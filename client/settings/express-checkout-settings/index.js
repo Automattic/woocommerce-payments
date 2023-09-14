@@ -127,11 +127,11 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 
 	// Only show the 'general' section of the WooPay method if the WooPay express checkout feature is enabled.
 	if (
-		'WooPay' === method.title &&
+		method.title === 'WooPay' &&
 		! wcpaySettings.featureFlags.woopayExpressCheckout
 	) {
 		method.sections = method.sections.filter( ( section ) => {
-			return 'general' !== section.section;
+			return section.section !== 'general';
 		} );
 	}
 
@@ -140,10 +140,8 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 	return (
 		<SettingsLayout>
 			<h2 className="express-checkout-settings__breadcrumbs">
-				<a href={ getPaymentSettingsUrl() }>
-					{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
-				</a>{ ' ' }
-				&gt; <span>{ title }</span>
+				<a href={ getPaymentSettingsUrl() }>{ 'WooPayments' }</a> &gt;{ ' ' }
+				<span>{ title }</span>
 			</h2>
 
 			{ sections.map( ( { section, description } ) => (

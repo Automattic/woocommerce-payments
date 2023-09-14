@@ -26,10 +26,10 @@ async function getLoadingDurations() {
 		let firstPaintTimings, firstContentfulPaintTimings;
 
 		paintTimings.forEach( ( item ) => {
-			if ( 'first-paint' === item.name ) {
+			if ( item.name === 'first-paint' ) {
 				firstPaintTimings = item;
 			}
-			if ( 'first-contentful-paint' === item.name ) {
+			if ( item.name === 'first-contentful-paint' ) {
 				firstContentfulPaintTimings = item;
 			}
 		} );

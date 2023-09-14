@@ -345,17 +345,29 @@ class Analytics {
 
 		$currency_args = $this->get_customer_currency_args_from_request();
 		if ( ! empty( $currency_args['currency_is'] ) ) {
-			$currency_is = sprintf( "'%s'", implode( "', '", $currency_args['currency_is'] ) );
+			/**
+			 * Skip implode complaining array_map as wrong argument.
+			 *
+			 * @psalm-suppress InvalidArgument
+			 */
+			$currency_is = sprintf( "'%s'", implode( "', '", array_map( 'esc_sql', $currency_args['currency_is'] ) ) );
 			$clauses[]   = "AND {$currency_field} IN ({$currency_is})";
 		}
 
 		if ( ! empty( $currency_args['currency_is_not'] ) ) {
-			$currency_is_not = sprintf( "'%s'", implode( "', '", $currency_args['currency_is_not'] ) );
+			/**
+			 * Skip implode complaining array_map as wrong argument.
+			 *
+			 * @psalm-suppress InvalidArgument
+			 */
+			$currency_is_not = sprintf( "'%s'", implode( "', '", array_map( 'esc_sql', $currency_args['currency_is_not'] ) ) );
 			$clauses[]       = "AND {$currency_field} NOT IN ({$currency_is_not})";
 		}
 
 		if ( ! empty( $currency_args['currency'] ) ) {
-			$clauses[] = "AND {$currency_field} = '{$currency_args['currency']}'";
+			global $wpdb;
+			$expression = "AND {$currency_field} = '%s'";
+			$clauses[]  = $wpdb->prepare( $expression, $currency_args['currency'] ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		}
 
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
@@ -496,22 +508,28 @@ class Analytics {
 	private function has_multi_currency_orders() {
 		global $wpdb;
 
-		// Using full SQL instad of variables to keep WPCS happy.
+		// Using full SQL instead of variables to keep WPCS happy.
 		if ( $this->is_cot_enabled() ) {
 			$result = $wpdb->get_var(
-				"SELECT COUNT(order_id)
-				FROM {$wpdb->prefix}wc_orders_meta
-				WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'"
+				"SELECT EXISTS(
+					SELECT 1
+					FROM {$wpdb->prefix}wc_orders_meta
+					WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'
+					LIMIT 1)
+				AS count;"
 			);
 		} else {
 			$result = $wpdb->get_var(
-				"SELECT COUNT(post_id)
-				FROM {$wpdb->postmeta}
-				WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'"
+				"SELECT EXISTS(
+					SELECT 1
+					FROM {$wpdb->postmeta}
+					WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'
+					LIMIT 1)
+				AS count;"
 			);
 		}
 
-		return intval( $result ) > 0;
+		return intval( $result ) === 1;
 	}
 
 	/**

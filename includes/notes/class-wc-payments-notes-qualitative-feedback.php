@@ -45,7 +45,13 @@ class WC_Payments_Notes_Qualitative_Feedback {
 
 		$note = new Note();
 
-		$note->set_title( __( 'Help us make improvements to WooCommerce Payments', 'woocommerce-payments' ) );
+		$note->set_title(
+			sprintf(
+				/* translators: %s: WooPayments */
+				__( 'Help us make improvements to %s', 'woocommerce-payments' ),
+				'WooPayments'
+			)
+		);
 		$note->set_content( __( 'Share your feedback in this 2 minute survey about how we can make the process of accepting payments more useful for your store.', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );

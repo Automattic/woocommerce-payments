@@ -358,7 +358,13 @@ class WC_Payments_Apple_Pay_Registration {
 		<div class="notice notice-warning apple-pay-message">
 			<p>
 				<strong><?php echo esc_html( 'Apple Pay:' ); ?></strong>
-				<?php echo esc_html_e( 'Express checkouts are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+				<?php
+					printf(
+						/* translators: %s: WooPayments */
+						esc_html__( 'Express checkouts are enabled. To use Apple Pay, please use a live %s account.', 'woocommerce-payments' ),
+						'WooPayments'
+					);
+				?>
 			</p>
 		</div>
 		<?php
@@ -405,7 +411,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$learn_more_text = WC_Payments_Utils::esc_interpolated_html(
 			__( '<a>Learn more</a>.', 'woocommerce-payments' ),
 			[
-				'a' => '<a href="https://woocommerce.com/document/woocommerce-payments/payment-methods/apple-pay/#domain-registration" target="_blank">',
+				'a' => '<a href="https://woocommerce.com/document/woopayments/payment-methods/apple-pay/#domain-registration" target="_blank">',
 			]
 		);
 

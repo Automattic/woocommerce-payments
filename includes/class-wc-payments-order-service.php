@@ -7,7 +7,7 @@
 
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -116,8 +116,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Parse the payment intent data and add any necessary notes to the order and update the order status accordingly.
 	 *
-	 * @param WC_Order     $order  The order to update.
-	 * @param object|array $intent The intent.
+	 * @param WC_Order                           $order   The order to update.
+	 * @param WC_Payments_API_Abstract_Intention $intent  Setup or payment intent to pull the data from.
 	 */
 	public function update_order_status_from_intent( $order, $intent ) {
 		$intent_data = $this->get_intent_data( $intent );
@@ -127,26 +127,26 @@ class WC_Payments_Order_Service {
 		}
 
 		switch ( $intent_data['intent_status'] ) {
-			case Payment_Intent_Status::CANCELED:
+			case Intent_Status::CANCELED:
 				$this->mark_payment_capture_cancelled( $order, $intent_data );
 				break;
-			case Payment_Intent_Status::SUCCEEDED:
-				if ( Payment_Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
+			case Intent_Status::SUCCEEDED:
+				if ( Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
 					$this->mark_payment_capture_completed( $order, $intent_data );
 				} else {
 					$this->mark_payment_completed( $order, $intent_data );
 				}
 				break;
-			case Payment_Intent_Status::PROCESSING:
-			case Payment_Intent_Status::REQUIRES_CAPTURE:
+			case Intent_Status::PROCESSING:
+			case Intent_Status::REQUIRES_CAPTURE:
 				if ( Rule::FRAUD_OUTCOME_REVIEW === $intent_data['fraud_outcome'] ) {
 					$this->mark_order_held_for_review_for_fraud( $order, $intent_data );
 				} else {
 					$this->mark_payment_authorized( $order, $intent_data );
 				}
 				break;
-			case Payment_Intent_Status::REQUIRES_ACTION:
-			case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
+			case Intent_Status::REQUIRES_ACTION:
+			case Intent_Status::REQUIRES_PAYMENT_METHOD:
 				$this->mark_payment_started( $order, $intent_data );
 				break;
 			default:
@@ -216,7 +216,9 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
+	 * Update an order to failed status, and add note with a link to the transaction.
+	 *
+	 * Context - when a Payment Intent expires. Changing the status to failed will enable the buyer to re-attempt payment.
 	 *
 	 * @param WC_Order $order         Order object.
 	 * @param string   $intent_id     The ID of the intent associated with this order.
@@ -240,7 +242,7 @@ class WC_Payments_Order_Service {
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_EXPIRED );
 		}
 
-		$this->update_order_status( $order, Order_Status::CANCELLED );
+		$this->update_order_status( $order, Order_Status::FAILED );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -276,16 +278,18 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order $order      Order object.
 	 * @param string   $dispute_id The ID of the dispute associated with this order.
-	 * @param string   $reason     The reason for the dispute.
+	 * @param string   $amount     The disputed amount – formatted currency value.
+	 * @param string   $reason     The reason for the dispute – human-readable text.
+	 * @param string   $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_created( $order, $dispute_id, $reason ) {
+	public function mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
-		$note = $this->generate_dispute_created_note( $dispute_id, $reason );
+		$note = $this->generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -942,14 +946,15 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully charged</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 	}
@@ -968,14 +973,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
@@ -999,14 +1005,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>authorized</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
@@ -1024,14 +1031,15 @@ class WC_Payments_Order_Service {
 	private function generate_payment_started_note( $order, $intent_id ): string {
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: intent ID of the payment */
+				__( 'A payment of %1$s was <strong>started</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'code'   => '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			$intent_id
 		);
 
@@ -1051,14 +1059,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully captured</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 		return $note;
@@ -1078,14 +1087,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A capture of %1$s <strong>failed</strong> to complete using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A capture of %1$s <strong>failed</strong> to complete using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
@@ -1209,22 +1219,29 @@ class WC_Payments_Order_Service {
 	 * Get content for the dispute created order note.
 	 *
 	 * @param string $dispute_id The ID of the dispute associated with this order.
-	 * @param string $reason     The reason for the dispute.
+	 * @param string $amount     The disputed amount – formatted currency value.
+	 * @param string $reason     The reason for the dispute – human-readable text.
+	 * @param string $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_created_note( $dispute_id, $reason ) {
+	private function generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by ) {
 		$dispute_url = $this->compose_dispute_url( $dispute_id );
+
+		// Get merchant-friendly dispute reason description.
+		$reason = WC_Payments_Utils::get_dispute_reason_description( $reason );
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the dispute reason */
-				__( 'Payment has been disputed as %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
+				/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to dispute */
+				__( 'Payment has been disputed for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
 				[
 					'a' => '<a href="' . $dispute_url . '" target="_blank" rel="noopener noreferrer">',
 				]
 			),
-			$reason
+			$amount,
+			$reason,
+			$due_by
 		);
 	}
 
@@ -1429,32 +1446,25 @@ class WC_Payments_Order_Service {
 	 * Takes an intent object or array and returns our needed data as an array.
 	 * This is needed due to intents can either be objects or arrays.
 	 *
-	 * @param object|array $intent The intent to pull the data from.
+	 * @param WC_Payments_API_Abstract_Intention $intent  Setup or payment intent to pull the data from.
 	 *
 	 * @return array The data we need to continue processing.
 	 */
-	private function get_intent_data( $intent ): array {
-		$intent_data = [];
-		if ( is_array( $intent ) ) {
-			$intent_data = [
-				'intent_id'           => $intent['id'],
-				'intent_status'       => $intent['status'],
-				'charge_id'           => $intent['charge_id'] ?? '',
-				'fraud_outcome'       => $intent['fraud_outcome'] ?? '',
-				'payment_method_type' => $intent['payment_method_type'] ?? '',
-			];
-		} elseif ( is_object( $intent ) ) {
-			$charge               = $intent->get_charge();
-			$payment_method_types = $intent->get_payment_method_types();
+	private function get_intent_data( WC_Payments_API_Abstract_Intention $intent ): array {
 
-			$intent_data = [
-				'intent_id'           => $intent->get_id(),
-				'intent_status'       => $intent->get_status(),
-				'charge_id'           => $charge ? $charge->get_id() : null,
-				'fraud_outcome'       => $intent->get_metadata()['fraud_outcome'] ?? '',
-				'payment_method_type' => 1 === count( $payment_method_types ) ? $payment_method_types[0] : '',
-			];
+		$intent_data = [
+			'intent_id'           => $intent->get_id(),
+			'intent_status'       => $intent->get_status(),
+			'charge_id'           => '',
+			'fraud_outcome'       => $intent->get_metadata()['fraud_outcome'] ?? '',
+			'payment_method_type' => $intent->get_payment_method_type(),
+		];
+
+		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
+			$charge                   = $intent->get_charge();
+			$intent_data['charge_id'] = $charge ? $charge->get_id() : null;
 		}
+
 		return $intent_data;
 	}
 

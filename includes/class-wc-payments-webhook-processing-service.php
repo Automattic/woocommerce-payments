@@ -213,6 +213,10 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Event mode does not match the gateway mode.
 	 */
 	private function is_webhook_mode_mismatch( array $event_body ): bool {
+		if ( ! $this->has_webhook_property( $event_body, 'livemode' ) ) {
+			return false;
+		}
+
 		$is_gateway_live_mode = WC_Payments::mode()->is_live();
 		$is_event_live_mode   = $this->read_webhook_property( $event_body, 'livemode' );
 
@@ -271,8 +275,8 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-			/* translators: %1: the refund amount, %2: ID of the refund */
-				__( 'A refund of %1$s was <strong>unsuccessful</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+			/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
+				__( 'A refund of %1$s was <strong>unsuccessful</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'code'   => '<code>',
@@ -282,6 +286,7 @@ class WC_Payments_Webhook_Processing_Service {
 				wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
 				$order
 			),
+			'WooPayments',
 			$refund_id
 		);
 
@@ -482,16 +487,13 @@ class WC_Payments_Webhook_Processing_Service {
 		// Save the order after updating the meta data values.
 		$order->save();
 
-		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
-		$intent_data    = [
-			'id'                  => $intent_id,
-			'status'              => $intent_status,
-			'charge_id'           => $charge_id,
-			'fraud_outcome'       => $metadata['fraud_outcome'] ?? '',
-			'payment_method_type' => $payment_method,
-		];
-		$this->order_service->update_order_status_from_intent( $order, $intent_data );
+		// This is an incoming request from WCPay server rather than an outgoing request to WCPay server.
+		// However, the shape of the payment intent object are the same.
+		// Using this extraction method will reduce the code duplication.
+		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
+		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 
+		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		// Send the customer a card reader receipt if it's an in person payment type.
 		if ( Payment_Method::CARD_PRESENT === $payment_method || Payment_Method::INTERAC_PRESENT === $payment_method ) {
 			$merchant_settings = [
@@ -524,7 +526,20 @@ class WC_Payments_Webhook_Processing_Service {
 		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$reason       = $this->read_webhook_property( $event_object, 'reason' );
-		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
+		$amount_raw   = $this->read_webhook_property( $event_object, 'amount' );
+		$evidence     = $this->read_webhook_property( $event_object, 'evidence_details' );
+		$due_by       = $this->read_webhook_property( $evidence, 'due_by' );
+
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+
+		$currency      = $order->get_currency();
+		$amount_string = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
+
+		// Explicitly add currency info if needed (multi-currency stores).
+		$amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $amount_string, $currency );
+
+		// Convert due_by to a date string in the store timezone.
+		$due_by = date_i18n( wc_date_format(), $due_by );
 
 		if ( ! $order ) {
 			throw new Invalid_Webhook_Data_Exception(
@@ -536,10 +551,11 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $reason );
+		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by );
 
-		// Clear the dispute statuses cache to trigger a fetch of new data.
+		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
 	}
 
 	/**
@@ -570,8 +586,9 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$this->order_service->mark_payment_dispute_closed( $order, $dispute_id, $status );
 
-		// Clear the dispute statuses cache to trigger a fetch of new data.
+		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
 	}
 
 	/**
@@ -626,8 +643,9 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$order->add_order_note( $note );
 
-		// Clear the dispute statuses cache to trigger a fetch of new data.
+		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
 	}
 
 	/**
@@ -671,6 +689,18 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 		return $array[ $key ];
+	}
+
+	/**
+	 * Safely check whether a webhook contains a property.
+	 *
+	 * @param array  $array Array to read from.
+	 * @param string $key   ID to fetch on.
+	 *
+	 * @return bool
+	 */
+	private function has_webhook_property( $array, $key ) {
+		return isset( $array[ $key ] );
 	}
 
 	/**

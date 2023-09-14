@@ -13,14 +13,15 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 
 /**
- * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
+ * Gateway class for WooPayments, with added compatibility with WooCommerce Subscriptions.
  */
 trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
@@ -47,6 +48,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
 	abstract public function process_payment_for_order( $cart, $payment_information, $scheduled_subscription_payment = false );
+
+
+	/**
+	 * Get the payment method to use for the intent.
+	 *
+	 * @return string The payment method to use for the intent (e.g. 'card')
+	 */
+	abstract public function get_payment_method_to_use_for_intent();
 
 	/**
 	 * Saves the payment token to the order.
@@ -118,10 +127,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			'subscriptions',
 		];
 
-		if ( $this->is_subscriptions_plugin_active() ) {
+		if ( ! WC_Payments_Features::should_use_stripe_billing() ) {
 			/*
 			 * Subscription amount & date changes are only supported
-			 * when WooCommerce Subscriptions is active.
+			 * when Stripe Billing is not in use.
 			 */
 			$payment_gateway_features = array_merge(
 				$payment_gateway_features,
@@ -139,7 +148,16 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		$this->supports = array_merge( $this->supports, $payment_gateway_features );
+	}
 
+	/**
+	 * Initializes this trait's WP hooks.
+	 *
+	 * The hooks are not initialized more than once or if the ID of the attached gateway is not 'woocommerce_payments'.
+	 *
+	 * @return void
+	 */
+	public function maybe_init_subscriptions_hooks() {
 		/**
 		 * The following callbacks are only attached once to avoid duplication.
 		 * The callbacks are also only intended to be attached for the WCPay core payment gateway ($this->id = 'woocommerce_payments').
@@ -147,7 +165,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		 * If new payment method IDs (eg 'sepa_debit') are added to this condition in the future, care should be taken to ensure duplication,
 		 * including double renewal charging, isn't introduced.
 		 */
-		if ( self::$has_attached_integration_hooks || 'woocommerce_payments' !== $this->id ) {
+		if ( self::$has_attached_integration_hooks || 'woocommerce_payments' !== $this->id || ! $this->is_subscriptions_enabled() ) {
 			return;
 		}
 
@@ -240,7 +258,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$request = Get_Intention::create( $order->get_transaction_id() );
 		$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
-		if ( ! $intent || Payment_Intent_Status::REQUIRES_ACTION !== $intent->get_status() ) {
+		if ( ! $intent || Intent_Status::REQUIRES_ACTION !== $intent->get_status() ) {
 			return false;
 		}
 
@@ -290,6 +308,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param WC_Order $renewal_order A WC_Order object created to record the renewal payment.
 	 */
 	public function scheduled_subscription_payment( $amount, $renewal_order ) {
+
+		// Exit early if the order belongs to a WCPay Subscription. The payment will be processed by the subscription via webhooks.
+		if ( $this->is_wcpay_subscription_renewal_order( $renewal_order ) ) {
+			return;
+		}
+
 		$token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
@@ -298,13 +322,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
-		// Exit early if the order belongs to a WCPay Subscription. The payment will be processed by the subscription via webhooks.
-		if ( $this->is_wcpay_subscription_renewal_order( $renewal_order ) ) {
-			return;
-		}
-
 		try {
-			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
+			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT(), null, null, '', $this->get_payment_method_to_use_for_intent() );
 			$this->process_payment_for_order( null, $payment_information, true );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
@@ -836,12 +855,17 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * Checks if a renewal order is linked to a WCPay subscription.
 	 *
 	 * @param WC_Order $renewal_order The renewal order to check.
+	 *
 	 * @return bool True if the renewal order is linked to a renewal order. Otherwise false.
 	 */
 	private function is_wcpay_subscription_renewal_order( WC_Order $renewal_order ) {
-
-		// Exit early if WCPay subscriptions functionality isn't enabled.
-		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		/**
+		 * Check if WC_Payments_Subscription_Service class exists first before fetching the subscription for the renewal order.
+		 *
+		 * This class is only loaded when the store has the Stripe Billing feature turned on or has existing
+		 * WCPay Subscriptions @see WC_Payments::should_load_stripe_billing_integration().
+		 */
+		if ( ! class_exists( 'WC_Payments_Subscription_Service' ) ) {
 			return false;
 		}
 

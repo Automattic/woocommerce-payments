@@ -130,13 +130,18 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 			function ( $result, $current ) use ( $search ) {
 				$outcome = $this->build_fraud_outcome_transactions_order_info( $current );
 
-				// Removes the outcomes that are not pending review.
+				// Removes the outcome that is not a valid order.
+				if ( empty( $outcome ) ) {
+					return $result;
+				}
+
+				// Removes the outcome that is not pending review.
 				$is_review_pending = 'requires_capture' === $outcome['payment_intent']['status'] && empty( $outcome['manual_review'] ) && Fraud_Meta_Box_Type::REVIEW === $outcome['fraud_meta_box_type'];
 				if ( 'review' === $this->status && ! $is_review_pending ) {
 					return $result;
 				}
 
-				// Removes the outcomes that are not blocked.
+				// Removes the outcome that is not blocked.
 				$block_statuses   = [ Fraud_Meta_Box_Type::BLOCK, Fraud_Meta_Box_Type::REVIEW_BLOCKED ];
 				$has_block_status = in_array( $outcome['fraud_meta_box_type'], $block_statuses, true );
 				if ( 'block' === $this->status && ! $has_block_status ) {
@@ -185,10 +190,15 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	 *
 	 * @param array $outcome Fraud outcome array.
 	 *
-	 * @return array
+	 * @return array|null
 	 */
 	private function build_fraud_outcome_transactions_order_info( $outcome ) {
 		$order = wc_get_order( $outcome['order_id'] );
+
+		// Skip the outcome if it's not a valid order or if it's a refund.
+		if ( empty( $order ) || is_a( $order, 'WC_Order_Refund' ) ) {
+			return null;
+		}
 
 		$outcome['payment_intent']           = [];
 		$outcome['payment_intent']['id']     = $outcome['payment_intent_id'] ?? $order->get_meta( '_intent_id' ) ?? $order->get_transaction_id();
@@ -196,7 +206,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 
 		$outcome['amount']              = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
 		$outcome['currency']            = $order->get_currency();
-		$outcome['customer_name']       = wc_clean( $order->get_billing_first_name() ) . ' ' . wc_clean( $order->get_billing_last_name() );
+		$outcome['customer_name']       = wc_clean( $order->get_formatted_billing_full_name() );
 		$outcome['manual_review']       = $order->get_meta( '_wcpay_fraud_outcome_manual_entry' );
 		$outcome['fraud_meta_box_type'] = $order->get_meta( '_wcpay_fraud_meta_box_type' );
 

@@ -48,9 +48,17 @@ class WC_Payments_Status {
 	 */
 	public function debug_tools( $tools ) {
 		$tools['clear_wcpay_account_cache'] = [
-			'name'     => __( 'Clear WooCommerce Payments account cache', 'woocommerce-payments' ),
+			'name'     => sprintf(
+				/* translators: %s: WooPayments */
+				__( 'Clear %s account cache', 'woocommerce-payments' ),
+				'WooPayments'
+			),
 			'button'   => __( 'Clear', 'woocommerce-payments' ),
-			'desc'     => __( 'This tool will clear the account cached values used in WooCommerce Payments.', 'woocommerce-payments' ),
+			'desc'     => sprintf(
+				/* translators: %s: WooPayments */
+				__( 'This tool will clear the account cached values used in %s.', 'woocommerce-payments' ),
+				'WooPayments'
+			),
 			'callback' => [ $this->account, 'refresh_account_data' ],
 		];
 		return $tools;
@@ -65,9 +73,7 @@ class WC_Payments_Status {
 				<thead>
 					<tr>
 						<th colspan="3" data-export-label="WooCommerce Payments">
-							<h2>
-								<?php esc_html_e( 'WooCommerce Payments', 'woocommerce-payments' ); ?>
-							</h2>
+							<h2>WooPayments</h2>
 						</th>
 					</tr>
 				</thead>

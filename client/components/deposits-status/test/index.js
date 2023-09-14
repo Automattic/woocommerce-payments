@@ -108,6 +108,8 @@ describe( 'DepositsStatus', () => {
 		status,
 		interval,
 		accountStatus,
+		poEnabled = false,
+		poComplete = false,
 		iconSize,
 	} ) {
 		return render(
@@ -115,6 +117,8 @@ describe( 'DepositsStatus', () => {
 				status={ status }
 				accountStatus={ accountStatus }
 				interval={ interval }
+				poEnabled={ poEnabled }
+				poComplete={ poComplete }
 				iconSize={ iconSize }
 			/>
 		);

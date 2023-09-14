@@ -6,6 +6,7 @@
  */
 
 use WCPay\MultiCurrency\MultiCurrency;
+use WCPay\Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -13,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Class for displaying the explicit prices on total amounts.
+ *
+ * Also used for consistent rendering of price values with currency (get_explicit_price_with_currency()).
  */
 class WC_Payments_Explicit_Price_Formatter {
 
@@ -106,21 +109,38 @@ class WC_Payments_Explicit_Price_Formatter {
 	 * @return string
 	 */
 	public static function get_explicit_price( string $price, WC_Abstract_Order $order = null ) {
-		if ( false === static::should_output_explicit_price() ) {
-			return $price;
-		}
 		if ( null === $order ) {
 			$currency_code = get_woocommerce_currency();
 		} else {
 			$currency_code = $order->get_currency();
 		}
 
-		if ( ! empty( $currency_code ) ) {
-			$price_to_check = html_entity_decode( wp_strip_all_tags( $price ) );
+		return static::get_explicit_price_with_currency( $price, $currency_code );
+	}
 
-			if ( false === strpos( $price_to_check, trim( $currency_code ) ) ) {
-				return $price . ' ' . $currency_code;
-			}
+	/**
+	 * Returns a formatted price string suffixed with the appropriate currency code (if necessary).
+	 *
+	 * In multi-currency stores, order and price values are rendered with currency suffix.
+	 * This method only renders the currency suffix if appropriate (see `should_output_explicit_price`).
+	 *
+	 * @param string  $price A price value (as a string).
+	 * @param ?string $currency_code Currency of the price.
+	 *
+	 * @return string Price value with currency code suffix if necessary.
+	 */
+	public static function get_explicit_price_with_currency( string $price, ?string $currency_code ) {
+		if ( false === static::should_output_explicit_price() ) {
+			return $price;
+		}
+		if ( empty( $currency_code ) ) {
+			return $price;
+		}
+
+		$price_to_check = html_entity_decode( wp_strip_all_tags( $price ) );
+
+		if ( false === strpos( $price_to_check, trim( $currency_code ) ) ) {
+			return $price . ' ' . $currency_code;
 		}
 
 		return $price;

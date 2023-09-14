@@ -8,7 +8,6 @@ import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
-	CardDivider,
 	CardHeader,
 	DropdownMenu,
 	ExternalLink,
@@ -26,10 +25,12 @@ import {
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
+	useAccountDomesticCurrency,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
+import PAYMENT_METHOD_IDS from './constants';
 
 // Survey modal imports.
 import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
@@ -45,6 +46,9 @@ import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants'
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
+import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
+import InlineNotice from 'wcpay/components/inline-notice';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -79,32 +83,35 @@ const UpeSetupBanner = () => {
 
 	return (
 		<>
-			<CardDivider />
-			<CardBody className="payment-methods__express-checkouts">
+			<CardBody
+				className={ classNames( 'payment-methods__express-checkouts', {
+					'background-local-payment-methods': ! wcpaySettings.isBnplAffirmAfterpayEnabled,
+				} ) }
+			>
 				<h3>
 					{ __(
-						'Enable the new WooCommerce Payments checkout experience',
+						'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023',
 						'woocommerce-payments'
 					) }
 				</h3>
 				<p>
 					{ __(
 						/* eslint-disable-next-line max-len */
-						'Get access to additional payment methods and an improved checkout experience.',
+						'This will improve the checkout experience and boost sales with access to additional payment methods, which you’ll be able to manage from here in settings.',
 						'woocommerce-payments'
 					) }
 				</p>
 
 				<div className="payment-methods__express-checkouts-actions">
 					<span className="payment-methods__express-checkouts-get-started">
-						<Button isPrimary onClick={ handleEnableUpeClick }>
+						<Button isSecondary onClick={ handleEnableUpeClick }>
 							{ __(
-								'Enable in your store',
+								'Enable payment methods',
 								'woocommerce-payments'
 							) }
 						</Button>
 					</span>
-					<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/">
 						{ __( 'Learn more', 'woocommerce-payments' ) }
 					</ExternalLink>
 				</div>
@@ -121,9 +128,31 @@ const PaymentMethods = () => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
 	// We filter link payment method since this will be displayed in other section (express checkout).
-	const availableMethods = availablePaymentMethodIds
-		.filter( ( id ) => 'link' !== id )
-		.map( ( methodId ) => methodsConfiguration[ methodId ] );
+	// We further split the available methods into pay later and non-pay later methods to sort them in the required order later.
+	const availableNonPayLaterMethods = availablePaymentMethodIds.filter(
+		( id ) =>
+			PAYMENT_METHOD_IDS.LINK !== id &&
+			PAYMENT_METHOD_IDS.CARD !== id &&
+			! methodsConfiguration[ id ].allows_pay_later
+	);
+
+	const availablePayLaterMethods = availablePaymentMethodIds.filter(
+		( id ) =>
+			PAYMENT_METHOD_IDS.LINK !== id &&
+			methodsConfiguration[ id ].allows_pay_later
+	);
+
+	const orderedAvailablePaymentMethodIds = [
+		PAYMENT_METHOD_IDS.CARD,
+		...availablePayLaterMethods,
+		...availableNonPayLaterMethods,
+	];
+
+	const availableMethods = orderedAvailablePaymentMethodIds.map(
+		( methodId ) => methodsConfiguration[ methodId ]
+	);
+
+	const isCreditCardEnabled = enabledMethodIds.includes( 'card' );
 
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
 		null
@@ -131,6 +160,8 @@ const PaymentMethods = () => {
 	const [ deleteModalParams, handleDeleteModalOpen ] = useState( null );
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
+
+	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
 
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );
@@ -162,8 +193,8 @@ const PaymentMethods = () => {
 	const handleCheckClick = ( itemId ) => {
 		const statusAndRequirements = getStatusAndRequirements( itemId );
 		if (
-			'unrequested' === statusAndRequirements.status &&
-			0 < statusAndRequirements.requirements.length
+			statusAndRequirements.status === 'unrequested' &&
+			statusAndRequirements.requirements.length > 0
 		) {
 			handleActivationModalOpen( {
 				id: itemId,
@@ -177,7 +208,7 @@ const PaymentMethods = () => {
 	const handleUncheckClick = ( itemId ) => {
 		const methodConfig = methodsConfiguration[ itemId ];
 		const statusAndRequirements = getStatusAndRequirements( itemId );
-		if ( methodConfig && 'active' === statusAndRequirements.status ) {
+		if ( methodConfig && statusAndRequirements.status === 'active' ) {
 			handleDeleteModalOpen( {
 				id: itemId,
 				label: methodConfig.label,
@@ -197,7 +228,7 @@ const PaymentMethods = () => {
 
 	return (
 		<>
-			{ 'disable' === openModalIdentifier ? (
+			{ openModalIdentifier === 'disable' ? (
 				<DisableUPEModal
 					setOpenModal={ setOpenModalIdentifier }
 					triggerAfterDisable={ () =>
@@ -205,7 +236,7 @@ const PaymentMethods = () => {
 					}
 				/>
 			) : null }
-			{ 'survey' === openModalIdentifier ? (
+			{ openModalIdentifier === 'survey' ? (
 				<WcPaySurveyContextProvider>
 					<SurveyModal
 						setOpenModal={ setOpenModalIdentifier }
@@ -217,7 +248,7 @@ const PaymentMethods = () => {
 
 			<Card
 				className={ classNames( 'payment-methods', {
-					'is-loading': 'pending' === status,
+					'is-loading': status === 'pending',
 				} ) }
 			>
 				{ isUpeEnabled && (
@@ -229,7 +260,7 @@ const PaymentMethods = () => {
 									'woocommerce-payments'
 								) }
 							</span>
-							{ 'split' !== upeType && (
+							{ upeType !== 'split' && (
 								<>
 									{ ' ' }
 									<Pill>
@@ -247,21 +278,49 @@ const PaymentMethods = () => {
 					</CardHeader>
 				) }
 
+				{ isUpeEnabled && upeType === 'legacy' && (
+					<CardHeader className="payment-methods__header">
+						<InlineNotice
+							icon
+							status="warning"
+							isDismissible={ false }
+						>
+							{ interpolateComponents( {
+								mixedString: __(
+									'The new WooPayments checkout experience will become the default on October 11, 2023.' +
+										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+									'woocommerce-payments'
+								),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line max-len
+										<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#popular-payment-methods" />
+									),
+								},
+							} ) }
+						</InlineNotice>
+					</CardHeader>
+				) }
+
 				<CardBody size={ null }>
 					<PaymentMethodsList className="payment-methods__available-methods">
 						{ availableMethods.map(
 							( {
 								id,
 								label,
-								description,
 								icon: Icon,
 								allows_manual_capture: isAllowingManualCapture,
+								setup_required: isSetupRequired,
+								setup_tooltip: setupTooltip,
 							} ) => (
 								<PaymentMethod
 									id={ id }
 									key={ id }
 									label={ label }
-									description={ description }
+									description={ getPaymentMethodDescription(
+										id,
+										stripeAccountDomesticCurrency
+									) }
 									checked={
 										enabledMethodIds.includes( id ) &&
 										upeCapabilityStatuses.INACTIVE !==
@@ -269,12 +328,21 @@ const PaymentMethods = () => {
 												.status
 									}
 									// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
-									required={ 'card' === id && isUpeEnabled }
-									locked={ 'card' === id && isUpeEnabled }
+									required={
+										PAYMENT_METHOD_IDS.CARD === id &&
+										isUpeEnabled
+									}
+									locked={
+										PAYMENT_METHOD_IDS.CARD === id &&
+										isCreditCardEnabled &&
+										isUpeEnabled
+									}
 									Icon={ Icon }
 									status={
 										getStatusAndRequirements( id ).status
 									}
+									isSetupRequired={ isSetupRequired }
+									setupTooltip={ setupTooltip }
 									isAllowingManualCapture={
 										isAllowingManualCapture
 									}
@@ -284,15 +352,34 @@ const PaymentMethods = () => {
 									onCheckClick={ () => {
 										handleCheckClick( id );
 									} }
+									isPoEnabled={
+										wcpaySettings?.progressiveOnboarding
+											?.isEnabled
+									}
+									isPoComplete={
+										wcpaySettings?.progressiveOnboarding
+											?.isComplete
+									}
 								/>
 							)
 						) }
 					</PaymentMethodsList>
 				</CardBody>
-				{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
-					<UpeSetupBanner />
-				) }
 			</Card>
+
+			{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
+				<>
+					<br />
+					<Card
+						className={ classNames( 'payment-methods', {
+							'is-loading': status === 'pending',
+						} ) }
+					>
+						<UpeSetupBanner />
+					</Card>
+				</>
+			) }
+
 			{ activationModalParams && (
 				<ConfirmPaymentMethodActivationModal
 					onClose={ () => {

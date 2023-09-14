@@ -73,6 +73,7 @@ const DisputeDetails = ( {
 							{ __( 'Dispute overview', 'woocommerce-payments' ) }
 							<DisputeStatusChip
 								status={ disputeObject.status }
+								dueBy={ disputeObject.evidence_details?.due_by }
 							/>
 						</LoadableBlock>
 					</CardHeader>

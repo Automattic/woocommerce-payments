@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { sprintf, __ } from '@wordpress/i18n';
-import { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 /**
  * Internal dependencies
@@ -20,28 +20,50 @@ export const WoopayExpressCheckoutButton = ( {
 	isProductPage = false,
 	emailSelector = '#email',
 } ) => {
+	const buttonWidthTypes = {
+		narrow: 'narrow',
+		wide: 'wide',
+	};
+	const buttonRef = useRef();
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
+	const [ buttonWidthType, setButtonWidthType ] = useState(
+		buttonWidthTypes.wide
+	);
+
 	const text =
-		'default' !== buttonType
+		buttonType !== 'default'
 			? sprintf(
 					__( `%s with`, 'woocommerce-payments' ),
 					buttonType.charAt( 0 ).toUpperCase() +
 						buttonType.slice( 1 ).toLowerCase()
 			  )
 			: '';
-	const ThemedWooPayIcon = 'dark' === theme ? WoopayIcon : WoopayIconLight;
+	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
 
-	const { addToCart, isAddToCartDisabled } = useExpressCheckoutProductHandler(
-		api,
-		isProductPage
-	);
+	const {
+		addToCart,
+		getProductData,
+		isAddToCartDisabled,
+	} = useExpressCheckoutProductHandler( api, isProductPage );
+
+	useEffect( () => {
+		if ( ! buttonRef.current ) {
+			return;
+		}
+
+		const buttonWidth = buttonRef.current.getBoundingClientRect().width;
+		const isButtonWide = buttonWidth > 140;
+		setButtonWidthType(
+			isButtonWide ? buttonWidthTypes.wide : buttonWidthTypes.narrow
+		);
+	}, [ buttonWidthTypes.narrow, buttonWidthTypes.wide ] );
 
 	useEffect( () => {
 		if ( ! isPreview ) {
 			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.WOOPAY_EXPRESS_BUTTON_OFFERED,
+				wcpayTracks.events.WOOPAY_BUTTON_LOAD,
 				{
-					context,
+					source: context,
 				}
 			);
 		}
@@ -54,15 +76,18 @@ export const WoopayExpressCheckoutButton = ( {
 			return; // eslint-disable-line no-useless-return
 		}
 
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_EXPRESS_BUTTON_CLICKED,
-			{
-				context: context,
-			}
-		);
+		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_BUTTON_CLICK, {
+			source: context,
+		} );
 
 		if ( isProductPage ) {
-			addToCart()
+			const productData = getProductData();
+
+			if ( ! productData ) {
+				return;
+			}
+
+			addToCart( productData )
 				.then( () => {
 					expressCheckoutIframe( api, context, emailSelector );
 				} )
@@ -76,14 +101,16 @@ export const WoopayExpressCheckoutButton = ( {
 
 	return (
 		<button
+			ref={ buttonRef }
 			key={ `${ buttonType }-${ theme }-${ size }` }
-			aria-label={ 'default' !== buttonType ? text : __( 'WooPay' ) }
+			aria-label={ buttonType !== 'default' ? text : __( 'WooPay' ) }
 			onClick={ initWooPay }
 			className="woopay-express-button"
 			disabled={ isAddToCartDisabled }
 			data-type={ buttonType }
 			data-size={ size }
 			data-theme={ theme }
+			data-width-type={ buttonWidthType }
 			style={ { height: `${ height }px` } }
 		>
 			{ text }

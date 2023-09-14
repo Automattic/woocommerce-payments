@@ -19,15 +19,14 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	protected $mock_cache;
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_upe'                        => 'upe',
-		'_wcpay_feature_upe_split'                  => 'upeSplit',
-		'_wcpay_feature_upe_deferred_intent'        => 'upeDeferred',
-		'_wcpay_feature_upe_settings_preview'       => 'upeSettingsPreview',
-		'_wcpay_feature_customer_multi_currency'    => 'multiCurrency',
-		'_wcpay_feature_documents'                  => 'documents',
-		'_wcpay_feature_account_overview_task_list' => 'accountOverviewTaskList',
-		'_wcpay_feature_auth_and_capture'           => 'isAuthAndCaptureEnabled',
-		'_wcpay_feature_progressive_onboarding'     => 'progressiveOnboarding',
+		'_wcpay_feature_upe'                     => 'upe',
+		'_wcpay_feature_upe_split'               => 'upeSplit',
+		'_wcpay_feature_upe_deferred_intent'     => 'upeDeferred',
+		'_wcpay_feature_upe_settings_preview'    => 'upeSettingsPreview',
+		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
+		'_wcpay_feature_documents'               => 'documents',
+		'_wcpay_feature_auth_and_capture'        => 'isAuthAndCaptureEnabled',
+		'_wcpay_feature_progressive_onboarding'  => 'progressiveOnboarding',
 	];
 
 	public function set_up() {

@@ -98,7 +98,7 @@ WooCommerce Payments contains a comprehensive set of internal services, but as e
 
 Instead, please use the following services available in core:
 
-- [🔗 `WC_Payments_Customer_Service_API`](services/customer-service.md)
+- [🔗 `WC_Payments_Customer_Service_API`](service/customer-service.md)
 
 ### Server requests & responses
 

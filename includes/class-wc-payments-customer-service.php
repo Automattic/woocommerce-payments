@@ -270,7 +270,7 @@ class WC_Payments_Customer_Service {
 			return; // No need to do anything, payment methods will never be cached in this case.
 		}
 
-		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::SEPA ];
+		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::SEPA ];
 		$customer_id                      = $this->get_customer_id_by_user_id( $user_id );
 		foreach ( $retrievable_payment_method_types as $type ) {
 			$this->database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
@@ -445,7 +445,7 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
-	 * Adds the WooComerce Payments customer ID found in the user session
+	 * Adds the WooCommerce Payments customer ID found in the user session
 	 * to the WordPress user as metadata.
 	 *
 	 * @param int $user_id The WordPress user ID.
@@ -459,7 +459,7 @@ class WC_Payments_Customer_Service {
 			return;
 		}
 
-		// Retrieve the WooComerce Payments customer ID from the user session.
+		// Retrieve the WooCommerce Payments customer ID from the user session.
 		$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
 
 		if ( ! $customer_id ) {

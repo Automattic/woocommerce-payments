@@ -8,31 +8,26 @@
 namespace WCPay\Payment_Methods;
 
 use Exception;
-use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Method;
-use WCPay\Constants\Payment_Type;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WC_Payments_API_Setup_Intention;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
-use WCPay\Payment_Information;
 use WCPay\Session_Rate_Limiter;
-use WC_Order;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
-use WC_Payments_Explicit_Price_Formatter;
-use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
 use WC_Payment_Token_CC;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
-use WC_Payments_Features;
+use WCPay\Constants\Payment_Method;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
+use WC_Payments_Localization_Service;
 
 
 
@@ -57,15 +52,17 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
-	 * @param WC_Payments_Account                  $account                         - Account class instance.
-	 * @param WC_Payments_Customer_Service         $customer_service                - Customer class instance.
-	 * @param WC_Payments_Token_Service            $token_service                   - Token class instance.
-	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
-	 * @param UPE_Payment_Method                   $payment_method                  - Specific UPE_Payment_Method instance for gateway.
-	 * @param array                                $payment_methods                 - Array of payment methods to supply to parent.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Session Rate Limiter instance.
-	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
+	 * @param WC_Payments_API_Client               $payments_api_client                  - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                              - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service                     - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service                        - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service             - Action Scheduler service instance.
+	 * @param UPE_Payment_Method                   $payment_method                       - Specific UPE_Payment_Method instance for gateway.
+	 * @param array                                $payment_methods                      - Array of payment methods to supply to parent.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter      - Session Rate Limiter instance.
+	 * @param WC_Payments_Order_Service            $order_service                        - Order class instance.
+	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
+	 * @param WC_Payments_Localization_Service     $localization_service                 - Localization service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -76,9 +73,11 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		UPE_Payment_Method $payment_method,
 		array $payment_methods,
 		Session_Rate_Limiter $failed_transaction_rate_limiter,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service,
+		WC_Payments_Localization_Service $localization_service
 	) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $payment_methods, $failed_transaction_rate_limiter, $order_service );
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $payment_methods, $failed_transaction_rate_limiter, $order_service, $duplicate_payment_prevention_service, $localization_service );
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->description        = '';
 		$this->stripe_id          = $payment_method->get_id();
@@ -86,41 +85,23 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		$this->title              = $payment_method->get_title();
 		$this->icon               = $payment_method->get_icon();
 
-		add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
-		add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
-		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
-
 		if ( 'card' !== $this->stripe_id ) {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
-			$this->method_title = "WooCommerce Payments ($this->title)";
+			$this->method_title = "WooPayments ($this->title)";
 		}
 	}
 
 	/**
-	 * Registers all scripts, necessary for the gateway.
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
 	 */
-	public function register_scripts() {
-		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-		// https://stripe.com/docs/stripe-js/elements/migrating).
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
-		);
+	public function init_hooks() {
+		add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
+		add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
+		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
 
-		$script_dependencies = [ 'stripe', 'wc-checkout', 'wp-i18n' ];
-
-		if ( $this->supports( 'tokenization' ) ) {
-			$script_dependencies[] = 'woocommerce-tokenization-form';
-		}
-		$script = WC_Payments_Features::is_upe_deferred_intent_enabled() ? 'dist/upe_with_deferred_intent_creation_checkout' : 'dist/upe_split_checkout';
-		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
+		parent::init_hooks();
 	}
 
 	/**
@@ -154,6 +135,23 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	}
 
 	/**
+	 * This method is used by WooCommerce Core's WC_Payment_Gateways::get_available_payment_gateways() to filter out gateways.
+	 *
+	 * The availability decision includes an additional business rule that checks if the payment method is enabled at checkout
+	 * via the is_enabled_at_checkout method. This method provides crucial information, among others, to determine if the gateway
+	 * is reusable in case there's a subcription in the cart.
+	 *
+	 * @return bool Whether the gateway is enabled and ready to accept payments.
+	 */
+	public function is_available() {
+		$processing_payment_method = $this->payment_methods[ $this->payment_method->get_id() ];
+		if ( ! $processing_payment_method->is_enabled_at_checkout() ) {
+			return false;
+		}
+		return parent::is_available();
+	}
+
+	/**
 	 * Gets UPE_Payment_Method instance from ID.
 	 *
 	 * @param string $payment_method_type Stripe payment method type ID.
@@ -167,7 +165,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * Set formatted readable payment method title for order,
 	 * using payment method details from accompanying charge.
 	 *
-	 * @param WC_Order   $order WC Order being processed.
+	 * @param \WC_Order  $order WC Order being processed.
 	 * @param string     $payment_method_type Stripe payment method key.
 	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
 	 */
@@ -179,7 +177,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 
 		$payment_method_title = $payment_method->get_title( $payment_method_details );
 
-		$payment_gateway = 'card' === $payment_method->get_id() ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
+		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
 
 		$order->set_payment_method( $payment_gateway );
 		$order->set_payment_method_title( $payment_method_title );
@@ -216,7 +214,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -273,7 +272,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -319,7 +319,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -358,8 +359,11 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 */
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
-			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
-			$payment_method_id = $setup_intent['payment_method'];
+			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
+			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+
+			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
 			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
 			// $payment_method = $this->payment_methods['card'];// Maybe this should be enforced.

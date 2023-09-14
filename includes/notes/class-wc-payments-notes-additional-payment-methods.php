@@ -11,8 +11,6 @@ use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Tracker;
-
 /**
  * Class WC_Payments_Notes_Additional_Payment_Methods
  */
@@ -53,9 +51,19 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 			return;
 		}
 
-		// if the user hasn't connected their account (or the account got disconnected) do not add the note.
 		if ( self::$account instanceof WC_Payments_Account ) {
+			// if the user hasn't connected their account, do not add the note.
 			if ( ! self::$account->is_stripe_connected() ) {
+				return;
+			}
+
+			// If the account hasn't completed intitial Stripe onboarding, do not add the note.
+			if ( self::$account->is_account_partially_onboarded() ) {
+				return;
+			}
+
+			// If this is a PO account which has not yet completed full onboarding, do not add the note.
+			if ( self::$account->is_progressive_onboarding_in_progress() ) {
 				return;
 			}
 		}
@@ -63,7 +71,18 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		$note = new Note();
 
 		$note->set_title( __( 'Boost your sales by accepting new payment methods', 'woocommerce-payments' ) );
-		$note->set_content( __( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://woocommerce.com/document/payments/additional-payment-methods/" target="wcpay_upe_learn_more">Learn more</a>', 'woocommerce-payments' ) );
+		$note->set_content(
+			WC_Payments_Utils::esc_interpolated_html(
+				sprintf(
+					/* translators: %s: WooPayments */
+					__( 'Get early access to additional payment methods and an improved checkout experience, coming soon to %s. <a>Learn more</a>', 'woocommerce-payments' ),
+					'WooPayments'
+				),
+				[
+					'a' => '<a href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/" target="wcpay_upe_learn_more">',
+				]
+			)
+		);
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
@@ -106,7 +125,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		if ( self::$account instanceof WC_Payments_Account ) {
 			if ( false === self::$account->is_stripe_connected() ) {
 				// account is not connected, redirecting to connection page.
-				self::$account->redirect_to_onboarding_page( __( 'We detected a temporary issue with your account. Please try and connect your Stripe account.', 'woocommerce-payments' ) );
+				self::$account->redirect_to_onboarding_welcome_page( __( 'We detected a temporary issue with your account. Please try and connect your Stripe account.', 'woocommerce-payments' ) );
 
 				return;
 			}
@@ -120,7 +139,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		}
 
 		// Enable UPE, deletes the note and redirect to onboarding task.
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
 		self::possibly_delete_note();
 
 		$wcpay_settings_url = admin_url( 'admin.php?page=wc-admin&path=/payments/additional-payment-methods' );

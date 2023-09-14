@@ -93,4 +93,11 @@ declare module '@woocommerce/components' {
 	}
 
 	const TourKit: ( props: any ) => JSX.Element;
+
+	interface ListProps {
+		className?: string;
+		items: any[];
+	}
+
+	const List: React.FC< ListProps >;
 }

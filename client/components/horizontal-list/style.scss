@@ -45,10 +45,14 @@
 			@include font-size( 14 );
 		}
 		.woocommerce-list__item-title {
-			color: $studio-gray-60;
+			text-transform: uppercase;
+			color: $gray-700;
+			font-size: 11px;
+			font-weight: 600;
 		}
 		.woocommerce-list__item-content {
 			color: $studio-gray-80;
+			display: flex;
 		}
 	}
 	.woocommerce-list__item:first-child {

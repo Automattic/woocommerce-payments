@@ -18,15 +18,13 @@
 		}
 
 		label {
-			flex: 1;
-			display: flex;
-			gap: $gap-small;
-			align-items: flex-start;
+			display: block;
 			margin: 0 !important;
-			padding: 0 !important;
+			padding: 0 0 0 27px;
+			text-indent: -27px;
 
 			.save-details-checkbox:not( .wc-block-components-checkbox__input ) {
-				margin-top: 0.375rem;
+				margin-right: 12px;
 			}
 		}
 
@@ -36,6 +34,10 @@
 
 			label {
 				gap: unset;
+				display: flex !important;
+				align-items: flex-start;
+				padding: 0;
+				text-indent: 0;
 			}
 
 			input {
@@ -86,6 +88,10 @@
 
 			&:hover {
 				display: flex;
+			}
+
+			span {
+				color: $gray-900;
 			}
 
 			svg {

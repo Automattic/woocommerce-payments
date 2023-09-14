@@ -217,7 +217,7 @@ describe( 'Multi-Currency enabled currencies list', () => {
 			screen.queryByRole( 'dialog', { name: /add enabled currencies/i } )
 		).not.toBeInTheDocument();
 		fireEvent.click(
-			screen.getByRole( 'button', { name: /add currencies/i } )
+			screen.getByRole( 'button', { name: /add\/remove currencies/i } )
 		);
 		const modal = screen.queryByRole( 'dialog', {
 			name: /add enabled currencies/i,
@@ -269,7 +269,7 @@ describe( 'Multi-Currency enabled currencies list', () => {
 			getContainer();
 			userEvent.click(
 				screen.getByRole( 'button', {
-					name: /add currencies/i,
+					name: /add\/remove currencies/i,
 				} )
 			);
 			userEvent.type( screen.getByRole( 'textbox' ), 'dollar' );
@@ -280,7 +280,7 @@ describe( 'Multi-Currency enabled currencies list', () => {
 			);
 			userEvent.click(
 				screen.getByRole( 'button', {
-					name: /add currencies/i,
+					name: /add\/remove currencies/i,
 				} )
 			);
 			expect(

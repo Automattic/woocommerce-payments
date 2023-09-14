@@ -54,6 +54,7 @@ import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { applyThousandSeparator } from '../../utils/index.js';
 import { HoverTooltip } from 'components/tooltip';
+import { PAYMENT_METHOD_TITLES } from 'payment-methods/constants';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -414,9 +415,17 @@ export const TransactionsList = (
 				display: ! isFinancingType ? (
 					clickable(
 						<span className="payment-method-details-list-item">
-							<span
-								className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-							/>
+							<HoverTooltip
+								isVisible={ false }
+								content={ PAYMENT_METHOD_TITLES[ txn.source ] }
+							>
+								<span
+									className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+									aria-label={
+										PAYMENT_METHOD_TITLES[ txn.source ]
+									}
+								/>
+							</HoverTooltip>
 							{ getPaymentSourceDetails( txn ) }
 						</span>
 					)
@@ -532,6 +541,8 @@ export const TransactionsList = (
 				search,
 				type_is: typeIs,
 				type_is_not: typeIsNot,
+				source_device_is: sourceDeviceIs,
+				source_device_is_not: sourceDeviceIsNot,
 				customer_currency_is: customerCurrencyIs,
 				customer_currency_is_not: customerCurrencyIsNot,
 			} = params;
@@ -543,7 +554,8 @@ export const TransactionsList = (
 				!! dateBetween ||
 				!! search ||
 				!! typeIs ||
-				!! typeIsNot;
+				!! typeIsNot ||
+				!! sourceDeviceIsNot;
 
 			const confirmThreshold = 10000;
 			const confirmMessage = sprintf(
@@ -572,6 +584,8 @@ export const TransactionsList = (
 							search,
 							typeIs,
 							typeIsNot,
+							sourceDeviceIs,
+							sourceDeviceIsNot,
 							customerCurrencyIs,
 							customerCurrencyIsNot,
 							depositId,

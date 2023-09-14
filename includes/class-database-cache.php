@@ -13,11 +13,22 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * A class for caching data as an option in the database.
  */
 class Database_Cache {
-	const ACCOUNT_KEY                = 'wcpay_account_data';
-	const ONBOARDING_FIELDS_DATA_KEY = 'wcpay_onboarding_fields_data';
-	const BUSINESS_TYPES_KEY         = 'wcpay_business_types_data';
-	const CURRENCIES_KEY             = 'wcpay_multi_currency_cached_currencies';
-	const CUSTOMER_CURRENCIES_KEY    = 'wcpay_multi_currency_customer_currencies';
+	const ACCOUNT_KEY                 = 'wcpay_account_data';
+	const ONBOARDING_FIELDS_DATA_KEY  = 'wcpay_onboarding_fields_data';
+	const BUSINESS_TYPES_KEY          = 'wcpay_business_types_data';
+	const CURRENCIES_KEY              = 'wcpay_multi_currency_cached_currencies';
+	const CUSTOMER_CURRENCIES_KEY     = 'wcpay_multi_currency_customer_currencies';
+	const PAYMENT_PROCESS_FACTORS_KEY = 'wcpay_payment_process_factors';
+
+	/**
+	 * Refresh during AJAX calls is avoided, but white-listing
+	 * a key here will allow the refresh to happen.
+	 *
+	 * @var string[]
+	 */
+	const AJAX_ALLOWED_KEYS = [
+		self::PAYMENT_PROCESS_FACTORS_KEY,
+	];
 
 	/**
 	 * Payment methods cache key prefix. Used in conjunction with the customer_id to cache a customer's payment methods.
@@ -32,6 +43,13 @@ class Database_Cache {
 	const DISPUTE_STATUS_COUNTS_KEY = 'wcpay_dispute_status_counts_cache';
 
 	/**
+	 * Active disputes cache key.
+	 *
+	 * @var string
+	 */
+	const ACTIVE_DISPUTES_KEY = 'wcpay_active_dispute_cache';
+
+	/**
 	 * Cache key for authorization summary data like count, total amount, etc.
 	 *
 	 * @var string
@@ -44,6 +62,11 @@ class Database_Cache {
 	 * @var string
 	 */
 	const AUTHORIZATION_SUMMARY_KEY_TEST_MODE = 'wcpay_test_authorization_summary_cache';
+
+	/**
+	 * Cache key for eligible connect incentive data.
+	 */
+	const CONNECT_INCENTIVE_KEY = 'wcpay_connect_incentive';
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
@@ -204,7 +227,10 @@ class Database_Cache {
 		}
 
 		// Do not refresh if doing ajax or the refresh has been disabled (running an AS job).
-		if ( defined( 'DOING_CRON' ) || wp_doing_ajax() || $this->refresh_disabled ) {
+		if (
+			defined( 'DOING_CRON' )
+			|| ( wp_doing_ajax() && ! in_array( $key, self::AJAX_ALLOWED_KEYS, true ) )
+			|| $this->refresh_disabled ) {
 			return false;
 		}
 
@@ -314,6 +340,12 @@ class Database_Cache {
 			case self::ONBOARDING_FIELDS_DATA_KEY:
 				// Cache these for a week.
 				$ttl = WEEK_IN_SECONDS;
+				break;
+			case self::CONNECT_INCENTIVE_KEY:
+				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
+				break;
+			case self::PAYMENT_PROCESS_FACTORS_KEY:
+				$ttl = 2 * HOUR_IN_SECONDS;
 				break;
 			default:
 				// Default to 24h.

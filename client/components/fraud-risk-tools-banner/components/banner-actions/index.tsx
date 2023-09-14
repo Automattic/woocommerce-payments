@@ -11,14 +11,10 @@ import { Button } from '@wordpress/components';
 import wcpayTracks from 'tracks';
 
 interface BannerActionsProps {
-	remindMeCount: number;
-	handleRemindOnClick: () => void;
 	handleDontShowAgainOnClick: () => void;
 }
 
 const BannerActions: React.FC< BannerActionsProps > = ( {
-	remindMeCount,
-	handleRemindOnClick,
 	handleDontShowAgainOnClick,
 } ) => {
 	const handleLearnMoreButtonClick = () => {
@@ -32,20 +28,14 @@ const BannerActions: React.FC< BannerActionsProps > = ( {
 		<div className="discoverability-card__actions">
 			<Button
 				href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
-				isPrimary
+				variant="primary"
 				onClick={ handleLearnMoreButtonClick }
 			>
 				{ __( 'Learn more', 'woocommerce-payments' ) }
 			</Button>
-			{ 3 > remindMeCount ? (
-				<Button isTertiary onClick={ handleRemindOnClick }>
-					{ __( 'Remind me later', 'woocommerce-payments' ) }
-				</Button>
-			) : (
-				<Button isTertiary onClick={ handleDontShowAgainOnClick }>
-					{ __( 'Dismiss', 'woocommerce-payments' ) }
-				</Button>
-			) }
+			<Button variant="tertiary" onClick={ handleDontShowAgainOnClick }>
+				{ __( 'Dismiss', 'woocommerce-payments' ) }
+			</Button>
 		</div>
 	);
 };

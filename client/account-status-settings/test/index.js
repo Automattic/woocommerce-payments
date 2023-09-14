@@ -22,6 +22,10 @@ describe( 'AccountStatus', () => {
 				status: 'enabled',
 				interval: 'daily',
 			},
+			progressiveOnboarding: {
+				isEnabled: false,
+				isComplete: false,
+			},
 			currentDeadline: 0,
 			accountLink: '',
 		} );
@@ -35,6 +39,10 @@ describe( 'AccountStatus', () => {
 			deposits: {
 				status: 'enabled',
 				interval: 'daily',
+			},
+			progressiveOnboarding: {
+				isEnabled: false,
+				isComplete: false,
 			},
 			currentDeadline: 1583844589,
 			accountLink:
@@ -50,6 +58,10 @@ describe( 'AccountStatus', () => {
 			deposits: {
 				status: 'disabled',
 				interval: '',
+			},
+			progressiveOnboarding: {
+				isEnabled: false,
+				isComplete: false,
 			},
 			currentDeadline: 1583844589,
 			pastDue: true,
@@ -67,6 +79,10 @@ describe( 'AccountStatus', () => {
 				status: 'disabled',
 				interval: 'daily',
 			},
+			progressiveOnboarding: {
+				isEnabled: false,
+				isComplete: false,
+			},
 			currentDeadline: 1583844589,
 			pastDue: false,
 			accountLink: '',
@@ -81,6 +97,10 @@ describe( 'AccountStatus', () => {
 			deposits: {
 				status: 'disabled',
 				interval: 'daily',
+			},
+			progressiveOnboarding: {
+				isEnabled: false,
+				isComplete: false,
 			},
 			currentDeadline: 1583844589,
 			pastDue: false,
@@ -97,6 +117,10 @@ describe( 'AccountStatus', () => {
 				status: 'disabled',
 				interval: 'monthly',
 			},
+			progressiveOnboarding: {
+				isEnabled: false,
+				isComplete: false,
+			},
 			currentDeadline: 0,
 			accountLink: '',
 		} );
@@ -110,6 +134,10 @@ describe( 'AccountStatus', () => {
 			deposits: {
 				status: 'disabled',
 				interval: 'daily',
+			},
+			progressiveOnboarding: {
+				isEnabled: false,
+				isComplete: false,
 			},
 			currentDeadline: 0,
 			accountLink: '',
@@ -125,6 +153,10 @@ describe( 'AccountStatus', () => {
 				status: 'disabled',
 				interval: 'daily',
 			},
+			progressiveOnboarding: {
+				isEnabled: false,
+				isComplete: false,
+			},
 			currentDeadline: 0,
 			accountLink: '',
 		} );
@@ -138,6 +170,10 @@ describe( 'AccountStatus', () => {
 			deposits: {
 				status: 'enabled',
 				interval: 'manual',
+			},
+			progressiveOnboarding: {
+				isEnabled: false,
+				isComplete: false,
 			},
 			currentDeadline: 0,
 			accountLink: '',

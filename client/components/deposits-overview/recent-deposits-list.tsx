@@ -11,7 +11,6 @@ import {
 } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
-import InfoOutlineIcon from 'gridicons/dist/info-outline';
 import { Fragment } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -19,12 +18,12 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import './style.scss';
-import DepositStatusPill from 'components/deposit-status-pill';
+import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
-import BannerNotice from '../banner-notice';
+import InlineNotice from '../inline-notice';
 
 interface DepositRowProps {
 	deposit: CachedDeposit;
@@ -53,7 +52,7 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 				</Link>
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
-				<DepositStatusPill status={ deposit.status } />
+				<DepositStatusChip status={ deposit.status } />
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				{ formatCurrency( deposit.amount, deposit.currency ) }
@@ -89,10 +88,10 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 		<Fragment key={ deposit.id }>
 			<DepositTableRow deposit={ deposit } />
 			{ deposit.id === oldestPendingDepositId && (
-				<BannerNotice
+				<InlineNotice
 					className="wcpay-deposits-overview__business-day-delay-notice"
 					status="info"
-					icon={ <InfoOutlineIcon /> }
+					icon
 					children={
 						'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched'
 					}

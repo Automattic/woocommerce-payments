@@ -59,6 +59,6 @@ class Get_Charge extends Request {
 			return $response;
 		}
 
-		return WC_Payments::get_payments_api_client()->add_additional_info_to_charge( $response );
+		return $this->api_client->add_additional_info_to_charge( $response );
 	}
 }

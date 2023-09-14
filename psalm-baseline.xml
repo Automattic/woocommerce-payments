@@ -31,6 +31,11 @@
       <code>WC_Subscriptions_Product</code>
     </UndefinedClass>
   </file>
+  <file src="includes/class-wc-payments.php">
+    <UndefinedClass occurrences="1">
+      <code>WC_Subscriptions_Product</code>
+    </UndefinedClass>
+  </file>
   <file src="includes/multi-currency/Compatibility/WooCommerceProductAddOns.php">
     <UndefinedClass occurrences="2">
       <code>\WC_Product_Addons_Helper</code>
@@ -82,5 +87,17 @@
     <UndefinedClass occurrences="1">
       <code>CheckoutSchema</code>
     </UndefinedClass>
+  </file>
+  <file src="includes/admin/class-wc-rest-payments-settings-controller.php">
+    <MissingDependency occurrences="8">
+      <code>WC_Payments_Subscriptions::get_stripe_billing_migrator()</code>
+      <code>$stripe_billing_migrator</code>
+      <code>$stripe_billing_migrator</code>
+      <code>$stripe_billing_migrator</code>
+      <code>WC_Payments_Subscriptions::get_stripe_billing_migrator()</code>
+      <code>$stripe_billing_migrator</code>
+      <code>$stripe_billing_migrator</code>
+      <code>$stripe_billing_migrator</code>
+    </MissingDependency>
   </file>
 </files>

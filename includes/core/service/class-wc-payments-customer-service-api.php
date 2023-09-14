@@ -152,11 +152,11 @@ class WC_Payments_Customer_Service_API {
 	}
 
 	/**
-	 * Updates the given user with the given WooCommerce Payments
+	 * Updates the given user with the given WooPayments
 	 * customer ID.
 	 *
 	 * @param int    $user_id     The WordPress user ID.
-	 * @param string $customer_id The WooCommerce Payments customer ID.
+	 * @param string $customer_id The WooPayments customer ID.
 	 */
 	public function update_user_customer_id( int $user_id, string $customer_id ) {
 		$this->customer_service->update_user_customer_id( $user_id, $customer_id );

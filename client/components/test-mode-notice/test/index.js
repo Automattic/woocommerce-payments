@@ -44,7 +44,7 @@ describe( 'Test mode notification', () => {
 	test( 'Returns correct URL component', () => {
 		const expected = (
 			<a href={ getPaymentSettingsUrl() }>
-				{ 'View WooCommerce Payments settings' }
+				{ 'View WooPayments settings' }
 			</a>
 		);
 
@@ -66,15 +66,15 @@ describe( 'Test mode notification', () => {
 
 	test( 'Notice details are correct for details topics', () => {
 		expect( getTopicDetails( topics.depositDetails ) ).toBe(
-			'WooCommerce Payments was in test mode when these orders were placed.'
+			'WooPayments was in test mode when these orders were placed.'
 		);
 
 		expect( getTopicDetails( topics.disputeDetails ) ).toBe(
-			'WooCommerce Payments was in test mode when this order was placed.'
+			'WooPayments was in test mode when this order was placed.'
 		);
 
 		expect( getTopicDetails( topics.paymentDetails ) ).toBe(
-			'WooCommerce Payments was in test mode when this order was placed.'
+			'WooPayments was in test mode when this order was placed.'
 		);
 	} );
 

@@ -61,7 +61,6 @@
 
 .woopay-settings {
 	&__custom-message-wrapper {
-		max-width: 500px;
 		position: relative;
 
 		.components-base-control__field .components-text-control__input {
@@ -192,8 +191,8 @@
 	}
 }
 
-.express-checkout__notice {
-	margin-left: 0;
-	margin-right: 0;
-	border: 0;
+.components-notice {
+	&__content {
+		display: flex;
+	}
 }

@@ -41,7 +41,7 @@ export async function fillCardDetails( page, card ) {
 		await page.waitFor( 1000 );
 
 		const zip = await stripeFrame.$( '[name="postalCode"]' );
-		if ( null !== zip ) {
+		if ( zip !== null ) {
 			await zip.type( '90210', { delay: 20 } );
 		}
 	} else {
@@ -191,7 +191,7 @@ export async function confirmCardAuthentication(
 	);
 	let challengeFrame = await challengeFrameHandle.contentFrame();
 	// 3DS 1 cards have another iframe enclosing the authorize form
-	if ( '3DS' === cardType.toUpperCase() ) {
+	if ( cardType.toUpperCase() === '3DS' ) {
 		const acsFrameHandle = await challengeFrame.waitForSelector(
 			'iframe[name="acsFrame"]'
 		);
@@ -251,6 +251,7 @@ export async function setupCheckout( billingDetails ) {
 	await shopper.goToCheckout();
 	await uiUnblocked();
 	await shopper.fillBillingDetails( billingDetails );
+
 	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
 	await page.waitFor( 1000 );

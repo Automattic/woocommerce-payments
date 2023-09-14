@@ -27,12 +27,12 @@ import SetupRealPayments from './setup-real-payments';
 import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
-import { useSettings } from 'wcpay/data';
+import { useDisputes, useSettings } from 'wcpay/data';
 import './style.scss';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
-	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
+	const showLoginError = queryParams[ 'wcpay-login-error' ] === '1';
 	if ( ! wcpaySettings.errorMessage && ! showLoginError ) {
 		return null;
 	}
@@ -57,51 +57,54 @@ const OverviewPage = () => {
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		featureFlags: { accountOverviewTaskList },
+		enabledPaymentMethods,
 	} = wcpaySettings;
-	const numDisputesNeedingResponse =
-		parseInt( wcpaySettings.numDisputesNeedingResponse, 10 ) || 0;
+
 	const { isLoading: settingsIsLoading, settings } = useSettings();
 
+	const { disputes: activeDisputes } = useDisputes( {
+		filter: 'awaiting_response',
+		per_page: 50,
+	} );
+
 	const tasksUnsorted = getTasks( {
-		accountStatus,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
-		numDisputesNeedingResponse,
+		activeDisputes,
+		enabledPaymentMethods,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
+
 	const queryParams = getQuery();
+	const accountRejected =
+		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
 
 	const showConnectionSuccess =
-		'1' === queryParams[ 'wcpay-connection-success' ];
+		queryParams[ 'wcpay-connection-success' ] === '1';
 
-	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
+	const showLoanOfferError = queryParams[ 'wcpay-loan-offer-error' ] === '1';
 	const showServerLinkError =
-		'1' === queryParams[ 'wcpay-server-link-error' ];
+		queryParams[ 'wcpay-server-link-error' ] === '1';
 	const showProgressiveOnboardingEligibilityModal =
 		showConnectionSuccess &&
 		accountStatus.progressiveOnboarding.isEnabled &&
-		! accountStatus.progressiveOnboarding.isComplete &&
-		'pending_verification' !== accountStatus.status;
-	const accountRejected =
-		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
+		! accountStatus.progressiveOnboarding.isComplete;
+	const showTaskList = ! accountRejected && tasks.length > 0;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
 			const isPaymentMethodEnabled =
 				! settingsIsLoading &&
-				0 <
-					settings.enabled_payment_method_ids.filter(
-						( enabledMethod ) => {
-							return enabledMethod === key;
-						}
-					).length;
+				settings.enabled_payment_method_ids.filter(
+					( enabledMethod ) => {
+						return enabledMethod === key;
+					}
+				).length > 0;
 			if (
 				settingsIsLoading ||
 				! isPaymentMethodEnabled ||
-				0 === value.discount.length
+				value.discount.length === 0
 			) {
 				return null;
 			}
@@ -144,26 +147,34 @@ const OverviewPage = () => {
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					<>
-						<Card>
-							<Welcome />
-							<AccountBalances />
-						</Card>
+						{ showTaskList ? (
+							<>
+								<Card>
+									<Welcome />
+									<ErrorBoundary>
+										<TaskList
+											tasks={ tasks }
+											overviewTasksVisibility={
+												overviewTasksVisibility
+											}
+										/>
+									</ErrorBoundary>
+								</Card>
+								<Card>
+									<AccountBalances />
+								</Card>
+							</>
+						) : (
+							<Card>
+								<Welcome />
+								<AccountBalances />
+							</Card>
+						) }
 
 						<DepositsOverview />
 					</>
 				</ErrorBoundary>
 			) }
-
-			{ !! accountOverviewTaskList &&
-				0 < tasks.length &&
-				! accountRejected && (
-					<ErrorBoundary>
-						<TaskList
-							tasks={ tasks }
-							overviewTasksVisibility={ overviewTasksVisibility }
-						/>
-					</ErrorBoundary>
-				) }
 
 			{ wcpaySettings.onboardingTestMode && (
 				<ErrorBoundary>

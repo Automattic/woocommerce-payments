@@ -12,6 +12,7 @@ import PhoneNumberControl from '../';
 
 describe( 'Phone Number Control', () => {
 	const onChange = jest.fn();
+	const onKeyDown = jest.fn();
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -83,6 +84,27 @@ describe( 'Phone Number Control', () => {
 		userEvent.selectOptions( select, 'CA' );
 
 		expect( input ).toHaveFocus();
+	} );
+
+	it( 'calls onKeyDown when input is focused and key is pressed', () => {
+		render(
+			<PhoneNumberControl
+				value=""
+				onChange={ onChange }
+				onKeyDown={ onKeyDown }
+			/>
+		);
+
+		const input = screen.getByRole( 'textbox' );
+		userEvent.type( input, '1234567890' );
+		fireEvent.keyDown( input, {
+			key: 'Enter',
+			code: 'Enter',
+			charCode: 13,
+		} );
+
+		// Will be called 10 times by the input, then once more by the 'Enter' keydown.
+		expect( onKeyDown ).toHaveBeenCalledTimes( 11 );
 	} );
 
 	it( 'toggles focused class as expected', () => {

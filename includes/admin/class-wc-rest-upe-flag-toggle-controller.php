@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Constants\Track_Events;
+
 /**
  * REST controller for UPE feature flag.
  */
@@ -117,12 +119,17 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 		$is_upe_enabled = $request->get_param( 'is_upe_enabled' );
 
 		if ( $is_upe_enabled ) {
-			update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+			update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
 
 			// WooCommerce core only includes Tracks in admin, not the REST API, so we need to use this wc_admin method
 			// that includes WC_Tracks in case it's not loaded.
 			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-				wc_admin_record_tracks_event( 'wcpay_split_upe_enabled' );
+				wc_admin_record_tracks_event(
+					Track_Events::DEFERRED_INTENT_UPE_ENABLED,
+					[
+						'is_bnpl_affirm_afterpay_enabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
+					]
+				);
 			}
 
 			return;
@@ -133,14 +140,36 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 			update_option( WC_Payments_Features::UPE_FLAG_NAME, 'disabled' );
 
 			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-				wc_admin_record_tracks_event( 'wcpay_upe_disabled' );
+				wc_admin_record_tracks_event(
+					Track_Events::UPE_DISABLED,
+					[
+						'is_bnpl_affirm_afterpay_enabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
+					]
+				);
 			}
-		} else {
-			// marking the flag as "disabled", so that we can keep track that the merchant explicitly disabled it.
+		} elseif ( '1' === get_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME ) ) {
+			// marking the flag as "disabled", so that we can keep track that the merchant explicitly disabled split UPE.
 			update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, 'disabled' );
 
 			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-				wc_admin_record_tracks_event( 'wcpay_split_upe_disabled' );
+				wc_admin_record_tracks_event(
+					Track_Events::SPLIT_UPE_DISABLED,
+					[
+						'is_bnpl_affirm_afterpay_enabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
+					]
+				);
+			}
+		} elseif ( '1' === get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME ) ) {
+			// marking the flag as "disabled", so that we can keep track that the merchant explicitly disabled deferred intent UPE.
+			update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 'disabled' );
+
+			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
+				wc_admin_record_tracks_event(
+					Track_Events::DEFERRED_INTENT_UPE_DISABLED,
+					[
+						'is_bnpl_affirm_afterpay_enabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
+					]
+				);
 			}
 		}
 

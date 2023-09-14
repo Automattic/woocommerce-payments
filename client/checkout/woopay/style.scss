@@ -66,7 +66,7 @@
 .woopay-otp-iframe {
 	transition: top 500ms;
 	width: 100%;
-	height: 100vh;
+	height: 100dvh; /* stylelint-disable-line unit-no-unknown */
 	position: fixed;
 	top: 100%;
 	left: 0;
@@ -123,26 +123,27 @@
 }
 
 .woopay-express-button {
-	font-size: 13px;
+	font-size: 11px;
 	font-weight: 500;
 	font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial',
 		sans-serif;
 	letter-spacing: 0.8px;
 	height: 40px;
-	background: #f2deff;
-	border: 1px solid $white;
-	color: $studio-woocommerce-purple-60;
+	background: #f2deff !important;
+	border: 1px solid $white !important;
+	color: $studio-woocommerce-purple-60 !important;
 	width: 100%;
 	border-radius: 4px;
 	padding-top: 1px;
 	padding-bottom: 1px;
-	display: flex;
+	display: flex !important;
 	align-items: center;
 	justify-content: center;
 	white-space: nowrap;
+	text-transform: none;
 
 	&:hover {
-		background: #d9baff;
+		background: #d9baff !important;
 		cursor: pointer;
 	}
 
@@ -152,28 +153,46 @@
 		top: 1px;
 	}
 
+	&[data-type='buy'],
+	&[data-type='book'],
+	&[data-type='donate'] {
+		svg {
+			flex-shrink: 0.4;
+			margin-left: 3px;
+		}
+	}
+
+	&[data-width-type='wide'] {
+		font-size: 13px;
+
+		svg {
+			flex-shrink: 1;
+			margin-left: 6px;
+		}
+	}
+
 	&[data-theme='dark'] {
-		background: $studio-woocommerce-purple-60;
-		color: $white;
-		border-color: $studio-woocommerce-purple-60;
+		background: $studio-woocommerce-purple-60 !important;
+		color: $white !important;
+		border-color: $studio-woocommerce-purple-60 !important;
 
 		svg {
 			fill: $white;
 		}
 		&:hover {
-			background: #533582;
+			background: #533582 !important;
 		}
 	}
 
 	&[data-theme='light-outline'] {
-		border-color: #674399;
+		border-color: #674399 !important;
 		&:hover {
-			background: #d9baff;
+			background: #d9baff !important;
 		}
 	}
 
 	&[data-size='medium'] {
-		font-size: 14px;
+		font-size: 12px;
 		height: 48px;
 
 		svg {
@@ -181,10 +200,32 @@
 			width: auto;
 			height: 27px;
 		}
+
+		&[data-type='buy'],
+		&[data-type='book'],
+		&[data-type='donate'] {
+			svg {
+				flex-shrink: 0.6;
+				margin-left: 3px;
+			}
+		}
+
+		&[data-width-type='wide'] {
+			font-size: 14px;
+
+			&[data-type='buy'],
+			&[data-type='book'],
+			&[data-type='donate'] {
+				svg {
+					flex-shrink: 1;
+					margin-left: 6px;
+				}
+			}
+		}
 	}
 
 	&[data-size='large'] {
-		font-size: 16px;
+		font-size: 13px;
 		height: 56px;
 
 		svg {
@@ -192,17 +233,28 @@
 			width: auto;
 			height: 32px;
 		}
-	}
 
-	&[data-type='buy'],
-	&[data-type='book'],
-	&[data-type='donate'] {
-		svg {
-			margin-left: 6px;
-		}
-		&[data-size='large'] {
+		&[data-type='buy'],
+		&[data-type='book'],
+		&[data-type='donate'] {
 			svg {
-				margin-left: 8px;
+				flex-shrink: 0.6;
+				margin-left: 3px;
+				margin-bottom: 0.25rem;
+			}
+		}
+
+		&[data-width-type='wide'] {
+			font-size: 16px;
+
+			&[data-type='buy'],
+			&[data-type='book'],
+			&[data-type='donate'] {
+				svg {
+					flex-shrink: 1;
+					margin-left: 8px;
+					margin-bottom: 0;
+				}
 			}
 		}
 	}

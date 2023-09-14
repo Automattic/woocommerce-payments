@@ -12,6 +12,12 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  */
 import { DepositsFilters } from '../';
 
+// TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
+jest.mock( '@woocommerce/settings', () => ( {
+	...jest.requireActual( '@woocommerce/settings' ),
+	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.7 : '' ) ),
+} ) );
+
 describe( 'Deposits filters', () => {
 	beforeEach( () => {
 		// the query string is preserved across tests, so we need to reset it

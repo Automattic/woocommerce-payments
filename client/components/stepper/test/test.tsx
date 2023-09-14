@@ -35,6 +35,17 @@ describe( 'Stepper', () => {
 		expect( screen.queryByText( 'Step 2' ) ).not.toBeInTheDocument();
 	} );
 
+	it( 'renders initial step if provided', () => {
+		render(
+			<Stepper initialStep="Step 2">
+				<TestStep name="Step 1" />
+				<TestStep name="Step 2" />
+			</Stepper>
+		);
+		expect( screen.queryByText( 'Step 2' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Step 1' ) ).not.toBeInTheDocument();
+	} );
+
 	it( 'shows the next step when the "Next" button is clicked', () => {
 		render(
 			<Stepper>

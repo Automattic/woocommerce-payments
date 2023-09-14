@@ -11,7 +11,7 @@ import LightbulbIcon from 'components/icons/lightbulb';
 import './style.scss';
 
 interface Props {
-	color: 'purple' | 'blue';
+	color: 'purple' | 'blue' | 'gray';
 	className?: string;
 }
 const TipBox: React.FC< Props > = ( { color, className, children } ) => {

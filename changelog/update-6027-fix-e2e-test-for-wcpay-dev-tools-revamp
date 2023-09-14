@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: This just fixes e2e tests to work with the new WCPay Dev Tools UI markup.
-
-

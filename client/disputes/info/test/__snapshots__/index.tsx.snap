@@ -58,7 +58,7 @@ exports[`Dispute info renders correctly 1`] = `
       <span
         class="wcpay-dispute-info-value"
       >
-        Fraudulent
+        Transaction unauthorized
       </span>
     </div>
     <div

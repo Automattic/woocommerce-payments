@@ -15,6 +15,7 @@ import {
 	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
+	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
@@ -23,6 +24,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useWooPayEnabledSettings: jest.fn(),
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
+	useWooPayShowIncompatibilityNotice: jest.fn(),
 } ) );
 
 const getMockPaymentRequestEnabledSettings = (
@@ -43,6 +45,8 @@ describe( 'ExpressCheckout', () => {
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( false, jest.fn() )
 		);
+
+		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
 	} );
 
 	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {
@@ -185,5 +189,29 @@ describe( 'ExpressCheckout', () => {
 			)
 		).not.toBeInTheDocument();
 		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeChecked();
+	} );
+
+	it( 'should show incompatibility warning', async () => {
+		const updateIsWooPayEnabledHandler = jest.fn();
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( false, updateIsWooPayEnabledHandler )
+		);
+		const context = { featureFlags: { woopay: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+
+		useWooPayShowIncompatibilityNotice.mockReturnValue( true );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				'One or more of your extensions are incompatible with WooPay.'
+			)
+		).toBeInTheDocument();
 	} );
 } );

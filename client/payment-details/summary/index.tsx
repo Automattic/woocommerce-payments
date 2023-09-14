@@ -19,9 +19,10 @@ import {
 	getChargeChannel,
 	isOnHoldByFraudTools,
 } from 'utils/charge';
+import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
-import HorizontalList from 'components/horizontal-list';
+import { HorizontalList, HorizontalListItem } from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
@@ -36,6 +37,7 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
+import DisputeDetails from '../dispute-details';
 
 declare const window: any;
 
@@ -69,7 +71,7 @@ const getTapToPayChannel = ( platform: string ) => {
 	}
 
 	if ( platform === 'android' ) {
-		__( 'Tap to Pay on Android', 'woocommerce-payments' );
+		return __( 'Tap to Pay on Android', 'woocommerce-payments' );
 	}
 
 	return __( 'Tap to Pay', 'woocommerce-payments' );
@@ -81,7 +83,7 @@ const composePaymentSummaryItems = ( {
 }: {
 	charge: Charge;
 	metadata: Record< string, any >;
-} ) =>
+} ): HorizontalListItem[] =>
 	[
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
@@ -137,7 +139,7 @@ const composePaymentSummaryItems = ( {
 				? riskMappings[ charge.outcome.risk_level ]
 				: '–',
 		},
-	].filter( Boolean );
+	].filter( isValueTruthy );
 
 const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge = {} as Charge,
@@ -152,7 +154,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.currency && balance.currency !== charge.currency;
 
 	const {
-		featureFlags: { isAuthAndCaptureEnabled },
+		featureFlags: {
+			isAuthAndCaptureEnabled,
+			isDisputeOnTransactionPageEnabled,
+		},
 	} = useContext( WCPaySettingsContext );
 
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
@@ -370,6 +375,9 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
+			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
+				<DisputeDetails dispute={ charge.dispute } />
+			) }
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
@@ -386,7 +394,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											a: (
 												// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
 												<a
-													href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+													href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
 													target="_blank"
 													rel="noreferer"
 												/>

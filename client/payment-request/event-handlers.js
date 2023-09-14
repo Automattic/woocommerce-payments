@@ -27,7 +27,7 @@ export const shippingOptionChangeHandler = async ( api, event ) => {
 		event.shippingOption
 	);
 
-	if ( 'success' === response.result ) {
+	if ( response.result === 'success' ) {
 		event.updateWith( {
 			status: 'success',
 			total: response.total,
@@ -35,7 +35,7 @@ export const shippingOptionChangeHandler = async ( api, event ) => {
 		} );
 	}
 
-	if ( 'fail' === response.result ) {
+	if ( response.result === 'fail' ) {
 		event.updateWith( { status: 'fail' } );
 	}
 };
@@ -47,7 +47,7 @@ const paymentResponseHandler = async (
 	abortPayment,
 	event
 ) => {
-	if ( 'success' !== response.result ) {
+	if ( response.result !== 'success' ) {
 		return abortPayment(
 			event,
 			getErrorMessageFromNotice( response.messages )
@@ -60,7 +60,7 @@ const paymentResponseHandler = async (
 		event.complete( 'success' );
 
 		// `true` means there is no intent to confirm.
-		if ( true === confirmation ) {
+		if ( confirmation === true ) {
 			completePayment( response.redirect );
 		} else {
 			const { request } = confirmation;

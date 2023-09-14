@@ -3,6 +3,13 @@
  * Class WC_REST_User_Exists_Controller
  *
  * @package WooCommerce\Payments\Admin
+ *
+ *
+ * NOTE: This API endpoint is never registered and not available for use.
+ * It is only available here as a temporary workaround for the issue described in
+ * https://github.com/Automattic/woocommerce-payments/issues/6304
+ *
+ * This file can be removed once the issue is resolved.
  */
 
 defined( 'ABSPATH' ) || exit;

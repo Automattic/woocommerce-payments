@@ -45,7 +45,7 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
 		if (
-			( null !== baseCurrencyCode &&
+			( baseCurrencyCode !== null &&
 				baseCurrencyCode.toUpperCase() !==
 					currencyCode.toUpperCase() ) ||
 			currencyData[ country ]
@@ -60,9 +60,6 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 				currency.decimalSeparator = baseCurrency.decimalSeparator;
 				currency.thousandSeparator = baseCurrency.thousandSeparator;
 				currency.symbolPosition = baseCurrency.symbolPosition;
-				if ( 0 !== currency.precision ) {
-					currency.precision = baseCurrency.precision;
-				}
 			}
 		}
 		return Currency( currency );
@@ -106,12 +103,12 @@ export const formatCurrency = (
 
 	const currency = getCurrency( currencyCode, baseCurrencyCode );
 
-	if ( null === currency ) {
+	if ( currency === null ) {
 		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
 	}
 
 	try {
-		return 'function' === typeof currency.formatAmount
+		return typeof currency.formatAmount === 'function'
 			? htmlDecode( currency.formatAmount( amount ) )
 			: htmlDecode( currency.formatCurrency( amount ) );
 	} catch ( err ) {
@@ -130,7 +127,7 @@ export const formatCurrency = (
  * @return {string} formatted currency representation with the currency code suffix
  */
 const appendCurrencyCode = ( formatted, currencyCode ) => {
-	if ( -1 === formatted.toString().indexOf( currencyCode ) ) {
+	if ( formatted.toString().indexOf( currencyCode ) === -1 ) {
 		formatted = formatted + ' ' + currencyCode;
 	}
 	return formatted;
@@ -193,9 +190,9 @@ function formatExchangeRate( from, to ) {
 	const { currencyData } = wcpaySettings;
 
 	let exchangeRate =
-		'number' === typeof to.amount &&
-		'number' === typeof from.amount &&
-		0 !== from.amount
+		typeof to.amount === 'number' &&
+		typeof from.amount === 'number' &&
+		from.amount !== 0
 			? Math.abs( to.amount / from.amount )
 			: 0;
 	if ( isZeroDecimalCurrency( to.currency ) ) {
@@ -210,7 +207,7 @@ function formatExchangeRate( from, to ) {
 		code: to.currency.toUpperCase(),
 	} );
 
-	const precision = 1 > exchangeRate ? 6 : 5;
+	const precision = exchangeRate < 1 ? 6 : 5;
 	const isZeroDecimal = isZeroDecimalCurrency( to.currency );
 
 	if ( ! exchangeCurrencyConfig ) {

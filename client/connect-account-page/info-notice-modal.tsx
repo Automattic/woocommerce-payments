@@ -27,10 +27,10 @@ const InfoNoticeModal: React.FC = () => {
 
 	return (
 		<>
-			<TipBox color="purple">
+			<TipBox color="gray">
 				{ strings.infoNotice.description }{ ' ' }
 				<Button
-					isLink
+					variant="link"
 					onClick={ () => {
 						wcpayTracks.recordEvent(
 							wcpayTracks.events.CONNECT_ACCOUNT_KYC_MODAL_OPENED
@@ -88,7 +88,7 @@ const InfoNoticeModal: React.FC = () => {
 					</div>
 					<hr />
 					<div className="connect-account-page__info-modal__footer">
-						<Button isPrimary onClick={ handleModalClose }>
+						<Button variant="primary" onClick={ handleModalClose }>
 							{ __( 'Got it', 'woocommerce-payments' ) }
 						</Button>
 					</div>

@@ -6,6 +6,7 @@
  */
 
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
 
@@ -70,11 +71,25 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	private $order_service;
 
 	/**
+	 * Duplicate_Payment_Prevention_Service instance.
+	 *
+	 * @var Duplicate_Payment_Prevention_Service
+	 */
+	private $mock_dpps;
+
+	/**
 	 * Mock WC_Payments_Account.
 	 *
 	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_wcpay_account;
+
+	/**
+	 * WC_Payments_Localization_Service instance.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $mock_localization_service;
 
 	public function set_up() {
 		parent::set_up();
@@ -105,6 +120,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
+		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+
+		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
@@ -112,14 +131,18 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_session_rate_limiter,
-			$this->order_service
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service
 		);
+		$this->wcpay_gateway->init_hooks();
 	}
 
 	public static function tear_down_after_class() {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
 		WC_Subscriptions::set_wcs_is_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order( null );
+		parent::tear_down_after_class();
 	}
 
 	public function test_add_token_to_order_should_add_token_to_subscriptions() {
@@ -790,7 +813,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_session_rate_limiter,
-			$this->order_service
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service
 		);
 
 		// Ensure the has_attached_integration_hooks property is set to false so callbacks can be attached in maybe_init_subscriptions().
@@ -798,7 +823,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$ref->setAccessible( true );
 		$ref->setValue( null, false );
 
-		$payment_gateway->maybe_init_subscriptions();
+		$payment_gateway->init_hooks();
 
 		$this->assertTrue( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
 	}
@@ -814,7 +839,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_session_rate_limiter,
-			$this->order_service
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service
 		);
 
 		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );

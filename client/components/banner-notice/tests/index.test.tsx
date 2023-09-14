@@ -2,145 +2,111 @@
  * External dependencies
  */
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import user from '@testing-library/user-event';
+import { mocked } from 'ts-jest/utils';
+import { speak } from '@wordpress/a11y';
 
 /**
  * Internal dependencies
  */
 import BannerNotice from '../';
 
-describe( 'Info BannerNotices renders', () => {
-	test( 'with dismiss', () => {
-		const { container } = render(
-			<BannerNotice
-				status="info"
-				className="wcpaytest-notice"
-				children={ 'Test notice content' }
-				isDismissible={ true }
-			/>
-		);
-		expect( container ).toMatchSnapshot();
+jest.mock( '@wordpress/a11y', () => ( { speak: jest.fn() } ) );
+
+describe( 'BannerNotice', () => {
+	beforeEach( () => {
+		mocked( speak ).mockClear();
 	} );
 
-	test( 'with dismiss and icon', () => {
+	it( 'should match snapshot', () => {
+		const onClick = jest.fn();
 		const { container } = render(
 			<BannerNotice
-				status="info"
-				icon={ 'info' }
-				children={ 'Test notice content' }
-				isDismissible={ true }
-			/>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'with dismiss and icon and actions', () => {
-		const { container } = render(
-			<BannerNotice
-				status="info"
-				children={ 'Test notice content' }
-				isDismissible={ true }
+				status="success"
+				icon={ <span>Custom Icon</span> }
 				actions={ [
-					{
-						label: 'Button',
-						onClick: jest.fn(),
-					},
-					{
-						label: 'URL',
-						url: 'https://wordpress.com',
-					},
+					{ label: 'More information', url: 'https://example.com' },
+					{ label: 'Cancel', onClick },
+					{ label: 'Submit', onClick, variant: 'primary' },
 				] }
-			/>
+			>
+				Example
+			</BannerNotice>
 		);
 
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'without dismiss and icon', () => {
-		const { container } = render(
-			<BannerNotice
-				status="info"
-				children={ 'Test notice content' }
-				isDismissible={ false }
-			/>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-} );
+	it( 'should default to info status', () => {
+		const {
+			container: { firstChild },
+		} = render( <BannerNotice>FYI</BannerNotice> );
 
-describe( 'Action click triggers callback', () => {
-	test( 'with dismiss and icon and actions', () => {
-		const onClickMock = jest.fn();
-		const { getByText } = render(
-			<BannerNotice
-				status="warning"
-				children={ 'Test notice content' }
-				isDismissible={ true }
-				actions={ [
-					{
-						label: 'Button',
-						onClick: onClickMock,
-					},
-					{
-						label: 'URL',
-						url: 'https://wordpress.com',
-					},
-				] }
-			/>
-		);
-
-		fireEvent.click( getByText( 'Button' ) );
-		expect( onClickMock ).toHaveBeenCalled();
+		expect( firstChild ).toHaveClass( 'is-info' );
 	} );
 
-	test( 'With icon and multiple button actions', () => {
-		const onButtonClickOne = jest.fn();
-		const onButtonClickTwo = jest.fn();
-		const { getByText } = render(
-			<BannerNotice
-				status="warning"
-				children={ 'Test notice content' }
-				isDismissible={ true }
-				actions={ [
-					{
-						label: 'Button one',
-						onClick: onButtonClickOne,
-					},
-					{
-						label: 'Button two',
-						onClick: onButtonClickTwo,
-					},
-				] }
-			/>
+	/*****************	 */
+
+	it( 'calls action onClick when clicked', () => {
+		const onClick = jest.fn();
+		render(
+			<BannerNotice actions={ [ { label: 'Action', onClick } ] }>
+				Notice with Action
+			</BannerNotice>
 		);
 
-		expect( onButtonClickOne ).not.toHaveBeenCalled();
-		expect( onButtonClickTwo ).not.toHaveBeenCalled();
+		user.click( screen.getByText( 'Action' ) );
 
-		// Click Button 1
-		fireEvent.click( getByText( 'Button one' ) );
-		expect( onButtonClickOne ).toHaveBeenCalled();
-		expect( onButtonClickTwo ).not.toHaveBeenCalled();
-
-		// Click Button 1
-		fireEvent.click( getByText( 'Button two' ) );
-		expect( onButtonClickTwo ).toHaveBeenCalled();
+		expect( onClick ).toHaveBeenCalled();
 	} );
-} );
 
-describe( 'Dismiss click triggers callback', () => {
-	test( 'with dismiss and icon and actions', () => {
-		const onDismissMock = jest.fn();
-		const { getByLabelText } = render(
-			<BannerNotice
-				status="error"
-				children={ 'Test notice content' }
-				isDismissible={ true }
-				onRemove={ onDismissMock }
-			/>
+	it( 'calls onRemove when dismiss button is clicked', () => {
+		const onRemove = jest.fn();
+		render(
+			<BannerNotice onRemove={ onRemove }>
+				Dismissible Notice
+			</BannerNotice>
 		);
 
-		fireEvent.click( getByLabelText( 'Dismiss this notice' ) );
-		expect( onDismissMock ).toHaveBeenCalled();
+		user.click( screen.getByLabelText( 'Dismiss this notice' ) );
+
+		expect( onRemove ).toHaveBeenCalled();
+	} );
+
+	describe( 'useSpokenMessage', () => {
+		it( 'should speak the given message', () => {
+			render( <BannerNotice>FYI</BannerNotice> );
+
+			expect( speak ).toHaveBeenCalledWith( 'FYI', 'polite' );
+		} );
+
+		it( 'should speak the given message by implicit politeness by status', () => {
+			render( <BannerNotice status="error">Uh oh!</BannerNotice> );
+
+			expect( speak ).toHaveBeenCalledWith( 'Uh oh!', 'assertive' );
+		} );
+
+		it( 'should coerce a message to a string', () => {
+			render(
+				<BannerNotice>
+					With <em>emphasis</em> this time.
+				</BannerNotice>
+			);
+
+			expect( speak ).toHaveBeenCalledWith(
+				'With <em>emphasis</em> this time.',
+				'polite'
+			);
+		} );
+
+		it( 'should not re-speak an effectively equivalent element message', () => {
+			const { rerender } = render(
+				<BannerNotice>Duplicated notice message.</BannerNotice>
+			);
+			rerender( <BannerNotice>Duplicated notice message.</BannerNotice> );
+
+			expect( speak ).toHaveBeenCalledTimes( 1 );
+		} );
 	} );
 } );

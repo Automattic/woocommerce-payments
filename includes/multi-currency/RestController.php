@@ -7,6 +7,9 @@
 
 namespace WCPay\MultiCurrency;
 
+use WCPay\Exceptions\Base_Exception;
+use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -40,6 +43,12 @@ class RestController extends \WC_Payments_REST_Controller {
 			'/' . $this->rest_base . '/update-enabled-currencies',
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
+				'args'                => [
+					'enabled' => [
+						'type'     => 'array',
+						'required' => true,
+					],
+				],
 				'callback'            => [ $this, 'update_enabled_currencies' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
@@ -50,7 +59,14 @@ class RestController extends \WC_Payments_REST_Controller {
 			'/' . $this->rest_base . '/currencies/(?P<currency_code>[A-Za-z]{3})',
 			[
 				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_currency_settings' ],
+				'args'                => [
+					'currency_code' => [
+						'type'     => 'string',
+						'format'   => 'text-field',
+						'required' => true,
+					],
+				],
+				'callback'            => [ $this, 'get_single_currency_settings' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -70,7 +86,31 @@ class RestController extends \WC_Payments_REST_Controller {
 			'/' . $this->rest_base . '/currencies/(?P<currency_code>[A-Za-z]{3})',
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'update_currency_settings' ],
+				'args'                => [
+					'currency_code'      => [
+						'type'     => 'string',
+						'format'   => 'text-field',
+						'required' => true,
+					],
+					'exchange_rate_type' => [
+						'type'     => 'string',
+						'format'   => 'text-field',
+						'required' => true,
+					],
+					'manual_rate'        => [
+						'type'     => 'number',
+						'required' => false,
+					],
+					'price_rounding'     => [
+						'type'     => 'number',
+						'required' => true,
+					],
+					'price_charm'        => [
+						'type'     => 'number',
+						'required' => true,
+					],
+				],
+				'callback'            => [ $this, 'update_single_currency_settings' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -80,6 +120,18 @@ class RestController extends \WC_Payments_REST_Controller {
 			'/' . $this->rest_base . '/update-settings',
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
+				'args'                => [
+					'wcpay_multi_currency_enable_auto_currency'       => [
+						'type'     => 'string',
+						'format'   => 'text-field',
+						'required' => true,
+					],
+					'wcpay_multi_currency_enable_storefront_switcher' => [
+						'type'     => 'string',
+						'format'   => 'text-field',
+						'required' => true,
+					],
+				],
 				'callback'            => [ $this, 'update_settings' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
@@ -89,14 +141,10 @@ class RestController extends \WC_Payments_REST_Controller {
 	/**
 	 * Retrieve currencies for the store.
 	 *
-	 * @return array The store currencies structure.
+	 * @return \WP_REST_Response|\WP_Error Array of the store currencies structure.
 	 */
 	public function get_store_currencies() {
-		return [
-			'available' => WC_Payments_Multi_Currency()->get_available_currencies(),
-			'enabled'   => WC_Payments_Multi_Currency()->get_enabled_currencies(),
-			'default'   => WC_Payments_Multi_Currency()->get_default_currency(),
-		];
+		return rest_ensure_response( WC_Payments_Multi_Currency()->get_store_currencies() );
 	}
 
 	/**
@@ -104,80 +152,81 @@ class RestController extends \WC_Payments_REST_Controller {
 	 *
 	 * @param \WP_REST_Request $request Full data about the request.
 	 *
-	 * @return array The store currencies structure.
+	 * @return \WP_REST_Response|\WP_Error The store currencies structure or WP_Error.
 	 */
 	public function update_enabled_currencies( $request ) {
-		$params = $request->get_params();
-		WC_Payments_Multi_Currency()->set_enabled_currencies( $params['enabled'] );
-		return $this->get_store_currencies();
+		$enabled = $request->get_param( 'enabled' );
+		try {
+			WC_Payments_Multi_Currency()->set_enabled_currencies( $enabled );
+			$response = $this->get_store_currencies();
+		} catch ( InvalidCurrencyException $e ) {
+			$response = new \WP_Error( $e->get_error_code(), $e->getMessage() );
+		}
+		return rest_ensure_response( $response );
 	}
 
 	/**
 	 * Gets the currency settings for a single currency.
 	 *
-	 * @param   \WP_REST_Request $request  Full data about the request.
+	 * @param \WP_REST_Request $request Full data about the request.
 	 *
-	 * @return  array            The currency settings.
+	 * @return \WP_REST_Response|\WP_Error The single currency settings as an array.
 	 */
-	public function get_currency_settings( $request ) {
-		$currency_code = sanitize_key( strtolower( $request['currency_code'] ) );
-		return [
-			'exchange_rate_type' => get_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, 'automatic' ),
-			'manual_rate'        => get_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, null ),
-			'price_rounding'     => get_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, null ),
-			'price_charm'        => get_option( 'wcpay_multi_currency_price_charm_' . $currency_code, null ),
-		];
+	public function get_single_currency_settings( $request ) {
+		$currency_code = $request->get_param( 'currency_code' );
+
+		try {
+			$response = WC_Payments_Multi_Currency()->get_single_currency_settings( $currency_code );
+		} catch ( InvalidCurrencyException $e ) {
+			$response = new \WP_Error( $e->get_error_code(), $e->getMessage() );
+		}
+
+		return rest_ensure_response( $response );
 	}
 
 	/**
 	 * Updates the currency settings for a single currency.
 	 *
-	 * @param   \WP_REST_Request $request  Full data about the request.
+	 * @param \WP_REST_Request $request Full data about the request.
 	 *
-	 * @return  array            The currency settings.
+	 * @return \WP_REST_Response|\WP_Error The single currency settings as an array.
 	 */
-	public function update_currency_settings( $request ) {
-		$currency_code        = sanitize_key( strtolower( $request['currency_code'] ) );
-		$params               = $request->get_params();
-		$available_currencies = WC_Payments_Multi_Currency()->get_available_currencies();
+	public function update_single_currency_settings( $request ) {
+		$currency_code      = $request->get_param( 'currency_code' );
+		$exchange_rate_type = $request->get_param( 'exchange_rate_type' );
+		$price_rounding     = $request->get_param( 'price_rounding' );
+		$price_charm        = $request->get_param( 'price_charm' );
+		$manual_rate        = $request->get_param( 'manual_rate' ) ?? null;
 
-		if ( array_key_exists( strtoupper( $currency_code ), $available_currencies ) ) {
-			if ( isset( $params['exchange_rate_type'] ) && in_array( $params['exchange_rate_type'], [ 'automatic', 'manual' ], true ) ) {
-				update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $params['exchange_rate_type'] ) );
-			}
-			if ( 'manual' === $params['exchange_rate_type'] && isset( $params['manual_rate'] ) ) {
-				update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, (float) $params['manual_rate'] );
-			}
-			if ( isset( $params['price_rounding'] ) ) {
-				update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, (float) $params['price_rounding'] );
-			}
-			if ( isset( $params['price_charm'] ) ) {
-				update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, (float) $params['price_charm'] );
-			}
+		try {
+			WC_Payments_Multi_Currency()->update_single_currency_settings( $currency_code, $exchange_rate_type, $price_rounding, $price_charm, $manual_rate );
+			$response = WC_Payments_Multi_Currency()->get_single_currency_settings( $currency_code );
+		} catch ( Base_Exception $e ) {
+			$response = new \WP_Error( $e->get_error_code(), $e->getMessage() );
 		}
 
-		return $this->get_currency_settings( $request );
+		return rest_ensure_response( $response );
 	}
 
 	/**
 	 * Gets the store settings for Multi-Currency.
 	 *
-	 * @return  array  The store settings.
+	 * @return \WP_REST_Response|\WP_Error The store settings as an array.
 	 */
 	public function get_settings() {
-		return WC_Payments_Multi_Currency()->get_settings();
+		return rest_ensure_response( WC_Payments_Multi_Currency()->get_settings() );
 	}
 
 	/**
 	 * Updates Multi-Currency store settings parameters.
 	 *
-	 * @param   \WP_REST_Request $request  Full data about the request.
+	 * @param \WP_REST_Request $request Full data about the request.
 	 *
-	 * @return array The store settings.
+	 * @return \WP_REST_Response|\WP_Error The store settings as an array.
 	 */
 	public function update_settings( $request ) {
 		$params = $request->get_params();
 		WC_Payments_Multi_Currency()->update_settings( $params );
-		return WC_Payments_Multi_Currency()->get_settings();
+		return rest_ensure_response( WC_Payments_Multi_Currency()->get_settings() );
 	}
 }

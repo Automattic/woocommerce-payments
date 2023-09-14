@@ -33,6 +33,8 @@ const filterQuery = {
 	dateBetween: [ '2020-04-28 00:00:00', '2020-04-29 23:59:59' ],
 	typeIs: 'charge',
 	typeIsNot: 'dispute',
+	sourceDeviceIs: 'ios',
+	sourceDeviceIsNot: 'android',
 	depositId: 'mock_po_id',
 	loanIdIs: 'mock_flxln_id',
 	search: 'Test user',
@@ -44,8 +46,9 @@ describe( 'getTransactions resolver', () => {
 	const expectedQueryString =
 		'page=1&pagesize=25&sort=date&direction=desc' +
 		'&match=all&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00' +
-		'&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&type_is=charge' +
-		`&type_is_not=dispute&loan_id_is=mock_flxln_id&deposit_id=mock_po_id&search=Test%20user&user_timezone=${ encodeURIComponent(
+		'&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59' +
+		'&type_is=charge&type_is_not=dispute&source_device_is=ios&source_device_is_not=android' +
+		`&loan_id_is=mock_flxln_id&deposit_id=mock_po_id&search=Test%20user&user_timezone=${ encodeURIComponent(
 			getUserTimeZone()
 		) }`;
 	let generator = null;
@@ -92,8 +95,9 @@ describe( 'getTransactionsSummary resolver', () => {
 	const query = filterQuery;
 	const expectedQueryString =
 		'match=all&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00' +
-		'&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&type_is=charge' +
-		`&type_is_not=dispute&loan_id_is=mock_flxln_id&deposit_id=mock_po_id&search=Test%20user&user_timezone=${ encodeURIComponent(
+		'&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59' +
+		'&type_is=charge&type_is_not=dispute&source_device_is=ios&source_device_is_not=android' +
+		`&loan_id_is=mock_flxln_id&deposit_id=mock_po_id&search=Test%20user&user_timezone=${ encodeURIComponent(
 			getUserTimeZone()
 		) }`;
 	let generator = null;

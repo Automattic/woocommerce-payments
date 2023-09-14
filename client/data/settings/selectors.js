@@ -52,6 +52,14 @@ export const getAccountStatementDescriptor = ( state ) => {
 	return getSettings( state ).account_statement_descriptor || '';
 };
 
+export const getAccountStatementDescriptorKanji = ( state ) => {
+	return getSettings( state ).account_statement_descriptor_kanji || '';
+};
+
+export const getAccountStatementDescriptorKana = ( state ) => {
+	return getSettings( state ).account_statement_descriptor_kana || '';
+};
+
 export const getAccountBusinessName = ( state ) => {
 	return getSettings( state ).account_business_name || '';
 };
@@ -100,6 +108,10 @@ export const getAccountBrandingLogo = ( state ) => {
 	return getSettings( state ).account_branding_logo || '';
 };
 
+export const getAccountDomesticCurrency = ( state ) => {
+	return getSettings( state ).account_domestic_currency || '';
+};
+
 export const getDepositScheduleInterval = ( state ) => {
 	return getSettings( state ).deposit_schedule_interval || '';
 };
@@ -122,6 +134,10 @@ export const getCompletedWaitingPeriod = ( state ) => {
 
 export const getDepositStatus = ( state ) => {
 	return getSettings( state ).deposit_status || '';
+};
+
+export const getDepositRestrictions = ( state ) => {
+	return getSettings( state ).deposit_restrictions || '';
 };
 
 export const getIsManualCaptureEnabled = ( state ) => {
@@ -212,4 +228,24 @@ export const getCurrentProtectionLevel = ( state ) => {
 
 export const getAdvancedFraudProtectionSettings = ( state ) => {
 	return getSettings( state ).advanced_fraud_protection_settings || EMPTY_ARR;
+};
+
+export const getShowWooPayIncompatibilityNotice = ( state ) => {
+	return getSettings( state ).show_woopay_incompatibility_notice || false;
+};
+
+export const getIsStripeBillingEnabled = ( state ) => {
+	return getSettings( state ).is_stripe_billing_enabled || false;
+};
+
+export const getIsStripeBillingMigrationInProgress = ( state ) => {
+	return getSettings( state ).is_migrating_stripe_billing || false;
+};
+
+export const getStripeBillingSubscriptionCount = ( state ) => {
+	return getSettings( state ).stripe_billing_subscription_count || 0;
+};
+
+export const getStripeBillingMigratedCount = ( state ) => {
+	return getSettings( state ).stripe_billing_migrated_count || 0;
 };
