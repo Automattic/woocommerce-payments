@@ -397,7 +397,13 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 			}
 		}
 
+		// Prevent the WC_Payments_Subscriptions class from attempting to update the Stripe Billing subscription's payment method while we set the token.
+		remove_action( 'woocommerce_payment_token_added_to_order', [ WC_Payments_Subscriptions::get_subscription_service(), 'update_wcpay_subscription_payment_method' ], 10 );
+
 		$subscription->add_payment_token( $token );
+
+		// Reattach.
+		add_action( 'woocommerce_payment_token_added_to_order', [ WC_Payments_Subscriptions::get_subscription_service(), 'update_wcpay_subscription_payment_method' ], 10, 3 );
 
 		return $token;
 	}
