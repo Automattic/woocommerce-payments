@@ -91,14 +91,14 @@ const UpeSetupBanner = () => {
 			>
 				<h3>
 					{ __(
-						'Boost your sales by accepting additional payment methods',
+						'Enable the new WooPayments checkout experience, which will become the default on October 23, 2023',
 						'woocommerce-payments'
 					) }
 				</h3>
 				<p>
 					{ __(
 						/* eslint-disable-next-line max-len */
-						'Get access to additional payment methods and an improved checkout experience.',
+						'This will improve the checkout experience and boost sales with access to additional payment methods, which you’ll be able to manage from here in settings.',
 						'woocommerce-payments'
 					) }
 				</p>
@@ -107,7 +107,7 @@ const UpeSetupBanner = () => {
 					<span className="payment-methods__express-checkouts-get-started">
 						<Button isSecondary onClick={ handleEnableUpeClick }>
 							{ __(
-								'Enable in your store',
+								'Enable payment methods',
 								'woocommerce-payments'
 							) }
 						</Button>
