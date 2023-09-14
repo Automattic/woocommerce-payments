@@ -26,7 +26,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'wcpay/utils/currency';
 import DisputeNotice from './dispute-notice';
 import DisputeSummaryRow from './dispute-summary-row';
-import DisputeFooter from './dispute-footer';
+import DisputeResolvedMessage from './dispute-resolved-message';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
@@ -135,7 +135,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 
 		if ( dispute.status === 'won' ) {
 			return (
-				<DisputeFooter
+				<DisputeResolvedMessage
 					buttonLabel="View dispute details"
 					onButtonClick={ handleClick }
 					message={ createInterpolateElement(
@@ -155,7 +155,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 
 		if ( dispute.status === 'under_review' ) {
 			return (
-				<DisputeFooter
+				<DisputeResolvedMessage
 					buttonLabel={ __(
 						'View submitted evidence',
 						'woocommerce-payments'
@@ -185,7 +185,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 		if ( dispute.status === 'lost' ) {
 			if ( isAccepted ) {
 				return (
-					<DisputeFooter
+					<DisputeResolvedMessage
 						message={ createInterpolateElement(
 							sprintf(
 								/* Translators: %1$s - formatted date, %2$s – the formatted dispute fee amount, <a> - link to documentation page */
@@ -202,7 +202,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 				);
 			} else if ( isSubmitted ) {
 				return (
-					<DisputeFooter
+					<DisputeResolvedMessage
 						buttonLabel={ __(
 							'View dispute details',
 							'woocommerce-payments'
@@ -226,7 +226,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 
 			// Lost, no challenge submitted
 			return (
-				<DisputeFooter
+				<DisputeResolvedMessage
 					message={ createInterpolateElement(
 						sprintf(
 							/* Translators: %1$s - formatted date, %2$s – the formatted dispute fee amount, <a> - link to documentation page */

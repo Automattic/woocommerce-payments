@@ -13,14 +13,14 @@ import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
 
 import './style.scss';
 
-interface DisputeFooterProps {
+interface Props {
 	message: React.ReactNode;
 	buttonLabel?: string;
 	onButtonClick?: () => void;
 	isPrimary?: boolean;
 }
 
-const DisputeFooter: React.FC< DisputeFooterProps > = ( {
+const DisputeResolvedMessage: React.FC< Props > = ( {
 	message,
 	buttonLabel,
 	onButtonClick,
@@ -46,4 +46,4 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( {
 	);
 };
 
-export default DisputeFooter;
+export default DisputeResolvedMessage;
