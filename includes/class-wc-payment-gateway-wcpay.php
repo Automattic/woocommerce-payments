@@ -1615,9 +1615,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'subscription_payment' => 'no',
 		];
 
-		if ( 'recurring' === (string) $payment_type && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
+		if ( 'recurring' === (string) $payment_type && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order, 'any' ) ) {
 			$metadata['subscription_payment'] = wcs_order_contains_renewal( $order ) ? 'renewal' : 'initial';
-			$metadata['payment_context']      = $this->is_subscriptions_plugin_active() ? 'regular_subscription' : 'wcpay_subscription';
+			$metadata['payment_context']      = WC_Payments_Features::should_use_stripe_billing() ? 'wcpay_subscription' : 'regular_subscription';
 		}
 		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
 	}

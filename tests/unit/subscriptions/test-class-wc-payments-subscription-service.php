@@ -171,6 +171,9 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 					],
 				],
 			],
+			'metadata' => [
+				'subscription_source' => 'woo_subscriptions',
+			],
 		];
 
 		$this->assertNotEquals( $mock_subscription->get_meta( self::SUBSCRIPTION_ID_META_KEY ), $mock_wcpay_subscription_id );
