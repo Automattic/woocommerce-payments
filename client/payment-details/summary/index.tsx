@@ -197,7 +197,7 @@ const composeResolvedDisputeMessage = (
 
 	const handleClick = () => {
 		wcpayTracks.recordEvent(
-			wcpayTracks.events.TRANSACTION_DETAILS_DISPUTE_FOOTER_BUTTON_CLICK,
+			wcpayTracks.events.DISPUTE_RESOLVED_MESSAGE_VIEW_BUTTON_CLICK,
 			{
 				dispute_status: dispute?.status,
 				dispute_submitted: isSubmitted,
