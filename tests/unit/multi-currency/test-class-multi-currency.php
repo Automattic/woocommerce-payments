@@ -978,7 +978,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$result = $this->multi_currency->get_all_customer_currencies();
 
-		$this->assertEquals( [ 'GBP', 'EUR', 'USD' ], $result );
+		$this->assertEquals( [ 'EUR', 'GBP', 'USD' ], $result );
 
 		foreach ( $mock_orders as $order_id ) {
 			wp_delete_post( $order_id, true );
