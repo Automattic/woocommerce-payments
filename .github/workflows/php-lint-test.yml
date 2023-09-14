@@ -17,7 +17,7 @@ concurrency:
 jobs:
   lint:
     name:    PHP linting
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # clone the repository
       - uses: actions/checkout@v3
@@ -34,7 +34,7 @@ jobs:
 
   generate-test-matrix:
     name: "Generate the matrix for php tests dynamically"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -47,7 +47,7 @@ jobs:
   test:
     name: PHP testing
     needs: generate-test-matrix
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: 10
