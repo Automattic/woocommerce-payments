@@ -28,6 +28,8 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 use WC_Payments_Localization_Service;
+use WCPay\Payment_Information;
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 
 
 
@@ -528,5 +530,22 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 */
 	public function get_stripe_id() {
 		return $this->stripe_id;
+	}
+
+	/**
+	 * Modifies the create intent parameters when processing a payment.
+	 *
+	 * If the selected Stripe payment type is AFTERPAY, it updates the shipping data in the request.
+	 *
+	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
+	 * @param Payment_Information          $payment_information   The payment information object.
+	 * @param mixed                        $order                 The order object or data.
+	 *
+	 * @return void
+	 */
+	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, $order ): void {
+		if ( Payment_Method::AFTERPAY === $this->get_selected_stripe_payment_type_id() ) {
+			$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
+		}
 	}
 }
