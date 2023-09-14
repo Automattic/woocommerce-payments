@@ -33,6 +33,17 @@ export interface File {
 	title: string | null;
 }
 
+export interface FileContent {
+	/**
+	 * The file mime-type.
+	 */
+	content_type: string;
+	/**
+	 * The file content, base64 encoded.
+	 */
+	file_content: string;
+}
+
 export interface FileResponse {
 	isLoading: boolean;
 	file?: File;

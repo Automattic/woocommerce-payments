@@ -23,7 +23,7 @@ import { ApiError } from 'wcpay/types/errors';
 export function* getFile( id: string ): Generator< unknown > {
 	try {
 		const result = yield apiFetch( {
-			path: `${ NAMESPACE }/file/detail/${ id }`,
+			path: `${ NAMESPACE }/file/${ id }/details`,
 		} );
 		yield updateFiles( id, result as File );
 	} catch ( e ) {

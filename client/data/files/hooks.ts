@@ -26,7 +26,7 @@ export const useFiles = ( id: string ): FileResponse =>
 			const file: File = getFile( id );
 
 			return {
-				data: file || ( {} as File ),
+				file: file || ( {} as File ),
 				error: getFileError( id ),
 				isLoading:
 					isResolving( 'getFile', [ id ] ) ||

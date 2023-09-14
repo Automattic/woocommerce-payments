@@ -5,7 +5,8 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { download, Icon } from '@wordpress/icons';
+import apiFetch from '@wordpress/api-fetch';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -13,6 +14,8 @@ import { download, Icon } from '@wordpress/icons';
 import type { IssuerEvidence } from 'wcpay/types/disputes';
 import { useFiles } from 'wcpay/data';
 import Loadable from 'wcpay/components/loadable';
+import { NAMESPACE } from 'wcpay/data/constants';
+import { FileContent } from 'wcpay/data/files/types';
 
 interface Props {
 	issuerEvidence: IssuerEvidence | null;
@@ -25,10 +28,9 @@ const TextEvidence: React.FC< {
 		href={ URL.createObjectURL(
 			new Blob( [ evidence ], { type: 'text/plain' } )
 		) }
-		className="wcpay-text-evidence"
+		className="dispute-evidence-link"
 		download="evidence.txt"
 	>
-		<Icon icon={ download } size={ 16 } />
 		{ __( 'Evidence.txt', 'woocommerce-payments' ) }
 	</a>
 );
@@ -37,6 +39,32 @@ const FileEvidence: React.FC< {
 	fileId: string;
 } > = ( { fileId } ) => {
 	const { file, isLoading } = useFiles( fileId );
+	const { createNotice } = useDispatch( 'core/notices' );
+
+	const onDownload = async ( e: React.MouseEvent< HTMLAnchorElement > ) => {
+		e.preventDefault();
+		if ( ! file || ! file.id ) {
+			return;
+		}
+		try {
+			const downloadRequest = await apiFetch< FileContent >( {
+				path: `${ NAMESPACE }/file/${ encodeURI( file.id ) }/content`,
+				method: 'GET',
+			} );
+
+			const link = document.createElement( 'a' );
+			link.href =
+				'data:application/octect-stream;base64,' +
+				downloadRequest.file_content;
+			link.download = file.filename;
+			link.click();
+		} catch ( exception ) {
+			createNotice(
+				'error',
+				__( 'Error downloading file', 'woocommerce-payments' )
+			);
+		}
+	};
 
 	return (
 		<Loadable
@@ -45,11 +73,16 @@ const FileEvidence: React.FC< {
 		>
 			{
 				/* eslint-disable jsx-a11y/anchor-is-valid */
-				file && (
-					<a href="#" className="wcpay-text-evidence">
-						<Icon icon={ download } size={ 16 } />
-						{ file?.title || file.filename } ({ file.type })
+				file && file.id ? (
+					<a
+						href="#"
+						className="dispute-evidence-link"
+						onClick={ onDownload }
+					>
+						{ file?.title || file.filename }
 					</a>
+				) : (
+					<></>
 				)
 			}
 		</Loadable>
@@ -71,13 +104,12 @@ const EvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 
 	return (
 		<>
-			{ issuerEvidence.file_evidence.map( ( fileId: string, i: any ) => (
-				// eslint-disable-next-line react/jsx-key
-				<FileEvidence fileId={ fileId } />
-			) ) }
 			{ issuerEvidence.text_evidence && (
 				<TextEvidence evidence={ issuerEvidence.text_evidence } />
 			) }
+			{ issuerEvidence.file_evidence.map( ( fileId: string, i: any ) => (
+				<FileEvidence key={ i } fileId={ fileId } />
+			) ) }
 		</>
 	);
 };
