@@ -157,6 +157,8 @@ class WC_Payments_Subscription_Service {
 
 		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
 		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'show_wcpay_subscription_id' ] );
+
+		add_action( 'woocommerce_subscription_payment_method_updated_from_' . WC_Payment_Gateway_WCPay::GATEWAY_ID, [ $this, 'maybe_cancel_subscription' ], 10, 2 );
 	}
 
 	/**
@@ -557,16 +559,14 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * If the WCPay subscription's payment method was updated while there's a failed invoice, trigger a retry.
 	 *
-	 * @param int              $post_id  Post ID (WC subscription ID) that had its payment method updated.
-	 * @param int              $token_id Payment Token post ID stored in DB.
-	 * @param WC_Payment_Token $token    Payment Token object.
-	 *
-	 * @return void
+	 * @param int              $subscription_id Post ID (WC subscription ID) that had its payment method updated.
+	 * @param int              $token_id        Payment Token post ID stored in DB.
+	 * @param WC_Payment_Token $token           Payment Token object.
 	 */
-	public function update_wcpay_subscription_payment_method( int $post_id, int $token_id, WC_Payment_Token $token ) {
-		$subscription = wcs_get_subscription( $post_id );
+	public function update_wcpay_subscription_payment_method( int $subscription_id, int $token_id, WC_Payment_Token $token ) {
+		$subscription = wcs_get_subscription( $subscription_id );
 
-		if ( $subscription ) {
+		if ( $subscription && self::is_wcpay_subscription( $subscription ) ) {
 			$wcpay_subscription_id   = $this->get_wcpay_subscription_id( $subscription );
 			$wcpay_payment_method_id = $token->get_token();
 
@@ -824,6 +824,25 @@ class WC_Payments_Subscription_Service {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Cancels a WCPay subscription when a customer changes their payment method
+	 *
+	 * @param WC_Subscription $subscription       The subscription that was updated.
+	 * @param string          $new_payment_method The subscription's new payment method ID.
+	 */
+	public function maybe_cancel_subscription( $subscription, $new_payment_method ) {
+		$wcpay_subscription_id = self::get_wcpay_subscription_id( $subscription );
+
+		if ( (bool) $wcpay_subscription_id && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+			$this->cancel_subscription( $subscription );
+
+			// Delete the WCPay Subscription meta but keep a record of it.
+			$subscription->update_meta_data( '_cancelled' . self::SUBSCRIPTION_ID_META_KEY, $wcpay_subscription_id );
+			$subscription->delete_meta_data( self::SUBSCRIPTION_ID_META_KEY );
+			$subscription->save();
+		}
 	}
 
 	/**
