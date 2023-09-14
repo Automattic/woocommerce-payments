@@ -8,12 +8,19 @@ import { render, screen, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import WizardTaskContext from '../../../../additional-methods-setup/wizard/task/context';
-import { useCurrencies, useStoreSettings } from 'wcpay/data';
+import {
+	useCurrencies,
+	useStoreSettings,
+	useSettings,
+	useMultiCurrency,
+} from 'wcpay/data';
 import StoreSettingsTask from '..';
 
 jest.mock( 'wcpay/data', () => ( {
 	useStoreSettings: jest.fn(),
 	useCurrencies: jest.fn(),
+	useSettings: jest.fn(),
+	useMultiCurrency: jest.fn(),
 } ) );
 
 const changeableSettings = [
@@ -43,6 +50,11 @@ useStoreSettings.mockReturnValue( {
 	submitStoreSettingsUpdate: jest.fn(),
 } );
 
+useSettings.mockReturnValue( {
+	saveSettings: jest.fn().mockResolvedValue( {} ),
+	isSaving: false,
+} );
+
 const setCompletedMock = jest.fn();
 
 const createContainer = () => {
@@ -59,6 +71,10 @@ const createContainer = () => {
 describe( 'Multi-Currency store settings', () => {
 	afterEach( () => {
 		jest.clearAllMocks();
+	} );
+
+	beforeEach( () => {
+		useMultiCurrency.mockReturnValue( [ true, jest.fn() ] );
 	} );
 
 	test( 'store settings task renders correctly', () => {
@@ -83,15 +99,27 @@ describe( 'Multi-Currency store settings', () => {
 		} );
 	} );
 
-	test( 'store settings are saved with continue button click', () => {
+	test( 'multi-currency is enabled if it was previously disabled', async () => {
+		useMultiCurrency.mockReturnValue( [ false, jest.fn() ] );
+
 		createContainer();
 		const { submitStoreSettingsUpdate } = useStoreSettings();
+		const { saveSettings } = useSettings();
+		const [ , updateIsMultiCurrencyEnabled ] = useMultiCurrency();
+
 		fireEvent.click(
 			screen.getByRole( 'button', {
 				name: /Continue/,
 			} )
 		);
-		expect( submitStoreSettingsUpdate ).toBeCalledWith( false, false );
+
+		expect( saveSettings ).toBeCalled();
+		expect( updateIsMultiCurrencyEnabled ).toBeCalledWith( true );
+		expect( submitStoreSettingsUpdate ).toBeCalledWith(
+			false,
+			false,
+			true
+		);
 
 		changeableSettings.forEach( ( setting ) => {
 			fireEvent.click( screen.getByTestId( setting ) );
@@ -102,7 +130,33 @@ describe( 'Multi-Currency store settings', () => {
 				name: /Continue/,
 			} )
 		);
-		expect( submitStoreSettingsUpdate ).toBeCalledWith( true, true );
+		expect( submitStoreSettingsUpdate ).toBeCalledWith( true, true, true );
+	} );
+
+	test( 'store settings are saved with continue button click', () => {
+		createContainer();
+		const { submitStoreSettingsUpdate } = useStoreSettings();
+		fireEvent.click(
+			screen.getByRole( 'button', {
+				name: /Continue/,
+			} )
+		);
+		expect( submitStoreSettingsUpdate ).toBeCalledWith(
+			false,
+			false,
+			false
+		);
+
+		changeableSettings.forEach( ( setting ) => {
+			fireEvent.click( screen.getByTestId( setting ) );
+			expect( screen.getByTestId( setting ) ).toBeChecked();
+		} );
+		fireEvent.click(
+			screen.getByRole( 'button', {
+				name: /Continue/,
+			} )
+		);
+		expect( submitStoreSettingsUpdate ).toBeCalledWith( true, true, false );
 	} );
 
 	test( 'store settings preview should open a modal with an iframe', () => {

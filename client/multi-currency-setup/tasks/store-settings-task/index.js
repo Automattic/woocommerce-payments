@@ -68,12 +68,12 @@ const StoreSettingsTask = () => {
 		setIsStorefrontSwitcherEnabledValue( value );
 	};
 
-	const handleContinueClick = async () => {
+	const handleContinueClick = () => {
 		setPending( true );
 
 		if ( ! isMultiCurrencyEnabled ) {
 			updateIsMultiCurrencyEnabled( true );
-			await saveSettings();
+			saveSettings();
 		}
 
 		submitStoreSettingsUpdate(
