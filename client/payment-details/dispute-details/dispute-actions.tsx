@@ -34,7 +34,7 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 		setModalOpen( false );
 	};
 
-	const onSubmit = () => {
+	const onAccept = () => {
 		wcpayTracks.recordEvent( wcpayTracks.events.DISPUTE_ACCEPT_CLICK );
 		setModalOpen( false );
 		doAccept();
@@ -132,7 +132,7 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 						<Button variant="tertiary" onClick={ onClose }>
 							{ __( 'Cancel', 'woocommerce-payments' ) }
 						</Button>
-						<Button variant="primary" onClick={ onSubmit }>
+						<Button variant="primary" onClick={ onAccept }>
 							{ __( 'Accept dispute', 'woocommerce-payments' ) }
 						</Button>
 					</Flex>
