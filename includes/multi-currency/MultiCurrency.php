@@ -1486,7 +1486,7 @@ class MultiCurrency {
 		$currencies = get_option( self::CUSTOMER_CURRENCIES_KEY );
 
 		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
-			return $currencies;
+			return array_map( 'strtoupper', $currencies );
 		}
 
 		$currencies  = $this->get_available_currencies();
@@ -1517,9 +1517,8 @@ class MultiCurrency {
 		$currencies = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
-			$currencies = array_map( 'strtoupper', $currencies );
 			update_option( self::CUSTOMER_CURRENCIES_KEY, $currencies );
-			return $currencies;
+			return array_map( 'strtoupper', $currencies );
 		}
 
 		return [];
