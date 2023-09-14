@@ -194,11 +194,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
 	const transactionFee = charge.balance_transaction
 		? {
-				amount: charge.balance_transaction.fee,
+				fee: charge.balance_transaction.fee,
 				currency: charge.balance_transaction.currency,
 		  }
 		: {
-				amount: charge.application_fee_amount,
+				fee: charge.application_fee_amount,
 				currency: charge.currency,
 		  };
 
@@ -304,7 +304,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 														</label>
 														<span aria-label="Transaction fee">
 															{ formatCurrency(
-																transactionFee.amount,
+																transactionFee.fee,
 																transactionFee.currency
 															) }
 														</span>
