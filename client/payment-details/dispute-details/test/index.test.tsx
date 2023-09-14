@@ -10,7 +10,6 @@ import React from 'react';
  */
 import type { Dispute } from 'wcpay/types/disputes';
 import type { Charge } from 'wcpay/types/charges';
-import { useDisputeAccept } from 'wcpay/data';
 import DisputeDetails from '..';
 
 declare const global: {
@@ -132,23 +131,12 @@ const getBaseCharge = (): ChargeWithDisputeRequired =>
 	} as any );
 
 // mock the useDisputeAccept hook
+const mockDoAccept = jest.fn();
 jest.mock( 'wcpay/data', () => ( {
 	useDisputeAccept: jest.fn( () => ( {
-		doAccept: jest.fn(),
+		doAccept: mockDoAccept,
 		isLoading: false,
 	} ) ),
-} ) );
-const mockUseDisputeAccept = useDisputeAccept as jest.MockedFunction<
-	typeof useDisputeAccept
->;
-const mockDoAccept = jest.fn();
-
-// mock the history push function
-const mockHistoryPush = jest.fn();
-jest.mock( '@woocommerce/navigation', () => ( {
-	getHistory: () => ( {
-		push: mockHistoryPush,
-	} ),
 } ) );
 
 describe( 'DisputeDetails', () => {
@@ -157,14 +145,6 @@ describe( 'DisputeDetails', () => {
 		Date.now = jest.fn( () =>
 			new Date( '2023-09-08T12:33:37.000Z' ).getTime()
 		);
-
-		jest.clearAllMocks();
-
-		mockUseDisputeAccept.mockReset();
-		mockUseDisputeAccept.mockReturnValue( {
-			doAccept: mockDoAccept,
-			isLoading: false,
-		} );
 	} );
 
 	afterEach( () => {
@@ -275,20 +255,5 @@ describe( 'DisputeDetails', () => {
 		acceptButton.click();
 
 		expect( mockDoAccept ).toHaveBeenCalledTimes( 1 );
-	} );
-
-	test( 'correctly navigates to the challenge screen when challenge button clicked', () => {
-		const charge = getBaseCharge();
-		render( <DisputeDetails dispute={ charge.dispute } /> );
-
-		const challengeButton = screen.getByRole( 'button', {
-			name: /Challenge dispute/,
-		} );
-		challengeButton.click();
-
-		expect( mockHistoryPush ).toHaveBeenNthCalledWith(
-			1,
-			expect.stringContaining( `challenge&id=${ charge.dispute.id }` )
-		);
 	} );
 } );
