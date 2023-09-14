@@ -13,12 +13,12 @@ import RadioCard from 'components/radio-card';
 import { useStepperContext } from 'components/stepper';
 import { trackModeSelected } from '../tracking';
 import strings from '../strings';
-import BannerNotice from 'components/banner-notice';
+import InlineNotice from 'components/inline-notice';
 
 const DevModeNotice = () => (
-	<BannerNotice icon status="warning" isDismissible={ false }>
+	<InlineNotice icon status="warning" isDismissible={ false }>
 		{ strings.steps.mode.devModeNotice }
-	</BannerNotice>
+	</InlineNotice>
 );
 
 const ModeChoice: React.FC = () => {
