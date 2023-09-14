@@ -30,12 +30,12 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 
-	if ( isAwaitingResponse( dispute.status ) ) {
-		return (
-			<div className="transaction-details-dispute-details-wrapper">
-				<Card>
-					<CardBody className="transaction-details-dispute-details-body">
-						{ countdownDays >= 0 && (
+	return (
+		<div className="transaction-details-dispute-details-wrapper">
+			<Card>
+				<CardBody className="transaction-details-dispute-details-body">
+					{ isAwaitingResponse( dispute.status ) &&
+						countdownDays >= 0 && (
 							<>
 								<DisputeNotice
 									dispute={ dispute }
@@ -58,16 +58,13 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 								/>
 							</>
 						) }
-						{ ! isInquiry( dispute ) && (
-							<DisputeActions dispute={ dispute } />
-						) }
-					</CardBody>
-				</Card>
-			</div>
-		);
-	}
-
-	return null;
+					{ ! isInquiry( dispute ) && (
+						<DisputeActions dispute={ dispute } />
+					) }
+				</CardBody>
+			</Card>
+		</div>
+	);
 };
 
 export default DisputeDetails;
