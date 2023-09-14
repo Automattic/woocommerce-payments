@@ -30,6 +30,7 @@ declare const global: {
 			country: string;
 		};
 		featureFlags: {
+			isDisputeOnTransactionPageEnabled: boolean;
 			isAuthAndCaptureEnabled: boolean;
 		};
 	};
@@ -157,6 +158,7 @@ describe( 'PaymentDetailsSummary', () => {
 			},
 			featureFlags: {
 				isAuthAndCaptureEnabled: true,
+				isDisputeOnTransactionPageEnabled: false,
 			},
 			currencyData: {
 				US: {
@@ -169,6 +171,15 @@ describe( 'PaymentDetailsSummary', () => {
 				},
 			},
 		};
+
+		// mock Date.now that moment library uses to get current date for testing purposes
+		Date.now = jest.fn( () =>
+			new Date( '2023-09-08T12:33:37.000Z' ).getTime()
+		);
+	} );
+
+	afterEach( () => {
+		Date.now = () => new Date().getTime();
 	} );
 
 	test( 'correctly renders a charge', () => {
@@ -335,6 +346,147 @@ describe( 'PaymentDetailsSummary', () => {
 			).toBeInTheDocument();
 
 			expect( container ).toMatchSnapshot();
+		} );
+	} );
+
+	describe( 'with feature flag isDisputeOnTransactionPageEnabled', () => {
+		beforeEach( () => {
+			global.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = true;
+		} );
+
+		afterEach( () => {
+			global.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = false;
+		} );
+
+		test( 'renders the information of a disputed charge', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			renderCharge( charge );
+
+			// Dispute Notice
+			screen.getByText(
+				/The cardholder claims this is an unauthorized transaction/,
+				{ ignore: '.a11y-speak-region' }
+			);
+
+			// Don't render the staged evidence message
+			expect(
+				screen.queryByText(
+					/You initiated a dispute a challenge to this dispute/,
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeNull();
+
+			// Dispute Summary Row
+			expect(
+				screen.getByText( /Dispute Amount/i ).nextSibling
+			).toHaveTextContent( /\$20.00/ );
+			expect(
+				screen.getByText( /Disputed On/i ).nextSibling
+			).toHaveTextContent( /Aug 30, 2023/ );
+			expect(
+				screen.getByText( /Reason/i ).nextSibling
+			).toHaveTextContent( /Transaction unauthorized/ );
+			expect(
+				screen.getByText( /Respond By/i ).nextSibling
+			).toHaveTextContent( /Sep 9, 2023/ );
+		} );
+
+		test( 'correctly renders dispute details for a dispute with staged evidence', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+			charge.dispute.evidence_details = {
+				has_evidence: true,
+				due_by: 1694303999,
+				past_due: false,
+				submission_count: 0,
+			};
+
+			renderCharge( charge );
+
+			screen.getByText(
+				/The cardholder claims this is an unauthorized transaction/,
+				{ ignore: '.a11y-speak-region' }
+			);
+
+			// Render the staged evidence message
+			screen.getByText(
+				/You initiated a dispute a challenge to this dispute/,
+				{ ignore: '.a11y-speak-region' }
+			);
+		} );
+
+		test( 'correctly renders dispute details for "won" disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'won';
+			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+			renderCharge( charge );
+
+			screen.getByText( /You won this dispute on/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			screen.getByRole( 'button', { name: /View dispute details/i } );
+		} );
+
+		test( 'correctly renders dispute details for "under_review" disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'under_review';
+			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+
+			renderCharge( charge );
+
+			screen.getByText( /reviewing the case/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			screen.getByRole( 'button', { name: /View submitted evidence/i } );
+		} );
+
+		test( 'correctly renders dispute details for "accepted" disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'lost';
+			charge.dispute.metadata.__closed_by_merchant = '1';
+			charge.dispute.metadata.__dispute_closed_at = '1693453017';
+
+			renderCharge( charge );
+
+			screen.getByText( /This dispute was accepted/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			// Check for the correct fee amount
+			screen.getByText( /\$15.00 fee/i, {
+				ignore: '.a11y-speak-region',
+			} );
+		} );
+
+		test( 'correctly renders dispute details for "lost" disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'lost';
+			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+			charge.dispute.metadata.__dispute_closed_at = '1693453017';
+
+			renderCharge( charge );
+
+			screen.getByText( /This dispute was lost/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			// Check for the correct fee amount
+			screen.getByText( /\$15.00 fee/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			screen.getByRole( 'button', { name: /View dispute details/i } );
 		} );
 	} );
 } );
