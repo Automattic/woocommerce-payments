@@ -527,6 +527,8 @@ class MultiCurrency {
 			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
 		}
 
+		$currency_code = strtolower( $currency_code );
+
 		if ( 'manual' === $exchange_rate_type && ! is_null( $manual_rate ) ) {
 			if ( ! is_numeric( $manual_rate ) || 0 >= $manual_rate ) {
 				$message = 'Invalid manual currency rate passed to update_single_currency_settings: ' . $manual_rate;
@@ -536,7 +538,6 @@ class MultiCurrency {
 			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
 		}
 
-		$currency_code = strtolower( $currency_code );
 		update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, $price_rounding );
 		update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, $price_charm );
 		if ( in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
