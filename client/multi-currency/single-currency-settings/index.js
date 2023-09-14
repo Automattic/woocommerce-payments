@@ -82,7 +82,6 @@ const SingleCurrencySettings = () => {
 	const [ isSaving, setIsSaving ] = useState( false );
 
 	useEffect( () => {
-		console.log( currencySettings[ currency ] );
 		if ( currencySettings[ currency ] ) {
 			setExchangeRateType(
 				currencySettings[ currency ].exchange_rate_type ||
