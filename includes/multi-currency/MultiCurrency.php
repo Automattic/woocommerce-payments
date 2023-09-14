@@ -30,7 +30,7 @@ class MultiCurrency {
 	const CURRENCY_SESSION_KEY    = 'wcpay_currency';
 	const CURRENCY_META_KEY       = 'wcpay_currency';
 	const FILTER_PREFIX           = 'wcpay_multi_currency_';
-	const CUSTOMER_CURRENCIES_KEY = self::FILTER_PREFIX . 'customer_currencies';
+	const CUSTOMER_CURRENCIES_KEY = 'wcpay_multi_currency_stored_customer_currencies';
 
 	/**
 	 * The plugin's ID.
