@@ -15,10 +15,15 @@ import WizardTaskItem from '../../wizard/task-item';
 import PreviewModal from '../../../multi-currency/preview-modal';
 import './index.scss';
 
-import { useStoreSettings } from 'wcpay/data';
+import { useStoreSettings, useSettings, useMultiCurrency } from 'wcpay/data';
 
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
+	const { saveSettings, isSaving } = useSettings();
+	const [
+		isMultiCurrencyEnabled,
+		updateIsMultiCurrencyEnabled,
+	] = useMultiCurrency();
 
 	const [ isPending, setPending ] = useState( false );
 
@@ -63,12 +68,20 @@ const StoreSettingsTask = () => {
 		setIsStorefrontSwitcherEnabledValue( value );
 	};
 
-	const handleContinueClick = () => {
+	const handleContinueClick = async () => {
 		setPending( true );
+
+		if ( ! isMultiCurrencyEnabled ) {
+			updateIsMultiCurrencyEnabled( true );
+			await saveSettings();
+		}
+
 		submitStoreSettingsUpdate(
 			isAutomaticSwitchEnabledValue,
-			isStorefrontSwitcherEnabledValue
+			isStorefrontSwitcherEnabledValue,
+			! isMultiCurrencyEnabled
 		);
+
 		setPending( false );
 		setCompleted( true, 'setup-complete' );
 	};
@@ -139,19 +152,19 @@ const StoreSettingsTask = () => {
 					</CardBody>
 				</Card>
 				<Button
-					isBusy={ isPending }
-					disabled={ isPending }
+					isBusy={ isPending || isSaving }
+					disabled={ isPending || isSaving }
 					onClick={ handleContinueClick }
-					isPrimary
+					variant="primary"
 				>
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>
 				<Button
-					isBusy={ isPending }
-					disabled={ isPending }
+					isBusy={ isPending || isSaving }
+					disabled={ isPending || isSaving }
 					onClick={ handlePreviewModalOpenClick }
 					className={ 'multi-currency-setup-preview-button' }
-					isTertiary
+					variant="tertiary"
 				>
 					{ __( 'Preview', 'woocommerce-payments' ) }
 				</Button>
