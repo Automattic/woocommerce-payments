@@ -26,7 +26,7 @@ jQuery( function ( $ ) {
 	const bnplPaymentMessageElement = initializeBnplSiteMessaging();
 
 	// Utility function to safely parse integers and handle NaN
-	const safeParseInt = ( value ) => {
+	const parseIntOrReturnZero = ( value ) => {
 		const result = parseInt( value, 10 );
 		return isNaN( result ) ? 0 : result;
 	};
@@ -40,11 +40,12 @@ jQuery( function ( $ ) {
 	const quantityInput = $( '.quantity input[type=number]' );
 
 	const resetBnplPaymentMessage = () => {
-		if ( ! quantityInput.length || ! productVariations.base_product )
+		if ( ! quantityInput.length || ! productVariations.base_product ) {
 			return;
+		}
 
-		const quantity = safeParseInt( quantityInput.val() );
-		const baseProductAmount = safeParseInt(
+		const quantity = parseIntOrReturnZero( quantityInput.val() );
+		const baseProductAmount = parseIntOrReturnZero(
 			productVariations.base_product.amount
 		);
 
@@ -56,8 +57,10 @@ jQuery( function ( $ ) {
 
 	// Update BNPL message based on the quantity change
 	quantityInput.on( 'change', ( event ) => {
-		const newQuantity = safeParseInt( event.target.value );
-		const price = safeParseInt( productVariations[ productId ].amount );
+		const newQuantity = parseIntOrReturnZero( event.target.value );
+		const price = parseIntOrReturnZero(
+			productVariations[ productId ]?.amount
+		);
 
 		const amount = price * newQuantity;
 		const currency = productVariations[ productId ]?.currency;
@@ -74,12 +77,13 @@ jQuery( function ( $ ) {
 				if (
 					! quantityInput.length ||
 					! productVariations[ variation.variation_id ]
-				)
+				) {
 					return;
+				}
 
-				const quantity = safeParseInt( quantityInput.val() );
-				const variationPrice = safeParseInt(
-					productVariations[ variation.variation_id ].amount
+				const quantity = parseIntOrReturnZero( quantityInput.val() );
+				const variationPrice = parseIntOrReturnZero(
+					productVariations[ variation.variation_id ]?.amount
 				);
 
 				const amount = variationPrice * quantity;
@@ -92,7 +96,9 @@ jQuery( function ( $ ) {
 
 		// Reset BNPL message if variation is changed back to default
 		$( '.variations' ).on( 'change', ( event ) => {
-			if ( event.target.value === '' ) resetBnplPaymentMessage();
+			if ( event.target.value === '' ) {
+				resetBnplPaymentMessage();
+			}
 		} );
 
 		// Reset BNPL message on variations reset
