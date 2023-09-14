@@ -48,6 +48,7 @@ import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import InlineNotice from 'wcpay/components/inline-notice';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -284,20 +285,19 @@ const PaymentMethods = () => {
 							status="warning"
 							isDismissible={ false }
 						>
-							<div>
-								{ __(
-									'The new WooPayments checkout experience will become the default on October 2, 2023.',
+							{ interpolateComponents( {
+								mixedString: __(
+									'The new WooPayments checkout experience will become the default on October 2, 2023.' +
+										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 									'woocommerce-payments'
-								) }
-								<br />
-								{ /* eslint-disable-next-line max-len */ }
-								<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/">
-									{ __(
-										'Learn more',
-										'woocommerce-payments'
-									) }
-								</ExternalLink>
-							</div>
+								),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line max-len
+										<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/" />
+									),
+								},
+							} ) }
 						</InlineNotice>
 					</CardHeader>
 				) }
