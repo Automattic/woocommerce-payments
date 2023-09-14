@@ -135,17 +135,7 @@
 			}
 
 			&__link {
-				padding: 12px;
-				border: 1px solid #007cba;
-				border-radius: 2px;
-				font-size: 12px;
-				height: 18px;
 				align-self: center;
-
-				a {
-					text-decoration: none;
-					white-space: nowrap;
-				}
 
 				@include breakpoint( '<660px' ) {
 					align-self: flex-start;
