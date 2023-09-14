@@ -13,7 +13,7 @@ import { edit } from '@wordpress/icons';
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
-import { isAwaitingResponse } from 'wcpay/disputes/utils';
+import { isAwaitingResponse, isInquiry } from 'wcpay/disputes/utils';
 import DisputeNotice from './dispute-notice';
 import DisputeActions from './dispute-actions';
 import DisputeSummaryRow from './dispute-summary-row';
@@ -58,7 +58,9 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 								/>
 							</>
 						) }
-						<DisputeActions dispute={ dispute } />
+						{ ! isInquiry( dispute ) && (
+							<DisputeActions dispute={ dispute } />
+						) }
 					</CardBody>
 				</Card>
 			</div>
