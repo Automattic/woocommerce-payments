@@ -2459,11 +2459,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
 	 * @param bool     $include_level3 - Whether to include level 3 data in payment intent.
-	 * @param array    $metadata - Retrieved intent metadata.
+	 * @param array    $intent_metadata - Intent metadata retrieved earlier in the calling method.
 	 *
 	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code
 	 */
-	public function capture_charge( $order, $include_level3 = true, $metadata = [] ) {
+	public function capture_charge( $order, $include_level3 = true, $intent_metadata = [] ) {
 		$amount                   = $order->get_total();
 		$is_authorization_expired = false;
 		$intent                   = null;
@@ -2475,7 +2475,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent_id           = $order->get_transaction_id();
 			$payment_type        = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 			$metadata_from_order = $this->get_metadata_from_order( $order, $payment_type );
-			$merged_metadata     = array_merge( (array) $metadata_from_order, (array) $metadata ); // prioritize metadata from mobile app.
+			$merged_metadata     = array_merge( (array) $metadata_from_order, (array) $intent_metadata ); // prioritize metadata from mobile app.
 
 			$wcpay_request = Update_Intention::create( $intent_id );
 			$wcpay_request->set_metadata( $merged_metadata );
