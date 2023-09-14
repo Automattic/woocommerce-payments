@@ -13,6 +13,7 @@ import { edit } from '@wordpress/icons';
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import DisputeNotice from './dispute-notice';
 import DisputeSummaryRow from './dispute-summary-row';
 import InlineNotice from 'components/inline-notice';
@@ -32,29 +33,30 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 		<div className="transaction-details-dispute-details-wrapper">
 			<Card>
 				<CardBody className="transaction-details-dispute-details-body">
-					{ countdownDays >= 0 && (
-						<>
-							<DisputeNotice
-								dispute={ dispute }
-								urgent={ countdownDays <= 2 }
-							/>
-							{ hasStagedEvidence && (
-								<InlineNotice
-									icon={ edit }
-									isDismissible={ false }
-								>
-									{ __(
-										`You initiated a dispute a challenge to this dispute. Click 'Continue with challenge' to proceed with your drafted response.`,
-										'woocommerce-payments'
-									) }
-								</InlineNotice>
-							) }
-							<DisputeSummaryRow
-								dispute={ dispute }
-								daysRemaining={ countdownDays }
-							/>
-						</>
-					) }
+					{ isAwaitingResponse( dispute.status ) &&
+						countdownDays >= 0 && (
+							<>
+								<DisputeNotice
+									dispute={ dispute }
+									urgent={ countdownDays <= 2 }
+								/>
+								{ hasStagedEvidence && (
+									<InlineNotice
+										icon={ edit }
+										isDismissible={ false }
+									>
+										{ __(
+											`You initiated a dispute a challenge to this dispute. Click 'Continue with challenge' to proceed with your drafted response.`,
+											'woocommerce-payments'
+										) }
+									</InlineNotice>
+								) }
+								<DisputeSummaryRow
+									dispute={ dispute }
+									daysRemaining={ countdownDays }
+								/>
+							</>
+						) }
 				</CardBody>
 			</Card>
 		</div>
