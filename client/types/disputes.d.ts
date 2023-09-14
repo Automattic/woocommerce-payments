@@ -36,7 +36,7 @@ interface IssuerEvidence {
 	/**
 	 * Type of issuer evidence supplied.
 	 */
-	evidence_type: string; //'retrieval' | 'chargeback' | 'response';
+	evidence_type: 'retrieval' | 'chargeback' | 'response';
 	/**
 	 * List of up to 5 (ID of a file upload) File-based issuer evidence.
 	 */
