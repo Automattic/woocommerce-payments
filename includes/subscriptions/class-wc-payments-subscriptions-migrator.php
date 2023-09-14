@@ -125,18 +125,8 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 			$this->maybe_cancel_wcpay_subscription( $wcpay_subscription );
 
-			/**
-			 * There's a scenario where a WCPay subscription is active but has no pending renewal scheduled action.
-			 * Once migrated, this results in an active subscription that will remain active forever, without processing a renewal order.
-			 *
-			 * To ensure that all migrated subscriptions have a pending scheduled action, we need to reschedule the next payment date by
-			 * updating the date on the subscription.
-			 */
-			if ( $subscription->has_status( 'active' ) && $subscription->get_time( 'next_payment' ) > time() ) {
-				$new_next_payment = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + 1 );
-				$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
-
-				$this->logger->log( sprintf( '---- Next payment date updated to %1$s to ensure subscription #%2$d has a pending scheduled payment.', $new_next_payment, $subscription_id ) );
+			if ( $subscription->has_status( 'active' ) ) {
+				$this->update_next_payment_date( $subscription, $wcpay_subscription );
 			}
 
 			// If the subscription is active or on-hold, verify the payment method is valid and set correctly that it continues to renew.
@@ -146,9 +136,11 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 			$this->update_wcpay_subscription_meta( $subscription );
 
-			$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() ) {
+				$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
+			}
 
-			$this->logger->log( sprintf( '---- SUCCESS: Subscription #%d migrated.', $subscription_id ) );
+			$this->logger->log( sprintf( '---- Subscription #%d migration complete.', $subscription_id ) );
 		} catch ( \Exception $e ) {
 			$this->logger->log( $e->getMessage() );
 
@@ -292,6 +284,70 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 		if ( $updated ) {
 			$subscription->save();
+		}
+	}
+
+	/**
+	 * Updates the subscription's next payment date in WooCommerce to ensure a smooth transition to on-site billing.
+	 *
+	 * There's a scenario where a WCPay subscription is active but has no pending renewal scheduled action.
+	 * Once migrated, this results in an active subscription that will remain active forever, without processing a renewal order.
+	 *
+	 * To ensure that all migrated subscriptions have a pending scheduled action, we need to reschedule the next payment date by
+	 * updating the date on the subscription.
+	 *
+	 * In priority order the new next payment date will be:
+	 *  - The existing WooCommerce next payment date if it's in the future.
+	 *  - The Stripe subscription's current_period_end if it's in the future.
+	 *  - A newly calculated next payment date using the WC_Subscription::calculate_date() method.
+	 *
+	 * @param WC_Subscription $subscription       The WC Subscription being migrated.
+	 * @param array           $wcpay_subscription The subscription data from Stripe.
+	 */
+	private function update_next_payment_date( $subscription, $wcpay_subscription ) {
+		try {
+			// Just update the existing WC Subscription's next payment date if it's in the future.
+			if ( $subscription->get_time( 'next_payment' ) > time() ) {
+				$new_next_payment = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + 1 );
+
+				$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
+				$this->logger->log( sprintf( '---- Next payment date updated to %1$s to ensure subscription #%2$d has a pending scheduled payment.', $new_next_payment, $subscription->get_id() ) );
+
+				return;
+			}
+
+			// If the subscription was still using WooPayments, use the Stripe subscription's next payment time (current_period_end) if it's in the future.
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && isset( $wcpay_subscription['current_period_end'] ) && absint( $wcpay_subscription['current_period_end'] ) > time() ) {
+				$new_next_payment = gmdate( 'Y-m-d H:i:s', absint( $wcpay_subscription['current_period_end'] ) );
+
+				$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
+				$this->logger->log( sprintf( '---- Next payment date updated to %1$s to match Stripe subscription record and to ensure subscription #%2$d has a pending scheduled payment.', $new_next_payment, $subscription->get_id() ) );
+
+				return;
+			}
+
+			// Lastly calculate the next payment date.
+			$new_next_payment = $subscription->calculate_date( 'next_payment' );
+
+			if ( wcs_date_to_time( $new_next_payment ) > time() ) {
+				$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
+				$this->logger->log( sprintf( '---- Calculated a new next payment date (%1$s) to ensure subscription #%2$d has a pending scheduled payment in the future.', $new_next_payment, $subscription->get_id() ) );
+
+				return;
+			}
+
+			// If we got here the next payment date is in the past, the Stripe subscription is missing a "current_period_end" or it's in the past, and calculating a new date also failed. Log an error.
+			$this->logger->log(
+				sprintf(
+					'---- ERROR: Failed to update subscription #%1$d next payment date. Current next payment date (%2$s) is in the past, Stripe "current_period_end" data is invalid (%3$s) and an attempt to calculate a new date also failed (%4$s).',
+					$subscription->get_id(),
+					gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) ),
+					isset( $wcpay_subscription['current_period_end'] ) ? gmdate( 'Y-m-d H:i:s', absint( $wcpay_subscription['current_period_end'] ) ) : 'no data',
+					$new_next_payment
+				)
+			);
+		} catch ( \Exception $e ) {
+			$this->logger->log( sprintf( '---- ERROR: Failed to update subscription #%1$d next payment date. %2$s', $subscription->get_id(), $e->getMessage() ) );
 		}
 	}
 
