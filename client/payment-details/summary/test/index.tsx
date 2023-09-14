@@ -233,8 +233,15 @@ describe( 'PaymentDetailsSummary', () => {
 	test( 'renders the fee breakdown tooltip of a disputed charge', () => {
 		const charge = getBaseCharge();
 		charge.disputed = true;
+		charge.currency = 'jpy';
+		charge.amount = 10000;
+		charge.balance_transaction = {
+			amount: 2000,
+			currency: 'usd',
+			fee: 70,
+		};
 		charge.dispute = {
-			amount: 1500,
+			amount: 10000,
 			status: 'under_review',
 			balance_transactions: [
 				{
