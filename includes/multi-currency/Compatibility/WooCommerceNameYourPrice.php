@@ -96,16 +96,11 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 				$cart_item['nyp'] = $cart_item['nyp_original'];
 			} else {
 
-				$nyp_currency = $this->multi_currency->get_enabled_currencies()[ $cart_item['nyp_currency'] ] ?? null;
+				$from_currency = $cart_item['nyp_currency'];
+				$raw_price     = $cart_item['nyp_original'];
 
-				// Convert entered price back to default currency.
-				$converted_price = ( (float) $cart_item['nyp_original'] ) / $nyp_currency->get_rate();
-
-				if ( ! $selected_currency->get_is_default() ) {
-					$converted_price = $this->multi_currency->get_price( $converted_price, 'product' );
-				}
-
-				$cart_item['nyp'] = $converted_price;
+				$cart_item['nyp'] = $this->multi_currency->get_raw_conversion( $raw_price, $selected_currency->get_code(), $from_currency );
+	
 			}
 
 			$cart_item = WC_Name_Your_Price()->cart->set_cart_item( $cart_item );
@@ -177,18 +172,9 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
             $selected_currency = $this->multi_currency->get_selected_currency();
             
             if ( $from_currency !== $selected_currency->get_code() ) {
-                $nyp_currency = $this->multi_currency->get_enabled_currencies()[ $from_currency ] ?? null;
-                
-                // Convert entered price back to default currency.
-				$converted_price = ( (float) $raw_price ) / $nyp_currency->get_rate();
+				$initial_price = $this->multi_currency->get_raw_conversion( $raw_price, $selected_currency->get_code(), $from_currency );
+			}
 		
-				if ( ! $selected_currency->get_is_default() ) {
-					$converted_price = $this->multi_currency->get_price( $converted_price, 'product' );
-				}
-		
-				$initial_price = $converted_price;
-                
-            }
 		}
 
 		return $initial_price;
