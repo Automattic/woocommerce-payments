@@ -337,8 +337,10 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 			return;
 		}
 
+		unset( $wcpay_subscription['default_payment_method'] );
+
 		if ( empty( $wcpay_subscription['default_payment_method'] ) ) {
-			$this->logger->log( sprintf( '---- Could not verify the payment method. Stripe Billing subscription (%2$s) does not have a default payment method.', $wcpay_subscription['id'] ?? 'unknown' ) );
+			$this->logger->log( sprintf( '---- Could not verify the payment method. Stripe Billing subscription (%1$s) does not have a default payment method.', $wcpay_subscription['id'] ?? 'unknown' ) );
 			return;
 		}
 
