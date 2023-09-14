@@ -21,6 +21,7 @@ export const handleWooPayEmailInput = async (
 	const waitTime = 500;
 	const woopayEmailInput = await getTargetElement( field );
 	let hasCheckedLoginSession = false;
+	let isWooPayRedirecting = false;
 
 	// If we can't find the input, return.
 	if ( ! woopayEmailInput ) {
@@ -488,44 +489,50 @@ export const handleWooPayEmailInput = async (
 			case 'auto_redirect_to_platform_checkout':
 			case 'auto_redirect_to_woopay':
 				hasCheckedLoginSession = true;
-				api.initWooPay(
-					e.data.userEmail,
-					e.data.platformCheckoutUserSession
-				)
-					.then( ( response ) => {
-						if ( response.result === 'success' ) {
-							loginSessionIframeWrapper.classList.add(
-								'woopay-login-session-iframe-wrapper'
-							);
-							loginSessionIframe.classList.add( 'open' );
-							wcpayTracks.recordUserEvent(
-								wcpayTracks.events.WOOPAY_AUTO_REDIRECT
-							);
-							spinner.remove();
-							// Do nothing if the iframe has been closed.
-							if (
-								! document.querySelector(
-									'.woopay-login-session-iframe'
-								)
-							) {
-								return;
+
+				if ( ! isWooPayRedirecting ) {
+					isWooPayRedirecting = true;
+
+					api.initWooPay(
+						e.data.userEmail,
+						e.data.platformCheckoutUserSession
+					)
+						.then( ( response ) => {
+							if ( response.result === 'success' ) {
+								loginSessionIframeWrapper.classList.add(
+									'woopay-login-session-iframe-wrapper'
+								);
+								loginSessionIframe.classList.add( 'open' );
+								wcpayTracks.recordUserEvent(
+									wcpayTracks.events.WOOPAY_AUTO_REDIRECT
+								);
+								spinner.remove();
+								// Do nothing if the iframe has been closed.
+								if (
+									! document.querySelector(
+										'.woopay-login-session-iframe'
+									)
+								) {
+									return;
+								}
+								window.location = response.url;
+							} else {
+								closeLoginSessionIframe();
 							}
-							window.location = response.url;
-						} else {
-							closeLoginSessionIframe();
-						}
-					} )
-					.catch( ( err ) => {
-						// Only show the error if it's not an AbortError,
-						// it occurs when the fetch request is aborted because user
-						// clicked the Place Order button while loading.
-						if ( err.name !== 'AbortError' ) {
-							showErrorMessage();
-						}
-					} )
-					.finally( () => {
-						spinner.remove();
-					} );
+						} )
+						.catch( ( err ) => {
+							// Only show the error if it's not an AbortError,
+							// it occurs when the fetch request is aborted because user
+							// clicked the Place Order button while loading.
+							if ( err.name !== 'AbortError' ) {
+								showErrorMessage();
+							}
+						} )
+						.finally( () => {
+							isWooPayRedirecting = false;
+							spinner.remove();
+						} );
+				}
 				break;
 			case 'close_auto_redirection_modal':
 				hasCheckedLoginSession = true;
@@ -545,33 +552,40 @@ export const handleWooPayEmailInput = async (
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
-					[],
-					true
-				);
-				api.initWooPay(
-					woopayEmailInput.value,
-					e.data.platformCheckoutUserSession
-				)
-					.then( ( response ) => {
-						// Do nothing if the iframe has been closed.
-						if (
-							! document.querySelector( '.woopay-otp-iframe' )
-						) {
-							return;
-						}
-						if ( response.result === 'success' ) {
-							window.location = response.url;
-						} else {
+				if ( ! isWooPayRedirecting ) {
+					isWooPayRedirecting = true;
+
+					wcpayTracks.recordUserEvent(
+						wcpayTracks.events.WOOPAY_OTP_COMPLETE,
+						[],
+						true
+					);
+					api.initWooPay(
+						woopayEmailInput.value,
+						e.data.platformCheckoutUserSession
+					)
+						.then( ( response ) => {
+							// Do nothing if the iframe has been closed.
+							if (
+								! document.querySelector( '.woopay-otp-iframe' )
+							) {
+								return;
+							}
+							if ( response.result === 'success' ) {
+								window.location = response.url;
+							} else {
+								showErrorMessage();
+								closeIframe( false );
+							}
+						} )
+						.catch( () => {
 							showErrorMessage();
 							closeIframe( false );
-						}
-					} )
-					.catch( () => {
-						showErrorMessage();
-						closeIframe( false );
-					} );
+						} )
+						.finally( () => {
+							isWooPayRedirecting = false;
+						} );
+				}
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(
