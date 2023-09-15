@@ -276,6 +276,26 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the account statement descriptor for rendering on the settings page.
+	 *
+	 * @return string Account statement descriptor.
+	 */
+	public function get_statement_descriptor_kanji() : string {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['statement_descriptor_kanji'] ) ? $account['statement_descriptor_kanji'] : '';
+	}
+
+	/**
+	 * Gets the account statement descriptor for rendering on the settings page.
+	 *
+	 * @return string Account statement descriptor.
+	 */
+	public function get_statement_descriptor_kana() : string {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['statement_descriptor_kana'] ) ? $account['statement_descriptor_kana'] : '';
+	}
+
+	/**
 	 * Gets the business name.
 	 *
 	 * @return string Business profile name.
@@ -477,6 +497,17 @@ class WC_Payments_Account {
 			'isComplete'       => $account['progressive_onboarding']['is_complete'] ?? false,
 			'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
 		];
+	}
+
+	/**
+	 * Determine whether Progressive Onboarding is in progress for this account.
+	 *
+	 * @return boolean
+	 */
+	public function is_progressive_onboarding_in_progress(): bool {
+		$account = $this->get_cached_account_data();
+		return $account['progressive_onboarding']['is_enabled'] ?? false
+			&& ! $account['progressive_onboarding']['is_complete'] ?? false;
 	}
 
 	/**
@@ -858,6 +889,10 @@ class WC_Payments_Account {
 			}
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
+				// Delete the account if the dev mode is enabled otherwise it'll cause issues to onboard again.
+				if ( WC_Payments::mode()->is_dev() ) {
+					$this->payments_api_client->delete_account();
+				}
 				WC_Payments_Onboarding_Service::set_test_mode( false );
 				$this->redirect_to_onboarding_flow_page();
 				return;

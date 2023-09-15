@@ -123,7 +123,7 @@ export const getUpdateBusinessDetailsTask = (
 		title: ! detailsSubmitted
 			? sprintf(
 					/* translators: %s: WooPayments */
-					__( 'Set up %s', 'woocommerce-payments' ),
+					__( 'Finish setting up %s', 'woocommerce-payments' ),
 					'WooPayments'
 			  )
 			: sprintf(

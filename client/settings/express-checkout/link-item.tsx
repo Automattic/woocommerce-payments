@@ -1,8 +1,9 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
+import { Button, CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -17,18 +18,21 @@ import './style.scss';
 import { HoverTooltip } from 'components/tooltip';
 import LinkIcon from 'assets/images/payment-methods/link.svg?asset';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
+import { EnabledMethodIdsHook } from './interfaces';
 
-const LinkExpressCheckoutItem = () => {
-	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
+const LinkExpressCheckoutItem = (): React.ReactElement => {
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds() as Array<
+		string
+	>;
 
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 
 	const [
 		enabledMethodIds,
 		updateEnabledMethodIds,
-	] = useEnabledPaymentMethodIds();
+	] = useEnabledPaymentMethodIds() as EnabledMethodIdsHook;
 
-	const updateStripeLinkCheckout = ( isEnabled ) => {
+	const updateStripeLinkCheckout = ( isEnabled: boolean ) => {
 		//this handles the link payment method checkbox. If it's enable we should add link to the rest of the
 		//enabled payment method.
 		// If false - we should remove link payment method from the enabled payment methods
@@ -62,15 +66,7 @@ const LinkExpressCheckoutItem = () => {
 									) }
 								>
 									<div className="loadable-checkbox__icon">
-										<NoticeOutlineIcon
-											style={ {
-												color: '#F0B849',
-												fill: 'currentColor',
-												marginBottom: '-5px',
-												marginRight: '16px',
-											} }
-											size={ 20 }
-										/>
+										<NoticeOutlineIcon />
 										<div
 											className="loadable-checkbox__icon-warning"
 											data-testid="loadable-checkbox-icon-warning"
@@ -158,26 +154,18 @@ const LinkExpressCheckoutItem = () => {
 								</div>
 							</div>
 							<div className="express-checkout__link">
-								{
-									/* eslint-disable jsx-a11y/anchor-has-content */
-									interpolateComponents( {
-										mixedString: __(
-											'{{linkDocs}}Read more{{/linkDocs}}',
-											'woocommerce-payments'
-										),
-										components: {
-											linkDocs: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													/* eslint-disable-next-line max-len */
-													href="https://woocommerce.com/document/woocommerce-payments/payment-methods/link-by-stripe/"
-												/>
-											),
-										},
-									} )
-									/* eslint-enable jsx-a11y/anchor-has-content */
-								}
+								<Button
+									target="_blank"
+									rel="noreferrer"
+									/* eslint-disable-next-line max-len */
+									href="https://woocommerce.com/document/woopayments/payment-methods/link-by-stripe/"
+									isSecondary
+								>
+									{ __(
+										'Read more',
+										'woocommerce-payments'
+									) }
+								</Button>
 							</div>
 						</div>
 					</div>

@@ -176,7 +176,7 @@ const DepositsSchedule = () => {
 						'Learn more about deposit scheduling.',
 						'woocommerce-payments'
 					) }
-					href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/"
+					href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/"
 					target="_blank"
 					rel="external noreferrer noopener"
 				>
@@ -203,7 +203,7 @@ const DepositsSchedule = () => {
 						'Learn more about deposit scheduling.',
 						'woocommerce-payments'
 					) }
-					href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/"
+					href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/"
 					target="_blank"
 					rel="external noreferrer noopener"
 				>

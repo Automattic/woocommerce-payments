@@ -374,13 +374,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'set_metadata' )
 			->with(
 				[
-					'customer_name'  => 'Jeroen Sormani',
-					'customer_email' => 'admin@example.org',
-					'site_url'       => 'http://example.org',
-					'order_id'       => $order_id,
-					'order_number'   => $order_number,
-					'order_key'      => $order->get_order_key(),
-					'payment_type'   => Payment_Type::SINGLE(),
+					'customer_name'        => 'Jeroen Sormani',
+					'customer_email'       => 'admin@example.org',
+					'site_url'             => 'http://example.org',
+					'order_id'             => $order_id,
+					'order_number'         => $order_number,
+					'order_key'            => $order->get_order_key(),
+					'payment_type'         => Payment_Type::SINGLE(),
+					'gateway_type'         => 'upe',
+					'checkout_type'        => '',
+					'client_version'       => WCPAY_VERSION_NUMBER,
+					'subscription_payment' => 'no',
 				]
 			);
 
@@ -472,13 +476,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'set_metadata' )
 			->with(
 				[
-					'customer_name'  => 'Jeroen Sormani',
-					'customer_email' => 'admin@example.org',
-					'site_url'       => 'http://example.org',
-					'order_id'       => $order_id,
-					'order_number'   => $order_number,
-					'order_key'      => $order->get_order_key(),
-					'payment_type'   => Payment_Type::SINGLE(),
+					'customer_name'        => 'Jeroen Sormani',
+					'customer_email'       => 'admin@example.org',
+					'site_url'             => 'http://example.org',
+					'order_id'             => $order_id,
+					'order_number'         => $order_number,
+					'order_key'            => $order->get_order_key(),
+					'payment_type'         => Payment_Type::SINGLE(),
+					'gateway_type'         => 'upe',
+					'checkout_type'        => '',
+					'client_version'       => WCPAY_VERSION_NUMBER,
+					'subscription_payment' => 'no',
 				]
 			);
 
@@ -566,13 +574,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'set_metadata' )
 			->with(
 				[
-					'customer_name'  => 'Jeroen Sormani',
-					'customer_email' => 'admin@example.org',
-					'site_url'       => 'http://example.org',
-					'order_id'       => $order_id,
-					'order_number'   => $order_number,
-					'order_key'      => $order->get_order_key(),
-					'payment_type'   => Payment_Type::SINGLE(),
+					'customer_name'        => 'Jeroen Sormani',
+					'customer_email'       => 'admin@example.org',
+					'site_url'             => 'http://example.org',
+					'order_id'             => $order_id,
+					'order_number'         => $order_number,
+					'order_key'            => $order->get_order_key(),
+					'payment_type'         => Payment_Type::SINGLE(),
+					'gateway_type'         => 'upe',
+					'checkout_type'        => '',
+					'client_version'       => WCPAY_VERSION_NUMBER,
+					'subscription_payment' => 'no',
 				]
 			);
 
@@ -1543,7 +1555,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title() );
 		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( $mock_sepa_details ) );
 		$this->assertTrue( $sepa_method->is_enabled_at_checkout() );
-		$this->assertTrue( $sepa_method->is_reusable() );
+		$this->assertFalse( $sepa_method->is_reusable() );
 
 		$this->assertEquals( 'ideal', $ideal_method->get_id() );
 		$this->assertEquals( 'iDEAL', $ideal_method->get_title() );
@@ -1590,7 +1602,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
 		$this->assertFalse( $bancontact_method->is_enabled_at_checkout() );
 		$this->assertFalse( $eps_method->is_enabled_at_checkout() );
-		$this->assertTrue( $sepa_method->is_enabled_at_checkout() );
+		$this->assertFalse( $sepa_method->is_enabled_at_checkout() );
 		$this->assertFalse( $p24_method->is_enabled_at_checkout() );
 		$this->assertFalse( $ideal_method->is_enabled_at_checkout() );
 		$this->assertFalse( $becs_method->is_enabled_at_checkout() );

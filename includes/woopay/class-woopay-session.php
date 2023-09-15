@@ -21,6 +21,7 @@ use WC_Customer;
 use WC_Payments;
 use WC_Payments_Customer_Service;
 use WC_Payments_Features;
+use WCPay\MultiCurrency\MultiCurrency;
 use WP_REST_Request;
 
 /**
@@ -53,7 +54,7 @@ class WooPay_Session {
 	 */
 	public static function init() {
 		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
-		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 10, 3 );
+		add_filter( 'woocommerce_session_handler', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 20 );
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
 
@@ -64,31 +65,24 @@ class WooPay_Session {
 	 * This filter is used to add a custom session handler before processing Store API request callbacks.
 	 * This is only necessary because the Store API SessionHandler currently doesn't provide an `init_session_cookie` method.
 	 *
-	 * @param mixed           $response The response object.
-	 * @param mixed           $handler The handler used for the response.
-	 * @param WP_REST_Request $request The request used to generate the response.
+	 * @param string $default_session_handler The default session handler class name.
 	 *
-	 * @return mixed
+	 * @return string The session handler class name.
 	 */
-	public static function add_woopay_store_api_session_handler( $response, $handler, WP_REST_Request $request ) {
-		$cart_token = $request->get_header( 'Cart-Token' );
+	public static function add_woopay_store_api_session_handler( $default_session_handler ) {
+		$cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ?? null ) );
 
 		if (
 			$cart_token &&
+			self::is_request_from_woopay() &&
 			self::is_store_api_request() &&
 			class_exists( JsonWebToken::class ) &&
 			JsonWebToken::validate( $cart_token, '@' . wp_salt() )
 		) {
-			add_filter(
-				'woocommerce_session_handler',
-				function ( $session_handler ) {
-					return SessionHandler::class;
-				},
-				20
-			);
+			return SessionHandler::class;
 		}
 
-		return $response;
+		return $default_session_handler;
 	}
 
 	/**
@@ -338,9 +332,27 @@ class WooPay_Session {
 			$customer_id   = WC_Payments::get_customer_service()->create_customer_for_user( $user, $customer_data );
 		}
 
+		if ( 0 !== $user->ID ) {
+			// Multicurrency selection is stored on user meta when logged in and WC session when logged out.
+			// This code just makes sure that currency selection is available on WC session for WooPay.
+			$currency      = get_user_meta( $user->ID, MultiCurrency::CURRENCY_META_KEY, true );
+			$currency_code = strtoupper( $currency );
+
+			if ( ! empty( $currency_code ) && WC()->session ) {
+				WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, $currency_code );
+			}
+		}
+
 		$account_id = WC_Payments::get_account_service()->get_stripe_account_id();
 
-		$store_logo = WC_Payments::get_gateway()->get_option( 'platform_checkout_store_logo' );
+		$site_logo_id      = get_theme_mod( 'custom_logo' );
+		$site_logo_url     = $site_logo_id ? ( wp_get_attachment_image_src( $site_logo_id, 'full' )[0] ?? '' ) : '';
+		$woopay_store_logo = WC_Payments::get_gateway()->get_option( 'platform_checkout_store_logo' );
+
+		$store_logo = $site_logo_url;
+		if ( ! empty( $woopay_store_logo ) ) {
+			$store_logo = get_rest_url( null, 'wc/v3/payments/file/' . $woopay_store_logo );
+		}
 
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
@@ -361,7 +373,7 @@ class WooPay_Session {
 			'email'                => '',
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
-				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
+				'store_logo'                     => $store_logo,
 				'custom_message'                 => self::get_formatted_custom_message(),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
@@ -493,10 +505,6 @@ class WooPay_Session {
 	 * @return bool True if request is a Store API request, false otherwise.
 	 */
 	private static function is_store_api_request(): bool {
-		if ( ! defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
-			return false;
-		}
-
 		$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		$request_path = rtrim( $url_parts['path'], '/' );
 		$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
@@ -535,6 +543,11 @@ class WooPay_Session {
 	 * @return bool True if WooPay is enabled, false otherwise.
 	 */
 	private static function is_woopay_enabled(): bool {
+		// There were previously instances of this function being called too early. While those should be resolved, adding this defensive check as well.
+		if ( ! class_exists( WC_Payments_Features::class ) || ! class_exists( WC_Payments::class ) || is_null( WC_Payments::get_gateway() ) ) {
+			return false;
+		}
+
 		return WC_Payments_Features::is_woopay_eligible() && 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' );
 	}
 
@@ -602,5 +615,4 @@ class WooPay_Session {
 
 		return str_replace( array_keys( $replacement_map ), array_values( $replacement_map ), $custom_message );
 	}
-
 }

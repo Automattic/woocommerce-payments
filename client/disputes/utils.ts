@@ -10,8 +10,13 @@ import moment from 'moment';
 import type {
 	CachedDispute,
 	Dispute,
+	DisputeStatus,
 	EvidenceDetails,
 } from 'wcpay/types/disputes';
+import {
+	disputeAwaitingResponseStatuses,
+	disputeUnderReviewStatuses,
+} from 'wcpay/disputes/filters/config';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
@@ -48,6 +53,16 @@ export const isDueWithin = ( { dueBy, days }: IsDueWithinProps ): boolean => {
 	const isWithinDays = dueByMoment.diff( now, 'days', true ) <= days;
 	const isPastDue = now.isAfter( dueByMoment );
 	return isWithinDays && ! isPastDue;
+};
+
+export const isAwaitingResponse = (
+	status: DisputeStatus | string
+): boolean => {
+	return disputeAwaitingResponseStatuses.includes( status );
+};
+
+export const isUnderReview = ( status: DisputeStatus | string ): boolean => {
+	return disputeUnderReviewStatuses.includes( status );
 };
 
 export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {

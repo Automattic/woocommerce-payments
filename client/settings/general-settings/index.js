@@ -64,7 +64,7 @@ const GeneralSettings = () => {
 									target="_blank"
 									rel="noreferrer"
 									/* eslint-disable-next-line max-len */
-									href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards"
+									href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards"
 								/>
 							),
 							learnMoreLink: (
@@ -72,7 +72,7 @@ const GeneralSettings = () => {
 								<a
 									target="_blank"
 									rel="noreferrer"
-									href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/"
+									href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/"
 								/>
 							),
 						},

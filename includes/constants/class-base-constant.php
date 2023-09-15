@@ -27,12 +27,19 @@ abstract class Base_Constant implements \JsonSerializable {
 	protected $value;
 
 	/**
-	 * Class constructor.
+	 * Static objects cache.
 	 *
-	 * @param mixed $value Constant from class.
+	 * @var array
+	 */
+	protected static $object_cache = [];
+
+	/**
+	 * Class constructor. Keep it private to only allow initializing from __callStatic()
+	 *
+	 * @param string $value Constant from class.
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct( $value ) {
+	private function __construct( string $value ) {
 		if ( $value instanceof static ) {
 			$value = $value->get_value();
 		} else {
@@ -61,7 +68,7 @@ abstract class Base_Constant implements \JsonSerializable {
 	 * @return bool
 	 */
 	final public function equals( $variable = null ): bool {
-		return $variable instanceof Base_Constant && $this->get_value() === $variable->get_value() && static::class === \get_class( $variable );
+		return $this === $variable;
 	}
 
 	/**
@@ -92,7 +99,10 @@ abstract class Base_Constant implements \JsonSerializable {
 	 * @throws \InvalidArgumentException
 	 */
 	public static function __callStatic( $name, $arguments ) {
-		return new static( $name );
+		if ( ! isset( static::$object_cache[ $name ] ) ) {
+			static::$object_cache[ $name ] = new static( $name );
+		}
+		return static::$object_cache[ $name ];
 	}
 
 	/**

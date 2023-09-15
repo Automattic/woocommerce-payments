@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React from 'react';
-import { info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -15,10 +14,9 @@ const RestoredStateBanner: React.FC = () => {
 	if ( hidden || ! wcpaySettings.onboardingFlowState ) return null;
 	return (
 		<BannerNotice
-			className="restored-state-banner"
+			icon
 			status="info"
-			icon={ info }
-			isDismissible={ true }
+			className="restored-state-banner"
 			onRemove={ () => setHidden( true ) }
 		>
 			{ strings.restoredState }

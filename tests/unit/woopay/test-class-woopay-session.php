@@ -14,6 +14,11 @@ use WCPay\WooPay\WooPay_Scheduler;
  * WooPay_Session unit tests.
  */
 class WooPay_Session_Test extends WCPAY_UnitTestCase {
+	/**
+	 * @var Database_Cache|MockObject
+	 */
+	protected $mock_cache;
+
 	public function set_up() {
 		parent::set_up();
 
