@@ -648,6 +648,25 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * @dataProvider get_raw_conversion_exception_provider
+	 */
+	public function test_get_raw_conversion_throws_exception_on_unavailable_currency( $amount, $to_currency, $from_currency ) {
+		// Arrange/Assert: Set expected exception and message.
+		$this->expectException( InvalidCurrencyException::class );
+		$this->expectExceptionMessage( 'Invalid currency passed to get_raw_conversion: BANANA' );
+
+		// Act: Attempt to get the conversion.
+		$this->multi_currency->get_raw_conversion( $amount, $to_currency, $from_currency );
+	}
+
+	public function get_raw_conversion_exception_provider() {
+		return [
+			'CAD banana' => [ 10.00, 'CAD', 'banana' ],
+			'banana CAD' => [ 10.00, 'banana', 'CAD' ],
+		];
+	}
+
 	public function test_get_cached_currencies_with_no_server_connection() {
 		// Need to create a new instance of MultiCurrency with a different $mock_api_client
 		// Because the mock return value of 'is_server_connected' cannot be overridden.
