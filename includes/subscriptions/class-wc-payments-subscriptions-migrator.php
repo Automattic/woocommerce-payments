@@ -43,6 +43,13 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	private $api_client;
 
 	/**
+	 * WC_Payments_Token_Service instance.
+	 *
+	 * @var WC_Payments_Token_Service
+	 */
+	private $token_service;
+
+	/**
 	 * WC_Payments_Subscription_Migration_Log_Handler instance.
 	 *
 	 * @var WC_Payments_Subscription_Migration_Log_Handler
@@ -73,11 +80,13 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_API_Client|null $api_client WC_Payments_API_Client instance.
+	 * @param WC_Payments_API_Client|null    $api_client    WC_Payments_API_Client instance.
+	 * @param WC_Payments_Token_Service|null $token_service WC_Payments_Token_Service instance.
 	 */
-	public function __construct( $api_client = null ) {
-		$this->api_client = $api_client;
-		$this->logger     = new WC_Payments_Subscription_Migration_Log_Handler();
+	public function __construct( $api_client = null, $token_service = null ) {
+		$this->api_client    = $api_client;
+		$this->token_service = $token_service;
+		$this->logger        = new WC_Payments_Subscription_Migration_Log_Handler();
 
 		// Don't copy migrated subscription meta keys to related orders.
 		add_filter( 'wc_subscriptions_object_data', [ $this, 'exclude_migrated_meta' ], 10, 1 );
@@ -116,25 +125,22 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 			$this->maybe_cancel_wcpay_subscription( $wcpay_subscription );
 
-			/**
-			 * There's a scenario where a WCPay subscription is active but has no pending renewal scheduled action.
-			 * Once migrated, this results in an active subscription that will remain active forever, without processing a renewal order.
-			 *
-			 * To ensure that all migrated subscriptions have a pending scheduled action, we need to reschedule the next payment date by
-			 * updating the date on the subscription.
-			 */
-			if ( $subscription->has_status( 'active' ) && $subscription->get_time( 'next_payment' ) > time() ) {
-				$new_next_payment = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + 1 );
-				$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
+			if ( $subscription->has_status( 'active' ) ) {
+				$this->update_next_payment_date( $subscription, $wcpay_subscription );
+			}
 
-				$this->logger->log( sprintf( '---- Next payment date updated to %1$s to ensure subscription #%2$d has a pending scheduled payment.', $new_next_payment, $subscription_id ) );
+			// If the subscription is active or on-hold, verify the payment method is valid and set correctly that it continues to renew.
+			if ( $subscription->has_status( [ 'active', 'on-hold' ] ) ) {
+				$this->verify_subscription_payment_token( $subscription, $wcpay_subscription );
 			}
 
 			$this->update_wcpay_subscription_meta( $subscription );
 
-			$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() ) {
+				$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
+			}
 
-			$this->logger->log( sprintf( '---- SUCCESS: Subscription #%d migrated.', $subscription_id ) );
+			$this->logger->log( sprintf( '---- Subscription #%d migration complete.', $subscription_id ) );
 		} catch ( \Exception $e ) {
 			$this->logger->log( $e->getMessage() );
 
@@ -282,6 +288,70 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	}
 
 	/**
+	 * Updates the subscription's next payment date in WooCommerce to ensure a smooth transition to on-site billing.
+	 *
+	 * There's a scenario where a WCPay subscription is active but has no pending renewal scheduled action.
+	 * Once migrated, this results in an active subscription that will remain active forever, without processing a renewal order.
+	 *
+	 * To ensure that all migrated subscriptions have a pending scheduled action, we need to reschedule the next payment date by
+	 * updating the date on the subscription.
+	 *
+	 * In priority order the new next payment date will be:
+	 *  - The existing WooCommerce next payment date if it's in the future.
+	 *  - The Stripe subscription's current_period_end if it's in the future.
+	 *  - A newly calculated next payment date using the WC_Subscription::calculate_date() method.
+	 *
+	 * @param WC_Subscription $subscription       The WC Subscription being migrated.
+	 * @param array           $wcpay_subscription The subscription data from Stripe.
+	 */
+	private function update_next_payment_date( $subscription, $wcpay_subscription ) {
+		try {
+			// Just update the existing WC Subscription's next payment date if it's in the future.
+			if ( $subscription->get_time( 'next_payment' ) > time() ) {
+				$new_next_payment = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + 1 );
+
+				$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
+				$this->logger->log( sprintf( '---- Next payment date updated to %1$s to ensure subscription #%2$d has a pending scheduled payment.', $new_next_payment, $subscription->get_id() ) );
+
+				return;
+			}
+
+			// If the subscription was still using WooPayments, use the Stripe subscription's next payment time (current_period_end) if it's in the future.
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && isset( $wcpay_subscription['current_period_end'] ) && absint( $wcpay_subscription['current_period_end'] ) > time() ) {
+				$new_next_payment = gmdate( 'Y-m-d H:i:s', absint( $wcpay_subscription['current_period_end'] ) );
+
+				$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
+				$this->logger->log( sprintf( '---- Next payment date updated to %1$s to match Stripe subscription record and to ensure subscription #%2$d has a pending scheduled payment.', $new_next_payment, $subscription->get_id() ) );
+
+				return;
+			}
+
+			// Lastly calculate the next payment date.
+			$new_next_payment = $subscription->calculate_date( 'next_payment' );
+
+			if ( wcs_date_to_time( $new_next_payment ) > time() ) {
+				$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
+				$this->logger->log( sprintf( '---- Calculated a new next payment date (%1$s) to ensure subscription #%2$d has a pending scheduled payment in the future.', $new_next_payment, $subscription->get_id() ) );
+
+				return;
+			}
+
+			// If we got here the next payment date is in the past, the Stripe subscription is missing a "current_period_end" or it's in the past, and calculating a new date also failed. Log an error.
+			$this->logger->log(
+				sprintf(
+					'---- ERROR: Failed to update subscription #%1$d next payment date. Current next payment date (%2$s) is in the past, Stripe "current_period_end" data is invalid (%3$s) and an attempt to calculate a new date also failed (%4$s).',
+					$subscription->get_id(),
+					gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) ),
+					isset( $wcpay_subscription['current_period_end'] ) ? gmdate( 'Y-m-d H:i:s', absint( $wcpay_subscription['current_period_end'] ) ) : 'no data',
+					$new_next_payment
+				)
+			);
+		} catch ( \Exception $e ) {
+			$this->logger->log( sprintf( '---- ERROR: Failed to update subscription #%1$d next payment date. %2$s', $subscription->get_id(), $e->getMessage() ) );
+		}
+	}
+
+	/**
 	 * Returns the subscription status from the WCPay subscription data for logging purposes.
 	 *
 	 * If a subscription is on-hold in WC we wouldn't have changed the status of the subscription at Stripe, instead, the
@@ -304,6 +374,94 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		}
 
 		return $wcpay_subscription['status'];
+	}
+
+	/**
+	 * Verifies the payment token on the subscription matches the default payment method on the WCPay Subscription.
+	 *
+	 * This function does two things:
+	 * 1. If the subscription doesn't have a WooPayments payment token, set it to the default payment method from Stripe Billing.
+	 * 2. If the subscription has a token, verify the token matches the token on the Stripe Billing subscription
+	 *
+	 * @param WC_Subscription $subscription       The subscription to verify the payment token on.
+	 * @param array           $wcpay_subscription The subscription data from Stripe.
+	 */
+	private function verify_subscription_payment_token( $subscription, $wcpay_subscription ) {
+		// If the subscription's payment method isn't set to WooPayments, we skip this token step.
+		if ( $subscription->get_payment_method() !== WC_Payment_Gateway_WCPay::GATEWAY_ID ) {
+			$this->logger->log( sprintf( '---- Skipped verifying the payment token. Subscription #%1$d has "%2$s" as the payment method.', $subscription->get_id(), $subscription->get_payment_method() ) );
+			return;
+		}
+
+		if ( empty( $wcpay_subscription['default_payment_method'] ) ) {
+			$this->logger->log( sprintf( '---- Could not verify the payment method. Stripe Billing subscription (%1$s) does not have a default payment method.', $wcpay_subscription['id'] ?? 'unknown' ) );
+			return;
+		}
+
+		$tokens   = $subscription->get_payment_tokens();
+		$token_id = end( $tokens );
+		$token    = ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
+
+		// If the token matches the default payment method on the Stripe Billing subscription, we're done here.
+		if ( $token && $token->get_token() === $wcpay_subscription['default_payment_method'] ) {
+			$this->logger->log( sprintf( '---- Payment token on subscription #%1$d matches the payment method on the Stripe Billing subscription (%2$s).', $subscription->get_id(), $wcpay_subscription['id'] ?? 'unknown' ) );
+			return;
+		}
+
+		// At this point we know the subscription doesn't have a token or the token doesn't match, add one using the default payment method on the WCPay Subscription.
+		$new_token = $this->maybe_create_and_update_payment_token( $subscription, $wcpay_subscription );
+
+		if ( $new_token ) {
+			$this->logger->log( sprintf( '---- Payment token on subscription #%1$d has been updated (from %2$s to %3$s) to match the payment method on the Stripe Billing subscription.', $subscription->get_id(), $token ? $token->get_token() : 'missing', $wcpay_subscription['default_payment_method'] ) );
+		}
+	}
+
+	/**
+	 * Locates a payment token or creates one if it doesn't exist, then updates the subscription with the new token.
+	 *
+	 * @param WC_Subscription $subscription       The subscription to add the payment token to.
+	 * @param array           $wcpay_subscription The subscription data from Stripe.
+	 *
+	 * @return WC_Payment_Token|false The new payment token or false if the token couldn't be created.
+	 */
+	private function maybe_create_and_update_payment_token( $subscription, $wcpay_subscription ) {
+		$token           = false;
+		$user            = new WP_User( $subscription->get_user_id() );
+		$customer_tokens = WC_Payment_Tokens::get_tokens(
+			[
+				'user_id'    => $user->ID,
+				'gateway_id' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				'limit'      => WC_Payment_Gateway_WCPay::USER_FORMATTED_TOKENS_LIMIT,
+			]
+		);
+
+		foreach ( $customer_tokens as $customer_token ) {
+			if ( $customer_token->get_token() === $wcpay_subscription['default_payment_method'] ) {
+				$token = $customer_token;
+				break;
+			}
+		}
+
+		// If we didn't find a token linked to the subscription customer, create one.
+		if ( ! $token ) {
+			try {
+				$token = $this->token_service->add_payment_method_to_user( $wcpay_subscription['default_payment_method'], $user );
+				$this->logger->log( sprintf( '---- Created a new payment token (%1$s) for subscription #%2$d.', $token->get_token(), $subscription->get_id() ) );
+			} catch ( \Exception $e ) {
+				$this->logger->log( sprintf( '---- WARNING: Subscription #%1$d is missing a payment token and we failed to create one. Error: %2$s', $subscription->get_id(), $e->getMessage() ) );
+				return;
+			}
+		}
+
+		// Prevent the WC_Payments_Subscriptions class from attempting to update the Stripe Billing subscription's payment method while we set the token.
+		remove_action( 'woocommerce_payment_token_added_to_order', [ WC_Payments_Subscriptions::get_subscription_service(), 'update_wcpay_subscription_payment_method' ], 10 );
+
+		$subscription->add_payment_token( $token );
+
+		// Reattach.
+		add_action( 'woocommerce_payment_token_added_to_order', [ WC_Payments_Subscriptions::get_subscription_service(), 'update_wcpay_subscription_payment_method' ], 10, 3 );
+
+		return $token;
 	}
 
 	/**
