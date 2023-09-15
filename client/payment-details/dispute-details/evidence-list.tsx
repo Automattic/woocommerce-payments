@@ -111,8 +111,8 @@ const IssuerEvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 
 	return (
 		<div className="dispute-evidence">
-			<div className="dispute-evidence__header">
-				{ __( 'Issuer Evidence:', 'woocommercts' ) }
+			<div className="dispute-evidence__title">
+				{ __( 'Issuer evidence', 'woocommerce' ) }
 			</div>
 			<ul className="dispute-evidence__list">
 				{ issuerEvidence.text_evidence && (
