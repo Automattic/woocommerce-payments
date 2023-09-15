@@ -415,9 +415,10 @@ describe( 'PaymentDetailsSummary', () => {
 			);
 
 			// Render the staged evidence message
-			screen.getByText( /You initiated a challenge to this dispute/, {
-				ignore: '.a11y-speak-region',
-			} );
+			screen.getByText(
+				/You initiated a dispute a challenge to this dispute/,
+				{ ignore: '.a11y-speak-region' }
+			);
 		} );
 
 		test( 'correctly renders dispute details for "won" disputes', () => {
