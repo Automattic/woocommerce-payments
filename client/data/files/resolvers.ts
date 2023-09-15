@@ -16,9 +16,9 @@ import { File } from './types';
 import { ApiError } from 'wcpay/types/errors';
 
 /**
- * Retrieve a single dispute from the disputes API.
+ * Retrieve a single file from the files API.
  *
- * @param {string} id Identifier for specified dispute to retrieve.
+ * @param {string} id Identifier for specified file to retrieve.
  */
 export function* getFile( id: string ): Generator< unknown > {
 	try {
