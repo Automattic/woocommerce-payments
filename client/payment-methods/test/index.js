@@ -227,7 +227,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Boost your sales by accepting additional payment methods'
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 		);
 
 		expect( enableWooCommercePaymentText ).toBeInTheDocument();
@@ -342,7 +342,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Boost your sales by accepting additional payment methods'
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 		);
 
 		expect( enableWooCommercePaymentText.parentElement ).not.toHaveClass(
@@ -371,7 +371,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Boost your sales by accepting additional payment methods'
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 		);
 
 		expect( enableWooCommercePaymentText.parentElement ).toHaveClass(
@@ -404,7 +404,7 @@ describe( 'PaymentMethods', () => {
 			);
 
 			const enableWooCommercePaymentText = screen.queryByText(
-				'Boost your sales by accepting additional payment methods'
+				'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 			);
 
 			expect( enableWooCommercePaymentText ).toBeNull();
@@ -444,7 +444,7 @@ describe( 'PaymentMethods', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	test( 'clicking "Enable in your store" in express payments enable UPE and redirects', async () => {
+	test( 'clicking "Enable payment methods" in express payments enable UPE and redirects', async () => {
 		Object.defineProperty( window, 'location', {
 			value: {
 				href: 'example.com/',
@@ -471,7 +471,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableInYourStoreButton = screen.queryByRole( 'button', {
-			name: 'Enable in your store',
+			name: 'Enable payment methods',
 		} );
 
 		expect( enableInYourStoreButton ).toBeInTheDocument();

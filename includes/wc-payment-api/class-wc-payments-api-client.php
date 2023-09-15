@@ -1123,6 +1123,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Updates an invoice.
+	 *
+	 * @param string $invoice_id ID of the invoice to update.
+	 * @param array  $data       Parameters to send to the invoice endpoint. Optional. Default is an empty array.
+	 * @return array
+	 *
+	 * @throws API_Exception Error updating the invoice.
+	 */
+	public function update_invoice( string $invoice_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::INVOICES_API . '/' . $invoice_id,
+			self::POST
+		);
+	}
+
+	/**
 	 * Fetch a WCPay subscription.
 	 *
 	 * @param string $wcpay_subscription_id Data used to create subscription.
