@@ -7,7 +7,8 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
-import classNames from 'classnames';
+import { Button } from '@wordpress/components';
+import { Icon, page } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -23,18 +24,26 @@ interface Props {
 }
 const TextEvidence: React.FC< {
 	evidence: string;
-} > = ( { evidence } ): JSX.Element => (
-	// eslint-disable-next-line jsx-a11y/anchor-is-valid
-	<a
-		href={ URL.createObjectURL(
+} > = ( { evidence } ) => {
+	const download = () => {
+		const link = document.createElement( 'a' );
+		link.href = URL.createObjectURL(
 			new Blob( [ evidence ], { type: 'text/plain' } )
-		) }
-		className="dispute-evidence-link"
-		download="evidence.txt"
-	>
-		{ __( 'Evidence.txt', 'woocommerce-payments' ) }
-	</a>
-);
+		);
+		link.download = 'evidence.txt';
+		link.click();
+	};
+
+	return (
+		<Button
+			variant="secondary"
+			onClick={ download }
+			icon={ <Icon icon={ page } /> }
+		>
+			{ __( 'Evidence.txt', 'woocommerce-payments' ) }
+		</Button>
+	);
+};
 
 const FileEvidence: React.FC< {
 	fileId: string;
@@ -43,8 +52,7 @@ const FileEvidence: React.FC< {
 	const { createNotice } = useDispatch( 'core/notices' );
 	const [ isDownloading, setIsDownloading ] = React.useState( false );
 
-	const onDownload = async ( e: React.MouseEvent< HTMLAnchorElement > ) => {
-		e.preventDefault();
+	const onDownload = async () => {
 		if ( ! file || ! file.id || isDownloading ) {
 			return;
 		}
@@ -75,23 +83,19 @@ const FileEvidence: React.FC< {
 			isLoading={ isLoading }
 			placeholder={ __( 'Loading', 'woocommerce-payments' ) }
 		>
-			{
-				/* eslint-disable jsx-a11y/anchor-is-valid */
-				file && file.id ? (
-					<a
-						href="#"
-						className={ classNames( {
-							'dispute-evidence-link': true,
-							'dispute-evidence-link--downloading': isDownloading,
-						} ) }
-						onClick={ onDownload }
-					>
-						{ file?.title || file.filename }
-					</a>
-				) : (
-					<></>
-				)
-			}
+			{ file && file.id ? (
+				<Button
+					variant="secondary"
+					isBusy={ isDownloading }
+					disabled={ isDownloading }
+					icon={ <Icon icon={ page } /> }
+					onClick={ onDownload }
+				>
+					{ file?.title || file.filename }
+				</Button>
+			) : (
+				<></>
+			) }
 		</Loadable>
 	);
 };

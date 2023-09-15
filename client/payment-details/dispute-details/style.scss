@@ -61,11 +61,4 @@
 		display: inline-block;
 		margin-right: 12px;
 	}
-
-	.dispute-evidence-link {
-		&--downloading {
-			cursor: progress;
-			opacity: 0.5;
-		}
-	}
 }
