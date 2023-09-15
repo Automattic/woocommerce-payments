@@ -856,6 +856,7 @@ class MultiCurrency {
 	 * @return float The converted amount.
 	 *
 	 * @throws InvalidCurrencyException
+	 * @throws InvalidCurrencyRateException
 	 */
 	public function get_raw_conversion( float $amount, string $to_currency, string $from_currency = '' ): float {
 		$enabled_currencies = $this->get_enabled_currencies();
@@ -876,10 +877,18 @@ class MultiCurrency {
 			}
 		}
 
-		// Get the rates and convert the amount.
+		// Get the rates.
 		$to_currency_rate   = $enabled_currencies[ $to_currency ]->get_rate();
 		$from_currency_rate = $enabled_currencies[ $from_currency ]->get_rate();
-		$amount             = $amount * ( $to_currency_rate / $from_currency_rate );
+
+		// Thrown an exception in case from_currency_rate is less than or equal to 0.
+		if ( 0 >= $from_currency_rate ) {
+			$message = 'Invalid rate for from_currency in get_raw_conversion: ' . $from_currency_rate;
+			Logger::error( $message );
+			throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 );
+		}
+
+		$amount = $amount * ( $to_currency_rate / $from_currency_rate );
 
 		return (float) $amount;
 	}

@@ -667,6 +667,30 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_get_raw_conversion_throws_exception_on_invalid_from_rate() {
+		// Arrange: Update a valid currency to be enabled and have a zero conversion rate.
+		$this->mock_enabled_currencies[]        = 'BAM';
+		$this->mock_available_currencies['BAM'] = 0;
+
+		// Arrange: Add the new available currencies to the cache.
+		$this->mock_cached_currencies = [
+			'currencies' => $this->mock_available_currencies,
+			'updated'    => $this->timestamp_for_testing,
+			'expires'    => $this->timestamp_for_testing + DAY_IN_SECONDS,
+		];
+
+		// Arrange: Update the enabled currencies in the db and init MC again.
+		update_option( self::ENABLED_CURRENCIES_OPTION, $this->mock_enabled_currencies );
+		$this->init_multi_currency();
+
+		// Arrange/Assert: Set expected exception and message.
+		$this->expectException( InvalidCurrencyRateException::class );
+		$this->expectExceptionMessage( 'Invalid rate for from_currency in get_raw_conversion: 0' );
+
+		// Act: Attempt to get the conversion.
+		$this->multi_currency->get_raw_conversion( 10, 'CAD', 'BAM' );
+	}
+
 	public function test_get_cached_currencies_with_no_server_connection() {
 		// Need to create a new instance of MultiCurrency with a different $mock_api_client
 		// Because the mock return value of 'is_server_connected' cannot be overridden.
