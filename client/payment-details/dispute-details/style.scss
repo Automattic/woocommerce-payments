@@ -71,3 +71,40 @@
 		}
 	}
 }
+
+.dispute-evidence {
+	// Override WordPress core PanelBody boxy styles. Ours is more inline content.
+	&.components-panel__body {
+		border: none;
+	}
+	// Override WordPress core PanelBody padding so fits snug in our container.
+	&.components-panel__body.is-opened {
+		padding-bottom: 0;
+	}
+	// Override WordPress core PanelBody title to align with other nearby headings.
+	.components-panel__body-title button {
+		// Copy of WooCommerce core list table header style.
+		text-transform: uppercase;
+		color: #757575;
+		font-size: 11px;
+		font-weight: 600;
+	}
+	// Override WordPress core PanelBody button/title – slim padding consistent with surrounding components.
+	.components-panel__body-toggle.components-button {
+		padding: 10px;
+	}
+	// Override WordPress core PanelBody focus/highlighting.
+	.components-panel__body-toggle.components-button:focus {
+		box-shadow: none;
+		outline: 0;
+	}
+	&__list {
+		list-style: none;
+		margin: 8px 0 0;
+	}
+	&__list-item {
+		display: inline-block;
+		margin-right: 12px;
+		margin-bottom: 0;
+	}
+}

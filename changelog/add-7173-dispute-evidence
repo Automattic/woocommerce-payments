@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Adding issuer evidence to dispute details. Hidden behind a feature flag
