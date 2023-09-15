@@ -29,7 +29,7 @@ defaults:
 jobs:    
   process-changelog:
     name: "Process the changelog"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       CHANGELOG_ACTION: ${{ inputs.action-type }}
       RELEASE_VERSION: ${{ inputs.release-version }}
