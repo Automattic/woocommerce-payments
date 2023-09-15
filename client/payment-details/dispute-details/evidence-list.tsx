@@ -17,15 +17,12 @@ import type { IssuerEvidence } from 'wcpay/types/disputes';
 import { useFiles } from 'wcpay/data';
 import Loadable from 'wcpay/components/loadable';
 import { NAMESPACE } from 'wcpay/data/constants';
-import { FileContent } from 'wcpay/data/files/types';
+import { FileDownload } from 'wcpay/data/files/types';
 
-interface Props {
-	issuerEvidence: IssuerEvidence | null;
-}
 const TextEvidence: React.FC< {
 	evidence: string;
 } > = ( { evidence } ) => {
-	const download = () => {
+	const onClick = () => {
 		const link = document.createElement( 'a' );
 		link.href = URL.createObjectURL(
 			new Blob( [ evidence ], { type: 'text/plain' } )
@@ -37,10 +34,13 @@ const TextEvidence: React.FC< {
 	return (
 		<Button
 			variant="secondary"
-			onClick={ download }
+			onClick={ onClick }
 			icon={ <Icon icon={ page } /> }
 		>
-			{ __( 'Evidence.txt', 'woocommerce-payments' ) }
+			{
+				/* translators: Default filename for issuer evidence on a dispute */
+				__( 'Evidence.txt', 'woocommerce-payments' )
+			}
 		</Button>
 	);
 };
@@ -52,13 +52,13 @@ const FileEvidence: React.FC< {
 	const { createNotice } = useDispatch( 'core/notices' );
 	const [ isDownloading, setIsDownloading ] = React.useState( false );
 
-	const onDownload = async () => {
+	const onClick = async () => {
 		if ( ! file || ! file.id || isDownloading ) {
 			return;
 		}
 		try {
 			setIsDownloading( true );
-			const downloadRequest = await apiFetch< FileContent >( {
+			const downloadRequest = await apiFetch< FileDownload >( {
 				path: `${ NAMESPACE }/file/${ encodeURI( file.id ) }/content`,
 				method: 'GET',
 			} );
@@ -89,7 +89,7 @@ const FileEvidence: React.FC< {
 					isBusy={ isDownloading }
 					disabled={ isDownloading }
 					icon={ <Icon icon={ page } /> }
-					onClick={ onDownload }
+					onClick={ onClick }
 				>
 					{ file?.title || file.filename }
 				</Button>
@@ -99,6 +99,10 @@ const FileEvidence: React.FC< {
 		</Loadable>
 	);
 };
+
+interface Props {
+	issuerEvidence: IssuerEvidence | null;
+}
 
 const IssuerEvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 	if (

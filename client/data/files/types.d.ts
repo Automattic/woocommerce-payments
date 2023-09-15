@@ -12,7 +12,7 @@ export interface File {
 	 */
 	id: string;
 	/**
-	 * 'dispute_evidence' is expected here, as this is the only type of file upload used by the API at this time.
+	 * The purpose for file. eg 'dispute_evidence'.
 	 */
 	purpose: string;
 	/**
@@ -33,7 +33,7 @@ export interface File {
 	title: string | null;
 }
 
-export interface FileContent {
+export interface FileDownload {
 	/**
 	 * The file mime-type.
 	 */
