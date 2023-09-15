@@ -86,6 +86,7 @@ const getBaseCharge = (): ChargeWithDisputeRequired =>
 				customer_name: 'Test customer',
 				shipping_address: '123 test address',
 			},
+			issuer_evidence: null,
 			evidence_details: {
 				due_by: 1694303999,
 				has_evidence: false,

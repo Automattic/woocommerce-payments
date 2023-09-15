@@ -279,11 +279,16 @@ const SingleCurrencySettings = () => {
 															exchangeRateType ===
 															'manual'
 														}
-														onChange={ () =>
+														onChange={ () => {
 															setExchangeRateType(
 																'manual'
-															)
-														}
+															);
+															setManualRate(
+																manualRate
+																	? manualRate
+																	: targetCurrency.rate
+															);
+														} }
 													/>
 													<h4>
 														{ __(
