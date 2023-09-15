@@ -50,12 +50,7 @@
 }
 
 .dispute-evidence {
-	// Override WordPress core PanelBody boxy styles. Ours is more inline content.
-	&.components-panel__body {
-		border: none;
-	}
-	// Override WordPress core PanelBody title to align with other nearby headings.
-	.components-panel__body-title button {
+	&__title {
 		// Copy of WooCommerce core list table header style.
 		text-transform: uppercase;
 		color: #757575;
@@ -73,7 +68,7 @@
 	}
 	&__list {
 		list-style: none;
-		margin: 8px 0;
+		margin: 4px 0 8px;
 	}
 	&__list-item {
 		display: inline-block;
