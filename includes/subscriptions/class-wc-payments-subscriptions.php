@@ -63,8 +63,9 @@ class WC_Payments_Subscriptions {
 	 * @param WC_Payments_Customer_Service $customer_service WCPay Customer Service.
 	 * @param WC_Payments_Order_Service    $order_service    WCPay Order Service.
 	 * @param WC_Payments_Account          $account          WC_Payments_Account.
+	 * @param WC_Payments_Token_Service    $token_service    WC_Payments_Token_Service.
 	 */
-	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service, WC_Payments_Account $account ) {
+	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service, WC_Payments_Account $account, WC_Payments_Token_Service $token_service ) {
 		// Store dependencies.
 		self::$order_service = $order_service;
 
@@ -93,10 +94,8 @@ class WC_Payments_Subscriptions {
 
 		if ( class_exists( 'WCS_Background_Repairer' ) ) {
 			include_once __DIR__ . '/class-wc-payments-subscriptions-migrator.php';
-			self::$stripe_billing_migrator = new WC_Payments_Subscriptions_Migrator( $api_client );
+			self::$stripe_billing_migrator = new WC_Payments_Subscriptions_Migrator( $api_client, $token_service );
 		}
-
-		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_disable_wcpay_subscriptions_on_update' ] );
 	}
 
 	/**
@@ -157,16 +156,5 @@ class WC_Payments_Subscriptions {
 		}
 
 		return class_exists( 'WCS_Staging' ) && WCS_Staging::is_duplicate_site();
-	}
-
-	/**
-	 * Disable the WCPay Subscriptions feature on WooPayments plugin update if it's enabled and the store is no longer eligible.
-	 *
-	 * @see WC_Payments_Features::is_wcpay_subscriptions_eligible() for eligibility criteria.
-	 */
-	public static function maybe_disable_wcpay_subscriptions_on_update() {
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) {
-			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
-		}
 	}
 }

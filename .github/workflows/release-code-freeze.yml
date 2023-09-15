@@ -19,7 +19,7 @@ defaults:
 jobs:
   check-code-freeze:
     name: "Check that today is the day of the code freeze"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       freeze: ${{ steps.check-freeze.outputs.FREEZE }}
       nextReleaseVersion: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
@@ -81,7 +81,7 @@ jobs:
     name: "Send notification to Slack"
     needs: [check-code-freeze, create-release-pr]
     if: ${{ ! ( inputs.skipSlackPing && needs.create-release-pr.outputs.release-pr-id ) }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.nextReleaseDate }}

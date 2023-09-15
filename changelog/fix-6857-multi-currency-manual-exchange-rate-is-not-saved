@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix single currency manual rate save producing error when no changes are made
