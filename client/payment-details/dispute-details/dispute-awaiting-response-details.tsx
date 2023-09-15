@@ -19,11 +19,11 @@ import DisputeSummaryRow from './dispute-summary-row';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
-interface DisputeDetailsProps {
+interface Props {
 	dispute: Dispute;
 }
 
-const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
+const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 	const now = moment();
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
@@ -63,4 +63,4 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 	);
 };
 
-export default DisputeDetails;
+export default DisputeAwaitingResponseDetails;
