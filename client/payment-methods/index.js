@@ -8,7 +8,6 @@ import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
-	CardDivider,
 	CardHeader,
 	DropdownMenu,
 	ExternalLink,
@@ -49,6 +48,8 @@ import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import CapabilityRequestNotice from './capability-request';
+import InlineNotice from 'wcpay/components/inline-notice';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -83,7 +84,6 @@ const UpeSetupBanner = () => {
 
 	return (
 		<>
-			<CardDivider />
 			<CardBody
 				className={ classNames( 'payment-methods__express-checkouts', {
 					'background-local-payment-methods': ! wcpaySettings.isBnplAffirmAfterpayEnabled,
@@ -91,14 +91,14 @@ const UpeSetupBanner = () => {
 			>
 				<h3>
 					{ __(
-						'Boost your sales by accepting additional payment methods',
+						'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023',
 						'woocommerce-payments'
 					) }
 				</h3>
 				<p>
 					{ __(
 						/* eslint-disable-next-line max-len */
-						'Get access to additional payment methods and an improved checkout experience.',
+						'This will improve the checkout experience and boost sales with access to additional payment methods, which you’ll be able to manage from here in settings.',
 						'woocommerce-payments'
 					) }
 				</p>
@@ -107,7 +107,7 @@ const UpeSetupBanner = () => {
 					<span className="payment-methods__express-checkouts-get-started">
 						<Button isSecondary onClick={ handleEnableUpeClick }>
 							{ __(
-								'Enable in your store',
+								'Enable payment methods',
 								'woocommerce-payments'
 							) }
 						</Button>
@@ -279,6 +279,30 @@ const PaymentMethods = () => {
 					</CardHeader>
 				) }
 
+				{ isUpeEnabled && upeType === 'legacy' && (
+					<CardHeader className="payment-methods__header">
+						<InlineNotice
+							icon
+							status="warning"
+							isDismissible={ false }
+						>
+							{ interpolateComponents( {
+								mixedString: __(
+									'The new WooPayments checkout experience will become the default on October 11, 2023.' +
+										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+									'woocommerce-payments'
+								),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line max-len
+										<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#popular-payment-methods" />
+									),
+								},
+							} ) }
+						</InlineNotice>
+					</CardHeader>
+				) }
+
 				<CardBody size={ null }>
 					<CapabilityRequestNotice />
 
@@ -344,10 +368,21 @@ const PaymentMethods = () => {
 						) }
 					</PaymentMethodsList>
 				</CardBody>
-				{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
-					<UpeSetupBanner />
-				) }
 			</Card>
+
+			{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
+				<>
+					<br />
+					<Card
+						className={ classNames( 'payment-methods', {
+							'is-loading': status === 'pending',
+						} ) }
+					>
+						<UpeSetupBanner />
+					</Card>
+				</>
+			) }
+
 			{ activationModalParams && (
 				<ConfirmPaymentMethodActivationModal
 					onClose={ () => {
