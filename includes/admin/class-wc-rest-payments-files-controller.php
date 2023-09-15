@@ -137,6 +137,26 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 
 	}
 
+	/**
+	 * Retrieve file details via the API.
+	 *
+	 * Example response:
+	 * {
+	 *     "id": "file_1Np1S5J5cIRIG92xknlr0iND",
+	 *     "object": "file",
+	 *     "created": 1694405421,
+	 *     "expires_at": 1717733421,
+	 *     "filename": "Screenshot 2023-09-04 at 5.08.31\u202fPM.png",
+	 *     "purpose": "dispute_evidence",
+	 *     "size": 21444,
+	 *     "title": null,
+	 *     "type": "png",
+	 * }
+	 *
+	 * @param WP_REST_Request $request
+	 *
+	 * @return mixed|WP_Error
+	 */
 	public function get_file_detail( WP_REST_Request $request ) {
 		$file_id    = $request->get_param( 'file_id' );
 		$as_account = (bool) $request->get_param( 'as_account' );
@@ -144,6 +164,20 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 		return $this->forward_request( 'get_file', [ $file_id, $as_account ] );
 	}
 
+	/**
+	 * Retrieve file contents via the API as a base64 encoded string.
+	 *
+	 * Example response:
+	 * {
+	 *     "content_type": "image\/png",
+	 *     "file_content": "iVBORw.......",
+	 * }
+	 *
+	 *
+	 * @param WP_REST_Request $request
+	 *
+	 * @return mixed|WP_Error
+	 */
 	public function get_file_content( WP_REST_Request $request ) {
 		$file_id    = $request->get_param( 'file_id' );
 		$as_account = (bool) $request->get_param( 'as_account' );
