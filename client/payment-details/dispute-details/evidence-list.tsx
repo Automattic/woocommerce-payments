@@ -7,6 +7,7 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -40,13 +41,15 @@ const FileEvidence: React.FC< {
 } > = ( { fileId } ) => {
 	const { file, isLoading } = useFiles( fileId );
 	const { createNotice } = useDispatch( 'core/notices' );
+	const [ isDownloading, setIsDownloading ] = React.useState( false );
 
 	const onDownload = async ( e: React.MouseEvent< HTMLAnchorElement > ) => {
 		e.preventDefault();
-		if ( ! file || ! file.id ) {
+		if ( ! file || ! file.id || isDownloading ) {
 			return;
 		}
 		try {
+			setIsDownloading( true );
 			const downloadRequest = await apiFetch< FileContent >( {
 				path: `${ NAMESPACE }/file/${ encodeURI( file.id ) }/content`,
 				method: 'GET',
@@ -64,6 +67,7 @@ const FileEvidence: React.FC< {
 				__( 'Error downloading file', 'woocommerce-payments' )
 			);
 		}
+		setIsDownloading( false );
 	};
 
 	return (
@@ -76,7 +80,10 @@ const FileEvidence: React.FC< {
 				file && file.id ? (
 					<a
 						href="#"
-						className="dispute-evidence-link"
+						className={ classNames( {
+							'dispute-evidence-link': true,
+							'dispute-evidence-link--downloading': isDownloading,
+						} ) }
 						onClick={ onDownload }
 					>
 						{ file?.title || file.filename }
@@ -95,22 +102,31 @@ const EvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 		! issuerEvidence.file_evidence.length ||
 		! issuerEvidence.text_evidence
 	) {
-		return (
-			<span>
-				{ __( 'No evidence available', 'woocommerce-payments' ) }
-			</span>
-		);
+		return <></>;
 	}
 
 	return (
-		<>
-			{ issuerEvidence.text_evidence && (
-				<TextEvidence evidence={ issuerEvidence.text_evidence } />
-			) }
-			{ issuerEvidence.file_evidence.map( ( fileId: string, i: any ) => (
-				<FileEvidence key={ i } fileId={ fileId } />
-			) ) }
-		</>
+		<div className="dispute-evidence">
+			<div className="dispute-evidence__header">
+				{ __( 'Issuer Evidence:', 'woocommercts' ) }
+			</div>
+			<ul className="dispute-evidence__list">
+				{ issuerEvidence.text_evidence && (
+					<li className="dispute-evidence__list-item">
+						<TextEvidence
+							evidence={ issuerEvidence.text_evidence }
+						/>
+					</li>
+				) }
+				{ issuerEvidence.file_evidence.map(
+					( fileId: string, i: any ) => (
+						<li className="dispute-evidence__list-item" key={ i }>
+							<FileEvidence fileId={ fileId } />
+						</li>
+					)
+				) }
+			</ul>
+		</div>
 	);
 };
 

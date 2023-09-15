@@ -49,6 +49,23 @@
 	}
 }
 
-.dispute-evidence-link {
-	margin-right: .5em;
+.dispute-evidence {
+	&__header {
+		font-weight: 600;
+	}
+	&__list {
+		list-style: none;
+		margin: 0 0 8px;
+	}
+	&__list-item {
+		display: inline-block;
+		margin-right: 12px;
+	}
+
+	.dispute-evidence-link {
+		&--downloading {
+			cursor: progress;
+			opacity: 0.5;
+		}
+	}
 }
