@@ -153,7 +153,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 	 *     "type": "png",
 	 * }
 	 *
-	 * @param WP_REST_Request $request
+	 * @param WP_REST_Request $request Full data about the request.
 	 *
 	 * @return mixed|WP_Error
 	 */
@@ -173,8 +173,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 	 *     "file_content": "iVBORw.......",
 	 * }
 	 *
-	 *
-	 * @param WP_REST_Request $request
+	 * @param WP_REST_Request $request Full data about the request.
 	 *
 	 * @return mixed|WP_Error
 	 */

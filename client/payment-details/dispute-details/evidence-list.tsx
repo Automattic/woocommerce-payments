@@ -35,6 +35,7 @@ const TextEvidence: React.FC< {
 		<Button
 			variant="secondary"
 			onClick={ onClick }
+			isSmall={ true }
 			icon={ <Icon icon={ page } /> }
 		>
 			{
@@ -88,6 +89,7 @@ const FileEvidence: React.FC< {
 					variant="secondary"
 					isBusy={ isDownloading }
 					disabled={ isDownloading }
+					isSmall={ true }
 					icon={ <Icon icon={ page } /> }
 					onClick={ onClick }
 				>
