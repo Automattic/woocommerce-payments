@@ -7,7 +7,7 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
-import { Button } from '@wordpress/components';
+import { Button, PanelBody } from '@wordpress/components';
 import { Icon, page } from '@wordpress/icons';
 
 /**
@@ -114,10 +114,11 @@ const IssuerEvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 	}
 
 	return (
-		<div className="dispute-evidence">
-			<div className="dispute-evidence__title">
-				{ __( 'Issuer evidence', 'woocommerce' ) }
-			</div>
+		<PanelBody
+			className="dispute-evidence"
+			title={ __( 'Issuer evidence', 'woocommerce' ) }
+			initialOpen={ false }
+		>
 			<ul className="dispute-evidence__list">
 				{ issuerEvidence.text_evidence && (
 					<li className="dispute-evidence__list-item">
@@ -134,7 +135,7 @@ const IssuerEvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 					)
 				) }
 			</ul>
-		</div>
+		</PanelBody>
 	);
 };
 
