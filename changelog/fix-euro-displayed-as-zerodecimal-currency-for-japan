@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Ignore updating currency precision if the country is Japan

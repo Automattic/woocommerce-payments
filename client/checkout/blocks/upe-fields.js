@@ -41,10 +41,7 @@ const WCPayUPEFields = ( {
 	activePaymentMethod,
 	billing: { billingData },
 	shippingData,
-	eventRegistration: {
-		onPaymentProcessing,
-		onCheckoutAfterProcessingWithSuccess,
-	},
+	eventRegistration: { onPaymentProcessing, onCheckoutSuccess },
 	emitResponse,
 	paymentIntentId,
 	paymentIntentSecret,
@@ -206,7 +203,7 @@ const WCPayUPEFields = ( {
 	// Once the server has completed payment processing, confirm the intent if necessary.
 	useEffect(
 		() =>
-			onCheckoutAfterProcessingWithSuccess(
+			onCheckoutSuccess(
 				( { orderId, processingResponse: { paymentDetails } } ) => {
 					async function updateIntent() {
 						if ( api.handleDuplicatePayments( paymentDetails ) ) {

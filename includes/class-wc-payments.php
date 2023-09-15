@@ -336,6 +336,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/trait-use-test-mode-only-when-dev-mode.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
+		include_once __DIR__ . '/core/server/request/class-get-payment-process-factors.php';
 		include_once __DIR__ . '/core/server/request/class-create-intention.php';
 		include_once __DIR__ . '/core/server/request/class-update-intention.php';
 		include_once __DIR__ . '/core/server/request/class-capture-intention.php';
@@ -623,20 +624,14 @@ class WC_Payments {
 			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 		}
 
-		// Load WCPay Subscriptions.
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		// Load Stripe Billing subscription integration.
+		if ( self::should_load_stripe_billing_integration() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
+			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
-		}
-
-		// Load the WCPay Subscriptions migration class.
-		if ( WC_Payments_Features::is_subscription_migration_enabled() ) {
-			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-migrator.php';
-			new WC_Payments_Subscriptions_Migrator( self::$api_client );
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -1710,5 +1705,40 @@ class WC_Payments {
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Determines whether we should load Stripe Billing integration classes.
+	 *
+	 * Return true when:
+	 *  - the WCPay Subscriptions feature is enabled & the Woo Subscriptions plugin isn't active, or
+	 *  - Woo Subscriptions plugin is active and Stripe Billing is enabled or there are Stripe Billing Subscriptions.
+	 *
+	 * @see WC_Payments_Features::should_use_stripe_billing()
+	 *
+	 * @return bool
+	 */
+	private static function should_load_stripe_billing_integration() {
+		if ( WC_Payments_Features::should_use_stripe_billing() ) {
+			return true;
+		}
+
+		// If there are any Stripe Billing Subscriptions, we should load the Stripe Billing integration classes. eg while a migration is in progress, or to support legacy subscriptions.
+		return function_exists( 'wcs_get_orders_with_meta_query' ) && (bool) count(
+			wcs_get_orders_with_meta_query(
+				[
+					'status'     => 'any',
+					'return'     => 'ids',
+					'type'       => 'shop_subscription',
+					'limit'      => 1, // We only need to know if there are any - at least 1.
+					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => '_wcpay_subscription_id',
+							'compare' => 'EXISTS',
+						],
+					],
+				]
+			)
+		);
 	}
 }

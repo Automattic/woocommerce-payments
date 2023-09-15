@@ -11,7 +11,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import { useCurrencies, useEnabledCurrencies } from '../../data';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
-import InlineNotice from '../inline-notice';
+import InlineNotice from 'components/inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
 
 const ListToCommaSeparatedSentencePartConverter = ( items ) => {
@@ -90,7 +90,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 
 	if ( missingCurrencyLabels.length > 0 ) {
 		return (
-			<InlineNotice status="info" isDismissible={ false }>
+			<InlineNotice icon status="info" isDismissible={ false }>
 				{ interpolateComponents( {
 					mixedString: sprintf(
 						__(

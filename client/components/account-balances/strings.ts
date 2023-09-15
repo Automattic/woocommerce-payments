@@ -26,7 +26,7 @@ export const fundLabelStrings = {
 
 export const documentationUrls = {
 	depositSchedule:
-		'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule',
+		'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/',
 	negativeBalance:
-		'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance',
+		'https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/',
 };

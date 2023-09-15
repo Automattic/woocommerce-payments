@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent fetching disputes on WooCommerce home task when store is not connected to a WooPayments account.
