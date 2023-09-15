@@ -3,13 +3,12 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
 import moment from 'moment';
 import React, { useContext } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
-import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
@@ -39,14 +38,8 @@ import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
 import DisputeDetails from '../dispute-details';
-import DisputeResolvedMessage from '../dispute-details/dispute-resolved-message';
-import {
-	getDisputeFee,
-	isAwaitingResponse,
-	isInquiry,
-} from 'wcpay/disputes/utils';
-import { getAdminUrl } from 'wcpay/utils';
-import { Dispute } from 'wcpay/types/disputes';
+import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 declare const window: any;
 
@@ -150,174 +143,6 @@ const composePaymentSummaryItems = ( {
 		},
 	].filter( isValueTruthy );
 
-const composeResolvedDisputeMessage = (
-	dispute: Dispute
-): {
-	message: React.ReactNode;
-	buttonLabel?: string;
-	onButtonClick?: () => void;
-} | null => {
-	const isSubmitted = !! dispute?.metadata.__evidence_submitted_at;
-	const isAccepted = dispute?.metadata.__closed_by_merchant === '1';
-	const disputeFee = dispute && getDisputeFee( dispute );
-	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
-		? dateI18n(
-				'M j, Y',
-				moment
-					.unix(
-						parseInt( dispute.metadata.__dispute_closed_at, 10 )
-					)
-					.toISOString()
-		  )
-		: '-';
-	const submissionDateFormatted = dispute?.metadata.__evidence_submitted_at
-		? dateI18n(
-				'M j, Y',
-				moment
-					.unix(
-						parseInt(
-							dispute?.metadata.__evidence_submitted_at,
-							10
-						)
-					)
-					.toISOString()
-		  )
-		: '-';
-	const disputeFeeFormatted = disputeFee
-		? formatExplicitCurrency( disputeFee.fee, disputeFee.currency )
-		: '-';
-	const disputeDocsLinkElement = (
-		// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-		<a
-			target="_blank"
-			rel="noopener noreferrer"
-			href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-		/>
-	);
-
-	const handleClick = () => {
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.DISPUTE_RESOLVED_MESSAGE_VIEW_BUTTON_CLICK,
-			{
-				dispute_status: dispute?.status,
-				dispute_submitted: isSubmitted,
-				dispute_accepted: isAccepted,
-			}
-		);
-		if ( isSubmitted ) {
-			const challengeUrl = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/disputes/challenge',
-				id: dispute?.id,
-			} );
-			getHistory().push( challengeUrl );
-		}
-	};
-
-	if ( dispute.status === 'won' ) {
-		return {
-			buttonLabel: __( 'View dispute details', 'woocommerce-payments' ),
-			onButtonClick: handleClick,
-			message: createInterpolateElement(
-				sprintf(
-					/* Translators: %s - formatted date, <a> - link to documentation page */
-					__(
-						'Good news! You won this dispute on %s. The disputed amount and the dispute fee have been credited back to your account. <a>Learn more about preventing disputes</a>.',
-						'woocommerce-payments'
-					),
-					closedDateFormatted
-				),
-				{ a: disputeDocsLinkElement }
-			),
-		};
-	}
-
-	if ( dispute.status === 'under_review' ) {
-		return {
-			buttonLabel: __(
-				'View submitted evidence',
-				'woocommerce-payments'
-			),
-			onButtonClick: handleClick,
-			message: createInterpolateElement(
-				sprintf(
-					isInquiry( dispute )
-						? /* Translators: %s - formatted date, <a> - link to documentation page */
-						  __(
-								'You submitted evidence for this inquiry on %s. The cardholder’s bank is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
-								'woocommerce-payments'
-						  )
-						: /* Translators: %s - formatted date, <a> - link to documentation page */
-						  __(
-								'You submitted evidence for this dispute on %s. The cardholder’s bank is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
-								'woocommerce-payments'
-						  ),
-					submissionDateFormatted
-				),
-				{ a: disputeDocsLinkElement }
-			),
-		};
-	}
-
-	if ( dispute.status === 'lost' ) {
-		if ( isAccepted ) {
-			return {
-				message: createInterpolateElement(
-					sprintf(
-						/* Translators: %1$s - formatted date, %2$s – the formatted dispute fee amount, <a> - link to documentation page */
-						__(
-							'This dispute was accepted and lost on %1$s. The %2$s fee has been deducted from your account, and the disputed amount returned to the cardholder. <a>Learn more about preventing disputes</a>.',
-							'woocommerce-payments'
-						),
-						closedDateFormatted,
-						disputeFeeFormatted
-					),
-					{ a: disputeDocsLinkElement }
-				),
-			};
-		}
-
-		if ( isSubmitted ) {
-			return {
-				buttonLabel: __(
-					'View dispute details',
-					'woocommerce-payments'
-				),
-				onButtonClick: handleClick,
-				message: createInterpolateElement(
-					sprintf(
-						/* Translators: %1$s - formatted date, %2$s – the formatted dispute fee amount, <a> - link to documentation page */
-						__(
-							'This dispute was lost on %1$s. The %2$s fee has been deducted from your account, and the disputed amount returned to the cardholder. <a>Learn more about preventing disputes</a>.',
-							'woocommerce-payments'
-						),
-						closedDateFormatted,
-						disputeFeeFormatted
-					),
-					{ a: disputeDocsLinkElement }
-				),
-			};
-		}
-
-		return {
-			message: createInterpolateElement(
-				sprintf(
-					/* Translators: %1$s - formatted date, %2$s – the formatted dispute fee amount, <a> - link to documentation page */
-					__(
-						'This dispute was lost on %1$s due to non-response. The %2$s fee has been deducted from your account, and the disputed amount returned to the cardholder. <a>Learn more about preventing disputes</a>.',
-						'woocommerce-payments'
-					),
-					closedDateFormatted,
-					disputeFeeFormatted
-				),
-				{ a: disputeDocsLinkElement }
-			),
-		};
-	}
-
-	return null;
-};
-
 const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge = {} as Charge,
 	metadata = {},
@@ -367,9 +192,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			dd: __( '%d days', 'woocommerce-payments' ),
 		},
 	} );
-
-	const resolvedDisputeMessage =
-		charge.dispute && composeResolvedDisputeMessage( charge.dispute );
 
 	return (
 		<Card>
@@ -561,17 +383,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					{ isAwaitingResponse( charge.dispute.status ) ? (
 						<DisputeDetails dispute={ charge.dispute } />
 					) : (
-						resolvedDisputeMessage && (
-							<DisputeResolvedMessage
-								message={ resolvedDisputeMessage.message }
-								buttonLabel={
-									resolvedDisputeMessage.buttonLabel
-								}
-								onButtonClick={
-									resolvedDisputeMessage.onButtonClick
-								}
-							/>
-						)
+						<DisputeResolutionFooter dispute={ charge.dispute } />
 					) }
 				</>
 			) }

@@ -77,6 +77,8 @@ const events = {
 	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:
 		'wcpay_overview_deposits_change_schedule_click',
 	OVERVIEW_TASK_CLICK: 'wcpay_overview_task_click',
+	PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK:
+		'wcpay_payment_details_view_dispute_evidence_button_click',
 	SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK:
 		'wcpay_settings_deposits_manage_in_stripe_click',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
@@ -95,8 +97,6 @@ const events = {
 		'wcpay_subscriptions_account_not_connected_product_modal_finish_setup',
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
-	DISPUTE_RESOLVED_MESSAGE_VIEW_BUTTON_CLICK:
-		'wcpay_dispute_resolved_message_view_button_click',
 	TRANSACTIONS_DOWNLOAD_CSV_CLICK: 'wcpay_transactions_download_csv_click',
 	WOOPAY_OFFERED: 'woopay_offered',
 	WOOPAY_OTP_START: 'woopay_otp_prompt_start',
