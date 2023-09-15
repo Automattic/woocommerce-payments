@@ -96,7 +96,7 @@ const FileEvidence: React.FC< {
 	);
 };
 
-const EvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
+const IssuerEvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 	if (
 		! issuerEvidence ||
 		! issuerEvidence.file_evidence.length ||
@@ -130,4 +130,4 @@ const EvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 	);
 };
 
-export default EvidenceList;
+export default IssuerEvidenceList;

@@ -15,7 +15,7 @@ import { edit } from '@wordpress/icons';
 import type { Dispute } from 'wcpay/types/disputes';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import DisputeNotice from './dispute-notice';
-import EvidenceList from './evidence-list';
+import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
@@ -56,7 +56,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 									dispute={ dispute }
 									daysRemaining={ countdownDays }
 								/>
-								<EvidenceList
+								<IssuerEvidenceList
 									issuerEvidence={ dispute.issuer_evidence }
 								/>
 							</>
