@@ -296,6 +296,8 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		$this->set_dispute_id_for_order( $order, $dispute_id );
+
 		$note = $this->generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
@@ -319,6 +321,8 @@ class WC_Payments_Order_Service {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
+
+		$this->set_dispute_id_for_order( $order, $dispute_id );
 
 		$note = $this->generate_dispute_closed_note( $dispute_id, $status );
 
