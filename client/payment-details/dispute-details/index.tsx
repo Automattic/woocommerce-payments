@@ -12,7 +12,7 @@ import { edit } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import type { Dispute } from 'wcpay/types/disputes';
+import type {Dispute, IssuerEvidence} from 'wcpay/types/disputes';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import DisputeNotice from './dispute-notice';
 import IssuerEvidenceList from './evidence-list';
