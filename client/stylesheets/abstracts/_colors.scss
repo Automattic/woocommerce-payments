@@ -66,3 +66,12 @@ $wp-green-70: #005c12;
 $wp-green-80: #00450c;
 $wp-green-90: #003008;
 $wp-green-100: #001c05;
+
+// Missing from dependencies
+$gutenberg-blue: #007cba;
+
+// Accent color
+$components-color-accent: var(
+	--wp-components-color-accent,
+	var( --wp-admin-theme-color, $gutenberg-blue )
+);

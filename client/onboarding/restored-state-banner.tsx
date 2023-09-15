@@ -7,21 +7,20 @@ import React from 'react';
  * Internal dependencies
  */
 import strings from './strings';
-import InlineNotice from 'components/inline-notice';
+import BannerNotice from 'components/banner-notice';
 
 const RestoredStateBanner: React.FC = () => {
 	const [ hidden, setHidden ] = React.useState( false );
 	if ( hidden || ! wcpaySettings.onboardingFlowState ) return null;
 	return (
-		<InlineNotice
-			className="restored-state-banner"
-			status="info"
+		<BannerNotice
 			icon
-			isDismissible={ true }
+			status="info"
+			className="restored-state-banner"
 			onRemove={ () => setHidden( true ) }
 		>
 			{ strings.restoredState }
-		</InlineNotice>
+		</BannerNotice>
 	);
 };
 

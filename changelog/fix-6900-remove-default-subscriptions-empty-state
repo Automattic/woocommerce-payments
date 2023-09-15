@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: This PR is the result of splitting what was WooPayments functionality between WooPayments and subscriptions core. The net change to WooPayments is 0.
-
-

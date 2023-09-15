@@ -23,14 +23,14 @@ env:
   E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_USE_LOCAL_SERVER:  false
   E2E_RESULT_FILEPATH:   'tests/e2e/results.json'
-  WC_MIN_SUPPORTED_VERSION: '7.8.0'
+  WC_MIN_SUPPORTED_VERSION: '7.7.0'
   NODE_ENV: 'test'
   FORCE_E2E_DEPS_SETUP: true
 
 jobs:
   generate-matrix:
     name: "Generate the matrix for subscriptions-tests dynamically"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -42,7 +42,7 @@ jobs:
 
   # Run WCPay & subscriptions tests against specific WC versions
   wcpay-subscriptions-tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: generate-matrix
     strategy:
       fail-fast:     false
@@ -70,7 +70,7 @@ jobs:
   # Run tests against WC Checkout blocks & WC latest
   # [TODO] Unskip blocks tests after investigating constant failures.
   # blocks-tests:
-  #   runs-on: ubuntu-20.04
+  #   runs-on: ubuntu-latest
   #   name: WC - latest | blocks - shopper
 
   #   env:
@@ -93,7 +93,7 @@ jobs:
 
   # Run tests against WP Nightly & WC latest
   wp-nightly-tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast:     false

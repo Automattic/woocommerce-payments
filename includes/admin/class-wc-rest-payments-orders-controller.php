@@ -499,7 +499,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			$result = $this->gateway->cancel_authorization( $order );
 
-			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
+			if ( Intent_Status::CANCELED !== $result['status'] ) {
 				return new WP_Error(
 					'wcpay_cancel_error',
 					sprintf(

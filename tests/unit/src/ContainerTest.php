@@ -74,6 +74,18 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Cleans up global replacements after the class.
+	 *
+	 * Without this, other `src` tests will fail.
+	 */
+	public static function tearDownAfterClass(): void {
+		parent::tearDownAfterClass();
+
+		$GLOBALS['wcpay_container']      = null;
+		$GLOBALS['wcpay_test_container'] = null;
+	}
+
+	/**
 	 * Tests the `wcpay_get_container` function.
 	 */
 	public function test_function() {

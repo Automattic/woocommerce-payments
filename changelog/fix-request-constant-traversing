@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix the way request params are loaded between parent and child classes.
