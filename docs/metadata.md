@@ -2,7 +2,7 @@
 
 ## Purpose
 
-To improve the extensibility and stability of WooCommerce Payments, all WooCommerce Payment related order metadata should be accessible in a clear and stable manner. We would like to prevent accessing metadata directly. By implementing this, changes in datastructure will not affect extensions and extensions will be able to reliably access the data. 
+To improve the extensibility and stability of WooCommerce Payments, all WooCommerce Payment related order metadata should be accessible in a clear and stable manner. We would like to prevent accessing metadata directly. By implementing this, changes in datastructure will not affect extensions and extensions will be able to reliably access the data.
 
 ## Accessing Metadata
 
@@ -16,6 +16,9 @@ To improve the extensibility and stability of WooCommerce Payments, all WooComme
 - `_charge_id`
 	- `get_charge_id_for_order( mixed $order ) : string`
 	- `set_charge_id_for_order( mixed $order, string $charge_id )`
+- `_dispute_id`
+	- `get_dispute_id_for_order( mixed $order ) : string`
+	- `set_dispute_id_for_order( mixed $order, string $dispute_id )`
 - `_intention_status`
 	- `get_intention_status_for_order( mixed $order ) : string`
 	- `set_intention_status_for_order( mixed $order, string $intention_status )`
