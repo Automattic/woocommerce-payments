@@ -11,7 +11,7 @@ concurrency:
 jobs:
   check-changelog:
     name:    Check changelog
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # clone the repository
       - uses: actions/checkout@v3
