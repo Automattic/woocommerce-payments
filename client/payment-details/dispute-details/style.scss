@@ -54,6 +54,10 @@
 	&.components-panel__body {
 		border: none;
 	}
+	// Override WordPress core PanelBody padding so fits snug in our container.
+	&.components-panel__body.is-opened {
+		padding-bottom: 0;
+	}
 	// Override WordPress core PanelBody title to align with other nearby headings.
 	.components-panel__body-title button {
 		// Copy of WooCommerce core list table header style.
@@ -73,10 +77,11 @@
 	}
 	&__list {
 		list-style: none;
-		margin: 8px 0;
+		margin: 8px 0 0;
 	}
 	&__list-item {
 		display: inline-block;
 		margin-right: 12px;
+		margin-bottom: 0;
 	}
 }
