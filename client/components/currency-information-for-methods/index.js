@@ -94,7 +94,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 				{ interpolateComponents( {
 					mixedString: sprintf(
 						__(
-							"%s %s %s additional %s, so {{strong}}we'll add %s to your store{{/strong}}. " +
+							"%s %s %sadditional %s, so {{strong}}we'll add %s to your store{{/strong}}. " +
 								'You can view & manage currencies later in settings.',
 							'woocommerce-payments'
 						),
@@ -107,7 +107,79 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 							paymentMethodsWithMissingCurrencies.length,
 							'woocommerce-payments'
 						),
-						missingCurrencyLabels.length === 1 ? 'an' : '',
+						missingCurrencyLabels.length === 1 ? 'an ' : '',
+						_n(
+							'currency',
+							'currencies',
+							missingCurrencyLabels.length,
+							'woocommerce-payments'
+						),
+						ListToCommaSeparatedSentencePartConverter(
+							missingCurrencyLabels
+						)
+					),
+					components: {
+						strong: <strong />,
+					},
+				} ) }
+			</InlineNotice>
+		);
+	}
+	return null;
+};
+
+const CurrencyInformationForMethodsWithoutMC = ( {
+	selectedMethods,
+	storeCurrency,
+} ) => {
+	let paymentMethodsWithMissingCurrencies = [];
+	let missingCurrencyLabels = [];
+	const missingCurrencies = [];
+
+	selectedMethods.map( ( paymentMethod ) => {
+		if ( typeof PaymentMethodsMap[ paymentMethod ] !== 'undefined' ) {
+			PaymentMethodsMap[ paymentMethod ].currencies.map( ( currency ) => {
+				if ( storeCurrency !== currency.toLowerCase() ) {
+					missingCurrencies.push( currency );
+
+					paymentMethodsWithMissingCurrencies.push(
+						PaymentMethodsMap[ paymentMethod ].label
+					);
+
+					missingCurrencyLabels.push( currency.toUpperCase() );
+				}
+				return currency;
+			} );
+		}
+		return paymentMethod;
+	} );
+
+	missingCurrencyLabels = _.uniq( missingCurrencyLabels );
+	paymentMethodsWithMissingCurrencies = _.uniq(
+		paymentMethodsWithMissingCurrencies
+	);
+
+	if ( missingCurrencyLabels.length > 0 ) {
+		return (
+			<InlineNotice icon status="warning" isDismissible={ false }>
+				{ interpolateComponents( {
+					mixedString: sprintf(
+						__(
+							'%s %s %sadditional %s, we tried to enable {{strong}}%s{{/strong}}, ' +
+								'but it seems multi currency is disabled. ' +
+								'You can view & manage currencies later in settings.',
+							'woocommerce-payments'
+						),
+						ListToCommaSeparatedSentencePartConverter(
+							paymentMethodsWithMissingCurrencies
+						),
+						_n(
+							'requires',
+							'require',
+							paymentMethodsWithMissingCurrencies.length,
+							'woocommerce-payments'
+						),
+						missingCurrencyLabels.length === 1 ? 'an ' : '',
 						_n(
 							'currency',
 							'currencies',
@@ -131,10 +203,18 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 const CurrencyInformationForMethodsWrapper = ( props ) => {
 	const {
 		featureFlags: { multiCurrency },
+		storeCurrency,
 	} = useContext( WCPaySettingsContext );
 
 	// Prevents loading currency data when the feature flag is disabled.
-	if ( ! multiCurrency ) return null;
+	if ( ! multiCurrency ) {
+		return (
+			<CurrencyInformationForMethodsWithoutMC
+				{ ...props }
+				storeCurrency={ storeCurrency }
+			/>
+		);
+	}
 
 	return <CurrencyInformationForMethods { ...props } />;
 };

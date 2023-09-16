@@ -23,7 +23,7 @@ jest.mock( '@wordpress/a11y', () => ( {
 
 const FlagsContextWrapper = ( { children, multiCurrency = true } ) => (
 	<WCPaySettingsContext.Provider
-		value={ { featureFlags: { multiCurrency } } }
+		value={ { featureFlags: { multiCurrency }, storeCurrency: 'USD' } }
 	>
 		{ children }
 	</WCPaySettingsContext.Provider>
@@ -48,25 +48,54 @@ describe( 'CurrencyInformationForMethods', () => {
 		} );
 	} );
 
-	it( 'should not display content when the feature flag is disabled', () => {
-		const { container } = render(
+	it( 'should display content when the feature flag is disabled and EUR is required', () => {
+		render(
 			<FlagsContextWrapper multiCurrency={ false }>
 				<CurrencyInformationForMethods
-					selectedMethods={ [
-						'card',
-						'bancontact',
-						'eps',
-						'giropay',
-						'ideal',
-						'p24',
-						'sofort',
-						'sepa_debit',
-					] }
+					selectedMethods={ [ 'card', 'ideal' ] }
 				/>
 			</FlagsContextWrapper>
 		);
 
-		expect( container.firstChild ).toBeNull();
+		expect(
+			screen.queryByText(
+				/requires an additional currency, we tried to enable/,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeInTheDocument();
+
+		expect(
+			screen.queryByText( /EUR/, {
+				ignore: '.a11y-speak-region',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	it( 'should display content when the feature flag is disabled and EUR and PLN is required', () => {
+		render(
+			<FlagsContextWrapper multiCurrency={ false }>
+				<CurrencyInformationForMethods
+					selectedMethods={ [ 'card', 'ideal', 'p24' ] }
+				/>
+			</FlagsContextWrapper>
+		);
+
+		expect(
+			screen.queryByText(
+				/require additional currencies, we tried to enable/,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeInTheDocument();
+
+		expect(
+			screen.queryByText( /EUR and PLN/, {
+				ignore: '.a11y-speak-region',
+			} )
+		).toBeInTheDocument();
 	} );
 
 	it( 'should not display content when the currency data is being loaded', () => {
