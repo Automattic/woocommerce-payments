@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Refactor Woo Subscriptions compatibility to fix currency being able to be updated during renewals, resubscribes, or switches.
