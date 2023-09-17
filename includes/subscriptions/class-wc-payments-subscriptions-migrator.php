@@ -389,11 +389,9 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	private function verify_subscription_payment_token( $subscription, $wcpay_subscription ) {
 		// If the subscription's payment method isn't set to WooPayments, we skip this token step.
 		if ( $subscription->get_payment_method() !== WC_Payment_Gateway_WCPay::GATEWAY_ID ) {
-			$this->logger->log( sprintf( '---- Skipped verifying the payment token. Subscription #%1$d is no longer set to "woocommerce_payments".', $subscription->get_id() ) );
+			$this->logger->log( sprintf( '---- Skipped verifying the payment token. Subscription #%1$d has "%2$s" as the payment method.', $subscription->get_id(), $subscription->get_payment_method() ) );
 			return;
 		}
-
-		unset( $wcpay_subscription['default_payment_method'] );
 
 		if ( empty( $wcpay_subscription['default_payment_method'] ) ) {
 			$this->logger->log( sprintf( '---- Could not verify the payment method. Stripe Billing subscription (%1$s) does not have a default payment method.', $wcpay_subscription['id'] ?? 'unknown' ) );
