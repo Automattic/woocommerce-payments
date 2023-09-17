@@ -85,6 +85,7 @@ const getBaseCharge = (): ChargeWithDisputeRequired =>
 				customer_name: 'Test customer',
 				shipping_address: '123 test address',
 			},
+			issuer_evidence: null,
 			evidence_details: {
 				due_by: 1694303999,
 				has_evidence: false,
@@ -207,9 +208,8 @@ describe( 'DisputeDetails', () => {
 		);
 
 		// Render the staged evidence message
-		screen.getByText(
-			/You initiated a dispute a challenge to this dispute/,
-			{ ignore: '.a11y-speak-region' }
-		);
+		screen.getByText( /You initiated a challenge to this dispute/, {
+			ignore: '.a11y-speak-region',
+		} );
 	} );
 } );

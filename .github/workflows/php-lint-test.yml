@@ -6,9 +6,9 @@ on:
 
 env:
   WP_VERSION:        latest
-  WC_MIN_SUPPORTED_VERSION: '7.7.0'
+  WC_MIN_SUPPORTED_VERSION: '7.6.0'
   GUTENBERG_VERSION: latest
-  PHP_MIN_SUPPORTED_VERSION: '7.4'
+  PHP_MIN_SUPPORTED_VERSION: '7.3'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,7 +17,7 @@ concurrency:
 jobs:
   lint:
     name:    PHP linting
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # clone the repository
       - uses: actions/checkout@v3
@@ -34,20 +34,20 @@ jobs:
 
   generate-test-matrix:
     name: "Generate the matrix for php tests dynamically"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"8.0\", \"8.1\"]" )
+          PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"7.3\", \"7.4\"]" )
           echo "matrix={\"php\":$PHP_VERSIONS}" >> $GITHUB_OUTPUT
 
   test:
     name: PHP testing
     needs: generate-test-matrix
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: 10
