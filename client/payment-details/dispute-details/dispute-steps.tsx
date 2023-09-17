@@ -102,13 +102,22 @@ const DisputeSteps: React.FC< Props > = ( {
 						  ) }
 				</li>
 				<li>
-					{
-						// TODO: link 'guidance on dispute withdrawal' to the docs when it's ready.
+					{ createInterpolateElement(
 						__(
-							'Provide guidance on dispute withdrawal if the customer agrees.',
+							'Provide <a>guidance on dispute withdrawal</a> if the customer agrees.',
 							'woocommerce-payments'
-						)
-					}
+						),
+						{
+							a: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									target="_blank"
+									rel="noopener noreferrer"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals"
+								/>
+							),
+						}
+					) }
 				</li>
 				<li>
 					{ createInterpolateElement(
