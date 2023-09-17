@@ -43,8 +43,9 @@ const DisputeSteps: React.FC< Props > = ( {
 			moment( dispute.created * 1000 ).toISOString()
 		);
 		const emailSubject = `Problem with your purchase from ${ wcpaySettings.storeName } on ${ chargeDate }?`;
+		const customerName = customer?.name || '';
 		const emailBody =
-			`Hello ${ customer?.name }\n\n` +
+			`Hello ${ customerName }\n\n` +
 			`We noticed that on ${ disputeDate }, you disputed a ${ formatExplicitCurrency(
 				dispute.amount,
 				dispute.currency
