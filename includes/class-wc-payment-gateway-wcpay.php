@@ -250,7 +250,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 				'description' => WC_Payments_Utils::esc_interpolated_html(
 					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
-					[ 'a' => '<a href="https://woocommerce.com/document/woocommerce-payments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+					[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 				),
 			],
 			'manual_capture'                   => [
@@ -782,8 +782,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			function_exists( 'wcs_order_contains_subscription' )
 			&& wcs_order_contains_subscription( $order_id )
-			&& WC_Payments_Features::is_wcpay_subscriptions_enabled()
-			&& ! $this->is_subscriptions_plugin_active()
+			&& WC_Payments_Features::should_use_stripe_billing()
 		) {
 			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP();
 		}
@@ -1236,6 +1235,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 
+				// Add specific payment method parameters to the request.
+				$this->modify_create_intent_parameters_when_processing_payment( $request, $payment_information, $order );
+
 				// The below if-statement ensures the support for UPE payment methods.
 				if ( $this->upe_needs_redirection( $payment_methods ) ) {
 					$request->set_return_url(
@@ -1613,9 +1615,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'subscription_payment' => 'no',
 		];
 
-		if ( 'recurring' === (string) $payment_type && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
+		if ( 'recurring' === (string) $payment_type && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order, 'any' ) ) {
 			$metadata['subscription_payment'] = wcs_order_contains_renewal( $order ) ? 'renewal' : 'initial';
-			$metadata['payment_context']      = $this->is_subscriptions_plugin_active() ? 'regular_subscription' : 'wcpay_subscription';
+			$metadata['payment_context']      = WC_Payments_Features::should_use_stripe_billing() ? 'wcpay_subscription' : 'regular_subscription';
 		}
 		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
 	}
@@ -3748,5 +3750,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function upe_needs_redirection( $payment_methods ) {
 		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
+	}
+
+	/**
+	 * Modifies the create intent parameters when processing a payment.
+	 *
+	 * Currently used by child UPE_Split_Payment_Gateway to add required shipping information for Afterpay.
+	 *
+	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
+	 * @param Payment_Information          $payment_information   The payment information object.
+	 * @param mixed                        $order                 The order object or data.
+	 *
+	 * @return void
+	 */
+	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, $order ) {
+		// Do nothing.
 	}
 }
