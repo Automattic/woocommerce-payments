@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Internal\Payment;
+namespace WCPay\Internal\Payment\Exception;
 
 /**
  * Exception thrown when a payment request is invalid.

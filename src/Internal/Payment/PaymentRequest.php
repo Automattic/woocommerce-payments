@@ -10,6 +10,7 @@ namespace WCPay\Internal\Payment;
 use WC_Payment_Gateway_WCPay;
 use WC_Payment_Token;
 use WC_Payment_Tokens;
+use WCPay\Internal\Payment\Exception\PaymentRequestException;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
