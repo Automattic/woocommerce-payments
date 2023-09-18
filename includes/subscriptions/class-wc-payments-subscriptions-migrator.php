@@ -764,13 +764,13 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	/**
 	 * Determines if a migration is currently in progress.
 	 *
-	 * A migration is considered to be in progress if either the initial migration action or an individual subscription
-	 * actions are scheduled.
+	 * A migration is considered to be in progress if the initial migration action or an individual subscription
+	 * action (or retry) is scheduled.
 	 *
 	 * @return bool True if a migration is in progress, false otherwise.
 	 */
 	public function is_migrating() {
-		return is_numeric( as_next_scheduled_action( $this->scheduled_hook ) ) || is_numeric( as_next_scheduled_action( $this->migrate_hook ) ) || is_numeric( as_next_scheduled_action( $this->migrate_hook . '_retry' ) );
+		return (bool) as_next_scheduled_action( $this->scheduled_hook ) || (bool) as_next_scheduled_action( $this->migrate_hook ) || (bool) as_next_scheduled_action( $this->migrate_hook . '_retry' );
 	}
 
 	/**
