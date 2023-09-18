@@ -70,17 +70,19 @@ const DisputeUnderReviewFooter: React.FC< {
 							path: '/payments/disputes/challenge',
 							id: dispute?.id,
 						} ) }
-						onClick={ () => {
-							wcpayTracks.recordEvent(
-								wcpayTracks.events
-									.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
-								{
-									dispute_status: dispute.status,
-								}
-							);
-						} }
 					>
-						<Button variant="secondary">
+						<Button
+							variant="secondary"
+							onClick={ () => {
+								wcpayTracks.recordEvent(
+									wcpayTracks.events
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+									{
+										dispute_status: dispute.status,
+									}
+								);
+							} }
+						>
 							{ __(
 								'View submitted evidence',
 								'woocommerce-payments'
@@ -139,17 +141,19 @@ const DisputeWonFooter: React.FC< {
 							path: '/payments/disputes/challenge',
 							id: dispute?.id,
 						} ) }
-						onClick={ () => {
-							wcpayTracks.recordEvent(
-								wcpayTracks.events
-									.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
-								{
-									dispute_status: dispute.status,
-								}
-							);
-						} }
 					>
-						<Button variant="secondary">
+						<Button
+							variant="secondary"
+							onClick={ () => {
+								wcpayTracks.recordEvent(
+									wcpayTracks.events
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+									{
+										dispute_status: dispute.status,
+									}
+								);
+							} }
+						>
 							{ __(
 								'View dispute details',
 								'woocommerce-payments'
@@ -245,17 +249,19 @@ const DisputeLostFooter: React.FC< {
 								path: '/payments/disputes/challenge',
 								id: dispute?.id,
 							} ) }
-							onClick={ () => {
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
-									{
-										dispute_status: dispute.status,
-									}
-								);
-							} }
 						>
-							<Button variant="secondary">
+							<Button
+								variant="secondary"
+								onClick={ () => {
+									wcpayTracks.recordEvent(
+										wcpayTracks.events
+											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+										{
+											dispute_status: dispute.status,
+										}
+									);
+								} }
+							>
 								{ __(
 									'View dispute details',
 									'woocommerce-payments'
