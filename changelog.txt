@@ -1,6 +1,6 @@
 *** WooPayments Changelog ***
 
-= 6.5.0 - 2023-09-21 =
+= 6.5.0-test-3 - unreleased =
 * Add - Add a new task prompt to set up APMs after onboarding. Fixed an issue where a notice would show up in some unintended circumstances on the APM setup.
 * Add - Add an option on the Settings screen to enable merchants to migrate their Stripe Billing subscriptions to on-site billing.
 * Add - Added additional meta data to payment requests
