@@ -12,7 +12,7 @@ use WCPay\Container;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
-use WCPay\Internal\Payment\Router;
+use WCPay\Internal\Payment\Routing\Router;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\StateFactory;

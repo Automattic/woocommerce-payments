@@ -5,12 +5,12 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Internal\Payment;
+namespace WCPay\Internal\Payment\Routing;
 
 use WCPay\Core\Server\Request\Get_Payment_Process_Factors;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
-use WCPay\Internal\Payment\Factor;
+use WCPay\Internal\Payment\Routing\Factor;
 
 /**
  * Until the new payment process is fully developed, and the legacy

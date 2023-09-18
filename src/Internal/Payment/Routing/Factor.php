@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Internal\Payment;
+namespace WCPay\Internal\Payment\Routing;
 
 use WCPay\Constants\Base_Constant;
 
