@@ -375,7 +375,7 @@ describe( 'PaymentDetailsSummary', () => {
 			// Don't render the staged evidence message
 			expect(
 				screen.queryByText(
-					/You initiated a dispute a challenge to this dispute/,
+					/You initiated a challenge to this dispute/,
 					{ ignore: '.a11y-speak-region' }
 				)
 			).toBeNull();
@@ -415,10 +415,9 @@ describe( 'PaymentDetailsSummary', () => {
 			);
 
 			// Render the staged evidence message
-			screen.getByText(
-				/You initiated a dispute a challenge to this dispute/,
-				{ ignore: '.a11y-speak-region' }
-			);
+			screen.getByText( /You initiated a challenge to this dispute/, {
+				ignore: '.a11y-speak-region',
+			} );
 		} );
 
 		test( 'correctly renders dispute details for "won" disputes', () => {

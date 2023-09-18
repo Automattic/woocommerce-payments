@@ -47,7 +47,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 										isDismissible={ false }
 									>
 										{ __(
-											`You initiated a dispute a challenge to this dispute. Click 'Continue with challenge' to proceed with your drafted response.`,
+											`You initiated a challenge to this dispute. Click 'Continue with challenge' to proceed with your draft response.`,
 											'woocommerce-payments'
 										) }
 									</InlineNotice>
