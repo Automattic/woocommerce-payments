@@ -9,9 +9,11 @@ namespace WCPay\Internal\Payment\State;
 
 use WCPay\Internal\Payment\Exception\MethodUnavailableException;
 use WCPay\Internal\Payment\Payment;
+use WCPay\Internal\Payment\Response\ResponseInterface;
+use WCPay\Internal\Payment\PaymentRequest;
 
 /**
- * Base class for all states.
+ * Base class for all payment states.
  */
 abstract class State {
 	/**
@@ -22,12 +24,11 @@ abstract class State {
 	protected $payment;
 
 	/**
-	 * Changes the context of the state.
-	 * Without a payment (context), states are not functional.
+	 * Class constructor.
 	 *
-	 * @param Payment $payment Context of the state.
+	 * @param Payment $payment Without a payment (context), states are not functional.
 	 */
-	public function set_context( Payment $payment ) {
+	public function __construct( Payment $payment ) {
 		$this->payment = $payment;
 	}
 
@@ -36,25 +37,24 @@ abstract class State {
 	// phpcs:disable Squiz.Commenting.FunctionComment.InvalidNoReturn
 
 	/**
-	 * Returns the response, expected from a gateway's `process_payment()` method.
+	 * Payment processing method.
 	 *
-	 * @return array Whenever the current state implements the method.
+	 * @param PaymentRequest $request Payment request, containing the necessary parameters.
+	 * @return State                  Next payment state.
 	 * @throws MethodUnavailableException In case the method is not available in the state.
-	 * @psalm-suppress InvalidReturnType If this method does not throw, it will return an array.
 	 */
-	public function get_gateway_response() {
+	public function process( PaymentRequest $request ) {
 		$this->throw_method_exception( __METHOD__ );
 	}
 
 	/**
-	 * Preparation method.
+	 * Returns the response, expected by the gateway's `process_payment()` method.
 	 *
-	 * Not available in most states, unless overloaded.
-	 *
-	 * @param string $payment_method_id ID of the payment method to use.
+	 * @return ResponseInterface
 	 * @throws MethodUnavailableException In case the method is not available in the state.
+	 * @psalm-suppress InvalidReturnType If this method does not throw, it will return an array.
 	 */
-	public function prepare( string $payment_method_id ) {
+	public function get_processing_response() {
 		$this->throw_method_exception( __METHOD__ );
 	}
 

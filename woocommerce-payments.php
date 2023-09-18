@@ -408,8 +408,25 @@ add_action(
 	'template_redirect',
 	function() {
 		// phpcs:disable
-		$service = wcpay_get_container()->get( WCPay\Internal\Service\PaymentProcessingService::class );
-		$result  = $service->process_payment( 1564 );
+		$service  = wcpay_get_container()->get( WCPay\Internal\Service\PaymentProcessingService::class );
+		$response = $service->process_payment( 1564 );
+
+		if ( $response->is_successful() ) {
+			$result = [
+				'result'   => 'success',
+				'redirect' => $response->get_redirect_url(),
+			];
+
+			if ( $response->is_complete() ) {
+				// In the gateway, this would update the order status.
+				$result['processing'] = true;
+			}
+		} else {
+			$result = [
+				'error' => $response->get_error_message(),
+			];
+		}
+
 		echo '<pre>';
 		var_dump( $result );
 		exit;

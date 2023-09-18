@@ -8,18 +8,18 @@
 namespace WCPay\Internal\Payment\State;
 
 use WCPay\Internal\Payment\Exception\StateTransitionException;
+use WCPay\Internal\Payment\PaymentRequest;
 
 /**
  * Initial payment state.
  */
 class InitialState extends State {
 	/**
-	 * Prepares the payment, and transitions to the prepared state.
+	 * Processes a new payment.
 	 *
-	 * @param string $payment_method_id ID of the payment method to use.
-	 * @throws StateTransitionException In case the transition to CompletedState fails.
+	 * @param PaymentRequest $request Payment request.
 	 */
-	public function prepare( string $payment_method_id ) {
-		$this->payment->set_state( CompletedState::class );
+	public function process( PaymentRequest $request ) {
+		return new CompletedState( $this->payment );
 	}
 }
