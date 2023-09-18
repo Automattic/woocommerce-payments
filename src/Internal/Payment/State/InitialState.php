@@ -7,7 +7,6 @@
 
 namespace WCPay\Internal\Payment\State;
 
-use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentRequest;
 
 /**
@@ -20,6 +19,6 @@ class InitialState extends State {
 	 * @param PaymentRequest $request Payment request.
 	 */
 	public function process( PaymentRequest $request ) {
-		return new CompletedState( $this->payment );
+		return $this->create_state( CompletedState::class );
 	}
 }

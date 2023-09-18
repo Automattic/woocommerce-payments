@@ -12,8 +12,7 @@ use WC_Order;
 use WCPay\Internal\Payment\Payment;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\Response\Failure;
-use WCPay\Internal\Payment\State\InitialState;
-use WCPay\Internal\Payment\StateFactory;
+use WCPay\Internal\Payment\Storage;
 use WCPay\Internal\Payment\Response\ResponseInterface;
 use WCPay\Internal\Proxy\LegacyProxy;
 
@@ -22,11 +21,11 @@ use WCPay\Internal\Proxy\LegacyProxy;
  */
 class PaymentProcessingService {
 	/**
-	 * State factory.
+	 * Storage for payments.
 	 *
-	 * @var StateFactory
+	 * @var Storage
 	 */
-	protected $state_factory;
+	protected $storage;
 
 	/**
 	 * Legacy proxy.
@@ -38,15 +37,15 @@ class PaymentProcessingService {
 	/**
 	 * Class constructor.
 	 *
-	 * @param StateFactory $state_factory Factory for states.
-	 * @param LegacyProxy  $legacy_proxy  Legacy proxy.
+	 * @param Storage     $storage       Payment storage.
+	 * @param LegacyProxy $legacy_proxy  Legacy proxy.
 	 */
 	public function __construct(
-		StateFactory $state_factory,
+		Storage $storage,
 		LegacyProxy $legacy_proxy
 	) {
-		$this->state_factory = $state_factory;
-		$this->legacy_proxy  = $legacy_proxy;
+		$this->storage      = $storage;
+		$this->legacy_proxy = $legacy_proxy;
 	}
 
 	/**
@@ -65,10 +64,9 @@ class PaymentProcessingService {
 			}
 
 			$request = new PaymentRequest( $this->legacy_proxy, [ 'payment_method_id' => 'pm_XYZ' ] );
-			$payment = new Payment( $order );
-			$state   = new InitialState( $payment );
-			$state   = $state->process( $request );
-			return $state->get_processing_response();
+			$payment = $this->storage->get_order_payment( $order );
+			$payment = $payment->process( $request );
+			return $payment->get_processing_response();
 		} catch ( Exception $e ) {
 			return new Failure( $e->getMessage() );
 		}

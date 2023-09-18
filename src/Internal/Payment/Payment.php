@@ -8,6 +8,8 @@
 namespace WCPay\Internal\Payment;
 
 use WC_Order;
+use WCPay\Internal\Payment\State\InitialState;
+use WCPay\Internal\Payment\State\State;
 
 /**
  * Payment object.
@@ -38,5 +40,17 @@ class Payment {
 	 */
 	public function get_order() {
 		return $this->order;
+	}
+
+	/**
+	 * Generates and returns the current state of the payment.
+	 *
+	 * @param StateFactory $state_factory A factory that generates states with dependencies.
+	 * @return State
+	 */
+	public function get_state( StateFactory $state_factory ): State {
+		$state = $state_factory->create_state( InitialState::class );
+		$state->set_context( $this );
+		return $state;
 	}
 }

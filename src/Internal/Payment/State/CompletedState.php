@@ -19,7 +19,7 @@ class CompletedState extends State {
 	 * @return ProcessingCompleted Whenever the current state implements the method.
 	 */
 	public function get_processing_response() {
-		$url = $this->payment->get_order()->get_checkout_order_received_url();
+		$url = $this->get_context()->get_order()->get_checkout_order_received_url();
 		return new ProcessingCompleted( $url );
 	}
 }
