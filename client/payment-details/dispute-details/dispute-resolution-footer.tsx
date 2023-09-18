@@ -5,7 +5,7 @@ import React from 'react';
 import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
-import { getHistory } from '@woocommerce/navigation';
+import { Link } from '@woocommerce/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
 
@@ -64,8 +64,12 @@ const DisputeUnderReviewFooter: React.FC< {
 					) }
 				</FlexItem>
 				<FlexItem className="transaction-details-dispute-footer__actions">
-					<Button
-						variant="secondary"
+					<Link
+						href={ getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/disputes/challenge',
+							id: dispute?.id,
+						} ) }
 						onClick={ () => {
 							wcpayTracks.recordEvent(
 								wcpayTracks.events
@@ -74,19 +78,15 @@ const DisputeUnderReviewFooter: React.FC< {
 									dispute_status: dispute.status,
 								}
 							);
-							const challengeUrl = getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/disputes/challenge',
-								id: dispute?.id,
-							} );
-							getHistory().push( challengeUrl );
 						} }
 					>
-						{ __(
-							'View submitted evidence',
-							'woocommerce-payments'
-						) }
-					</Button>
+						<Button variant="secondary">
+							{ __(
+								'View submitted evidence',
+								'woocommerce-payments'
+							) }
+						</Button>
+					</Link>
 				</FlexItem>
 			</Flex>
 		</CardFooter>
@@ -133,8 +133,12 @@ const DisputeWonFooter: React.FC< {
 					) }
 				</FlexItem>
 				<FlexItem className="transaction-details-dispute-footer__actions">
-					<Button
-						variant="secondary"
+					<Link
+						href={ getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/disputes/challenge',
+							id: dispute?.id,
+						} ) }
 						onClick={ () => {
 							wcpayTracks.recordEvent(
 								wcpayTracks.events
@@ -143,16 +147,15 @@ const DisputeWonFooter: React.FC< {
 									dispute_status: dispute.status,
 								}
 							);
-							const challengeUrl = getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/disputes/challenge',
-								id: dispute?.id,
-							} );
-							getHistory().push( challengeUrl );
 						} }
 					>
-						{ __( 'View dispute details', 'woocommerce-payments' ) }
-					</Button>
+						<Button variant="secondary">
+							{ __(
+								'View dispute details',
+								'woocommerce-payments'
+							) }
+						</Button>
+					</Link>
 				</FlexItem>
 			</Flex>
 		</CardFooter>
@@ -236,8 +239,12 @@ const DisputeLostFooter: React.FC< {
 
 				{ isSubmitted && (
 					<FlexItem className="transaction-details-dispute-footer__actions">
-						<Button
-							variant="secondary"
+						<Link
+							href={ getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/disputes/challenge',
+								id: dispute?.id,
+							} ) }
 							onClick={ () => {
 								wcpayTracks.recordEvent(
 									wcpayTracks.events
@@ -246,19 +253,15 @@ const DisputeLostFooter: React.FC< {
 										dispute_status: dispute.status,
 									}
 								);
-								const challengeUrl = getAdminUrl( {
-									page: 'wc-admin',
-									path: '/payments/disputes/challenge',
-									id: dispute?.id,
-								} );
-								getHistory().push( challengeUrl );
 							} }
 						>
-							{ __(
-								'View dispute details',
-								'woocommerce-payments'
-							) }
-						</Button>
+							<Button variant="secondary">
+								{ __(
+									'View dispute details',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</Link>
 					</FlexItem>
 				) }
 			</Flex>
