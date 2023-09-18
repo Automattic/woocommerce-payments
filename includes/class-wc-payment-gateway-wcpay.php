@@ -1267,12 +1267,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				// For Stripe Link with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
-				if (
-					WC_Payments_Features::is_upe_deferred_intent_enabled() &&
-					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
-					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
-					) {
+				// For Stripe Link & SEPA with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
+				if ( $this->is_mandate_acknowledgment_needed_for_deferred_intent_upe() ) {
 					$request->set_mandate_data( $this->get_mandate_data() );
 				}
 
@@ -1481,6 +1477,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * Mandate must be shown and acknowledged by customer before deferred intent UPE payment can be processed.
+	 * This applies to SEPA and Link payment methods.
+	 * https://stripe.com/docs/payments/finalize-payments-on-the-server
+	 *
+	 * @return boolean True if mandate must be shown and acknowledged by customer before deferred intent UPE payment can be processed, false otherwise.
+	 */
+	private function is_mandate_acknowledgment_needed_for_deferred_intent_upe() {
+		$is_link_payment       = Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() && in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true );
+		$is_sepa_debit_payment = Payment_Method::SEPA === $this->get_selected_stripe_payment_type_id();
+
+		return WC_Payments_Features::is_upe_deferred_intent_enabled() && ( $is_link_payment || $is_sepa_debit_payment );
 	}
 
 	/**
@@ -3749,7 +3759,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean True if the arrray consist of only one payment method which is not a card. False otherwise.
 	 */
 	private function upe_needs_redirection( $payment_methods ) {
-		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
+		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0] && 'sepa_debit' !== $payment_methods[0];
 	}
 
 	/**
