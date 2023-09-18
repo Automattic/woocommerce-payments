@@ -15,6 +15,7 @@ import { edit } from '@wordpress/icons';
 import type { Dispute } from 'wcpay/types/disputes';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import DisputeNotice from './dispute-notice';
+import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
@@ -46,7 +47,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 										isDismissible={ false }
 									>
 										{ __(
-											`You initiated a dispute a challenge to this dispute. Click 'Continue with challenge' to proceed with your drafted response.`,
+											`You initiated a challenge to this dispute. Click 'Continue with challenge' to proceed with your draft response.`,
 											'woocommerce-payments'
 										) }
 									</InlineNotice>
@@ -54,6 +55,9 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 								<DisputeSummaryRow
 									dispute={ dispute }
 									daysRemaining={ countdownDays }
+								/>
+								<IssuerEvidenceList
+									issuerEvidence={ dispute.issuer_evidence }
 								/>
 							</>
 						) }

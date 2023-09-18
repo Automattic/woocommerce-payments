@@ -310,6 +310,20 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
+	 * Sends a request to server to record the store's context for an invoice payment.
+	 *
+	 * @param string $invoice_id The subscription invoice ID.
+	 */
+	public function record_subscription_payment_context( string $invoice_id ) {
+		$this->payments_api_client->update_invoice(
+			$invoice_id,
+			[
+				'subscription_context' => class_exists( 'WC_Subscriptions' ) && WC_Payments_Features::is_stripe_billing_enabled() ? 'stripe_billing' : 'legacy_wcpay_subscription',
+			]
+		);
+	}
+
+	/**
 	 * Sets the subscription last invoice ID meta for WC subscription.
 	 *
 	 * @param WC_Subscription $subscription The subscription.

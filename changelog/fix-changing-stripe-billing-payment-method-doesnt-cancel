@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Ensure the Stripe Billing subscription is cancelled when the subscription is changed from WooPayments to another payment method.
