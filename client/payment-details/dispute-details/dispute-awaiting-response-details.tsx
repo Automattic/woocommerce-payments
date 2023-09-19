@@ -91,7 +91,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 
 					{ /* Dispute Actions */ }
 					{ showDisputeActions && (
-						<Flex justify="start">
+						<div className="transaction-details-dispute-details-body__actions">
 							<Link
 								href={
 									// Prevent the user navigating to the challenge screen if the accept request is in progress.
@@ -236,7 +236,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 									</Flex>
 								</Modal>
 							) }
-						</Flex>
+						</div>
 					) }
 				</CardBody>
 			</Card>

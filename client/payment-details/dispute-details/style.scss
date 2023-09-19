@@ -34,6 +34,21 @@
 				}
 			}
 		}
+
+		&__actions {
+			display: flex;
+			justify-content: start;
+			gap: $grid-unit-10;
+
+			@media screen and ( max-width: $break-small ) {
+				flex-direction: column;
+
+				.components-button {
+					width: 100%;
+					justify-content: center;
+				}
+			}
+		}
 	}
 }
 .dispute-reason-tooltip {
