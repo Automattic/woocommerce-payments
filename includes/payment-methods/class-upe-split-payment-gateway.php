@@ -378,6 +378,20 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	}
 
 	/**
+	 * Mandate must be shown and acknowledged by customer before deferred intent UPE payment can be processed.
+	 * This applies to SEPA and Link payment methods.
+	 * https://stripe.com/docs/payments/finalize-payments-on-the-server
+	 *
+	 * @return boolean True if mandate must be shown and acknowledged by customer before deferred intent UPE payment can be processed, false otherwise.
+	 */
+	public function does_payment_method_require_mandate_data() {
+		$is_link_payment       = Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() && in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true );
+		$is_sepa_debit_payment = Payment_Method::SEPA === $this->get_selected_stripe_payment_type_id();
+
+		return $is_link_payment || $is_sepa_debit_payment;
+	}
+
+	/**
 	 * Returns the Stripe payment type of the selected payment method.
 	 *
 	 * @return string

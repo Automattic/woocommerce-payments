@@ -1268,7 +1268,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// For Stripe Link & SEPA with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
-				if ( $this->is_mandate_acknowledgment_needed_for_deferred_intent_upe() ) {
+				if ( WC_Payments_Features::is_upe_deferred_intent_enabled() && $this->does_payment_method_require_mandate_data() ) {
 					$request->set_mandate_data( $this->get_mandate_data() );
 				}
 
@@ -1486,11 +1486,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return boolean True if mandate must be shown and acknowledged by customer before deferred intent UPE payment can be processed, false otherwise.
 	 */
-	private function is_mandate_acknowledgment_needed_for_deferred_intent_upe() {
-		$is_link_payment       = Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() && in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true );
-		$is_sepa_debit_payment = Payment_Method::SEPA === $this->get_selected_stripe_payment_type_id();
-
-		return WC_Payments_Features::is_upe_deferred_intent_enabled() && ( $is_link_payment || $is_sepa_debit_payment );
+	protected function does_payment_method_require_mandate_data() {
+		// Returning false, because WC Payment Gateway represents card payment method, which does not require mandate.
+		return false;
 	}
 
 	/**
