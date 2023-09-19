@@ -491,9 +491,7 @@ class MultiCurrency {
 	public function get_single_currency_settings( string $currency_code ): array {
 		// Confirm the currency code is valid before trying to get the settings.
 		if ( ! array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() ) ) {
-			$message = 'Invalid currency passed to get_single_currency_settings: ' . $currency_code;
-			Logger::error( $message );
-			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+			$this->log_and_throw_invalid_currency_exception( __FUNCTION__, $currency_code );
 		}
 
 		$currency_code = strtolower( $currency_code );
@@ -522,9 +520,7 @@ class MultiCurrency {
 	public function update_single_currency_settings( string $currency_code, string $exchange_rate_type, float $price_rounding, float $price_charm, $manual_rate = null ) {
 		// Confirm the currency code is valid before trying to update the settings.
 		if ( ! array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() ) ) {
-			$message = 'Invalid currency passed to update_single_currency_settings: ' . $currency_code;
-			Logger::error( $message );
-			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+			$this->log_and_throw_invalid_currency_exception( __FUNCTION__, $currency_code );
 		}
 
 		$currency_code = strtolower( $currency_code );
@@ -690,9 +686,7 @@ class MultiCurrency {
 		// Confirm the currencies submitted are available/valid currencies.
 		$invalid_currencies = array_diff( $currencies, array_keys( $this->get_available_currencies() ) );
 		if ( 0 < count( $invalid_currencies ) ) {
-			$message = 'Invalid currency/currencies passed to set_enabled_currencies: ' . implode( ', ', $invalid_currencies );
-			Logger::error( $message );
-			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+			$this->log_and_throw_invalid_currency_exception( __FUNCTION__, implode( ', ', $invalid_currencies ) );
 		}
 
 		// Get the currencies that were removed before they are updated.
@@ -871,9 +865,7 @@ class MultiCurrency {
 		$from_currency = strtoupper( $from_currency );
 		foreach ( [ $to_currency, $from_currency ] as $code ) {
 			if ( ! isset( $enabled_currencies[ $code ] ) ) {
-				$message = 'Invalid currency passed to get_raw_conversion: ' . $code;
-				Logger::error( $message );
-				throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+				$this->log_and_throw_invalid_currency_exception( __FUNCTION__, $code );
 			}
 		}
 
@@ -881,7 +873,7 @@ class MultiCurrency {
 		$to_currency_rate   = $enabled_currencies[ $to_currency ]->get_rate();
 		$from_currency_rate = $enabled_currencies[ $from_currency ]->get_rate();
 
-		// Thrown an exception in case from_currency_rate is less than or equal to 0.
+		// Throw an exception in case from_currency_rate is less than or equal to 0.
 		if ( 0 >= $from_currency_rate ) {
 			$message = 'Invalid rate for from_currency in get_raw_conversion: ' . $from_currency_rate;
 			Logger::error( $message );
@@ -1577,5 +1569,20 @@ class MultiCurrency {
 	 */
 	public static function is_initialized() : bool {
 		return static::$is_initialized;
+	}
+
+	/**
+	 * Logs a message and throws InvalidCurrencyException.
+	 *
+	 * @param string $method        The method that's actually throwing the exception.
+	 * @param string $currency_code The currency code that was invalid.
+	 * @param int    $code          The exception code.
+	 *
+	 * @throws InvalidCurrencyException
+	 */
+	private function log_and_throw_invalid_currency_exception( $method, $currency_code, $code = 500 ) {
+		$message = 'Invalid currency passed to ' . $method . ': ' . $currency_code;
+		Logger::error( $message );
+		throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', $code );
 	}
 }

@@ -306,7 +306,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		// Arrange/Assert: Set expected exception and message.
 		$this->expectException( InvalidCurrencyException::class );
-		$this->expectExceptionMessage( 'Invalid currency/currencies passed to set_enabled_currencies: banana' );
+		$this->expectExceptionMessage( 'Invalid currency passed to set_enabled_currencies: banana' );
 
 		// Act: Set the currencies.
 		$this->multi_currency->set_enabled_currencies( $currencies );
