@@ -51,6 +51,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	const disputeFee = getDisputeFee( dispute );
+	const showDisputeActions = ! isInquiry( dispute );
 
 	const onModalClose = () => {
 		setModalOpen( false );
@@ -89,7 +90,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 						) }
 
 					{ /* Dispute Actions */ }
-					{ ! isInquiry( dispute ) && (
+					{ showDisputeActions && (
 						<Flex justify="start">
 							<Link
 								href={
