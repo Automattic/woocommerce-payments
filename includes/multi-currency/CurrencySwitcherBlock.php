@@ -117,7 +117,13 @@ class CurrencySwitcherBlock {
 	 * @return string The content to be displayed inside the block widget.
 	 */
 	public function render_block_widget( $block_attributes, $content ): string {
-		if ( $this->compatibility->should_hide_widgets() ) {
+		if ( $this->compatibility->should_disable_currency_switching() ) {
+			return '';
+		}
+
+		$enabled_currencies = $this->multi_currency->get_enabled_currencies();
+
+		if ( 1 === count( $enabled_currencies ) ) {
 			return '';
 		}
 
@@ -133,7 +139,7 @@ class CurrencySwitcherBlock {
 		$widget_content .= '<div class="currency-switcher-holder" style="' . $div_styles . '">';
 		$widget_content .= '<select name="currency" onchange="this.form.submit()" style="' . $select_styles . '">';
 
-		foreach ( $this->multi_currency->get_enabled_currencies() as $currency ) {
+		foreach ( $enabled_currencies as $currency ) {
 			$widget_content .= $this->render_currency_option( $currency, $with_symbol, $with_flag );
 		}
 

@@ -500,6 +500,43 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_filter( 'wp_footer', [ $this->multi_currency, 'display_geolocation_currency_update_notice' ] ) );
 	}
 
+	/**
+	 * If compatibility->should_disable_currency_switching returns true, then we should not automatically change the customer currency
+	 * or add the action that displays the notice that the currency was changed.
+	 */
+	public function test_update_selected_currency_by_geolocation_does_not_update_if_should_disable_currency_switching() {
+		// Arrange: Update the option to enable to auto currency switching.
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+
+		// Arrange: Add a filter to return a non US country.
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CA';
+			}
+		);
+
+		// Arrange: Set the expected calls and retruns for our mock classes.
+		$this->mock_localization_service
+			->method( 'get_country_locale_data' )
+			->with( 'CA' )
+			->willReturn( [ 'currency_code' => 'CAD' ] );
+
+		$this->mock_utils
+			->expects( $this->never() )
+			->method( 'set_customer_session_cookie' );
+
+		// Arrange: Blatantly hack mock request params for the test.
+		$_GET['pay_for_order'] = true;
+
+		// Act: Call the tested method.
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		// Assert: Confirm the session does not have a currency key set, and that the update notice action was not added.
+		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+		$this->assertFalse( has_filter( 'wp_footer', [ $this->multi_currency, 'display_geolocation_currency_update_notice' ] ) );
+	}
+
 	public function test_display_geolocation_currency_update_notice() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
 		add_filter(
