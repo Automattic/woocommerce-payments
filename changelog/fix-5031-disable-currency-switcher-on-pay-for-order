@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Disable automatic currency switching and switcher widgets on pay_for_order page.
