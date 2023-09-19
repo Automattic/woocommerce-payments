@@ -19,7 +19,7 @@ describe( 'Strings in captured events', () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
 			shouldUseExplicitPrice: true,
-			zeroDecimalCurrencies: [ 'vnd' ],
+			zeroDecimalCurrencies: [ 'vnd', 'jpy' ],
 			connect: {
 				country: 'US',
 			},
@@ -31,6 +31,14 @@ describe( 'Strings in captured events', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+				},
+				JP: {
+					code: 'JPY',
+					symbol: '¥',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 0,
 				},
 			},
 		};
@@ -44,7 +52,7 @@ describe( 'Strings in captured events', () => {
 		);
 		return fs
 			.readdirSync( dir )
-			.filter( ( name ) => '.json' === path.extname( name ) )
+			.filter( ( name ) => path.extname( name ) === '.json' )
 			.map( ( name ) => require( path.join( dir, name ) ) );
 	};
 

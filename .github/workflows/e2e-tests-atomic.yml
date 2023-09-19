@@ -1,0 +1,49 @@
+name: "E2E Tests on Atomic - All"
+
+# This action will run when it is triggered manually
+on:
+  workflow_dispatch:
+
+env:
+  WC_E2E_SCREENSHOTS: 1
+  E2E_SLACK_CHANNEL: ${{ secrets.E2E_SLACK_CHANNEL }}
+  E2E_SLACK_TOKEN: ${{ secrets.E2E_SLACK_TOKEN }}
+  E2E_WP_VERSION: 'nightly'
+  E2E_WC_VERSION: 'latest'
+  E2E_RESULT_FILEPATH: 'tests/e2e/results.json'
+  NODE_ENV: 'atomic'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Run tests against WP Nightly & WC latest. Only one combination at a time.
+  wp-nightly-tests:
+    name: "WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}"
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        test_groups: [ 'wcpay', 'subscriptions', 'upe', 'upeSplit' ]
+        test_branches: [ 'merchant', 'shopper' ]
+        exclude:
+          - test_groups: 'subscriptions'
+          - test_groups: 'wcpay'
+            test_branches: 'merchant'
+          - test_groups: 'upe'
+            test_branches: 'merchant'
+          - test_groups: 'upeSplit'
+            test_branches: 'merchant'
+    
+    env:
+      E2E_GROUP: ${{ matrix.test_groups }}
+      E2E_BRANCH: ${{ matrix.test_branches }}
+    
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+
+      - name: "Run the tests"
+        uses: ./.github/actions/e2e/atomic-prepare-and-run

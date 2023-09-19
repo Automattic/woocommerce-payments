@@ -12,6 +12,7 @@ import user from '@testing-library/user-event';
  */
 import PaymentMethods from '..';
 import {
+	useAccountDomesticCurrency,
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
@@ -24,6 +25,14 @@ import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
 import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
+jest.mock( '@woocommerce/components', () => {
+	return {
+		Pill: ( { className, children } ) => (
+			<span className={ className }>{ children }</span>
+		),
+	};
+} );
+
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
@@ -33,6 +42,7 @@ jest.mock( '../../data', () => ( {
 	useManualCapture: jest.fn(),
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
+	useAccountDomesticCurrency: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -72,6 +82,7 @@ describe( 'PaymentMethods', () => {
 		global.wcpaySettings = {
 			accountEmail: 'admin@example.com',
 		};
+		useAccountDomesticCurrency.mockReturnValue( 'usd' );
 	} );
 
 	test( 'payment methods are rendered correctly', () => {
@@ -86,7 +97,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const cc = screen.getByRole( 'checkbox', {
-			name: 'Credit card / debit card',
+			name: 'Credit / Debit card',
 		} );
 		const becs = screen.getByRole( 'checkbox', {
 			name: 'BECS Direct Debit',
@@ -137,7 +148,7 @@ describe( 'PaymentMethods', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useSelectedPaymentMethod.mockReturnValue( [
 			[
-				'Credit card / debit card',
+				'Credit / Debit card',
 				'BECS Direct Debit',
 				'Bancontact',
 				'EPS',
@@ -194,14 +205,10 @@ describe( 'PaymentMethods', () => {
 			</WcPayUpeContextProvider>
 		);
 
-		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 2 );
-
-		expect(
-			screen.queryAllByText( /Contact WooCommerce Support/i ).length
-		).toEqual( 4 );
+		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
 	} );
 
-	test( 'express payments rendered when UPE preview feture flag is enabled', () => {
+	test( 'upe setup banner is rendered when UPE preview feature flag is enabled', () => {
 		const featureFlagContext = {
 			featureFlags: { upeSettingsPreview: true, upe: false },
 		};
@@ -220,10 +227,156 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooCommerce Payments checkout experience'
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 		);
 
 		expect( enableWooCommercePaymentText ).toBeInTheDocument();
+	} );
+
+	test( 'affirm afterpay pms renders correctly', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'card',
+			'au_becs_debit',
+			'affirm',
+			'afterpay_clearpay',
+			'bancontact',
+			'eps',
+			'giropay',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
+		] );
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
+		const afterpay = screen.getByRole( 'checkbox', {
+			name: 'Afterpay',
+		} );
+
+		expect( affirm ).toBeInTheDocument();
+		expect( afterpay ).toBeInTheDocument();
+	} );
+
+	test( 'affirm and afterpay appear checked when enabled', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'card',
+			'au_becs_debit',
+			'affirm',
+			'afterpay_clearpay',
+			'bancontact',
+			'eps',
+			'giropay',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
+		] );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'card', 'affirm', 'afterpay_clearpay' ],
+		] );
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			affirm_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			afterpay_clearpay_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+		} );
+
+		const renderPaymentElements = () => {
+			render(
+				<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+					<PaymentMethods />
+				</WcPayUpeContextProvider>
+			);
+		};
+
+		renderPaymentElements();
+
+		const affirm = screen.getByRole( 'checkbox', {
+			name: 'Affirm',
+		} );
+		const afterpay = screen.getByRole( 'checkbox', {
+			name: 'Afterpay',
+		} );
+
+		expect( affirm ).toBeChecked();
+		expect( afterpay ).toBeChecked();
+	} );
+
+	test( 'upe setup banner has Buy Now Pay Later methods asset for eligible merchants', () => {
+		const featureFlagContext = {
+			featureFlags: { upeSettingsPreview: true, upe: false },
+		};
+		const upeContext = {
+			isUpeEnabled: false,
+			setIsUpeEnabled: () => null,
+			status: 'resolved',
+		};
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
+		render(
+			<WCPaySettingsContext.Provider value={ featureFlagContext }>
+				<WcPayUpeContext.Provider value={ upeContext }>
+					<PaymentMethods />
+				</WcPayUpeContext.Provider>
+			</WCPaySettingsContext.Provider>
+		);
+
+		const enableWooCommercePaymentText = screen.getByText(
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
+		);
+
+		expect( enableWooCommercePaymentText.parentElement ).not.toHaveClass(
+			'background-local-payment-methods'
+		);
+	} );
+
+	test( 'upe setup banner has only local methods in asset for non-BNPL-eligible merchants', () => {
+		const featureFlagContext = {
+			featureFlags: { upeSettingsPreview: true, upe: false },
+		};
+		const upeContext = {
+			isUpeEnabled: false,
+			setIsUpeEnabled: () => null,
+			status: 'resolved',
+		};
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = false;
+
+		render(
+			<WCPaySettingsContext.Provider value={ featureFlagContext }>
+				<WcPayUpeContext.Provider value={ upeContext }>
+					<PaymentMethods />
+				</WcPayUpeContext.Provider>
+			</WCPaySettingsContext.Provider>
+		);
+
+		const enableWooCommercePaymentText = screen.getByText(
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
+		);
+
+		expect( enableWooCommercePaymentText.parentElement ).toHaveClass(
+			'background-local-payment-methods'
+		);
 	} );
 
 	test.each( [
@@ -251,7 +404,7 @@ describe( 'PaymentMethods', () => {
 			);
 
 			const enableWooCommercePaymentText = screen.queryByText(
-				'Enable the new WooCommerce Payments checkout experience'
+				'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 			);
 
 			expect( enableWooCommercePaymentText ).toBeNull();
@@ -291,7 +444,7 @@ describe( 'PaymentMethods', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	test( 'clicking "Enable in your store" in express payments enable UPE and redirects', async () => {
+	test( 'clicking "Enable payment methods" in express payments enable UPE and redirects', async () => {
 		Object.defineProperty( window, 'location', {
 			value: {
 				href: 'example.com/',
@@ -318,7 +471,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableInYourStoreButton = screen.queryByRole( 'button', {
-			name: 'Enable in your store',
+			name: 'Enable payment methods',
 		} );
 
 		expect( enableInYourStoreButton ).toBeInTheDocument();
@@ -333,9 +486,9 @@ describe( 'PaymentMethods', () => {
 
 	it( 'should render the activation modal when requirements exist for the payment method', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
-		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'bancontact' ] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: {
+			bancontact_payments: {
 				status: upeCapabilityStatuses.UNREQUESTED,
 				requirements: [ 'company.tax_id' ],
 			},
@@ -348,26 +501,26 @@ describe( 'PaymentMethods', () => {
 		);
 
 		expect(
-			screen.queryByLabelText( 'Credit card / debit card' )
+			screen.queryByRole( 'checkbox', { name: /Bancontact/ } )
 		).toBeInTheDocument();
 
-		const cardCheckbox = screen.getByLabelText(
-			'Credit card / debit card'
-		);
+		const bancontactCheckbox = screen.queryByRole( 'checkbox', {
+			name: /Bancontact/,
+		} );
 
-		expect( cardCheckbox ).not.toBeChecked();
+		expect( bancontactCheckbox ).not.toBeChecked();
 
 		jest.useFakeTimers();
 
 		act( () => {
 			// Enabling a PM with requirements should show the activation modal
-			user.click( cardCheckbox );
-			jest.runAllTimers();
+			user.click( bancontactCheckbox );
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect(
 			screen.queryByText(
-				/You need to provide more information to enable Credit card \/ debit card on your checkout/
+				/You need to provide more information to enable Bancontact on your checkout/
 			)
 		).toBeInTheDocument();
 
@@ -375,10 +528,13 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	it( 'should render the delete modal on an already active payment method', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ], jest.fn() ] );
-		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'bancontact' ],
+			jest.fn(),
+		] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'bancontact' ] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: {
+			bancontact_payments: {
 				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
 			},
@@ -390,27 +546,23 @@ describe( 'PaymentMethods', () => {
 			</WcPayUpeContextProvider>
 		);
 
-		expect(
-			screen.queryByLabelText( 'Credit card / debit card' )
-		).toBeInTheDocument();
+		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
 
-		const cardCheckbox = screen.getByLabelText(
-			'Credit card / debit card'
-		);
+		const bancontactCheckbox = screen.getByLabelText( 'Bancontact' );
 
-		expect( cardCheckbox ).toBeChecked();
+		expect( bancontactCheckbox ).toBeChecked();
 
 		jest.useFakeTimers();
 
 		act( () => {
 			// Disabling an already active PM should show the delete modal
-			user.click( cardCheckbox );
-			jest.runAllTimers();
+			user.click( bancontactCheckbox );
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect(
 			screen.queryByText(
-				/Your customers will no longer be able to pay using Credit card \/ debit card\./
+				/Your customers will no longer be able to pay using Bancontact\./
 			)
 		).toBeInTheDocument();
 

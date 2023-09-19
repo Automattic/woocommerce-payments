@@ -13,4 +13,5 @@ export interface PaymentIntent {
 	metadata: Record< string, any >;
 	payment_method: string;
 	status: string;
+	order?: null | OrderDetails;
 }

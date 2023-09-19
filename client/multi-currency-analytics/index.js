@@ -81,7 +81,7 @@ addFilter(
 			! tableData.items ||
 			! tableData.items.data ||
 			! tableData.items.data.length ||
-			'orders' !== tableData.endpoint
+			tableData.endpoint !== 'orders'
 		) {
 			return tableData;
 		}

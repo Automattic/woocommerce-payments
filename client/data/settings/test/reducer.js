@@ -15,9 +15,9 @@ import {
 	updateAccountBusinessSupportEmail,
 	updateAccountBusinessSupportPhone,
 	updateAccountBrandingLogo,
-	updateIsPlatformCheckoutEnabled,
-	updatePlatformCheckoutCustomMessage,
-	updatePlatformCheckoutStoreLogo,
+	updateIsWooPayEnabled,
+	updateWooPayCustomMessage,
+	updateWooPayStoreLogo,
 	updateIsClientSecretEncryptionEnabled,
 } from '../actions';
 
@@ -376,72 +376,64 @@ describe( 'Settings reducer tests', () => {
 		);
 	} );
 
-	describe( 'SET_IS_PLATFORM_CHECKOUT_ENABLED', () => {
-		test( 'toggles `data.is_platform_checkout_enabled`', () => {
+	describe( 'SET_IS_WOOPAY_ENABLED', () => {
+		test( 'toggles `data.is_woopay_enabled`', () => {
 			const oldState = {
 				data: {
-					is_platform_checkout_enabled: false,
+					is_woopay_enabled: false,
 				},
 				savingError: null,
 			};
 
-			const state = reducer(
-				oldState,
-				updateIsPlatformCheckoutEnabled( true )
-			);
+			const state = reducer( oldState, updateIsWooPayEnabled( true ) );
 
-			expect( state.data.is_platform_checkout_enabled ).toBeTruthy();
+			expect( state.data.is_woopay_enabled ).toBeTruthy();
 		} );
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					is_platform_checkout_enabled: false,
+					is_woopay_enabled: false,
 					baz: 'quux',
 				},
 				savingError: {},
 			};
 
-			const state = reducer(
-				oldState,
-				updateIsPlatformCheckoutEnabled( true )
-			);
+			const state = reducer( oldState, updateIsWooPayEnabled( true ) );
 
 			expect( state ).toEqual( {
 				foo: 'bar',
 				savingError: null,
 				data: {
-					is_platform_checkout_enabled: true,
+					is_woopay_enabled: true,
 					baz: 'quux',
 				},
 			} );
 		} );
 	} );
 
-	describe( 'SET_PLATFORM_CHECKOUT_CUSTOM_MESSAGE', () => {
-		test( 'toggle `data.platform_checkout_custom_message`', () => {
+	describe( 'SET_WOOPAY_CUSTOM_MESSAGE', () => {
+		test( 'toggle `data.woopay_custom_message`', () => {
 			const oldState = {
 				data: {
-					platform_checkout_custom_message: '',
+					woopay_custom_message: '',
 				},
 			};
 
 			const state = reducer(
 				oldState,
-				updatePlatformCheckoutCustomMessage( 'test' )
+				updateWooPayCustomMessage( 'test' )
 			);
 
-			expect( state.data.platform_checkout_custom_message ).toEqual(
-				'test'
-			);
+			expect( state.data.woopay_custom_message ).toEqual( 'test' );
 		} );
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					platform_checkout_custom_message: '',
+					woopay_custom_message: '',
 					baz: 'quux',
 				},
 				savingError: {},
@@ -449,13 +441,13 @@ describe( 'Settings reducer tests', () => {
 
 			const state = reducer(
 				oldState,
-				updatePlatformCheckoutCustomMessage( 'test' )
+				updateWooPayCustomMessage( 'test' )
 			);
 
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
-					platform_checkout_custom_message: 'test',
+					woopay_custom_message: 'test',
 					baz: 'quux',
 				},
 				savingError: null,
@@ -463,41 +455,35 @@ describe( 'Settings reducer tests', () => {
 		} );
 	} );
 
-	describe( 'SET_PLATFORM_CHECKOUT_STORE_LOGO', () => {
-		test( 'toggle `data.platform_checkout_store_logo`', () => {
+	describe( 'SET_WOOPAY_STORE_LOGO', () => {
+		test( 'toggle `data.woopay_store_logo`', () => {
 			const oldState = {
 				data: {
-					platform_checkout_store_logo: '',
+					woopay_store_logo: '',
 				},
 			};
 
-			const state = reducer(
-				oldState,
-				updatePlatformCheckoutStoreLogo( 'test' )
-			);
+			const state = reducer( oldState, updateWooPayStoreLogo( 'test' ) );
 
-			expect( state.data.platform_checkout_store_logo ).toEqual( 'test' );
+			expect( state.data.woopay_store_logo ).toEqual( 'test' );
 		} );
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
 				foo: 'bar',
 				data: {
-					platform_checkout_store_logo: '',
+					woopay_store_logo: '',
 					baz: 'quux',
 				},
 				savingError: {},
 			};
 
-			const state = reducer(
-				oldState,
-				updatePlatformCheckoutStoreLogo( 'test' )
-			);
+			const state = reducer( oldState, updateWooPayStoreLogo( 'test' ) );
 
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
-					platform_checkout_store_logo: 'test',
+					woopay_store_logo: 'test',
 					baz: 'quux',
 				},
 				savingError: null,

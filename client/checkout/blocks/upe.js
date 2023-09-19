@@ -1,8 +1,6 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-
 // Handled as an external dependency: see '/webpack.config.js:83'
 import {
 	registerPaymentMethod,
@@ -21,11 +19,10 @@ import { SavedTokenHandler } from './saved-token-handler';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
+import { isLinkEnabled } from '../utils/upe.js';
 
 const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
-const isStripeLinkEnabled =
-	paymentMethodsConfig.link !== undefined &&
-	paymentMethodsConfig.card !== undefined;
+const isStripeLinkEnabled = isLinkEnabled( paymentMethodsConfig );
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -48,7 +45,7 @@ registerPaymentMethod( {
 	canMakePayment: () => !! api.getStripe(),
 	paymentMethodId: PAYMENT_METHOD_NAME_CARD,
 	label: getCustomGatewayTitle( getConfig( 'paymentMethodsConfig' ) ),
-	ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
+	ariaLabel: 'WooPayments',
 	supports: {
 		showSavedCards: getConfig( 'isSavedCardsEnabled' ) ?? false,
 		showSaveOption:

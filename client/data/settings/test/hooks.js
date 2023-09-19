@@ -15,9 +15,9 @@ import {
 	useTestMode,
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
-	usePlatformCheckoutEnabledSettings,
-	usePlatformCheckoutCustomMessage,
-	usePlatformCheckoutStoreLogo,
+	useWooPayEnabledSettings,
+	useWooPayCustomMessage,
+	useWooPayStoreLogo,
 	useClientSecretEncryption,
 } from '../hooks';
 import { STORE_NAME } from '../../constants';
@@ -302,87 +302,81 @@ describe( 'Settings hooks tests', () => {
 		} );
 	} );
 
-	describe( 'usePlatformCheckoutEnabledSettings()', () => {
-		test( 'returns platform checkout setting from selector', () => {
+	describe( 'useWooPayEnabledSettings()', () => {
+		test( 'returns woopay setting from selector', () => {
 			actions = {
-				updateIsPlatformCheckoutEnabled: jest.fn(),
+				updateIsWooPayEnabled: jest.fn(),
 			};
 
 			selectors = {
-				getIsPlatformCheckoutEnabled: jest.fn( () => true ),
+				getIsWooPayEnabled: jest.fn( () => true ),
 			};
 
 			const [
-				isPlatformCheckoutEnabled,
-				updateIsPlatformCheckoutEnabled,
-			] = usePlatformCheckoutEnabledSettings();
+				isWooPayEnabled,
+				updateIsWooPayEnabled,
+			] = useWooPayEnabledSettings();
 
-			updateIsPlatformCheckoutEnabled( false );
+			updateIsWooPayEnabled( false );
 
-			expect( isPlatformCheckoutEnabled ).toEqual( true );
-			expect(
-				actions.updateIsPlatformCheckoutEnabled
-			).toHaveBeenCalledWith( false );
-		} );
-	} );
-
-	describe( 'usePlatformCheckoutCustomMessage()', () => {
-		test( 'returns and updates platform checkout custom message', () => {
-			const messageBeforeUpdate = '';
-			const messageAfterUpdate = 'test';
-
-			actions = {
-				updatePlatformCheckoutCustomMessage: jest.fn(),
-			};
-
-			selectors = {
-				getPlatformCheckoutCustomMessage: jest.fn(
-					() => messageBeforeUpdate
-				),
-			};
-
-			const [
-				platformCheckoutCustomMessage,
-				updatePlatformCheckoutCustomMessage,
-			] = usePlatformCheckoutCustomMessage();
-
-			updatePlatformCheckoutCustomMessage( messageAfterUpdate );
-
-			expect( platformCheckoutCustomMessage ).toEqual(
-				messageBeforeUpdate
+			expect( isWooPayEnabled ).toEqual( true );
+			expect( actions.updateIsWooPayEnabled ).toHaveBeenCalledWith(
+				false
 			);
-			expect(
-				actions.updatePlatformCheckoutCustomMessage
-			).toHaveBeenCalledWith( messageAfterUpdate );
 		} );
 	} );
 
-	describe( 'usePlatformCheckoutStoreLogo()', () => {
-		test( 'returns and updates platform checkout custom message', () => {
+	describe( 'useWooPayCustomMessage()', () => {
+		test( 'returns and updates woopay custom message', () => {
 			const messageBeforeUpdate = '';
 			const messageAfterUpdate = 'test';
 
 			actions = {
-				updatePlatformCheckoutStoreLogo: jest.fn(),
+				updateWooPayCustomMessage: jest.fn(),
 			};
 
 			selectors = {
-				getPlatformCheckoutStoreLogo: jest.fn(
-					() => messageBeforeUpdate
-				),
+				getWooPayCustomMessage: jest.fn( () => messageBeforeUpdate ),
 			};
 
 			const [
-				platformCheckoutStoreLogo,
-				updatePlatformCheckoutStoreLogo,
-			] = usePlatformCheckoutStoreLogo();
+				woopayCustomMessage,
+				updateWooPayCustomMessage,
+			] = useWooPayCustomMessage();
 
-			updatePlatformCheckoutStoreLogo( messageAfterUpdate );
+			updateWooPayCustomMessage( messageAfterUpdate );
 
-			expect( platformCheckoutStoreLogo ).toEqual( messageBeforeUpdate );
-			expect(
-				actions.updatePlatformCheckoutStoreLogo
-			).toHaveBeenCalledWith( messageAfterUpdate );
+			expect( woopayCustomMessage ).toEqual( messageBeforeUpdate );
+			expect( actions.updateWooPayCustomMessage ).toHaveBeenCalledWith(
+				messageAfterUpdate
+			);
+		} );
+	} );
+
+	describe( 'useWooPayStoreLogo()', () => {
+		test( 'returns and updates woopay custom message', () => {
+			const messageBeforeUpdate = '';
+			const messageAfterUpdate = 'test';
+
+			actions = {
+				updateWooPayStoreLogo: jest.fn(),
+			};
+
+			selectors = {
+				getWooPayStoreLogo: jest.fn( () => messageBeforeUpdate ),
+			};
+
+			const [
+				woopayStoreLogo,
+				updateWooPayStoreLogo,
+			] = useWooPayStoreLogo();
+
+			updateWooPayStoreLogo( messageAfterUpdate );
+
+			expect( woopayStoreLogo ).toEqual( messageBeforeUpdate );
+			expect( actions.updateWooPayStoreLogo ).toHaveBeenCalledWith(
+				messageAfterUpdate
+			);
 		} );
 	} );
 } );

@@ -38,7 +38,7 @@ export default {
 		message: __( 'Refunded', 'woocommerce-payments' ),
 	},
 	paid: {
-		type: 'light',
+		type: 'success',
 		message: __( 'Paid', 'woocommerce-payments' ),
 	},
 	authorized: {
@@ -54,6 +54,14 @@ export default {
 		message: __( 'Payment failed', 'woocommerce-payments' ),
 	},
 	blocked: {
+		type: 'alert',
+		message: __( 'Payment blocked', 'woocommerce-payments' ),
+	},
+	fraud_outcome_review: {
+		type: 'warning',
+		message: __( 'Needs review', 'woocommerce-payments' ),
+	},
+	fraud_outcome_block: {
 		type: 'alert',
 		message: __( 'Payment blocked', 'woocommerce-payments' ),
 	},

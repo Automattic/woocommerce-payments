@@ -5,6 +5,10 @@
  */
 import { getResourceId } from 'utils/data';
 import {
+	getFraudOutcomeTransactions,
+	getFraudOutcomeTransactionsError,
+	getFraudOutcomeTransactionsSummary,
+	getFraudOutcomeTransactionsSummaryError,
 	getTransactions,
 	getTransactionsError,
 	getTransactionsSummary,
@@ -43,6 +47,14 @@ describe( 'Transactions selectors', () => {
 	const emptyState = {
 		transactions: {
 			summary: {},
+			fraudProtection: {
+				review: {
+					summary: {},
+				},
+				block: {
+					summary: {},
+				},
+			},
 		},
 	};
 	const emptySummaryErrorState = {
@@ -50,6 +62,22 @@ describe( 'Transactions selectors', () => {
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
 					error: {},
+				},
+			},
+			fraudProtection: {
+				review: {
+					summary: {
+						[ getResourceId( mockQuery ) ]: {
+							error: {},
+						},
+					},
+				},
+				block: {
+					summary: {
+						[ getResourceId( mockQuery ) ]: {
+							error: {},
+						},
+					},
 				},
 			},
 		},
@@ -66,8 +94,31 @@ describe( 'Transactions selectors', () => {
 					data: mockSummary,
 				},
 			},
+			fraudProtection: {
+				review: {
+					[ getResourceId( mockQuery ) ]: {
+						data: mockTransactions,
+					},
+					summary: {
+						[ getResourceId( mockSummaryQuery ) ]: {
+							data: mockSummary,
+						},
+					},
+				},
+				block: {
+					[ getResourceId( mockQuery ) ]: {
+						data: mockTransactions,
+					},
+					summary: {
+						[ getResourceId( mockSummaryQuery ) ]: {
+							data: mockSummary,
+						},
+					},
+				},
+			},
 		},
 	};
+
 	const filledErrorState = {
 		transactions: {
 			[ getResourceId( mockQuery ) ]: {
@@ -76,6 +127,28 @@ describe( 'Transactions selectors', () => {
 			summary: {
 				[ getResourceId( mockSummaryQuery ) ]: {
 					error: mockError,
+				},
+			},
+			fraudProtection: {
+				review: {
+					[ getResourceId( mockQuery ) ]: {
+						error: mockError,
+					},
+					summary: {
+						[ getResourceId( mockSummaryQuery ) ]: {
+							error: mockError,
+						},
+					},
+				},
+				block: {
+					[ getResourceId( mockQuery ) ]: {
+						error: mockError,
+					},
+					summary: {
+						[ getResourceId( mockSummaryQuery ) ]: {
+							error: mockError,
+						},
+					},
 				},
 			},
 		},
@@ -138,5 +211,99 @@ describe( 'Transactions selectors', () => {
 		expect(
 			getTransactionsSummaryError( filledErrorState, mockSummaryQuery )
 		).toBe( expected );
+	} );
+
+	describe( 'Fraud outcome transactions', () => {
+		[ 'review', 'block' ].forEach( ( status ) => {
+			test( `Returns empty transactions list when transactions list is empty - ${ status }`, () => {
+				expect(
+					getFraudOutcomeTransactions( emptyState, status, mockQuery )
+				).toStrictEqual( [] );
+			} );
+
+			test( `Returns transactions list from state - ${ status }`, () => {
+				const expected = mockTransactions;
+				expect(
+					getFraudOutcomeTransactions(
+						filledSuccessState,
+						status,
+						mockQuery
+					)
+				).toBe( expected );
+			} );
+
+			test( `Returns empty transactions list error when error is empty - ${ status }`, () => {
+				expect(
+					getFraudOutcomeTransactionsError(
+						emptyState,
+						status,
+						mockQuery
+					)
+				).toStrictEqual( {} );
+			} );
+
+			test( `Returns transactions list error from state - ${ status }`, () => {
+				const expected = mockError;
+				expect(
+					getFraudOutcomeTransactionsError(
+						filledErrorState,
+						status,
+						mockQuery
+					)
+				).toBe( expected );
+			} );
+
+			test( `Returns empty transactions summary when transactions summary is empty - ${ status }`, () => {
+				expect(
+					getFraudOutcomeTransactionsSummary(
+						emptyState,
+						status,
+						mockSummaryQuery
+					)
+				).toStrictEqual( {} );
+			} );
+
+			test( `Returns transactions summary from state - ${ status }`, () => {
+				const expected = mockSummary;
+				expect(
+					getFraudOutcomeTransactionsSummary(
+						filledSuccessState,
+						status,
+						mockSummaryQuery
+					)
+				).toBe( expected );
+			} );
+
+			test( `Returns empty transactions summary error when state is uninitialized - ${ status }`, () => {
+				expect(
+					getFraudOutcomeTransactionsSummaryError(
+						emptyState,
+						status,
+						mockSummaryQuery
+					)
+				).toStrictEqual( {} );
+			} );
+
+			test( `Returns empty transactions summary error when error is empty - ${ status }`, () => {
+				expect(
+					getFraudOutcomeTransactionsSummaryError(
+						emptySummaryErrorState,
+						status,
+						mockSummaryQuery
+					)
+				).toStrictEqual( {} );
+			} );
+
+			test( `Returns transactions summary error from state - ${ status }`, () => {
+				const expected = mockError;
+				expect(
+					getFraudOutcomeTransactionsSummaryError(
+						filledErrorState,
+						status,
+						mockSummaryQuery
+					)
+				).toBe( expected );
+			} );
+		} );
 	} );
 } );

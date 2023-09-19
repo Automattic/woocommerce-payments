@@ -76,6 +76,20 @@ function wcs_get_subscriptions( $args ) {
 	return ( WC_Subscriptions::$wcs_get_subscriptions )( $args );
 }
 
+function wcs_order_contains_renewal() {
+	if ( ! WC_Subscriptions::$wcs_order_contains_renewal ) {
+		return;
+	}
+	return ( WC_Subscriptions::$wcs_order_contains_renewal )();
+}
+
+function wcs_get_orders_with_meta_query( $args ) {
+	if ( ! WC_Subscriptions::$wcs_get_orders_with_meta_query ) {
+		return [];
+	}
+	return ( WC_Subscriptions::$wcs_get_orders_with_meta_query )( $args );
+}
+
 /**
  * Class WC_Subscriptions.
  *
@@ -83,11 +97,11 @@ function wcs_get_subscriptions( $args ) {
  */
 class WC_Subscriptions {
 	/**
-	 * Subscriptions version, defaults to 3.0.7
+	 * Subscriptions version, defaults to 4.0.0
 	 *
 	 * @var string
 	 */
-	public static $version = '3.0.7';
+	public static $version = '4.0.0';
 
 	/**
 	 * wcs_order_contains_subscription mock.
@@ -159,6 +173,20 @@ class WC_Subscriptions {
 	 */
 	public static $wcs_create_renewal_order = null;
 
+	/**
+	 * wcs_get_orders_with_meta_query mock.
+	 *
+	 * @var function
+	 */
+	public static $wcs_get_orders_with_meta_query = null;
+
+	/**
+	 * wcs_order_contains_renewal mock.
+	 *
+	 * @var function
+	 */
+	public static $wcs_order_contains_renewal = null;
+
 	public static function set_wcs_order_contains_subscription( $function ) {
 		self::$wcs_order_contains_subscription = $function;
 	}
@@ -197,5 +225,13 @@ class WC_Subscriptions {
 
 	public static function wcs_create_renewal_order( $function ) {
 		self::$wcs_create_renewal_order = $function;
+	}
+
+	public static function wcs_order_contains_renewal( $function ) {
+		self::$wcs_order_contains_renewal = $function;
+	}
+
+	public static function is_duplicate_site() {
+		return false;
 	}
 }

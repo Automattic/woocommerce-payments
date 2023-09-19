@@ -10,28 +10,24 @@ runs:
       run: echo -e "machine github.com\n  login $E2E_GH_TOKEN" > ~/.netrc
 
     # PHP setup
-    - name: PHP Setup
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '7.4'
-        tools: composer
-        coverage: none
+    - name: "Set up PHP"
+      uses: ./.github/actions/setup-php
 
     # Composer setup
     - name: Setup Composer
       shell: bash
-      run: composer self-update 2.0.6
+      run: composer self-update
 
     # Use node version from .nvmrc
     - name: Setup NodeJS
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version-file: '.nvmrc'
 
     # Cache composer dependencies
     - name: Cache composer dependencies
       id: composer-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ./vendor
         key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
@@ -39,7 +35,7 @@ runs:
     # Cache node dependencies
     - name: Cache node dependencies
       id: node-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ./node_modules
         key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
@@ -58,6 +54,7 @@ runs:
 
     # Build WCPay client
     - name: Build WCPay Client
+      if: ${{ ! env.WCPAY_USE_BUILD_ARTIFACT }}
       shell: bash
       run: |
         echo "::group::Build WCPay client"

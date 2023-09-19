@@ -15,9 +15,9 @@ import { useDisputes, useDisputesSummary } from 'data/index';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
 import {
+	CachedDispute,
 	DisputeReason,
 	DisputeStatus,
-	CachedDispute,
 } from 'wcpay/types/disputes';
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -35,7 +35,10 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
@@ -98,7 +101,7 @@ const mockDisputes = [
 		customer_country: 'US',
 		status: 'needs_response' as DisputeStatus,
 		created: '2019-11-01 23:59:59',
-		due_by: '2019-11-08 02:46:00',
+		due_by: '2019-11-10 02:46:00',
 		order: {
 			number: '1',
 			customer_url: 'https://shop.local',
@@ -144,6 +147,11 @@ const mockDisputes = [
 
 describe( 'Disputes list', () => {
 	beforeEach( () => {
+		// mock Date.now that moment library uses to get current date for testing purposes
+		Date.now = jest.fn( () =>
+			new Date( '2019-11-07T12:33:37.000Z' ).getTime()
+		);
+
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
 			connect: {
@@ -161,6 +169,11 @@ describe( 'Disputes list', () => {
 				},
 			},
 		};
+	} );
+
+	afterEach( () => {
+		// roll it back
+		Date.now = () => new Date().getTime();
 	} );
 
 	test( 'renders correctly', () => {
@@ -310,7 +323,9 @@ describe( 'Disputes list', () => {
 				`"${ displayFirstDispute[ 1 ] }"`
 			); //status
 
-			expect( csvFirstDispute[ 4 ] ).toBe( displayFirstDispute[ 2 ] ); // reason
+			expect( csvFirstDispute[ 4 ] ).toBe(
+				`"${ displayFirstDispute[ 2 ] }"`
+			); // reason
 
 			expect( csvFirstDispute[ 6 ] ).toBe( displayFirstDispute[ 4 ] ); // order
 
@@ -318,12 +333,8 @@ describe( 'Disputes list', () => {
 				`"${ displayFirstDispute[ 5 ] }"`
 			); // customer
 
-			expect( formatDate( csvFirstDispute[ 10 ], 'Y-m-d' ) ).toBe(
-				formatDate( displayFirstDispute[ 6 ], 'Y-m-d' )
-			); // date disputed on
-
 			expect( formatDate( csvFirstDispute[ 11 ], 'Y-m-d / g:iA' ) ).toBe(
-				formatDate( displayFirstDispute[ 7 ], 'Y-m-d / g:iA' )
+				formatDate( displayFirstDispute[ 6 ], 'Y-m-d / g:iA' )
 			); // date respond by
 		} );
 	} );

@@ -27,6 +27,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 		$this->title       = __( 'Credit card / debit card', 'woocommerce-payments' );
 		$this->is_reusable = true;
 		$this->currencies  = [];// All currencies are supported.
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -49,14 +50,25 @@ class CC_Payment_Method extends UPE_Payment_Method {
 			'unknown' => __( 'unknown', 'woocommerce-payments' ),
 		];
 
+		$card_network = $details['network'] ?? $details['networks']['available'][0];
+
 		$payment_method_title = sprintf(
 			// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
 			__( '%1$s %2$s card', 'woocommerce-payments' ),
-			ucfirst( $details['network'] ),
+			ucfirst( $card_network ),
 			$funding_types[ $details['funding'] ]
 		);
 
 		return $payment_method_title;
+	}
+
+	/**
+	 * Returns testing credentials to be printed at checkout in test mode.
+	 *
+	 * @return string
+	 */
+	public function get_testing_instructions() {
+		return __( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a>here</a>.', 'woocommerce-payments' );
 	}
 
 }

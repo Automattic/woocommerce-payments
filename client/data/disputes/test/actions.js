@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -29,7 +30,7 @@ describe( 'acceptDispute action', () => {
 		const generator = acceptDispute( 'dp_mock1' );
 
 		expect( generator.next().value ).toEqual(
-			dispatch( 'wc/payments', 'startResolution', 'getDispute', [
+			controls.dispatch( 'wc/payments', 'startResolution', 'getDispute', [
 				'dp_mock1',
 			] )
 		);
@@ -43,15 +44,18 @@ describe( 'acceptDispute action', () => {
 			updateDispute( mockDispute )
 		);
 		expect( generator.next().value ).toEqual(
-			dispatch( 'wc/payments', 'finishResolution', 'getDispute', [
-				'dp_mock1',
-			] )
+			controls.dispatch(
+				'wc/payments',
+				'finishResolution',
+				'getDispute',
+				[ 'dp_mock1' ]
+			)
 		);
 
 		const noticeAction = generator.next().value;
 		expect( window.location.replace ).toHaveBeenCalledTimes( 1 );
 		expect( noticeAction ).toEqual(
-			dispatch(
+			controls.dispatch(
 				'core/notices',
 				'createSuccessNotice',
 				expect.any( String )
@@ -65,7 +69,7 @@ describe( 'acceptDispute action', () => {
 
 		generator.next();
 		expect( generator.throw( { code: 'error' } ).value ).toEqual(
-			dispatch(
+			controls.dispatch(
 				'core/notices',
 				'createErrorNotice',
 				expect.any( String )

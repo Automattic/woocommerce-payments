@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Make the tooltips on UPE settings ( Settings > Payments accepted on checkout ) , show the correct custom rates whenever applicable.

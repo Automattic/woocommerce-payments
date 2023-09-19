@@ -10,6 +10,7 @@
 	&__enabled-methods-list {
 		display: flex;
 		align-items: center;
+		flex-wrap: wrap;
 
 		> *:not( :last-child ) {
 			margin-right: $grid-unit-10;

@@ -152,7 +152,9 @@ describe( 'CurrencyInformationForMethods', () => {
 		);
 
 		expect(
-			screen.queryByText( /we\'ll add Euro \(€\) to your store/ )
+			screen.queryByText( /we\'ll add Euro \(€\) to your store/, {
+				ignore: '.a11y-speak-region',
+			} )
 		).toBeInTheDocument();
 	} );
 
@@ -167,13 +169,19 @@ describe( 'CurrencyInformationForMethods', () => {
 
 		expect(
 			screen.queryByText(
-				/(we\'ll add|and) Euro \(€\) (and|to your store)/
+				/(we\'ll add|and) Euro \(€\) (and|to your store)/,
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 
 		expect(
 			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
+				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/,
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 	} );

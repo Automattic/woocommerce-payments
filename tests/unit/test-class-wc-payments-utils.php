@@ -138,13 +138,13 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 	public function test_esc_interpolated_html_does_not_escape_sprintf_placeholders() {
 		$result = WC_Payments_Utils::esc_interpolated_html(
-			'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).',
+			'A payment of %1$s was <strong>authorized</strong> using WooPayments (<code>%2$s</code>).',
 			[
 				'strong' => '<strong/>',
 				'code'   => '<code>',
 			]
 		);
-		$this->assertEquals( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', $result );
+		$this->assertEquals( 'A payment of %1$s was <strong>authorized</strong> using WooPayments (<code>%2$s</code>).', $result );
 	}
 
 	public function test_esc_interpolated_html_handles_nested_tags() {
@@ -354,7 +354,9 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_zero_decimal_currency() {
 		$this->assertEquals( false, WC_Payments_Utils::is_zero_decimal_currency( 'usd' ) );
+		$this->assertEquals( false, WC_Payments_Utils::is_zero_decimal_currency( 'USD' ) );
 		$this->assertEquals( true, WC_Payments_Utils::is_zero_decimal_currency( 'jpy' ) );
+		$this->assertEquals( true, WC_Payments_Utils::is_zero_decimal_currency( 'JPY' ) );
 	}
 
 	public function test_it_returns_is_payment_settings_page_for_main_settings_page() {

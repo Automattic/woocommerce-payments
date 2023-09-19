@@ -10,6 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { getUserTimeZone } from 'wcpay/utils/test-utils';
 import moment from 'moment';
 import os from 'os';
 
@@ -35,7 +36,10 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
@@ -159,6 +163,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		},
 		channel: 'in_person',
 		source_identifier: '1234',
+		source_device: 'ios',
 		customer_name: 'Best customer',
 		customer_email: 'best@customer.com',
 		customer_country: 'US',
@@ -386,6 +391,15 @@ describe( 'Transactions list', () => {
 			expect( tableSummary ).toHaveLength( 1 );
 			expect( container ).toMatchSnapshot();
 		} );
+
+		test( 'renders table with a TTP source device', () => {
+			( { container } = render( <TransactionsList /> ) );
+			const ttpLogo = container.querySelectorAll(
+				'.woocommerce-taptopay__icon'
+			);
+
+			expect( ttpLogo ).toHaveLength( 1 );
+		} );
 	} );
 
 	test( 'subscription column renders correctly', () => {
@@ -519,8 +533,9 @@ describe( 'Transactions list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
-					path:
-						'/wc/v3/payments/transactions/download?user_email=mock%40example.com&user_timezone=-05%3A00',
+					path: `/wc/v3/payments/transactions/download?user_email=mock%40example.com&user_timezone=${ encodeURIComponent(
+						getUserTimeZone()
+					) }`,
 				} );
 			} );
 		} );
@@ -574,8 +589,9 @@ describe( 'Transactions list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
-					path:
-						'/wc/v3/payments/transactions/download?user_email=mock%40example.com&deposit_id=po_mock&user_timezone=-05%3A00',
+					path: `/wc/v3/payments/transactions/download?user_email=mock%40example.com&deposit_id=po_mock&user_timezone=${ encodeURIComponent(
+						getUserTimeZone()
+					) }`,
 				} );
 			} );
 		} );

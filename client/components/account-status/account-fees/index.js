@@ -10,26 +10,13 @@ import { __ } from '@wordpress/i18n';
  */
 import ExpirationBar from './expiration-bar';
 import ExpirationDescription from './expiration-description';
-import { getCurrency, formatCurrencyName } from 'utils/currency';
+import { formatCurrencyName, getCurrency } from 'utils/currency';
 import {
 	formatAccountFeesDescription,
 	getCurrentBaseFee,
 	getTransactionsPaymentMethodName,
 } from 'utils/account-fees';
 
-const LearnMoreLink = () => {
-	return (
-		<p>
-			<a
-				href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				{ __( 'Learn more', 'woocommerce-payments' ) }
-			</a>
-		</p>
-	);
-};
 const AccountFee = ( props ) => {
 	const { accountFee, paymentMethod } = props;
 	const baseFee = accountFee.base;
@@ -56,7 +43,7 @@ const AccountFees = ( props ) => {
 	let haveDiscounts = false;
 	const activeDiscounts = Object.entries( accountFees ).map(
 		( [ key, value ] ) => {
-			if ( 0 === value.fee.discount.length ) {
+			if ( value.fee.discount.length === 0 ) {
 				return null;
 			}
 			haveDiscounts = true;
@@ -75,7 +62,6 @@ const AccountFees = ( props ) => {
 				<h4>{ __( 'Active discounts', 'woocommerce-payments' ) }</h4>
 			) }
 			{ activeDiscounts }
-			{ haveDiscounts && <LearnMoreLink /> }
 		</>
 	);
 };

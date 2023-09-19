@@ -107,7 +107,7 @@ Array [
       </Link>,
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment disputed as Fraudulent.",
+    "headline": "Payment disputed as Transaction unauthorized.",
     "icon": <CrossIcon
       className="is-error"
     />,
@@ -163,16 +163,16 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "21,64 $ USD will be deducted from a future deposit.",
+    "headline": "21,64 $ USD will be deducted from a future deposit.",
     "icon": <MinusIcon />,
   },
   Object {
     "body": Array [
-      "1,00 EUR → 1,20222 USD: 21,64 $ USD",
+      "1,00 EUR → 1,20222 USD: 21,64 $ USD",
       "",
     ],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "A payment of 18,00 € EUR was successfully refunded.",
+    "headline": "A payment of 18,00 € EUR was successfully refunded.",
     "icon": <CheckmarkIcon
       className="is-success"
     />,
@@ -191,16 +191,16 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "6,00 $ USD will be deducted from a future deposit.",
+    "headline": "6,00 $ USD will be deducted from a future deposit.",
     "icon": <MinusIcon />,
   },
   Object {
     "body": Array [
-      "1,00 EUR → 1,2 USD: 6,00 $ USD",
+      "1,00 EUR → 1,2 USD: 6,00 $ USD",
       "Acquirer Reference Number (ARN) 4785767637658864",
     ],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "A payment of 5,00 € EUR was successfully refunded.",
+    "headline": "A payment of 5,00 € EUR was successfully refunded.",
     "icon": <CheckmarkIcon
       className="is-success"
     />,
@@ -343,7 +343,7 @@ Array [
       </Link>,
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment disputed as Fraudulent.",
+    "headline": "Payment disputed as Transaction unauthorized.",
     "icon": <CrossIcon
       className="is-error"
     />,
@@ -571,7 +571,7 @@ Array [
       </Link>,
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment disputed as Fraudulent.",
+    "headline": "Payment disputed as Transaction unauthorized.",
     "icon": <CrossIcon
       className="is-error"
     />,
@@ -686,6 +686,56 @@ Array [
     ],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of $50.00 USD was successfully refunded.",
+    "icon": <CheckmarkIcon
+      className="is-success"
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents single currency events in person payments - tap to pay 1`] = `
+Array [
+  Object {
+    "body": Array [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": "Payment status changed to Paid.",
+    "icon": <SyncIcon />,
+  },
+  Object {
+    "body": Array [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": <React.Fragment>
+      $19.19 USD was added to your 
+      <Link
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        type="wc-admin"
+      >
+        Apr 2, 2020 deposit
+      </Link>
+      .
+    </React.Fragment>,
+    "icon": <PlusIcon />,
+  },
+  Object {
+    "body": Array [
+      undefined,
+      "Fee (2.6% + $0.20): $-0.61",
+      <ul
+        className="fee-breakdown-list"
+      >
+         
+        <li>
+          Base fee: 2.6% + $0.10
+        </li>
+        <li>
+          Tap to pay transaction fee: 0% + $0.10
+        </li>
+         
+      </ul>,
+      "Net deposit: $19.19 USD",
+    ],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": "A payment of $19.80 USD was successfully charged.",
     "icon": <CheckmarkIcon
       className="is-success"
     />,

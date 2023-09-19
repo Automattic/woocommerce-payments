@@ -44,7 +44,7 @@ const getColumns = (): Column[] =>
 			screenReaderLabel: __( 'Authorized on', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
-			defaultOrder: 'desc',
+			defaultOrder: 'asc',
 			cellClassName: 'date-time',
 			isSortable: true,
 			defaultSort: true,
@@ -191,6 +191,7 @@ export const AuthorizationsList = (): JSX.Element => {
 					<CaptureAuthorizationButton
 						orderId={ auth.order_id }
 						paymentIntentId={ auth.payment_intent_id }
+						buttonIsSmall={ false }
 						onClick={ () => {
 							wcpayTracks.recordEvent(
 								'payments_transactions_uncaptured_list_capture_charge_button_click',

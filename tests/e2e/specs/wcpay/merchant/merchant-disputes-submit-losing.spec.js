@@ -2,14 +2,13 @@
  * External dependencies
  */
 import config from 'config';
-
-const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
-
 /**
  * Internal dependencies
  */
 import { merchantWCP } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
+
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 let orderId;
 
@@ -80,7 +79,7 @@ describe( 'Disputes > Submit losing dispute', () => {
 			}
 		);
 		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-details .components-card > .components-card__header',
+			'div.wcpay-dispute-details .components-card .components-card__header',
 			{
 				text: 'Dispute: Product not received',
 			}

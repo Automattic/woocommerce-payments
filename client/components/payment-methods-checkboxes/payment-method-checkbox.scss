@@ -1,3 +1,5 @@
+@import './../../stylesheets/abstracts/variables';
+
 .payment-method-checkbox {
 	display: flex;
 	flex-wrap: nowrap;
@@ -11,9 +13,9 @@
 		row-gap: 5px;
 	}
 
-	margin-bottom: $grid-unit-20;
+	margin-bottom: $gap;
 	&:last-child {
-		margin-bottom: 0;
+		margin-bottom: $gap-smallest;
 	}
 
 	& > * {
@@ -21,6 +23,12 @@
 
 		@include breakpoint( '<660px' ) {
 			flex-basis: 100%;
+		}
+	}
+
+	input[type='checkbox'] {
+		&:disabled {
+			cursor: not-allowed;
 		}
 	}
 
@@ -72,25 +80,17 @@
 		text-transform: initial;
 	}
 
+	&__required-label {
+		display: block;
+		font-size: 11px;
+		line-height: 1em;
+		color: $gray-700;
+	}
+
 	&__info {
 		> * {
 			margin: 0;
 			color: $gray-600;
-		}
-
-		// To be removed when @wordpress/components is upgraded to 17.0.0.
-		.components-visually-hidden {
-			border: 0;
-			clip: rect( 1px, 1px, 1px, 1px );
-			-webkit-clip-path: inset( 50% );
-			clip-path: inset( 50% );
-			height: 1px;
-			margin: -1px;
-			overflow: hidden;
-			padding: 0;
-			position: absolute;
-			width: 1px;
-			word-wrap: normal;
 		}
 	}
 
@@ -110,6 +110,22 @@
 			pointer-events: none;
 		}
 	}
+
+	.wcpay-pill {
+		margin-left: $gap-smaller;
+
+		&.payment-status-pending-approval,
+		&.payment-status-pending-verification {
+			border: 0 solid transparent;
+			background: #f0b849;
+			color: #1f1f1f;
+		}
+		&.payment-status-inactive {
+			border: 0 solid transparent;
+			background: $studio-yellow-5;
+			color: $studio-yellow-50;
+		}
+	}
 }
 
 .woocommerce-payments__payment-method-icon {
@@ -117,20 +133,5 @@
 		svg {
 			margin-right: 4px;
 		}
-	}
-}
-
-.wcpay-pill {
-	margin-left: $gap-smaller;
-	&.payment-status-pending-approval,
-	&.payment-status-pending-verification {
-		border: 0 solid transparent;
-		background: #f0b849;
-		color: #1f1f1f;
-	}
-	&.payment-status-inactive {
-		border: 0 solid transparent;
-		background: #cc1818;
-		color: #fff;
 	}
 }

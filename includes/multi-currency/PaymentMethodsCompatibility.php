@@ -66,7 +66,11 @@ class PaymentMethodsCompatibility {
 				if ( in_array( $method, [ 'card', 'card_present' ], true ) ) {
 					return $result;
 				}
-				$method_key = Payment_Method::search( $method );
+				try {
+					$method_key = Payment_Method::search( $method );
+				} catch ( \InvalidArgumentException $e ) {
+					return $result;
+				}
 				$class_key  = ucfirst( strtolower( $method_key ? $method_key : $method ) );
 				$class_name = "\\WCPay\\Payment_Methods\\{$class_key}_Payment_Method";
 				if ( ! class_exists( $class_name ) ) {
@@ -126,6 +130,10 @@ class PaymentMethodsCompatibility {
 			return;
 		}
 
+		/**
+		 * The set_enabled_currencies method throws an exception if any currencies passed are not found in the current available currencies.
+		 * Any currencies not found are filtered out above, so we shouldn't need a try/catch here.
+		 */
 		$this->multi_currency->set_enabled_currencies( array_merge( array_keys( $enabled_currencies ), $missing_currency_codes ) );
 	}
 

@@ -2,7 +2,7 @@
 @import '../../stylesheets/abstracts/variables';
 @import '/node_modules/intl-tel-input/build/css/intlTelInput.css';
 
-.platform-checkout-save-new-user-container {
+.woopay-save-new-user-container {
 	display: flex;
 	flex-direction: column;
 	gap: $gap;
@@ -43,16 +43,12 @@
 		transition: max-height 0.5s ease-in-out;
 		margin: 0 !important;
 		padding: 0 !important;
-		max-height: 0;
 		overflow-y: hidden;
+		max-height: 21.875rem;
 
 		&::before,
 		&::after {
 			display: none;
-		}
-
-		&.visible {
-			max-height: 21.875rem;
 		}
 
 		> div {
@@ -111,7 +107,7 @@
 		margin-top: $gap-smaller;
 	}
 
-	.platform-checkout-save-new-user-container + .place-order {
+	.woopay-save-new-user-container + .place-order {
 		margin-top: $gap-large !important;
 	}
 }
@@ -131,6 +127,14 @@
 .iti {
 	width: 100%;
 	margin-top: $gap-large;
+
+	&--container {
+		margin-top: 0;
+	}
+}
+
+.no-top-margin .iti {
+	margin-top: 0;
 }
 
 .iti__selected-flag {

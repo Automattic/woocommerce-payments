@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent checkboxes from getting unchecked automatically within the UPE onboarding form, when we click multiple selections within a very short time ( 1.5 seconds )

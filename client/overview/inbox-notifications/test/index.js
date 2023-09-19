@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useSelect, useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { render } from '@testing-library/react';
 
 /**
@@ -10,7 +10,21 @@ import { render } from '@testing-library/react';
 import { updateWoocommerceUserMeta } from 'utils/update-woocommerce-user-meta';
 import InboxPanel from '..';
 
-jest.mock( '@wordpress/data' );
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	combineReducers: jest.fn(),
+	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+	useSelect: jest.fn(),
+} ) );
+
 jest.mock( '@woocommerce/components', () => {
 	return {
 		EmptyContent: () => <div>empty-content</div>,

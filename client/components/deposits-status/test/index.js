@@ -10,14 +10,6 @@ import { render } from '@testing-library/react';
 import DepositsStatus from '../';
 
 describe( 'DepositsStatus', () => {
-	beforeEach( () => {
-		global.wcpaySettings = {
-			featureFlags: {
-				customDepositSchedules: false,
-			},
-		};
-	} );
-
 	test( 'renders disabled status', () => {
 		const { container: depositsStatus } = renderDepositsStatus( {
 			status: 'disabled',
@@ -53,14 +45,15 @@ describe( 'DepositsStatus', () => {
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
-	test( 'renders manual status', async () => {
+	test( 'renders blocked status', async () => {
 		const { container: depositsStatus, findByText } = renderDepositsStatus(
 			{
-				status: 'enabled',
-				interval: 'manual',
+				status: 'blocked',
+				interval: 'daily',
 				iconSize: 20,
 			}
 		);
+
 		expect( await findByText( /Temporarily suspended/i ) ).toBeVisible();
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
@@ -78,26 +71,18 @@ describe( 'DepositsStatus', () => {
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
-	test( 'renders blocked status with feature flag enabled', async () => {
-		// Enable custom deposit schedules feature flag.
-		global.wcpaySettings.featureFlags.customDepositSchedules = true;
+	test( 'renders pending verification status', async () => {
+		const { container: depositsStatus } = renderDepositsStatus( {
+			status: 'blocked',
+			accountStatus: 'pending_verification',
+			interval: 'daily',
+			iconSize: 20,
+		} );
 
-		const { container: depositsStatus, findByText } = renderDepositsStatus(
-			{
-				status: 'blocked',
-				interval: 'daily',
-				iconSize: 20,
-			}
-		);
-
-		expect( await findByText( /Temporarily suspended/i ) ).toBeVisible();
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
-	test( 'renders manual status with feature flag enabled', async () => {
-		// Enable custom deposit schedules feature flag.
-		global.wcpaySettings.featureFlags.customDepositSchedules = true;
-
+	test( 'renders manual status', async () => {
 		const { container: depositsStatus, findByText } = renderDepositsStatus(
 			{
 				status: 'enabled',
@@ -119,11 +104,21 @@ describe( 'DepositsStatus', () => {
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
-	function renderDepositsStatus( { status, interval, iconSize } ) {
+	function renderDepositsStatus( {
+		status,
+		interval,
+		accountStatus,
+		poEnabled = false,
+		poComplete = false,
+		iconSize,
+	} ) {
 		return render(
 			<DepositsStatus
 				status={ status }
+				accountStatus={ accountStatus }
 				interval={ interval }
+				poEnabled={ poEnabled }
+				poComplete={ poComplete }
 				iconSize={ iconSize }
 			/>
 		);

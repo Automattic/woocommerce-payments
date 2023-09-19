@@ -173,6 +173,12 @@ Handy utility scripts for managing environment:
 
 <br>
 
+For running E2E tests on an Atomic site, follow the same guidelines mentioned above, and specify `NODE_ENV=atomic`, such as this:
+
+`npm run test:e2e-dev -- --NODE_ENV=atomic`
+
+Note that, at the moment, we are only able to run a subset of the regular E2E tests.
+
 ## Writing tests
 
 Package `@woocommerce/e2e-environment` overrides `it` method to attach custom reporter for failed tests.

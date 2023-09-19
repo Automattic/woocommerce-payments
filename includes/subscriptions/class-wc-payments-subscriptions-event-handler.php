@@ -5,7 +5,9 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Logger;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 
 /**
  * Subscriptions Event/Webhook Handler class
@@ -54,10 +56,22 @@ class WC_Payments_Subscriptions_Event_Handler {
 	public function handle_invoice_upcoming( array $body ) {
 		$event_object          = $this->get_event_property( $body, [ 'data', 'object' ] );
 		$wcpay_subscription_id = $this->get_event_property( $event_object, 'subscription' );
-		$wcpay_customer_id     = $this->get_event_property( $event_object, 'customer' );
-		$wcpay_discounts       = $this->get_event_property( $event_object, 'discounts' );
-		$wcpay_lines           = $this->get_event_property( $event_object, [ 'lines', 'data' ] );
-		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
+
+		/**
+		 * When a store is in staging mode, we don't want any webhook handling response to be sent to the server.
+		 *
+		 * Sending requests from staging sites can have unintended consequences for the live store. For example,
+		 * Subscriptions which renew on the staging site will lead to paused subscriptions at Stripe and result in
+		 * missed renewal payments.
+		 */
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
+			$this->log_skipped_webhook_due_to_staging( 'invoice.upcoming', $wcpay_subscription_id );
+			return;
+		}
+
+		$wcpay_discounts = $this->get_event_property( $event_object, 'discounts' );
+		$wcpay_lines     = $this->get_event_property( $event_object, [ 'lines', 'data' ] );
+		$subscription    = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
 			throw new Invalid_Webhook_Data_Exception( __( 'Cannot find subscription to handle the "invoice.upcoming" event.', 'woocommerce-payments' ) );
@@ -72,6 +86,14 @@ class WC_Payments_Subscriptions_Event_Handler {
 				$this->subscription_service->cancel_subscription( $subscription );
 			} else {
 				$this->subscription_service->suspend_subscription( $subscription );
+				$subscription->add_order_note( __( 'Suspended WCPay Subscription in invoice.upcoming webhook handler because subscription next_payment date is 0.', 'woocommerce-payments' ) );
+				Logger::log(
+					sprintf(
+						'Suspended WCPay Subscription in invoice.upcoming webhook handler because subscription next_payment date is 0. WC ID: %d; WCPay ID: %s.',
+						$subscription->get_id(),
+						$wcpay_subscription_id
+					)
+				);
 			}
 		} else {
 			// Translators: %s Scheduled/upcoming payment date in Y-m-d H:i:s format.
@@ -88,13 +110,27 @@ class WC_Payments_Subscriptions_Event_Handler {
 	 * @param array $body The event body that triggered the webhook.
 	 *
 	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function handle_invoice_paid( array $body ) {
 		$event_data            = $this->get_event_property( $body, 'data' );
 		$event_object          = $this->get_event_property( $event_data, 'object' );
 		$wcpay_subscription_id = $this->get_event_property( $event_object, 'subscription' );
-		$wcpay_invoice_id      = $this->get_event_property( $event_object, 'id' );
-		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
+
+		/**
+		 * When a store is in staging mode, we don't want any webhook handling response to be sent to the server.
+		 *
+		 * Sending requests from staging sites can have unintended consequences for the live store. For example,
+		 * Subscriptions which renew on the staging site will lead to paused subscriptions at Stripe and result in
+		 * missed renewal payments.
+		 */
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
+			$this->log_skipped_webhook_due_to_staging( 'invoice.paid', $wcpay_subscription_id );
+			return;
+		}
+
+		$wcpay_invoice_id = $this->get_event_property( $event_object, 'id' );
+		$subscription     = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
 			throw new Invalid_Webhook_Data_Exception( __( 'Cannot find subscription for the incoming "invoice.paid" event.', 'woocommerce-payments' ) );
@@ -124,9 +160,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 			 * This ensures the downstream effects take place, e.g. a payment status order note is added and the
 			 * 'woocommerce_subscription_payment_complete' action is fired.
 			 */
-			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 			$subscription->update_status( 'on-hold' );
-			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 
 			/*
 			 * Remove the reactivate_subscription callback that occurs when a subscription transitions from on-hold to active.
@@ -152,6 +188,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 
 		// Remove pending invoice ID in case one was recorded for previous failed renewal attempts.
 		$this->invoice_service->mark_pending_invoice_paid_for_subscription( $subscription );
+
+		// Record the store's Stripe Billing environment context on the payment intent.
+		$this->invoice_service->record_subscription_payment_context( $wcpay_invoice_id );
 	}
 
 	/**
@@ -165,12 +204,25 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$event_data            = $this->get_event_property( $body, 'data' );
 		$event_object          = $this->get_event_property( $event_data, 'object' );
 		$wcpay_subscription_id = $this->get_event_property( $event_object, 'subscription' );
-		$wcpay_invoice_id      = $this->get_event_property( $event_object, 'id' );
-		$attempts              = (int) $this->get_event_property( $event_object, 'attempt_count' );
-		$subscription          = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
+
+		/**
+		 * When a store is in staging mode, we don't want any webhook handling response to be sent to the server.
+		 *
+		 * Sending requests from staging sites can have unintended consequences for the live store. For example,
+		 * Subscriptions which renew on the staging site will lead to paused subscriptions at Stripe and result in
+		 * missed renewal payments.
+		 */
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
+			$this->log_skipped_webhook_due_to_staging( 'invoice.payment_failed', $wcpay_subscription_id );
+			return;
+		}
+
+		$wcpay_invoice_id = $this->get_event_property( $event_object, 'id' );
+		$attempts         = (int) $this->get_event_property( $event_object, 'attempt_count' );
+		$subscription     = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
-			throw new Invalid_Webhook_Data_Exception( __( 'Cannot find subscription for the incoming "invoice.upcoming" event.', 'woocommerce-payments' ) );
+			throw new Invalid_Webhook_Data_Exception( __( 'Cannot find subscription for the incoming "invoice.payment_failed" event.', 'woocommerce-payments' ) );
 		}
 
 		$order = wc_get_order( WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id ) );
@@ -190,15 +242,18 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$subscription->add_order_note( sprintf( _n( 'WCPay subscription renewal attempt %d failed.', 'WCPay subscription renewal attempt %d failed.', $attempts, 'woocommerce-payments' ), $attempts ) );
 
 		if ( self::MAX_RETRIES > $attempts ) {
-			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 			$subscription->payment_failed();
-			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 		} else {
 			$subscription->payment_failed( 'cancelled' );
 		}
 
 		// Record invoice ID so we can trigger repayment on payment method update.
 		$this->invoice_service->mark_pending_invoice_for_subscription( $subscription, $wcpay_invoice_id );
+
+		// Record the store's Stripe Billing environment context on the payment intent.
+		$this->invoice_service->record_subscription_payment_context( $wcpay_invoice_id );
 	}
 
 	/**
@@ -225,5 +280,24 @@ class WC_Payments_Subscriptions_Event_Handler {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Creates a log entry noting that a subscription-related webhook has been skipped due to the current site being in staging mode.
+	 *
+	 * @param string $event                 The webhook event type. eg "invoice.paid".
+	 * @param string $wcpay_subscription_id The WCPay subsciption ID.
+	 */
+	private function log_skipped_webhook_due_to_staging( string $event, string $wcpay_subscription_id ) {
+		Logger::info(
+			sprintf(
+				// Example message: "invoice.paid webhook processing for sub_abc123defg456 was skipped. The current site (https://staging.example.com) is in staging mode. Live site is https://example.com.
+				'%s webhook processing for %s was skipped. The current site (%s) is in staging mode. Live site is %s.',
+				$event,
+				$wcpay_subscription_id,
+				WCS_Staging::get_site_url_from_source( 'current_wp_site' ),
+				WCS_Staging::get_site_url_from_source( 'subscriptions_install' )
+			)
+		);
 	}
 }

@@ -15,8 +15,14 @@ const SettingsSection: React.FunctionComponent< {
 	className?: string;
 	description?: React.FunctionComponent;
 	title?: string;
-} > = ( { description: Description = () => null, children, className } ) => (
-	<div className={ classNames( 'settings-section', className ) }>
+	id?: string;
+} > = ( {
+	description: Description = () => null,
+	children,
+	className,
+	id,
+} ) => (
+	<div className={ classNames( 'settings-section', className ) } id={ id }>
 		<div className="settings-section__details">
 			<Description />
 		</div>

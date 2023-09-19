@@ -7,6 +7,9 @@ export const upeMethods = [
 	'p24',
 	'sepa_debit',
 	'sofort',
+	'affirm',
+	'afterpay_clearpay',
+	'jcb',
 ];
 
 export const upeCapabilityStatuses = {

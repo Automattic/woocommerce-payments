@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Fix subscriptions remaining on-hold after processing a WCPay Subscription renewal on HPOS environments.

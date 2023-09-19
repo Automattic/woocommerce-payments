@@ -99,3 +99,6 @@ export const getAuthorizationsSummaryError = (
 ): ApiError => {
 	return getAuthorizationsSummaryForQuery( state, query ).error || {};
 };
+
+export const getIsRequesting = ( state: Record< string, any > ): boolean =>
+	getAuthorizationsState( state ).isRequesting;

@@ -19,6 +19,7 @@ import {
 	useCurrencies,
 	useEnabledCurrencies,
 	useManualCapture,
+	useAccountDomesticCurrency,
 } from '../../../data';
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
@@ -31,6 +32,7 @@ jest.mock( '../../../data', () => ( {
 	useEnabledCurrencies: jest.fn(),
 	useGetPaymentMethodStatuses: jest.fn(),
 	useManualCapture: jest.fn(),
+	useAccountDomesticCurrency: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {
@@ -116,6 +118,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			},
 		} );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
+		useAccountDomesticCurrency.mockReturnValue( 'usd' );
 		global.wcpaySettings = {
 			accountEmail: 'admin@example.com',
 		};
@@ -147,13 +150,11 @@ describe( 'AddPaymentMethodsTask', () => {
 				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
 			)
 		).not.toBeInTheDocument();
-		expect(
-			screen.queryByText( 'Add payment methods' )
-		).not.toBeInTheDocument();
+		expect( screen.queryByText( 'Continue' ) ).not.toBeInTheDocument();
 		expect( useSettings ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should not allow to move forward if no payment methods are selected', () => {
+	it( 'should allow to move forward when no payment methods are selected', () => {
 		const setCompletedMock = jest.fn();
 		render(
 			<SettingsContextProvider>
@@ -182,10 +183,6 @@ describe( 'AddPaymentMethodsTask', () => {
 			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
 		} );
 
-		expect(
-			screen.queryByRole( 'checkbox', { name: /Credit/ } )
-		).not.toBeInTheDocument();
-
 		// No add currency text when no elements are checked.
 		expect(
 			screen.queryByText(
@@ -197,7 +194,7 @@ describe( 'AddPaymentMethodsTask', () => {
 				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
 			)
 		).not.toBeInTheDocument();
-		expect( screen.getByText( 'Add payment methods' ) ).not.toBeEnabled();
+		expect( screen.getByText( 'Continue' ) ).toBeEnabled();
 	} );
 
 	it( 'should move forward when the payment methods are selected', async () => {
@@ -219,10 +216,13 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		expect(
 			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
+				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/,
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
-		expect( screen.getByText( 'Add payment methods' ) ).not.toBeEnabled();
+		expect( screen.getByText( 'Continue' ) ).toBeEnabled();
 		expect( useSettings ).toHaveBeenCalled();
 
 		// The payment methods should all be checked.
@@ -241,23 +241,26 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
-		).not.toBeInTheDocument();
+		).toBeInTheDocument();
 
 		jest.useFakeTimers();
 		act( () => {
 			userEvent.click( screen.getByLabelText( 'Przelewy24 (P24)' ) );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 
-		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
+		expect( screen.getByText( 'Continue' ) ).toBeEnabled();
 
 		expect(
 			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
+				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/,
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 
-		userEvent.click( screen.getByText( 'Add payment methods' ) );
+		userEvent.click( screen.getByText( 'Continue' ) );
 
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
@@ -318,11 +321,11 @@ describe( 'AddPaymentMethodsTask', () => {
 			const methodsToCheck = [ 'Bancontact', 'giropay' ];
 			methodsToCheck.forEach( function ( checkboxName ) {
 				userEvent.click( screen.getByLabelText( checkboxName ) );
-				jest.runAllTimers();
+				jest.runOnlyPendingTimers();
 			} );
 		} );
 
-		userEvent.click( screen.getByText( 'Add payment methods' ) );
+		userEvent.click( screen.getByText( 'Continue' ) );
 
 		// Methods are removed.
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
@@ -429,7 +432,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		act( () => {
 			// Enabling a PM with requirements should show the activation modal
 			userEvent.click( cardCheckbox );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect(

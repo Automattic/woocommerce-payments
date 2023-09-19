@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Updates subscriptions' payment token when a new default payment method is set.

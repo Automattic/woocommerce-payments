@@ -27,7 +27,10 @@ declare const global: {
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	combineReducers: jest.fn(),
@@ -35,6 +38,20 @@ jest.mock( '@wordpress/data', () => ( {
 	withDispatch: jest.fn( () => jest.fn() ),
 	withSelect: jest.fn( () => jest.fn() ),
 	useSelect: jest.fn(),
+} ) );
+
+const mockHistoryReplace = jest.fn();
+jest.mock( '@woocommerce/navigation', () => ( {
+	getQuery: () => {
+		return {
+			status_is: '',
+			type_is: '',
+		};
+	},
+	getHistory: () => ( {
+		replace: mockHistoryReplace,
+	} ),
+	addHistoryListener: jest.fn(),
 } ) );
 
 const chargeMock = {
@@ -97,6 +114,7 @@ const chargeMock = {
 		jest.fn().mockReturnValue( {
 			getCharge: jest.fn().mockReturnValue( chargeMock ),
 			isResolving: jest.fn().mockReturnValue( false ),
+			hasFinishedResolution: jest.fn().mockReturnValue( true ),
 			getChargeError: jest.fn().mockReturnValue( null ),
 			getPaymentIntent: jest.fn().mockReturnValue( {
 				id: 'pi_mock',
@@ -108,6 +126,7 @@ const chargeMock = {
 			getAuthorization: jest.fn().mockReturnValue( {
 				created: '2022-09-27 17:07:09',
 			} ),
+			getIsRequesting: jest.fn().mockReturnValue( false ),
 		} )
 	)
 );
@@ -136,6 +155,7 @@ describe( 'Payment details page', () => {
 		Object.defineProperty( window, 'location', {
 			value: { href: 'http://example.com' },
 		} );
+		mockHistoryReplace.mockReset();
 	} );
 
 	afterAll( () => {
@@ -148,6 +168,12 @@ describe( 'Payment details page', () => {
 		);
 
 		expect( container ).toMatchSnapshot();
+
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
+		expect( console ).toHaveWarnedWith(
+			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
+		);
 	} );
 
 	it( 'should match the snapshot - Charge query param', () => {
@@ -161,14 +187,12 @@ describe( 'Payment details page', () => {
 	it( 'should redirect from ch_mock to pi_mock', () => {
 		render( <PaymentDetailsPage query={ chargeQuery } /> );
 
-		expect( window.location.href ).toEqual( redirectUrl );
+		expect( mockHistoryReplace ).toHaveBeenCalledWith( redirectUrl );
 	} );
 
 	it( 'should not redirect with a payment intent ID as query param', () => {
-		const { href } = window.location;
-
 		render( <PaymentDetailsPage query={ paymentIntentQuery } /> );
 
-		expect( window.location.href ).toEqual( href );
+		expect( mockHistoryReplace ).not.toHaveBeenCalled();
 	} );
 } );

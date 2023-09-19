@@ -4,7 +4,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { render, waitFor, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 
 /**
@@ -12,11 +12,12 @@ import { updateQueryString } from '@woocommerce/navigation';
  */
 import TransactionsPage from '../';
 import {
+	useAuthorizationsSummary,
+	useFraudOutcomeTransactionsSummary,
+	useManualCapture,
+	useSettings,
 	useTransactions,
 	useTransactionsSummary,
-	useSettings,
-	useManualCapture,
-	useAuthorizationsSummary,
 } from 'data/index';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -25,7 +26,10 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
@@ -36,6 +40,7 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
+	useFraudOutcomeTransactionsSummary: jest.fn(),
 	useManualCapture: jest.fn(),
 	useSettings: jest.fn(),
 	useAuthorizationsSummary: jest.fn(),
@@ -59,6 +64,10 @@ const mockUseManualCapture = useManualCapture as jest.MockedFunction<
 
 const mockUseAuthorizationsSummary = useAuthorizationsSummary as jest.MockedFunction<
 	typeof useAuthorizationsSummary
+>;
+
+const mockUseFraudOutcomeTransactionsSummary = useFraudOutcomeTransactionsSummary as jest.MockedFunction<
+	typeof useFraudOutcomeTransactionsSummary
 >;
 
 declare const global: {
@@ -102,6 +111,11 @@ describe( 'TransactionsPage', () => {
 				count: 10,
 				total: 15,
 			},
+		} );
+
+		mockUseFraudOutcomeTransactionsSummary.mockReturnValue( {
+			isLoading: false,
+			transactionsSummary: {},
 		} );
 
 		global.wcpaySettings = {
@@ -179,5 +193,18 @@ describe( 'TransactionsPage', () => {
 
 		await renderTransactionsPage();
 		expect( screen.queryByText( /uncaptured/i ) ).not.toBeInTheDocument();
+	} );
+
+	test( 'renders fraud outcome tabs', async () => {
+		mockUseManualCapture.mockReturnValue( [ false ] );
+		mockUseAuthorizationsSummary.mockReturnValue( {
+			authorizationsSummary: {
+				total: 0,
+			},
+			isLoading: false,
+		} );
+
+		await renderTransactionsPage();
+		expect( screen.queryByText( /blocked/i ) ).toBeInTheDocument();
 	} );
 } );

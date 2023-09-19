@@ -10,7 +10,6 @@ import { Card, CardBody } from '@wordpress/components';
 import Wizard from '../wizard/wrapper';
 import WizardTask from '../wizard/task';
 import WizardTaskList from '../wizard/task-list';
-import EnableUpePreviewTask from './enable-upe-preview-task';
 import SetupCompleteTask from './setup-complete-task';
 import useIsUpeEnabled from '../../settings/wcpay-upe-toggle/hook';
 import AddPaymentMethodsTask from './add-payment-methods-task';
@@ -33,9 +32,6 @@ const UpePreviewMethodsSelector = () => {
 					} }
 				>
 					<WizardTaskList>
-						<WizardTask id="enable-upe-preview">
-							<EnableUpePreviewTask />
-						</WizardTask>
 						<WizardTask id="add-payment-methods">
 							<AddPaymentMethodsTask />
 						</WizardTask>

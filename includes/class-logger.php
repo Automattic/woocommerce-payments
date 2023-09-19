@@ -76,7 +76,7 @@ class Logger {
 			return false;
 		}
 
-		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return true;
 		}
 

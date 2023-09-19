@@ -33,7 +33,7 @@ const SetupCompleteMessaging = () => {
 	// we need to check that the type of `enableUpePreviewPayload` is an object - it can also just be `true` or `undefined`
 	let addedPaymentMethodsCount = 0;
 	if (
-		'object' === typeof enableUpePreviewPayload &&
+		typeof enableUpePreviewPayload === 'object' &&
 		enableUpePreviewPayload.initialMethods
 	) {
 		const { initialMethods } = enableUpePreviewPayload;
@@ -41,7 +41,7 @@ const SetupCompleteMessaging = () => {
 	}
 
 	// can't just check for "0", some methods could have been disabled
-	if ( 0 >= addedPaymentMethodsCount ) {
+	if ( addedPaymentMethodsCount <= 0 ) {
 		return __( 'Setup complete!', 'woocommerce-payments' );
 	}
 
@@ -87,8 +87,8 @@ const SetupComplete = () => {
 
 	return (
 		<WizardTaskItem
-			title={ __( 'Enjoy the new features', 'woocommerce-payments' ) }
-			index={ 3 }
+			title={ __( 'Enablement complete', 'woocommerce-payments' ) }
+			index={ 2 }
 		>
 			<CollapsibleBody>
 				<p className="wcpay-wizard-task__description-element is-muted-color">

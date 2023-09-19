@@ -4,23 +4,28 @@ updates:
     - package-ecosystem: 'npm'
       # Look for `package.json` and `lock` files in the `root` directory
       directory: '/'
-      # Check the npm registry for updates every day (weekdays)
+      # Check for updates once a week
       schedule:
-          interval: 'daily'
+        interval: 'weekly'
+      ignore:
+        # For @wordpress dependencies, ignore all updates as most of them need to be synced to the min WP version
+        - dependency-name: "@wordpress/*"
+        # For @woocommerce dependencies, ignore all updates as most of them need to be synced to the min WC version
+        - dependency-name: "@woocommerce/*"
       # Reviewers for issues created
       reviewers:
-          - 'jessepearson'
+        - 'Automattic/harmony'
 
     # Enable version updates for composer
     - package-ecosystem: 'composer'
       # Look for `package.json` and `lock` files in the `root` directory
       directory: '/'
-      # Check the npm registry for updates every day (weekdays)
+      # Check for updates once a week
       schedule:
-          interval: 'daily'
+        interval: 'weekly'
       # Reviewers for issues created
       reviewers:
-          - 'jessepearson'
+          - 'Automattic/harmony'
 
     # Enable version updates for Docker
     - package-ecosystem: 'docker'
@@ -31,4 +36,4 @@ updates:
           interval: 'weekly'
       # Reviewers for issues created
       reviewers:
-          - 'jessepearson'
+          - 'Automattic/harmony'

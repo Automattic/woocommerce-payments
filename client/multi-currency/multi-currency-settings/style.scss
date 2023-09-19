@@ -1,14 +1,14 @@
 .multi-currency-settings {
 	&__wrapper {
-		& > .components-card__body {
-			&.is-size-medium {
-				padding: 24px;
-			}
+		& .components-card__body {
+			padding: 24px;
+
 			.components-base-control {
 				.components-base-control__field {
 					margin-bottom: 0;
 				}
 			}
+
 			& > .wcpay-wizard__description-element {
 				font-size: 13px;
 				line-height: 16px;

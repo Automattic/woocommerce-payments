@@ -10,12 +10,14 @@ import moment from 'moment';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
-import { Query } from '@woocommerce/navigation';
-import {
+import type { Query } from '@woocommerce/navigation';
+import type {
 	CachedDeposits,
 	CachedDeposit,
 	DepositsSummaryCache,
 } from 'wcpay/types/deposits';
+import type { Transaction } from 'wcpay/data/transactions';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 
 export const useDeposit = (
 	id: string
@@ -31,6 +33,47 @@ export const useDeposit = (
 		},
 		[ id ]
 	);
+
+export const useDepositIncludesLoan = (
+	depositId?: string
+): {
+	includesFinancingPayout: boolean;
+	isLoading: boolean;
+} => {
+	const hasActiveLoan = wcpaySettings.accountLoans.has_active_loan;
+
+	return useSelect(
+		( select ) => {
+			// Using a conditional select here to avoid fetching transactions if there is no active loan.
+			if ( ! depositId || ! hasActiveLoan ) {
+				return {
+					includesFinancingPayout: false,
+					isLoading: false,
+				};
+			}
+
+			const { getTransactions, isResolving } = select( STORE_NAME );
+			const query = {
+				depositId,
+				page: '1',
+				typeIs: 'financing_payout',
+				perPage: '1',
+				orderby: 'date',
+				order: 'desc',
+			};
+			const financingPayoutTransactions = getTransactions(
+				query
+			) as Transaction[];
+			const isLoading = !! isResolving( 'getTransactions', [ query ] );
+
+			return {
+				includesFinancingPayout: financingPayoutTransactions.length > 0,
+				isLoading,
+			};
+		},
+		[ depositId, hasActiveLoan ]
+	);
+};
 
 export const useDepositsOverview = (): {
 	overviewError: unknown;
@@ -57,12 +100,15 @@ export const useAllDepositsOverviews = (): AccountOverview.OverviewsResponse =>
 			getAllDepositsOverviews,
 			getAllDepositsOverviewsError,
 			isResolving,
+			hasFinishedResolution,
 		} = select( STORE_NAME );
 
 		return {
 			overviews: getAllDepositsOverviews(),
 			overviewError: getAllDepositsOverviewsError(),
-			isLoading: isResolving( 'getAllDepositsOverviews' ),
+			isLoading:
+				! hasFinishedResolution( 'getAllDepositsOverviews' ) ||
+				isResolving( 'getAllDepositsOverviews' ),
 		};
 	} );
 

@@ -7,6 +7,7 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Payments;
 use function http_build_query;
 use function implode;
 use function urldecode;
@@ -52,21 +53,7 @@ class CurrencySwitcherBlock {
 	 */
 	public function init_block_widget() {
 		// Automatically load dependencies and version.
-		$asset_file_path = WCPAY_ABSPATH . 'dist/multi-currency-switcher-block.asset.php';
-		$asset_file      = file_exists( $asset_file_path )
-			? require_once $asset_file_path
-			: [
-				'dependencies' => [],
-				'version'      => false,
-			];
-
-		wp_register_script(
-			'woocommerce-payments/multi-currency-switcher',
-			plugins_url( 'dist/multi-currency-switcher-block.js', WCPAY_PLUGIN_FILE ),
-			$asset_file['dependencies'],
-			$asset_file['version'],
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'woocommerce-payments/multi-currency-switcher', 'dist/multi-currency-switcher-block' );
 
 		register_block_type(
 			'woocommerce-payments/multi-currency-switcher',
@@ -130,7 +117,13 @@ class CurrencySwitcherBlock {
 	 * @return string The content to be displayed inside the block widget.
 	 */
 	public function render_block_widget( $block_attributes, $content ): string {
-		if ( $this->compatibility->should_hide_widgets() ) {
+		if ( $this->compatibility->should_disable_currency_switching() ) {
+			return '';
+		}
+
+		$enabled_currencies = $this->multi_currency->get_enabled_currencies();
+
+		if ( 1 === count( $enabled_currencies ) ) {
 			return '';
 		}
 
@@ -146,7 +139,7 @@ class CurrencySwitcherBlock {
 		$widget_content .= '<div class="currency-switcher-holder" style="' . $div_styles . '">';
 		$widget_content .= '<select name="currency" onchange="this.form.submit()" style="' . $select_styles . '">';
 
-		foreach ( $this->multi_currency->get_enabled_currencies() as $currency ) {
+		foreach ( $enabled_currencies as $currency ) {
 			$widget_content .= $this->render_currency_option( $currency, $with_symbol, $with_flag );
 		}
 

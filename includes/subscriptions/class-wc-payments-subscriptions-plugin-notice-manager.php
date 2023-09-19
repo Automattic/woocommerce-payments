@@ -64,14 +64,13 @@ class WC_Payments_Subscriptions_Plugin_Notice_Manager {
 		];
 		wp_localize_script( 'wcpay-subscriptions-plugin', 'wcpay_subscriptions_plugin_screen_data', $script_data );
 
-		wp_register_style(
+		WC_Payments_Utils::enqueue_style(
 			'wcpay-subscriptions-plugin-styles',
 			plugins_url( 'includes/subscriptions/assets/css/plugin-page.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WCPAY_VERSION_NUMBER
+			WCPAY_VERSION_NUMBER,
+			'all'
 		);
-
-		wp_enqueue_style( 'wcpay-subscriptions-plugin-styles' );
 	}
 
 	/**

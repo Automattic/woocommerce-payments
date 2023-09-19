@@ -28,7 +28,7 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WCPAY_UnitTestCa
 		$note = WC_Payments_Notes_Additional_Payment_Methods::get_note();
 
 		$this->assertSame( 'Boost your sales by accepting new payment methods', $note->get_title() );
-		$this->assertSame( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments. <a href="https://woocommerce.com/document/payments/additional-payment-methods/" target="wcpay_upe_learn_more">Learn more</a>', $note->get_content() );
+		$this->assertSame( 'Get early access to additional payment methods and an improved checkout experience, coming soon to WooPayments. <a href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/" target="wcpay_upe_learn_more">Learn more</a>', $note->get_content() );
 		$this->assertSame( 'info', $note->get_type() );
 		$this->assertSame( 'wc-payments-notes-additional-payment-methods', $note->get_name() );
 		$this->assertSame( 'woocommerce-payments', $note->get_source() );
@@ -59,12 +59,11 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WCPAY_UnitTestCa
 	}
 
 	public function test_get_note_returns_note_when_account_is_connected() {
-		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'is_stripe_connected' ] )->getMock();
-		$account_mock->expects( $this->atLeastOnce() )->method( 'is_stripe_connected' )->will(
-			$this->returnValue(
-				true
-			)
-		);
+		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'is_stripe_connected', 'is_account_partially_onboarded', 'is_progressive_onboarding_in_progress' ] )->getMock();
+		$account_mock->expects( $this->once() )->method( 'is_stripe_connected' )->willReturn( true );
+		$account_mock->expects( $this->once() )->method( 'is_account_partially_onboarded' )->willReturn( false );
+		$account_mock->expects( $this->once() )->method( 'is_progressive_onboarding_in_progress' )->willReturn( false );
+
 		WC_Payments_Notes_Additional_Payment_Methods::set_account( $account_mock );
 
 		$note = WC_Payments_Notes_Additional_Payment_Methods::get_note();
@@ -72,10 +71,35 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WCPAY_UnitTestCa
 		$this->assertSame( 'Boost your sales by accepting new payment methods', $note->get_title() );
 	}
 
+	public function test_get_note_returns_note_when_account_is_partially_onboarded() {
+		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'is_stripe_connected', 'is_account_partially_onboarded', 'is_progressive_onboarding_in_progress' ] )->getMock();
+		$account_mock->expects( $this->once() )->method( 'is_stripe_connected' )->willReturn( true );
+		$account_mock->expects( $this->once() )->method( 'is_account_partially_onboarded' )->willReturn( true );
+
+		WC_Payments_Notes_Additional_Payment_Methods::set_account( $account_mock );
+
+		$note = WC_Payments_Notes_Additional_Payment_Methods::get_note();
+
+		$this->assertNull( $note );
+	}
+
+	public function test_get_note_returns_note_when_account_is_progressive_in_progress() {
+		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'is_stripe_connected', 'is_account_partially_onboarded', 'is_progressive_onboarding_in_progress' ] )->getMock();
+		$account_mock->expects( $this->once() )->method( 'is_stripe_connected' )->willReturn( true );
+		$account_mock->expects( $this->once() )->method( 'is_account_partially_onboarded' )->willReturn( false );
+		$account_mock->expects( $this->once() )->method( 'is_progressive_onboarding_in_progress' )->willReturn( true );
+
+		WC_Payments_Notes_Additional_Payment_Methods::set_account( $account_mock );
+
+		$note = WC_Payments_Notes_Additional_Payment_Methods::get_note();
+
+		$this->assertNull( $note );
+	}
+
 	public function test_maybe_enable_feature_flag_redirects_to_onboarding_when_account_not_connected() {
-		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'is_stripe_connected', 'redirect_to_onboarding_page' ] )->getMock();
+		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'is_stripe_connected', 'redirect_to_onboarding_welcome_page' ] )->getMock();
 		$account_mock->expects( $this->atLeastOnce() )->method( 'is_stripe_connected' )->will( $this->returnValue( false ) );
-		$account_mock->expects( $this->once() )->method( 'redirect_to_onboarding_page' );
+		$account_mock->expects( $this->once() )->method( 'redirect_to_onboarding_welcome_page' );
 		WC_Payments_Notes_Additional_Payment_Methods::set_account( $account_mock );
 		$_GET['page']   = 'wc-settings';
 		$_GET['action'] = 'enable-upe';

@@ -10,26 +10,61 @@ import Transactions from '..';
 import {
 	useGetSavingError,
 	useAccountStatementDescriptor,
+	useAccountStatementDescriptorKanji,
+	useAccountStatementDescriptorKana,
+	useAccountBusinessSupportEmail,
+	useAccountBusinessSupportPhone,
 	useManualCapture,
 	useSavedCards,
 	useCardPresentEligible,
 } from '../../../data';
+import { select } from '@wordpress/data';
+
+jest.mock( '@wordpress/data', () => ( {
+	select: jest.fn(),
+} ) );
+const settingsMock = {
+	account_country: 'US',
+};
+
+select.mockReturnValue( {
+	getSettings: () => settingsMock,
+} );
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
+	useAccountStatementDescriptorKanji: jest.fn(),
+	useAccountStatementDescriptorKana: jest.fn(),
+	useAccountBusinessSupportEmail: jest.fn(),
+	useAccountBusinessSupportPhone: jest.fn(),
 	useManualCapture: jest.fn(),
 	useGetSavingError: jest.fn(),
 	useSavedCards: jest.fn(),
 	useCardPresentEligible: jest.fn(),
 } ) );
 
-describe( 'TransactionsAndDeposits', () => {
+describe( 'Settings - Transactions', () => {
 	beforeEach( () => {
 		useAccountStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
+		useAccountStatementDescriptorKanji.mockReturnValue( [ '', jest.fn() ] );
+		useAccountStatementDescriptorKana.mockReturnValue( [ '', jest.fn() ] );
+		useAccountBusinessSupportEmail.mockReturnValue( [
+			'test@test.com',
+			jest.fn(),
+		] );
+		useAccountBusinessSupportPhone.mockReturnValue( [
+			'+12345678901',
+			jest.fn(),
+		] );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		useGetSavingError.mockReturnValue( null );
 		useSavedCards.mockReturnValue( [ false, jest.fn() ] );
 		useCardPresentEligible.mockReturnValue( [ false ] );
+		window.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
+		};
 	} );
 
 	it( 'displays the length of the bank statement input', async () => {
@@ -93,6 +128,35 @@ describe( 'TransactionsAndDeposits', () => {
 			screen.getByText(
 				new RegExp( 'The setting is not applied to In-Person Payments' )
 			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'display support email and phone inputs', async () => {
+		render( <Transactions /> );
+		expect(
+			screen.getByLabelText( 'Support phone number' )
+		).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Support email' ) ).toBeInTheDocument();
+	} );
+
+	it( 'display customer bank statements for JP', async () => {
+		const settingsMockCountryJP = {
+			account_country: 'JP',
+		};
+
+		select.mockReturnValue( {
+			getSettings: () => settingsMockCountryJP,
+		} );
+		render( <Transactions /> );
+
+		expect(
+			await screen.findByText( 'Use only latin characters.' )
+		).toBeInTheDocument();
+		expect(
+			await screen.findByText( 'Use only kanji characters.' )
+		).toBeInTheDocument();
+		expect(
+			await screen.findByText( 'Use only kana characters.' )
 		).toBeInTheDocument();
 	} );
 } );

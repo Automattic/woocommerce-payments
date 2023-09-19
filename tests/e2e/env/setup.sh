@@ -19,20 +19,24 @@ fi
 
 # Variables
 BLOG_ID=${E2E_BLOG_ID-111}
-WC_GUEST_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.guest.email')
-WC_CUSTOMER_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.email')
-WC_CUSTOMER_USERNAME=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.username')
-WC_CUSTOMER_PASSWORD=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.password')
-WP_ADMIN=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.username')
-WP_ADMIN_PASSWORD=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.password')
-WP_ADMIN_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.email')
+WC_GUEST_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.guest.email')
+WC_CUSTOMER_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.email')
+WC_CUSTOMER_USERNAME=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.username')
+WC_CUSTOMER_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.password')
+WP_ADMIN=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.username')
+WP_ADMIN_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.password')
+WP_ADMIN_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.email')
 SITE_TITLE="WooCommerce Payments E2E site"
 SITE_URL=$WP_URL
+
+if [[ $FORCE_E2E_DEPS_SETUP ]]; then
+	sudo rm -rf tests/e2e/deps
+fi
 
 # Setup WCPay local server instance.
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
-	if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$SERVER_PATH" ]]; then
+	if [[ ! -d "$SERVER_PATH" ]]; then
 		step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
 
 		if [[ -z $WCP_SERVER_REPO ]]; then
@@ -88,7 +92,7 @@ fi
 
 cd "$cwd"
 
-if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$DEV_TOOLS_PATH" ]]; then
+if [[ ! -d "$DEV_TOOLS_PATH" ]]; then
 	step "Fetching dev tools"
 	if [[ -z $WCP_DEV_TOOLS_REPO ]]; then
 		echo "WCP_DEV_TOOLS_REPO env variable is not defined"
@@ -187,7 +191,7 @@ else
 fi
 
 echo "Installing basic auth plugin for interfacing with the API"
-cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
+cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate --force
 
 echo "Installing and activating Storefront theme..."
 cli wp theme install storefront --activate
@@ -219,23 +223,32 @@ echo "Adding customer account ..."
 cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer --user_pass="$WC_CUSTOMER_PASSWORD"
 
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
-echo "Activating the WooCommerce Payments plugin..."
-cli wp plugin activate woocommerce-payments
+if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
+	echo "Creating WooCommerce Payments zip file from GitHub artifact..."
+	mv "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments-build
+    cd "$WCPAY_ARTIFACT_DIRECTORY" && zip -r "$cwd"/woocommerce-payments-build.zip . && cd "$cwd"
+
+	echo "Installing & activating the WooCommerce Payments plugin using the zip file created..."
+	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate
+else
+	echo "Activating the WooCommerce Payments plugin..."
+	cli wp plugin activate woocommerce-payments
+fi
 
 echo "Setting up WooCommerce Payments..."
 if [[ "0" == "$(cli wp option list --search=woocommerce_woocommerce_payments_settings --format=count)" ]]; then
 	echo "Creating WooCommerce Payments settings"
-	cli wp option add woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
+	cli wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 else
 	echo "Updating WooCommerce Payments settings"
-	cli wp option update woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
+	cli wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 fi
 
 echo "Activating dev tools plugin"
 cli wp plugin activate "$DEV_TOOLS_DIR"
 
 echo "Disabling WPCOM requests proxy"
-cli wp option update wcpaydev_proxy 0
+cli wp option set wcpaydev_proxy 0
 
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Setting redirection to local server"
@@ -301,7 +314,13 @@ echo "Creating screenshots directory"
 mkdir -p $WCP_ROOT/screenshots
 
 echo "Disabling rate limiter for card declined in E2E tests"
-cli wp option add wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
+cli wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
+
+echo "Removing all coupons ..."
+cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m.post_id WHERE p.post_type = 'shop_coupon'"
+
+echo "Setting up a coupon for E2E tests"
+cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
 
 # Log test configuration for visibility
 echo

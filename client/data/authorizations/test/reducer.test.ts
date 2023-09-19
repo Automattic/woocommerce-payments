@@ -19,7 +19,7 @@ describe( 'Authorizations reducer tests', () => {
 	const mockAuthorizations = authorizationsFixture;
 	const mockSummary = authorizationsSummaryFixture;
 
-	const emptyState = { summary: {}, byId: {} };
+	const emptyState = { summary: {}, byId: {}, isRequesting: false };
 
 	const filledState = {
 		[ getResourceId( mockQuery ) ]: {
@@ -31,6 +31,7 @@ describe( 'Authorizations reducer tests', () => {
 			},
 		},
 		byId: {},
+		isRequesting: false,
 	};
 
 	test( 'Unrelated action is ignored', () => {
@@ -91,6 +92,7 @@ describe( 'Authorizations reducer tests', () => {
 				},
 			},
 			byId: {},
+			isRequesting: false,
 		};
 
 		const reduced = reducer( emptyState, {
@@ -135,6 +137,7 @@ describe( 'Authorizations reducer tests', () => {
 					mockAuthorizations[ 0 ],
 			},
 			summary: {},
+			isRequesting: false,
 		} );
 
 		const stateAfterTwo = reducer( stateAfterOne, {
@@ -150,6 +153,7 @@ describe( 'Authorizations reducer tests', () => {
 					mockAuthorizations[ 1 ],
 			},
 			summary: {},
+			isRequesting: false,
 		} );
 	} );
 } );

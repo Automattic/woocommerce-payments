@@ -36,10 +36,10 @@ const formatPaymentMethodDetails = ( charge ) => {
 		cvc_check: cvcCheck,
 		address_line1_check: line1Check,
 		address_postal_code_check: postalCodeCheck,
-	} = checks;
+	} = checks || {};
 
 	// Format the date, MM/YYYY. No translations needed.
-	const date = month + ' / ' + year;
+	const date = month && year ? month + ' / ' + year : undefined;
 
 	// Generate the full funding type.
 	const fundingTypes = {
@@ -48,12 +48,14 @@ const formatPaymentMethodDetails = ( charge ) => {
 		prepaid: __( 'prepaid', 'woocommerce-payments' ),
 		unknown: __( 'unknown', 'woocommerce-payments' ),
 	};
-	const cardType = sprintf(
-		// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
-		__( '%1$s %2$s card', 'woocommerce-payments' ),
-		network.charAt( 0 ).toUpperCase() + network.slice( 1 ), // Brand
-		fundingTypes[ funding ]
-	);
+	const cardType = network
+		? sprintf(
+				// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
+				__( '%1$s %2$s card', 'woocommerce-payments' ),
+				network.charAt( 0 ).toUpperCase() + network.slice( 1 ), // Brand
+				fundingTypes[ funding ]
+		  )
+		: undefined;
 
 	// Use the full country name.
 	const country = wcSettings.countries[ countryCode ];
@@ -123,28 +125,32 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 					isLoading={ isLoading }
 					label={ __( 'Number', 'woocommerce-payments' ) }
 				>
-					&bull;&bull;&bull;&bull;&nbsp;{ last4 }
+					{ last4 ? (
+						<>&bull;&bull;&bull;&bull;&nbsp;{ last4 }</>
+					) : (
+						'–'
+					) }
 				</Detail>
 
 				<Detail
 					isLoading={ isLoading }
 					label={ __( 'Expires', 'woocommerce-payments' ) }
 				>
-					{ date }
+					{ date ?? '–' }
 				</Detail>
 
 				<Detail
 					isLoading={ isLoading }
 					label={ __( 'Type', 'woocommerce-payments' ) }
 				>
-					{ cardType }
+					{ cardType ?? '–' }
 				</Detail>
 
 				<Detail
 					isLoading={ isLoading }
 					label={ __( 'ID', 'woocommerce-payments' ) }
 				>
-					{ id }
+					{ !! id ? id : '–' }
 				</Detail>
 			</div>
 
