@@ -1,7 +1,8 @@
 version: '3'
 
 volumes:
-  ## Kludge for not having the ./docker directory bound recursively
+  ## Kludge / workaround to inhibit mounting all the subfolders of ./docker inside plugins/woocommerce-payments/docker.
+  ## These subfolders are mapped indivudally.
   dockerdirectory:
   ## Volume for mysql data to persist across restarts
   mysql_data:
@@ -25,14 +26,17 @@ services:
     env_file:
       - default.env
     volumes:
+      ## Mount the plugin source code as a WP plugin.
+      - .:/var/www/html/wp-content/plugins/woocommerce-payments
+      ## Kludge / workaround to inhibit mounting all the subfolders of ./docker inside plugin folder.
+      - dockerdirectory:/var/www/html/wp-content/plugins/woocommerce-payments/docker
+      ## Mount ./docker subfolders to specific paths in container.
       - ./docker/wordpress:/var/www/html/
       - ./docker/logs/apache2/:/var/log/apache2
-      - .:/var/www/html/wp-content/plugins/woocommerce-payments
       - ./docker/wc-payments-php.ini:/usr/local/etc/php/conf.d/wc-payments-php.ini
-      - dockerdirectory:/var/www/html/wp-content/plugins/woocommerce-payments/docker
       - ./docker/bin:/var/scripts
     extra_hosts:
-      - "host.docker.internal:host-gateway"  
+      - "host.docker.internal:host-gateway"
   db:
     container_name: woocommerce_payments_mysql
     image: mariadb:10.5.8
