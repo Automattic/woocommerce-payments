@@ -56,14 +56,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 		setModalOpen( false );
 	};
 
-	const onAccept = () => {
-		wcpayTracks.recordEvent( wcpayTracks.events.DISPUTE_ACCEPT_CLICK, {
-			dispute_status: dispute.status,
-		} );
-		setModalOpen( false );
-		doAccept();
-	};
-
 	return (
 		<div className="transaction-details-dispute-details-wrapper">
 			<Card>
@@ -221,7 +213,18 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 										</Button>
 										<Button
 											variant="primary"
-											onClick={ onAccept }
+											onClick={ () => {
+												wcpayTracks.recordEvent(
+													wcpayTracks.events
+														.DISPUTE_ACCEPT_CLICK,
+													{
+														dispute_status:
+															dispute.status,
+													}
+												);
+												setModalOpen( false );
+												doAccept();
+											} }
 										>
 											{ __(
 												'Accept dispute',
