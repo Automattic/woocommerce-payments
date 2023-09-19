@@ -94,6 +94,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 						<Flex justify="start">
 							<Link
 								href={
+									// Prevent the user navigating to the challenge screen if the accept request is in progress.
 									isLoading
 										? ''
 										: getAdminUrl( {
