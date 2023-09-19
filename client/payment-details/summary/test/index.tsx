@@ -473,6 +473,26 @@ describe( 'PaymentDetailsSummary', () => {
 			expect( mockDisputeDoAccept ).toHaveBeenCalledTimes( 1 );
 		} );
 
+		test( 'navigates to the dispute challenge screen when the challenge button is clicked', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+			charge.dispute.id = 'dp_test123';
+
+			renderCharge( charge );
+
+			const challengeButton = screen.getByRole( 'button', {
+				name: /Challenge dispute/,
+			} );
+
+			challengeButton.click();
+
+			expect( window.location.href ).toContain(
+				`admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=${ charge.dispute.id }`
+			);
+		} );
+
 		test( 'correctly renders dispute details for "won" disputes', () => {
 			const charge = getBaseCharge();
 			charge.disputed = true;
