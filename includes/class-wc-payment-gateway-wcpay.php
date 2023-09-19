@@ -1480,14 +1480,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Mandate must be shown and acknowledged by customer before deferred intent UPE payment can be processed.
-	 * This applies to SEPA and Link payment methods.
-	 * https://stripe.com/docs/payments/finalize-payments-on-the-server
+	 * The parent method which allows to modify the child class implementation, while supporting the current design where the parent process_payment method is called from the child class.
+	 * Mandate must be shown and acknowledged under certain conditions for Stripe Link and SEPA.
+	 * Since WC_Payment_Gateway_WCPay represents card payment, which does not require mandate, we return false.
 	 *
-	 * @return boolean True if mandate must be shown and acknowledged by customer before deferred intent UPE payment can be processed, false otherwise.
+	 * @return boolean False since card payment does not require mandate.
 	 */
 	protected function does_payment_method_require_mandate_data() {
-		// Returning false, because WC Payment Gateway represents card payment method, which does not require mandate.
 		return false;
 	}
 
