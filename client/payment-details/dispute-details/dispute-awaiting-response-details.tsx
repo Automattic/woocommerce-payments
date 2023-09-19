@@ -8,7 +8,7 @@ import moment from 'moment';
 import { __, sprintf } from '@wordpress/i18n';
 import { backup, edit, lock } from '@wordpress/icons';
 import { createInterpolateElement } from '@wordpress/element';
-import { getHistory } from '@woocommerce/navigation';
+import { Link } from '@woocommerce/components';
 import {
 	Button,
 	Card,
@@ -64,18 +64,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 		doAccept();
 	};
 
-	const onChallenge = () => {
-		wcpayTracks.recordEvent( wcpayTracks.events.DISPUTE_CHALLENGE_CLICK, {
-			dispute_status: dispute.status,
-		} );
-		const challengeUrl = getAdminUrl( {
-			page: 'wc-admin',
-			path: '/payments/disputes/challenge',
-			id: dispute.id,
-		} );
-		getHistory().push( challengeUrl );
-	};
-
 	return (
 		<div className="transaction-details-dispute-details-wrapper">
 			<Card>
@@ -111,21 +99,42 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 					{ /* Dispute Actions */ }
 					{ ! isInquiry( dispute ) && (
 						<Flex justify="start">
-							<Button
-								variant="primary"
-								disabled={ isLoading }
-								onClick={ onChallenge }
+							<Link
+								href={
+									isLoading
+										? ''
+										: getAdminUrl( {
+												page: 'wc-admin',
+												path:
+													'/payments/disputes/challenge',
+												id: dispute.id,
+										  } )
+								}
 							>
-								{ hasStagedEvidence
-									? __(
-											'Continue with challenge',
-											'woocommerce-payments'
-									  )
-									: __(
-											'Challenge dispute',
-											'woocommerce-payments'
-									  ) }
-							</Button>
+								<Button
+									variant="primary"
+									disabled={ isLoading }
+									onClick={ () => {
+										wcpayTracks.recordEvent(
+											wcpayTracks.events
+												.DISPUTE_CHALLENGE_CLICK,
+											{
+												dispute_status: dispute.status,
+											}
+										);
+									} }
+								>
+									{ hasStagedEvidence
+										? __(
+												'Continue with challenge',
+												'woocommerce-payments'
+										  )
+										: __(
+												'Challenge dispute',
+												'woocommerce-payments'
+										  ) }
+								</Button>
+							</Link>
 
 							<Button
 								variant="tertiary"
