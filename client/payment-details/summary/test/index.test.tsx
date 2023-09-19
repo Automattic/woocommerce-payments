@@ -505,6 +505,18 @@ describe( 'PaymentDetailsSummary', () => {
 				ignore: '.a11y-speak-region',
 			} );
 			screen.getByRole( 'button', { name: /View dispute details/i } );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
 		} );
 
 		test( 'correctly renders dispute details for "under_review" disputes', () => {
@@ -520,6 +532,18 @@ describe( 'PaymentDetailsSummary', () => {
 				ignore: '.a11y-speak-region',
 			} );
 			screen.getByRole( 'button', { name: /View submitted evidence/i } );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
 		} );
 
 		test( 'correctly renders dispute details for "accepted" disputes', () => {
@@ -539,6 +563,18 @@ describe( 'PaymentDetailsSummary', () => {
 			screen.getByText( /\$15.00 fee/i, {
 				ignore: '.a11y-speak-region',
 			} );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
 		} );
 
 		test( 'correctly renders dispute details for "lost" disputes', () => {
@@ -559,6 +595,18 @@ describe( 'PaymentDetailsSummary', () => {
 				ignore: '.a11y-speak-region',
 			} );
 			screen.getByRole( 'button', { name: /View dispute details/i } );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
 		} );
 	} );
 } );
