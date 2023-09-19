@@ -18,6 +18,7 @@ import {
 	disputeAwaitingResponseStatuses,
 	disputeUnderReviewStatuses,
 } from 'wcpay/disputes/filters/config';
+import { formatExplicitCurrency } from 'wcpay/utils/currency';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
@@ -81,4 +82,19 @@ export const getDisputeFee = (
 		( transaction ) => transaction.reporting_category === 'dispute'
 	);
 	return disputeFee;
+};
+
+/**
+ * Returns the dispute fee balance transaction for a dispute if it exists
+ * formatted as a currency string.
+ */
+export const getDisputeFeeFormatted = (
+	dispute: Dispute
+): string | undefined => {
+	const disputeFee = getDisputeFee( dispute );
+
+	return (
+		disputeFee &&
+		formatExplicitCurrency( disputeFee.fee, disputeFee.currency )
+	);
 };

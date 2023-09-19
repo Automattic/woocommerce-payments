@@ -15,8 +15,7 @@ import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
 import type { Dispute } from 'wcpay/types/disputes';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
-import { getDisputeFee, isInquiry } from 'wcpay/disputes/utils';
-import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
 
 const DisputeUnderReviewFooter: React.FC< {
 	dispute: Dispute;
@@ -171,10 +170,8 @@ const DisputeLostFooter: React.FC< {
 } > = ( { dispute } ) => {
 	const isSubmitted = !! dispute?.metadata.__evidence_submitted_at;
 	const isAccepted = dispute?.metadata.__closed_by_merchant === '1';
-	const disputeFee = dispute && getDisputeFee( dispute );
-	const disputeFeeFormatted = disputeFee
-		? formatExplicitCurrency( disputeFee.fee, disputeFee.currency )
-		: '-';
+	const disputeFeeFormatted = getDisputeFeeFormatted( dispute ) ?? '-';
+
 	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
 		? dateI18n(
 				'M j, Y',
