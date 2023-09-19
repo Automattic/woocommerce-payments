@@ -21,6 +21,7 @@ class InitialState extends State {
 	public function process( PaymentRequest $request ) {
 		$context = $this->get_context();
 
+		// Transfer the necessary data from the request into the payment object.
 		$payment_method = $request->get_payment_method();
 		$context->set_payment_method( $payment_method );
 

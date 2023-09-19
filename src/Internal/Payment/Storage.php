@@ -38,6 +38,13 @@ class Storage {
 	private $payment_method_service;
 
 	/**
+	 * Controls whether storage is actually enabled.
+	 *
+	 * @var bool
+	 */
+	private $enabled = false;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param StateFactory         $state_factory          A factory for payment states.
@@ -52,6 +59,17 @@ class Storage {
 	}
 
 	/**
+	 * Enables payment storage.
+	 *
+	 * IMPORTANT: By default, this class does not touch the database.
+	 * Once enabled, it will, but this should only be used for tests
+	 * before the final storage method is determined.
+	 */
+	public function enable() {
+		$this->enabled = true;
+	}
+
+	/**
 	 * Loads or creates the payment object for an order,
 	 * returning the one true payment object.
 	 *
@@ -62,10 +80,12 @@ class Storage {
 		$payment     = new Payment( $order );
 		$state_class = InitialState::class;
 
-		$data = $order->get_meta( self::ORDER_META_KEY );
-		if ( is_array( $data ) && ! empty( $data ) ) {
-			$state_class = $data['state'];
-			$this->import_payment_data( $payment, $data );
+		if ( $this->enabled ) {
+			$data = $order->get_meta( self::ORDER_META_KEY );
+			if ( is_array( $data ) && ! empty( $data ) ) {
+				$state_class = $data['state'];
+				$this->import_payment_data( $payment, $data );
+			}
 		}
 
 		$state = $this->state_factory->create_state( $state_class );
@@ -78,9 +98,12 @@ class Storage {
 	 * Prepares a payment for storage.
 	 *
 	 * @param State $payment_state The current payment state.
-	 * @return array
 	 */
-	public function save_order_payment( State $payment_state ): array {
+	public function save_order_payment( State $payment_state ): void {
+		if ( ! $this->enabled ) {
+			return;
+		}
+
 		$payment = $payment_state->get_context();
 		$data    = $this->extract_payment_data( $payment );
 
@@ -91,8 +114,6 @@ class Storage {
 		$order = $payment->get_order();
 		$order->update_meta_data( self::ORDER_META_KEY, $data );
 		$order->save();
-
-		return $data;
 	}
 
 	/**

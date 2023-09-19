@@ -63,6 +63,7 @@ class PaymentProcessingService {
 
 		try {
 			// Warning: Dev mode only! Will be deleted soon.
+			$this->storage->enable();
 			$this->storage->cleanup_order_payment( $order );
 
 			$post_data = [
