@@ -3757,7 +3757,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean True if the arrray consist of only one payment method which is not a card. False otherwise.
 	 */
 	private function upe_needs_redirection( $payment_methods ) {
-		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0] && 'sepa_debit' !== $payment_methods[0];
+		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
 	}
 
 	/**
