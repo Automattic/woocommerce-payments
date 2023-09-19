@@ -16,6 +16,7 @@ import type { Dispute } from 'wcpay/types/disputes';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
+import './style.scss';
 
 const DisputeUnderReviewFooter: React.FC< {
 	dispute: Dispute;
