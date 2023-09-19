@@ -93,31 +93,22 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 					{ showDisputeActions && (
 						<div className="transaction-details-dispute-details-body__actions">
 							<Link
-								href={
-									// Prevent the user navigating to the challenge screen if the accept request is in progress.
-									isLoading
-										? ''
-										: getAdminUrl( {
-												page: 'wc-admin',
-												path:
-													'/payments/disputes/challenge',
-												id: dispute.id,
-										  } )
-								}
+								href={ getAdminUrl( {
+									page: 'wc-admin',
+									path: '/payments/disputes/challenge',
+									id: dispute.id,
+								} ) }
+								onClick={ () => {
+									wcpayTracks.recordEvent(
+										wcpayTracks.events
+											.DISPUTE_CHALLENGE_CLICK,
+										{
+											dispute_status: dispute.status,
+										}
+									);
+								} }
 							>
-								<Button
-									variant="primary"
-									disabled={ isLoading }
-									onClick={ () => {
-										wcpayTracks.recordEvent(
-											wcpayTracks.events
-												.DISPUTE_CHALLENGE_CLICK,
-											{
-												dispute_status: dispute.status,
-											}
-										);
-									} }
-								>
+								<span className="components-button is-primary">
 									{ hasStagedEvidence
 										? __(
 												'Continue with challenge',
@@ -127,7 +118,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 												'Challenge dispute',
 												'woocommerce-payments'
 										  ) }
-								</Button>
+								</span>
 							</Link>
 
 							<Button
