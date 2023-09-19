@@ -19,6 +19,11 @@ class InitialState extends State {
 	 * @param PaymentRequest $request Payment request.
 	 */
 	public function process( PaymentRequest $request ) {
+		$context = $this->get_context();
+
+		$payment_method = $request->get_payment_method();
+		$context->set_payment_method( $payment_method );
+
 		return $this->create_state( CompletedState::class );
 	}
 }

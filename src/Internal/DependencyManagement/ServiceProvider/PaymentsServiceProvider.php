@@ -22,6 +22,7 @@ use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
 use WCPay\Internal\Service\GatewayService;
+use WCPay\Internal\Service\PaymentMethodService;
 
 /**
  * WCPay payments service provider.
@@ -57,11 +58,15 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( Router::class )
 			->addArgument( Database_Cache::class );
 
+		$container->addShared( PaymentMethodService::class )
+			->addArgument( LegacyProxy::class );
+
 		$container->addShared( StateFactory::class )
 			->addArgument( Container::class );
 
 		$container->addShared( Storage::class )
-			->addArgument( StateFactory::class );
+			->addArgument( StateFactory::class )
+			->addArgument( PaymentMethodService::class );
 
 		$container->add( InitialState::class )
 			->addArgument( StateFactory::class );

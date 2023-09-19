@@ -8,8 +8,7 @@
 namespace WCPay\Internal\Payment;
 
 use WC_Order;
-use WCPay\Internal\Payment\State\InitialState;
-use WCPay\Internal\Payment\State\State;
+use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 
 /**
  * Payment object.
@@ -23,6 +22,13 @@ class Payment {
 	 * @var WC_Order
 	 */
 	private $order;
+
+	/**
+	 * Payment method.
+	 *
+	 * @var PaymentMethodInterface
+	 */
+	private $payment_method;
 
 	/**
 	 * Payment constructor.
@@ -43,14 +49,20 @@ class Payment {
 	}
 
 	/**
-	 * Generates and returns the current state of the payment.
+	 * Sets the used payment method.
 	 *
-	 * @param StateFactory $state_factory A factory that generates states with dependencies.
-	 * @return State
+	 * @param PaymentMethodInterface $payment_method The payment method to use.
 	 */
-	public function get_state( StateFactory $state_factory ): State {
-		$state = $state_factory->create_state( InitialState::class );
-		$state->set_context( $this );
-		return $state;
+	public function set_payment_method( PaymentMethodInterface $payment_method ) {
+		$this->payment_method = $payment_method;
+	}
+
+	/**
+	 * Returns the used payment method, if any.
+	 *
+	 * @return PaymentMethodInterface|null
+	 */
+	public function get_payment_method(): ?PaymentMethodInterface {
+		return $this->payment_method;
 	}
 }
