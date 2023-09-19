@@ -77,44 +77,48 @@ class WC_Payments_Status {
 	 * Renders WCPay information on the status page.
 	 */
 	public function render_status_report_section() { ?>
-		<table class="wc_status_table widefat" cellspacing="0">
-			<thead>
-				<tr>
-					<th colspan="3" data-export-label="WooPayments">
-						<h2>WooPayments</h2>
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td data-export-label="Version"><?php esc_html_e( 'Version', 'woocommerce-payments' ); ?>:</td>
-					<td class="help">
-						<?php
-							/* translators: %s: WooPayments */
-							echo wc_help_tip( sprintf( esc_html__( 'The current version of the %s extension.', 'woocommerce-payments' ), 'WooPayments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */
-						?>
-					</td>
-					<td><?php echo esc_html( WCPAY_VERSION_NUMBER ); ?></td>
-				</tr>
-				<tr>
-					<td data-export-label="Connected to WPCOM"><?php esc_html_e( 'Connected to WPCOM', 'woocommerce-payments' ); ?>:</td>
-					<td class="help"><?php echo wc_help_tip( esc_html__( 'Can your store connect securely to wordpress.com?', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
-					<td><?php $this->http->is_connected() ? esc_html_e( 'Yes', 'woocommerce-payments' ) : esc_html_e( 'No', 'woocommerce-payments' ); ?></td>
-				</tr>
-				<tr>
-					<td data-export-label="WPCOM Blog ID"><?php esc_html_e( 'WPCOM Blog ID', 'woocommerce-payments' ); ?>:</td>
-					<td class="help"><?php echo wc_help_tip( esc_html__( 'The corresponding wordpress.com blog ID for this store.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
-					<td><?php echo esc_html( $this->http->is_connected() ? $this->http->get_blog_id() : '-' ); ?></td>
-				</tr>
-				<tr>
-					<td data-export-label="Account ID"><?php esc_html_e( 'Account ID', 'woocommerce-payments' ); ?>:</td>
-					<td class="help"><?php echo wc_help_tip( esc_html__( 'The merchant account ID you are currently using to process payments with.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
-					<td><?php echo esc_html( $this->account->get_stripe_account_id() ?? '-' ); ?></td>
-				</tr>
+	<table class="wc_status_table widefat" cellspacing="0">
+		<thead>
+			<tr>
+				<th colspan="3" data-export-label="WooPayments">
+					<h2>WooPayments</h2>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td data-export-label="Version"><?php esc_html_e( 'Version', 'woocommerce-payments' ); ?>:</td>
+				<td class="help">
+					<?php
+					/* translators: %s: WooPayments */
+					echo wc_help_tip( sprintf( esc_html__( 'The current version of the %s extension.', 'woocommerce-payments' ), 'WooPayments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */
+					?>
+				</td>
+				<td><?php echo esc_html( WCPAY_VERSION_NUMBER ); ?></td>
+			</tr>
+			<tr>
+				<td data-export-label="Connected to WPCOM"><?php esc_html_e( 'Connected to WPCOM', 'woocommerce-payments' ); ?>:</td>
+				<td class="help"><?php echo wc_help_tip( esc_html__( 'Can your store connect securely to wordpress.com?', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
+				<td><?php $this->http->is_connected() ? esc_html_e( 'Yes', 'woocommerce-payments' ) : esc_html_e( 'No', 'woocommerce-payments' ); ?></td>
+			</tr>
+			<tr>
+				<td data-export-label="WPCOM Blog ID"><?php esc_html_e( 'WPCOM Blog ID', 'woocommerce-payments' ); ?>:</td>
+				<td class="help"><?php echo wc_help_tip( esc_html__( 'The corresponding wordpress.com blog ID for this store.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
+				<td><?php echo esc_html( $this->http->is_connected() ? $this->http->get_blog_id() : '-' ); ?></td>
+			</tr>
+			<tr>
+				<td data-export-label="Account ID"><?php esc_html_e( 'Account ID', 'woocommerce-payments' ); ?>:</td>
+				<td class="help"><?php echo wc_help_tip( esc_html__( 'The merchant account ID you are currently using to process payments with.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
+				<td><?php echo $this->gateway->is_connected() ? esc_html( $this->account->get_stripe_account_id() ?? '-' ) : '<mark class="error"><span class="dashicons dashicons-warning"></span> ' . esc_html__( 'Not connected', 'woocommerce-payments' ) . '</mark>'; ?></td>
+			</tr>
+			<?php
+			// Only display the rest if the payment gateway is connected since many places check for this and we might get inaccurate data.
+			if ( $this->gateway->is_connected() ) :
+				?>
 				<tr>
 					<td data-export-label="Payment Gateway"><?php esc_html_e( 'Payment Gateway', 'woocommerce-payments' ); ?>:</td>
-					<td class="help"><?php echo wc_help_tip( esc_html__( 'Is this payment gateway enabled for use on your store?', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
-					<td><?php $this->gateway->is_enabled() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
+					<td class="help"><?php echo wc_help_tip( esc_html__( 'Is the payment gateway ready and enabled for use on your store?', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
+					<td><?php echo $this->gateway->needs_setup() ? '<mark class="error"><span class="dashicons dashicons-warning"></span> ' . esc_html__( 'Needs setup', 'woocommerce-payments' ) . '</mark>' : ( $this->gateway->is_enabled() ? esc_html__( 'Enabled', 'woocommerce-payments' ) : esc_html__( 'Disabled', 'woocommerce-payments' ) ); ?></td>
 				</tr>
 				<tr>
 					<td data-export-label="Test Mode"><?php esc_html_e( 'Test Mode', 'woocommerce-payments' ); ?>:</td>
@@ -123,20 +127,26 @@ class WC_Payments_Status {
 				</tr>
 				<tr>
 					<td data-export-label="UPE"><?php esc_html_e( 'UPE', 'woocommerce-payments' ); ?>:</td>
-					<td class="help"><?php echo wc_help_tip( esc_html__( 'The general state of the new payments architecture and the type in use.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
+					<td class="help"><?php echo wc_help_tip( esc_html__( 'The general state of the new payments architecture and the type in use (split or legacy).', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
 					<td><?php echo esc_html( WC_Payments_Features::is_upe_enabled() ? __( 'Enabled', 'woocommerce-payments' ) . ' (' . WC_Payments_Features::get_enabled_upe_type() . ')' : __( 'Disabled', 'woocommerce-payments' ) ); ?></td>
 				</tr>
-				<?php if ( WC_Payments_Features::is_upe_enabled() ) : ?>
+					<?php if ( WC_Payments_Features::is_upe_enabled() ) : ?>
 				<tr>
 					<td data-export-label="UPE Enabled APMs"><?php esc_html_e( 'UPE Enabled APMs', 'woocommerce-payments' ); ?>:</td>
 					<td class="help"><?php echo wc_help_tip( esc_html__( 'What UPE payments methods are enabled for the store.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
 					<td><?php echo esc_html( implode( ',', $this->gateway->get_upe_enabled_payment_method_ids() ) ); ?></td>
 				</tr>
 				<?php endif; ?>
+
 				<?php if ( ! WC_Payments_Features::is_woopay_express_checkout_enabled() ) : ?>
 				<tr>
-					<td data-export-label="WooPay"><?php esc_html_e( 'WooPay', 'woocommerce-payments' ); ?>:</td>
-					<td class="help"><?php echo wc_help_tip( esc_html__( 'WooPay is not yet enabled or the store is not yet eligible.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
+					<td data-export-label="WooPay"><?php esc_html_e( 'WooPay Express Checkout', 'woocommerce-payments' ); ?>:</td>
+					<td class="help">
+						<?php
+						/* translators: %s: WooPayments */
+						echo wc_help_tip( sprintf( esc_html__( 'WooPay is not available, as a %s feature, or the store is not yet eligible.', 'woocommerce-payments' ), 'WooPayments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */
+						?>
+					</td>
 					<td><?php echo ! WC_Payments_Features::is_woopay_eligible() ? esc_html__( 'Not eligible', 'woocommerce-payments' ) : esc_html__( 'Not active', 'woocommerce-payments' ); ?></td>
 				</tr>
 				<?php else : ?>
@@ -157,6 +167,7 @@ class WC_Payments_Status {
 					<td><?php get_option( \WCPay\WooPay\WooPay_Scheduler::INVALID_EXTENSIONS_FOUND_OPTION_NAME, false ) ? esc_html_e( 'Yes', 'woocommerce-payments' ) : esc_html_e( 'No', 'woocommerce-payments' ); ?></td>
 				</tr>
 				<?php endif; ?>
+
 				<tr>
 					<td data-export-label="Apple Pay / Google Pay"><?php esc_html_e( 'Apple Pay / Google Pay Express Checkout', 'woocommerce-payments' ); ?>:</td>
 					<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the store has Payment Request enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
@@ -179,7 +190,7 @@ class WC_Payments_Status {
 					<td data-export-label="Enabled Fraud Filters"><?php esc_html_e( 'Enabled Fraud Filters', 'woocommerce-payments' ); ?>:</td>
 					<td class="help"><?php echo wc_help_tip( esc_html__( 'The advanced fraud protection filters currently enabled.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
 					<td>
-					<?php
+						<?php
 						// Process the list.
 						$adv_fraud_settings = json_decode( wp_json_encode( $this->gateway->get_option( 'advanced_fraud_protection_settings' ) ), true );
 						$list               = array_filter(
@@ -212,10 +223,11 @@ class WC_Payments_Status {
 						);
 
 						echo empty( $list ) ? '-' : esc_html( implode( ',', $list ) );
-					?>
+						?>
 					</td>
 				</tr>
 				<?php endif; ?>
+
 				<tr>
 					<td data-export-label="Multi-currency"><?php esc_html_e( 'Multi-currency', 'woocommerce-payments' ); ?>:</td>
 					<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the store has the Multi-currency feature enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
@@ -232,12 +244,18 @@ class WC_Payments_Status {
 					<td><?php WC_Payments_Features::is_auth_and_capture_enabled() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
 				</tr>
 				<tr>
-					<td data-export-label="Logging"><?php esc_html_e( 'Logging', 'woocommerce-payments' ); ?>:</td>
-					<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether debug logging is enabled and working or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
-					<td><?php \WCPay\Logger::can_log() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
+					<td data-export-label="Documents"><?php esc_html_e( 'Documents', 'woocommerce-payments' ); ?>:</td>
+					<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the tax documents section is enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
+					<td><?php WC_Payments_Features::is_documents_section_enabled() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
 				</tr>
-			</tbody>
-		</table>
+			<?php endif; ?>
+			<tr>
+				<td data-export-label="Logging"><?php esc_html_e( 'Logging', 'woocommerce-payments' ); ?>:</td>
+				<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether debug logging is enabled and working or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
+				<td><?php \WCPay\Logger::can_log() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
+			</tr>
+		</tbody>
+	</table>
 		<?php
 	}
 }
