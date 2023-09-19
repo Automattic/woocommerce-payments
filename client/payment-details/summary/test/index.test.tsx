@@ -401,7 +401,7 @@ describe( 'PaymentDetailsSummary', () => {
 			).toHaveTextContent( /Sep 9, 2023/ );
 
 			// Actions
-			screen.getByRole( 'link', {
+			screen.getByRole( 'button', {
 				name: /Challenge dispute/,
 			} );
 			screen.getByRole( 'button', {
@@ -433,7 +433,7 @@ describe( 'PaymentDetailsSummary', () => {
 				ignore: '.a11y-speak-region',
 			} );
 
-			screen.getByRole( 'link', {
+			screen.getByRole( 'button', {
 				name: /Continue with challenge/,
 			} );
 		} );
@@ -482,7 +482,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 			renderCharge( charge );
 
-			const challengeButton = screen.getByRole( 'link', {
+			const challengeButton = screen.getByRole( 'button', {
 				name: /Challenge dispute/,
 			} );
 
