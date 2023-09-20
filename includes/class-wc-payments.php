@@ -1258,6 +1258,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WooPay utilities.
+	 *
+	 * @return WooPay_Utilities
+	 */
+	public static function get_woopay_util() {
+		return self::$woopay_util;
+	}
+
+	/**
 	 * Sets the customer service instance. This is needed only for tests.
 	 *
 	 * @param WC_Payments_Customer_Service $customer_service_class Instance of WC_Payments_Customer_Service.

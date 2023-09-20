@@ -145,4 +145,13 @@ class PaymentRequest {
 
 		throw new PaymentRequestException( __( 'No valid payment method was selected.', 'woocommerce-payments' ) );
 	}
+
+	/**
+	 * Checks if the payment method should be saved.
+	 *
+	 * @return bool
+	 */
+	public function should_save_payment_method() {
+		return ! empty( $this->request[ 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-new-payment-method' ] );
+	}
 }

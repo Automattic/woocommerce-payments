@@ -9,6 +9,7 @@ namespace WCPay\Internal\DependencyManagement\DelegateContainer;
 
 use Psr\Container\ContainerInterface;
 use WC_Payments;
+use WC_Payments_Subscriptions;
 use WCPay\Internal\DependencyManagement\ContainerException;
 
 /**
@@ -158,5 +159,23 @@ class LegacyContainer implements ContainerInterface {
 	 */
 	private function get_wc_payments_customer_service_instance() {
 		return WC_Payments::get_customer_service();
+	}
+
+	/**
+	 * Returns the subscriptions service.
+	 *
+	 * @return \WC_Payments_Subscription_Service
+	 */
+	private function get_wc_payments_subscription_service_instance() {
+		return WC_Payments_Subscriptions::get_subscription_service();
+	}
+
+	/**
+	 * Returns an instance of the WooPay utilities class.
+	 *
+	 * @return \WCPay\WooPay\WooPay_Utilities
+	 */
+	private function get_wcpay_woopay_woopay_utilities_instance() {
+		return WC_Payments::get_woopay_util();
 	}
 }

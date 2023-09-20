@@ -8,6 +8,7 @@
 namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
 use Automattic\WooCommerce\Utilities\PluginUtil;
+use WC_Payments_Subscription_Service;
 use WCPay\Container;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
@@ -23,6 +24,7 @@ use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
 use WCPay\Internal\Service\GatewayService;
 use WCPay\Internal\Service\PaymentMethodService;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * WCPay payments service provider.
@@ -75,7 +77,9 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 
 		$container->addShared( PaymentProcessingService::class )
 			->addArgument( Storage::class )
-			->addArgument( LegacyProxy::class );
+			->addArgument( LegacyProxy::class )
+			->addArgument( WC_Payments_Subscription_Service::class )
+			->addArgument( WooPay_Utilities::class );
 
 		$container->addShared( ExampleService::class );
 		$container->addShared( ExampleServiceWithDependencies::class )

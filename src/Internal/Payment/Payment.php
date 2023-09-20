@@ -24,11 +24,11 @@ class Payment {
 	private $order;
 
 	/**
-	 * Payment method.
+	 * Holds all data, related to the payment.
 	 *
-	 * @var PaymentMethodInterface
+	 * @var array
 	 */
-	private $payment_method;
+	private $data = [];
 
 	/**
 	 * Payment constructor.
@@ -49,12 +49,81 @@ class Payment {
 	}
 
 	/**
+	 * Stores data within the payment.
+	 *
+	 * @param string $key   Key of the property to store.
+	 * @param mixed  $value Value to store.
+	 */
+	private function store( string $key, $value ) {
+		$this->data[ $key ] = $value;
+	}
+
+	/**
+	 * Reads from the internal data array.
+	 *
+	 * @param string $key Key to read.
+	 * @return mixed|null
+	 */
+	private function read( string $key ) {
+		return $this->data[ $key ] ?? null;
+	}
+
+	/**
+	 * Adds a flag to the payment.
+	 *
+	 * Flags are used to control small nuances in the payment
+	 * processing, rather than controlling the flow.
+	 *
+	 * @param Flag $flag The flag to add.
+	 */
+	public function add_flag( Flag $flag ) {
+		$flags = $this->read( 'flags' ) ?? [];
+
+		if ( ! in_array( $flag, $flags, true ) ) {
+			$flags[] = $flag;
+			$this->store( 'flags', $flags );
+		}
+	}
+
+	/**
+	 * Checks if the payment has a certain flag.
+	 *
+	 * @param Flag $flag The flag to check.
+	 * @return bool
+	 */
+	public function has_flag( Flag $flag ) {
+		return in_array( $flag, $this->read( 'flags' ) ?? [], true );
+	}
+
+	/**
+	 * Removes a flag from the payment, if it was set.
+	 *
+	 * @param Flag $flag The flag to remove.
+	 */
+	public function remove_flag( Flag $flag ) {
+		if ( ! $this->has_flag( $flag ) ) {
+			return;
+		}
+
+		$existing_flags = $this->read( 'flags' );
+		$new_flags      = [];
+
+		foreach ( $existing_flags as $existing_flag ) {
+			if ( $existing_flag !== $flag ) {
+				$new_flags[] = $existing_flag;
+			}
+		}
+
+		$this->store( 'flags', $new_flags );
+	}
+
+	/**
 	 * Sets the used payment method.
 	 *
 	 * @param PaymentMethodInterface $payment_method The payment method to use.
 	 */
 	public function set_payment_method( PaymentMethodInterface $payment_method ) {
-		$this->payment_method = $payment_method;
+		$this->store( 'payment_method', $payment_method );
 	}
 
 	/**
@@ -63,6 +132,6 @@ class Payment {
 	 * @return PaymentMethodInterface|null
 	 */
 	public function get_payment_method(): ?PaymentMethodInterface {
-		return $this->payment_method;
+		return $this->read( 'payment_method' );
 	}
 }

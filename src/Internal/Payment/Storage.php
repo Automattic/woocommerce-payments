@@ -141,6 +141,13 @@ class Storage {
 		$payment_method         = $payment->get_payment_method();
 		$data['payment_method'] = $payment_method ? $payment_method->get_data() : null;
 
+		$data['flags'] = [];
+		foreach ( Flag::get_all() as $flag ) {
+			if ( $payment->has_flag( $flag ) ) {
+				$data['flags'][] = $flag->__toString();
+			}
+		}
+
 		return $data;
 	}
 
@@ -159,6 +166,10 @@ class Storage {
 		if ( $payment_method ) {
 			$pm_object = $this->payment_method_service->get_from_data( $payment_method );
 			$payment->set_payment_method( $pm_object );
+		}
+
+		foreach ( $data['flags'] as $flag ) {
+			$payment->add_flag( Flag::$flag() );
 		}
 	}
 }
