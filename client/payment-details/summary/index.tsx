@@ -37,7 +37,9 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
-import DisputeDetails from '../dispute-details';
+import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
+import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 declare const window: any;
 
@@ -375,9 +377,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
+
 			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
-				<DisputeDetails dispute={ charge.dispute } />
+				<>
+					{ isAwaitingResponse( charge.dispute.status ) ? (
+						<DisputeAwaitingResponseDetails
+							dispute={ charge.dispute }
+						/>
+					) : (
+						<DisputeResolutionFooter dispute={ charge.dispute } />
+					) }
+				</>
 			) }
+
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
@@ -394,7 +406,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											a: (
 												// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
 												<a
-													href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+													href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
 													target="_blank"
 													rel="noreferer"
 												/>

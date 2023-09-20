@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Update inbox note logic to prevent prompt to set up payment methods from showing on not fully onboarded account.
