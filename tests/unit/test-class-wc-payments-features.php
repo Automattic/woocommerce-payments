@@ -306,25 +306,9 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
-	public function test_legacy_upe_enabled_with_split_upe_ineligible_merchant() {
+	public function test_deferred_upe_enabled_with_sepa() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'capabilities' => [ 'sepa_debit_payments' => 'active' ] ] );
 		add_filter(
-			'pre_option_' . WC_Payments_Features::UPE_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '0';
-			},
-			10,
-			3
-		);
-		add_filter(
-			'pre_option_' . WC_Payments_Features::UPE_SPLIT_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '1';
-			},
-			10,
-			3
-		);
-		add_filter(
 			'pre_option_' . WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME,
 			function ( $pre_option, $option, $default ) {
 				return '1';
@@ -332,43 +316,8 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 			10,
 			3
 		);
-
-		$this->assertTrue( WC_Payments_Features::is_upe_enabled() );
-		$this->assertTrue( WC_Payments_Features::is_upe_legacy_enabled() );
-		$this->assertFalse( WC_Payments_Features::is_upe_split_enabled() );
-		$this->assertFalse( WC_Payments_Features::is_upe_deferred_intent_enabled() );
-	}
-
-	public function test_split_upe_enabled_with_eligible_merchant() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'capabilities' => [ 'sepa_debit_payments' => 'inactive' ] ] );
-		add_filter(
-			'pre_option_' . WC_Payments_Features::UPE_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '0';
-			},
-			10,
-			3
-		);
-		add_filter(
-			'pre_option_' . WC_Payments_Features::UPE_SPLIT_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '1';
-			},
-			10,
-			3
-		);
-		add_filter(
-			'pre_option_' . WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '1';
-			},
-			10,
-			3
-		);
-
 		$this->assertTrue( WC_Payments_Features::is_upe_enabled() );
 		$this->assertFalse( WC_Payments_Features::is_upe_legacy_enabled() );
-		$this->assertTrue( WC_Payments_Features::is_upe_split_enabled() );
 		$this->assertTrue( WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
