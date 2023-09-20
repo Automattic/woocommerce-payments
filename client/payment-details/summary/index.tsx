@@ -36,7 +36,7 @@ import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
 import { ClickTooltip } from 'components/tooltip';
-import { getDisputeFee } from 'wcpay/disputes/utils';
+import { getDisputeFee, isAwaitingResponse } from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
@@ -48,7 +48,6 @@ import CancelAuthorizationButton from '../../components/cancel-authorization-but
 import { PaymentIntent } from '../../types/payment-intents';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
-import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 declare const window: any;
 
