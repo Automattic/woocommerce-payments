@@ -18,7 +18,7 @@ import {
 	disputeAwaitingResponseStatuses,
 	disputeUnderReviewStatuses,
 } from 'wcpay/disputes/filters/config';
-import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { formatCurrency, formatExplicitCurrency } from 'wcpay/utils/currency';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
@@ -103,12 +103,18 @@ const getDisputeDeductedBalanceTransaction = (
  * and the deduction has not been reversed.
  */
 export const getDisputeFeeFormatted = (
-	dispute: Dispute
+	dispute: Dispute,
+	appendCurrencyCode?: boolean
 ): string | undefined => {
 	const disputeFee = getDisputeDeductedBalanceTransaction( dispute );
 
-	return (
-		disputeFee &&
-		formatExplicitCurrency( disputeFee.fee, disputeFee.currency )
-	);
+	if ( ! disputeFee ) {
+		return undefined;
+	}
+
+	if ( appendCurrencyCode ) {
+		return formatExplicitCurrency( disputeFee.fee, disputeFee.currency );
+	}
+
+	return formatCurrency( disputeFee.fee, disputeFee.currency );
 };

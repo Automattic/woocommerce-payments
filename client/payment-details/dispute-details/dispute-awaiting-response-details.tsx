@@ -175,7 +175,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 														'woocommerce-payments'
 													),
 													getDisputeFeeFormatted(
-														dispute
+														dispute,
+														true
 													) ?? '-'
 												),
 												{
