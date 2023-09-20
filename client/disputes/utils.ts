@@ -94,8 +94,8 @@ const getDisputeDeductedBalanceTransaction = (
 };
 
 /**
- * Returns the dispute fee balance transaction for a dispute if it exists
- * formatted as a currency string.
+ * Returns the dispute fee formatted as a currency string if it exists
+ * and the deduction has not been reversed.
  */
 export const getDisputeFeeFormatted = (
 	dispute: Dispute
