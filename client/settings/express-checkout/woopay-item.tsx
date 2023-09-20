@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
+import { Button, CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import WooIcon from 'assets/images/payment-methods/woo.svg?asset';
 import interpolateComponents from '@automattic/interpolate-components';
 import { getPaymentMethodSettingsUrl } from '../../utils';
@@ -162,16 +162,17 @@ const WooPayExpressCheckoutItem = (): React.ReactElement => {
 							</div>
 
 							<div className="express-checkout__link">
-								<a
+								<Button
 									href={ getPaymentMethodSettingsUrl(
 										'woopay'
 									) }
+									isSecondary
 								>
 									{ __(
 										'Customize',
 										'woocommerce-payments'
 									) }
-								</a>
+								</Button>
 							</div>
 						</div>
 					</div>

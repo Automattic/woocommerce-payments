@@ -11,7 +11,7 @@ defaults:
 jobs:
   get-last-released-version:
     name: "Get the last released version"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       releaseVersion: ${{ steps.current-version.outputs.RELEASE_VERSION }}
     
@@ -31,7 +31,7 @@ jobs:
   create-gh-release:
     name: "Create a GH release"
     needs: get-last-released-version
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RELEASE_VERSION: ${{ needs.get-last-released-version.outputs.releaseVersion }}
 
@@ -75,7 +75,7 @@ jobs:
   merge-trunk-into-develop:
     name: "Merge trunk back into develop"
     needs: get-last-released-version
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RELEASE_VERSION: ${{ needs.get-last-released-version.outputs.releaseVersion }}
 
@@ -98,7 +98,7 @@ jobs:
   trigger-translations:
     name: "Trigger translations update for the release"
     needs: [ get-last-released-version, create-gh-release ]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: "Checkout repository (trunk)"
         uses: actions/checkout@v3
@@ -114,7 +114,7 @@ jobs:
   update-wiki:
     name: "Update the wiki for the next release"
     needs: get-last-released-version
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RELEASE_VERSION: ${{ needs.get-last-released-version.outputs.releaseVersion }}
     
