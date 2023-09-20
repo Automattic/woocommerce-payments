@@ -385,10 +385,10 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @return boolean True if mandate must be shown and acknowledged by customer before deferred intent UPE payment can be processed, false otherwise.
 	 */
 	public function does_payment_method_require_mandate_data() {
-		$is_link_payment       = Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() && in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true );
-		$is_sepa_debit_payment = Payment_Method::SEPA === $this->get_selected_stripe_payment_type_id();
+		$is_stripe_link_enabled = Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() && in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true );
+		$is_sepa_debit_payment  = Payment_Method::SEPA === $this->get_selected_stripe_payment_type_id();
 
-		return $is_link_payment || $is_sepa_debit_payment;
+		return $is_stripe_link_enabled || $is_sepa_debit_payment;
 	}
 
 	/**
