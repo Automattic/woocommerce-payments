@@ -341,6 +341,7 @@ const InquiryUnderReviewFooter: React.FC< {
 const InquiryClosedFooter: React.FC< {
 	dispute: Dispute;
 } > = ( { dispute } ) => {
+	const isSubmitted = !! dispute?.metadata.__evidence_submitted_at;
 	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
 		? dateI18n(
 				'M j, Y',
@@ -378,6 +379,35 @@ const InquiryClosedFooter: React.FC< {
 					) }
 				</FlexItem>
 			</Flex>
+			{ isSubmitted && (
+				<FlexItem className="transaction-details-dispute-footer__actions">
+					<Link
+						href={ getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/disputes/challenge',
+							id: dispute?.id,
+						} ) }
+					>
+						<Button
+							variant="secondary"
+							onClick={ () => {
+								wcpayTracks.recordEvent(
+									wcpayTracks.events
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+									{
+										dispute_status: dispute.status,
+									}
+								);
+							} }
+						>
+							{ __(
+								'View submitted evidence',
+								'woocommerce-payments'
+							) }
+						</Button>
+					</Link>
+				</FlexItem>
+			) }
 		</CardFooter>
 	);
 };

@@ -641,13 +641,15 @@ describe( 'PaymentDetailsSummary', () => {
 			charge.disputed = true;
 			charge.dispute = getBaseDispute();
 			charge.dispute.status = 'warning_closed';
-			charge.dispute.metadata.__dispute_closed_at = '1693400000';
+			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+			charge.dispute.metadata.__dispute_closed_at = '1693453017';
 
 			renderCharge( charge );
 
 			screen.getByText( /This inquiry was closed/i, {
 				ignore: '.a11y-speak-region',
 			} );
+			screen.getByRole( 'button', { name: /View submitted evidence/i } );
 
 			// No actions rendered
 			expect(
