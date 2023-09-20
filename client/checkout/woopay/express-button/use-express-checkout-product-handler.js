@@ -72,7 +72,7 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 		// Check if product is a gravity form.
 		const gravityForm = document
 			.querySelector( '[name="wc_gforms_form_id"]' )
-			.closest( 'form.cart' );
+			?.closest( 'form.cart' );
 		// Check if product is a variable product.
 		const variation = document.querySelector( '.single_variation_wrap' );
 
