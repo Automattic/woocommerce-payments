@@ -124,15 +124,9 @@ class PaymentProcessingService {
 
 			$payment = $payment->process( $request );
 
-			var_dump( $payment->get_context()->has_flag( Flag::SAVE_PAYMENT_METHOD_TO_STORE() ) );
-
 			// Temporary: Store the order payment, and load it immediately, ensuring that everything is stored.
 			$this->storage->save_order_payment( $payment );
 			$payment = $this->storage->get_order_payment( $order );
-
-			var_dump( $payment->get_context()->has_flag( Flag::SAVE_PAYMENT_METHOD_TO_STORE() ) );
-
-			exit;
 
 			return $payment->get_processing_response();
 		} catch ( Exception $e ) {
