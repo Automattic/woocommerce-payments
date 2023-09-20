@@ -89,121 +89,6 @@ const DisputeUnderReviewFooter: React.FC< {
 	);
 };
 
-const InquiryUnderReviewFooter: React.FC< {
-	dispute: Dispute;
-} > = ( { dispute } ) => {
-	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
-		? dateI18n(
-				'M j, Y',
-				moment
-					.unix(
-						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
-					)
-					.toISOString()
-		  )
-		: '-';
-
-	return (
-		<CardFooter className="transaction-details-dispute-footer transaction-details-dispute-footer--primary">
-			<Flex justify="space-between">
-				<FlexItem>
-					{ createInterpolateElement(
-						sprintf(
-							/* Translators: %s - formatted date, <a> - link to documentation page */
-							__(
-								'You submitted evidence for this inquiry on %s. The cardholder’s bank is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
-								'woocommerce-payments'
-							),
-							submissionDateFormatted
-						),
-						{
-							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
-								/>
-							),
-						}
-					) }
-				</FlexItem>
-				<FlexItem className="transaction-details-dispute-footer__actions">
-					<Link
-						href={ getAdminUrl( {
-							page: 'wc-admin',
-							path: '/payments/disputes/challenge',
-							id: dispute?.id,
-						} ) }
-					>
-						<Button
-							variant="secondary"
-							onClick={ () => {
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
-									{
-										dispute_status: dispute.status,
-									}
-								);
-							} }
-						>
-							{ __(
-								'View submitted evidence',
-								'woocommerce-payments'
-							) }
-						</Button>
-					</Link>
-				</FlexItem>
-			</Flex>
-		</CardFooter>
-	);
-};
-
-const InquiryClosedFooter: React.FC< {
-	dispute: Dispute;
-} > = ( { dispute } ) => {
-	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
-		? dateI18n(
-				'M j, Y',
-				moment
-					.unix(
-						parseInt( dispute.metadata.__dispute_closed_at, 10 )
-					)
-					.toISOString()
-		  )
-		: '-';
-
-	return (
-		<CardFooter className="transaction-details-dispute-footer">
-			<Flex justify="space-between">
-				<FlexItem>
-					{ createInterpolateElement(
-						sprintf(
-							/* Translators: %s - formatted date, <a> - link to documentation page */
-							__(
-								'This inquiry was closed on %s. <a>Learn more about preventing disputes</a>.',
-								'woocommerce-payments'
-							),
-							closedDateFormatted
-						),
-						{
-							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-								/>
-							),
-						}
-					) }
-				</FlexItem>
-			</Flex>
-		</CardFooter>
-	);
-};
-
 const DisputeWonFooter: React.FC< {
 	dispute: Dispute;
 } > = ( { dispute } ) => {
@@ -377,6 +262,121 @@ const DisputeLostFooter: React.FC< {
 						</Link>
 					</FlexItem>
 				) }
+			</Flex>
+		</CardFooter>
+	);
+};
+
+const InquiryUnderReviewFooter: React.FC< {
+	dispute: Dispute;
+} > = ( { dispute } ) => {
+	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
+		? dateI18n(
+				'M j, Y',
+				moment
+					.unix(
+						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
+					)
+					.toISOString()
+		  )
+		: '-';
+
+	return (
+		<CardFooter className="transaction-details-dispute-footer transaction-details-dispute-footer--primary">
+			<Flex justify="space-between">
+				<FlexItem>
+					{ createInterpolateElement(
+						sprintf(
+							/* Translators: %s - formatted date, <a> - link to documentation page */
+							__(
+								'You submitted evidence for this inquiry on %s. The cardholder’s bank is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
+								'woocommerce-payments'
+							),
+							submissionDateFormatted
+						),
+						{
+							a: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
+								<a
+									target="_blank"
+									rel="noopener noreferrer"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
+								/>
+							),
+						}
+					) }
+				</FlexItem>
+				<FlexItem className="transaction-details-dispute-footer__actions">
+					<Link
+						href={ getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/disputes/challenge',
+							id: dispute?.id,
+						} ) }
+					>
+						<Button
+							variant="secondary"
+							onClick={ () => {
+								wcpayTracks.recordEvent(
+									wcpayTracks.events
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+									{
+										dispute_status: dispute.status,
+									}
+								);
+							} }
+						>
+							{ __(
+								'View submitted evidence',
+								'woocommerce-payments'
+							) }
+						</Button>
+					</Link>
+				</FlexItem>
+			</Flex>
+		</CardFooter>
+	);
+};
+
+const InquiryClosedFooter: React.FC< {
+	dispute: Dispute;
+} > = ( { dispute } ) => {
+	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
+		? dateI18n(
+				'M j, Y',
+				moment
+					.unix(
+						parseInt( dispute.metadata.__dispute_closed_at, 10 )
+					)
+					.toISOString()
+		  )
+		: '-';
+
+	return (
+		<CardFooter className="transaction-details-dispute-footer">
+			<Flex justify="space-between">
+				<FlexItem>
+					{ createInterpolateElement(
+						sprintf(
+							/* Translators: %s - formatted date, <a> - link to documentation page */
+							__(
+								'This inquiry was closed on %s. <a>Learn more about preventing disputes</a>.',
+								'woocommerce-payments'
+							),
+							closedDateFormatted
+						),
+						{
+							a: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
+								<a
+									target="_blank"
+									rel="noopener noreferrer"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+								/>
+							),
+						}
+					) }
+				</FlexItem>
 			</Flex>
 		</CardFooter>
 	);
