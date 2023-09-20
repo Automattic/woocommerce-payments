@@ -67,8 +67,6 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 		const productId = document.querySelector( '.single_add_to_cart_button' )
 			.value;
 
-		// Check if product is a bundle product.
-		const bundleForm = document.querySelector( '.bundle_form' );
 		// Check if product is a variable product.
 		const variation = document.querySelector( '.single_variation_wrap' );
 
@@ -77,8 +75,17 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 			qty: document.querySelector( '.quantity .qty' ).value,
 		};
 
-		if ( bundleForm ) {
-			const formData = new FormData( bundleForm );
+		if ( variation ) {
+			data.product_id = variation.querySelector(
+				'input[name="product_id"]'
+			).value;
+			data.attributes = document.querySelector( '.variations_form' )
+				? getAttributes()
+				: [];
+		} else {
+			const formData = new FormData(
+				document.querySelector( 'form.cart' )
+			);
 
 			const attributes = {};
 
@@ -90,13 +97,6 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 				...data,
 				...attributes,
 			};
-		} else if ( variation ) {
-			data.product_id = variation.querySelector(
-				'input[name="product_id"]'
-			).value;
-			data.attributes = document.querySelector( '.variations_form' )
-				? getAttributes()
-				: [];
 		}
 
 		const addOnForm = document.querySelector( 'form.cart' );
