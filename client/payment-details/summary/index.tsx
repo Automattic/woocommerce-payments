@@ -36,7 +36,10 @@ import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
 import { ClickTooltip } from 'components/tooltip';
-import { getDisputeFee } from 'wcpay/disputes/utils';
+import {
+	getDisputeFeeFormatted,
+	isAwaitingResponse,
+} from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
@@ -46,7 +49,8 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
-import DisputeDetails from '../dispute-details';
+import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
+import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 
 declare const window: any;
 
@@ -187,9 +191,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
 
 	const disputeFee =
-		charge.dispute &&
-		charge.dispute.status !== 'won' &&
-		getDisputeFee( charge.dispute );
+		charge.dispute && getDisputeFeeFormatted( charge.dispute );
 
 	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
 	const transactionFee = charge.balance_transaction
@@ -344,10 +346,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 															) }
 														</label>
 														<span aria-label="Dispute fee">
-															{ formatCurrency(
-																disputeFee.fee,
-																disputeFee.currency
-															) }
+															{ disputeFee }
 														</span>
 													</Flex>
 													<Flex>
@@ -490,9 +489,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
+
 			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
-				<DisputeDetails dispute={ charge.dispute } />
+				<>
+					{ isAwaitingResponse( charge.dispute.status ) ? (
+						<DisputeAwaitingResponseDetails
+							dispute={ charge.dispute }
+						/>
+					) : (
+						<DisputeResolutionFooter dispute={ charge.dispute } />
+					) }
+				</>
 			) }
+
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (

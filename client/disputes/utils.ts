@@ -18,6 +18,7 @@ import {
 	disputeAwaitingResponseStatuses,
 	disputeUnderReviewStatuses,
 } from 'wcpay/disputes/filters/config';
+import { formatExplicitCurrency } from 'wcpay/utils/currency';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
@@ -72,13 +73,42 @@ export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
 };
 
 /**
- * Returns the dispute fee balance transaction for a dispute if it exists.
+ * Returns the dispute fee balance transaction for a dispute if it exists
+ * and the deduction has not been reversed.
  */
-export const getDisputeFee = (
+const getDisputeDeductedBalanceTransaction = (
 	dispute: Dispute
 ): BalanceTransaction | undefined => {
+	// Note that there will only be two balance transactions for a given dispute:
+
+	// One balance transaction with reporting_category: 'dispute' will be present if funds have been withdrawn from the account.
 	const disputeFee = dispute.balance_transactions.find(
 		( transaction ) => transaction.reporting_category === 'dispute'
 	);
+
+	// A second balance transaction with the reporting_category: 'dispute_reversal' will be present if funds have been reinstated to the account.
+	const disputeFeeReversal = dispute.balance_transactions.find(
+		( transaction ) => transaction.reporting_category === 'dispute_reversal'
+	);
+
+	if ( disputeFeeReversal ) {
+		return undefined;
+	}
+
 	return disputeFee;
+};
+
+/**
+ * Returns the dispute fee formatted as a currency string if it exists
+ * and the deduction has not been reversed.
+ */
+export const getDisputeFeeFormatted = (
+	dispute: Dispute
+): string | undefined => {
+	const disputeFee = getDisputeDeductedBalanceTransaction( dispute );
+
+	return (
+		disputeFee &&
+		formatExplicitCurrency( disputeFee.fee, disputeFee.currency )
+	);
 };

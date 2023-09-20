@@ -7,11 +7,12 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
 import '@wordpress/jest-console';
+
 /**
  * Internal dependencies
  */
 import type { Charge } from 'wcpay/types/charges';
-import type { BalanceTransaction } from 'wcpay/types/balance-transactions';
+import type { Dispute } from 'wcpay/types/disputes';
 import PaymentDetailsSummary from '../';
 import { useAuthorization } from 'wcpay/data';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
@@ -31,14 +32,21 @@ declare const global: {
 			country: string;
 		};
 		featureFlags: {
+			isDisputeOnTransactionPageEnabled: boolean;
 			isAuthAndCaptureEnabled: boolean;
 		};
 	};
 };
 
+const mockDisputeDoAccept = jest.fn();
+
 jest.mock( 'wcpay/data', () => ( {
 	useAuthorization: jest.fn( () => ( {
 		authorization: null,
+	} ) ),
+	useDisputeAccept: jest.fn( () => ( {
+		doAccept: mockDisputeDoAccept,
+		isLoading: false,
 	} ) ),
 } ) );
 
@@ -88,6 +96,41 @@ const getBaseCharge = (): Charge =>
 		},
 	} as any );
 
+const getBaseDispute = (): Dispute =>
+	( {
+		id: 'dp_1',
+		amount: 2000,
+		charge: 'ch_38jdHA39KKA',
+		order: null,
+		balance_transactions: [
+			{
+				amount: -1500,
+				currency: 'usd',
+				fee: 1500,
+				reporting_category: 'dispute',
+			},
+		],
+		created: 1693453017,
+		currency: 'usd',
+		evidence: {
+			billing_address: '123 test address',
+			customer_email_address: 'test@email.com',
+			customer_name: 'Test customer',
+			shipping_address: '123 test address',
+		},
+		evidence_details: {
+			due_by: 1694303999,
+			has_evidence: false,
+			past_due: false,
+			submission_count: 0,
+		},
+		issuer_evidence: null,
+		metadata: {},
+		payment_intent: 'pi_1',
+		reason: 'fraudulent',
+		status: 'needs_response',
+	} as Dispute );
+
 const getBaseMetadata = () => ( {
 	platform: 'ios',
 	reader_id: 'APPLEBUILTINSIMULATOR-1',
@@ -124,6 +167,7 @@ describe( 'PaymentDetailsSummary', () => {
 			},
 			featureFlags: {
 				isAuthAndCaptureEnabled: true,
+				isDisputeOnTransactionPageEnabled: false,
 			},
 			currencyData: {
 				US: {
@@ -136,6 +180,15 @@ describe( 'PaymentDetailsSummary', () => {
 				},
 			},
 		};
+
+		// mock Date.now that moment library uses to get current date for testing purposes
+		Date.now = jest.fn( () =>
+			new Date( '2023-09-08T12:33:37.000Z' ).getTime()
+		);
+	} );
+
+	afterEach( () => {
+		Date.now = () => new Date().getTime();
 	} );
 
 	test( 'correctly renders a charge', () => {
@@ -206,18 +259,16 @@ describe( 'PaymentDetailsSummary', () => {
 	test( 'renders the information of a disputed charge', () => {
 		const charge = getBaseCharge();
 		charge.disputed = true;
-		charge.dispute = {
-			amount: 2000,
-			status: 'under_review',
-			balance_transactions: [
-				{
-					amount: -2000,
-					fee: 1500,
-					currency: 'usd',
-					reporting_category: 'dispute',
-				} as any,
-			],
-		} as any;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'under_review';
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				fee: 1500,
+				currency: 'usd',
+				reporting_category: 'dispute',
+			},
+		];
 
 		const container = renderCharge( charge );
 		screen.getByText( /Deducted: \$-20.00/i );
@@ -227,24 +278,23 @@ describe( 'PaymentDetailsSummary', () => {
 	test( 'renders the information of a dispute-reversal charge', () => {
 		const charge = getBaseCharge();
 		charge.disputed = true;
-		charge.dispute = {
-			amount: 2000,
-			status: 'won',
-			balance_transactions: [
-				{
-					amount: -2000,
-					fee: 1500,
-					currency: 'usd',
-					reporting_category: 'dispute',
-				} as any,
-				{
-					amount: 2000,
-					fee: -1500,
-					currency: 'usd',
-					reporting_category: 'dispute_reversal',
-				},
-			],
-		} as any;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'won';
+
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				fee: 1500,
+				currency: 'usd',
+				reporting_category: 'dispute',
+			},
+			{
+				amount: 2000,
+				fee: -1500,
+				currency: 'usd',
+				reporting_category: 'dispute_reversal',
+			},
+		];
 
 		const container = renderCharge( charge );
 		expect(
@@ -259,27 +309,30 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	test( 'renders the fee breakdown tooltip of a disputed charge', () => {
-		const charge = getBaseCharge();
-		charge.disputed = true;
-		charge.currency = 'jpy';
-		charge.amount = 10000;
-		charge.balance_transaction = {
-			amount: 2000,
-			currency: 'usd',
-			fee: 70,
-		};
-		charge.dispute = {
+		const charge = {
+			...getBaseCharge(),
+			currency: 'jpy',
 			amount: 10000,
-			status: 'under_review',
-			balance_transactions: [
-				{
-					amount: -1500,
-					fee: 1500,
-					currency: 'usd',
-					reporting_category: 'dispute',
-				} as BalanceTransaction,
-			],
-		} as any;
+			balance_transaction: {
+				amount: 2000,
+				currency: 'usd',
+				fee: 70,
+			},
+			disputed: true,
+			dispute: {
+				...getBaseDispute(),
+				amount: 10000,
+				status: 'under_review',
+				balance_transactions: [
+					{
+						amount: -1500,
+						fee: 1500,
+						currency: 'usd',
+						reporting_category: 'dispute',
+					},
+				],
+			} as Dispute,
+		};
 
 		renderCharge( charge );
 
@@ -422,6 +475,261 @@ describe( 'PaymentDetailsSummary', () => {
 			).toBeInTheDocument();
 
 			expect( container ).toMatchSnapshot();
+		} );
+	} );
+
+	describe( 'with feature flag isDisputeOnTransactionPageEnabled', () => {
+		beforeEach( () => {
+			global.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = true;
+		} );
+
+		afterEach( () => {
+			global.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = false;
+		} );
+
+		test( 'renders the information of a disputed charge', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			renderCharge( charge );
+
+			// Dispute Notice
+			screen.getByText(
+				/The cardholder claims this is an unauthorized transaction/,
+				{ ignore: '.a11y-speak-region' }
+			);
+
+			// Don't render the staged evidence message
+			expect(
+				screen.queryByText(
+					/You initiated a challenge to this dispute/,
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeNull();
+
+			// Dispute Summary Row
+			expect(
+				screen.getByText( /Dispute Amount/i ).nextSibling
+			).toHaveTextContent( /\$20.00/ );
+			expect(
+				screen.getByText( /Disputed On/i ).nextSibling
+			).toHaveTextContent( /Aug 30, 2023/ );
+			expect(
+				screen.getByText( /Reason/i ).nextSibling
+			).toHaveTextContent( /Transaction unauthorized/ );
+			expect(
+				screen.getByText( /Respond By/i ).nextSibling
+			).toHaveTextContent( /Sep 9, 2023/ );
+
+			// Actions
+			screen.getByRole( 'button', {
+				name: /Challenge dispute/,
+			} );
+			screen.getByRole( 'button', {
+				name: /Accept dispute/,
+			} );
+		} );
+
+		test( 'correctly renders dispute details for a dispute with staged evidence', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+			charge.dispute.evidence_details = {
+				has_evidence: true,
+				due_by: 1694303999,
+				past_due: false,
+				submission_count: 0,
+			};
+
+			renderCharge( charge );
+
+			screen.getByText(
+				/The cardholder claims this is an unauthorized transaction/,
+				{ ignore: '.a11y-speak-region' }
+			);
+
+			// Render the staged evidence message
+			screen.getByText( /You initiated a challenge to this dispute/, {
+				ignore: '.a11y-speak-region',
+			} );
+
+			screen.getByRole( 'button', {
+				name: /Continue with challenge/,
+			} );
+		} );
+
+		test( 'correctly renders the accept dispute modal and accepts', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			renderCharge( charge );
+
+			const openModalButton = screen.getByRole( 'button', {
+				name: /Accept dispute/,
+			} );
+
+			// Open the modal
+			openModalButton.click();
+
+			screen.getByRole( 'heading', {
+				name: /Accept the dispute?/,
+			} );
+			screen.getByText( /\$15.00 dispute fee/, {
+				ignore: '.a11y-speak-region',
+			} );
+
+			screen.getByRole( 'button', {
+				name: /Cancel/,
+			} );
+			const acceptButton = screen.getByRole( 'button', {
+				name: /Accept dispute/,
+			} );
+
+			// Accept the dispute
+			acceptButton.click();
+
+			expect( mockDisputeDoAccept ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		test( 'navigates to the dispute challenge screen when the challenge button is clicked', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+			charge.dispute.id = 'dp_test123';
+
+			renderCharge( charge );
+
+			const challengeButton = screen.getByRole( 'button', {
+				name: /Challenge dispute/,
+			} );
+
+			challengeButton.click();
+
+			expect( window.location.href ).toContain(
+				`admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=${ charge.dispute.id }`
+			);
+		} );
+
+		test( 'correctly renders dispute details for "won" disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'won';
+			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+			renderCharge( charge );
+
+			screen.getByText( /You won this dispute on/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			screen.getByRole( 'button', { name: /View dispute details/i } );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
+		} );
+
+		test( 'correctly renders dispute details for "under_review" disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'under_review';
+			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+
+			renderCharge( charge );
+
+			screen.getByText( /reviewing the case/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			screen.getByRole( 'button', { name: /View submitted evidence/i } );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
+		} );
+
+		test( 'correctly renders dispute details for "accepted" disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'lost';
+			charge.dispute.metadata.__closed_by_merchant = '1';
+			charge.dispute.metadata.__dispute_closed_at = '1693453017';
+
+			renderCharge( charge );
+
+			screen.getByText( /This dispute was accepted/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			// Check for the correct fee amount
+			screen.getByText( /\$15.00 fee/i, {
+				ignore: '.a11y-speak-region',
+			} );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
+		} );
+
+		test( 'correctly renders dispute details for "lost" disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'lost';
+			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+			charge.dispute.metadata.__dispute_closed_at = '1693453017';
+
+			renderCharge( charge );
+
+			screen.getByText( /This dispute was lost/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			// Check for the correct fee amount
+			screen.getByText( /\$15.00 fee/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			screen.getByRole( 'button', { name: /View dispute details/i } );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
 		} );
 	} );
 } );
