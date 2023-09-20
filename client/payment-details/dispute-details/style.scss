@@ -34,6 +34,21 @@
 				}
 			}
 		}
+
+		&__actions {
+			display: flex;
+			justify-content: start;
+			gap: $grid-unit-10;
+
+			@media screen and ( max-width: $break-small ) {
+				flex-direction: column;
+
+				.components-button {
+					width: 100%;
+					justify-content: center;
+				}
+			}
+		}
 	}
 }
 .dispute-reason-tooltip {
@@ -46,6 +61,47 @@
 		}
 		margin: 0;
 		margin-bottom: 8px;
+	}
+}
+
+.transaction-details-dispute-accept-modal {
+	max-width: 600px;
+
+	.components-modal__content {
+		padding-top: $grid-unit-30;
+	}
+
+	&__icon {
+		flex-shrink: 0;
+		padding: 6px;
+		margin-right: $grid-unit-10;
+	}
+
+	&__actions {
+		margin-top: $grid-unit-30;
+	}
+}
+
+.transaction-details-dispute-footer {
+	background-color: #f2f4f5;
+
+	&__actions {
+		flex-shrink: 0;
+	}
+
+	&--primary {
+		background-color: $wp-blue-0;
+	}
+
+	@media screen and ( max-width: $break-small ) {
+		.components-flex {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.components-flex-item {
+			margin: 10px 0;
+		}
 	}
 }
 

@@ -46,7 +46,9 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
-import DisputeDetails from '../dispute-details';
+import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
+import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 declare const window: any;
 
@@ -463,9 +465,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
+
 			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
-				<DisputeDetails dispute={ charge.dispute } />
+				<>
+					{ isAwaitingResponse( charge.dispute.status ) ? (
+						<DisputeAwaitingResponseDetails
+							dispute={ charge.dispute }
+						/>
+					) : (
+						<DisputeResolutionFooter dispute={ charge.dispute } />
+					) }
+				</>
 			) }
+
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
