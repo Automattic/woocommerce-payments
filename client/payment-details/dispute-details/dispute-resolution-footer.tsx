@@ -160,6 +160,50 @@ const InquiryUnderReviewFooter: React.FC< {
 	);
 };
 
+const InquiryClosedFooter: React.FC< {
+	dispute: Dispute;
+} > = ( { dispute } ) => {
+	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
+		? dateI18n(
+				'M j, Y',
+				moment
+					.unix(
+						parseInt( dispute.metadata.__dispute_closed_at, 10 )
+					)
+					.toISOString()
+		  )
+		: '-';
+
+	return (
+		<CardFooter className="transaction-details-dispute-footer">
+			<Flex justify="space-between">
+				<FlexItem>
+					{ createInterpolateElement(
+						sprintf(
+							/* Translators: %s - formatted date, <a> - link to documentation page */
+							__(
+								'This inquiry was closed on %s. <a>Learn more about preventing disputes</a>.',
+								'woocommerce-payments'
+							),
+							closedDateFormatted
+						),
+						{
+							a: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
+								<a
+									target="_blank"
+									rel="noopener noreferrer"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+								/>
+							),
+						}
+					) }
+				</FlexItem>
+			</Flex>
+		</CardFooter>
+	);
+};
+
 const DisputeWonFooter: React.FC< {
 	dispute: Dispute;
 } > = ( { dispute } ) => {
@@ -352,6 +396,9 @@ const DisputeResolutionFooter: React.FC< {
 	}
 	if ( dispute.status === 'warning_under_review' ) {
 		return <InquiryUnderReviewFooter dispute={ dispute } />;
+	}
+	if ( dispute.status === 'warning_closed' ) {
+		return <InquiryClosedFooter dispute={ dispute } />;
 	}
 
 	return null;

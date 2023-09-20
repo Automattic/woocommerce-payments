@@ -635,5 +635,31 @@ describe( 'PaymentDetailsSummary', () => {
 				} )
 			).toBeNull();
 		} );
+
+		test( 'correctly renders dispute details for "warning_closed" inquiry disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'warning_closed';
+			charge.dispute.metadata.__dispute_closed_at = '1693400000';
+
+			renderCharge( charge );
+
+			screen.getByText( /This inquiry was closed/i, {
+				ignore: '.a11y-speak-region',
+			} );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
+		} );
 	} );
 } );
