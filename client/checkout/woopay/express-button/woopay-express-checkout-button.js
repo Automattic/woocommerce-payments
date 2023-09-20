@@ -96,7 +96,16 @@ export const WoopayExpressCheckoutButton = ( {
 			}
 
 			addToCart( productData )
-				.then( () => {
+				.then( ( res ) => {
+					if ( res.error ) {
+						if ( res.submit ) {
+							// Some extensions needs to submit the form
+							// to show error messages.
+							document.querySelector( 'form.cart' ).submit();
+						}
+						return;
+					}
+
 					expressCheckoutIframe( api, context, emailSelector );
 				} )
 				.catch( () => {
