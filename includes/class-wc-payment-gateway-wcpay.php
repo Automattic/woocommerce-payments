@@ -1267,12 +1267,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				// For Stripe Link with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
-				if (
-					WC_Payments_Features::is_upe_deferred_intent_enabled() &&
-					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
-					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
-					) {
+				// For Stripe Link & SEPA with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
+				if ( WC_Payments_Features::is_upe_deferred_intent_enabled() && $this->is_mandate_data_required() ) {
 					$request->set_mandate_data( $this->get_mandate_data() );
 				}
 
@@ -1481,6 +1477,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * The parent method which allows to modify the child class implementation, while supporting the current design where the parent process_payment method is called from the child class.
+	 * Mandate must be shown and acknowledged under certain conditions for Stripe Link and SEPA.
+	 * Since WC_Payment_Gateway_WCPay represents card payment, which does not require mandate, we return false.
+	 *
+	 * @return boolean False since card payment does not require mandate.
+	 */
+	protected function is_mandate_data_required() {
+		return false;
 	}
 
 	/**
