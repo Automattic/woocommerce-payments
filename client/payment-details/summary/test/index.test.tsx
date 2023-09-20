@@ -528,7 +528,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 			renderCharge( charge );
 
-			screen.getByText( /reviewing the case/i, {
+			screen.getByText( /You submitted evidence for this dispute/i, {
 				ignore: '.a11y-speak-region',
 			} );
 			screen.getByRole( 'button', { name: /View submitted evidence/i } );
@@ -595,6 +595,33 @@ describe( 'PaymentDetailsSummary', () => {
 				ignore: '.a11y-speak-region',
 			} );
 			screen.getByRole( 'button', { name: /View dispute details/i } );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
+		} );
+
+		test( 'correctly renders dispute details for "warning_under_review" inquiry disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'warning_under_review';
+			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+
+			renderCharge( charge );
+
+			screen.getByText( /You submitted evidence for this inquiry/i, {
+				ignore: '.a11y-speak-region',
+			} );
+			screen.getByRole( 'button', { name: /View submitted evidence/i } );
 
 			// No actions rendered
 			expect(
