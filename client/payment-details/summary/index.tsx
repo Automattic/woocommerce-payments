@@ -36,7 +36,10 @@ import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
 import { ClickTooltip } from 'components/tooltip';
-import { getDisputeFee, isAwaitingResponse } from 'wcpay/disputes/utils';
+import {
+	getDisputeFeeFormatted,
+	isAwaitingResponse,
+} from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
@@ -188,9 +191,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
 
 	const disputeFee =
-		charge.dispute &&
-		charge.dispute.status !== 'won' &&
-		getDisputeFee( charge.dispute );
+		charge.dispute && getDisputeFeeFormatted( charge.dispute );
 
 	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
 	const transactionFee = charge.balance_transaction
@@ -318,10 +319,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 															) }
 														</label>
 														<span aria-label="Dispute fee">
-															{ formatCurrency(
-																disputeFee.fee,
-																disputeFee.currency
-															) }
+															{ disputeFee }
 														</span>
 													</Flex>
 													<Flex>
