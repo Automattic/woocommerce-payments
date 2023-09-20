@@ -224,6 +224,19 @@ class WC_Payments_WooPay_Button_Handler {
 		// First empty the cart to prevent wrong calculation.
 		WC()->cart->empty_cart();
 
+		if ( isset( $_POST['gform_form_id'] ) && class_exists( 'WC_GFPA_Cart' ) && ! WC_GFPA_Cart::instance()->add_to_cart_validation( true, $product_id, $qty ) ) {
+			// Gravity Forms error messages needs to be
+			// submitted to show error messages.
+			wp_send_json(
+				[
+					'error'  => true,
+					'submit' => true,
+				],
+				400
+			);
+			return;
+		}
+
 		if ( ( 'variable' === $product_type || 'variable-subscription' === $product_type ) && isset( $_POST['attributes'] ) ) {
 			$attributes = wc_clean( wp_unslash( $_POST['attributes'] ) );
 

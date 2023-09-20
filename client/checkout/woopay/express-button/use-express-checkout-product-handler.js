@@ -69,6 +69,10 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 
 		// Check if product is a bundle product.
 		const bundleForm = document.querySelector( '.bundle_form' );
+		// Check if product is a gravity form.
+		const gravityForm = document
+			.querySelector( '[name="wc_gforms_form_id"]' )
+			.closest( 'form.cart' );
 		// Check if product is a variable product.
 		const variation = document.querySelector( '.single_variation_wrap' );
 
@@ -77,8 +81,8 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 			qty: document.querySelector( '.quantity .qty' ).value,
 		};
 
-		if ( bundleForm ) {
-			const formData = new FormData( bundleForm );
+		if ( bundleForm || gravityForm ) {
+			const formData = new FormData( bundleForm || gravityForm );
 
 			const attributes = {};
 
