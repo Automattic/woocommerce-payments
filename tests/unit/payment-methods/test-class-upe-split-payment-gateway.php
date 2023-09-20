@@ -393,17 +393,17 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ 'link' ] )
 			);
 
-		$this->assertTrue( $mock_upe_gateway->does_payment_method_require_mandate_data() );
+		$this->assertTrue( $mock_upe_gateway->is_mandate_data_required() );
 	}
 
 	public function test_sepa_debit_payment_method_requires_mandate_data() {
 		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::SEPA ];
-		$this->assertTrue( $mock_upe_gateway->does_payment_method_require_mandate_data() );
+		$this->assertTrue( $mock_upe_gateway->is_mandate_data_required() );
 	}
 
 	public function test_non_required_mandate_data() {
 		$mock_gateway_not_requiring_mandate_data = $this->mock_payment_gateways[ Payment_Method::GIROPAY ];
-		$this->assertFalse( $mock_gateway_not_requiring_mandate_data->does_payment_method_require_mandate_data() );
+		$this->assertFalse( $mock_gateway_not_requiring_mandate_data->is_mandate_data_required() );
 	}
 
 	public function test_non_reusable_payment_method_is_not_available_when_subscription_is_in_cart() {
