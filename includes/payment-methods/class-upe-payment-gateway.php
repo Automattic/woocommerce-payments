@@ -989,6 +989,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$enabled_payment_methods = [];
 		$active_payment_methods  = $this->get_upe_enabled_payment_method_statuses();
+		if ( empty( $upe_enabled_payment_methods ) ) {
+			return [ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ];
+		}
+
 		foreach ( $upe_enabled_payment_methods as $payment_method_id ) {
 			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
 			if ( isset( $this->payment_methods[ $payment_method_id ] ) ) {
