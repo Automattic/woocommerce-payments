@@ -76,7 +76,7 @@ export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
  * Returns the dispute fee balance transaction for a dispute if it exists
  * and the deduction has not been reversed.
  */
-export const getDisputeFee = (
+const getDisputeDeductedBalanceTransaction = (
 	dispute: Dispute
 ): BalanceTransaction | undefined => {
 	const disputeFee = dispute.balance_transactions.find(
@@ -100,7 +100,7 @@ export const getDisputeFee = (
 export const getDisputeFeeFormatted = (
 	dispute: Dispute
 ): string | undefined => {
-	const disputeFee = getDisputeFee( dispute );
+	const disputeFee = getDisputeDeductedBalanceTransaction( dispute );
 
 	return (
 		disputeFee &&

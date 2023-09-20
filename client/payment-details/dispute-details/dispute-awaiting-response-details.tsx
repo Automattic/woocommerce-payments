@@ -26,12 +26,11 @@ import type { Dispute } from 'wcpay/types/disputes';
 import wcpayTracks from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
 import {
-	getDisputeFee,
+	getDisputeFeeFormatted,
 	isAwaitingResponse,
 	isInquiry,
 } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
-import { formatCurrency } from 'wcpay/utils/currency';
 import DisputeNotice from './dispute-notice';
 import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
@@ -50,7 +49,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
-	const disputeFee = getDisputeFee( dispute );
 	const showDisputeActions = ! isInquiry( dispute );
 
 	const onModalClose = () => {
@@ -176,11 +174,9 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 														'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account.',
 														'woocommerce-payments'
 													),
-													disputeFee &&
-														formatCurrency(
-															disputeFee.fee,
-															disputeFee.currency
-														)
+													getDisputeFeeFormatted(
+														dispute
+													) ?? '-'
 												),
 												{
 													em: <em />,
