@@ -302,6 +302,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
 		self::$dependency_service = new WC_Payments_Dependency_Service();
+		self::$dependency_service->init_hooks();
 
 		if ( false === self::$dependency_service->has_valid_dependencies() ) {
 			return;
@@ -950,6 +951,7 @@ class WC_Payments {
 
 		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
 			$http_class = new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
+			$http_class->init_hooks();
 		}
 
 		return $http_class;
