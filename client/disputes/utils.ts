@@ -79,7 +79,7 @@ export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
 const getDisputeDeductedBalanceTransaction = (
 	dispute: Dispute
 ): BalanceTransaction | undefined => {
-	// Note that there will only be two balance transactions for a given dispute:
+	// Note that there can only be, at most, two balance transactions for a given dispute:
 
 	// One balance transaction with reporting_category: 'dispute' will be present if funds have been withdrawn from the account.
 	const disputeFee = dispute.balance_transactions.find(
