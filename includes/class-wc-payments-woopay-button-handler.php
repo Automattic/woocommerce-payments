@@ -247,7 +247,20 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		if ( 'simple' === $product_type || 'subscription' === $product_type ) {
-			WC()->cart->add_to_cart( $product->get_id(), $qty );
+			$allowed_item_data = [
+				// Teams for WooCommerce Memberships fields.
+				'team_name',
+				'team_owner_takes_seat',
+			];
+			$item_data         = [];
+
+			foreach ( $allowed_item_data as $item ) {
+				if ( isset( $_POST[ $item ] ) ) {
+					$item_data[ $item ] = wc_clean( wp_unslash( $_POST[ $item ] ) );
+				}
+			}
+
+			WC()->cart->add_to_cart( $product->get_id(), $qty, null, null, $item_data );
 		}
 
 		if ( 'bundle' === $product_type && function_exists( 'WC_PB' ) ) {
