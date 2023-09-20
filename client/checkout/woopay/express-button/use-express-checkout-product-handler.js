@@ -67,6 +67,8 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 		const productId = document.querySelector( '.single_add_to_cart_button' )
 			.value;
 
+		// Check if product is a bundle product.
+		const bundleForm = document.querySelector( '.bundle_form' );
 		// Check if product is a variable product.
 		const variation = document.querySelector( '.single_variation_wrap' );
 
@@ -75,7 +77,7 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 			qty: document.querySelector( '.quantity .qty' ).value,
 		};
 
-		if ( variation ) {
+		if ( variation && ! bundleForm ) {
 			data.product_id = variation.querySelector(
 				'input[name="product_id"]'
 			).value;

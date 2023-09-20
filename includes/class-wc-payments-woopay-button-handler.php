@@ -224,8 +224,10 @@ class WC_Payments_WooPay_Button_Handler {
 		// First empty the cart to prevent wrong calculation.
 		WC()->cart->empty_cart();
 
-		if ( isset( $_POST['gform_form_id'] ) && class_exists( 'WC_GFPA_Cart' ) && ! WC_GFPA_Cart::instance()->add_to_cart_validation( true, $product_id, $qty ) ) {
-			// Gravity Forms error messages needs to be
+		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $qty );
+
+		if ( ! $is_add_to_cart_valid ) {
+			// Some extensions error messages needs to be
 			// submitted to show error messages.
 			wp_send_json(
 				[
@@ -246,7 +248,7 @@ class WC_Payments_WooPay_Button_Handler {
 			WC()->cart->add_to_cart( $product->get_id(), $qty, $variation_id, $attributes );
 		}
 
-		if ( 'simple' === $product_type || 'subscription' === $product_type ) {
+		if ( 'simple' === $product_type || 'subscription' === $product_type || 'bundle' === $product_type ) {
 			$allowed_item_data = [
 				// Teams for WooCommerce Memberships fields.
 				'team_name',
@@ -261,14 +263,6 @@ class WC_Payments_WooPay_Button_Handler {
 			}
 
 			WC()->cart->add_to_cart( $product->get_id(), $qty, null, null, $item_data );
-		}
-
-		if ( 'bundle' === $product_type && function_exists( 'WC_PB' ) ) {
-			$configuration = WC_PB()->cart->get_posted_bundle_configuration( $product_id );
-
-			if ( WC_PB()->cart->validate_bundle_configuration( $product_id, $qty, $configuration, 'cart' ) ) {
-				WC()->cart->add_to_cart( $product_id, $qty );
-			}
 		}
 
 		WC()->cart->calculate_totals();
