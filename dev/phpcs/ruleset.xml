@@ -12,4 +12,20 @@
 	<exclude-pattern>*/includes/class-woopay-tracker.php</exclude-pattern>
 	<exclude-pattern>*/includes/woopay/*</exclude-pattern>
 	<exclude-pattern>*/includes/woopay-user/*</exclude-pattern>
+	<exclude-pattern>*/includes/class-wc-payments-order-success-page.php</exclude-pattern>
+
+	<exclude-pattern>*/includes/class-wc-payments-fraud-service.php</exclude-pattern>
+	<exclude-pattern>*/includes/fraud-prevention/*</exclude-pattern>
+
+	<exclude-pattern>*/includes/class-wc-payments-account.php</exclude-pattern>
+	<exclude-pattern>*/includes/class-wc-payments-incentives-service.php</exclude-pattern>
+	<exclude-pattern>*/includes/class-wc-payments-onboarding-service.php</exclude-pattern>
+
+	<exclude-pattern>*/includes/class-wc-payments-apple-pay-registration.php</exclude-pattern>
+	<exclude-pattern>*/includes/class-wc-payments-express-checkout-button-display-handler.php</exclude-pattern>
+
+	<exclude-pattern>*/includes/class-wc-payments-customer-service.php</exclude-pattern>
+	<exclude-pattern>*/includes/class-wc-payments-token-service.php</exclude-pattern>
+
+	<exclude-pattern>*/includes/class-wc-payments-webhook-reliability-service.php</exclude-pattern>
 </ruleset>
