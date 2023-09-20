@@ -297,6 +297,7 @@ class WC_Payments {
 
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
+		self::$database_cache->init_hooks();
 
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
