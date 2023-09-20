@@ -10,12 +10,8 @@ runs:
       run: echo -e "machine github.com\n  login $E2E_GH_TOKEN" > ~/.netrc
 
     # PHP setup
-    - name: PHP Setup
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '7.4'
-        tools: composer
-        coverage: none
+    - name: "Set up PHP"
+      uses: ./.github/actions/setup-php
 
     # Composer setup
     - name: Setup Composer

@@ -30,6 +30,10 @@ const WCPaySubscriptionsToggle = () => {
 		updateIsWCPaySubscriptionsEnabled( value );
 	};
 
+	/**
+	 * Only show the toggle if the site doesn't have WC Subscriptions active and is eligible
+	 * for wcpay subscriptions or if wcpay subscriptions are already enabled.
+	 */
 	return ! wcpaySettings.isSubscriptionsActive &&
 		isWCPaySubscriptionsEligible ? (
 		<CheckboxControl

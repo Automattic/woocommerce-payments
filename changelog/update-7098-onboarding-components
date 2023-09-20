@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: Ensure new onboarding components (behind an experiment) use admin color schema.
+
+
