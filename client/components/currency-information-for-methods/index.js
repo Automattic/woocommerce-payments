@@ -162,38 +162,48 @@ const CurrencyInformationForMethodsWithoutMC = ( {
 	if ( missingCurrencyLabels.length > 0 ) {
 		return (
 			<InlineNotice icon status="warning" isDismissible={ false }>
-				{ interpolateComponents( {
-					mixedString: sprintf(
-						__(
-							'%s %s %sadditional %s, we tried to enable {{strong}}%s{{/strong}}, ' +
-								'but it seems multi currency is disabled. ' +
-								'You can view & manage currencies later in settings.',
-							'woocommerce-payments'
-						),
-						ListToCommaSeparatedSentencePartConverter(
-							paymentMethodsWithMissingCurrencies
-						),
-						_n(
-							'requires',
-							'require',
-							paymentMethodsWithMissingCurrencies.length,
-							'woocommerce-payments'
-						),
-						missingCurrencyLabels.length === 1 ? 'an ' : '',
-						_n(
-							'currency',
-							'currencies',
-							missingCurrencyLabels.length,
-							'woocommerce-payments'
-						),
-						ListToCommaSeparatedSentencePartConverter(
-							missingCurrencyLabels
-						)
+				{ sprintf(
+					__(
+						'%s %s the %s %s. In order to enable %s, you must add %s %s to your store.',
+						'woocommerce-payments'
 					),
-					components: {
-						strong: <strong />,
-					},
-				} ) }
+					ListToCommaSeparatedSentencePartConverter(
+						paymentMethodsWithMissingCurrencies
+					),
+					_n(
+						'requires',
+						'require',
+						paymentMethodsWithMissingCurrencies.length,
+						'woocommerce-payments'
+					),
+					ListToCommaSeparatedSentencePartConverter(
+						missingCurrencyLabels
+					),
+					_n(
+						'currency',
+						'currencies',
+						missingCurrencyLabels.length,
+						'woocommerce-payments'
+					),
+					_n(
+						'this payment method',
+						'these payment methods',
+						paymentMethodsWithMissingCurrencies.length,
+						'woocommerce-payments'
+					),
+					_n(
+						'this',
+						'these',
+						missingCurrencyLabels.length,
+						'woocommerce-payments'
+					),
+					_n(
+						'currency',
+						'currencies',
+						missingCurrencyLabels.length,
+						'woocommerce-payments'
+					)
+				) }
 			</InlineNotice>
 		);
 	}
@@ -206,7 +216,6 @@ const CurrencyInformationForMethodsWrapper = ( props ) => {
 		storeCurrency,
 	} = useContext( WCPaySettingsContext );
 
-	// Prevents loading currency data when the feature flag is disabled.
 	if ( ! multiCurrency ) {
 		return (
 			<CurrencyInformationForMethodsWithoutMC
