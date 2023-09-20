@@ -36,9 +36,15 @@ declare const global: {
 	};
 };
 
+const mockDisputeDoAccept = jest.fn();
+
 jest.mock( 'wcpay/data', () => ( {
 	useAuthorization: jest.fn( () => ( {
 		authorization: null,
+	} ) ),
+	useDisputeAccept: jest.fn( () => ( {
+		doAccept: mockDisputeDoAccept,
+		isLoading: false,
 	} ) ),
 } ) );
 
@@ -393,6 +399,14 @@ describe( 'PaymentDetailsSummary', () => {
 			expect(
 				screen.getByText( /Respond By/i ).nextSibling
 			).toHaveTextContent( /Sep 9, 2023/ );
+
+			// Actions
+			screen.getByRole( 'button', {
+				name: /Challenge dispute/,
+			} );
+			screen.getByRole( 'button', {
+				name: /Accept dispute/,
+			} );
 		} );
 
 		test( 'correctly renders dispute details for a dispute with staged evidence', () => {
@@ -418,6 +432,65 @@ describe( 'PaymentDetailsSummary', () => {
 			screen.getByText( /You initiated a challenge to this dispute/, {
 				ignore: '.a11y-speak-region',
 			} );
+
+			screen.getByRole( 'button', {
+				name: /Continue with challenge/,
+			} );
+		} );
+
+		test( 'correctly renders the accept dispute modal and accepts', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			renderCharge( charge );
+
+			const openModalButton = screen.getByRole( 'button', {
+				name: /Accept dispute/,
+			} );
+
+			// Open the modal
+			openModalButton.click();
+
+			screen.getByRole( 'heading', {
+				name: /Accept the dispute?/,
+			} );
+			screen.getByText( /\$15.00 dispute fee/, {
+				ignore: '.a11y-speak-region',
+			} );
+
+			screen.getByRole( 'button', {
+				name: /Cancel/,
+			} );
+			const acceptButton = screen.getByRole( 'button', {
+				name: /Accept dispute/,
+			} );
+
+			// Accept the dispute
+			acceptButton.click();
+
+			expect( mockDisputeDoAccept ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		test( 'navigates to the dispute challenge screen when the challenge button is clicked', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+			charge.dispute.id = 'dp_test123';
+
+			renderCharge( charge );
+
+			const challengeButton = screen.getByRole( 'button', {
+				name: /Challenge dispute/,
+			} );
+
+			challengeButton.click();
+
+			expect( window.location.href ).toContain(
+				`admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=${ charge.dispute.id }`
+			);
 		} );
 
 		test( 'correctly renders dispute details for "won" disputes', () => {
@@ -432,6 +505,18 @@ describe( 'PaymentDetailsSummary', () => {
 				ignore: '.a11y-speak-region',
 			} );
 			screen.getByRole( 'button', { name: /View dispute details/i } );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
 		} );
 
 		test( 'correctly renders dispute details for "under_review" disputes', () => {
@@ -447,6 +532,18 @@ describe( 'PaymentDetailsSummary', () => {
 				ignore: '.a11y-speak-region',
 			} );
 			screen.getByRole( 'button', { name: /View submitted evidence/i } );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
 		} );
 
 		test( 'correctly renders dispute details for "accepted" disputes', () => {
@@ -466,6 +563,18 @@ describe( 'PaymentDetailsSummary', () => {
 			screen.getByText( /\$15.00 fee/i, {
 				ignore: '.a11y-speak-region',
 			} );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
 		} );
 
 		test( 'correctly renders dispute details for "lost" disputes', () => {
@@ -486,6 +595,18 @@ describe( 'PaymentDetailsSummary', () => {
 				ignore: '.a11y-speak-region',
 			} );
 			screen.getByRole( 'button', { name: /View dispute details/i } );
+
+			// No actions rendered
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Challenge/i,
+				} )
+			).toBeNull();
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Accept/i,
+				} )
+			).toBeNull();
 		} );
 	} );
 } );

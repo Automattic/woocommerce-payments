@@ -619,7 +619,7 @@ class WC_Payments {
 			include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 
-			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
+			new WC_Payments_Status( self::get_gateway(), self::get_wc_payments_http(), self::get_account_service() );
 
 			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 		}
