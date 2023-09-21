@@ -17,7 +17,7 @@ concurrency:
 jobs:
   lint:
     name:    PHP linting
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # clone the repository
       - uses: actions/checkout@v3
@@ -27,17 +27,14 @@ jobs:
           path: ~/.cache/composer/
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.4'
-          tools: composer
-          coverage: none
+      - name: "Set up PHP"
+        uses: ./.github/actions/setup-php
       # install dependencies and run linter
       - run: composer self-update && composer install --no-progress && ./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$) && ./vendor/bin/psalm
 
   generate-test-matrix:
     name: "Generate the matrix for php tests dynamically"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -50,7 +47,7 @@ jobs:
   test:
     name: PHP testing
     needs: generate-test-matrix
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: 10

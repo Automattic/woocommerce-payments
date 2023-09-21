@@ -619,7 +619,7 @@ class WC_Payments {
 			include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 
-			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
+			new WC_Payments_Status( self::get_gateway(), self::get_wc_payments_http(), self::get_account_service() );
 
 			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 		}
@@ -627,7 +627,7 @@ class WC_Payments {
 		// Load Stripe Billing subscription integration.
 		if ( self::should_load_stripe_billing_integration() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
+			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {

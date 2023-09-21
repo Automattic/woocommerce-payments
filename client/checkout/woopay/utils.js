@@ -39,3 +39,22 @@ export const validateEmail = ( value ) => {
 	/* eslint-enable */
 	return pattern.test( value );
 };
+
+export const appendRedirectionParams = ( woopayUrl ) => {
+	const isPayForOrder = window.wcpayConfig.pay_for_order;
+	const orderId = window.wcpayConfig.order_id;
+	const key = window.wcpayConfig.key;
+	const billingEmail = window.wcpayConfig.billing_email;
+
+	if ( ! isPayForOrder || ! orderId || ! key ) {
+		return woopayUrl;
+	}
+
+	const url = new URL( woopayUrl );
+	url.searchParams.append( 'pay_for_order', isPayForOrder );
+	url.searchParams.append( 'order_id', orderId );
+	url.searchParams.append( 'key', key );
+	url.searchParams.append( 'billing_email', billingEmail );
+
+	return url.href;
+};

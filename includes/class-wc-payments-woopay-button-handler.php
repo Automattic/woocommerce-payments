@@ -529,10 +529,6 @@ class WC_Payments_WooPay_Button_Handler {
 			return false;
 		}
 
-		if ( $this->is_pay_for_order_page() ) {
-			return false;
-		}
-
 		if ( ! is_user_logged_in() ) {
 			// On product page for a subscription product, but not logged in, making WooPay unavailable.
 			if ( $this->is_product() ) {

@@ -1,0 +1,19 @@
+name: "Set up PHP"
+description: "Extracts the required PHP version from plugin file and uses it to build PHP."
+
+runs:
+  using: composite
+  steps:
+    - name: "Get minimum PHP version"
+      shell: bash
+      id: get_min_php_version
+      run: |
+        MIN_PHP_VERSION=$(sed -n 's/.*PHP: //p' woocommerce-payments.php)
+        echo "MIN_PHP_VERSION=$MIN_PHP_VERSION" >> $GITHUB_OUTPUT
+
+    - name: "Setup PHP"
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ steps.get_min_php_version.outputs.MIN_PHP_VERSION }}
+        tools: composer
+        coverage: none
