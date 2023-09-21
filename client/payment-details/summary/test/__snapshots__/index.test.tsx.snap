@@ -144,7 +144,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -461,7 +461,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -753,7 +753,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -1013,7 +1013,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -1303,7 +1303,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -1799,7 +1799,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -2059,7 +2059,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -2319,7 +2319,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -2610,7 +2610,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
