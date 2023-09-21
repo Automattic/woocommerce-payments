@@ -2,7 +2,8 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
 import '@wordpress/jest-console';
@@ -222,7 +223,9 @@ describe( 'PaymentDetailsSummary', () => {
 			} as any,
 		} );
 
-		expect( renderCharge( charge ) ).toMatchSnapshot();
+		const container = renderCharge( charge );
+		screen.getByText( /Refunded: \$-20.00/i );
+		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders the information of a disputed charge', () => {
@@ -230,8 +233,100 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.disputed = true;
 		charge.dispute = getBaseDispute();
 		charge.dispute.status = 'under_review';
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				fee: 1500,
+				currency: 'usd',
+				reporting_category: 'dispute',
+			},
+		];
 
-		expect( renderCharge( charge ) ).toMatchSnapshot();
+		const container = renderCharge( charge );
+		screen.getByText( /Deducted: \$-20.00/i );
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders the information of a dispute-reversal charge', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'won';
+
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				fee: 1500,
+				currency: 'usd',
+				reporting_category: 'dispute',
+			},
+			{
+				amount: 2000,
+				fee: -1500,
+				currency: 'usd',
+				reporting_category: 'dispute_reversal',
+			},
+		];
+
+		const container = renderCharge( charge );
+		expect(
+			screen.queryByText( /Deducted: \$-15.00/i )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Fee breakdown/i,
+			} )
+		).not.toBeInTheDocument();
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders the fee breakdown tooltip of a disputed charge', () => {
+		const charge = {
+			...getBaseCharge(),
+			currency: 'jpy',
+			amount: 10000,
+			balance_transaction: {
+				amount: 2000,
+				currency: 'usd',
+				fee: 70,
+			},
+			disputed: true,
+			dispute: {
+				...getBaseDispute(),
+				amount: 10000,
+				status: 'under_review',
+				balance_transactions: [
+					{
+						amount: -1500,
+						fee: 1500,
+						currency: 'usd',
+						reporting_category: 'dispute',
+					},
+				],
+			} as Dispute,
+		};
+
+		renderCharge( charge );
+
+		// Open tooltip content
+		const tooltipButton = screen.getByRole( 'button', {
+			name: /Fee breakdown/i,
+		} );
+		userEvent.click( tooltipButton );
+
+		// Check fee breakdown calculated correctly
+		const tooltipContent = screen.getByRole( 'tooltip' );
+		expect(
+			within( tooltipContent ).getByLabelText( /Transaction fee/ )
+		).toHaveTextContent( /\$0.70/ );
+
+		expect(
+			within( tooltipContent ).getByLabelText( /Dispute fee/ )
+		).toHaveTextContent( /\$15.00/ );
+
+		expect(
+			within( tooltipContent ).getByLabelText( /Total fees/ )
+		).toHaveTextContent( /\$15.70/ );
 	} );
 
 	test( 'renders the Tap to Pay channel from metadata', () => {
