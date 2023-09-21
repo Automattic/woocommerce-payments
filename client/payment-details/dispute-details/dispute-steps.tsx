@@ -19,6 +19,7 @@ import type { Dispute } from 'wcpay/types/disputes';
 import { ChargeBillingDetails } from 'wcpay/types/charges';
 import { formatExplicitCurrency } from 'utils/currency';
 import { ClickTooltip } from 'wcpay/components/tooltip';
+import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 
 interface Props {
 	dispute: Dispute;
@@ -140,8 +141,10 @@ const DisputeSteps: React.FC< Props > = ( {
 											`Accepting this dispute will automatically close it. Your account will be charged a %s fee, and the disputed amount will be refunded to the cardholder.`,
 											'woocommerce-payments'
 										),
-										// TODO: use getDisputeFee() from https://github.com/Automattic/woocommerce-payments/pull/7118.
-										''
+										getDisputeFeeFormatted(
+											dispute,
+											true
+										) || '-'
 									) }
 								/>
 							),
