@@ -6,6 +6,7 @@
 import React from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { ExternalLink } from '@wordpress/components';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
@@ -101,12 +102,7 @@ const DisputeSteps: React.FC< Props > = ( {
 						),
 						{
 							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals"
-								/>
+								<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
 							),
 						}
 					) }
