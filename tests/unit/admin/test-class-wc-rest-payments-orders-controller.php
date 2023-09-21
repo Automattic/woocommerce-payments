@@ -1606,6 +1606,121 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * @dataProvider provider_capture_terminal_payment_allows_charging_order_with_intent_meta
+	 */
+	public function test_capture_terminal_payment_allows_charging_order_with_intent_meta( string $order_meta_intent_status ) {
+		$order = $this->create_mock_order();
+		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, $this->mock_intent_id );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, $order_meta_intent_status );
+		$order->save_meta_data();
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->with( $this->isInstanceOf( WC_Order::class ) )
+			->willReturn(
+				[
+					'status' => Intent_Status::SUCCEEDED,
+					'id'     => $this->mock_intent_id,
+				]
+			);
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' )
+			->with( $this->anything() );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response      = $this->controller->capture_terminal_payment( $request );
+		$response_data = $response->get_data();
+
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			[
+				'status' => Intent_Status::SUCCEEDED,
+				'id'     => $this->mock_intent_id,
+			],
+			$response_data
+		);
+	}
+
+	public function provider_capture_terminal_payment_allows_charging_order_with_intent_meta(): array {
+		return [
+			[ '' ],
+			[ Intent_Status::REQUIRES_CAPTURE ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_capture_terminal_payment_prevents_double_charging_order_with_intent_meta
+	 */
+	public function test_capture_terminal_payment_prevents_double_charging_order_with_intent_meta( string $order_meta_intent_id, string $order_meta_intent_status, string $request_intent_id ) {
+		$order = $this->create_mock_order();
+		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, $order_meta_intent_id );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, $order_meta_intent_status );
+		$order->save_meta_data();
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 0, $request_intent_id );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'capture_charge' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $request_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 409, $data['status'] );
+	}
+
+	public function provider_capture_terminal_payment_prevents_double_charging_order_with_intent_meta(): array {
+		return [
+			[ 'pi_abc', Intent_Status::REQUIRES_CAPTURE, 'pi_xyz' ],
+			[ 'pi_abc', '', 'pi_xyz' ],
+			[ 'pi_abc', Intent_Status::SUCCEEDED, 'pi_abc' ],
+			[ 'pi_abc', Intent_Status::SUCCEEDED, 'pi_xyz' ],
+			[ 'pi_abc', Intent_Status::CANCELED, 'pi_abc' ],
+			[ 'pi_abc', Intent_Status::CANCELED, 'pi_xyz' ],
+			[ 'pi_abc', Intent_Status::PROCESSING, 'pi_abc' ],
+		];
+	}
+
+	/**
 	 * @dataProvider provider_get_terminal_intent_capture_method
 	 */
 	public function test_get_terminal_intent_capture_method( $capture_method, $expected ) {
