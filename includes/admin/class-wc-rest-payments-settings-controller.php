@@ -1002,7 +1002,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request The request object. Optional. If passed, the function will return a REST response.
 	 *
-	 * @return WP_REST_Response|null The response object, if this is a REST request.
+	 * @return WP_REST_Response The response object, if this is a REST request.
 	 */
 	public function request_capability( WP_REST_Request $request = null ) {
 		$id                      = $request->get_param( 'id' );
