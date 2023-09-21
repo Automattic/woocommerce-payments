@@ -81,12 +81,8 @@
 			border-bottom: 1px solid $wp-gray-5;
 		}
 
-		.wcpay-tooltip__content-wrapper.wcpay-tooltip--click__content-wrapper
-			> .wcpay-tooltip__content-wrapper
-			> [role='button'] {
-			margin-left: 0;
-			margin-right: 0;
-			vertical-align: text-bottom;
+		.wcpay-tooltip__content-wrapper > [role='button'] {
+			margin: 0;
 		}
 
 		&__response-date {
