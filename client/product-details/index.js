@@ -23,55 +23,56 @@ jQuery( function ( $ ) {
 	}
 
 	const { productVariations, productId } = window.wcpayStripeSiteMessaging;
+	const {
+		amount: productAmount = 0,
+		currency: productCurrency,
+	} = productVariations[ productId ];
+	const QUANTITY_INPUT_SELECTOR = '.quantity input[type=number]';
+	const SINGLE_VARIATION_SELECTOR = '.single_variation_wrap';
+	const VARIATIONS_SELECTOR = '.variations';
+	const RESET_VARIATIONS_SELECTOR = '.reset_variations';
+
+	const quantityInput = $( QUANTITY_INPUT_SELECTOR );
 	const bnplPaymentMessageElement = initializeBnplSiteMessaging();
 
 	// Utility function to safely parse integers and handle NaN
-	const parseIntOrReturnZero = ( value ) => {
-		const result = parseInt( value, 10 );
+	const parseFloatOrReturnZero = ( value ) => {
+		const result = parseFloat( value, 10 );
 		return isNaN( result ) ? 0 : result;
 	};
 
 	const updateBnplPaymentMessage = ( amount, currency ) => {
-		if ( amount > 0 && currency ) {
-			bnplPaymentMessageElement.update( { amount, currency } );
+		if ( amount <= 0 || ! currency ) {
+			return;
 		}
+		bnplPaymentMessageElement.update( { amount, currency } );
 	};
 
-	const quantityInput = $( '.quantity input[type=number]' );
+	const updateMessageWithQuantity = ( amount, quantity ) => {
+		updateBnplPaymentMessage(
+			parseFloatOrReturnZero( amount ) *
+				parseFloatOrReturnZero( quantity ),
+			productCurrency
+		);
+	};
 
 	const resetBnplPaymentMessage = () => {
-		if ( ! quantityInput.length || ! productVariations.base_product ) {
+		if ( ! quantityInput.length || ! productVariations[ productId ] ) {
 			return;
 		}
 
-		const quantity = parseIntOrReturnZero( quantityInput.val() );
-		const baseProductAmount = parseIntOrReturnZero(
-			productVariations.base_product.amount
-		);
-
-		const amount = baseProductAmount * quantity;
-		const currency = productVariations.base_product?.currency;
-
-		updateBnplPaymentMessage( amount, currency );
+		updateMessageWithQuantity( productAmount, quantityInput.val() );
 	};
 
 	// Update BNPL message based on the quantity change
 	quantityInput.on( 'change', ( event ) => {
-		const newQuantity = parseIntOrReturnZero( event.target.value );
-		const price = parseIntOrReturnZero(
-			productVariations[ productId ]?.amount
-		);
-
-		const amount = price * newQuantity;
-		const currency = productVariations[ productId ]?.currency;
-
-		updateBnplPaymentMessage( amount, currency );
+		updateMessageWithQuantity( productAmount, event.target.value );
 	} );
 
 	// Handle BNPL messaging for variable products.
 	if ( Object.keys( productVariations ).length > 1 ) {
 		// Update BNPL message based on product variation
-		$( '.single_variation_wrap' ).on(
+		$( SINGLE_VARIATION_SELECTOR ).on(
 			'show_variation',
 			( event, variation ) => {
 				if (
@@ -81,27 +82,21 @@ jQuery( function ( $ ) {
 					return;
 				}
 
-				const quantity = parseIntOrReturnZero( quantityInput.val() );
-				const variationPrice = parseIntOrReturnZero(
-					productVariations[ variation.variation_id ]?.amount
+				updateMessageWithQuantity(
+					productVariations[ variation.variation_id ]?.amount,
+					quantityInput.val()
 				);
-
-				const amount = variationPrice * quantity;
-				const currency =
-					productVariations[ variation.variation_id ]?.currency;
-
-				updateBnplPaymentMessage( amount, currency );
 			}
 		);
 
 		// Reset BNPL message if variation is changed back to default
-		$( '.variations' ).on( 'change', ( event ) => {
+		$( VARIATIONS_SELECTOR ).on( 'change', ( event ) => {
 			if ( event.target.value === '' ) {
 				resetBnplPaymentMessage();
 			}
 		} );
 
 		// Reset BNPL message on variations reset
-		$( '.reset_variations' ).on( 'click', resetBnplPaymentMessage );
+		$( RESET_VARIATIONS_SELECTOR ).on( 'click', resetBnplPaymentMessage );
 	}
 } );
