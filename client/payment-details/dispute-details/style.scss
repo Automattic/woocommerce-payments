@@ -17,7 +17,7 @@
 		}
 
 		.dispute-summary-row {
-			margin: 24px 0;
+			margin-top: 24px;
 
 			&__response-date {
 				display: flex;
@@ -39,6 +39,7 @@
 			display: flex;
 			justify-content: start;
 			gap: $grid-unit-10;
+			margin-top: 24px;
 
 			@media screen and ( max-width: $break-small ) {
 				flex-direction: column;
@@ -64,7 +65,7 @@
 	}
 }
 .dispute-steps {
-	margin-bottom: 24px;
+	margin-top: 24px;
 
 	&__header {
 		font-weight: 600;
