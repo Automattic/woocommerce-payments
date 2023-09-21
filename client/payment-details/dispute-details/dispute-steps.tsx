@@ -44,16 +44,29 @@ const DisputeSteps: React.FC< Props > = ( {
 			'Y-m-d',
 			moment( dispute.created * 1000 ).toISOString()
 		);
-		const emailSubject = `Problem with your purchase from ${ wcpaySettings.storeName } on ${ chargeDate }?`;
+		const emailSubject = sprintf(
+			// Translators: %1$s is the store name, %2$s is the charge date.
+			__(
+				`Problem with your purchase from %1$s on %2$s?`,
+				'woocommerce-payments'
+			),
+			wcpaySettings.storeName,
+			chargeDate
+		);
 		const customerName = customer?.name || '';
-		const emailBody =
-			`Hello ${ customerName }\n\n` +
-			`We noticed that on ${ disputeDate }, you disputed a ${ formatExplicitCurrency(
-				dispute.amount,
-				dispute.currency
-			) } from ${ chargeDate }. We wanted to contact you to make sure everything was all right with your purchase and see if there's anything else we can do to resolve any problems you might have had.\n\n` +
-			`Alternatively, if the dispute was a mistake, you could easily withdraw it by calling the number on the back of your card. Thank you so much - we appreciate your business and look forward to working with you.`;
-
+		const emailBody = sprintf(
+			// Translators: %1$s is the customer name, %2$s is the dispute date, %3$s is the dispute amount with currency-code e.g. $15 USD, %4$s is the charge date.
+			__(
+				`Hello %1$s\n\n` +
+					`We noticed that on %2$s, you disputed a %3$s charge on %4$s. We wanted to contact you to make sure everything was all right with your purchase and see if there's anything else we can do to resolve any problems you might have had.\n\n` +
+					`Alternatively, if the dispute was a mistake, you can easily withdraw it by calling the number on the back of your card. Thank you so much - we appreciate your business and look forward to working with you.`,
+				'woocommerce-payments'
+			),
+			customerName,
+			disputeDate,
+			formatExplicitCurrency( dispute.amount, dispute.currency ),
+			chargeDate
+		);
 		emailLink = `mailto:${ customer.email }?subject=${ encodeURIComponent(
 			emailSubject
 		) }&body=${ encodeURIComponent( emailBody ) }`;
