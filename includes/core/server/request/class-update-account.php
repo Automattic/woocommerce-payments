@@ -81,6 +81,28 @@ class Update_Account extends Request {
 	}
 
 	/**
+	 * Sets the account statement descriptor kanji.
+	 *
+	 * @param  string $statement_descriptor_kanji Statement descriptor kanji.
+	 *
+	 * @return void
+	 */
+	public function set_statement_descriptor_kanji( string $statement_descriptor_kanji ) {
+		$this->set_param( 'statement_descriptor_kanji', $statement_descriptor_kanji );
+	}
+
+	/**
+	 * Sets the account statement descriptor kana.
+	 *
+	 * @param  string $statement_descriptor_kana Statement descriptor kana.
+	 *
+	 * @return void
+	 */
+	public function set_statement_descriptor_kana( string $statement_descriptor_kana ) {
+		$this->set_param( 'statement_descriptor_kana', $statement_descriptor_kana );
+	}
+
+	/**
 	 * Sets the account business name.
 	 *
 	 * @param  string $business_name Business name.

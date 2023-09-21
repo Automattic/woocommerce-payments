@@ -1,8 +1,10 @@
 /**
  * External dependencies
  */
+
+import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
+import { Button, CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import WooIcon from 'assets/images/payment-methods/woo.svg?asset';
 import interpolateComponents from '@automattic/interpolate-components';
 import { getPaymentMethodSettingsUrl } from '../../utils';
@@ -21,13 +23,17 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import WooPayIncompatibilityNotice from '../settings-warnings/incompatibility-notice';
 
-const WooPayExpressCheckoutItem = () => {
-	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
+import { WooPayEnabledSettingsHook } from './interfaces';
+
+const WooPayExpressCheckoutItem = (): React.ReactElement => {
+	const [ enabledMethodIds ] = useEnabledPaymentMethodIds() as Array<
+		string
+	>;
 
 	const [
 		isWooPayEnabled,
 		updateIsWooPayEnabled,
-	] = useWooPayEnabledSettings();
+	] = useWooPayEnabledSettings() as WooPayEnabledSettingsHook;
 
 	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();
 
@@ -51,15 +57,7 @@ const WooPayExpressCheckoutItem = () => {
 									) }
 								>
 									<div className="loadable-checkbox__icon">
-										<NoticeOutlineIcon
-											style={ {
-												color: '#F0B849',
-												fill: 'currentColor',
-												marginBottom: '-5px',
-												marginRight: '16px',
-											} }
-											size={ 20 }
-										/>
+										<NoticeOutlineIcon />
 										<div
 											className="loadable-checkbox__icon-warning"
 											data-testid="loadable-checkbox-icon-warning"
@@ -164,16 +162,17 @@ const WooPayExpressCheckoutItem = () => {
 							</div>
 
 							<div className="express-checkout__link">
-								<a
+								<Button
 									href={ getPaymentMethodSettingsUrl(
 										'woopay'
 									) }
+									isSecondary
 								>
 									{ __(
 										'Customize',
 										'woocommerce-payments'
 									) }
-								</a>
+								</Button>
 							</div>
 						</div>
 					</div>

@@ -135,6 +135,12 @@ class WooPay_Order_Status_Sync {
 	 * @param integer $id          ID of the webhook.
 	 */
 	public static function create_payload( $payload, $resource, $resource_id, $id ) {
+		$webhook = wc_get_webhook( $id );
+		if ( 0 !== strpos( $webhook->get_delivery_url(), WooPay_Utilities::get_woopay_rest_url( 'merchant-notification' ) ) ) {
+			// This is not a WooPay webhook, so we don't need to modify the payload.
+			return $payload;
+		}
+
 		return [
 			'blog_id'      => \Jetpack_Options::get_option( 'id' ),
 			'order_id'     => $resource_id,

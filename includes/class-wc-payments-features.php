@@ -17,6 +17,7 @@ class WC_Payments_Features {
 	const UPE_SPLIT_FLAG_NAME               = '_wcpay_feature_upe_split';
 	const UPE_DEFERRED_INTENT_FLAG_NAME     = '_wcpay_feature_upe_deferred_intent';
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
+	const STRIPE_BILLING_FLAG_NAME          = '_wcpay_feature_stripe_billing';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
@@ -320,6 +321,51 @@ class WC_Payments_Features {
 	public static function is_bnpl_affirm_afterpay_enabled(): bool {
 		$account = WC_Payments::get_account_service()->get_cached_account_data();
 		return ! isset( $account['is_bnpl_affirm_afterpay_enabled'] ) || true === $account['is_bnpl_affirm_afterpay_enabled'];
+	}
+
+	/**
+	 * Checks whether the Stripe Billing feature is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_stripe_billing_enabled(): bool {
+		return '1' === get_option( self::STRIPE_BILLING_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks if the site is eligible for Stripe Billing.
+	 *
+	 * Only US merchants are eligible for Stripe Billing.
+	 *
+	 * @return bool
+	 */
+	public static function is_stripe_billing_eligible() {
+		if ( ! function_exists( 'wc_get_base_location' ) ) {
+			return false;
+		}
+
+		$store_base_location = wc_get_base_location();
+		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+	}
+
+	/**
+	 * Checks whether the merchant is using WCPay Subscription or opted into Stripe Billing.
+	 *
+	 * Note: Stripe Billing is only used when the merchant is using WooCommerce Subscriptions and turned it on or is still using WCPay Subscriptions.
+	 *
+	 * @return bool
+	 */
+	public static function should_use_stripe_billing() {
+		// We intentionally check for the existence of the 'WC_Subscriptions' class here as we want to confirm the Plugin is active.
+		if ( self::is_wcpay_subscriptions_enabled() && ! class_exists( 'WC_Subscriptions' ) ) {
+			return true;
+		}
+
+		if ( self::is_stripe_billing_enabled() && class_exists( 'WC_Subscriptions' ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

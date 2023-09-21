@@ -42,6 +42,8 @@ use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 use WCPay\Internal\Service\PaymentProcessingService;
+use WCPay\Internal\Payment\Factor;
+use WCPay\Internal\Payment\Router;
 
 /**
  * Gateway class for WooPayments
@@ -67,20 +69,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @type array
 	 */
 	const ACCOUNT_SETTINGS_MAPPING = [
-		'account_statement_descriptor'     => 'statement_descriptor',
-		'account_business_name'            => 'business_name',
-		'account_business_url'             => 'business_url',
-		'account_business_support_address' => 'business_support_address',
-		'account_business_support_email'   => 'business_support_email',
-		'account_business_support_phone'   => 'business_support_phone',
-		'account_branding_logo'            => 'branding_logo',
-		'account_branding_icon'            => 'branding_icon',
-		'account_branding_primary_color'   => 'branding_primary_color',
-		'account_branding_secondary_color' => 'branding_secondary_color',
+		'account_statement_descriptor'       => 'statement_descriptor',
+		'account_statement_descriptor_kanji' => 'statement_descriptor_kanji',
+		'account_statement_descriptor_kana'  => 'statement_descriptor_kana',
+		'account_business_name'              => 'business_name',
+		'account_business_url'               => 'business_url',
+		'account_business_support_address'   => 'business_support_address',
+		'account_business_support_email'     => 'business_support_email',
+		'account_business_support_phone'     => 'business_support_phone',
+		'account_branding_logo'              => 'branding_logo',
+		'account_branding_icon'              => 'branding_icon',
+		'account_branding_primary_color'     => 'branding_primary_color',
+		'account_branding_secondary_color'   => 'branding_secondary_color',
 
-		'deposit_schedule_interval'        => 'deposit_schedule_interval',
-		'deposit_schedule_weekly_anchor'   => 'deposit_schedule_weekly_anchor',
-		'deposit_schedule_monthly_anchor'  => 'deposit_schedule_monthly_anchor',
+		'deposit_schedule_interval'          => 'deposit_schedule_interval',
+		'deposit_schedule_weekly_anchor'     => 'deposit_schedule_weekly_anchor',
+		'deposit_schedule_monthly_anchor'    => 'deposit_schedule_monthly_anchor',
 	];
 
 	/**
@@ -246,7 +250,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 				'description' => WC_Payments_Utils::esc_interpolated_html(
 					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
-					[ 'a' => '<a href="https://woocommerce.com/document/woocommerce-payments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+					[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 				),
 			],
 			'manual_capture'                   => [
@@ -705,6 +709,110 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks whether the new payment process should be used to pay for a given order.
+	 *
+	 * @param WC_Order $order Order that's being paid.
+	 * @return bool
+	 */
+	public function should_use_new_process( WC_Order $order ) {
+		$order_id = $order->get_id();
+
+		// The new process us under active development, and not ready for production yet.
+		if ( ! WC_Payments::mode()->is_dev() ) {
+			return false;
+		}
+
+		// This array will contain all factors, present during checkout.
+		$factors = [
+			/**
+			 * The new payment process is a factor itself.
+			 * Even if no other factors are present, this will make entering
+			 * the new payment process possible only if this factor is allowed.
+			 */
+			Factor::NEW_PAYMENT_PROCESS(),
+		];
+
+		// If there is a token in the request, we're using a saved PM.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$using_saved_payment_method = ! empty( Payment_Information::get_token_from_request( $_POST ) );
+		if ( $using_saved_payment_method ) {
+			$factors[] = Factor::USE_SAVED_PM();
+		}
+
+		// The PM should be saved when chosen, or when it's a recurrent payment, but not if already saved.
+		$save_payment_method = ! $using_saved_payment_method && (
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] )
+			|| $this->is_payment_recurring( $order_id )
+		);
+		if ( $save_payment_method ) {
+			$factors[] = Factor::SAVE_PM();
+		}
+
+		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
+		if (
+			apply_filters(
+				'wcpay_confirm_without_payment_intent',
+				$order->get_total() <= 0 && ! $save_payment_method
+			)
+		) {
+			$factors[] = Factor::NO_PAYMENT();
+		}
+
+		// Subscription (both WCPay and WCSubs) if when the order contains one.
+		if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
+			$factors[] = Factor::SUBSCRIPTION_SIGNUP();
+		}
+
+		// WooPay might change how payment fields were loaded.
+		if (
+			$this->woopay_util->should_enable_woopay( $this )
+			&& $this->woopay_util->should_enable_woopay_on_cart_or_checkout()
+		) {
+			$factors[] = Factor::WOOPAY_ENABLED();
+		}
+
+		// WooPay payments are indicated by the platform checkout intent.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['platform-checkout-intent'] ) ) {
+			$factors[] = Factor::WOOPAY_PAYMENT();
+		}
+
+		// Check whether the customer is signining up for a WCPay subscription.
+		if (
+			function_exists( 'wcs_order_contains_subscription' )
+			&& wcs_order_contains_subscription( $order_id )
+			&& WC_Payments_Features::should_use_stripe_billing()
+		) {
+			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP();
+		}
+
+		if ( $this instanceof UPE_Split_Payment_Gateway ) {
+			$factors[] = Factor::DEFERRED_INTENT_SPLIT_UPE();
+		}
+
+		if ( defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) && WCPAY_PAYMENT_REQUEST_CHECKOUT ) {
+			$factors[] = Factor::PAYMENT_REQUEST();
+		}
+
+		$router = wcpay_get_container()->get( Router::class );
+		return $router->should_use_new_payment_process( $factors );
+	}
+
+	/**
+	 * Checks whether the new payment process should be entered,
+	 * and if the answer is yes, uses it and returns the result.
+	 *
+	 * @param WC_Order $order Order that needs payment.
+	 * @return array|null     Array if processed, null if the new process is not supported.
+	 */
+	public function new_process_payment( WC_Order $order ) {
+		// Important: No factors are provided here, they were meant just for `Feature`.
+		$service = wcpay_get_container()->get( PaymentProcessingService::class );
+		return $service->process_payment( $order->get_id() );
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -714,13 +822,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
-
-		if ( defined( 'WCPAY_NEW_PROCESS' ) && true === WCPAY_NEW_PROCESS ) {
-			$new_process = wcpay_get_container()->get( PaymentProcessingService::class );
-			return $new_process->process_payment( $order_id );
-		}
-
 		$order = wc_get_order( $order_id );
+
+		// Use the new payment process if allowed.
+		if ( $this->should_use_new_process( $order ) ) {
+			return $this->new_process_payment( $order );
+		}
 
 		try {
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
@@ -1485,30 +1592,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Array of keyed metadata values.
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
+		if ( $this instanceof UPE_Split_Payment_Gateway ) {
+			$gateway_type = 'split_upe';
+		} elseif ( $this instanceof UPE_Payment_Gateway ) {
+			$gateway_type = 'upe';
+		} else {
+			$gateway_type = 'classic';
+		}
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email    = sanitize_email( $order->get_billing_email() );
 		$metadata = [
-			'customer_name'  => $name,
-			'customer_email' => $email,
-			'site_url'       => esc_url( get_site_url() ),
-			'order_id'       => $order->get_id(),
-			'order_number'   => $order->get_order_number(),
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => $payment_type,
+			'customer_name'        => $name,
+			'customer_email'       => $email,
+			'site_url'             => esc_url( get_site_url() ),
+			'order_id'             => $order->get_id(),
+			'order_number'         => $order->get_order_number(),
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => $payment_type,
+			'gateway_type'         => $gateway_type,
+			'checkout_type'        => $order->get_created_via(),
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
 		];
 
-		// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
-		if ( 'recurring' === (string) $payment_type && ! $this->is_subscriptions_plugin_active() ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
-
-			foreach ( $subscriptions as $subscription ) {
-				if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
-					$metadata['payment_context'] = 'wcpay_subscription';
-					break;
-				}
-			}
+		if ( 'recurring' === (string) $payment_type && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order, 'any' ) ) {
+			$metadata['subscription_payment'] = wcs_order_contains_renewal( $order ) ? 'renewal' : 'initial';
+			$metadata['payment_context']      = WC_Payments_Features::should_use_stripe_billing() ? 'wcpay_subscription' : 'regular_subscription';
 		}
-
 		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
 	}
 
@@ -1820,6 +1930,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_country();
 			case 'account_statement_descriptor':
 				return $this->get_account_statement_descriptor();
+			case 'account_statement_descriptor_kanji':
+				return $this->get_account_statement_descriptor_kanji();
+			case 'account_statement_descriptor_kana':
+				return $this->get_account_statement_descriptor_kana();
 			case 'account_business_name':
 				return $this->get_account_business_name();
 			case 'account_business_url':
@@ -1971,6 +2085,41 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $empty_value;
 	}
 
+	/**
+	 * Gets connected account statement descriptor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch account descriptor.
+	 *
+	 * @return string Statement descriptor of default value.
+	 */
+	public function get_account_statement_descriptor_kanji( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_statement_descriptor_kanji();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account statement descriptor.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account statement descriptor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch account descriptor.
+	 *
+	 * @return string Statement descriptor of default value.
+	 */
+	public function get_account_statement_descriptor_kana( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_statement_descriptor_kana();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account statement descriptor.' . $e );
+		}
+		return $empty_value;
+	}
 
 	/**
 	 * Gets account default currency.

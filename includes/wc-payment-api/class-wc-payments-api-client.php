@@ -59,6 +59,7 @@ class WC_Payments_API_Client {
 	const TRACKING_API                 = 'tracking';
 	const PRODUCTS_API                 = 'products';
 	const PRICES_API                   = 'products/prices';
+	const PAYMENT_PROCESS_CONFIG_API   = 'payment_process_config';
 	const INVOICES_API                 = 'invoices';
 	const SUBSCRIPTIONS_API            = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API       = 'subscriptions/items';
@@ -886,7 +887,11 @@ class WC_Payments_API_Client {
 		);
 
 		if ( ! is_array( $fields_data ) ) {
-			return [];
+			throw new API_Exception(
+				__( 'Onboarding field data could not be retrieved', 'woocommerce-payments' ),
+				'wcpay_onboarding_fields_data_error',
+				400
+			);
 		}
 
 		return $fields_data;
@@ -1113,6 +1118,23 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$data,
 			self::INVOICES_API . '/' . $invoice_id . '/pay',
+			self::POST
+		);
+	}
+
+	/**
+	 * Updates an invoice.
+	 *
+	 * @param string $invoice_id ID of the invoice to update.
+	 * @param array  $data       Parameters to send to the invoice endpoint. Optional. Default is an empty array.
+	 * @return array
+	 *
+	 * @throws API_Exception Error updating the invoice.
+	 */
+	public function update_invoice( string $invoice_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::INVOICES_API . '/' . $invoice_id,
 			self::POST
 		);
 	}
@@ -2338,6 +2360,24 @@ class WC_Payments_API_Client {
 			self::WOOPAY_COMPATIBILITY_API,
 			self::GET,
 			false
+		);
+	}
+
+	/**
+	 * Delete account.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function delete_account() {
+		return $this->request(
+			[
+				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
+			],
+			self::ACCOUNTS_API . '/delete',
+			self::POST,
+			true,
+			true
 		);
 	}
 }

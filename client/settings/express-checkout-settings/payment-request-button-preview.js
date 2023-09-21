@@ -152,7 +152,7 @@ const PaymentRequestButtonPreview = () => {
 				</div>
 			) }
 			{ ! isWooPayEnabled && ! isPaymentRequestEnabled && (
-				<InlineNotice status="info" isDismissible={ false }>
+				<InlineNotice icon status="info" isDismissible={ false }>
 					{ __(
 						'To preview the express checkout buttons, ' +
 							'activate at least one express checkout.',
@@ -161,7 +161,7 @@ const PaymentRequestButtonPreview = () => {
 				</InlineNotice>
 			) }
 			{ isPaymentRequestEnabled && ! isLoading && ! paymentRequest && (
-				<InlineNotice status="info" isDismissible={ false }>
+				<InlineNotice icon status="info" isDismissible={ false }>
 					{ __(
 						'To preview the Apple Pay and Google Pay buttons, ' +
 							'ensure your device is configured to accept Apple Pay or Google Pay, ' +

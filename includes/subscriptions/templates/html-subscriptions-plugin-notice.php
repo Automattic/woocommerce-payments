@@ -38,7 +38,7 @@
 								esc_html__( 'Existing subscribers will need to pay for their next renewal manually, after which automatic payments will resume. You will also no longer have access to the %1$s%3$sadvanced features%4$s%2$s of WooCommerce Subscriptions.', 'woocommerce-payments' ),
 								'<strong>',
 								'</strong>',
-								'<a href="https://woocommerce.com/document/woocommerce-payments/built-in-subscriptions/comparison/" target="_blank" rel="noopener noreferrer">',
+								'<a href="https://woocommerce.com/document/woopayments/built-in-subscriptions/comparison/" target="_blank" rel="noopener noreferrer">',
 								'</a>'
 							);
 							?>

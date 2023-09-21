@@ -50,14 +50,22 @@ class WC_Payments_Subscriptions {
 	private static $event_handler;
 
 	/**
+	 * Instance of WC_Payments_Subscriptions_Migrator, created in init function.
+	 *
+	 * @var WC_Payments_Subscriptions_Migrator
+	 */
+	private static $stripe_billing_migrator;
+
+	/**
 	 * Initialize WooCommerce Payments subscriptions. (Stripe Billing)
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WCPay API client.
 	 * @param WC_Payments_Customer_Service $customer_service WCPay Customer Service.
 	 * @param WC_Payments_Order_Service    $order_service    WCPay Order Service.
 	 * @param WC_Payments_Account          $account          WC_Payments_Account.
+	 * @param WC_Payments_Token_Service    $token_service    WC_Payments_Token_Service.
 	 */
-	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service, WC_Payments_Account $account ) {
+	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service, WC_Payments_Account $account, WC_Payments_Token_Service $token_service ) {
 		// Store dependencies.
 		self::$order_service = $order_service;
 
@@ -83,6 +91,11 @@ class WC_Payments_Subscriptions {
 		new WC_Payments_Subscriptions_Empty_State_Manager( $account );
 		new WC_Payments_Subscriptions_Onboarding_Handler( $account );
 		new WC_Payments_Subscription_Minimum_Amount_Handler( $api_client );
+
+		if ( class_exists( 'WCS_Background_Repairer' ) ) {
+			include_once __DIR__ . '/class-wc-payments-subscriptions-migrator.php';
+			self::$stripe_billing_migrator = new WC_Payments_Subscriptions_Migrator( $api_client, $token_service );
+		}
 	}
 
 	/**
@@ -119,6 +132,15 @@ class WC_Payments_Subscriptions {
 	 */
 	public static function get_subscription_service() {
 		return self::$subscription_service;
+	}
+
+	/**
+	 * Returns the the Stripe Billing migrator instance.
+	 *
+	 * @return WC_Payments_Subscriptions_Migrator
+	 */
+	public static function get_stripe_billing_migrator() {
+		return self::$stripe_billing_migrator;
 	}
 
 	/**
