@@ -82,7 +82,7 @@ const DisputeSteps: React.FC< Props > = ( {
 	return (
 		<div className="dispute-steps">
 			<div className="dispute-steps__header">
-				{ __( 'Steps to resolve:', 'woocommercts' ) }
+				{ __( 'Steps to resolve:', 'woocommerce-payments' ) }
 			</div>
 			<ol className="dispute-steps__steps">
 				<li>
