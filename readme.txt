@@ -113,9 +113,11 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Allow request classes to be extended more than once.
 * Fix - Avoid empty fields in new onboarding flow
 * Fix - Corrected an issue causing incorrect responses at the cancel authorization API endpoint.
+* Fix - Disable automatic currency switching and switcher widgets on pay_for_order page.
 * Fix - Ensure the shipping phone number field is copied to subscriptions and their orders when copying address meta.
 * Fix - Ensure the Stripe Billing subscription is cancelled when the subscription is changed from WooPayments to another payment method.
 * Fix - express checkout links UI consistency & area increase
+* Fix - fix: save platform checkout info on blocks
 * Fix - fix checkout appearance width
 * Fix - Fix Currency Switcher Block flag rendering on Windows platform.
 * Fix - Fix deprecation warnings on blocks checkout.
@@ -127,8 +129,10 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix single currency manual rate save producing error when no changes are made
 * Fix - Fix the way request params are loaded between parent and child classes.
 * Fix - Fix WooPay Session Handler in Store API requests.
+* Fix - Improve escaping around attributes.
 * Fix - Increase admin enqueue scripts priority to avoid compatibility issues with WooCommerce Beta Tester plugin.
 * Fix - Modify title in task to continue with onboarding
+* Fix - Prevent WooPay-related implementation to modify non-WooPay-specific webhooks by changing their data.
 * Fix - Refactor Woo Subscriptions compatibility to fix currency being able to be updated during renewals, resubscribes, or switches.
 * Fix - Update inbox note logic to prevent prompt to set up payment methods from showing on not fully onboarded account.
 * Update - Add notice for legacy UPE users about deferred UPE upcoming, and adjust wording for non-UPE users
