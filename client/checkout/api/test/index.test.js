@@ -17,15 +17,7 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 describe( 'WCPayAPI', () => {
 	test( 'initializes woopay using config params', () => {
 		buildAjaxURL.mockReturnValue( 'https://example.org/' );
-		getConfig.mockImplementation( ( key ) => {
-			const mockProperties = {
-				initWooPayNonce: 'foo',
-				order_id: 1,
-				key: 'testkey',
-				billing_email: 'test@example.com',
-			};
-			return mockProperties[ key ];
-		} );
+		getConfig.mockReturnValue( 'foo' );
 
 		const api = new WCPayAPI( {}, request );
 		api.initWooPay( 'foo@bar.com', 'qwerty123' );
@@ -34,9 +26,6 @@ describe( 'WCPayAPI', () => {
 			_wpnonce: 'foo',
 			email: 'foo@bar.com',
 			user_session: 'qwerty123',
-			order_id: 1,
-			key: 'testkey',
-			billing_email: 'test@example.com',
 		} );
 	} );
 } );
