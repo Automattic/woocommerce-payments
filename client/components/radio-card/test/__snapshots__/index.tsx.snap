@@ -2,39 +2,57 @@
 
 exports[`RadioCard Component renders RadioCard component with provided props 1`] = `
 <div>
-  <label
+  <div
+    aria-checked="true"
     class="wcpay-component-radio-card checked"
+    role="radio"
+    tabindex="0"
   >
     <div
       class="wcpay-component-radio-card__label"
     >
       <input
         checked=""
+        id="radio-card-pizzas-pineapple"
         name="pizzas"
+        tabindex="-1"
         type="radio"
         value="pineapple"
       />
-      Pineapple pizza
+      <label
+        for="radio-card-pizzas-pineapple"
+      >
+        Pineapple pizza
+      </label>
       <svg />
     </div>
     <p>
       Sweet pizza
     </p>
-  </label>
-  <label
+  </div>
+  <div
+    aria-checked="false"
     class="wcpay-component-radio-card"
+    role="radio"
+    tabindex="0"
   >
     <div
       class="wcpay-component-radio-card__label"
     >
       <input
+        id="radio-card-pizzas-pizza"
         name="pizzas"
+        tabindex="-1"
         type="radio"
         value="pizza"
       />
-      Pizza
+      <label
+        for="radio-card-pizzas-pizza"
+      >
+        Pizza
+      </label>
       <svg />
     </div>
-  </label>
+  </div>
 </div>
 `;

@@ -19,6 +19,7 @@ declare global {
 		};
 		fraudServices: unknown[];
 		testMode: boolean;
+		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
 		accountStatus: {
@@ -112,6 +113,7 @@ declare global {
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
+		storeName: string;
 	};
 
 	const wcTracks: any;
