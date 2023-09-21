@@ -31,16 +31,31 @@ jQuery( function ( $ ) {
 	const SINGLE_VARIATION_SELECTOR = '.single_variation_wrap';
 	const VARIATIONS_SELECTOR = '.variations';
 	const RESET_VARIATIONS_SELECTOR = '.reset_variations';
+	const VARIATION_ID_SELECTOR = 'input[name="variation_id"]';
 
 	const quantityInput = $( QUANTITY_INPUT_SELECTOR );
 	const bnplPaymentMessageElement = initializeBnplSiteMessaging();
-
-	// Utility function to safely parse integers and handle NaN
-	const parseFloatOrReturnZero = ( value ) => {
-		const result = parseFloat( value, 10 );
+	const hasVariations = Object.keys( productVariations ).length > 1;
+	/**
+	 * Safely parses a given value to an integer number.
+	 * If the parsed value is NaN (Not a Number), the function returns 0.
+	 *
+	 * @param {string|number} value - The value to be parsed to integer number.
+	 * @return {number} The parsed number, or 0 if the parsed value is NaN.
+	 */
+	const parseIntOrReturnZero = ( value ) => {
+		const result = parseInt( value, 10 );
 		return isNaN( result ) ? 0 : result;
 	};
 
+	/**
+	 * Updates the BNPL payment message displayed on the page.
+	 * The function takes an amount and a currency. If the amount is less than or equal to zero,
+	 * or if the currency is not provided, the function will exit early without making updates.
+	 *
+	 * @param {number} amount - The total amount for the BNPL message.
+	 * @param {string} currency - The currency code (e.g., 'USD', 'EUR') for the BNPL message.
+	 */
 	const updateBnplPaymentMessage = ( amount, currency ) => {
 		if ( amount <= 0 || ! currency ) {
 			return;
@@ -48,16 +63,31 @@ jQuery( function ( $ ) {
 		bnplPaymentMessageElement.update( { amount, currency } );
 	};
 
+	/**
+	 * Updates the BNPL payment message based on the provided amount and quantity.
+	 * The function uses the global `productCurrency` for the currency. It first converts the amount and
+	 * quantity to floating-point numbers using `parseFloatOrReturnZero` and then multiplies them together
+	 * to get the total amount. This total amount is then passed along with the currency to
+	 * `updateBnplPaymentMessage` for updating the BNPL message on the page.
+	 *
+	 * @param {string|number} amount - The unit price amount for the product.
+	 * @param {string|number} quantity - The quantity of the product.
+	 */
 	const updateMessageWithQuantity = ( amount, quantity ) => {
 		updateBnplPaymentMessage(
-			parseFloatOrReturnZero( amount ) *
-				parseFloatOrReturnZero( quantity ),
+			parseIntOrReturnZero( amount ) * parseIntOrReturnZero( quantity ),
 			productCurrency
 		);
 	};
 
+	/**
+	 * Resets the BNPL payment message displayed on the page.
+	 * The function first checks whether the `quantityInput` exists. If not, the function exits early.
+	 * Otherwise, it updates the BNPL message using the global `productAmount` and the current value
+	 * from `quantityInput` by calling `updateMessageWithQuantity`.
+	 */
 	const resetBnplPaymentMessage = () => {
-		if ( ! quantityInput.length || ! productVariations[ productId ] ) {
+		if ( ! quantityInput.length ) {
 			return;
 		}
 
@@ -66,11 +96,18 @@ jQuery( function ( $ ) {
 
 	// Update BNPL message based on the quantity change
 	quantityInput.on( 'change', ( event ) => {
-		updateMessageWithQuantity( productAmount, event.target.value );
+		let amount = productAmount;
+		if ( hasVariations ) {
+			const variationId = $( VARIATION_ID_SELECTOR ).val();
+			if ( variationId ) {
+				amount = productVariations[ variationId ]?.amount;
+			}
+		}
+		updateMessageWithQuantity( amount, event.target.value );
 	} );
 
 	// Handle BNPL messaging for variable products.
-	if ( Object.keys( productVariations ).length > 1 ) {
+	if ( hasVariations ) {
 		// Update BNPL message based on product variation
 		$( SINGLE_VARIATION_SELECTOR ).on(
 			'show_variation',
