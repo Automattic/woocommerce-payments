@@ -139,4 +139,24 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( $this->woopay_adapted_extensions->get_gift_cards_data( $this->test_user ), $expected );
 	}
+
+	public function test_get_extension_data() {
+		$active_plugins_mock = function () {
+			return [
+				'woocommerce-multicurrency/woocommerce-multicurrency.php',
+			];
+		};
+		add_filter( 'pre_option_active_plugins', $active_plugins_mock, 10, 3 );
+
+		$this->assertEquals( $this->woopay_adapted_extensions->get_extension_data(), [ 'woocommerce-multicurrency' => [ 'currency' => 'USD' ] ] );
+	}
+
+	public function test_get_extension_data_with_no_data() {
+		$active_plugins_mock = function () {
+			return [];
+		};
+		add_filter( 'pre_option_active_plugins', $active_plugins_mock, 10, 3 );
+
+		$this->assertEquals( $this->woopay_adapted_extensions->get_extension_data(), [] );
+	}
 }

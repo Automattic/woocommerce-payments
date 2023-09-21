@@ -430,6 +430,7 @@ class WooPay_Session {
 
 			$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
 			$body['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
+			$body['extension_data']     = $woopay_adapted_extensions->get_extension_data();
 
 			if ( ! is_user_logged_in() && count( $body['adapted_extensions'] ) > 0 ) {
 				$store_user_email_registered = get_user_by( 'email', $email );
