@@ -57,6 +57,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
+	// This is a temporary restriction and can be removed once steps and actions for inquiries are implemented.
 	const showDisputeStepsAndActions = ! isInquiry( dispute );
 
 	const onModalClose = () => {
