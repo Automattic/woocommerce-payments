@@ -15,7 +15,7 @@ concurrency:
 jobs:
   generate-wc-compat-matrix:
     name: "Generate the matrix for woocommerce compatibility dynamically"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -29,7 +29,7 @@ jobs:
   woocommerce-compatibility:
     name: "WC compatibility"
     needs: generate-wc-compat-matrix
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
@@ -57,7 +57,7 @@ jobs:
   
   generate-wc-compat-beta-matrix:
     name: "Generate the matrix for compatibility-woocommerce-beta dynamically"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -71,7 +71,7 @@ jobs:
   compatibility-woocommerce-beta:
     name: Environment - WC beta
     needs: generate-wc-compat-beta-matrix
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate-wc-compat-beta-matrix.outputs.matrix) }}

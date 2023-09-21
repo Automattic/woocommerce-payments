@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 6.4.2 - 2023-09-14 =
+* Fix - Fix an error in the checkout when Afterpay is selected as payment method.
+
 = 6.4.1 - 2023-09-06 =
 * Fix - checkout processing when fields are hidden via customizer
 * Fix - Potential fatal error when viewing WooCommerce home because we try to check if store has been fully onboarded but account service is not yet initialized.

@@ -6,7 +6,7 @@ on:
 jobs:
   i18n-release:
     name: Release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       # clone the repository
@@ -27,12 +27,8 @@ jobs:
           path: ~/.npm/
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.4'
-          tools:       composer
-          coverage:    none
-
+      - name: "Set up PHP"
+        uses: ./.github/actions/setup-php
       - name: Build release
         run: |
           npm ci
