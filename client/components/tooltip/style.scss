@@ -3,7 +3,7 @@
 		// ensures that the element needed for position calculations isn't included in the DOM layout
 		display: contents;
 
-		// fixes a UI bug where the tooltip can shift neighboring elements when it appears
+		// Ensure that the tooltip doesn't shift neighboring elements when it appears.
 		> div {
 			display: inline;
 		}
