@@ -23,6 +23,7 @@ import {
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
+import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
 import {
@@ -34,14 +35,21 @@ import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
 import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
+import DisputeSteps from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
 interface Props {
 	dispute: Dispute;
+	customer: ChargeBillingDetails | null;
+	chargeCreated: number;
 }
 
-const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
+const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
+	dispute,
+	customer,
+	chargeCreated,
+} ) => {
 	const { doAccept, isLoading } = useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
 
@@ -49,7 +57,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
-	const showDisputeActions = ! isInquiry( dispute );
+	// This is a temporary restriction and can be removed once steps and actions for inquiries are implemented.
+	const showDisputeStepsAndActions = ! isInquiry( dispute );
 
 	const onModalClose = () => {
 		setModalOpen( false );
@@ -75,12 +84,20 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 						dispute={ dispute }
 						daysRemaining={ countdownDays }
 					/>
+					{ showDisputeStepsAndActions && (
+						<DisputeSteps
+							dispute={ dispute }
+							customer={ customer }
+							chargeCreated={ chargeCreated }
+							daysRemaining={ countdownDays }
+						/>
+					) }
 					<IssuerEvidenceList
 						issuerEvidence={ dispute.issuer_evidence }
 					/>
 
 					{ /* Dispute Actions */ }
-					{ showDisputeActions && (
+					{ showDisputeStepsAndActions && (
 						<div className="transaction-details-dispute-details-body__actions">
 							<Link
 								href={
