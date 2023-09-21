@@ -358,7 +358,14 @@ class WooPay_Session {
 
 		$account_id = WC_Payments::get_account_service()->get_stripe_account_id();
 
-		$store_logo = WC_Payments::get_gateway()->get_option( 'platform_checkout_store_logo' );
+		$site_logo_id      = get_theme_mod( 'custom_logo' );
+		$site_logo_url     = $site_logo_id ? ( wp_get_attachment_image_src( $site_logo_id, 'full' )[0] ?? '' ) : '';
+		$woopay_store_logo = WC_Payments::get_gateway()->get_option( 'platform_checkout_store_logo' );
+
+		$store_logo = $site_logo_url;
+		if ( ! empty( $woopay_store_logo ) ) {
+			$store_logo = get_rest_url( null, 'wc/v3/payments/file/' . $woopay_store_logo );
+		}
 
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
