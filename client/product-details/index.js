@@ -50,7 +50,7 @@ jQuery( function ( $ ) {
 		);
 
 		const amount = baseProductAmount * quantity;
-		const currency = productVariations.base_product.currency;
+		const currency = productVariations.base_product?.currency;
 
 		updateBnplPaymentMessage( amount, currency );
 	};
