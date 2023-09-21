@@ -73,6 +73,18 @@ class WC_Payments_Features {
 	 * Checks whether the Split UPE with deferred intent is enabled
 	 */
 	public static function is_upe_deferred_intent_enabled() {
+		$deferred_intent_creation_upe_flag_value = get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, 0 );
+
+		// legacy UPE users in past which were migrated to dUPE and then went back to legacy UPE. This group should not be forced back to dUPE.
+		if ( self::is_upe_legacy_enabled() && 'disabled' === $deferred_intent_creation_upe_flag_value ) {
+			return false;
+		}
+
+		// legacy UPE users who never used dUPE and thus should be forced to dUPE.
+		if ( self::is_upe_legacy_enabled() && 0 === $deferred_intent_creation_upe_flag_value ) {
+			return true;
+		}
+
 		return ( '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) ) || self::is_upe_split_enabled();
 	}
 

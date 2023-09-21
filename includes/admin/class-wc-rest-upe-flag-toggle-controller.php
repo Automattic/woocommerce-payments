@@ -136,7 +136,7 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 		}
 
 		// If the legacy UPE flag has been enabled, we need to disable the legacy UPE flag.
-		if ( '1' === get_option( WC_Payments_Features::UPE_FLAG_NAME ) ) {
+		if ( '1' === get_option( WC_Payments_Features::UPE_FLAG_NAME ) && '0' === get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME ) ) {
 			update_option( WC_Payments_Features::UPE_FLAG_NAME, 'disabled' );
 
 			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
