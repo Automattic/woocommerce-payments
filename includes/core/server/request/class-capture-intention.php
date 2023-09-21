@@ -81,7 +81,7 @@ class Capture_Intention extends Request {
 	 *
 	 * @param array $metadata Intent metadata that includes stuff like order details, card reader specifics, etc..
 	 */
-	public function set_metadata( $metadata ) {
+	public function set_metadata( array $metadata ): void {
 		$this->set_param( 'metadata', $metadata );
 	}
 
