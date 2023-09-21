@@ -89,12 +89,6 @@
 			vertical-align: text-bottom;
 		}
 
-		.wcpay-tooltip__content-wrapper.wcpay-tooltip--click__content-wrapper
-			> .wcpay-tooltip__content-wrapper
-			+ div {
-			display: inline;
-		}
-
 		&__response-date {
 			display: inline-flex;
 			align-items: center;
