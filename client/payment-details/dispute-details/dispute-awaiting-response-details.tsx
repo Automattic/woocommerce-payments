@@ -23,6 +23,7 @@ import {
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
+import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
 import {
@@ -37,15 +38,14 @@ import DisputeSummaryRow from './dispute-summary-row';
 import DisputeSteps from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
-import { ChargeBillingDetails } from 'wcpay/types/charges';
 
-interface DisputeDetailsProps {
+interface Props {
 	dispute: Dispute;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
 }
 
-const DisputeAwaitingResponseDetails: React.FC< DisputeDetailsProps > = ( {
+const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
