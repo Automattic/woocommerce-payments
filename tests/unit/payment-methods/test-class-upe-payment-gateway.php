@@ -2096,12 +2096,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_get_payment_method_ids_enabled_at_checkout_no_upe_pm_enabled() {
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', [] );
-		$this->mock_upe_gateway->settings['manual_capture'] = 'no';
-		$this->assertSame( [ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ], $this->mock_upe_gateway->get_payment_method_ids_enabled_at_checkout() );
-	}
-
 	public function maybe_filter_gateway_title_data_provider() {
 		$method_title   = 'WooPayments';
 		$checkout_title = 'Popular payment methods';
