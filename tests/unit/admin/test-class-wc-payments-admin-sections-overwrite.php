@@ -48,7 +48,7 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WCPAY_UnitTestCase {
 			->method( 'get_cached_account_data' )
 			->willReturn( [ 'is_live' => true ] );
 
-		$admin_sections_overwrite =	new WC_Payments_Admin_Sections_Overwrite( $this->account_service );
+		$admin_sections_overwrite = new WC_Payments_Admin_Sections_Overwrite( $this->account_service );
 		$admin_sections_overwrite->init_hooks();
 
 		$this->assertEquals(
