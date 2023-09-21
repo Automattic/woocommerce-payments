@@ -500,6 +500,17 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Determine whether Progressive Onboarding is in progress for this account.
+	 *
+	 * @return boolean
+	 */
+	public function is_progressive_onboarding_in_progress(): bool {
+		$account = $this->get_cached_account_data();
+		return $account['progressive_onboarding']['is_enabled'] ?? false
+			&& ! $account['progressive_onboarding']['is_complete'] ?? false;
+	}
+
+	/**
 	 * Gets the current account loan data for rendering on the settings pages.
 	 *
 	 * @return array loan data.
@@ -878,6 +889,10 @@ class WC_Payments_Account {
 			}
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
+				// Delete the account if the dev mode is enabled otherwise it'll cause issues to onboard again.
+				if ( WC_Payments::mode()->is_dev() ) {
+					$this->payments_api_client->delete_account();
+				}
 				WC_Payments_Onboarding_Service::set_test_mode( false );
 				$this->redirect_to_onboarding_flow_page();
 				return;

@@ -83,6 +83,13 @@ function wcs_order_contains_renewal() {
 	return ( WC_Subscriptions::$wcs_order_contains_renewal )();
 }
 
+function wcs_get_orders_with_meta_query( $args ) {
+	if ( ! WC_Subscriptions::$wcs_get_orders_with_meta_query ) {
+		return [];
+	}
+	return ( WC_Subscriptions::$wcs_get_orders_with_meta_query )( $args );
+}
+
 /**
  * Class WC_Subscriptions.
  *
@@ -165,6 +172,13 @@ class WC_Subscriptions {
 	 * @var function
 	 */
 	public static $wcs_create_renewal_order = null;
+
+	/**
+	 * wcs_get_orders_with_meta_query mock.
+	 *
+	 * @var function
+	 */
+	public static $wcs_get_orders_with_meta_query = null;
 
 	/**
 	 * wcs_order_contains_renewal mock.

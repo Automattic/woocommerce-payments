@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay, woocommerce 
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.3
-Stable tag: 6.4.1
+Stable tag: 6.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,13 +22,13 @@ See payments, track cash flow into your bank account, manage refunds, and stay o
 
 Features previously only available on your payment provider’s website are now part of your store’s **integrated payments dashboard**. This enables you to:
 
-- View the details of [payments, refunds, and other transactions](https://woocommerce.com/document/woocommerce-payments/managing-money/).
-- View and respond to [disputes and chargebacks](https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/managing-disputes-with-woocommerce-payments/).
-- [Track deposits](https://woocommerce.com/document/woocommerce-payments/deposits/) into your bank account or debit card.
+- View the details of [payments, refunds, and other transactions](https://woocommerce.com/document/woopayments/managing-money/).
+- View and respond to [disputes and chargebacks](https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/).
+- [Track deposits](https://woocommerce.com/document/woopayments/deposits/) into your bank account or debit card.
 
 **Pay as you go**
 
-WooPayments is **free to install**, with **no setup fees or monthly fees**. Pay-as-you-go fees start at 2.9% + $0.30 per transaction for U.S.-issued cards. [Read more about transaction fees](https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/).
+WooPayments is **free to install**, with **no setup fees or monthly fees**. Pay-as-you-go fees start at 2.9% + $0.30 per transaction for U.S.-issued cards. [Read more about transaction fees](https://woocommerce.com/document/woopayments/fees-and-debits/fees/).
 
 **Supported by the WooCommerce team**
 
@@ -44,7 +44,7 @@ Our global support team is available to answer questions you may have about WooP
 
 = Try it now =
 
-To try WooPayments (previously WooCommerce Payments) on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts. Please see our [Startup Guide](https://woocommerce.com/document/woocommerce-payments/startup-guide/) for a full walkthrough of the process.
+To try WooPayments (previously WooCommerce Payments) on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts. Please see our [Startup Guide](https://woocommerce.com/document/woopayments/startup-guide/) for a full walkthrough of the process.
 
 WooPayments has experimental support for the Checkout block from [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/). Please check the [FAQ section](#faq) for more information.
 
@@ -56,7 +56,7 @@ Install and activate the WooCommerce and WooPayments plugins, if you haven't alr
 
 = What countries and currencies are supported? =
 
-If you are an individual or business based in [one of these countries](https://woocommerce.com/document/woocommerce-payments/compatibility/countries/#supported-countries), you can sign-up with WooPayments. After completing sign up, you can accept payments from customers anywhere in the world.
+If you are an individual or business based in [one of these countries](https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries), you can sign-up with WooPayments. After completing sign up, you can accept payments from customers anywhere in the world.
 
 We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooPayments launch next](https://woocommerce.com/payments/#request-invite).
 
@@ -66,15 +66,15 @@ WooPayments uses the WordPress.com connection to authenticate each request, conn
 
 = How do I set up a store for a client? =
 
-If you are a developer or agency setting up a site for a client, please see [this page](https://woocommerce.com/document/woocommerce-payments/account-management/developer-or-agency-setup/) of our documentation for some tips on how to install WooPayments on client sites.
+If you are a developer or agency setting up a site for a client, please see [this page](https://woocommerce.com/document/woopayments/account-management/developer-or-agency-setup/) of our documentation for some tips on how to install WooPayments on client sites.
 
 = How is WooPayments related to Stripe? =
 
-WooPayments is built in partnership with Stripe [Stripe](https://stripe.com/). When you sign up for WooPayments, your personal and business information is verified with Stripe and stored in an account connected to the WooPayments service. This account is then used in the background for managing your business account information and activity via WooPayments. [Learn more](https://woocommerce.com/document/woocommerce-payments/account-management/partnership-with-stripe/).
+WooPayments is built in partnership with Stripe [Stripe](https://stripe.com/). When you sign up for WooPayments, your personal and business information is verified with Stripe and stored in an account connected to the WooPayments service. This account is then used in the background for managing your business account information and activity via WooPayments. [Learn more](https://woocommerce.com/document/woopayments/account-management/partnership-with-stripe/).
 
 = Are there Terms of Service and data usage policies? =
 
-You can read our Terms of Service and other policies [here](https://woocommerce.com/document/woocommerce-payments/our-policies/).
+You can read our Terms of Service and other policies [here](https://woocommerce.com/document/woopayments/our-policies/).
 
 = How does the Checkout block work? =
 
@@ -93,6 +93,76 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 6.5.0 - 2023-09-21 =
+* Add - Add a new task prompt to set up APMs after onboarding. Fixed an issue where a notice would show up in some unintended circumstances on the APM setup.
+* Add - Add an option on the Settings screen to enable merchants to migrate their Stripe Billing subscriptions to on-site billing.
+* Add - Added additional meta data to payment requests
+* Add - Add onboarding task incentive badge.
+* Add - Add payment request class for loading, sanitizing, and escaping data (reengineering payment process)
+* Add - Add the express button on the pay for order page
+* Add - add WooPay checkout appearance documentation link
+* Add - Fall back to site logo when a custom WooPay logo has not been defined
+* Add - Introduce a new setting that enables store to opt into Subscription off-site billing via Stripe Billing.
+* Add - Load payment methods through the request class (re-engineering payment process).
+* Add - Record the source (Woo Subscriptions or WCPay Subscriptions) when a Stripe Billing subscription is created.
+* Add - Record the subscriptions environment context in transaction meta when Stripe Billing payments are handled.
+* Add - Redirect back to the pay-for-order page when it is pay-for-order order
+* Add - Support kanji and kana statement descriptors for Japanese merchants
+* Add - Warn about dev mode enabled on new onboarding flow choice
+* Fix - Allow request classes to be extended more than once.
+* Fix - Avoid empty fields in new onboarding flow
+* Fix - Corrected an issue causing incorrect responses at the cancel authorization API endpoint.
+* Fix - Disable automatic currency switching and switcher widgets on pay_for_order page.
+* Fix - Ensure the shipping phone number field is copied to subscriptions and their orders when copying address meta.
+* Fix - Ensure the Stripe Billing subscription is cancelled when the subscription is changed from WooPayments to another payment method.
+* Fix - express checkout links UI consistency & area increase
+* Fix - fix: save platform checkout info on blocks
+* Fix - fix checkout appearance width
+* Fix - Fix Currency Switcher Block flag rendering on Windows platform.
+* Fix - Fix deprecation warnings on blocks checkout.
+* Fix - Fix double indicators showing under Payments tab
+* Fix - Fixes the currency formatting for AED and SAR currencies.
+* Fix - Fix init WooPay and empty cart error
+* Fix - Fix Multi-currency exchange rate date format when using custom date or time settings.
+* Fix - Fix Multicurrency widget error on post/page edit screen
+* Fix - Fix single currency manual rate save producing error when no changes are made
+* Fix - Fix the way request params are loaded between parent and child classes.
+* Fix - Fix WooPay Session Handler in Store API requests.
+* Fix - Improve escaping around attributes.
+* Fix - Increase admin enqueue scripts priority to avoid compatibility issues with WooCommerce Beta Tester plugin.
+* Fix - Modify title in task to continue with onboarding
+* Fix - Prevent WooPay-related implementation to modify non-WooPay-specific webhooks by changing their data.
+* Fix - Refactor Woo Subscriptions compatibility to fix currency being able to be updated during renewals, resubscribes, or switches.
+* Fix - Update inbox note logic to prevent prompt to set up payment methods from showing on not fully onboarded account.
+* Update - Add notice for legacy UPE users about deferred UPE upcoming, and adjust wording for non-UPE users
+* Update - Disable refund button on order edit page when there is active or lost dispute.
+* Update - Enhanced Analytics SQL, added unit test for has_multi_currency_orders(). Improved code quality and test coverage.
+* Update - Improved `get_all_customer_currencies` method to retrieve existing order currencies faster.
+* Update - Improve the transaction details redirect user-experience by using client-side routing.
+* Update - Temporarily disable saving SEPA
+* Update - Update Multi-currency documentation links.
+* Update - Update outdated public documentation links on WooCommerce.com
+* Update - Update Tooltip component on ConvertedAmount.
+* Update - When HPOS is disabled, fetch subscriptions by customer_id using the user's subscription cache to improve performance.
+* Dev - Adding factor flags to control when to enter the new payment process.
+* Dev - Adding issuer evidence to dispute details. Hidden behind a feature flag
+* Dev - Comment: Update GH workflows to use PHP version from plugin file.
+* Dev - Comment: Update occurence of all ubuntu versions to ubuntu-latest
+* Dev - Deprecated the 'woocommerce_subscriptions_not_found_label' filter.
+* Dev - Fix payment context and subscription payment metadata stored on subscription recurring transactions.
+* Dev - Fix Tracks conditions
+* Dev - Migrate DetailsLink component to TypeScript to improve code quality
+* Dev - Migrate link-item.js to typescript
+* Dev - Migrate woopay-item to typescript
+* Dev - Remove reference to old experiment.
+* Dev - Update Base_Constant to return the singleton object for same static calls.
+* Dev - Updated subscriptions-core to 6.2.0
+* Dev - Update the name of the A/B experiment on new onboarding.
+
+= 6.4.2 - 2023-09-14 =
+* Fix - Fix an error in the checkout when Afterpay is selected as payment method.
+
 
 = 6.4.1 - 2023-09-06 =
 * Fix - checkout processing when fields are hidden via customizer

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent WooPay-related implementation to modify non-WooPay-specific webhooks by changing their data.

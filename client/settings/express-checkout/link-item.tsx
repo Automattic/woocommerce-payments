@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
+import { Button, CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -154,26 +154,18 @@ const LinkExpressCheckoutItem = (): React.ReactElement => {
 								</div>
 							</div>
 							<div className="express-checkout__link">
-								{
-									/* eslint-disable jsx-a11y/anchor-has-content */
-									interpolateComponents( {
-										mixedString: __(
-											'{{linkDocs}}Read more{{/linkDocs}}',
-											'woocommerce-payments'
-										),
-										components: {
-											linkDocs: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													/* eslint-disable-next-line max-len */
-													href="https://woocommerce.com/document/woocommerce-payments/payment-methods/link-by-stripe/"
-												/>
-											),
-										},
-									} )
-									/* eslint-enable jsx-a11y/anchor-has-content */
-								}
+								<Button
+									target="_blank"
+									rel="noreferrer"
+									/* eslint-disable-next-line max-len */
+									href="https://woocommerce.com/document/woopayments/payment-methods/link-by-stripe/"
+									isSecondary
+								>
+									{ __(
+										'Read more',
+										'woocommerce-payments'
+									) }
+								</Button>
 							</div>
 						</div>
 					</div>

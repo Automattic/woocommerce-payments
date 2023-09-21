@@ -51,7 +51,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				add_filter( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', [ $this, 'override_selected_currency' ], 50 );
 				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
 				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_coupon_amount', [ $this, 'should_convert_coupon_amount' ], 50, 2 );
-				add_filter( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', [ $this, 'should_hide_widgets' ], 50 );
+				add_filter( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', [ $this, 'should_disable_currency_switching' ], 50 );
 			}
 		}
 	}
@@ -254,13 +254,13 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	}
 
 	/**
-	 * Checks to see if the widgets should be hidden.
+	 * Checks to see if currency switching should be disabled.
 	 *
 	 * @param bool $return Whether widgets should be hidden or not. Default is false.
 	 *
 	 * @return bool
 	 */
-	public function should_hide_widgets( bool $return ): bool {
+	public function should_disable_currency_switching( bool $return ): bool {
 		// If it's already true, return it.
 		if ( $return ) {
 			return $return;
