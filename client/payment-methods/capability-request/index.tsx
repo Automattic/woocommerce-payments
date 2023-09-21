@@ -7,31 +7,29 @@ import { __ } from '@wordpress/i18n';
 import { useGetPaymentMethodStatuses } from 'wcpay/data';
 import { useState } from '@wordpress/element';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import CapabilityRequestList, {
-	CapabilityStatus,
-} from './capability-request-map';
+import CapabilityRequestList from './capability-request-map';
 import methodsConfiguration from '../../payment-methods-map';
 import InlineNotice from 'components/inline-notice';
 import { select, useDispatch } from '@wordpress/data';
 import { NAMESPACE, STORE_NAME } from 'wcpay/data/constants';
 import { Notice } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
+import DismissConfirmationModal from './dismiss-modal';
+import { CapabilityNoticeProps } from './types';
 
 const CapabilityNotice = ( {
 	id,
+	label,
 	country,
 	states,
-}: {
-	id: string;
-	country?: string;
-	states: Record< string, CapabilityStatus >;
-} ) => {
+}: CapabilityNoticeProps ) => {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { capabilityRequestNotices } = wcpaySettings;
 	const [ isDismissed, setIsDismissed ] = useState(
 		capabilityRequestNotices[ id ] ?? false
 	);
+	const [ isDismissModalOpen, setDismissModalOpen ] = useState( false );
 
 	const paymentMethodStatuses = useGetPaymentMethodStatuses() as Record<
 		string,
@@ -106,6 +104,10 @@ const CapabilityNotice = ( {
 		}
 	};
 
+	const closeModal = () => {
+		setDismissModalOpen( false );
+	};
+
 	const dismissNotice = () => {
 		updateOptions( {
 			wcpay_capability_request_dismissed_notices: {
@@ -113,8 +115,20 @@ const CapabilityNotice = ( {
 				[ id ]: true,
 			},
 		} );
-		wcpaySettings.fraudProtection.isWelcomeTourDismissed = true;
+		wcpaySettings.capabilityRequestNotices = {
+			...capabilityRequestNotices,
+			[ id ]: true,
+		};
+
 		setIsDismissed( true );
+	};
+
+	const dismissModal = () => {
+		if ( status === 'unrequested' || status === 'pending_verification' ) {
+			setDismissModalOpen( true );
+		} else {
+			dismissNotice();
+		}
 	};
 
 	let actions;
@@ -135,15 +149,25 @@ const CapabilityNotice = ( {
 	}
 
 	return (
-		<InlineNotice
-			status={ noticeData.status }
-			isDismissible={ true }
-			onRemove={ dismissNotice }
-			actions={ actions as readonly Notice.Action[] }
-			className="woopayments-request-jcb"
-		>
-			{ noticeData.content }
-		</InlineNotice>
+		<>
+			<InlineNotice
+				status={ noticeData.status }
+				isDismissible={ true }
+				onRemove={ dismissModal }
+				actions={ actions as readonly Notice.Action[] }
+				className="woopayments-request-jcb"
+			>
+				{ noticeData.content }
+			</InlineNotice>
+
+			{ isDismissModalOpen && (
+				<DismissConfirmationModal
+					onClose={ closeModal }
+					onSubmit={ dismissNotice }
+					label={ label }
+				/>
+			) }
+		</>
 	);
 };
 
@@ -153,6 +177,7 @@ const CapabilityRequestNotice = (): JSX.Element => {
 			{ CapabilityRequestList.map( ( request ) => (
 				<CapabilityNotice
 					id={ request.id }
+					label={ request.label }
 					country={ request.country }
 					states={ request.states }
 					key={ request.id }

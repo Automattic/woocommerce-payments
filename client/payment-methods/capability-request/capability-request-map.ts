@@ -2,25 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Status } from '@wordpress/notices';
-
-export interface CapabilityStatus {
-	status: Status;
-	content: string;
-	actions?: string;
-	actionsLabel?: string;
-	actionUrl?: string;
-}
-
-export interface CapabilityRequestMap {
-	id: string;
-	country?: string;
-	states: Record< string, CapabilityStatus >;
-}
+import { CapabilityRequestMap } from './types';
 
 const CapabilityRequestList: Array< CapabilityRequestMap > = [
 	{
 		id: 'jcb',
+		label: __( 'JCB', 'woocommerce-payments' ),
 		country: 'JP',
 		states: {
 			unrequested: {

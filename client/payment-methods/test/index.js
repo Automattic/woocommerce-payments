@@ -6,6 +6,7 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
+import { select } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -49,6 +50,7 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest
 		.fn()
 		.mockReturnValue( { updateAvailablePaymentMethodIds: jest.fn() } ),
+	select: jest.fn(),
 } ) );
 
 describe( 'PaymentMethods', () => {
@@ -81,8 +83,14 @@ describe( 'PaymentMethods', () => {
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		global.wcpaySettings = {
 			accountEmail: 'admin@example.com',
+			capabilityRequestNotices: {},
 		};
 		useAccountDomesticCurrency.mockReturnValue( 'usd' );
+		select.mockImplementation( () => ( {
+			getSettings: jest.fn().mockReturnValue( {
+				account_country: 'US',
+			} ),
+		} ) );
 	} );
 
 	test( 'payment methods are rendered correctly', () => {
