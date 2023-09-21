@@ -102,7 +102,13 @@ export interface Dispute {
 	amount: number;
 	currency: string;
 	created: number;
+	/**
+	 * List of zero, one, or two balance transactions that show funds withdrawn and reinstated to the Stripe account as a result of this dispute.
+	 * One balance transaction with `reporting_category: 'dispute'` will be present if funds have been withdrawn from the account.
+	 * A second balance transaction with the `reporting_category: 'dispute_reversal'` will be present if funds have been reinstated to the account.
+	 */
 	balance_transactions: BalanceTransaction[];
+	payment_intent: string;
 }
 
 export interface CachedDispute {

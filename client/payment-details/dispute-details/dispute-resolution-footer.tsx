@@ -171,7 +171,7 @@ const DisputeLostFooter: React.FC< {
 } > = ( { dispute } ) => {
 	const isSubmitted = !! dispute?.metadata.__evidence_submitted_at;
 	const isAccepted = dispute?.metadata.__closed_by_merchant === '1';
-	const disputeFeeFormatted = getDisputeFeeFormatted( dispute ) ?? '-';
+	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true ) ?? '-';
 
 	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
 		? dateI18n(

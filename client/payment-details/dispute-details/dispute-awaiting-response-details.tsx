@@ -3,17 +3,34 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import moment from 'moment';
-import { __ } from '@wordpress/i18n';
-import { Card, CardBody } from '@wordpress/components';
-import { edit } from '@wordpress/icons';
+import { __, sprintf } from '@wordpress/i18n';
+import { backup, edit, lock } from '@wordpress/icons';
+import { createInterpolateElement } from '@wordpress/element';
+import { Link } from '@woocommerce/components';
+import {
+	Button,
+	Card,
+	CardBody,
+	Flex,
+	FlexItem,
+	Icon,
+	Modal,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
-import { isAwaitingResponse } from 'wcpay/disputes/utils';
+import wcpayTracks from 'tracks';
+import { useDisputeAccept } from 'wcpay/data';
+import {
+	getDisputeFeeFormatted,
+	isAwaitingResponse,
+	isInquiry,
+} from 'wcpay/disputes/utils';
+import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
 import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
@@ -25,10 +42,18 @@ interface Props {
 }
 
 const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
+	const { doAccept, isLoading } = useDisputeAccept( dispute );
+	const [ isModalOpen, setModalOpen ] = useState( false );
+
 	const now = moment();
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
+	const showDisputeActions = ! isInquiry( dispute );
+
+	const onModalClose = () => {
+		setModalOpen( false );
+	};
 
 	return (
 		<div className="transaction-details-dispute-details-wrapper">
@@ -61,6 +86,155 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 								/>
 							</>
 						) }
+
+					{ /* Dispute Actions */ }
+					{ showDisputeActions && (
+						<div className="transaction-details-dispute-details-body__actions">
+							<Link
+								href={
+									// Prevent the user navigating to the challenge screen if the accept request is in progress.
+									isLoading
+										? ''
+										: getAdminUrl( {
+												page: 'wc-admin',
+												path:
+													'/payments/disputes/challenge',
+												id: dispute.id,
+										  } )
+								}
+							>
+								<Button
+									variant="primary"
+									disabled={ isLoading }
+									onClick={ () => {
+										wcpayTracks.recordEvent(
+											wcpayTracks.events
+												.DISPUTE_CHALLENGE_CLICK,
+											{
+												dispute_status: dispute.status,
+											}
+										);
+									} }
+								>
+									{ hasStagedEvidence
+										? __(
+												'Continue with challenge',
+												'woocommerce-payments'
+										  )
+										: __(
+												'Challenge dispute',
+												'woocommerce-payments'
+										  ) }
+								</Button>
+							</Link>
+
+							<Button
+								variant="tertiary"
+								disabled={ isLoading }
+								onClick={ () => {
+									wcpayTracks.recordEvent(
+										wcpayTracks.events
+											.DISPUTE_ACCEPT_MODAL_VIEW,
+										{
+											dispute_status: dispute.status,
+										}
+									);
+									setModalOpen( true );
+								} }
+							>
+								{ __(
+									'Accept dispute',
+									'woocommerce-payments'
+								) }
+							</Button>
+
+							{ isModalOpen && (
+								<Modal
+									title="Accept the dispute?"
+									onRequestClose={ onModalClose }
+									className="transaction-details-dispute-accept-modal"
+								>
+									<p>
+										<strong>
+											{ __(
+												'Before proceeding, please take note of the following:',
+												'woocommerce-payments'
+											) }
+										</strong>
+									</p>
+									<Flex justify="start">
+										<FlexItem className="transaction-details-dispute-accept-modal__icon">
+											<Icon icon={ backup } size={ 24 } />
+										</FlexItem>
+										<FlexItem>
+											{ createInterpolateElement(
+												sprintf(
+													/* translators: %s: dispute fee, <em>: emphasis HTML element. */
+													__(
+														'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account.',
+														'woocommerce-payments'
+													),
+													getDisputeFeeFormatted(
+														dispute,
+														true
+													) ?? '-'
+												),
+												{
+													em: <em />,
+												}
+											) }
+										</FlexItem>
+									</Flex>
+									<Flex justify="start">
+										<FlexItem className="transaction-details-dispute-accept-modal__icon">
+											<Icon icon={ lock } size={ 24 } />
+										</FlexItem>
+										<FlexItem>
+											{ __(
+												'Accepting the dispute is final and cannot be undone.',
+												'woocommerce-payments'
+											) }
+										</FlexItem>
+									</Flex>
+
+									<Flex
+										className="transaction-details-dispute-accept-modal__actions"
+										justify="end"
+									>
+										<Button
+											variant="tertiary"
+											onClick={ onModalClose }
+										>
+											{ __(
+												'Cancel',
+												'woocommerce-payments'
+											) }
+										</Button>
+										<Button
+											variant="primary"
+											onClick={ () => {
+												wcpayTracks.recordEvent(
+													wcpayTracks.events
+														.DISPUTE_ACCEPT_CLICK,
+													{
+														dispute_status:
+															dispute.status,
+													}
+												);
+												setModalOpen( false );
+												doAccept();
+											} }
+										>
+											{ __(
+												'Accept dispute',
+												'woocommerce-payments'
+											) }
+										</Button>
+									</Flex>
+								</Modal>
+							) }
+						</div>
+					) }
 				</CardBody>
 			</Card>
 		</div>
