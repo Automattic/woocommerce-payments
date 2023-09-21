@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-When HPOS is disabled, fetch subscriptions by customer_id using the user's subscription cache to improve performance.
