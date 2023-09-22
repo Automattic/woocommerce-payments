@@ -39,7 +39,7 @@ jQuery( function ( $ ) {
 
 	/**
 	 * Safely parses a given value to an integer number.
-	 * If the parsed value is NaN (Not a Number), the function returns 0.
+	 * If the parsed value is NaN, the function returns 0.
 	 *
 	 * @param {string|number} value - The value to be parsed to integer number.
 	 * @return {number} The parsed number, or 0 if the parsed value is NaN.
@@ -72,9 +72,8 @@ jQuery( function ( $ ) {
 
 	/**
 	 * Resets the BNPL payment message displayed on the page.
-	 * The function first checks whether the `quantityInput` exists. If not, the function exits early.
-	 * Otherwise, it updates the BNPL message using the global `productAmount` and the current value
-	 * from `quantityInput` by calling `updateMessageWithQuantity`.
+	 * The function updates the BNPL message using the global `productAmount` and the current value
+	 * from `quantityInput` by calling `updateBnplPaymentMessage`.
 	 */
 	const resetBnplPaymentMessage = () => {
 		updateBnplPaymentMessage(
