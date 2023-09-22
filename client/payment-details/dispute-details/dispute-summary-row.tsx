@@ -103,18 +103,22 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute, daysRemaining } ) => {
 								daysRemaining < 7 && daysRemaining > 2,
 						} ) }
 					>
-						{ daysRemaining === 0
-							? __( '(Last day today)', 'woocommerce-payments' )
-							: sprintf(
-									// Translators: %s is the number of days left to respond to the dispute.
-									_n(
-										'(%s day left to respond)',
-										'(%s days left to respond)',
-										daysRemaining,
-										'woocommerce-payments'
-									),
-									daysRemaining
-							  ) }
+						{ daysRemaining > 0 &&
+							sprintf(
+								// Translators: %s is the number of days left to respond to the dispute.
+								_n(
+									'(%s day left to respond)',
+									'(%s days left to respond)',
+									daysRemaining,
+									'woocommerce-payments'
+								),
+								daysRemaining
+							) }
+
+						{ daysRemaining === 0 &&
+							__( '(Last day today)', 'woocommerce-payments' ) }
+						{ daysRemaining < 0 &&
+							__( '(Past due)', 'woocommerce-payments' ) }
 					</span>
 				</span>
 			),

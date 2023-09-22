@@ -853,6 +853,7 @@ class WC_Payments_Admin {
 			'isWooPayStoreCountryAvailable' => WooPay_Utilities::is_store_country_available(),
 			'isStripeBillingEnabled'        => WC_Payments_Features::is_stripe_billing_enabled(),
 			'isStripeBillingEligible'       => WC_Payments_Features::is_stripe_billing_eligible(),
+			'storeName'                     => get_bloginfo( 'name' ),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
