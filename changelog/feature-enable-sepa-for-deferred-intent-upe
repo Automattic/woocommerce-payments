@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Allow deferred intent creation UPE to support SEPA payments.

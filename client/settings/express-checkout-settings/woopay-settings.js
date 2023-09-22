@@ -4,7 +4,12 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CheckboxControl, TextareaControl } from '@wordpress/components';
+import {
+	Card,
+	CheckboxControl,
+	TextareaControl,
+	ExternalLink,
+} from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 
@@ -213,19 +218,24 @@ const WooPaySettings = ( { section } ) => {
 							help={ interpolateComponents( {
 								mixedString: __(
 									'Override the default {{privacyLink}}privacy policy{{/privacyLink}}' +
-										' and {{termsLink}}terms of service{{/termsLink}}, or add custom text to WooPay checkout.',
+										' and {{termsLink}}terms of service{{/termsLink}},' +
+										' or add custom text to WooPay checkout. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
 									'woocommerce-payments'
 								),
 								// prettier-ignore
 								components: {
 									/* eslint-disable prettier/prettier */
 									privacyLink: window.wcSettings?.storePages?.privacy?.permalink ?
-										<Link href={ window.wcSettings?.storePages?.privacy?.permalink } type="external" /> :
+										<Link href={ window.wcSettings.storePages.privacy.permalink } type="external" /> :
 										<span />,
 									termsLink: window.wcSettings?.storePages?.terms?.permalink ?
-										<Link href={ window.wcSettings?.storePages?.terms?.permalink } type="external" /> :
+										<Link href={ window.wcSettings.storePages.terms.permalink } type="external" /> :
 										<span />,
 									/* eslint-enable prettier/prettier */
+									learnMoreLink: (
+										// eslint-disable-next-line max-len
+										<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance" />
+									),
 								}
 							} ) }
 							value={ woopayCustomMessage }

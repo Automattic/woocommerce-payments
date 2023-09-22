@@ -113,6 +113,7 @@ declare global {
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
+		storeName: string;
 	};
 
 	const wcTracks: any;
