@@ -24,7 +24,7 @@ jQuery( function ( $ ) {
 
 	const { productVariations, productId } = window.wcpayStripeSiteMessaging;
 	const {
-		amount: productAmount = 0,
+		amount: baseProductAmount = 0,
 		currency: productCurrency,
 	} = productVariations[ productId ];
 	const QUANTITY_INPUT_SELECTOR = '.quantity input[type=number]';
@@ -72,12 +72,12 @@ jQuery( function ( $ ) {
 
 	/**
 	 * Resets the BNPL payment message displayed on the page.
-	 * The function updates the BNPL message using the global `productAmount` and the current value
+	 * The function updates the BNPL message using the global `baseProductAmount` and the current value
 	 * from `quantityInput` by calling `updateBnplPaymentMessage`.
 	 */
 	const resetBnplPaymentMessage = () => {
 		updateBnplPaymentMessage(
-			productAmount,
+			baseProductAmount,
 			productCurrency,
 			quantityInput.val()
 		);
@@ -85,7 +85,7 @@ jQuery( function ( $ ) {
 
 	// Update BNPL message based on the quantity change
 	quantityInput.on( 'change', ( event ) => {
-		let amount = productAmount;
+		let amount = baseProductAmount;
 		const variationId = $( VARIATION_ID_SELECTOR ).val();
 
 		// If the product has variations, get the amount from the selected variation.
