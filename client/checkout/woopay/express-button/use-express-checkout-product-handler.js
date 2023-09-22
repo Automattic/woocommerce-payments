@@ -89,6 +89,11 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 				document.querySelector( 'form.cart' )
 			);
 
+			// Remove add-to-cart attribute to prevent redirection
+			// when "Redirect to the cart page after successful addition"
+			// option is enabled.
+			formData.delete( 'add-to-cart' );
+
 			const attributes = {};
 
 			for ( const fields of formData.entries() ) {
