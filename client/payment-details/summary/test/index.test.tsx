@@ -82,6 +82,7 @@ const getBaseCharge = (): Charge =>
 		},
 		billing_details: {
 			name: 'Customer name',
+			email: 'mock@example.com',
 		},
 		payment_method_details: {
 			card: {
@@ -495,6 +496,15 @@ describe( 'PaymentDetailsSummary', () => {
 				screen.getByText( /Respond By/i ).nextSibling
 			).toHaveTextContent( /Sep 9, 2023/ );
 
+			// Steps to resolve
+			screen.getByText( /Steps to resolve/i );
+			screen.getByRole( 'link', {
+				name: /Email the customer/i,
+			} );
+			screen.getByRole( 'link', {
+				name: /guidance on dispute withdrawal/i,
+			} );
+
 			// Actions
 			screen.getByRole( 'button', {
 				name: /Challenge dispute/,
@@ -601,7 +611,8 @@ describe( 'PaymentDetailsSummary', () => {
 			} );
 			screen.getByRole( 'button', { name: /View dispute details/i } );
 
-			// No actions rendered
+			// No actions or steps rendered
+			expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
 			expect(
 				screen.queryByRole( 'button', {
 					name: /Challenge/i,
@@ -628,7 +639,8 @@ describe( 'PaymentDetailsSummary', () => {
 			} );
 			screen.getByRole( 'button', { name: /View submitted evidence/i } );
 
-			// No actions rendered
+			// No actions or steps rendered
+			expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
 			expect(
 				screen.queryByRole( 'button', {
 					name: /Challenge/i,
@@ -659,7 +671,8 @@ describe( 'PaymentDetailsSummary', () => {
 				ignore: '.a11y-speak-region',
 			} );
 
-			// No actions rendered
+			// No actions or steps rendered
+			expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
 			expect(
 				screen.queryByRole( 'button', {
 					name: /Challenge/i,
@@ -691,7 +704,8 @@ describe( 'PaymentDetailsSummary', () => {
 			} );
 			screen.getByRole( 'button', { name: /View dispute details/i } );
 
-			// No actions rendered
+			// No actions or steps rendered
+			expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
 			expect(
 				screen.queryByRole( 'button', {
 					name: /Challenge/i,
