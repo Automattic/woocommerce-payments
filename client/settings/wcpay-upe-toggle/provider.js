@@ -27,11 +27,6 @@ const WcPayUpeContextProvider = ( {
 	const [ , setEnabledPaymentMethods ] = useEnabledPaymentMethodIds();
 	const { updateAvailablePaymentMethodIds } = useDispatch( STORE_NAME );
 
-	useState( () => {
-		console.log( 'timka: ' + upeType );
-	}
-	, [ upeType ] );
-
 	const updateFlag = useCallback(
 		( value ) => {
 			setStatus( 'pending' );
@@ -54,8 +49,8 @@ const WcPayUpeContextProvider = ( {
 							setIsUpeEnabled( true );
 						}
 					}
-					
-					// down 
+
+					// down
 					if ( ! value ) {
 						if ( upeType === 'deferred_upe_from_legacy_card' ) {
 							// fallback to card
@@ -63,12 +58,12 @@ const WcPayUpeContextProvider = ( {
 							setIsUpeEnabled( false );
 							updateAvailablePaymentMethodIds( [ 'card' ] );
 							setEnabledPaymentMethods( [ 'card' ] );
-						} 
+						}
 
-						if ( upeType ==='deferred_upe_from_legacy_upe' ) {
+						if ( upeType === 'deferred_upe_from_legacy_upe' ) {
 							// fallback to upe
 							setUpeType( 'legacy_after_deferred_intent' );
-							setIsUpeEnabled( true ); 
+							setIsUpeEnabled( true );
 						}
 					}
 
@@ -92,7 +87,7 @@ const WcPayUpeContextProvider = ( {
 			setStatus,
 			setIsUpeEnabled,
 			setUpeType,
-			upeType, 
+			upeType,
 			setEnabledPaymentMethods,
 			updateAvailablePaymentMethodIds,
 		]
