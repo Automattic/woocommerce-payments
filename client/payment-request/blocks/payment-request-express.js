@@ -53,9 +53,14 @@ const PaymentRequestExpressComponent = ( {
 		return null;
 	}
 
+	const onPaymentRequestButtonClick = () => {
+		console.log( 'clicked' );
+		onButtonClick();
+	};
+
 	return (
 		<PaymentRequestButtonElement
-			onClick={ onButtonClick }
+			onClick={ onPaymentRequestButtonClick }
 			options={ {
 				style: paymentRequestButtonStyle,
 				paymentRequest,

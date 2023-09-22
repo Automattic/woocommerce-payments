@@ -15,6 +15,7 @@ import {
 	payForOrderHandler,
 } from './event-handlers.js';
 import '../checkout/express-checkout-buttons.scss';
+import wcpayTracks from 'tracks';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
@@ -341,6 +342,21 @@ jQuery( ( $ ) => {
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
+				if ( paymentRequestType === 'google_pay' ) {
+					wcpayTracks.recordUserEvent(
+						wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
+						{
+							source: 'product',
+						}
+					);
+				} else if ( paymentRequestType === 'apple_pay' ) {
+					wcpayTracks.recordUserEvent(
+						wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+						{
+							source: 'product',
+						}
+					);
+				}
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( wcpayPaymentRequestParams.login_confirmation ) {
 					evt.preventDefault();
@@ -435,6 +451,22 @@ jQuery( ( $ ) => {
 				if ( wcpayPaymentRequestParams.login_confirmation ) {
 					evt.preventDefault();
 					displayLoginConfirmation( paymentRequestType );
+				}
+
+				if ( paymentRequestType === 'google_pay' ) {
+					wcpayTracks.recordUserEvent(
+						wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
+						{
+							source: wcpayPaymentRequestParams.button_context,
+						}
+					);
+				} else if ( paymentRequestType === 'apple_pay' ) {
+					wcpayTracks.recordUserEvent(
+						wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+						{
+							source: wcpayPaymentRequestParams.button_context,
+						}
+					);
 				}
 			} );
 		},

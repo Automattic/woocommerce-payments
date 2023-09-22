@@ -30,6 +30,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
 	const [ isInfoFlyoutVisible, setIsInfoFlyoutVisible ] = useState( false );
+	const [ hasShownInfoFlyout, setHasShownInfoFlyout ] = useState( false );
+
 	const setInfoFlyoutVisible = useCallback(
 		() => setIsInfoFlyoutVisible( true ),
 		[]
@@ -111,6 +113,18 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			}
 		);
 	};
+
+	useEffect( () => {
+		// Record Tracks event when user hovers over the info icon for the first time.
+		if ( isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
+			setHasShownInfoFlyout( true );
+			wcpayTracks.recordUserEvent(
+				wcpayTracks.events.WOOPAY_SAVE_MY_INFO_TOOLTIP_HOVER
+			);
+		} else if ( ! isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
+			setHasShownInfoFlyout( false );
+		}
+	}, [ isInfoFlyoutVisible, hasShownInfoFlyout ] );
 
 	useEffect( () => {
 		const formSubmitButton = isBlocksCheckout
@@ -259,6 +273,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 											target="_blank"
 											href="https://woocommerce.com/document/woopay-customer-documentation/"
 											rel="noopener noreferrer"
+											onClick={ () => {
+												wcpayTracks.recordUserEvent(
+													wcpayTracks.events
+														.WOOPAY_SAVE_MY_INFO_TOOLTIP_LEARN_MORE_CLICK
+												);
+											} }
 										>
 											{ __(
 												'Learn more',
