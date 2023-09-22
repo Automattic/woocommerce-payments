@@ -77,10 +77,6 @@ jQuery( function ( $ ) {
 	 * from `quantityInput` by calling `updateMessageWithQuantity`.
 	 */
 	const resetBnplPaymentMessage = () => {
-		if ( ! quantityInput.length ) {
-			return;
-		}
-
 		updateBnplPaymentMessage(
 			productAmount,
 			productCurrency,
@@ -110,10 +106,7 @@ jQuery( function ( $ ) {
 		$( SINGLE_VARIATION_SELECTOR ).on(
 			'show_variation',
 			( event, variation ) => {
-				if (
-					! quantityInput.length ||
-					! productVariations[ variation.variation_id ]
-				) {
+				if ( ! productVariations[ variation.variation_id ] ) {
 					return;
 				}
 
