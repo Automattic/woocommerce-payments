@@ -114,6 +114,7 @@ declare global {
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
 		capabilityRequestNotices: Record< string, boolean >;
+		storeName: string;
 	};
 
 	const wcTracks: any;
