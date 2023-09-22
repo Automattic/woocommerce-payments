@@ -71,13 +71,17 @@ const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 
 const UpeSetupBanner = () => {
 	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
+	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
 
 	const handleEnableUpeClick = () => {
+		console.log('while enabling, upe type is: ' + upeType);
 		setIsUpeEnabled( true ).then( () => {
-			window.location.href = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/additional-payment-methods',
-			} );
+			if ( upeType === '' ) {
+				window.location.href = getAdminUrl( {
+					page: 'wc-admin',
+					path: '/payments/additional-payment-methods',
+				} );
+			}
 		} );
 	};
 
@@ -89,27 +93,45 @@ const UpeSetupBanner = () => {
 				} ) }
 			>
 				<h3>
-					{ __(
+					{ upeType === 'legacy_after_deferred_intent' && __(
+						'Enable deferred UPE',
+						'woocommerce-payments'
+					)}
+
+					{ ! isUpeEnabled && __(
 						'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023',
 						'woocommerce-payments'
-					) }
+					)}
+
+					{ upeType === 'split' && __(
+						'This is deferred UPE (this header will be removed after DEMO)',
+						'woocommerce-payments'
+					)}
 				</h3>
 				<p>
-					{ __(
+					{ upeType === 'legacy_after_deferred_intent' && __(
+						/* eslint-disable-next-line max-len */
+						'You previously disabled deferred UPE. Maybe it is time to give it another try?',
+						'woocommerce-payments'
+					)}
+
+					{ ! isUpeEnabled && __(
 						/* eslint-disable-next-line max-len */
 						'This will improve the checkout experience and boost sales with access to additional payment methods, which you’ll be able to manage from here in settings.',
 						'woocommerce-payments'
-					) }
+					)}
 				</p>
 
 				<div className="payment-methods__express-checkouts-actions">
 					<span className="payment-methods__express-checkouts-get-started">
-						<Button isSecondary onClick={ handleEnableUpeClick }>
-							{ __(
-								'Enable payment methods',
-								'woocommerce-payments'
-							) }
-						</Button>
+						{ upeType !== 'split' && (
+							<Button isSecondary onClick={ handleEnableUpeClick }>
+								{ __(
+									'Enable payment methods',
+									'woocommerce-payments'
+								) }
+							</Button>	
+						)}
 					</span>
 					<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/">
 						{ __( 'Learn more', 'woocommerce-payments' ) }
@@ -272,11 +294,25 @@ const PaymentMethods = () => {
 								</>
 							) }
 						</h4>
-						<PaymentMethodsDropdownMenu
-							setOpenModal={ setOpenModalIdentifier }
-						/>
+						{ upeType !== 'legacy_after_deferred_intent' && (
+							<PaymentMethodsDropdownMenu
+								setOpenModal={ setOpenModalIdentifier }
+							/>	
+						)}
 					</CardHeader>
 				) }
+
+				{ upeType === 'legacy_after_deferred_intent' && (
+					<CardHeader className="payment-methods__header">
+							<UpeSetupBanner />
+					</CardHeader>
+				)}
+
+				{ upeType === 'split' && (
+					<CardHeader className="payment-methods__header">
+							<UpeSetupBanner />
+					</CardHeader>
+				)}
 
 				{ isUpeEnabled && upeType === 'legacy' && (
 					<CardHeader className="payment-methods__header">

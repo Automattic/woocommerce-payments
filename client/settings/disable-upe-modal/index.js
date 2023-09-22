@@ -88,14 +88,22 @@ const DisableUpeModalBody = () => {
 
 const DisableUpeModal = ( { setOpenModal, triggerAfterDisable } ) => {
 	const [ isUpeEnabled, setIsUpeEnabled ] = useIsUpeEnabled();
-	const { status } = useContext( WcPayUpeContext );
+	const { status, upeType } = useContext( WcPayUpeContext );
 
 	useEffect( () => {
-		if ( ! isUpeEnabled ) {
+		console.log(' upe type is: ' + upeType );
+		if ( status === 'pending') {
 			setOpenModal( '' );
 			triggerAfterDisable();
 		}
-	}, [ isUpeEnabled, setOpenModal, triggerAfterDisable ] );
+// 
+		// if ( isUpeEnabled && upeType === 'legacy_after_deferred_intent' ) {
+		// 	setOpenModal( '' );
+		// 	triggerAfterDisable();
+		// }
+
+		
+	}, [ isUpeEnabled, setOpenModal, triggerAfterDisable, status, upeType ] );
 
 	useEffect( () => {
 		if ( status === 'error' ) {

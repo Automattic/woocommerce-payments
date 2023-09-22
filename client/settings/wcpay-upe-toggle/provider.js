@@ -27,6 +27,11 @@ const WcPayUpeContextProvider = ( {
 	const [ , setEnabledPaymentMethods ] = useEnabledPaymentMethodIds();
 	const { updateAvailablePaymentMethodIds } = useDispatch( STORE_NAME );
 
+	useState( () => {
+		console.log( 'timka: ' + upeType );
+	}
+	, [ upeType ] );
+
 	const updateFlag = useCallback(
 		( value ) => {
 			setStatus( 'pending' );
@@ -39,16 +44,44 @@ const WcPayUpeContextProvider = ( {
 			} )
 				.then( () => {
 					// new "toggles" will continue being "split" UPE
-					setUpeType( value ? 'split' : '' );
-					setIsUpeEnabled( Boolean( value ) );
+
+					if ( value ) {
+						if ( upeType === 'legacy_after_deferred_intent' ) {
+							setUpeType( 'deferred_upe_from_legacy_upe' );
+							setIsUpeEnabled( true );
+						} else if ( upeType === '' ) {
+							setUpeType( 'deferred_upe_from_legacy_card' );
+							setIsUpeEnabled( true );
+						}
+					}
+					
+					// down 
+					if ( ! value ) {
+						if ( upeType === 'deferred_upe_from_legacy_card' ) {
+							// fallback to card
+							setUpeType( '' );
+							setIsUpeEnabled( false );
+							updateAvailablePaymentMethodIds( [ 'card' ] );
+							setEnabledPaymentMethods( [ 'card' ] );
+						} 
+
+						if ( upeType ==='deferred_upe_from_legacy_upe' ) {
+							// fallback to upe
+							setUpeType( 'legacy_after_deferred_intent' );
+							setIsUpeEnabled( true ); 
+						}
+					}
+
+					// setUpeType( value ? 'split' : '' );
+					// setIsUpeEnabled( Boolean( value ) );
 
 					// the backend already takes care of this,
 					// we're just duplicating the effort
 					// to ensure that the non-UPE payment methods are removed when the flag is disabled
-					if ( ! value ) {
-						updateAvailablePaymentMethodIds( [ 'card' ] );
-						setEnabledPaymentMethods( [ 'card' ] );
-					}
+					// if ( ! value ) {
+					// 	updateAvailablePaymentMethodIds( [ 'card' ] );
+					// 	setEnabledPaymentMethods( [ 'card' ] );
+					// }
 					setStatus( 'resolved' );
 				} )
 				.catch( () => {
@@ -59,6 +92,7 @@ const WcPayUpeContextProvider = ( {
 			setStatus,
 			setIsUpeEnabled,
 			setUpeType,
+			upeType, 
 			setEnabledPaymentMethods,
 			updateAvailablePaymentMethodIds,
 		]

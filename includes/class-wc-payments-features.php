@@ -29,6 +29,10 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_enabled() {
+		$legacy   = get_option( self::UPE_FLAG_NAME, '0' );
+		$split    = get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
+		$deferred = get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, 0 );
+		$a        = 1;
 		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled();
 	}
 
@@ -38,12 +42,21 @@ class WC_Payments_Features {
 	 * @return string
 	 */
 	public static function get_enabled_upe_type() {
-		if ( self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled() ) {
-			return 'split';
+
+		if ( self::is_upe_deferred_intent_enabled() && self::is_upe_legacy_enabled() ) {
+			return 'deferred_upe_from_legacy_upe';
 		}
 
-		if ( self::is_upe_legacy_enabled() ) {
-			return 'legacy';
+		if ( self::is_upe_deferred_intent_enabled() && ! self::is_upe_legacy_enabled() ) {
+			return 'deferred_upe_from_legacy_card';
+		}
+
+		if ( 'disabled' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, 0 ) && self::is_upe_legacy_enabled() ) {
+			return 'legacy_after_deferred_intent';
+		}
+
+		if ( ! self::is_upe_enabled() ) {
+			return 'legacy_card';
 		}
 
 		return '';
@@ -81,7 +94,7 @@ class WC_Payments_Features {
 		}
 
 		// legacy UPE users who never used dUPE and thus should be forced to dUPE.
-		if ( self::is_upe_legacy_enabled() && 0 === $deferred_intent_creation_upe_flag_value ) {
+		if ( self::is_upe_legacy_enabled() && 0 == $deferred_intent_creation_upe_flag_value ) {
 			return true;
 		}
 

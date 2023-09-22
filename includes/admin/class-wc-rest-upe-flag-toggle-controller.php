@@ -119,7 +119,26 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 		$is_upe_enabled = $request->get_param( 'is_upe_enabled' );
 
 		if ( $is_upe_enabled ) {
-			update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
+			// update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );.
+
+			if ( '1' === get_option( WC_Payments_Features::UPE_FLAG_NAME, 0 ) && 'disabled' === get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 0 ) ) {
+				// enabling back dupe after falling back to legacy upe.
+				update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
+			} elseif ( '0' == get_option( WC_Payments_Features::UPE_FLAG_NAME, 0 ) && '0' == get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 0 ) ) {
+				// enabling dupe from legacy card for the first time.
+				update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
+			} elseif ( '0' == get_option( WC_Payments_Features::UPE_FLAG_NAME, 0 ) && 'disabled' === get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 0 ) ) {
+				// enabling dupe from legacy card after falling back.
+				update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
+			} elseif ( 'disabled' === get_option( WC_Payments_Features::UPE_FLAG_NAME, 0 ) && 'disabled' === get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 0 ) ) {
+				// enabling legacy upe from fallback from dupe and fallback from legacy upe to card (not needed anymore).
+				// update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );.
+				update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
+			} elseif ( 'disabled' === get_option( WC_Payments_Features::UPE_FLAG_NAME, 0 ) && '0' == get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 0 ) ) {
+				// enabling dupe for legacy card users who previously disabled legacy upe.
+				update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
+				update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
+			}
 
 			// WooCommerce core only includes Tracks in admin, not the REST API, so we need to use this wc_admin method
 			// that includes WC_Tracks in case it's not loaded.
@@ -135,42 +154,12 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 			return;
 		}
 
-		// If the legacy UPE flag has been enabled, we need to disable the legacy UPE flag.
-		if ( '1' === get_option( WC_Payments_Features::UPE_FLAG_NAME ) && '0' === get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME ) ) {
-			update_option( WC_Payments_Features::UPE_FLAG_NAME, 'disabled' );
-
-			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-				wc_admin_record_tracks_event(
-					Track_Events::UPE_DISABLED,
-					[
-						'is_bnpl_affirm_afterpay_enabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
-					]
-				);
-			}
-		} elseif ( '1' === get_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME ) ) {
-			// marking the flag as "disabled", so that we can keep track that the merchant explicitly disabled split UPE.
-			update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, 'disabled' );
-
-			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-				wc_admin_record_tracks_event(
-					Track_Events::SPLIT_UPE_DISABLED,
-					[
-						'is_bnpl_affirm_afterpay_enabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
-					]
-				);
-			}
-		} elseif ( '1' === get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME ) ) {
-			// marking the flag as "disabled", so that we can keep track that the merchant explicitly disabled deferred intent UPE.
+		if ( '1' === get_option( WC_Payments_Features::UPE_FLAG_NAME, 0 ) && '0' == get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 0 ) ) {
+			// legacy UPE users who have dupe -> legacy UPE.
 			update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 'disabled' );
-
-			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-				wc_admin_record_tracks_event(
-					Track_Events::DEFERRED_INTENT_UPE_DISABLED,
-					[
-						'is_bnpl_affirm_afterpay_enabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
-					]
-				);
-			}
+		} elseif ( '0' == get_option( WC_Payments_Features::UPE_FLAG_NAME, 0 ) && '1' === get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 0 ) ) {
+			// dupe -> legacy card.
+			update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 'disabled' );
 		}
 
 		// resetting a few other things:
