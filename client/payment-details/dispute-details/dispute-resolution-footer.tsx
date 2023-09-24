@@ -62,7 +62,7 @@ const DisputeUnderReviewFooter: React.FC< {
 						href={ getAdminUrl( {
 							page: 'wc-admin',
 							path: '/payments/disputes/challenge',
-							id: dispute?.id,
+							id: dispute.id,
 						} ) }
 					>
 						<Button
@@ -92,7 +92,7 @@ const DisputeUnderReviewFooter: React.FC< {
 const DisputeWonFooter: React.FC< {
 	dispute: Dispute;
 } > = ( { dispute } ) => {
-	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
+	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? dateI18n(
 				'M j, Y',
 				moment
@@ -133,7 +133,7 @@ const DisputeWonFooter: React.FC< {
 						href={ getAdminUrl( {
 							page: 'wc-admin',
 							path: '/payments/disputes/challenge',
-							id: dispute?.id,
+							id: dispute.id,
 						} ) }
 					>
 						<Button
@@ -163,11 +163,11 @@ const DisputeWonFooter: React.FC< {
 const DisputeLostFooter: React.FC< {
 	dispute: Dispute;
 } > = ( { dispute } ) => {
-	const isSubmitted = !! dispute?.metadata.__evidence_submitted_at;
-	const isAccepted = dispute?.metadata.__closed_by_merchant === '1';
+	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
+	const isAccepted = dispute.metadata.__closed_by_merchant === '1';
 	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true ) ?? '-';
 
-	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
+	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? dateI18n(
 				'M j, Y',
 				moment
@@ -239,7 +239,7 @@ const DisputeLostFooter: React.FC< {
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/disputes/challenge',
-								id: dispute?.id,
+								id: dispute.id,
 							} ) }
 						>
 							<Button
@@ -311,7 +311,7 @@ const InquiryUnderReviewFooter: React.FC< {
 						href={ getAdminUrl( {
 							page: 'wc-admin',
 							path: '/payments/disputes/challenge',
-							id: dispute?.id,
+							id: dispute.id,
 						} ) }
 					>
 						<Button
@@ -341,8 +341,8 @@ const InquiryUnderReviewFooter: React.FC< {
 const InquiryClosedFooter: React.FC< {
 	dispute: Dispute;
 } > = ( { dispute } ) => {
-	const isSubmitted = !! dispute?.metadata.__evidence_submitted_at;
-	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
+	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
+	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? dateI18n(
 				'M j, Y',
 				moment
@@ -385,7 +385,7 @@ const InquiryClosedFooter: React.FC< {
 						href={ getAdminUrl( {
 							page: 'wc-admin',
 							path: '/payments/disputes/challenge',
-							id: dispute?.id,
+							id: dispute.id,
 						} ) }
 					>
 						<Button
