@@ -46,8 +46,6 @@ import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
-import InlineNotice from 'wcpay/components/inline-notice';
-import interpolateComponents from '@automattic/interpolate-components';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
@@ -233,7 +231,7 @@ const PaymentMethods = () => {
 		featureFlags: { upeSettingsPreview: isUpeSettingsPreviewEnabled },
 	} = useContext( WCPaySettingsContext );
 
-	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
+	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
 
 	return (
@@ -274,30 +272,6 @@ const PaymentMethods = () => {
 						<PaymentMethodsDropdownMenu
 							setOpenModal={ setOpenModalIdentifier }
 						/>
-					</CardHeader>
-				) }
-
-				{ isUpeEnabled && upeType === 'legacy' && (
-					<CardHeader className="payment-methods__header">
-						<InlineNotice
-							icon
-							status="warning"
-							isDismissible={ false }
-						>
-							{ interpolateComponents( {
-								mixedString: __(
-									'The new WooPayments checkout experience will become the default on October 11, 2023.' +
-										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-									'woocommerce-payments'
-								),
-								components: {
-									learnMoreLink: (
-										// eslint-disable-next-line max-len
-										<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#popular-payment-methods" />
-									),
-								},
-							} ) }
-						</InlineNotice>
 					</CardHeader>
 				) }
 
