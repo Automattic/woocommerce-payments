@@ -66,7 +66,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 			</Loadable>
 			{ isModalOpen && (
 				<ConfirmationModal
-				    className="missing-order-notice-modal"
+					className="missing-order-notice-modal"
 					title={ __( 'Refund Transaction', 'woocommerce-payments' ) }
 					actions={
 						<>
@@ -102,15 +102,10 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 					</p>
 					<RadioControl
 						className="missing-order-notice-modal__reason"
-						label={ interpolateComponents( {
-							mixedString: __(
-								'{{strong}}Select a reason (Optional){{/strong}}',
-								'woocommerce-payments'
-							),
-							components: {
-								strong: <strong />,
-							},
-						} ) }
+						label={ __(
+							'Select a reason (Optional)',
+							'woocommerce-payments'
+						) }
 						selected={ reason }
 						options={ [
 							{

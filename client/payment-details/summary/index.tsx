@@ -385,14 +385,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
 				<DisputeDetails dispute={ charge.dispute } />
 			) }
-			{ isRefundControlsEnabled &&
-				! _.isEmpty( charge ) &&
-				! charge.order && (
-					<MissingOrderNotice
-						isLoading={ isLoading }
-						formattedAmount={ formattedAmount }
-					/>
-				) }
+			{ true && (
+				<MissingOrderNotice
+					isLoading={ isLoading }
+					formattedAmount={ formattedAmount }
+				/>
+			) }
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
