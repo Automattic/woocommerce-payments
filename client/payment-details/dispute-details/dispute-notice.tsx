@@ -25,26 +25,30 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	dispute,
 	isUrgent,
 } ) => {
-	const clientClaim =
+	const shopperDisputeReason =
 		reasons[ dispute.reason ]?.claim ??
 		__(
 			'The cardholder claims this is an unrecognized charge.',
 			'woocommerce-payments'
 		);
 
-	const noticeText = isInquiry( dispute )
-		? /* translators: <a> link to dispute inquiry documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
-		  __(
-				// eslint-disable-next-line max-len
-				'<strong>%s</strong> You can challenge their claim if you believe it’s invalid. Not responding will result in an automatic loss. <a>Learn more</a>',
-				'woocommerce-payments'
-		  )
-		: /* translators: <a> link to dispute documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
-		  __(
-				// eslint-disable-next-line max-len
-				'<strong>%s</strong> Challenge the dispute if you believe the claim is invalid, or accept to forfeit the funds and pay the dispute fee. Non-response will result in an automatic loss. <a>Learn more about responding to disputes</a>',
-				'woocommerce-payments'
-		  );
+	/* translators: <a> link to dispute documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
+	let noticeText = __(
+		'<strong>%s</strong> Challenge the dispute if you believe the claim is invalid, ' +
+		'or accept to forfeit the funds and pay the dispute fee. ' +
+		'Non-response will result in an automatic loss. <a>Learn more about responding to disputes</a>',
+		'woocommerce-payments'
+	);
+	let learnMoreDocsUrl = 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#section-3';
+
+	if ( isInquiry( dispute ) ) {
+		/* translators: <a> link to dispute inquiry documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
+		noticeText = __(
+			'<strong>%s</strong> You can challenge their claim if you believe it’s invalid. ' +
+			'Not responding will result in an automatic loss. <a>Learn more</a>',
+			'woocommerce-payments'
+		)
+	}
 
 	return (
 		<InlineNotice
@@ -53,13 +57,13 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			className="dispute-notice"
 			isDismissible={ false }
 		>
-			{ createInterpolateElement( sprintf( noticeText, clientClaim ), {
+			{ createInterpolateElement( sprintf( noticeText, shopperDisputeReason ), {
 				a: (
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#section-3"
+						href={ learnMoreDocsUrl }
 					/>
 				),
 				strong: <strong />,
