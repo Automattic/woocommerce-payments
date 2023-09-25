@@ -26,6 +26,7 @@ export default class WCPayAPI {
 		this.stripe = null;
 		this.stripePlatform = null;
 		this.request = request;
+		this.isWooPayRequesting = false;
 	}
 
 	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
@@ -688,13 +689,18 @@ export default class WCPayAPI {
 	}
 
 	initWooPay( userEmail, woopayUserSession ) {
-		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
-		const nonce = getConfig( 'initWooPayNonce' );
-		return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
-			_wpnonce: nonce,
-			email: userEmail,
-			user_session: woopayUserSession,
-		} );
+		if ( ! this.isWooPayRequesting ) {
+			this.isWooPayRequesting = true;
+			const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
+			const nonce = getConfig( 'initWooPayNonce' );
+			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
+				_wpnonce: nonce,
+				email: userEmail,
+				user_session: woopayUserSession,
+			} ).finally( () => {
+				this.isWooPayRequesting = false;
+			} );
+		}
 	}
 
 	expressCheckoutAddToCart( productData ) {
