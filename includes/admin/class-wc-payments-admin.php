@@ -145,8 +145,8 @@ class WC_Payments_Admin {
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_redirect_overview_to_connect' ], 1 ); // Run this late (after `admin_init`) but before any scripts are actually enqueued.
-		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 12 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ], 9 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 9 );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
@@ -846,6 +846,7 @@ class WC_Payments_Admin {
 			'isWooPayStoreCountryAvailable' => WooPay_Utilities::is_store_country_available(),
 			'isStripeBillingEnabled'        => WC_Payments_Features::is_stripe_billing_enabled(),
 			'isStripeBillingEligible'       => WC_Payments_Features::is_stripe_billing_eligible(),
+			'storeName'                     => get_bloginfo( 'name' ),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
@@ -954,9 +955,12 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		$badge = self::MENU_NOTIFICATION_BADGE;
 		foreach ( $menu as $index => $menu_item ) {
-			if ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) {
-				$menu[ $index ][0] .= self::MENU_NOTIFICATION_BADGE; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			if ( false === strpos( $menu_item[0], $badge ) && ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) ) {
+				$menu[ $index ][0] .= $badge; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+				// One menu item with a badge is more than enough.
 				break;
 			}
 		}

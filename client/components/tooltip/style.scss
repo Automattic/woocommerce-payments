@@ -3,6 +3,11 @@
 		// ensures that the element needed for position calculations isn't included in the DOM layout
 		display: contents;
 
+		// Ensure that the tooltip doesn't shift neighboring elements when it appears.
+		> div {
+			display: inline;
+		}
+
 		// Styles for buttonIcon
 		[role='button'] {
 			cursor: pointer;
@@ -12,6 +17,7 @@
 			transition: all 0.3s ease;
 			fill: currentColor;
 			margin: 0 0.4em;
+			vertical-align: text-bottom;
 
 			&:focus,
 			&:hover,

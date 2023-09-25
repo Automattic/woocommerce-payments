@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl } from '@wordpress/components';
+import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import React from 'react';
 
@@ -150,13 +150,14 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 						</div>
 					</div>
 					<div className="express-checkout__link">
-						<a
+						<Button
 							href={ getPaymentMethodSettingsUrl(
 								'payment_request'
 							) }
+							isSecondary
 						>
 							{ __( 'Customize', 'woocommerce-payments' ) }
-						</a>
+						</Button>
 					</div>
 				</div>
 			</div>
