@@ -381,36 +381,37 @@ const InquiryClosedFooter: React.FC< {
 						}
 					) }
 				</FlexItem>
-			</Flex>
-			{ isSubmitted && (
-				<FlexItem className="transaction-details-dispute-footer__actions">
-					<Link
-						href={ getAdminUrl( {
-							page: 'wc-admin',
-							path: '/payments/disputes/challenge',
-							id: dispute.id,
-						} ) }
-					>
-						<Button
-							variant="secondary"
-							onClick={ () => {
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
-									{
-										dispute_status: dispute.status,
-									}
-								);
-							} }
+
+				{ isSubmitted && (
+					<FlexItem className="transaction-details-dispute-footer__actions">
+						<Link
+							href={ getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/disputes/challenge',
+								id: dispute.id,
+							} ) }
 						>
-							{ __(
-								'View submitted evidence',
-								'woocommerce-payments'
-							) }
-						</Button>
-					</Link>
-				</FlexItem>
-			) }
+							<Button
+								variant="secondary"
+								onClick={ () => {
+									wcpayTracks.recordEvent(
+										wcpayTracks.events
+											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+										{
+											dispute_status: dispute.status,
+										}
+									);
+								} }
+							>
+								{ __(
+									'View submitted evidence',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</Link>
+					</FlexItem>
+				) }
+			</Flex>
 		</CardFooter>
 	);
 };
