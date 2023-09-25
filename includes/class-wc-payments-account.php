@@ -1504,7 +1504,7 @@ class WC_Payments_Account {
 	 *
 	 * @param array $stripe_account_settings Settings to update.
 	 *
-	 * @return array|WP_Error Account update result.
+	 * @return null|WP_Error Account update result.
 	 *
 	 * @throws Exception
 	 */
