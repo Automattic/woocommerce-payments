@@ -92,11 +92,10 @@ abstract class State {
 	/**
 	 * Payment processing method.
 	 *
-	 * @param PaymentRequest $request Payment request, containing the necessary parameters.
-	 * @return State                  Next payment state.
+	 * @return State                      Next payment state.
 	 * @throws MethodUnavailableException In case the method is not available in the state.
 	 */
-	public function process( PaymentRequest $request ) {
+	public function process() {
 		$this->throw_method_exception( __METHOD__ );
 	}
 

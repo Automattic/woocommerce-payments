@@ -7,8 +7,6 @@
 
 namespace WCPay\Internal\Payment\State;
 
-use WCPay\Internal\Payment\PaymentRequest;
-
 /**
  * Initial payment state.
  */
@@ -16,14 +14,10 @@ class InitialState extends State {
 	/**
 	 * Processes a new payment.
 	 *
-	 * @param PaymentRequest $request Payment request.
+	 * @return State Returns the next payment state.
 	 */
-	public function process( PaymentRequest $request ) {
+	public function process() {
 		$context = $this->get_context();
-
-		// Transfer the necessary data from the request into the payment object.
-		$payment_method = $request->get_payment_method();
-		$context->set_payment_method( $payment_method );
 
 		return $this->create_state( CompletedState::class );
 	}

@@ -97,32 +97,37 @@ class PaymentProcessingService {
 
 			// Initialize the request and payment.
 			$request = new PaymentRequest( $this->legacy_proxy, $post_data );
-			$payment = $this->storage->get_order_payment( $order );
+			$state   = $this->storage->get_order_payment( $order );
+			$context = $state->get_context();
 
 			// Setup flags.
 			if ( $request->should_save_payment_method() ) {
-				$payment->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_STORE );
+				$state->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_STORE );
 			}
 			if ( $manual_capture ) {
-				$payment->get_context()->add_flag( Flag::MANUAL_CAPTURE );
+				$state->get_context()->add_flag( Flag::MANUAL_CAPTURE );
 			}
 			if ( $this->woopay_utilities->should_save_platform_customer() ) {
 				do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
-				$payment->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_PLATFORM );
+				$state->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_PLATFORM );
 			}
 			if ( $this->subscriptions_service->is_payment_recurring( $order ) ) {
 				// Subs-specific behavior starts here.
-				$payment->get_context()->add_flag( Flag::RECURRING );
+				$state->get_context()->add_flag( Flag::RECURRING );
 
 				// The payment method is always saved for subscriptions, unless already saved.
-				$payment->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_STORE );
+				$state->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_STORE );
 
 				if ( $this->subscriptions_service->is_changing_payment_method_for_subscription() ) {
-					$payment->get_context()->add_flag( Flag::CHANGING_SUBSCRIPTION_PAYMENT_METHOD );
+					$state->get_context()->add_flag( Flag::CHANGING_SUBSCRIPTION_PAYMENT_METHOD );
 				}
 			}
 
-			$payment = $payment->process( $request );
+			// Transfer the necessary data from the request into the payment object.
+			$payment_method = $request->get_payment_method();
+			$context->set_payment_method( $payment_method );
+
+			$payment = $state->process();
 
 			// Temporary: Store the order payment, and load it immediately, ensuring that everything is stored.
 			$this->storage->save_order_payment( $payment );
