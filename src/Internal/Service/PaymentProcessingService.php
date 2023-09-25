@@ -43,30 +43,20 @@ class PaymentProcessingService {
 	private $subscriptions_service;
 
 	/**
-	 * WooPay utils.
-	 *
-	 * @var WooPay_Utilities
-	 */
-	private $woopay_utilities;
-
-	/**
 	 * Class constructor.
 	 *
 	 * @param Storage                          $storage               Payment storage.
 	 * @param LegacyProxy                      $legacy_proxy          Legacy proxy.
 	 * @param WC_Payments_Subscription_Service $subscriptions_service Subscriptions service.
-	 * @param WooPay_Utilities                 $woopay_utilities      WooPay utilities.
 	 */
 	public function __construct(
 		Storage $storage,
 		LegacyProxy $legacy_proxy,
-		WC_Payments_Subscription_Service $subscriptions_service,
-		WooPay_Utilities $woopay_utilities
+		WC_Payments_Subscription_Service $subscriptions_service
 	) {
 		$this->storage               = $storage;
 		$this->legacy_proxy          = $legacy_proxy;
 		$this->subscriptions_service = $subscriptions_service;
-		$this->woopay_utilities      = $woopay_utilities;
 	}
 
 	/**
@@ -107,10 +97,6 @@ class PaymentProcessingService {
 			if ( $manual_capture ) {
 				$state->get_context()->add_flag( Flag::MANUAL_CAPTURE );
 			}
-			if ( $this->woopay_utilities->should_save_platform_customer() ) {
-				do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
-				$state->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_PLATFORM );
-			}
 			if ( $this->subscriptions_service->is_payment_recurring( $order ) ) {
 				// Subs-specific behavior starts here.
 				$state->get_context()->add_flag( Flag::RECURRING );
@@ -127,13 +113,14 @@ class PaymentProcessingService {
 			$payment_method = $request->get_payment_method();
 			$context->set_payment_method( $payment_method );
 
-			$payment = $state->process();
+			// Call the main method, proceeding to the next state.
+			$state = $state->process();
 
 			// Temporary: Store the order payment, and load it immediately, ensuring that everything is stored.
-			$this->storage->save_order_payment( $payment );
-			$payment = $this->storage->get_order_payment( $order );
+			$this->storage->save_order_payment( $state );
+			$state = $this->storage->get_order_payment( $order );
 
-			return $payment->get_processing_response();
+			return $state->get_processing_response();
 		} catch ( Exception $e ) {
 			throw $e; // Keep some GH comments from losing context.
 		}

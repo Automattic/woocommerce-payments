@@ -72,8 +72,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( PaymentProcessingService::class )
 			->addArgument( Storage::class )
 			->addArgument( LegacyProxy::class )
-			->addArgument( WC_Payments_Subscription_Service::class )
-			->addArgument( WooPay_Utilities::class );
+			->addArgument( WC_Payments_Subscription_Service::class );
 
 		$container->addShared( ExampleService::class );
 		$container->addShared( ExampleServiceWithDependencies::class )
