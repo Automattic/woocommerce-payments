@@ -100,7 +100,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 						} ) }
 					</p>
 					<RadioControl
-						className="missing-order-notice__modal__reason"
+						className="missing-order-notice-modal__reason"
 						label={ interpolateComponents( {
 							mixedString: __(
 								'{{strong}}Select a reason (Optional){{/strong}}',
