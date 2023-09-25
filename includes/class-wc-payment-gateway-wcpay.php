@@ -42,8 +42,8 @@ use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 use WCPay\Internal\Service\PaymentProcessingService;
-use WCPay\Internal\Payment\Routing\Factor;
-use WCPay\Internal\Payment\Routing\Router;
+use WCPay\Internal\Payment\Factor;
+use WCPay\Internal\Payment\Router;
 
 /**
  * Gateway class for WooPayments
