@@ -66,6 +66,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 			</Loadable>
 			{ isModalOpen && (
 				<ConfirmationModal
+				    className="missing-order-notice-modal"
 					title={ __( 'Refund Transaction', 'woocommerce-payments' ) }
 					actions={
 						<>
