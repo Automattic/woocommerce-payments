@@ -51,20 +51,31 @@ import InlineNotice from 'wcpay/components/inline-notice';
 import interpolateComponents from '@automattic/interpolate-components';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
+	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
+	const isDisablePossible = isUpeEnabled && upeType !== 'deferred_intent_upe';
+	const label = isDisablePossible
+		? __( 'Add feedback or disable', 'woocommerce-payments' )
+		: __( 'Add feedback', 'woocommerce-payments' );
+
+	const buttons = [
+		{
+			title: __( 'Provide feedback', 'woocommerce-payments' ),
+			onClick: () => setOpenModal( 'survey' ),
+		},
+	];
+
+	if ( isDisablePossible ) {
+		buttons.push( {
+			title: 'Disable',
+			onClick: () => setOpenModal( 'disable' ),
+		} );
+	}
+
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
-			label={ __( 'Add feedback or disable', 'woocommerce-payments' ) }
-			controls={ [
-				{
-					title: __( 'Provide feedback', 'woocommerce-payments' ),
-					onClick: () => setOpenModal( 'survey' ),
-				},
-				{
-					title: 'Disable',
-					onClick: () => setOpenModal( 'disable' ),
-				},
-			] }
+			label={ label }
+			controls={ buttons }
 		/>
 	);
 };

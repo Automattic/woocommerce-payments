@@ -38,8 +38,12 @@ class WC_Payments_Features {
 	 * @return string
 	 */
 	public static function get_enabled_upe_type() {
-		if ( self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled() ) {
+		if ( self::is_upe_split_enabled() ) {
 			return 'split';
+		}
+
+		if ( self::is_upe_deferred_intent_enabled() ) {
+			return 'deferred_intent_upe';
 		}
 
 		if ( self::is_upe_legacy_enabled() ) {
