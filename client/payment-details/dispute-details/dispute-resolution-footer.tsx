@@ -15,11 +15,11 @@ import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
 import type { Dispute } from 'wcpay/types/disputes';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
-import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
+import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import './style.scss';
 
 const DisputeUnderReviewFooter: React.FC< {
-	dispute: Dispute;
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
 		? dateI18n(
@@ -38,17 +38,11 @@ const DisputeUnderReviewFooter: React.FC< {
 				<FlexItem>
 					{ createInterpolateElement(
 						sprintf(
-							isInquiry( dispute )
-								? /* Translators: %s - formatted date, <a> - link to documentation page */
-								  __(
-										'You submitted evidence for this inquiry on %s. The cardholder’s bank is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
-										'woocommerce-payments'
-								  )
-								: /* Translators: %s - formatted date, <a> - link to documentation page */
-								  __(
-										'You submitted evidence for this dispute on %s. The cardholder’s bank is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
-										'woocommerce-payments'
-								  ),
+							/* Translators: %s - formatted date, <a> - link to documentation page */
+							__(
+								'You submitted evidence for this dispute on %s. The cardholder’s bank is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
+								'woocommerce-payments'
+							),
 							submissionDateFormatted
 						),
 						{
@@ -68,7 +62,7 @@ const DisputeUnderReviewFooter: React.FC< {
 						href={ getAdminUrl( {
 							page: 'wc-admin',
 							path: '/payments/disputes/challenge',
-							id: dispute?.id,
+							id: dispute.id,
 						} ) }
 					>
 						<Button
@@ -96,9 +90,9 @@ const DisputeUnderReviewFooter: React.FC< {
 };
 
 const DisputeWonFooter: React.FC< {
-	dispute: Dispute;
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
-	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
+	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? dateI18n(
 				'M j, Y',
 				moment
@@ -139,7 +133,7 @@ const DisputeWonFooter: React.FC< {
 						href={ getAdminUrl( {
 							page: 'wc-admin',
 							path: '/payments/disputes/challenge',
-							id: dispute?.id,
+							id: dispute.id,
 						} ) }
 					>
 						<Button
@@ -167,13 +161,16 @@ const DisputeWonFooter: React.FC< {
 };
 
 const DisputeLostFooter: React.FC< {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		'id' | 'metadata' | 'status' | 'balance_transactions'
+	>;
 } > = ( { dispute } ) => {
-	const isSubmitted = !! dispute?.metadata.__evidence_submitted_at;
-	const isAccepted = dispute?.metadata.__closed_by_merchant === '1';
+	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
+	const isAccepted = dispute.metadata.__closed_by_merchant === '1';
 	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true ) ?? '-';
 
-	const closedDateFormatted = dispute?.metadata.__dispute_closed_at
+	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? dateI18n(
 				'M j, Y',
 				moment
@@ -245,7 +242,7 @@ const DisputeLostFooter: React.FC< {
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/disputes/challenge',
-								id: dispute?.id,
+								id: dispute.id,
 							} ) }
 						>
 							<Button
@@ -273,8 +270,157 @@ const DisputeLostFooter: React.FC< {
 	);
 };
 
+const InquiryUnderReviewFooter: React.FC< {
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+} > = ( { dispute } ) => {
+	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
+		? dateI18n(
+				'M j, Y',
+				moment
+					.unix(
+						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
+					)
+					.toISOString()
+		  )
+		: '-';
+
+	return (
+		<CardFooter className="transaction-details-dispute-footer transaction-details-dispute-footer--primary">
+			<Flex justify="space-between">
+				<FlexItem>
+					{ createInterpolateElement(
+						sprintf(
+							/* Translators: %s - formatted date, <a> - link to documentation page */
+							__(
+								'You submitted evidence for this inquiry on %s. The cardholder’s bank is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
+								'woocommerce-payments'
+							),
+							submissionDateFormatted
+						),
+						{
+							a: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
+								<a
+									target="_blank"
+									rel="noopener noreferrer"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
+								/>
+							),
+						}
+					) }
+				</FlexItem>
+				<FlexItem className="transaction-details-dispute-footer__actions">
+					<Link
+						href={ getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/disputes/challenge',
+							id: dispute.id,
+						} ) }
+					>
+						<Button
+							variant="secondary"
+							onClick={ () => {
+								wcpayTracks.recordEvent(
+									wcpayTracks.events
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+									{
+										dispute_status: dispute.status,
+									}
+								);
+							} }
+						>
+							{ __(
+								'View submitted evidence',
+								'woocommerce-payments'
+							) }
+						</Button>
+					</Link>
+				</FlexItem>
+			</Flex>
+		</CardFooter>
+	);
+};
+
+const InquiryClosedFooter: React.FC< {
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+} > = ( { dispute } ) => {
+	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
+	const closedDateFormatted = dispute.metadata.__dispute_closed_at
+		? dateI18n(
+				'M j, Y',
+				moment
+					.unix(
+						parseInt( dispute.metadata.__dispute_closed_at, 10 )
+					)
+					.toISOString()
+		  )
+		: '-';
+
+	return (
+		<CardFooter className="transaction-details-dispute-footer">
+			<Flex justify="space-between">
+				<FlexItem>
+					{ createInterpolateElement(
+						sprintf(
+							/* Translators: %s - formatted date, <a> - link to documentation page */
+							__(
+								'This inquiry was closed on %s. <a>Learn more about preventing disputes</a>.',
+								'woocommerce-payments'
+							),
+							closedDateFormatted
+						),
+						{
+							a: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
+								<a
+									target="_blank"
+									rel="noopener noreferrer"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+								/>
+							),
+						}
+					) }
+				</FlexItem>
+
+				{ isSubmitted && (
+					<FlexItem className="transaction-details-dispute-footer__actions">
+						<Link
+							href={ getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/disputes/challenge',
+								id: dispute.id,
+							} ) }
+						>
+							<Button
+								variant="secondary"
+								onClick={ () => {
+									wcpayTracks.recordEvent(
+										wcpayTracks.events
+											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+										{
+											dispute_status: dispute.status,
+										}
+									);
+								} }
+							>
+								{ __(
+									'View submitted evidence',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</Link>
+					</FlexItem>
+				) }
+			</Flex>
+		</CardFooter>
+	);
+};
+
 const DisputeResolutionFooter: React.FC< {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		'id' | 'metadata' | 'status' | 'balance_transactions'
+	>;
 } > = ( { dispute } ) => {
 	if ( dispute.status === 'under_review' ) {
 		return <DisputeUnderReviewFooter dispute={ dispute } />;
@@ -284,6 +430,12 @@ const DisputeResolutionFooter: React.FC< {
 	}
 	if ( dispute.status === 'lost' ) {
 		return <DisputeLostFooter dispute={ dispute } />;
+	}
+	if ( dispute.status === 'warning_under_review' ) {
+		return <InquiryUnderReviewFooter dispute={ dispute } />;
+	}
+	if ( dispute.status === 'warning_closed' ) {
+		return <InquiryClosedFooter dispute={ dispute } />;
 	}
 
 	return null;
