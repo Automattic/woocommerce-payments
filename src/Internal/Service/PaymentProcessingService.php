@@ -101,24 +101,24 @@ class PaymentProcessingService {
 
 			// Setup flags.
 			if ( $request->should_save_payment_method() ) {
-				$payment->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_STORE() );
+				$payment->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_STORE );
 			}
 			if ( $manual_capture ) {
-				$payment->get_context()->add_flag( Flag::MANUAL_CAPTURE() );
+				$payment->get_context()->add_flag( Flag::MANUAL_CAPTURE );
 			}
 			if ( $this->woopay_utilities->should_save_platform_customer() ) {
 				do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
-				$payment->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_PLATFORM() );
+				$payment->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_PLATFORM );
 			}
 			if ( $this->subscriptions_service->is_payment_recurring( $order ) ) {
 				// Subs-specific behavior starts here.
-				$payment->get_context()->add_flag( Flag::RECURRING() );
+				$payment->get_context()->add_flag( Flag::RECURRING );
 
 				// The payment method is always saved for subscriptions, unless already saved.
-				$payment->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_STORE() );
+				$payment->get_context()->add_flag( Flag::SAVE_PAYMENT_METHOD_TO_STORE );
 
 				if ( $this->subscriptions_service->is_changing_payment_method_for_subscription() ) {
-					$payment->get_context()->add_flag( Flag::CHANGING_SUBSCRIPTION_PAYMENT_METHOD() );
+					$payment->get_context()->add_flag( Flag::CHANGING_SUBSCRIPTION_PAYMENT_METHOD );
 				}
 			}
 
@@ -130,7 +130,7 @@ class PaymentProcessingService {
 
 			return $payment->get_processing_response();
 		} catch ( Exception $e ) {
-			return new Failure( $e->getMessage() );
+			throw $e; // Keep some GH comments from losing context.
 		}
 	}
 }

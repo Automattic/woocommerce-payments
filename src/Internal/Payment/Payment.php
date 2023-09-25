@@ -54,7 +54,7 @@ class Payment {
 	 * @param string $key   Key of the property to store.
 	 * @param mixed  $value Value to store.
 	 */
-	private function store( string $key, $value ) {
+	private function set( string $key, $value ) {
 		$this->data[ $key ] = $value;
 	}
 
@@ -64,7 +64,7 @@ class Payment {
 	 * @param string $key Key to read.
 	 * @return mixed|null
 	 */
-	private function read( string $key ) {
+	private function get( string $key ) {
 		return $this->data[ $key ] ?? null;
 	}
 
@@ -74,47 +74,50 @@ class Payment {
 	 * Flags are used to control small nuances in the payment
 	 * processing, rather than controlling the flow.
 	 *
-	 * @param Flag $flag The flag to add.
+	 * @param string $flag The flag to add.
 	 */
-	public function add_flag( Flag $flag ) {
-		$flags = $this->read( 'flags' ) ?? [];
+	public function add_flag( string $flag ) {
+		$flags = $this->get( 'flags' ) ?? [];
 
 		if ( ! in_array( $flag, $flags, true ) ) {
 			$flags[] = $flag;
-			$this->store( 'flags', $flags );
+			$this->set( 'flags', $flags );
 		}
 	}
 
 	/**
 	 * Checks if the payment has a certain flag.
 	 *
-	 * @param Flag $flag The flag to check.
+	 * @param string $flag The flag to check.
 	 * @return bool
 	 */
-	public function has_flag( Flag $flag ) {
-		return in_array( $flag, $this->read( 'flags' ) ?? [], true );
+	public function has_flag( string $flag ) {
+		return in_array( $flag, $this->get( 'flags' ) ?? [], true );
 	}
 
 	/**
 	 * Removes a flag from the payment, if it was set.
 	 *
-	 * @param Flag $flag The flag to remove.
+	 * @param string $flag The flag to remove.
 	 */
-	public function remove_flag( Flag $flag ) {
-		if ( ! $this->has_flag( $flag ) ) {
-			return;
+	public function remove_flag( string $flag ) {
+		$flags = $this->get( 'flags' );
+		$index = array_search( $flag, $flags, true );
+
+		if ( false !== $index ) {
+			unset( $flags['index'] );
 		}
 
-		$existing_flags = $this->read( 'flags' );
-		$new_flags      = [];
+		$this->set( 'flags', $flags );
+	}
 
-		foreach ( $existing_flags as $existing_flag ) {
-			if ( $existing_flag !== $flag ) {
-				$new_flags[] = $existing_flag;
-			}
-		}
-
-		$this->store( 'flags', $new_flags );
+	/**
+	 * Returns all flags of the payment.
+	 *
+	 * @return string[]
+	 */
+	public function get_flags() {
+		return $this->get( 'flags' ) ?? [];
 	}
 
 	/**
@@ -123,7 +126,7 @@ class Payment {
 	 * @param PaymentMethodInterface $payment_method The payment method to use.
 	 */
 	public function set_payment_method( PaymentMethodInterface $payment_method ) {
-		$this->store( 'payment_method', $payment_method );
+		$this->set( 'payment_method', $payment_method );
 	}
 
 	/**
@@ -132,6 +135,6 @@ class Payment {
 	 * @return PaymentMethodInterface|null
 	 */
 	public function get_payment_method(): ?PaymentMethodInterface {
-		return $this->read( 'payment_method' );
+		return $this->get( 'payment_method' );
 	}
 }

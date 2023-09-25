@@ -7,8 +7,6 @@
 
 namespace WCPay\Internal\Payment;
 
-use WCPay\Constants\Base_Constant;
-
 /**
  * All constants, used for payment flags.
  *
@@ -17,7 +15,7 @@ use WCPay\Constants\Base_Constant;
  * This could live in the `Payment` class as well, but we
  * should try to keep the main class undiluted.
  */
-final class Flag extends Base_Constant {
+final class Flag {
 	/**
 	 * Indicates if the payment is merchant-initiated.
 	 * If the flag is not present, it means that it's a standard
@@ -58,16 +56,16 @@ final class Flag extends Base_Constant {
 	/**
 	 * Returns all available flags.
 	 *
-	 * @return Flag[]
+	 * @return string[]
 	 */
 	public static function get_all() {
 		return [
-			self::MERCHANT_INITIATED(),
-			self::MANUAL_CAPTURE(),
-			self::RECURRING(),
-			self::CHANGING_SUBSCRIPTION_PAYMENT_METHOD(),
-			self::SAVE_PAYMENT_METHOD_TO_STORE(),
-			self::SAVE_PAYMENT_METHOD_TO_PLATFORM(),
+			self::MERCHANT_INITIATED,
+			self::MANUAL_CAPTURE,
+			self::RECURRING,
+			self::CHANGING_SUBSCRIPTION_PAYMENT_METHOD,
+			self::SAVE_PAYMENT_METHOD_TO_STORE,
+			self::SAVE_PAYMENT_METHOD_TO_PLATFORM,
 		];
 	}
 }
