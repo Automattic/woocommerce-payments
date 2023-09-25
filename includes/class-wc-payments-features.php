@@ -55,8 +55,10 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_legacy_enabled() {
-		$upe_flag_value = '1' === get_option( self::UPE_FLAG_NAME, '0' );
-		if ( $upe_flag_value ) {
+		$upe_flag_value           = '1' === get_option( self::UPE_FLAG_NAME, '0' );
+		$is_deferred_upe_disabled = 'disabled' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
+
+		if ( $upe_flag_value && $is_deferred_upe_disabled ) {
 			return true;
 		}
 		return false;
@@ -73,7 +75,10 @@ class WC_Payments_Features {
 	 * Checks whether the Split UPE with deferred intent is enabled
 	 */
 	public static function is_upe_deferred_intent_enabled() {
-		return ( '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) ) || self::is_upe_split_enabled();
+		$is_upe_legacy_enabled    = '1' === get_option( self::UPE_FLAG_NAME, '0' );
+		$is_deferred_upe_disabled = 'disabled' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
+
+		return ( '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) ) || self::is_upe_split_enabled() || ( $is_upe_legacy_enabled && ! $is_deferred_upe_disabled );
 	}
 
 	/**
