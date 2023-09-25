@@ -1064,6 +1064,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		// List JCB method for Japanese account only.
 		if ( 'JP' === $this->account->get_account_country() ) {

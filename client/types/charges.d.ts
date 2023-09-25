@@ -41,7 +41,8 @@ export interface PaymentMethodDetails {
 		| 'ideal'
 		| 'p24'
 		| 'sepa_debit'
-		| 'sofort';
+		| 'sofort'
+		| 'klarna';
 }
 
 export type OutcomeRiskLevel =

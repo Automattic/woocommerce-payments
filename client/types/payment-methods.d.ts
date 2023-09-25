@@ -14,6 +14,7 @@ export type PaymentMethod =
 	| 'card'
 	| 'card_present'
 	| 'eps'
+	| 'klarna'
 	| 'giropay'
 	| 'ideal'
 	| 'p24'
