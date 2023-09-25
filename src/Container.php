@@ -70,21 +70,12 @@ class Container implements ContainerInterface {
 	 * @template ID
 	 * @param class-string<ID> $id The ID of the class to retrieve.
 	 * @return ID
-	 * @throws ContainerException In case the ID could not be resolved or instantiated.
 	 *
 	 * Psalm expects $id to be a string, based on ContainerInterface.
 	 * @psalm-suppress MoreSpecificImplementedParamType
-	 *
-	 * PSR-11 containers declares to throw an un-throwable interface
-	 * (it does not extend Throwable), and Psalm does not accept it.
-	 * @psalm-suppress MissingThrowsDocblock
 	 */
 	public function get( $id ) {
-		try {
-			return $this->container->get( $id );
-		} catch ( Throwable $e ) {
-			throw new ContainerException( $e->getMessage() );
-		}
+		return $this->container->get( $id );
 	}
 
 	/**
