@@ -35,13 +35,14 @@ use WCPay\Core\Server\Request\Get_Intention;
 
 $intention_id = $this->order_service->get_intent_id_for_order( $order );
 $request      = Get_Intention::create( $intention_id );
+$request->apply_hook( 'my_get_intention_request', $order );
 
 /**
  * Sends a request to retrieve an intention.
  * 
  * @param WC_Order $order The order, which the intent is associated with.
  */
-$intention = $request->send( 'my_get_intention_request', $order );
+$intention = $request->send();
 ```
 
 Highlights from this example:

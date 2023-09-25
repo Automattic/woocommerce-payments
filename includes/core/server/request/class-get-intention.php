@@ -25,6 +25,13 @@ class Get_Intention extends Request {
 	private $intent_id;
 
 	/**
+	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 *
+	 * @var string $hook
+	 */
+	protected $hook = 'wcpay_get_intent_request';
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param WC_Payments_API_Client     $api_client Api client.
