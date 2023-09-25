@@ -35,19 +35,22 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	/* translators: <a> link to dispute documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
 	let noticeText = __(
 		'<strong>%s</strong> Challenge the dispute if you believe the claim is invalid, ' +
-		'or accept to forfeit the funds and pay the dispute fee. ' +
-		'Non-response will result in an automatic loss. <a>Learn more about responding to disputes</a>',
+			'or accept to forfeit the funds and pay the dispute fee. ' +
+			'Non-response will result in an automatic loss. <a>Learn more about responding to disputes</a>',
 		'woocommerce-payments'
 	);
-	let learnMoreDocsUrl = 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#section-3';
+	let learnMoreDocsUrl =
+		'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding';
 
 	if ( isInquiry( dispute ) ) {
 		/* translators: <a> link to dispute inquiry documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
 		noticeText = __(
 			'<strong>%s</strong> You can challenge their claim if you believe it’s invalid. ' +
-			'Not responding will result in an automatic loss. <a>Learn more</a>',
+				'Not responding will result in an automatic loss. <a>Learn more about payment inquiries</a>',
 			'woocommerce-payments'
-		)
+		);
+		learnMoreDocsUrl =
+			'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries';
 	}
 
 	return (
@@ -57,17 +60,20 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			className="dispute-notice"
 			isDismissible={ false }
 		>
-			{ createInterpolateElement( sprintf( noticeText, shopperDisputeReason ), {
-				a: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						target="_blank"
-						rel="noopener noreferrer"
-						href={ learnMoreDocsUrl }
-					/>
-				),
-				strong: <strong />,
-			} ) }
+			{ createInterpolateElement(
+				sprintf( noticeText, shopperDisputeReason ),
+				{
+					a: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							target="_blank"
+							rel="noopener noreferrer"
+							href={ learnMoreDocsUrl }
+						/>
+					),
+					strong: <strong />,
+				}
+			) }
 		</InlineNotice>
 	);
 };
