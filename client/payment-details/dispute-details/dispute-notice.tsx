@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
+import { ExternalLink } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
@@ -64,8 +65,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 				sprintf( noticeText, shopperDisputeReason ),
 				{
 					a: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
+						<ExternalLink
 							target="_blank"
 							rel="noopener noreferrer"
 							href={ learnMoreDocsUrl }
