@@ -22,7 +22,6 @@ use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
-use WCPay\Internal\Service\GatewayService;
 use WCPay\Internal\Service\PaymentMethodService;
 use WCPay\WooPay\WooPay_Utilities;
 
@@ -41,7 +40,6 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		Router::class,
 		InitialState::class,
 		CompletedState::class,
-		GatewayService::class,
 		Storage::class,
 		ExampleService::class,
 		ExampleServiceWithDependencies::class,
@@ -52,10 +50,6 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register(): void {
 		$container = $this->getContainer();
-
-		// ToDo: This belongs in a different provider.
-		$container->addShared( GatewayService::class )
-			->addArgument( Container::class );
 
 		$container->addShared( Router::class )
 			->addArgument( Database_Cache::class );
