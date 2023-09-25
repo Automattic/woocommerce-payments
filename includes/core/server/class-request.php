@@ -379,6 +379,16 @@ abstract class Request {
 			}
 		}
 	}
+	/**
+	 * Assign the WordPress filter hook and the arguments specific to the previously assigned hook.
+	 *
+	 * @param string $hook WordPress filter hook name.
+	 * @param mixed  ...$args Arguments for the filter hook.
+	 */
+	public function apply_hook( string $hook, ...$args ) {
+		$this->hook      = $hook;
+		$this->hook_args = $args;
+	}
 
 	/**
 	 * Stores a parameter within the internal props.

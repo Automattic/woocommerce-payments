@@ -238,8 +238,10 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 
 		if ( ! $readers ) {
 			// Retrieve terminal readers.
-			$request      = Request::get( WC_Payments_API_Client::TERMINAL_READERS_API );
-			$readers_data = $request->send( 'wcpay_get_terminal_readers_request' );
+			$request = Request::get( WC_Payments_API_Client::TERMINAL_READERS_API );
+			$request->apply_hook( 'wcpay_get_terminal_readers_request' );
+
+			$readers_data = $request->send();
 
 			// Retrieve the readers by charges.
 			$reader_by_charges = $this->api_client->get_readers_charge_summary( gmdate( 'Y-m-d', time() ) );
