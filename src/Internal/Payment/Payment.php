@@ -7,7 +7,6 @@
 
 namespace WCPay\Internal\Payment;
 
-use WC_Order;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 
 /**
@@ -17,11 +16,11 @@ use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
  */
 class Payment {
 	/**
-	 * Order requiring/having payment.
+	 * ID of the order requiring/having payment.
 	 *
-	 * @var WC_Order
+	 * @var int
 	 */
-	private $order;
+	private $order_id;
 
 	/**
 	 * Holds all data, related to the payment.
@@ -33,19 +32,19 @@ class Payment {
 	/**
 	 * Payment constructor.
 	 *
-	 * @param WC_Order $order Order requiring payment.
+	 * @param int $order_id Order requiring payment.
 	 */
-	public function __construct( WC_Order $order ) {
-		$this->order = $order;
+	public function __construct( int $order_id ) {
+		$this->order_id = $order_id;
 	}
 
 	/**
-	 * Returns the payment's order.
+	 * Returns the payment's order ID.
 	 *
-	 * @return WC_Order
+	 * @return int
 	 */
-	public function get_order() {
-		return $this->order;
+	public function get_order_id() {
+		return $this->order_id;
 	}
 
 	/**

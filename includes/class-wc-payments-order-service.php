@@ -1498,7 +1498,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	private function get_order( $order ) {
+	public function get_order( $order ) {
 		$order = $this->is_order_type_object( $order ) ? $order : wc_get_order( $order );
 		if ( ! $this->is_order_type_object( $order ) ) {
 			throw new Order_Not_Found_Exception(

@@ -1258,12 +1258,12 @@ class WC_Payments {
 	}
 
 	/**
-	 * Returns the WooPay utilities.
+	 * Returns the order service.
 	 *
-	 * @return WooPay_Utilities
+	 * @return WC_Payments_Order_Service
 	 */
-	public static function get_woopay_util() {
-		return self::$woopay_util;
+	public static function get_order_service() {
+		return self::$order_service;
 	}
 
 	/**

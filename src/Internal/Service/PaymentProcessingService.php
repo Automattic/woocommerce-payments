@@ -118,7 +118,8 @@ class PaymentProcessingService {
 
 			// Temporary: Store the order payment, and load it immediately, ensuring that everything is stored.
 			$this->storage->save_order_payment( $state );
-			$state = $this->storage->get_order_payment( $order );
+			// Not very pleasant, but we're dealing with different orders here.
+			$state = $this->storage->get_order_payment( wc_get_order( $order->get_id() ) );
 
 			return $state->get_processing_response();
 		} catch ( Exception $e ) {

@@ -171,11 +171,11 @@ class LegacyContainer implements ContainerInterface {
 	}
 
 	/**
-	 * Returns an instance of the WooPay utilities class.
+	 * Returns an instance of the order service class.
 	 *
-	 * @return \WCPay\WooPay\WooPay_Utilities
+	 * @return \WC_Payments_Order_Service
 	 */
-	private function get_wcpay_woopay_woopay_utilities_instance() {
-		return WC_Payments::get_woopay_util();
+	private function get_wc_payments_order_service_instance() {
+		return WC_Payments::get_order_service();
 	}
 }

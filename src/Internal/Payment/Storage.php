@@ -8,6 +8,7 @@
 namespace WCPay\Internal\Payment;
 
 use WC_Order;
+use WC_Payments_Order_Service;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\State;
 use WCPay\Internal\Service\PaymentMethodService;
@@ -22,6 +23,13 @@ class Storage {
 	 * @var string
 	 */
 	const ORDER_META_KEY = '_wcpay_payment_data';
+
+	/**
+	 * Order service.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
 
 	/**
 	 * State factory.
@@ -47,13 +55,16 @@ class Storage {
 	/**
 	 * Class constructor.
 	 *
-	 * @param StateFactory         $state_factory          A factory for payment states.
-	 * @param PaymentMethodService $payment_method_service PM service.
+	 * @param WC_Payments_Order_Service $order_service          Order service.
+	 * @param StateFactory              $state_factory          A factory for payment states.
+	 * @param PaymentMethodService      $payment_method_service PM service.
 	 */
 	public function __construct(
+		WC_Payments_Order_Service $order_service,
 		StateFactory $state_factory,
 		PaymentMethodService $payment_method_service
 	) {
+		$this->order_service          = $order_service;
 		$this->state_factory          = $state_factory;
 		$this->payment_method_service = $payment_method_service;
 	}
@@ -77,7 +88,7 @@ class Storage {
 	 * @return State          Current state of the order payment.
 	 */
 	public function get_order_payment( WC_Order $order ) {
-		$payment     = new Payment( $order );
+		$payment     = new Payment( $order->get_id() );
 		$state_class = InitialState::class;
 
 		if ( $this->enabled ) {
@@ -108,10 +119,10 @@ class Storage {
 		$data    = $this->extract_payment_data( $payment );
 
 		// State is not a part of the payment object, but should be saved.
-		$data['state'] = get_class( $payment_state );
+		$data['state'] = addslashes( get_class( $payment_state ) );
 
 		// Simply store as meta, and save the order immediately.
-		$order = $payment->get_order();
+		$order = $this->order_service->get_order( $payment->get_order_id() );
 		$order->update_meta_data( self::ORDER_META_KEY, $data );
 		$order->save();
 	}
