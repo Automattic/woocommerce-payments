@@ -1655,7 +1655,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// We check that the currency used in the order is different than the one set in the WC Payments account
 			// to avoid requesting the charge if not needed.
 			$request = Get_Charge::create( $charge_id );
-			$charge  = $request->send( 'wcpay_get_charge_request', $charge_id );
+			$request->set_hook_args( $charge_id );
+			$charge = $request->send();
 
 			$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
 			if ( isset( $exchange_rate ) ) {

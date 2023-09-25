@@ -391,6 +391,16 @@ abstract class Request {
 	}
 
 	/**
+	 * Set hook arguments. Used when hook filter is predefined in the request class, but you want to pass hook args.
+	 *
+	 * @param mixed ...$args Arguments for the filter hook.
+	 * @return void
+	 */
+	public function set_hook_args( ...$args ) {
+		$this->hook_args = $args;
+	}
+
+	/**
 	 * Stores a parameter within the internal props.
 	 *
 	 * Use this method within child classes in order to allow
