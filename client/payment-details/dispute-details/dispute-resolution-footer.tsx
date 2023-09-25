@@ -19,7 +19,7 @@ import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import './style.scss';
 
 const DisputeUnderReviewFooter: React.FC< {
-	dispute: Dispute;
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
 		? dateI18n(
@@ -90,7 +90,7 @@ const DisputeUnderReviewFooter: React.FC< {
 };
 
 const DisputeWonFooter: React.FC< {
-	dispute: Dispute;
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? dateI18n(
@@ -161,7 +161,10 @@ const DisputeWonFooter: React.FC< {
 };
 
 const DisputeLostFooter: React.FC< {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		'id' | 'metadata' | 'status' | 'balance_transactions'
+	>;
 } > = ( { dispute } ) => {
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const isAccepted = dispute.metadata.__closed_by_merchant === '1';
@@ -268,7 +271,7 @@ const DisputeLostFooter: React.FC< {
 };
 
 const InquiryUnderReviewFooter: React.FC< {
-	dispute: Dispute;
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
 		? dateI18n(
@@ -339,7 +342,7 @@ const InquiryUnderReviewFooter: React.FC< {
 };
 
 const InquiryClosedFooter: React.FC< {
-	dispute: Dispute;
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
@@ -413,7 +416,10 @@ const InquiryClosedFooter: React.FC< {
 };
 
 const DisputeResolutionFooter: React.FC< {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		'id' | 'metadata' | 'status' | 'balance_transactions'
+	>;
 } > = ( { dispute } ) => {
 	if ( dispute.status === 'under_review' ) {
 		return <DisputeUnderReviewFooter dispute={ dispute } />;
