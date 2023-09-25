@@ -424,7 +424,7 @@ describe( 'PaymentMethods', () => {
 		expect( disableUPEButton ).toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Payment methods' ).parentElement
-		).toHaveTextContent( 'Payment methods Early access' );
+		).toHaveTextContent( 'Payment methods' );
 	} );
 
 	test( 'Does not render the feedback elements when UPE is disabled', () => {
