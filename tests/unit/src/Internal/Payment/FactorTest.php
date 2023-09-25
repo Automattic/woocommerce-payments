@@ -5,10 +5,10 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Tests\Internal\Payment\Routing;
+namespace WCPay\Tests\Internal\Payment;
 
 use WCPAY_UnitTestCase;
-use WCPay\Internal\Payment\Routing\Factor;
+use WCPay\Internal\Payment\Factor;
 
 /**
  * Test class for the Factor enum.

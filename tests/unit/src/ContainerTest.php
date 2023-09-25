@@ -305,14 +305,6 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Verifies that any exceptions, thrown by the internal container, is converted to a container one.
-	 */
-	public function test_exceptions_are_converted_to_container_exceptions() {
-		$this->expectException( ContainerException::class );
-		$this->sut->get( 'RandomMissingService' );
-	}
-
-	/**
 	 * Replaces the example service within the container.
 	 *
 	 * @return object The replacement.

@@ -13,7 +13,7 @@ use WC_Payment_Tokens;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
 use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
 use WCPay\Internal\Payment\PaymentRequest;
-use WCPay\Internal\Payment\Exception\PaymentRequestException;
+use WCPay\Internal\Payment\PaymentRequestException;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPAY_UnitTestCase;
 
