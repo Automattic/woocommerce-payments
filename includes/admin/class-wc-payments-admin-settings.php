@@ -35,7 +35,14 @@ class WC_Payments_Admin_Settings {
 	 */
 	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
 		$this->gateway = $gateway;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ $this, 'add_plugin_links' ] );
 	}
