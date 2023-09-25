@@ -7,8 +7,6 @@
 
 namespace WCPay\Internal\Payment\State;
 
-use WCPay\Internal\Payment\Response\ProcessingCompleted;
-
 /**
  * Represents the payment in complete (successful) state.
  */
@@ -16,10 +14,9 @@ class CompletedState extends State {
 	/**
 	 * Returns the response, expected from a gateway's `process_payment()` method.
 	 *
-	 * @return ProcessingCompleted Whenever the current state implements the method.
+	 * @return string URL to redirect to.
 	 */
 	public function get_processing_response() {
-		$url = $this->get_context()->get_order()->get_checkout_order_received_url();
-		return new ProcessingCompleted( $url );
+		return $this->get_context()->get_order()->get_checkout_order_received_url();
 	}
 }

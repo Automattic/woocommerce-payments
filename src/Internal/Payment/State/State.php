@@ -9,7 +9,6 @@ namespace WCPay\Internal\Payment\State;
 
 use WCPay\Internal\Payment\Exception\MethodUnavailableException;
 use WCPay\Internal\Payment\Payment;
-use WCPay\Internal\Payment\Response\ResponseInterface;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\StateFactory;
 
@@ -104,7 +103,7 @@ abstract class State {
 	/**
 	 * Returns the response, expected by the gateway's `process_payment()` method.
 	 *
-	 * @return ResponseInterface
+	 * @return string
 	 * @throws MethodUnavailableException In case the method is not available in the state.
 	 * @psalm-suppress InvalidReturnType If this method does not throw, it will return an array.
 	 */
