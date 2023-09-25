@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Record the source (Woo Subscriptions or WCPay Subscriptions) when a Stripe Billing subscription is created.

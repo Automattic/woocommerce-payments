@@ -18,7 +18,7 @@ import {
 	disputeAwaitingResponseStatuses,
 	disputeUnderReviewStatuses,
 } from 'wcpay/disputes/filters/config';
-import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { formatCurrency, formatExplicitCurrency } from 'wcpay/utils/currency';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
@@ -67,34 +67,54 @@ export const isUnderReview = ( status: DisputeStatus | string ): boolean => {
 	return disputeUnderReviewStatuses.includes( status );
 };
 
-export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
+export const isInquiry = ( dispute: Pick< Dispute, 'status' > ): boolean => {
 	// Inquiry dispute statuses are one of `warning_needs_response`, `warning_under_review` or `warning_closed`.
 	return dispute.status.startsWith( 'warning' );
 };
 
 /**
- * Returns the dispute fee balance transaction for a dispute if it exists.
+ * Returns the dispute fee balance transaction for a dispute if it exists
+ * and the deduction has not been reversed.
  */
-export const getDisputeFee = (
-	dispute: Dispute
+const getDisputeDeductedBalanceTransaction = (
+	dispute: Pick< Dispute, 'balance_transactions' >
 ): BalanceTransaction | undefined => {
+	// Note that there can only be, at most, two balance transactions for a given dispute:
+
+	// One balance transaction with reporting_category: 'dispute' will be present if funds have been withdrawn from the account.
 	const disputeFee = dispute.balance_transactions.find(
 		( transaction ) => transaction.reporting_category === 'dispute'
 	);
+
+	// A second balance transaction with the reporting_category: 'dispute_reversal' will be present if funds have been reinstated to the account.
+	const disputeFeeReversal = dispute.balance_transactions.find(
+		( transaction ) => transaction.reporting_category === 'dispute_reversal'
+	);
+
+	if ( disputeFeeReversal ) {
+		return undefined;
+	}
+
 	return disputeFee;
 };
 
 /**
- * Returns the dispute fee balance transaction for a dispute if it exists
- * formatted as a currency string.
+ * Returns the dispute fee formatted as a currency string if it exists
+ * and the deduction has not been reversed.
  */
 export const getDisputeFeeFormatted = (
-	dispute: Dispute
+	dispute: Pick< Dispute, 'balance_transactions' >,
+	appendCurrencyCode?: boolean
 ): string | undefined => {
-	const disputeFee = getDisputeFee( dispute );
+	const disputeFee = getDisputeDeductedBalanceTransaction( dispute );
 
-	return (
-		disputeFee &&
-		formatExplicitCurrency( disputeFee.fee, disputeFee.currency )
-	);
+	if ( ! disputeFee ) {
+		return undefined;
+	}
+
+	if ( appendCurrencyCode ) {
+		return formatExplicitCurrency( disputeFee.fee, disputeFee.currency );
+	}
+
+	return formatCurrency( disputeFee.fee, disputeFee.currency );
 };
