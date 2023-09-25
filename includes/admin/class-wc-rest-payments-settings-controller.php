@@ -538,10 +538,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_fraud_protection_settings( $request );
 		$this->update_is_stripe_billing_enabled( $request );
 
-		try {
-			$this->update_account( $request );
-		} catch ( Exception $e ) {
-			return new WP_REST_Response( [ 'server_error' => $e->getMessage() ], 400 );
+		$update_account = $this->update_account( $request );
+
+		if ( is_wp_error( $update_account ) ) {
+			return new WP_REST_Response( [ 'server_error' => $update_account->get_error_message() ], 400 );
 		}
 
 		return new WP_REST_Response( [], 200 );
@@ -748,8 +748,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * Updates WooPayments account fields
 	 *
 	 * @param WP_REST_Request $request Request object.
-	 *
-	 * @throws Exception
 	 */
 	private function update_account( WP_REST_Request $request ) {
 		$updated_fields_callback = function ( $value, string $key ) {
@@ -764,11 +762,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			$updated_fields['deposit_schedule_interval'] = $this->wcpay_gateway->get_option( 'deposit_schedule_interval' );
 		}
 
-		try {
-			$this->wcpay_gateway->update_account_settings( $updated_fields );
-		} catch ( Exception $e ) {
-			throw new Exception( $e->getMessage() );
-		}
+		return $this->wcpay_gateway->update_account_settings( $updated_fields );
 	}
 
 	/**

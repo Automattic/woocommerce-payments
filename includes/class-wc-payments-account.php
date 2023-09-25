@@ -1504,6 +1504,8 @@ class WC_Payments_Account {
 	 *
 	 * @param array $stripe_account_settings Settings to update.
 	 *
+	 * @return array|WP_Error Account update result.
+	 *
 	 * @throws Exception
 	 */
 	public function update_stripe_account( $stripe_account_settings ) {
@@ -1520,7 +1522,8 @@ class WC_Payments_Account {
 			$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to update Stripe account ' . $e );
-			throw new Exception( $e->getMessage() );
+
+			return new WP_Error( 'wcpay_failed_to_update_stripe_account', $e->getMessage() );
 		}
 	}
 
