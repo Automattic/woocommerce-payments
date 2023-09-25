@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Fix deprecated string interpolation of ${var} with {$var}
-
-

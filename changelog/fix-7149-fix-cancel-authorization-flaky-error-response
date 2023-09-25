@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Corrected an issue causing incorrect responses at the cancel authorization API endpoint.
