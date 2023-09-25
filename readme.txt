@@ -94,6 +94,16 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 6.6.0-test-1 - unreleased =
+* Add - Behind a feature flag: dispute message added to transactions screen for disputes not needing a response.
+* Add - Expand the data points added to the WooCommerce SSR to include all the main WooPayments features.
+* Fix - Fix modal header alignment on safari browser
+* Fix - Prevent charging completed or processing orders with a new payment intent ID
+* Fix - WooPay save my info phone number fallback for virtual products
+* Update - Allow deferred intent creation UPE to support SEPA payments.
+* Update - Increase GBP transaction limit for Afterpay
+* Update - Updated Transaction Details summary with added fee breakdown tooltip for disputed transactions.
+
 = 6.5.0 - 2023-09-21 =
 * Add - Add a new task prompt to set up APMs after onboarding. Fixed an issue where a notice would show up in some unintended circumstances on the APM setup.
 * Add - Add an option on the Settings screen to enable merchants to migrate their Stripe Billing subscriptions to on-site billing.
