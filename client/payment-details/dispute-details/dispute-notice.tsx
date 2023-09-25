@@ -18,12 +18,12 @@ import { isInquiry } from 'wcpay/disputes/utils';
 
 interface DisputeNoticeProps {
 	dispute: Dispute;
-	urgent: boolean;
+	isUrgent: boolean;
 }
 
 const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	dispute,
-	urgent,
+	isUrgent,
 } ) => {
 	const clientClaim =
 		reasons[ dispute.reason ]?.claim ??
@@ -33,7 +33,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		);
 
 	const noticeText = isInquiry( dispute )
-		? /* translators: <a> link to dispute documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
+		? /* translators: <a> link to dispute inquiry documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
 		  __(
 				// eslint-disable-next-line max-len
 				'<strong>%s</strong> You can challenge their claim if you believe it’s invalid. Not responding will result in an automatic loss. <a>Learn more</a>',
@@ -49,7 +49,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	return (
 		<InlineNotice
 			icon
-			status={ urgent ? 'error' : 'warning' }
+			status={ isUrgent ? 'error' : 'warning' }
 			className="dispute-notice"
 			isDismissible={ false }
 		>

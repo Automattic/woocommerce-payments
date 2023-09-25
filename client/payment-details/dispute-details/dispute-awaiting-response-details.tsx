@@ -70,7 +70,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 				<CardBody className="transaction-details-dispute-details-body">
 					<DisputeNotice
 						dispute={ dispute }
-						urgent={ countdownDays <= 2 }
+						isUrgent={ countdownDays <= 2 }
 					/>
 					{ hasStagedEvidence && (
 						<InlineNotice icon={ edit } isDismissible={ false }>
