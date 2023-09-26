@@ -21,11 +21,13 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 
 	const WOOCOMMERCE_MULTICURRENCY      = 'woocommerce-multicurrency';
 	const WOOCOMMERCE_MULTICURRENCY_PATH = 'woocommerce-multicurrency/woocommerce-multicurrency.php';
+	const AFFILIATE_FOR_WOOCOMMERCE      = 'affiliate-for-woocommerce';
+	const AFFILIATE_FOR_WOOCOMMERCE_PATH = 'affiliate-for-woocommerce/affiliate-for-woocommerce.php';
 
 	/**
 	 * Initializa WC Blocks regitered integrations.
 	 */
-	public function __construct() {
+	public function init() {
 		do_action( 'woocommerce_blocks_checkout_block_registration', $this );
 	}
 
@@ -174,7 +176,35 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 			];
 		}
 
+		if ( is_plugin_active( self::AFFILIATE_FOR_WOOCOMMERCE_PATH ) && function_exists( 'afwc_get_referrer_id' ) ) {
+			$extension_data[ self::AFFILIATE_FOR_WOOCOMMERCE ] = [
+				'affiliate-user' => afwc_get_referrer_id(),
+			];
+		}
+
 		return $extension_data;
+	}
+
+	/**
+	 * Update order extension data after finishing
+	 * an order on WooPay, this usually is needed
+	 * for extensions which uses cookies when an
+	 * order is finished.
+	 *
+	 * @param int $order_id The successful WooPay order.
+	 */
+	public function update_order_extension_data( $order_id ) {
+		if ( ! empty( $_GET['affiliate'] ) // phpcs:ignore WordPress.Security.NonceVerification
+			&& is_plugin_active( self::AFFILIATE_FOR_WOOCOMMERCE_PATH )
+			&& class_exists( 'AFWC_API' )
+			&& method_exists( 'AFWC_API', 'get_instance' )
+			&& method_exists( 'AFWC_API', 'track_conversion' )
+		) {
+			$affiliate_id = wc_clean( wp_unslash( $_GET['affiliate'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+			$affiliate_api = \AFWC_API::get_instance();
+			$affiliate_api->track_conversion( $order_id, $affiliate_id, '', [ 'is_affiliate_eligible' => true ] );
+		}
 	}
 
 	/**
