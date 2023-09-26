@@ -106,23 +106,15 @@ export const getDisputeFeeFormatted = (
 	dispute: Pick< Dispute, 'balance_transactions' >,
 	appendCurrencyCode?: boolean
 ): string | undefined => {
-	const disputeBalanceTransaction = getDisputeDeductedBalanceTransaction(
-		dispute
-	);
+	const disputeFee = getDisputeDeductedBalanceTransaction( dispute );
 
-	if ( ! disputeBalanceTransaction ) {
+	if ( ! disputeFee ) {
 		return undefined;
 	}
 
 	if ( appendCurrencyCode ) {
-		return formatExplicitCurrency(
-			disputeBalanceTransaction.fee,
-			disputeBalanceTransaction.currency
-		);
+		return formatExplicitCurrency( disputeFee.fee, disputeFee.currency );
 	}
 
-	return formatCurrency(
-		disputeBalanceTransaction.fee,
-		disputeBalanceTransaction.currency
-	);
+	return formatCurrency( disputeFee.fee, disputeFee.currency );
 };
