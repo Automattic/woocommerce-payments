@@ -262,7 +262,7 @@ class WC_Payments_WooPay_Button_Handler {
 				}
 			}
 
-			WC()->cart->add_to_cart( $product->get_id(), $qty, null, null, $item_data );
+			WC()->cart->add_to_cart( $product->get_id(), $qty, 0, [], $item_data );
 		}
 
 		WC()->cart->calculate_totals();
