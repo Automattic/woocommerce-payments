@@ -94,7 +94,8 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.5.1 - 2023-09-27 =
+= 6.5.1 - 2023-09-26 =
+* Fix - fix incorrect payment method title for non-WooPayments gateways
 
 
 = 6.5.0 - 2023-09-21 =
