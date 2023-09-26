@@ -44,6 +44,69 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Tests that WooPay-specific webhooks are modified as expected.
+	 */
+	public function test_woopay_specific_webhook_payload_is_updated() {
+		wp_set_current_user( self::$admin_user->ID );
+		$pre_processing_payload = [
+			'status'             => 'publish',
+			'average_rating'     => '0.00',
+			'catalog_visibility' => 'visible',
+			'categories'         => [
+				[
+					'id'   => 9,
+					'name' => 'Clothing',
+					'slug' => 'clothing',
+				],
+			],
+		];
+
+		$woopay_specific_payload = [
+			'blog_id'      => false,
+			'order_id'     => 1,
+			'order_status' => 'publish',
+		];
+
+		wp_set_current_user( self::$admin_user->ID );
+		// Create the WebHook with WooPay specific delivery URL.
+		$this->webhook_sync_mock->maybe_create_woopay_order_webhook();
+
+		$post_processing_payload = $this->webhook_sync_mock->create_payload( $pre_processing_payload, 'product', 1, 1 );
+		$this->assertNotEquals( $pre_processing_payload, $post_processing_payload );
+		$this->assertEquals( $post_processing_payload, $woopay_specific_payload );
+
+		$this->webhook_sync_mock->remove_webhook();
+		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
+	}
+
+	/**
+	 * Tests that non WooPay webhooks (e.g. Product Updated, Order created) are filtered out and eventually not modified.
+	 */
+	public function test_non_woopay_specific_webhook_payload_remains_unaffected() {
+		wp_set_current_user( self::$admin_user->ID );
+		$pre_processing_payload = [
+			'status'             => 'publish',
+			'average_rating'     => '0.00',
+			'catalog_visibility' => 'visible',
+			'categories'         => [
+				[
+					'id'   => 9,
+					'name' => 'Clothing',
+					'slug' => 'clothing',
+				],
+			],
+		];
+
+		$this->create_non_woopay_specific_webhook();
+
+		$post_processing_payload = $this->webhook_sync_mock->create_payload( $pre_processing_payload, 'product', 1, 2 );
+		$this->assertEquals( $pre_processing_payload, $post_processing_payload );
+
+		$this->webhook_sync_mock->remove_webhook();
+		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
+	}
+
+	/**
 	 * Tests that the webhook is created succesfuly if the logged in user has the capability manage_woocommerce.
 	 */
 	public function test_webhook_is_created() {
@@ -81,6 +144,19 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	 */
 	private function set_is_woopay_eligible( $is_woopay_eligible ) {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
+	}
+
+	private function create_non_woopay_specific_webhook() {
+		$delivery_url_non_specific_for_woopay = 'some-woocommerce-core-webhook-delivery-url';
+
+		$webhook = new \WC_Webhook();
+		$webhook->set_name( 'WCPay woopay order status sync' );
+		$webhook->set_user_id( get_current_user_id() );
+		$webhook->set_topic( 'order.status_changed' );
+		$webhook->set_secret( wp_generate_password( 50, false ) );
+		$webhook->set_delivery_url( $delivery_url_non_specific_for_woopay );
+		$webhook->set_status( 'active' );
+		$webhook->save();
 	}
 
 }
