@@ -579,7 +579,7 @@ describe( 'PaymentDetailsSummary', () => {
 			];
 			renderCharge( charge );
 
-			// Disputed amount should show the store (balance transaction) currency
+			// Disputed amount should show the store (balance transaction) currency.
 			expect(
 				screen.getByText( /Dispute Amount/i ).nextSibling
 			).toHaveTextContent( /kr 725.81 NOK/i );
@@ -604,10 +604,11 @@ describe( 'PaymentDetailsSummary', () => {
 			charge.dispute.status = 'warning_needs_response';
 			charge.dispute.amount = 10000;
 			charge.dispute.currency = 'jpy';
+			// Inquiries don't have balance transactions.
 			charge.dispute.balance_transactions = [];
 			renderCharge( charge );
 
-			// Disputed amount should show the dispute currency
+			// Disputed amount should show the dispute/charge currency.
 			expect(
 				screen.getByText( /Dispute Amount/i ).nextSibling
 			).toHaveTextContent( /¥10,000 JPY/i );
