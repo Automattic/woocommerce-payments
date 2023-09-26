@@ -26,11 +26,7 @@ import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
-import {
-	getDisputeFeeFormatted,
-	isAwaitingResponse,
-	isInquiry,
-} from 'wcpay/disputes/utils';
+import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
 import IssuerEvidenceList from './evidence-list';
