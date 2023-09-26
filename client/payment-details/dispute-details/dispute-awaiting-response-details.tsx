@@ -58,7 +58,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	// This is a temporary restriction and can be removed once steps and actions for inquiries are implemented.
-	const showDisputeStepsAndActions = ! isInquiry( dispute );
+	const showDisputeActions = ! isInquiry( dispute );
 
 	const onModalClose = () => {
 		setModalOpen( false );
@@ -84,20 +84,18 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 						dispute={ dispute }
 						daysRemaining={ countdownDays }
 					/>
-					{ showDisputeStepsAndActions && (
-						<DisputeSteps
-							dispute={ dispute }
-							customer={ customer }
-							chargeCreated={ chargeCreated }
-							daysRemaining={ countdownDays }
-						/>
-					) }
+					<DisputeSteps
+						dispute={ dispute }
+						customer={ customer }
+						chargeCreated={ chargeCreated }
+						daysRemaining={ countdownDays }
+					/>
 					<IssuerEvidenceList
 						issuerEvidence={ dispute.issuer_evidence }
 					/>
 
 					{ /* Dispute Actions */ }
-					{ showDisputeStepsAndActions && (
+					{ showDisputeActions && (
 						<div className="transaction-details-dispute-details-body__actions">
 							<Link
 								href={
