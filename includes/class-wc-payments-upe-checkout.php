@@ -207,7 +207,13 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				);
 			}
 		}
-		return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
+
+		/**
+		 * Allows filtering for the payment fields.
+		 *
+		 * @param array $payment_fields The payment fields.
+		 */
+		return apply_filters( 'wcpay_payment_fields_js_config', $payment_fields ); // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 	}
 
 	/**
