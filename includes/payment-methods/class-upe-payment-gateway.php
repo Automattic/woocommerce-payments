@@ -1173,7 +1173,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function set_payment_method_title_for_email( $order ) {
 		$payment_gateway = wc_get_payment_gateway_by_order( $order );
 
-		if ( self::GATEWAY_ID !== $payment_gateway->id || ! WC_Payments_Features::is_upe_legacy_enabled() ) {
+		if ( ! empty( $payment_gateway ) && self::GATEWAY_ID !== $payment_gateway->id || ! WC_Payments_Features::is_upe_legacy_enabled() ) {
 			return;
 		}
 
