@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix WooPay express checkout button with product bundles on product page.
