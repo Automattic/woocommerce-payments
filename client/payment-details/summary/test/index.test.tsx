@@ -554,7 +554,7 @@ describe( 'PaymentDetailsSummary', () => {
 			// True when multi-currency is enabled.
 			global.wcpaySettings.shouldUseExplicitPrice = true;
 
-			// In this case, charge currency is AUD, but store currency is USD.
+			// In this case, charge currency is JPY, but store currency is NOK.
 			const charge = getBaseCharge();
 			charge.currency = 'jpy';
 			charge.amount = 10000;
@@ -589,7 +589,7 @@ describe( 'PaymentDetailsSummary', () => {
 			// True when multi-currency is enabled.
 			global.wcpaySettings.shouldUseExplicitPrice = true;
 
-			// In this case, charge currency is AUD, but store currency is USD.
+			// In this case, charge currency is JPY, but store currency is NOK.
 			const charge = getBaseCharge();
 			charge.currency = 'jpy';
 			charge.amount = 10000;
