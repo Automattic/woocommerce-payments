@@ -718,6 +718,28 @@ describe( 'PaymentDetailsSummary', () => {
 			).toBeNull();
 		} );
 
+		test( 'correctly renders dispute details for "warning_needs_response" inquiry disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'warning_needs_response';
+
+			renderCharge( charge );
+
+			// Dispute Notice
+			screen.getByText(
+				/The cardholder claims this is an unauthorized transaction/,
+				{ ignore: '.a11y-speak-region' }
+			);
+
+			// Steps to resolve
+			screen.getByText( /Steps to resolve/i );
+			screen.getByRole( 'link', {
+				name: /Email the customer/i,
+			} );
+			screen.getByText( /Submit evidence/i );
+		} );
+
 		test( 'correctly renders dispute details for "warning_under_review" inquiry disputes', () => {
 			const charge = getBaseCharge();
 			charge.disputed = true;
