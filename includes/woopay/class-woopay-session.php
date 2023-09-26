@@ -166,9 +166,6 @@ class WooPay_Session {
 	 * @param \WC_Order $order_id The order ID being updated.
 	 */
 	public static function woopay_order_payment_status_changed( $order_id ) {
-		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
-		$woopay_adapted_extensions->update_order_extension_data( $order_id );
-
 		$woopay_verified_email_address = self::get_woopay_verified_email_address();
 
 		if ( null === $woopay_verified_email_address ) {
@@ -182,6 +179,9 @@ class WooPay_Session {
 		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
 			return;
 		}
+
+		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
+		$woopay_adapted_extensions->update_order_extension_data( $order_id );
 
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
