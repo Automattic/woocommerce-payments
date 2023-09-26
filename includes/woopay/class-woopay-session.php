@@ -163,7 +163,7 @@ class WooPay_Session {
 	 * After 10 minutes, the customer ID will be restored
 	 * and the user will need to login to access the TYP.
 	 *
-	 * @param \WC_Order $order_id The order ID being updated.
+	 * @param int $order_id The order ID being updated.
 	 */
 	public static function woopay_order_payment_status_changed( $order_id ) {
 		$woopay_verified_email_address = self::get_woopay_verified_email_address();

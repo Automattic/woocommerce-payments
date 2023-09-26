@@ -202,6 +202,10 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		) {
 			$affiliate_id = wc_clean( wp_unslash( $_GET['affiliate'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
+			// phpcs:ignore
+			/**
+			 * @psalm-suppress UndefinedClass
+			 */
 			$affiliate_api = \AFWC_API::get_instance();
 			$affiliate_api->track_conversion( $order_id, $affiliate_id, '', [ 'is_affiliate_eligible' => true ] );
 		}
