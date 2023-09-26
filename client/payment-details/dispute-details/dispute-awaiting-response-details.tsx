@@ -23,26 +23,33 @@ import {
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
+import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
 import {
-	getDisputeFee,
+	getDisputeFeeFormatted,
 	isAwaitingResponse,
 	isInquiry,
 } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
-import { formatCurrency } from 'wcpay/utils/currency';
 import DisputeNotice from './dispute-notice';
 import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
+import DisputeSteps from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
 interface Props {
 	dispute: Dispute;
+	customer: ChargeBillingDetails | null;
+	chargeCreated: number;
 }
 
-const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
+const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
+	dispute,
+	customer,
+	chargeCreated,
+} ) => {
 	const { doAccept, isLoading } = useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
 
@@ -50,8 +57,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
-	const disputeFee = getDisputeFee( dispute );
-	const showDisputeActions = ! isInquiry( dispute );
+	// This is a temporary restriction and can be removed once steps and actions for inquiries are implemented.
+	const showDisputeStepsAndActions = ! isInquiry( dispute );
 
 	const onModalClose = () => {
 		setModalOpen( false );
@@ -61,36 +68,36 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 		<div className="transaction-details-dispute-details-wrapper">
 			<Card>
 				<CardBody className="transaction-details-dispute-details-body">
-					{ isAwaitingResponse( dispute.status ) &&
-						countdownDays >= 0 && (
-							<>
-								<DisputeNotice
-									dispute={ dispute }
-									urgent={ countdownDays <= 2 }
-								/>
-								{ hasStagedEvidence && (
-									<InlineNotice
-										icon={ edit }
-										isDismissible={ false }
-									>
-										{ __(
-											`You initiated a challenge to this dispute. Click 'Continue with challenge' to proceed with your draft response.`,
-											'woocommerce-payments'
-										) }
-									</InlineNotice>
-								) }
-								<DisputeSummaryRow
-									dispute={ dispute }
-									daysRemaining={ countdownDays }
-								/>
-								<IssuerEvidenceList
-									issuerEvidence={ dispute.issuer_evidence }
-								/>
-							</>
-						) }
+					<DisputeNotice
+						dispute={ dispute }
+						urgent={ countdownDays <= 2 }
+					/>
+					{ hasStagedEvidence && (
+						<InlineNotice icon={ edit } isDismissible={ false }>
+							{ __(
+								`You initiated a challenge to this dispute. Click 'Continue with challenge' to proceed with your draft response.`,
+								'woocommerce-payments'
+							) }
+						</InlineNotice>
+					) }
+					<DisputeSummaryRow
+						dispute={ dispute }
+						daysRemaining={ countdownDays }
+					/>
+					{ showDisputeStepsAndActions && (
+						<DisputeSteps
+							dispute={ dispute }
+							customer={ customer }
+							chargeCreated={ chargeCreated }
+							daysRemaining={ countdownDays }
+						/>
+					) }
+					<IssuerEvidenceList
+						issuerEvidence={ dispute.issuer_evidence }
+					/>
 
 					{ /* Dispute Actions */ }
-					{ showDisputeActions && (
+					{ showDisputeStepsAndActions && (
 						<div className="transaction-details-dispute-details-body__actions">
 							<Link
 								href={
@@ -176,11 +183,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 														'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account.',
 														'woocommerce-payments'
 													),
-													disputeFee &&
-														formatCurrency(
-															disputeFee.fee,
-															disputeFee.currency
-														)
+													getDisputeFeeFormatted(
+														dispute,
+														true
+													) ?? '-'
 												),
 												{
 													em: <em />,
