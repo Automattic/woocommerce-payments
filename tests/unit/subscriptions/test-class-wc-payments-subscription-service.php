@@ -171,6 +171,9 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 					],
 				],
 			],
+			'metadata' => [
+				'subscription_source' => 'woo_subscriptions',
+			],
 		];
 
 		$this->assertNotEquals( $mock_subscription->get_meta( self::SUBSCRIPTION_ID_META_KEY ), $mock_wcpay_subscription_id );
@@ -400,6 +403,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$token                      = WC_Helper_Token::create_token( $mock_wcpay_token_id, 1 );
 		$subscription->set_parent( $mock_order );
 
+		$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $mock_wcpay_subscription_id );
 
 		WC_Subscriptions::set_wcs_get_subscription(

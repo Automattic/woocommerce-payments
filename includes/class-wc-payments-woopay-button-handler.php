@@ -224,6 +224,21 @@ class WC_Payments_WooPay_Button_Handler {
 		// First empty the cart to prevent wrong calculation.
 		WC()->cart->empty_cart();
 
+		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $qty );
+
+		if ( ! $is_add_to_cart_valid ) {
+			// Some extensions error messages needs to be
+			// submitted to show error messages.
+			wp_send_json(
+				[
+					'error'  => true,
+					'submit' => true,
+				],
+				400
+			);
+			return;
+		}
+
 		if ( ( 'variable' === $product_type || 'variable-subscription' === $product_type ) && isset( $_POST['attributes'] ) ) {
 			$attributes = wc_clean( wp_unslash( $_POST['attributes'] ) );
 
@@ -233,7 +248,7 @@ class WC_Payments_WooPay_Button_Handler {
 			WC()->cart->add_to_cart( $product->get_id(), $qty, $variation_id, $attributes );
 		}
 
-		if ( 'simple' === $product_type || 'subscription' === $product_type ) {
+		if ( 'simple' === $product_type || 'subscription' === $product_type || 'bundle' === $product_type ) {
 			WC()->cart->add_to_cart( $product->get_id(), $qty );
 		}
 
@@ -526,10 +541,6 @@ class WC_Payments_WooPay_Button_Handler {
 		// Cart has unsupported product type.
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart have unsupported product type ( WooPay Express button disabled )' );
-			return false;
-		}
-
-		if ( $this->is_pay_for_order_page() ) {
 			return false;
 		}
 

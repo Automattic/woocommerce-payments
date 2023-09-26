@@ -53,7 +53,7 @@ defaults:
 jobs:
   prepare-release:
     name: "Prepare a stable release"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       branch: ${{ steps.create_branch.outputs.branch-name }}
       release-pr-id: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}

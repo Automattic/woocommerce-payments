@@ -15,5 +15,168 @@
 				margin-bottom: 24px;
 			}
 		}
+
+		.dispute-summary-row {
+			margin-top: 24px;
+
+			&__response-date {
+				display: flex;
+				align-items: center;
+				gap: var( --grid-unit-05, 4px );
+				flex-wrap: wrap;
+				&--warning {
+					color: $wp-yellow-30;
+					font-weight: 700;
+				}
+				&--urgent {
+					font-weight: 700;
+					color: $alert-red;
+				}
+			}
+		}
+
+		&__actions {
+			display: flex;
+			justify-content: start;
+			gap: $grid-unit-10;
+			margin-top: 24px;
+
+			@media screen and ( max-width: $break-small ) {
+				flex-direction: column;
+
+				.components-button {
+					width: 100%;
+					justify-content: center;
+				}
+			}
+		}
+	}
+}
+.dispute-reason-tooltip {
+	p {
+		&:first-child {
+			font-weight: bold;
+		}
+		&:last-child {
+			margin-bottom: 0;
+		}
+		margin: 0;
+		margin-bottom: 8px;
+	}
+}
+.dispute-steps {
+	margin-top: 24px;
+
+	&__header {
+		font-weight: 600;
+		font-size: 14px;
+	}
+	&__steps {
+		list-style-position: inside;
+		margin: 0;
+
+		> li {
+			margin: 0;
+			padding: 16px 10px 16px 4px;
+			border-bottom: 1px solid $wp-gray-5;
+		}
+
+		.wcpay-tooltip__content-wrapper > [role='button'] {
+			margin: 0;
+		}
+
+		&__response-date {
+			display: inline-flex;
+			align-items: center;
+			gap: var( --grid-unit-05, 4px );
+			flex-wrap: wrap;
+			font-weight: 600;
+
+			&--warning {
+				color: $wp-yellow-30;
+				font-weight: 700;
+			}
+			&--urgent {
+				color: $alert-red;
+				font-weight: 700;
+			}
+		}
+	}
+}
+.transaction-details-dispute-accept-modal {
+	max-width: 600px;
+
+	.components-modal__content {
+		padding-top: $grid-unit-30;
+	}
+
+	&__icon {
+		flex-shrink: 0;
+		padding: 6px;
+		margin-right: $grid-unit-10;
+	}
+
+	&__actions {
+		margin-top: $grid-unit-30;
+	}
+}
+
+.transaction-details-dispute-footer {
+	background-color: #f2f4f5;
+
+	&__actions {
+		flex-shrink: 0;
+	}
+
+	&--primary {
+		background-color: $wp-blue-0;
+	}
+
+	@media screen and ( max-width: $break-small ) {
+		.components-flex {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.components-flex-item {
+			margin: 10px 0;
+		}
+	}
+}
+
+.dispute-evidence {
+	// Override WordPress core PanelBody boxy styles. Ours is more inline content.
+	&.components-panel__body {
+		border: none;
+	}
+	// Override WordPress core PanelBody padding so fits snug in our container.
+	&.components-panel__body.is-opened {
+		padding-bottom: 0;
+	}
+	// Override WordPress core PanelBody title to align with other nearby headings.
+	.components-panel__body-title button {
+		// Copy of WooCommerce core list table header style.
+		text-transform: uppercase;
+		color: #757575;
+		font-size: 11px;
+		font-weight: 600;
+	}
+	// Override WordPress core PanelBody button/title – slim padding consistent with surrounding components.
+	.components-panel__body-toggle.components-button {
+		padding: 10px;
+	}
+	// Override WordPress core PanelBody focus/highlighting.
+	.components-panel__body-toggle.components-button:focus {
+		box-shadow: none;
+		outline: 0;
+	}
+	&__list {
+		list-style: none;
+		margin: 8px 0 0;
+	}
+	&__list-item {
+		display: inline-block;
+		margin-right: 12px;
+		margin-bottom: 0;
 	}
 }

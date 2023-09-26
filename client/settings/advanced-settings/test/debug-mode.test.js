@@ -22,12 +22,6 @@ describe( 'DebugMode', () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'sets the heading as focused after rendering', () => {
-		render( <DebugMode /> );
-
-		expect( screen.getByText( 'Debug mode' ) ).toHaveFocus();
-	} );
-
 	it( 'toggles the logging checkbox', () => {
 		const setDebugLogMock = jest.fn();
 		useDebugLog.mockReturnValue( [ false, setDebugLogMock ] );

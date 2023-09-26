@@ -28,17 +28,23 @@ const RadioCard: React.FC< Props > = ( {
 	onChange,
 	className,
 } ) => {
-	const handleChange = ( event: React.ChangeEvent< HTMLInputElement > ) =>
-		onChange( event.target.value );
-
 	return (
 		<>
 			{ options.map( ( { label, icon, value, content } ) => {
+				const id = `radio-card-${ name }-${ value }`;
 				const checked = value === selected;
+				const handleChange = () => onChange( value );
 
 				return (
-					<label
+					<div
+						role="radio"
+						aria-checked={ checked }
+						tabIndex={ 0 }
 						key={ value }
+						onClick={ handleChange }
+						onKeyDown={ ( event ) => {
+							if ( event.key === 'Enter' ) handleChange();
+						} }
 						className={ classNames(
 							'wcpay-component-radio-card',
 							{ checked },
@@ -47,17 +53,19 @@ const RadioCard: React.FC< Props > = ( {
 					>
 						<div className="wcpay-component-radio-card__label">
 							<input
+								id={ id }
 								type="radio"
 								name={ name }
 								value={ value }
 								checked={ !! checked }
 								onChange={ handleChange }
+								tabIndex={ -1 }
 							/>
-							{ label }
+							<label htmlFor={ id }>{ label }</label>
 							{ icon }
 						</div>
 						{ checked && content }
-					</label>
+					</div>
 				);
 			} ) }
 		</>

@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Load payment methods through the request class (re-engineering payment process).
