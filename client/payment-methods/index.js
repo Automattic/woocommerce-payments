@@ -287,7 +287,7 @@ const PaymentMethods = () => {
 						>
 							{ interpolateComponents( {
 								mixedString: __(
-									'The new WooPayments checkout experience will become the default on October 11, 2023.' +
+									'You were rolled back from dUPE to legacy UPE. Stay tuned on next actions.' +
 										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 									'woocommerce-payments'
 								),

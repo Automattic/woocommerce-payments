@@ -22,6 +22,7 @@ class WC_Payments_Features {
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
 	const DISPUTE_ON_TRANSACTION_PAGE       = '_wcpay_feature_dispute_on_transaction_page';
+	const DEFERRED_UPE_SERVER_FLAG_NAME = 'is_deferred_intent_creation_upe_enabled';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -55,25 +56,50 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_legacy_enabled() {
-		$upe_flag_value = '1' === get_option( self::UPE_FLAG_NAME, '0' );
-		if ( $upe_flag_value ) {
-			return true;
-		}
-		return false;
+		return '1' === get_option( self::UPE_FLAG_NAME, '0' ) && ! self::is_upe_deferred_intent_enabled();
 	}
 
 	/**
 	 * Checks whether the Split-UPE gateway is enabled
 	 */
 	public static function is_upe_split_enabled() {
-		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
+		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && ! self::is_upe_deferred_intent_enabled();
 	}
 
 	/**
 	 * Checks whether the Split UPE with deferred intent is enabled
 	 */
 	public static function is_upe_deferred_intent_enabled() {
-		return ( '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) ) || self::is_upe_split_enabled();
+		// Support new stores created in [6.4.0, 6.5.0] and legacy card stores that migrated to dUPE in [6.4.0, 6.5.0]
+		// TODO remove this variable and its usage after 6.6.0
+		$has_store_dupe_enabled_from_previous_version = self::has_store_dupe_enabled_from_previous_version();
+
+		// TODO refactor after 6.6.0 to avoid checking for UPE
+		$has_store_upe_enabled_and_server_flag_enabled = self::has_store_upe_enabled_and_server_flag_enabled();
+
+		return $has_store_dupe_enabled_from_previous_version || $has_store_upe_enabled_and_server_flag_enabled;
+	}
+
+	/**
+	 * Checks if the Deferred UPE server-side feature flag is enabled.
+	 */
+	private static function is_deferred_upe_server_flag_enabled() {
+		$account = WC_Payments::get_database_cache()->get(WCPay\Database_Cache::ACCOUNT_KEY, true);
+		return is_array($account) && ($account[self::DEFERRED_UPE_SERVER_FLAG_NAME] ?? false);
+	}
+
+	/**
+	 * Checks if the store has DUPE enabled from a previous version.
+	 */
+	private static function has_store_dupe_enabled_from_previous_version() {
+		return '1' === get_option(self::UPE_DEFERRED_INTENT_FLAG_NAME, '0');
+	}
+
+	/**
+	 * Checks if the store has UPE enabled and the server-side feature flag is enabled.
+	 */
+	private static function has_store_upe_enabled_and_server_flag_enabled() {
+		return (self::is_upe_split_enabled() || self::is_upe_legacy_enabled() ) && self::is_deferred_upe_server_flag_enabled();
 	}
 
 	/**
