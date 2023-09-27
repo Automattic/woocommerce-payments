@@ -47,7 +47,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
-    orderDetails,
+	orderDetails,
 } ) => {
 	const { doAccept, isLoading } = useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
