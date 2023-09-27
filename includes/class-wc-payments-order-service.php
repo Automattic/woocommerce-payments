@@ -10,6 +10,9 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
+use WCPay\Internal\Payment\Payment;
+use WCPay\Internal\Payment\State\CompletedState;
+use WCPay\Internal\Payment\State\State;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -111,6 +114,13 @@ class WC_Payments_Order_Service {
 	 */
 	public function __construct( WC_Payments_API_Client $api_client ) {
 		$this->api_client = $api_client;
+	}
+
+	/**
+	 * Marks an order as paid.
+	 */
+	public function maybe_mark_order_paid( State $state, Payment $payment ) {
+		return new CompletedState();
 	}
 
 	/**
