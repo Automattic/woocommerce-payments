@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added setup_future_usage to payment_intent
