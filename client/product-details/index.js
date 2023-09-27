@@ -110,7 +110,7 @@ jQuery( function ( $ ) {
 				}
 
 				updateBnplPaymentMessage(
-					productVariations[ variation.variation_id ]?.amount,
+					productVariations[ variation.variation_id ].amount,
 					productCurrency,
 					quantityInput.val()
 				);
