@@ -81,6 +81,14 @@ export const WoopayExpressCheckoutButton = ( {
 		} );
 
 		if ( isProductPage ) {
+			if ( isAddToCartDisabled ) {
+				alert(
+					window.wc_add_to_cart_variation_params
+						.i18n_make_a_selection_text
+				);
+				return;
+			}
+
 			const productData = getProductData();
 
 			if ( ! productData ) {
@@ -88,7 +96,16 @@ export const WoopayExpressCheckoutButton = ( {
 			}
 
 			addToCart( productData )
-				.then( () => {
+				.then( ( res ) => {
+					if ( res.error ) {
+						if ( res.submit ) {
+							// Some extensions needs to submit the form
+							// to show error messages.
+							document.querySelector( 'form.cart' ).submit();
+						}
+						return;
+					}
+
 					expressCheckoutIframe( api, context, emailSelector );
 				} )
 				.catch( () => {
@@ -106,7 +123,6 @@ export const WoopayExpressCheckoutButton = ( {
 			aria-label={ buttonType !== 'default' ? text : __( 'WooPay' ) }
 			onClick={ initWooPay }
 			className="woopay-express-button"
-			disabled={ isAddToCartDisabled }
 			data-type={ buttonType }
 			data-size={ size }
 			data-theme={ theme }
