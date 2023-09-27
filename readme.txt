@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay, woocommerce 
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.3
-Stable tag: 6.5.0
+Stable tag: 6.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,10 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 6.5.1 - 2023-09-26 =
+* Fix - fix incorrect payment method title for non-WooPayments gateways
+
 
 = 6.5.0 - 2023-09-21 =
 * Add - Add a new task prompt to set up APMs after onboarding. Fixed an issue where a notice would show up in some unintended circumstances on the APM setup.
