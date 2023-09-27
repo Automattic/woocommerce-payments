@@ -17,7 +17,7 @@
 		}
 
 		.dispute-summary-row {
-			margin: 24px 0;
+			margin-top: 24px;
 
 			&__response-date {
 				display: flex;
@@ -39,6 +39,7 @@
 			display: flex;
 			justify-content: start;
 			gap: $grid-unit-10;
+			margin-top: 24px;
 
 			@media screen and ( max-width: $break-small ) {
 				flex-direction: column;
@@ -63,7 +64,45 @@
 		margin-bottom: 8px;
 	}
 }
+.dispute-steps {
+	margin-top: 24px;
 
+	&__header {
+		font-weight: 600;
+		font-size: 14px;
+	}
+	&__steps {
+		list-style-position: inside;
+		margin: 0;
+
+		> li {
+			margin: 0;
+			padding: 16px 10px 16px 4px;
+			border-bottom: 1px solid $wp-gray-5;
+		}
+
+		.wcpay-tooltip__content-wrapper > [role='button'] {
+			margin: 0;
+		}
+
+		&__response-date {
+			display: inline-flex;
+			align-items: center;
+			gap: var( --grid-unit-05, 4px );
+			flex-wrap: wrap;
+			font-weight: 600;
+
+			&--warning {
+				color: $wp-yellow-30;
+				font-weight: 700;
+			}
+			&--urgent {
+				color: $alert-red;
+				font-weight: 700;
+			}
+		}
+	}
+}
 .transaction-details-dispute-accept-modal {
 	max-width: 600px;
 

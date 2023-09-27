@@ -468,6 +468,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					{ isAwaitingResponse( charge.dispute.status ) ? (
 						<DisputeAwaitingResponseDetails
 							dispute={ charge.dispute }
+							customer={ charge.billing_details }
+							chargeCreated={ charge.created }
 							orderDetails={ charge.order }
 						/>
 					) : (

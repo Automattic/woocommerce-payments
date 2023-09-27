@@ -24,28 +24,30 @@ import {
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
+import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
-import {
-	getDisputeFeeFormatted,
-	isAwaitingResponse,
-	isInquiry,
-} from 'wcpay/disputes/utils';
+import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
 import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
+import DisputeSteps from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
 interface Props {
 	dispute: Dispute;
+	customer: ChargeBillingDetails | null;
+	chargeCreated: number;
 	orderDetails: OrderDetails | null;
 }
 
 const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	dispute,
-	orderDetails,
+	customer,
+	chargeCreated,
+    orderDetails,
 } ) => {
 	const { doAccept, isLoading } = useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
@@ -55,6 +57,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	const { createErrorNotice } = useDispatch( 'core/notices' );
+	// This is a temporary restriction and can be removed once steps and actions for inquiries are implemented.
+	const showDisputeSteps = ! isInquiry( dispute );
 
 	const onModalClose = () => {
 		setModalOpen( false );
@@ -82,33 +86,33 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		<div className="transaction-details-dispute-details-wrapper">
 			<Card>
 				<CardBody className="transaction-details-dispute-details-body">
-					{ isAwaitingResponse( dispute.status ) &&
-						countdownDays >= 0 && (
-							<>
-								<DisputeNotice
-									dispute={ dispute }
-									urgent={ countdownDays <= 2 }
-								/>
-								{ hasStagedEvidence && (
-									<InlineNotice
-										icon={ edit }
-										isDismissible={ false }
-									>
-										{ __(
-											`You initiated a challenge to this dispute. Click 'Continue with challenge' to proceed with your draft response.`,
-											'woocommerce-payments'
-										) }
-									</InlineNotice>
-								) }
-								<DisputeSummaryRow
-									dispute={ dispute }
-									daysRemaining={ countdownDays }
-								/>
-								<IssuerEvidenceList
-									issuerEvidence={ dispute.issuer_evidence }
-								/>
-							</>
-						) }
+					<DisputeNotice
+						dispute={ dispute }
+						isUrgent={ countdownDays <= 2 }
+					/>
+					{ hasStagedEvidence && (
+						<InlineNotice icon={ edit } isDismissible={ false }>
+							{ __(
+								`You initiated a challenge to this dispute. Click 'Continue with challenge' to proceed with your draft response.`,
+								'woocommerce-payments'
+							) }
+						</InlineNotice>
+					) }
+					<DisputeSummaryRow
+						dispute={ dispute }
+						daysRemaining={ countdownDays }
+					/>
+					{ showDisputeSteps && (
+						<DisputeSteps
+							dispute={ dispute }
+							customer={ customer }
+							chargeCreated={ chargeCreated }
+							daysRemaining={ countdownDays }
+						/>
+					) }
+					<IssuerEvidenceList
+						issuerEvidence={ dispute.issuer_evidence }
+					/>
 
 					{ /* Dispute Actions */ }
 					{
