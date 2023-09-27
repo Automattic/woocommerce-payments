@@ -47,6 +47,14 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	 */
 	private $processing;
 
+
+	/**
+	 * The future setup usage of the payment method.
+	 *
+	 * @var string
+	 */
+	private $setup_future_usage;
+
 	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
@@ -66,6 +74,7 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	 * @param array                  $payment_method_types - An array containing the possible payment methods for the intent.
 	 * @param array                  $payment_method_options - An array containing the payment method options for the intent.
 	 * @param array                  $order                - An array containing the order data associated with this intention.
+	 * @param string                 $setup_future_usage   - Indicates whether the associated payment method can be used to make future payments.
 	 */
 	public function __construct(
 		$id,
@@ -83,7 +92,8 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 		$processing = [],
 		$payment_method_types = [],
 		$payment_method_options = [],
-		$order = []
+		$order = [],
+		$setup_future_usage = null
 	) {
 		$this->id                     = $id;
 		$this->amount                 = $amount;
@@ -101,6 +111,7 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 		$this->payment_method_types   = $payment_method_types;
 		$this->payment_method_options = $payment_method_options;
 		$this->order                  = $order;
+		$this->setup_future_usage     = $setup_future_usage;
 	}
 
 	/**
@@ -149,6 +160,16 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	}
 
 	/**
+	 * Returns the future setup usage of this intention
+	 *
+	 * @return string
+	 */
+	public function get_setup_future_usage() {
+		return $this->setup_future_usage;
+	}
+
+
+	/**
 	 * Defines which data will be serialized to JSON
 	 */
 	public function jsonSerialize(): array {
@@ -165,6 +186,7 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 			'processing'           => $this->get_processing(),
 			'status'               => $this->get_status(),
 			'order'                => $this->get_order(),
+			'setup_future_usage'   => $this->get_setup_future_usage(),
 		];
 	}
 }
