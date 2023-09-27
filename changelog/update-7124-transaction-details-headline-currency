@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Changed Transaction Details screen to display headline currency in store's primary currency instead of transaction currency, with transaction currency rendered in the transaction breakdown.

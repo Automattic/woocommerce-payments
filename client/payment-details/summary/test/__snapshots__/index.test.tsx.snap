@@ -22,7 +22,6 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             class="payment-details-summary__section"
           >
             <p
-              aria-label="Payment amount"
               class="payment-details-summary__amount"
             >
               $20.00
@@ -324,7 +323,6 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             class="payment-details-summary__section"
           >
             <p
-              aria-label="Payment amount"
               class="payment-details-summary__amount"
             >
               $20.00
@@ -633,7 +631,6 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             class="payment-details-summary__section"
           >
             <p
-              aria-label="Payment amount"
               class="payment-details-summary__amount"
             >
               $20.00
@@ -894,7 +891,6 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             class="payment-details-summary__section"
           >
             <p
-              aria-label="Payment amount"
               class="payment-details-summary__amount"
             >
               $20.00
@@ -1182,7 +1178,6 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             class="payment-details-summary__section"
           >
             <p
-              aria-label="Payment amount"
               class="payment-details-summary__amount"
             >
               $20.00
@@ -1446,13 +1441,14 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             class="payment-details-summary__section"
           >
             <p
-              aria-label="Payment amount"
               class="payment-details-summary__amount"
             >
               
               <span
                 class="payment-details-summary__amount-currency"
-              />
+              >
+                USD
+              </span>
               <span
                 class="chip chip-light"
               />
@@ -1678,7 +1674,6 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             class="payment-details-summary__section"
           >
             <p
-              aria-label="Payment amount"
               class="payment-details-summary__amount"
             >
               $20.00
@@ -1942,7 +1937,6 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
             class="payment-details-summary__section"
           >
             <p
-              aria-label="Payment amount"
               class="payment-details-summary__amount"
             >
               $20.00
@@ -2203,7 +2197,6 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             class="payment-details-summary__section"
           >
             <p
-              aria-label="Payment amount"
               class="payment-details-summary__amount"
             >
               $20.00
@@ -2464,7 +2457,6 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             class="payment-details-summary__section"
           >
             <p
-              aria-label="Payment amount"
               class="payment-details-summary__amount"
             >
               $20.00

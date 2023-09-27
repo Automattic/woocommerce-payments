@@ -47,13 +47,7 @@
 		p:last-child {
 			margin-right: 0;
 		}
-		&__original-amount {
-			&::after {
-				content: '|';
-				color: #e0e0e0;
-				margin-left: 1rem;
-			}
-		}
+
 		&__fee-tooltip {
 			display: flex;
 			flex-direction: column;

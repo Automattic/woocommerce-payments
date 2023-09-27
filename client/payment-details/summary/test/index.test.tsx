@@ -209,32 +209,6 @@ describe( 'PaymentDetailsSummary', () => {
 		);
 	} );
 
-	test( 'correctly renders a charge when the store/charge currency differ', () => {
-		// True when multi-currency is enabled.
-		global.wcpaySettings.shouldUseExplicitPrice = true;
-
-		// In this case, charge currency is AUD, but store currency is USD.
-		const charge = getBaseCharge();
-		charge.currency = 'aud';
-		charge.amount = 4768;
-		charge.balance_transaction = {
-			amount: 3080,
-			currency: 'usd',
-			exchange_rate: 1.5479,
-		} as any;
-		renderCharge( charge );
-
-		// Headline should show the store currency
-		const headlineAmount = screen.getByLabelText( /Payment amount$/i );
-		within( headlineAmount ).getByText( /\$30.80/ );
-		within( headlineAmount ).getByText( /USD/i );
-
-		// Breakdown should show the charge currency
-		within(
-			screen.getByLabelText( /Payment amount in original currency/i )
-		).getByText( /\$47.68 AUD/i );
-	} );
-
 	test( 'renders partially refunded information for a charge', () => {
 		const charge = getBaseCharge();
 		charge.refunded = false;

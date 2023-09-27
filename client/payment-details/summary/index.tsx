@@ -223,40 +223,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			<CardBody>
 				<div className="payment-details-summary">
 					<div className="payment-details-summary__section">
-						<p
-							className="payment-details-summary__amount"
-							aria-label={ __(
-								'Payment amount',
-								'woocommerce-payments'
-							) }
-						>
+						<p className="payment-details-summary__amount">
 							<Loadable
 								isLoading={ isLoading }
 								placeholder="Amount placeholder"
 							>
-								{ renderStorePrice ? (
-									<>
-										{ formatCurrency(
-											balance.amount,
-											balance.currency
-										) }
-										<span className="payment-details-summary__amount-currency">
-											{ balance.currency }
-										</span>
-									</>
-								) : (
-									<>
-										{ formatCurrency(
-											charge.amount,
-											charge.currency,
-											balance.currency
-										) }
-										<span className="payment-details-summary__amount-currency">
-											{ charge.currency }
-										</span>
-									</>
+								{ formatCurrency(
+									charge.amount,
+									charge.currency,
+									balance.currency
 								) }
-
+								<span className="payment-details-summary__amount-currency">
+									{ charge.currency || 'USD' }
+								</span>
 								<PaymentStatusChip
 									status={ getChargeStatus(
 										charge,
@@ -267,16 +246,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						</p>
 						<div className="payment-details-summary__breakdown">
 							{ renderStorePrice ? (
-								<p
-									className="payment-details-summary__breakdown__original-amount"
-									aria-label={ __(
-										'Payment amount in original currency',
-										'woocommerce-payments'
-									) }
-								>
+								<p>
 									{ formatExplicitCurrency(
-										charge.amount,
-										charge.currency
+										balance.amount,
+										balance.currency
 									) }
 								</p>
 							) : null }
