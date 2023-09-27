@@ -491,6 +491,8 @@ class WC_Payments {
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
+		self::$fraud_service->init_hooks();
+
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service );
 
 		$payment_method_classes = [
@@ -627,7 +629,8 @@ class WC_Payments {
 			$wcpay_status = new WC_Payments_Status( self::get_gateway(), self::get_wc_payments_http(), self::get_account_service() );
 			$wcpay_status->init_hooks();
 
-			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
+			$wcpay_order_frt_meta_box = new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
+			$wcpay_order_frt_meta_box->init_hooks();
 		}
 
 		// Load Stripe Billing subscription integration.
@@ -1648,7 +1651,7 @@ class WC_Payments {
 
 	/**
 	 * Inject an inline script with WCPay assets properties.
-	 * window.wcpayAssets.url – Dist URL, required to properly load chunks on sites with JS concatenation enabled.
+	 * window.wcpayAssets.url – Dist URL, required to properly load chunks on sites with JS concatenation enabled.
 	 *
 	 * @return void
 	 */
