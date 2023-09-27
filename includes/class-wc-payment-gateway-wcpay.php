@@ -2675,7 +2675,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		try {
 			$intent_id           = $order->get_transaction_id();
-			$payment_type        = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING : Payment_Type::SINGLE;
+			$payment_type        = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 			$metadata_from_order = $this->get_metadata_from_order( $order, $payment_type );
 			$merged_metadata     = array_merge( (array) $metadata_from_order, (array) $intent_metadata ); // prioritize metadata from mobile app.
 
