@@ -56,14 +56,14 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_legacy_enabled() {
-		return '1' === get_option( self::UPE_FLAG_NAME, '0' ) && ! self::is_upe_deferred_intent_enabled();
+		return '1' === get_option( self::UPE_FLAG_NAME, '0' );
 	}
 
 	/**
 	 * Checks whether the Split-UPE gateway is enabled
 	 */
 	public static function is_upe_split_enabled() {
-		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && ! self::is_upe_deferred_intent_enabled();
+		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
 	}
 
 	/**
