@@ -1171,13 +1171,21 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return void
 	 */
 	public function set_payment_method_title_for_email( $order ) {
+		$payment_gateway = wc_get_payment_gateway_by_order( $order );
+
+		if ( ! empty( $payment_gateway ) && self::GATEWAY_ID !== $payment_gateway->id || ! WC_Payments_Features::is_upe_legacy_enabled() ) {
+			return;
+		}
+
 		$payment_method_id = $this->order_service->get_payment_method_id_for_order( $order );
+
 		if ( ! $payment_method_id ) {
 			$order->set_payment_method_title( $this->title );
 			$order->save();
 
 			return;
 		}
+
 		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
 		$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
