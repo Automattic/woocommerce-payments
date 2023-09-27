@@ -7,7 +7,7 @@
 
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -127,26 +127,26 @@ class WC_Payments_Order_Service {
 		}
 
 		switch ( $intent_data['intent_status'] ) {
-			case Payment_Intent_Status::CANCELED:
+			case Intent_Status::CANCELED:
 				$this->mark_payment_capture_cancelled( $order, $intent_data );
 				break;
-			case Payment_Intent_Status::SUCCEEDED:
-				if ( Payment_Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
+			case Intent_Status::SUCCEEDED:
+				if ( Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
 					$this->mark_payment_capture_completed( $order, $intent_data );
 				} else {
 					$this->mark_payment_completed( $order, $intent_data );
 				}
 				break;
-			case Payment_Intent_Status::PROCESSING:
-			case Payment_Intent_Status::REQUIRES_CAPTURE:
+			case Intent_Status::PROCESSING:
+			case Intent_Status::REQUIRES_CAPTURE:
 				if ( Rule::FRAUD_OUTCOME_REVIEW === $intent_data['fraud_outcome'] ) {
 					$this->mark_order_held_for_review_for_fraud( $order, $intent_data );
 				} else {
 					$this->mark_payment_authorized( $order, $intent_data );
 				}
 				break;
-			case Payment_Intent_Status::REQUIRES_ACTION:
-			case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
+			case Intent_Status::REQUIRES_ACTION:
+			case Intent_Status::REQUIRES_PAYMENT_METHOD:
 				$this->mark_payment_started( $order, $intent_data );
 				break;
 			default:

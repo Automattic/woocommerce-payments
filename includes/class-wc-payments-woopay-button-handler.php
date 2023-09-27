@@ -146,6 +146,12 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'dist/woopay-express-button' );
+		WC_Payments_Utils::enqueue_style(
+			'WCPAY_WOOPAY_EXPRESS_BUTTON',
+			plugins_url( 'dist/woopay-express-button.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/woopay-express-button.css' )
+		);
 
 		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
 
@@ -161,14 +167,13 @@ class WC_Payments_WooPay_Button_Handler {
 
 		wp_enqueue_script( 'WCPAY_WOOPAY_EXPRESS_BUTTON' );
 
-		wp_register_style(
+		WC_Payments_Utils::enqueue_style(
 			'WCPAY_WOOPAY',
 			plugins_url( 'dist/woopay.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WCPAY_VERSION_NUMBER
+			WCPAY_VERSION_NUMBER,
+			'all'
 		);
-
-		wp_enqueue_style( 'WCPAY_WOOPAY' );
 	}
 
 	/**
@@ -219,6 +224,21 @@ class WC_Payments_WooPay_Button_Handler {
 		// First empty the cart to prevent wrong calculation.
 		WC()->cart->empty_cart();
 
+		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $qty );
+
+		if ( ! $is_add_to_cart_valid ) {
+			// Some extensions error messages needs to be
+			// submitted to show error messages.
+			wp_send_json(
+				[
+					'error'  => true,
+					'submit' => true,
+				],
+				400
+			);
+			return;
+		}
+
 		if ( ( 'variable' === $product_type || 'variable-subscription' === $product_type ) && isset( $_POST['attributes'] ) ) {
 			$attributes = wc_clean( wp_unslash( $_POST['attributes'] ) );
 
@@ -228,7 +248,7 @@ class WC_Payments_WooPay_Button_Handler {
 			WC()->cart->add_to_cart( $product->get_id(), $qty, $variation_id, $attributes );
 		}
 
-		if ( 'simple' === $product_type || 'subscription' === $product_type ) {
+		if ( 'simple' === $product_type || 'subscription' === $product_type || 'bundle' === $product_type ) {
 			WC()->cart->add_to_cart( $product->get_id(), $qty );
 		}
 
@@ -524,10 +544,6 @@ class WC_Payments_WooPay_Button_Handler {
 			return false;
 		}
 
-		if ( $this->is_pay_for_order_page() ) {
-			return false;
-		}
-
 		if ( ! is_user_logged_in() ) {
 			// On product page for a subscription product, but not logged in, making WooPay unavailable.
 			if ( $this->is_product() ) {
@@ -568,11 +584,9 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		?>
-		<div class="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
-			<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->is_product() ); ?>>
+		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->is_product() ); ?>>
 				<?php // The WooPay express checkout button React component will go here. ?>
 			</div>
-		</div>
 		<?php
 	}
 

@@ -351,7 +351,7 @@ class MultiCurrency {
 		$this->register_admin_scripts();
 
 		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
-		wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		WC_Payments_Utils::enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 	}
 
 	/**
@@ -527,6 +527,8 @@ class MultiCurrency {
 			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
 		}
 
+		$currency_code = strtolower( $currency_code );
+
 		if ( 'manual' === $exchange_rate_type && ! is_null( $manual_rate ) ) {
 			if ( ! is_numeric( $manual_rate ) || 0 >= $manual_rate ) {
 				$message = 'Invalid manual currency rate passed to update_single_currency_settings: ' . $manual_rate;
@@ -536,7 +538,6 @@ class MultiCurrency {
 			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
 		}
 
-		$currency_code = strtolower( $currency_code );
 		update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, $price_rounding );
 		update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, $price_charm );
 		if ( in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
@@ -781,8 +782,8 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_geolocation() {
-		// We only want to automatically set the currency if this option is enabled.
-		if ( ! $this->is_using_auto_currency_switching() ) {
+		// We only want to automatically set the currency if the option is enabled and it shouldn't be disabled for any reason.
+		if ( ! $this->is_using_auto_currency_switching() || $this->compatibility->should_disable_currency_switching() ) {
 			return;
 		}
 
@@ -1212,9 +1213,12 @@ class MultiCurrency {
 	 */
 	public function set_client_format_and_rounding_precision() {
 		$screen = get_current_screen();
-		if ( 'post' === $screen->base && 'shop_order' === $screen->post_type ) :
-			global $post;
-			$currency                     = wc_get_order( $post->ID )->get_currency();
+		if ( in_array( $screen->id, [ 'shop_order', 'woocommerce_page_wc-orders' ], true ) ) :
+			$order = wc_get_order();
+			if ( ! $order ) {
+				return;
+			}
+			$currency                     = $order->get_currency();
 			$currency_format_num_decimals = $this->backend_currencies->get_price_decimals( $currency );
 			$currency_format_decimal_sep  = $this->backend_currencies->get_price_decimal_separator( $currency );
 			$currency_format_thousand_sep = $this->backend_currencies->get_price_thousand_separator( $currency );
@@ -1241,11 +1245,12 @@ class MultiCurrency {
 	private function register_admin_scripts() {
 		WC_Payments::register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS' ] );
 
-		wp_register_style(
+		WC_Payments_Utils::register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',
 			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components', 'WCPAY_ADMIN_SETTINGS' ],
-			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
+			\WC_Payments::get_file_version( 'dist/multi-currency.css' ),
+			'all'
 		);
 	}
 
@@ -1442,27 +1447,56 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Function used to compute the customer used currencies, used as internal callable for get_all_customer_currencies function.
+	 *
+	 * @return array
+	 */
+	public function callable_get_customer_currencies() {
+		global $wpdb;
+
+		$currencies  = $this->get_available_currencies();
+		$query_union = [];
+
+		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
+					\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			foreach ( $currencies as $currency ) {
+				$query_union[] = $wpdb->prepare(
+					"SELECT %s AS currency_code, EXISTS(SELECT currency FROM {$wpdb->prefix}wc_orders WHERE currency=%s LIMIT 1) AS exists_in_orders",
+					$currency->code,
+					$currency->code
+				);
+			}
+		} else {
+			foreach ( $currencies as $currency ) {
+				$query_union[] = $wpdb->prepare(
+					"SELECT %s AS currency_code, EXISTS(SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key=%s AND meta_value=%s LIMIT 1) AS exists_in_orders",
+					$currency->code,
+					'_order_currency',
+					$currency->code
+				);
+			}
+		}
+
+		$sub_query  = join( ' UNION ALL ', $query_union );
+		$query      = "SELECT currency_code FROM ( $sub_query ) as subquery WHERE subquery.exists_in_orders=1 ORDER BY currency_code ASC";
+		$currencies = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+		return [
+			'currencies' => $currencies,
+			'updated'    => time(),
+		];
+	}
+
+	/**
 	 * Get all the currencies that have been used in the store.
 	 *
 	 * @return array
 	 */
 	public function get_all_customer_currencies(): array {
+
 		$data = $this->database_cache->get_or_add(
 			Database_Cache::CUSTOMER_CURRENCIES_KEY,
-			function() {
-				global $wpdb;
-				if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
-						\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-					$currencies = $wpdb->get_col( "SELECT DISTINCT(currency) FROM {$wpdb->prefix}wc_orders" );
-				} else {
-					$currencies = $wpdb->get_col( "SELECT DISTINCT(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = '_order_currency'" );
-				}
-
-				return [
-					'currencies' => $currencies,
-					'updated'    => time(),
-				];
-			},
+			[ $this, 'callable_get_customer_currencies' ],
 			function ( $data ) {
 				// Return true if the data looks valid and was updated an hour or less ago.
 				return is_array( $data ) &&

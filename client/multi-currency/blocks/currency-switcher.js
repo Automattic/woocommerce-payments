@@ -130,6 +130,16 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 		// eslint-disable-next-line react-hooks/rules-of-hooks
 		const blockProps = useBlockProps();
 
+		/**
+		 * WP Emoji replaces the flag emoji with an image if it's not natively
+		 * supported by the browser. This behavior is problematic on Windows
+		 * because it renders an <img> tag inside the <option>, which can lead to crashes.
+		 * We need to guarantee that the OS supports flag emojis before rendering it.
+		 */
+		const supportsFlagEmoji = window._wpemojiSettings
+			? window._wpemojiSettings.supports?.flag
+			: true;
+
 		const onChangeFlag = ( newFlag ) => {
 			setAttributes( { flag: newFlag } );
 		};
@@ -310,7 +320,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 									key={ enabledCurrencies[ code ].id }
 									value={ enabledCurrencies[ code ].code }
 								>
-									{ flag
+									{ supportsFlagEmoji && flag
 										? enabledCurrencies[ code ].flag + ' '
 										: '' }
 									{ symbol &&

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix error while selecting product variations. Make the stripe payment messaging element load only if at least one BNPL method is active.

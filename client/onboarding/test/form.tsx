@@ -130,6 +130,7 @@ describe( 'Onboarding Form', () => {
 			render( <OnboardingTextField name="individual.first_name" /> );
 
 			const textField = screen.getByLabelText( 'First name' );
+			textField.focus(); // Workaround for `type` not triggering focus.
 			userEvent.type( textField, 'John' );
 
 			expect( setData ).toHaveBeenCalledWith( {
@@ -139,8 +140,17 @@ describe( 'Onboarding Form', () => {
 			expect( validate ).not.toHaveBeenCalled();
 		} );
 
-		it( 'only calls validate on change if touched', () => {
+		it( 'calls validate on change if touched', () => {
 			touched = { 'individual.first_name': true };
+			render( <OnboardingTextField name="individual.first_name" /> );
+
+			const textField = screen.getByLabelText( 'First name' );
+			userEvent.type( textField, 'John' );
+
+			expect( validate ).toHaveBeenCalledWith( 'John' );
+		} );
+
+		it( 'calls validate on change if not focused', () => {
 			render( <OnboardingTextField name="individual.first_name" /> );
 
 			const textField = screen.getByLabelText( 'First name' );

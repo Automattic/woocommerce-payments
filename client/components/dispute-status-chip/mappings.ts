@@ -4,10 +4,11 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import type { ChipType } from '../chip';
 
 const status: {
 	[ key: string ]: {
-		type: string;
+		type: ChipType;
 		message: string;
 	};
 } = {

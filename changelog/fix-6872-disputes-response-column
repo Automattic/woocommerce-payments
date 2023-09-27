@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Disputes listing column renamed to Respond by and will show empty when dispute does not need response or if respond by date has passed.

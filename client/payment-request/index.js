@@ -14,6 +14,7 @@ import {
 	paymentMethodHandler,
 	payForOrderHandler,
 } from './event-handlers.js';
+import '../checkout/express-checkout-buttons.scss';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
 

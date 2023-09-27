@@ -12,9 +12,10 @@ import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
  * @param {string|null}   paymentIntentSecret Payment Intent Secret used to validate payment on rate limit error.
  * @param {Object}   elements       Reference to the UPE elements mounted on the page.
  * @param {Object}   billingData    An object containing the customer's billing data.
+ * @param {Object}   shippingData   An object containing the customer's shipping data, needed for Afterpay.
  * @param {Object}   emitResponse   Various helpers for usage with observer response objects.
  * @param {string}   selectedUPEPaymentType   The selected UPE payment type.
- * @return {Object}                An object, which contains the result from the action.
+ * @return {Object}                 An object, which contains the result from the action.
  */
 export default async function confirmUPEPayment(
 	api,
@@ -23,6 +24,7 @@ export default async function confirmUPEPayment(
 	paymentIntentSecret,
 	elements,
 	billingData,
+	shippingData,
 	emitResponse,
 	selectedUPEPaymentType
 ) {
@@ -55,15 +57,16 @@ export default async function confirmUPEPayment(
 		// Afterpay requires shipping details to be passed. Not needed by other payment methods.
 		if ( PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY === selectedUPEPaymentType ) {
 			confirmParams.shipping = {
-				name,
-				phone: billingData.phone || '-',
+				name:
+					`${ shippingData.shippingAddress.first_name } ${ shippingData.shippingAddress.last_name }`.trim() ||
+					'-',
 				address: {
-					country: billingData.country || '_',
-					postal_code: billingData.postcode || '-',
-					state: billingData.state || '-',
-					city: billingData.city || '-',
-					line1: billingData.address_1 || '-',
-					line2: billingData.address_2 || '-',
+					country: shippingData.shippingAddress.country || '_',
+					postal_code: shippingData.shippingAddress.postcode || '-',
+					state: shippingData.shippingAddress.state || '-',
+					city: shippingData.shippingAddress.city || '-',
+					line1: shippingData.shippingAddress.address_1 || '-',
+					line2: shippingData.shippingAddress.address_2 || '-',
 				},
 			};
 		}

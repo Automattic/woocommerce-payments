@@ -60,9 +60,6 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 				currency.decimalSeparator = baseCurrency.decimalSeparator;
 				currency.thousandSeparator = baseCurrency.thousandSeparator;
 				currency.symbolPosition = baseCurrency.symbolPosition;
-				if ( currency.precision !== 0 ) {
-					currency.precision = baseCurrency.precision;
-				}
 			}
 		}
 		return Currency( currency );

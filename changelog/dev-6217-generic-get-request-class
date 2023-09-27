@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Add generic Get_Request class, and migrate current simple requests to use it

@@ -78,6 +78,12 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			'Some payment methods and deposits are disabled for this account until all required documents are provided.',
 			'woocommerce-payments'
 		);
+	} else if ( status === 'enabled' ) {
+		description = __(
+			// eslint-disable-next-line max-len
+			'This account is in good standing. Additional business information might be required when a payment volume threshold is reached.',
+			'woocommerce-payments'
+		);
 	} else if ( status === 'restricted' ) {
 		description = __(
 			'Payments and deposits are disabled for this account until business information is verified by the payment processor.',

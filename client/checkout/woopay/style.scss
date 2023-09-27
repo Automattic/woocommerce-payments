@@ -123,7 +123,7 @@
 }
 
 .woopay-express-button {
-	font-size: 13px;
+	font-size: 11px;
 	font-weight: 500;
 	font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial',
 		sans-serif;
@@ -136,10 +136,11 @@
 	border-radius: 4px;
 	padding-top: 1px;
 	padding-bottom: 1px;
-	display: flex;
+	display: flex !important;
 	align-items: center;
 	justify-content: center;
 	white-space: nowrap;
+	text-transform: none;
 
 	&:hover {
 		background: #d9baff !important;
@@ -150,6 +151,24 @@
 		fill: $studio-woocommerce-purple-60;
 		position: relative;
 		top: 1px;
+	}
+
+	&[data-type='buy'],
+	&[data-type='book'],
+	&[data-type='donate'] {
+		svg {
+			flex-shrink: 0.4;
+			margin-left: 3px;
+		}
+	}
+
+	&[data-width-type='wide'] {
+		font-size: 13px;
+
+		svg {
+			flex-shrink: 1;
+			margin-left: 6px;
+		}
 	}
 
 	&[data-theme='dark'] {
@@ -173,7 +192,7 @@
 	}
 
 	&[data-size='medium'] {
-		font-size: 14px;
+		font-size: 12px;
 		height: 48px;
 
 		svg {
@@ -181,10 +200,32 @@
 			width: auto;
 			height: 27px;
 		}
+
+		&[data-type='buy'],
+		&[data-type='book'],
+		&[data-type='donate'] {
+			svg {
+				flex-shrink: 0.6;
+				margin-left: 3px;
+			}
+		}
+
+		&[data-width-type='wide'] {
+			font-size: 14px;
+
+			&[data-type='buy'],
+			&[data-type='book'],
+			&[data-type='donate'] {
+				svg {
+					flex-shrink: 1;
+					margin-left: 6px;
+				}
+			}
+		}
 	}
 
 	&[data-size='large'] {
-		font-size: 16px;
+		font-size: 13px;
 		height: 56px;
 
 		svg {
@@ -192,17 +233,28 @@
 			width: auto;
 			height: 32px;
 		}
-	}
 
-	&[data-type='buy'],
-	&[data-type='book'],
-	&[data-type='donate'] {
-		svg {
-			margin-left: 6px;
-		}
-		&[data-size='large'] {
+		&[data-type='buy'],
+		&[data-type='book'],
+		&[data-type='donate'] {
 			svg {
-				margin-left: 8px;
+				flex-shrink: 0.6;
+				margin-left: 3px;
+				margin-bottom: 0.25rem;
+			}
+		}
+
+		&[data-width-type='wide'] {
+			font-size: 16px;
+
+			&[data-type='buy'],
+			&[data-type='book'],
+			&[data-type='donate'] {
+				svg {
+					flex-shrink: 1;
+					margin-left: 8px;
+					margin-bottom: 0;
+				}
 			}
 		}
 	}

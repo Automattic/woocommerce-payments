@@ -106,8 +106,12 @@ class Blocks_Data_Extractor {
 		$settings          = [
 			'defaultText'   => $settings_instance->get( 'woocommerce.optin_on_checkout.message', '' ),
 			'optinEnabled'  => $settings_instance->get( 'woocommerce.optin_on_checkout.enabled', false ),
-			'defaultStatus' => $mailpoet_wc_subscription->isCurrentUserSubscribed(),
+			'defaultStatus' => false,
 		];
+
+		if ( version_compare( \MAILPOET_VERSION, '4.18.0', '<=' ) ) {
+			$settings['defaultStatus'] = $mailpoet_wc_subscription->isCurrentUserSubscribed();
+		}
 		return $settings;
 	}
 

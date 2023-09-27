@@ -4,7 +4,6 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
-import { useDispatch } from '@wordpress/data';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 import { Icon, info } from '@wordpress/icons';
@@ -21,8 +20,8 @@ import Agreement from './agreement';
 import Container from './container';
 import useWooPayUser from '../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
-import { WC_STORE_CART } from '../../../checkout/constants';
 import WooPayIcon from 'assets/images/woopay.svg?asset';
+import wcpayTracks from 'tracks';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -43,7 +42,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
 	);
-	const cart = useDispatch( WC_STORE_CART );
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
 
@@ -53,6 +51,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			phoneFieldValue =
 				document.getElementById( 'phone' )?.value ||
 				document.getElementById( 'shipping-phone' )?.value ||
+				// in case of virtual products, the shipping phone is not available. So we also need to check the billing phone.
+				document.getElementById( 'billing-phone' )?.value ||
 				'';
 		} else {
 			// for classic checkout.
@@ -72,9 +72,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 
 	const sendExtensionData = useCallback(
 		( shouldClearData = false ) => {
-			const shippingPhone = document.getElementById( 'shipping-phone' )
-				?.value;
-			const billingPhone = document.getElementById( 'phone' )?.value;
 			const data = shouldClearData
 				? {}
 				: {
@@ -92,23 +89,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				data: data,
 			} ).then( () => {
 				setUserDataSent( ! shouldClearData );
-				// Cart returned from `extensionCartUpdate` clears these as these fields are not sent to backend by blocks when added.
-				// Setting them explicitly here to the previous user input.
-				cart.setShippingAddress( {
-					phone: shippingPhone,
-				} );
-				cart.setBillingAddress( {
-					phone: billingPhone,
-				} );
 			} );
 		},
-		[
-			isSaveDetailsChecked,
-			phoneNumber,
-			cart,
-			viewportWidth,
-			viewportHeight,
-		]
+		[ isSaveDetailsChecked, phoneNumber, viewportWidth, viewportHeight ]
 	);
 
 	const handleCheckboxClick = ( e ) => {
@@ -116,12 +99,19 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		if ( isChecked ) {
 			setPhoneNumber( getPhoneFieldValue() );
 		} else {
-			setPhoneNumber( null );
+			setPhoneNumber( '' );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
 		}
 		setIsSaveDetailsChecked( isChecked );
+
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.WOOPAY_SAVE_MY_INFO_CLICK,
+			{
+				status: isChecked ? 'checked' : 'unchecked',
+			}
+		);
 	};
 
 	useEffect( () => {
@@ -299,11 +289,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							value={ `${ viewportWidth }x${ viewportHeight }` }
 						/>
 						<PhoneNumberInput
-							value={
-								phoneNumber === null
-									? getPhoneFieldValue()
-									: phoneNumber
-							}
+							value={ phoneNumber }
 							onValueChange={ setPhoneNumber }
 							onValidationChange={ onPhoneValidationChange }
 							inputProps={ {

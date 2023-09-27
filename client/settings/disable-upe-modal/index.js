@@ -14,13 +14,13 @@ import './style.scss';
 import ConfirmationModal from 'components/confirmation-modal';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import WcPayUpeContext from 'settings/wcpay-upe-toggle/context';
-import InlineNotice from '../../components/inline-notice';
+import InlineNotice from 'components/inline-notice';
 import { useEnabledPaymentMethodIds } from '../../data';
 import PaymentMethodIcon from '../payment-method-icon';
 
 const NeedHelpBarSection = () => {
 	return (
-		<InlineNotice status="info" isDismissible={ false }>
+		<InlineNotice icon status="info" isDismissible={ false }>
 			{ interpolateComponents( {
 				mixedString: __(
 					'Need help? Visit {{ docsLink /}} or {{supportLink /}}.',
@@ -29,7 +29,7 @@ const NeedHelpBarSection = () => {
 				components: {
 					docsLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/payment-methods/additional-payment-methods/">
+						<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/">
 							{ sprintf(
 								/* translators: %s: WooPayments */
 								__( '%s docs', 'woocommerce-payments' ),

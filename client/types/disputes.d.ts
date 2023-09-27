@@ -11,9 +11,40 @@ interface Evidence {
 }
 
 interface EvidenceDetails {
+	/**
+	 * Whether evidence has been staged for this dispute.
+	 */
 	has_evidence: boolean;
+	/**
+	 * Date by which evidence must be submitted in order to successfully challenge dispute.
+	 */
 	due_by: number;
+	/**
+	 * Whether the last evidence submission was submitted past the due date. Defaults to false if no evidence submissions have occurred. If true, then delivery of the latest evidence is not guaranteed.
+	 */
+	past_due: boolean;
+	/**
+	 * The number of times evidence has been submitted. Typically, the merchant may only submit evidence once.
+	 */
 	submission_count: number;
+}
+
+/**
+ * See https://stripe.com/docs/api/disputes/object#dispute_object-issuer_evidence
+ */
+interface IssuerEvidence {
+	/**
+	 * Type of issuer evidence supplied.
+	 */
+	evidence_type: 'retrieval' | 'chargeback' | 'response';
+	/**
+	 * List of up to 5 (ID of a file upload) File-based issuer evidence.
+	 */
+	file_evidence: string[];
+	/**
+	 * Free-form, text-based issuer evidence.
+	 */
+	text_evidence: string | null;
 }
 
 export type DisputeReason =
@@ -46,16 +77,38 @@ export interface Dispute {
 	status: DisputeStatus;
 	id: string;
 	evidence_details?: EvidenceDetails;
-	metadata: Record< string, any >;
+	metadata: {
+		/* eslint-disable @typescript-eslint/naming-convention -- required to allow underscores in keys */
+		/**
+		 * '1' if the dispute was closed/accepted by the merchant, '0' if the dispute was closed by Stripe.
+		 */
+		__closed_by_merchant?: '1' | '0';
+		/**
+		 * Unix timestamp of when the dispute was closed.
+		 */
+		__dispute_closed_at?: string;
+		/**
+		 * Unix timestamp of when dispute evidence was submitted.
+		 */
+		__evidence_submitted_at?: string;
+		/* eslint-enable @typescript-eslint/naming-convention */
+	};
 	order: null | OrderDetails;
 	evidence: Evidence;
+	issuer_evidence: IssuerEvidence | null;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
-	charge: Charge;
+	charge: Charge | string;
 	amount: number;
 	currency: string;
 	created: number;
+	/**
+	 * List of zero, one, or two balance transactions that show funds withdrawn and reinstated to the Stripe account as a result of this dispute.
+	 * One balance transaction with `reporting_category: 'dispute'` will be present if funds have been withdrawn from the account.
+	 * A second balance transaction with the `reporting_category: 'dispute_reversal'` will be present if funds have been reinstated to the account.
+	 */
 	balance_transactions: BalanceTransaction[];
+	payment_intent: string;
 }
 
 export interface CachedDispute {

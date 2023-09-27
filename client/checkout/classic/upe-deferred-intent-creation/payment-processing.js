@@ -10,10 +10,17 @@ import {
 } from 'wcpay/checkout/utils/fingerprint';
 import {
 	appendPaymentMethodIdToForm,
+	getPaymentMethodTypes,
 	getSelectedUPEGatewayPaymentMethod,
 	getTerms,
 	getUpeSettings,
+	isLinkEnabled,
 } from 'wcpay/checkout/utils/upe';
+import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
+import {
+	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
+	SHORTCODE_BILLING_ADDRESS_FIELDS,
+} from '../../constants';
 
 const gatewayUPEComponents = {};
 let fingerprint = null;
@@ -105,21 +112,25 @@ function createStripePaymentMethod(
 				name: document.querySelector( '#billing_first_name' )
 					? (
 							document.querySelector( '#billing_first_name' )
-								.value +
+								?.value +
 							' ' +
-							document.querySelector( '#billing_last_name' ).value
+							document.querySelector( '#billing_last_name' )
+								?.value
 					  ).trim()
 					: undefined,
-				email: document.querySelector( '#billing_email' ).value,
-				phone: document.querySelector( '#billing_phone' ).value,
+				email: document.querySelector( '#billing_email' )?.value,
+				phone: document.querySelector( '#billing_phone' )?.value,
 				address: {
-					city: document.querySelector( '#billing_city' ).value,
-					country: document.querySelector( '#billing_country' ).value,
-					line1: document.querySelector( '#billing_address_1' ).value,
-					line2: document.querySelector( '#billing_address_2' ).value,
+					city: document.querySelector( '#billing_city' )?.value,
+					country: document.querySelector( '#billing_country' )
+						?.value,
+					line1: document.querySelector( '#billing_address_1' )
+						?.value,
+					line2: document.querySelector( '#billing_address_2' )
+						?.value,
 					postal_code: document.querySelector( '#billing_postcode' )
-						.value,
-					state: document.querySelector( '#billing_state' ).value,
+						?.value,
+					state: document.querySelector( '#billing_state' )?.value,
 				},
 			},
 		};
@@ -141,12 +152,13 @@ function createStripePaymentMethod(
  */
 async function createStripePaymentElement( api, paymentMethodType ) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
+	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
 	const options = {
 		mode: amount < 1 ? 'setup' : 'payment',
 		currency: getUPEConfig( 'currency' ).toLowerCase(),
 		amount: amount,
 		paymentMethodCreation: 'manual',
-		paymentMethodTypes: [ paymentMethodType ],
+		paymentMethodTypes: paymentMethodTypes,
 		appearance: initializeAppearance( api ),
 	};
 
@@ -185,6 +197,36 @@ function appendSetupIntentToForm( form, confirmedIntent ) {
 }
 
 /**
+ * If Link is enabled, add event listeners and handlers.
+ *
+ * @param {Object} api WCPayAPI instance.
+ */
+export function maybeEnableStripeLink( api ) {
+	if ( isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) ) ) {
+		enableStripeLinkPaymentMethod( {
+			api: api,
+			elements: gatewayUPEComponents.card.elements,
+			emailId: 'billing_email',
+			complete_billing: () => {
+				return true;
+			},
+			complete_shipping: () => {
+				return (
+					document.getElementById(
+						'ship-to-different-address-checkbox'
+					) &&
+					document.getElementById(
+						'ship-to-different-address-checkbox'
+					).checked
+				);
+			},
+			shipping_fields: SHORTCODE_SHIPPING_ADDRESS_FIELDS,
+			billing_fields: SHORTCODE_BILLING_ADDRESS_FIELDS,
+		} );
+	}
+}
+
+/**
  * Mounts the existing Stripe Payment Element to the DOM element.
  * Creates the Stipe Payment Element instance if it doesn't exist and mounts it to the DOM element.
  *
@@ -215,6 +257,10 @@ export async function mountStripePaymentElement( api, domElement ) {
 	document.body.dispatchEvent( event );
 
 	const paymentMethodType = domElement.dataset.paymentMethodType;
+	if ( ! gatewayUPEComponents[ paymentMethodType ] ) {
+		return;
+	}
+
 	const upeElement =
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
 		( await createStripePaymentElement( api, paymentMethodType ) );

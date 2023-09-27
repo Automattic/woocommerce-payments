@@ -19,11 +19,10 @@ import { SavedTokenHandler } from './saved-token-handler';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
+import { isLinkEnabled } from '../utils/upe.js';
 
 const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
-const isStripeLinkEnabled =
-	paymentMethodsConfig.link !== undefined &&
-	paymentMethodsConfig.card !== undefined;
+const isStripeLinkEnabled = isLinkEnabled( paymentMethodsConfig );
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
