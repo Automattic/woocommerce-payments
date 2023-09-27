@@ -23,6 +23,8 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	const WOOCOMMERCE_MULTICURRENCY_PATH = 'woocommerce-multicurrency/woocommerce-multicurrency.php';
 	const AFFILIATE_FOR_WOOCOMMERCE      = 'affiliate-for-woocommerce';
 	const AFFILIATE_FOR_WOOCOMMERCE_PATH = 'affiliate-for-woocommerce/affiliate-for-woocommerce.php';
+	const AUTEMATEWOO_REFERRALS          = 'automatewoo-referrals';
+	const AUTEMATEWOO_REFERRALS_PATH     = 'automatewoo-referrals/automatewoo-referrals.php';
 
 	/**
 	 * Initializa WC Blocks regitered integrations.
@@ -179,6 +181,22 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		if ( is_plugin_active( self::AFFILIATE_FOR_WOOCOMMERCE_PATH ) && function_exists( 'afwc_get_referrer_id' ) ) {
 			$extension_data[ self::AFFILIATE_FOR_WOOCOMMERCE ] = [
 				'affiliate-user' => afwc_get_referrer_id(),
+			];
+		}
+
+		if ( is_plugin_active( self::AUTEMATEWOO_REFERRALS_PATH ) &&
+			function_exists( 'AW_Referrals' ) &&
+			method_exists( AW_Referrals(), 'options' ) &&
+			AW_Referrals()->options()->type === 'link' &&
+			class_exists(
+				'\AutomateWoo\Referrals\Referral_Manager'
+			) &&
+			method_exists( \AutomateWoo\Referrals\Referral_Manager::class, 'get_advocate_key_from_cookie' )
+		) {
+			$advocate_from_key_cookie = \AutomateWoo\Referrals\Referral_Manager::get_advocate_key_from_cookie();
+
+			$extension_data[ self::AUTEMATEWOO_REFERRALS ] = [
+				'advocate_id' => $advocate_from_key_cookie->get_advocate_id(),
 			];
 		}
 
