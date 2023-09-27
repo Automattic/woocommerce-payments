@@ -6,7 +6,8 @@
 import React, { useState } from 'react';
 import moment from 'moment';
 import { __, sprintf } from '@wordpress/i18n';
-import { backup, edit, lock } from '@wordpress/icons';
+import { backup, edit, lock, chevronRightSmall } from '@wordpress/icons';
+import { useDispatch } from '@wordpress/data';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 import {
@@ -39,9 +40,13 @@ import './style.scss';
 
 interface Props {
 	dispute: Dispute;
+	orderDetails: OrderDetails | null;
 }
 
-const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
+const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
+	dispute,
+	orderDetails,
+} ) => {
 	const { doAccept, isLoading } = useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
 
@@ -49,11 +54,29 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
-	const showDisputeActions = ! isInquiry( dispute );
+	const { createErrorNotice } = useDispatch( 'core/notices' );
 
 	const onModalClose = () => {
 		setModalOpen( false );
 	};
+
+	const viewOrder = () => {
+		if ( orderDetails?.url ) {
+			window.location.href = orderDetails?.url;
+			return;
+		}
+
+		createErrorNotice(
+			__(
+				'Unable to view order. Order not found.',
+				'woocommerce-payments'
+			)
+		);
+	};
+
+	const challengeButtonDefaultText = ! isInquiry( dispute )
+		? __( 'Challenge dispute', 'woocommerce-payments' )
+		: __( 'Submit Evidence', 'woocommerce-payments' );
 
 	return (
 		<div className="transaction-details-dispute-details-wrapper">
@@ -88,7 +111,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 						) }
 
 					{ /* Dispute Actions */ }
-					{ showDisputeActions && (
+					{
 						<div className="transaction-details-dispute-details-body__actions">
 							<Link
 								href={
@@ -121,10 +144,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 												'Continue with challenge',
 												'woocommerce-payments'
 										  )
-										: __(
-												'Challenge dispute',
-												'woocommerce-payments'
-										  ) }
+										: challengeButtonDefaultText }
 								</Button>
 							</Link>
 
@@ -142,15 +162,25 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 									setModalOpen( true );
 								} }
 							>
-								{ __(
-									'Accept dispute',
-									'woocommerce-payments'
-								) }
+								{ isInquiry( dispute )
+									? __(
+											'Issue refund',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Accept dispute',
+											'woocommerce-payments'
+									  ) }
 							</Button>
 
+							{ /** Accept dispute modal */ }
 							{ isModalOpen && (
 								<Modal
-									title="Accept the dispute?"
+									title={
+										! isInquiry( dispute )
+											? 'Accept the dispute?'
+											: 'Issue a refund?'
+									}
 									onRequestClose={ onModalClose }
 									className="transaction-details-dispute-accept-modal"
 								>
@@ -167,22 +197,27 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 											<Icon icon={ backup } size={ 24 } />
 										</FlexItem>
 										<FlexItem>
-											{ createInterpolateElement(
-												sprintf(
-													/* translators: %s: dispute fee, <em>: emphasis HTML element. */
-													__(
-														'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account.',
+											{ isInquiry( dispute )
+												? __(
+														'Issuing a refund will close the inquiry, returning the amount in question back to the cardholder. No additional fees apply.',
 														'woocommerce-payments'
-													),
-													getDisputeFeeFormatted(
-														dispute,
-														true
-													) ?? '-'
-												),
-												{
-													em: <em />,
-												}
-											) }
+												  )
+												: createInterpolateElement(
+														sprintf(
+															/* translators: %s: dispute fee, <em>: emphasis HTML element. */
+															__(
+																'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account.',
+																'woocommerce-payments'
+															),
+															getDisputeFeeFormatted(
+																dispute,
+																true
+															) ?? '-'
+														),
+														{
+															em: <em />,
+														}
+												  ) }
 										</FlexItem>
 									</Flex>
 									<Flex justify="start">
@@ -190,12 +225,33 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 											<Icon icon={ lock } size={ 24 } />
 										</FlexItem>
 										<FlexItem>
-											{ __(
-												'Accepting the dispute is final and cannot be undone.',
-												'woocommerce-payments'
-											) }
+											{ isInquiry( dispute )
+												? __(
+														'This action is final and cannot be undone.',
+														'woocommerce-payments'
+												  )
+												: __(
+														'Accepting the dispute is final and cannot be undone.',
+														'woocommerce-payments'
+												  ) }
 										</FlexItem>
 									</Flex>
+									{ isInquiry( dispute ) && (
+										<Flex justify="start">
+											<FlexItem className="transaction-details-dispute-accept-modal__icon">
+												<Icon
+													icon={ chevronRightSmall }
+													size={ 24 }
+												/>
+											</FlexItem>
+											<FlexItem>
+												{ __(
+													'You will be taken to the order, where you must complete the refund process manually.',
+													'woocommerce-payments'
+												) }
+											</FlexItem>
+										</Flex>
+									) }
 
 									<Flex
 										className="transaction-details-dispute-accept-modal__actions"
@@ -222,19 +278,32 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( { dispute } ) => {
 													}
 												);
 												setModalOpen( false );
-												doAccept();
+												/**
+												 * Handle the primary modal action.
+												 * If it's an inquiry, redirect to the order page; otherwise, continue with the default dispute acceptance.
+												 */
+												if ( isInquiry( dispute ) ) {
+													viewOrder();
+												} else {
+													doAccept();
+												}
 											} }
 										>
-											{ __(
-												'Accept dispute',
-												'woocommerce-payments'
-											) }
+											{ isInquiry( dispute )
+												? __(
+														'View Order to Issue Refund',
+														'woocommerce-payments'
+												  )
+												: __(
+														'Accept dispute',
+														'woocommerce-payments'
+												  ) }
 										</Button>
 									</Flex>
 								</Modal>
 							) }
 						</div>
-					) }
+					}
 				</CardBody>
 			</Card>
 		</div>

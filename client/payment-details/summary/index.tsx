@@ -468,6 +468,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					{ isAwaitingResponse( charge.dispute.status ) ? (
 						<DisputeAwaitingResponseDetails
 							dispute={ charge.dispute }
+							orderDetails={ charge.order }
 						/>
 					) : (
 						<DisputeResolutionFooter dispute={ charge.dispute } />
