@@ -17,7 +17,7 @@ const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
 
 export const getDisputeStatus = (
-	dispute: null | Dispute = <Dispute>{}
+	dispute: null | Pick< Dispute, 'status' > = <Dispute>{}
 ): string => dispute?.status || '';
 
 export const getChargeOutcomeType = ( charge: Charge = <Charge>{} ): string =>
