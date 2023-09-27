@@ -369,7 +369,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_pay_for_order_flow_enabled() {
-		return '1' === get_option( '_wcpay_feature_pay_for_order_flow', '0' );
+		return '1' === get_option( self::PAY_FOR_ORDER_FLOW, '0' );
 	}
 
 	/**
