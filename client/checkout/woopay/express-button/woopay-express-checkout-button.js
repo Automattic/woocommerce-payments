@@ -224,35 +224,41 @@ export const WoopayExpressCheckoutButton = ( {
 		};
 	}, [ isPreview, isProductPage, newIframe ] );
 
-	// Set button's default onClick handle to use modal checkout flow.
-	initWoopayRef.current = ( e ) => {
-		e.preventDefault();
+	useEffect( () => {
+		// Set button's default onClick handle to use modal checkout flow.
+		initWoopayRef.current = ( e ) => {
+			e.preventDefault();
 
-		if ( isPreview ) {
-			return; // eslint-disable-line no-useless-return
-		}
-
-		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_BUTTON_CLICK, {
-			source: context,
-		} );
-
-		if ( isProductPage ) {
-			const productData = getProductData();
-			if ( ! productData ) {
-				return;
+			if ( isPreview ) {
+				return; // eslint-disable-line no-useless-return
 			}
 
-			addToCart( productData )
-				.then( () => {
-					expressCheckoutIframe( api, context, emailSelector );
-				} )
-				.catch( () => {
-					// handle error.
-				} );
-		} else {
-			expressCheckoutIframe( api, context, emailSelector );
-		}
-	};
+			wcpayTracks.recordUserEvent(
+				wcpayTracks.events.WOOPAY_BUTTON_CLICK,
+				{
+					source: context,
+				}
+			);
+
+			if ( isProductPage ) {
+				const productData = getProductDataRef.current();
+				if ( ! productData ) {
+					return;
+				}
+
+				addToCartRef
+					.current( productData )
+					.then( () => {
+						expressCheckoutIframe( api, context, emailSelector );
+					} )
+					.catch( () => {
+						// handle error.
+					} );
+			} else {
+				expressCheckoutIframe( api, context, emailSelector );
+			}
+		};
+	}, [ api, context, emailSelector, isPreview, isProductPage ] );
 
 	return (
 		<button
