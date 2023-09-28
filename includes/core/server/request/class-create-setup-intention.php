@@ -22,6 +22,13 @@ class Create_Setup_Intention extends Request {
 	const IMMUTABLE_PARAMS = [ 'customer', 'confirm' ];
 	const REQUIRED_PARAMS  = [ 'customer', 'payment_method_types' ];
 
+	/**
+	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 *
+	 * @var string $hook
+	 */
+	protected $hook = 'wcpay_create_setup_intention_request';
+
 	const DEFAULT_PARAMS = [
 		'confirm' => 'false',
 	];

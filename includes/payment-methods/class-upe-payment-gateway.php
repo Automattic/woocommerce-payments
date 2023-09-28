@@ -440,7 +440,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$request->set_customer( $customer_id );
 		$request->set_payment_method_types( array_values( $displayed_payment_methods ) );
 		/** @var WC_Payments_API_Setup_Intention $setup_intent */  // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-		$setup_intent = $request->send( 'wcpay_create_setup_intention_request' );
+		$setup_intent = $request->send();
 
 		return [
 			'id'            => $setup_intent->get_id(),
