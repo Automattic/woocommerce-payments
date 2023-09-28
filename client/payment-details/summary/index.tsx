@@ -62,14 +62,6 @@ interface PaymentDetailsSummaryProps {
 	paymentIntent?: PaymentIntent;
 }
 
-const placeholderValues = {
-	amount: 0,
-	currency: 'USD',
-	net: 0,
-	fee: 0,
-	refunded: null,
-};
-
 const isTapToPay = ( model: string ) => {
 	if ( model === 'COTS_DEVICE' ) {
 		return true;
@@ -160,10 +152,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	isLoading,
 	paymentIntent,
 } ) => {
-	const balance = charge.amount
-		? getChargeAmounts( charge )
-		: placeholderValues;
-	const renderStorePrice =
+	const balance = getChargeAmounts( charge );
+	const isStoreAndShopperCurrencyMismatched =
 		charge.currency && balance.currency !== charge.currency;
 
 	const {
@@ -234,29 +224,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								isLoading={ isLoading }
 								placeholder="Amount placeholder"
 							>
-								{ renderStorePrice ? (
-									<>
-										{ formatCurrency(
-											balance.amount,
-											balance.currency
-										) }
-										<span className="payment-details-summary__amount-currency">
-											{ balance.currency }
-										</span>
-									</>
-								) : (
-									<>
-										{ formatCurrency(
-											charge.amount,
-											charge.currency,
-											balance.currency
-										) }
-										<span className="payment-details-summary__amount-currency">
-											{ charge.currency }
-										</span>
-									</>
+								{ formatCurrency(
+									balance.amount,
+									balance.currency
 								) }
-
+								<span className="payment-details-summary__amount-currency">
+									{ balance.currency }
+								</span>
 								<PaymentStatusChip
 									status={ getChargeStatus(
 										charge,
@@ -266,7 +240,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							</Loadable>
 						</p>
 						<div className="payment-details-summary__breakdown">
-							{ renderStorePrice ? (
+							{ isStoreAndShopperCurrencyMismatched && (
 								<p
 									className="payment-details-summary__breakdown__original-amount"
 									aria-label={ __(
@@ -279,7 +253,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										charge.currency
 									) }
 								</p>
-							) : null }
+							) }
 							{ balance.refunded ? (
 								<p>
 									{ `${

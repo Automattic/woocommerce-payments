@@ -1463,12 +1463,12 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
               
               <p>
                 Fees: 
-                $0.00
+                
               </p>
               
               <p>
                 Net: 
-                $0.00
+                
               </p>
             </div>
           </div>
