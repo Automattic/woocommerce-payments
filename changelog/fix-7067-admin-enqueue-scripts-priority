@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Increase admin enqueue scripts priority to avoid compatibility issues with WooCommerce Beta Tester plugin.
