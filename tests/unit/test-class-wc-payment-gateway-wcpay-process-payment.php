@@ -507,7 +507,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Throw an exception in create_and_confirm_intention.
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$request->expects( $this->once() )
-			->method( 'send' )
+			->method( 'format_response' )
 			->will(
 				$this->throwException(
 					new API_Exception(
