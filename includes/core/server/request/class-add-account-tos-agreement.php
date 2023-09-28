@@ -22,6 +22,13 @@ class Add_Account_Tos_Agreement extends Request {
 	];
 
 	/**
+	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 *
+	 * @var string $hook
+	 */
+	protected $hook = 'wcpay_add_account_tos_agreement';
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string
