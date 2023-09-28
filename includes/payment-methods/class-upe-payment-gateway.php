@@ -240,6 +240,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$request->set_level3( $this->get_level3_data_from_order( $order ) );
 			$request->set_payment_method_types( $payment_methods );
 			$request->set_fingerprint( $fingerprint );
+			$request->set_hook_args( $order, $payment_intent_id );
 			if ( $payment_country ) {
 				$request->set_payment_country( $payment_country );
 			}
@@ -250,7 +251,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$request->set_customer( $customer_id );
 			}
 
-			$updated_payment_intent = $request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
+			$updated_payment_intent = $request->send();
 
 			// Attach the intent and exchange info to the order before doing the redirect,
 			// so that when processing redirect, the up-to-date intent information is available.
@@ -546,6 +547,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					$request->set_metadata( $this->get_metadata_from_order( $order, $payment_type ) );
 					$request->set_level3( $this->get_level3_data_from_order( $order ) );
 					$request->set_payment_method_types( $payment_methods );
+					$request->set_hook_args( $order, $payment_intent_id );
 					if ( $payment_country ) {
 						$request->set_payment_country( $payment_country );
 					}
@@ -560,7 +562,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						$request->setup_future_usage();
 						$request->set_payment_method_options( $payment_method_options );
 					}
-					$updated_payment_intent = $request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
+					$updated_payment_intent = $request->send();
 				} catch ( Amount_Too_Small_Exception $e ) {
 					// This code would only be reached if the cache has already expired.
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
