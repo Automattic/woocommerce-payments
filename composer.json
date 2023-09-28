@@ -27,7 +27,7 @@
         "automattic/jetpack-autoloader": "2.11.18",
         "automattic/jetpack-identity-crisis": "0.8.43",
         "automattic/jetpack-sync": "1.47.7",
-        "woocommerce/subscriptions-core": "6.0.0",
+        "woocommerce/subscriptions-core": "6.2.0",
         "psr/container": "^1.1"
     },
     "require-dev": {
@@ -91,8 +91,8 @@
             "WCPay\\Vendor\\": "lib/packages",
             "WCPay\\": "src"
         },
-        "files": [ 
-            "src/wcpay-get-container.php" 
+        "files": [
+            "src/wcpay-get-container.php"
         ]
     },
     "repositories": [

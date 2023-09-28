@@ -33,6 +33,7 @@ class WC_Payments_Incentives_Service {
 
 		add_action( 'admin_menu', [ $this, 'add_payments_menu_badge' ] );
 		add_filter( 'woocommerce_admin_allowed_promo_notes', [ $this, 'allowed_promo_notes' ] );
+		add_filter( 'woocommerce_admin_woopayments_onboarding_task_badge', [ $this, 'onboarding_task_badge' ] );
 	}
 
 	/**
@@ -47,9 +48,12 @@ class WC_Payments_Incentives_Service {
 			return;
 		}
 
+		$badge = WC_Payments_Admin::MENU_NOTIFICATION_BADGE;
 		foreach ( $menu as $index => $menu_item ) {
-			if ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) {
-				$menu[ $index ][0] .= WC_Payments_Admin::MENU_NOTIFICATION_BADGE; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			if ( false === strpos( $menu_item[0], $badge ) && ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) ) {
+				$menu[ $index ][0] .= $badge; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+				// One menu item with a badge is more than enough.
 				break;
 			}
 		}
@@ -75,6 +79,23 @@ class WC_Payments_Incentives_Service {
 		$promo_notes[] = $incentive['id'];
 
 		return $promo_notes;
+	}
+
+	/**
+	 * Adds the WooPayments incentive badge to the onboarding task.
+	 *
+	 * @param string $badge Current badge.
+	 *
+	 * @return string
+	 */
+	public function onboarding_task_badge( string $badge ): string {
+		$incentive = $this->get_cached_connect_incentive();
+		// Return early if there is no eligible incentive.
+		if ( empty( $incentive['id'] ) ) {
+			return $badge;
+		}
+
+		return $incentive['task_badge'] ?? $badge;
 	}
 
 	/**

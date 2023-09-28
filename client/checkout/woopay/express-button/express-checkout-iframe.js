@@ -5,7 +5,11 @@ import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
 import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
-import { getTargetElement, validateEmail } from '../utils';
+import {
+	getTargetElement,
+	validateEmail,
+	appendRedirectionParams,
+} from '../utils';
 import wcpayTracks from 'tracks';
 
 export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
@@ -92,6 +96,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
 			{
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+				order_id: getConfig( 'order_id' ),
+				key: getConfig( 'key' ),
+				billing_email: getConfig( 'billing_email' ),
 			}
 		).then( ( response ) => {
 			if ( response?.data?.session ) {
@@ -250,7 +257,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 					true
 				);
 				if ( e.data.redirectUrl ) {
-					window.location = e.data.redirectUrl;
+					window.location = appendRedirectionParams(
+						e.data.redirectUrl
+					);
 				}
 				break;
 			case 'redirect_to_platform_checkout':
@@ -269,7 +278,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 						return;
 					}
 					if ( response.result === 'success' ) {
-						window.location = response.url;
+						window.location = appendRedirectionParams(
+							response.url
+						);
 					} else {
 						showErrorMessage();
 						closeIframe( false );

@@ -250,7 +250,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 				'description' => WC_Payments_Utils::esc_interpolated_html(
 					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
-					[ 'a' => '<a href="https://woocommerce.com/document/woocommerce-payments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+					[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 				),
 			],
 			'manual_capture'                   => [
@@ -782,8 +782,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			function_exists( 'wcs_order_contains_subscription' )
 			&& wcs_order_contains_subscription( $order_id )
-			&& WC_Payments_Features::is_wcpay_subscriptions_enabled()
-			&& ! $this->is_subscriptions_plugin_active()
+			&& WC_Payments_Features::should_use_stripe_billing()
 		) {
 			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP();
 		}
@@ -1236,6 +1235,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 
+				// Add specific payment method parameters to the request.
+				$this->modify_create_intent_parameters_when_processing_payment( $request, $payment_information, $order );
+
 				// The below if-statement ensures the support for UPE payment methods.
 				if ( $this->upe_needs_redirection( $payment_methods ) ) {
 					$request->set_return_url(
@@ -1265,12 +1267,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				// For Stripe Link with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
-				if (
-					WC_Payments_Features::is_upe_deferred_intent_enabled() &&
-					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
-					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
-					) {
+				// For Stripe Link & SEPA with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
+				if ( WC_Payments_Features::is_upe_deferred_intent_enabled() && $this->is_mandate_data_required() ) {
 					$request->set_mandate_data( $this->get_mandate_data() );
 				}
 
@@ -1482,6 +1480,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * The parent method which allows to modify the child class implementation, while supporting the current design where the parent process_payment method is called from the child class.
+	 * Mandate must be shown and acknowledged under certain conditions for Stripe Link and SEPA.
+	 * Since WC_Payment_Gateway_WCPay represents card payment, which does not require mandate, we return false.
+	 *
+	 * @return boolean False since card payment does not require mandate.
+	 */
+	protected function is_mandate_data_required() {
+		return false;
+	}
+
+	/**
 	 * Get the payment method chosen by the customer for the payment processing.
 	 * This payment method is needed in case of the deferred intent creation flow only, because this is the only time when the current gateway might process payments other than of the card type.
 	 * Payment method is only one in case of the deferred intent creation flow, hence the first element of the array is returned.
@@ -1613,9 +1622,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'subscription_payment' => 'no',
 		];
 
-		if ( 'recurring' === (string) $payment_type && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
+		if ( 'recurring' === (string) $payment_type && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order, 'any' ) ) {
 			$metadata['subscription_payment'] = wcs_order_contains_renewal( $order ) ? 'renewal' : 'initial';
-			$metadata['payment_context']      = $this->is_subscriptions_plugin_active() ? 'regular_subscription' : 'wcpay_subscription';
+			$metadata['payment_context']      = WC_Payments_Features::should_use_stripe_billing() ? 'wcpay_subscription' : 'regular_subscription';
 		}
 		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
 	}
@@ -2652,10 +2661,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
 	 * @param bool     $include_level3 - Whether to include level 3 data in payment intent.
+	 * @param array    $intent_metadata - Intent metadata retrieved earlier in the calling method.
 	 *
 	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code
 	 */
-	public function capture_charge( $order, $include_level3 = true ) {
+	public function capture_charge( $order, $include_level3 = true, $intent_metadata = [] ) {
 		$amount                   = $order->get_total();
 		$is_authorization_expired = false;
 		$intent                   = null;
@@ -2664,23 +2674,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$http_code                = null;
 
 		try {
-			$intent_id = $order->get_transaction_id();
-
-			$request = Get_Intention::create( $intent_id );
-			$intent  = $request->send( 'wcpay_get_intent_request', $order );
-
-			$payment_type = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
-
-			$metadata_from_intent = $intent->get_metadata(); // mobile app may have set metadata.
-			$metadata_from_order  = $this->get_metadata_from_order( $order, $payment_type );
-			$merged_metadata      = array_merge( (array) $metadata_from_order, (array) $metadata_from_intent ); // prioritize metadata from mobile app.
-
-			$wcpay_request = Update_Intention::create( $intent_id );
-			$wcpay_request->set_metadata( $merged_metadata );
-			$wcpay_request->send( 'wcpay_prepare_intention_for_capture', $order );
+			$intent_id           = $order->get_transaction_id();
+			$payment_type        = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
+			$metadata_from_order = $this->get_metadata_from_order( $order, $payment_type );
+			$merged_metadata     = array_merge( (array) $metadata_from_order, (array) $intent_metadata ); // prioritize metadata from mobile app.
 
 			$capture_intention_request = Capture_Intention::create( $intent_id );
 			$capture_intention_request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+			$capture_intention_request->set_metadata( $merged_metadata );
 			if ( $include_level3 ) {
 				$capture_intention_request->set_level3( $this->get_level3_data_from_order( $order ) );
 			}
@@ -2693,6 +2694,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
 
+				$request = Get_Intention::create( $intent_id );
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
 				$intent = $request->send( 'wcpay_get_intent_request', $order );
 
@@ -3748,5 +3750,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function upe_needs_redirection( $payment_methods ) {
 		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
+	}
+
+	/**
+	 * Modifies the create intent parameters when processing a payment.
+	 *
+	 * Currently used by child UPE_Split_Payment_Gateway to add required shipping information for Afterpay.
+	 *
+	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
+	 * @param Payment_Information          $payment_information   The payment information object.
+	 * @param mixed                        $order                 The order object or data.
+	 *
+	 * @return void
+	 */
+	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, $order ) {
+		// Do nothing.
 	}
 }

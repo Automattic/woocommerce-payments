@@ -17,6 +17,11 @@ use WCPay\MultiCurrency\MultiCurrency;
 class WooCommerceSubscriptions extends BaseCompatibility {
 
 	/**
+	 * Our allowed subscription types.
+	 */
+	const SUBSCRIPTION_TYPES = [ 'renewal', 'resubscribe', 'switch' ];
+
+	/**
 	 * Subscription switch cart item.
 	 *
 	 * @var string
@@ -46,7 +51,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				add_filter( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', [ $this, 'override_selected_currency' ], 50 );
 				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
 				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_coupon_amount', [ $this, 'should_convert_coupon_amount' ], 50, 2 );
-				add_filter( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', [ $this, 'should_hide_widgets' ], 50 );
+				add_filter( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', [ $this, 'should_disable_currency_switching' ], 50 );
 			}
 		}
 	}
@@ -80,11 +85,8 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $price;
 		}
 
-		$switch_cart_items = $this->get_subscription_switch_cart_items();
-		if ( 0 < count( $switch_cart_items ) ) {
-
-			// There should only ever be one item, so use that item.
-			$item                   = array_shift( $switch_cart_items );
+		$item = $this->get_subscription_type_from_cart( 'switch' );
+		if ( $item ) {
 			$item_id                = ! empty( $item['variation_id'] ) ? $item['variation_id'] : $item['product_id'];
 			$switch_cart_item       = $this->switch_cart_item;
 			$this->switch_cart_item = $item['key'];
@@ -112,7 +114,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				// Check to see if the _subscription_sign_up_fee meta for the product has already been updated.
 				if ( $item['key'] === $switch_cart_item ) {
 					foreach ( $product->get_meta_data() as $meta ) {
-						if ( '_subscription_sign_up_fee' === $meta->get_data()['key'] && 0 < count( $meta->get_changes() ) ) {
+						if ( '_subscription_sign_up_fee' === $meta->get_data()['key'] && ! empty( $meta->get_changes() ) ) {
 							return $price;
 						}
 					}
@@ -133,7 +135,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	public function maybe_disable_mixed_cart( $value ) {
 		// If there's a subscription switch in the cart, disable multiple items in the cart.
 		// This is so that subscriptions with different currencies cannot be added to the cart.
-		if ( 0 < count( $this->get_subscription_switch_cart_items() ) ) {
+		if ( $this->get_subscription_type_from_cart( 'switch' ) ) {
 			return 'no';
 		}
 
@@ -143,56 +145,36 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	/**
 	 * Checks to see if the if the selected currency needs to be overridden.
 	 *
+	 * The running_override_selected_currency_filters property is used here to avoid infinite loops.
+	 *
 	 * @param mixed $return Default is false, but could be three letter currency code.
 	 *
 	 * @return mixed Three letter currency code or false if not.
 	 */
 	public function override_selected_currency( $return ) {
-		// If it's not false, return it.
+		// If it's not false, or we are already running filters, exit.
 		if ( $return || $this->running_override_selected_currency_filters ) {
 			return $return;
 		}
 
-		$subscription_renewal = $this->cart_contains_renewal();
-		if ( $subscription_renewal ) {
-			$order = wc_get_order( $subscription_renewal['subscription_renewal']['renewal_order_id'] );
-			return $order ? $order->get_currency() : $return;
-		}
+		// Loop through subscription types and check for cart items.
+		foreach ( self::SUBSCRIPTION_TYPES as $type ) {
+			$cart_item = $this->get_subscription_type_from_cart( $type );
+			if ( $cart_item ) {
+				$this->running_override_selected_currency_filters = true;
 
-		// The running_override_selected_currency_filters property has been added here due to if it isn't, it will create an infinite loop of calls.
-		if ( isset( WC()->session ) && WC()->session->get( 'order_awaiting_payment' ) ) {
-			$this->running_override_selected_currency_filters = true;
-			$order = wc_get_order( WC()->session->get( 'order_awaiting_payment' ) );
-			$this->running_override_selected_currency_filters = false;
-			if ( $order && $this->order_contains_renewal( $order ) ) {
-				return $order->get_currency();
+				// If we have a cart item, then we can get the order or subscription to pull the currency from.
+				$subscription_type = 'subscription_' . $type;
+				$subscription      = $this->get_subscription( $cart_item[ $subscription_type ]['subscription_id'] );
+
+				$this->running_override_selected_currency_filters = false;
+				return $subscription ? $subscription->get_currency() : $return;
 			}
 		}
 
-		// The running_override_selected_currency_filters property is used to avoid an infinite loop
-		// that can occur on the product page when `get_subscription()` is used.
-		$switch_id = $this->get_subscription_switch_id_from_superglobal();
-		if ( $switch_id ) {
-			$this->running_override_selected_currency_filters = true;
-			$switch_subscription                              = $this->get_subscription( $switch_id );
-			$this->running_override_selected_currency_filters = false;
-			return $switch_subscription ? $switch_subscription->get_currency() : $return;
-		}
-
-		$switch_cart_items = $this->get_subscription_switch_cart_items();
-		if ( 0 < count( $switch_cart_items ) ) {
-			$switch_cart_item    = array_shift( $switch_cart_items );
-			$switch_subscription = $this->get_subscription( $switch_cart_item['subscription_switch']['subscription_id'] );
-			return $switch_subscription ? $switch_subscription->get_currency() : $return;
-		}
-
-		$subscription_resubscribe = $this->cart_contains_resubscribe();
-		if ( $subscription_resubscribe ) {
-			$subscription = $this->get_subscription( $subscription_resubscribe['subscription_resubscribe']['subscription_id'] );
-			return $subscription ? $subscription->get_currency() : $return;
-		}
-
-		return $return;
+		// This instance is for when the customer lands on the product page to choose a new subscription tier.
+		$switch_subscription = $this->get_subscription_from_superglobal_switch_id();
+		return $switch_subscription ? $switch_subscription->get_currency() : $return;
 	}
 
 	/**
@@ -210,8 +192,8 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		}
 
 		// Check for subscription renewal or resubscribe.
-		if ( $this->is_product_subscription_type_in_cart( $product, 'renewal' )
-			|| $this->is_product_subscription_type_in_cart( $product, 'resubscribe' ) ) {
+		if ( $this->get_subscription_type_from_cart( 'renewal' )
+			|| $this->get_subscription_type_from_cart( 'resubscribe' ) ) {
 			$calls = [
 				'WC_Cart_Totals->calculate_item_totals',
 				'WC_Cart->get_product_subtotal',
@@ -252,7 +234,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		}
 
 		// If there's not a renewal in the cart, we can convert.
-		$subscription_renewal = $this->cart_contains_renewal();
+		$subscription_renewal = $this->get_subscription_type_from_cart( 'renewal' );
 		if ( ! $subscription_renewal ) {
 			return true;
 		}
@@ -272,22 +254,22 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	}
 
 	/**
-	 * Checks to see if the widgets should be hidden.
+	 * Checks to see if currency switching should be disabled.
 	 *
 	 * @param bool $return Whether widgets should be hidden or not. Default is false.
 	 *
 	 * @return bool
 	 */
-	public function should_hide_widgets( bool $return ): bool {
+	public function should_disable_currency_switching( bool $return ): bool {
 		// If it's already true, return it.
 		if ( $return ) {
 			return $return;
 		}
 
-		if ( $this->cart_contains_renewal()
-			|| $this->get_subscription_switch_id_from_superglobal()
-			|| 0 < count( $this->get_subscription_switch_cart_items() )
-			|| $this->cart_contains_resubscribe() ) {
+		if ( $this->get_subscription_type_from_cart( 'renewal' )
+			|| $this->get_subscription_type_from_cart( 'resubscribe' )
+			|| $this->get_subscription_type_from_cart( 'switch' )
+			|| $this->get_subscription_from_superglobal_switch_id() ) {
 			return true;
 		}
 
@@ -295,50 +277,53 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	}
 
 	/**
-	 * Checks the cart to see if it contains a subscription product renewal.
+	 * Checks the cart values to see if there are subscriptions with specific types present.
 	 *
-	 * @return mixed The cart item containing the renewal as an array, else false.
+	 * This checks both the cart itself and the session. This is due to there are times when an item may be present in
+	 * one place and not the other. We need to make sure that if an item is in either we are not creating double conversions.
+	 *
+	 * @param string $type The type of subscription to look for in the cart.
+	 *
+	 * @return mixed False if none found, or the subscription cart item as an array.
 	 */
-	private function cart_contains_renewal() {
-		if ( ! function_exists( 'wcs_cart_contains_renewal' ) ) {
+	private function get_subscription_type_from_cart( $type ) {
+		// Make sure we're looking for allowed types.
+		if ( ! in_array( $type, self::SUBSCRIPTION_TYPES, true ) ) {
 			return false;
 		}
-		return wcs_cart_contains_renewal();
-	}
 
-	/**
-	 * Checks an order  to see if it contains a subscription product renewal.
-	 *
-	 * @param object $order Order object.
-	 *
-	 * @return bool The cart item containing the renewal as an array, else false.
-	 */
-	private function order_contains_renewal( $order ): bool {
-		if ( ! function_exists( 'wcs_order_contains_renewal' ) ) {
-			return false;
-		}
-		return wcs_order_contains_renewal( $order );
-	}
+		// Set the sub type cart key.
+		$subscription_type = 'subscription_' . $type;
 
-	/**
-	 * Gets the subscription switch items out of the cart.
-	 *
-	 * @return array Empty array or the cart items in an array..
-	 */
-	private function get_subscription_switch_cart_items(): array {
-		if ( ! function_exists( 'wcs_get_order_type_cart_items' ) ) {
-			return [];
+		// Go through each cart item and if it matches the type, return that item.
+		if ( isset( WC()->cart ) && is_array( WC()->cart->cart_contents ) && ! empty( WC()->cart->cart_contents ) ) {
+			foreach ( WC()->cart->cart_contents as $cart_item ) {
+				if ( isset( $cart_item[ $subscription_type ] ) ) {
+					return $cart_item;
+				}
+			}
 		}
-		return wcs_get_order_type_cart_items( 'switch' );
+
+		// Go through each session cart item and if it matches the type, return that item.
+		if ( isset( WC()->session ) && is_array( WC()->session->get( 'cart' ) ) && ! empty( WC()->session->get( 'cart' ) ) ) {
+			foreach ( WC()->session->get( 'cart' ) as $cart_item ) {
+				if ( isset( $cart_item[ $subscription_type ] ) ) {
+					return $cart_item;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
 	 * Getter for subscription objects.
 	 *
 	 * @param  mixed $the_subscription Post object or post ID of the order.
+	 *
 	 * @return mixed The subscription object, or false if it cannot be found.
-	 *               Note: this is WC_Subscription|bool in normal use, but in tests
-	 *               we use WC_Order to simulate a subscription (hence `mixed`).
+	 *               Note: This should be WC_Subscription|bool, but Psalm throws errors like:
+	 *                     Docblock-defined class, interface or enum named WC_Subscription does not exist (see https://psalm.dev/200)
 	 */
 	private function get_subscription( $the_subscription ) {
 		if ( ! function_exists( 'wcs_get_subscription' ) ) {
@@ -352,9 +337,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * This `switch-subscription` param is added to the URL when a customer
 	 * has initiated a switch from the My Account → Subscription page.
 	 *
-	 * @return int|bool The ID of the subscription being switched, or false if it cannot be found.
+	 * @return mixed The subscription object, or false if it cannot be found.
+	 *               Note: This should be WC_Subscription|bool, but Psalm throws errors like:
+	 *                     Docblock-defined class, interface or enum named WC_Subscription does not exist (see https://psalm.dev/200)
 	 */
-	private function get_subscription_switch_id_from_superglobal() {
+	private function get_subscription_from_superglobal_switch_id() {
 		// Return false if there's no nonce, or if it fails.
 		if ( ! isset( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wcsnonce'] ), 'wcs_switch_request' ) ) {
 			return false;
@@ -373,63 +360,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		$switch_subscription                              = $this->get_subscription( $switch_id );
 		$this->running_override_selected_currency_filters = false;
 
-		// Confirm the sub user matches current user, and return the sub ID.
+		// Confirm the sub user matches current user, and return the sub.
 		if ( $switch_subscription && $switch_subscription->get_customer_id() === get_current_user_id() ) {
-			return $switch_subscription->get_id();
+			return $switch_subscription;
 		} else {
 			Logger::notice( 'User (' . get_current_user_id() . ') attempted to switch a subscription (' . $switch_subscription->get_id() . ') not assigned to them.' );
-		}
-
-		return false;
-	}
-
-	/**
-	 * Checks the cart to see if it contains a resubscription.
-	 *
-	 * @return mixed The cart item containing the resubscription as an array, else false.
-	 */
-	private function cart_contains_resubscribe() {
-		if ( ! function_exists( 'wcs_cart_contains_resubscribe' ) ) {
-			return false;
-		}
-		return wcs_cart_contains_resubscribe();
-	}
-
-	/**
-	 * Checks to see if the product passed is in the cart as a subscription type.
-	 *
-	 * @param object $product Product to test.
-	 * @param string $type    Type of subscription.
-	 *
-	 * @return bool True if found in the cart, false if not.
-	 */
-	private function is_product_subscription_type_in_cart( $product, $type ): bool {
-		if ( ! function_exists( 'wcs_get_subscription' ) ) {
-			return false;
-		}
-
-		$subscription = false;
-
-		switch ( $type ) {
-			case 'renewal':
-				$subscription_item = $this->cart_contains_renewal();
-
-				if ( $subscription_item ) {
-					$subscription = wcs_get_subscription( $subscription_item['subscription_renewal']['subscription_id'] );
-				}
-				break;
-
-			case 'resubscribe':
-				$subscription_item = $this->cart_contains_resubscribe();
-
-				if ( $subscription_item ) {
-					$subscription = wcs_get_subscription( $subscription_item['subscription_resubscribe']['subscription_id'] );
-				}
-				break;
-		}
-
-		if ( $subscription && $product && $subscription->has_product( $product->get_id() ) ) {
-			return true;
 		}
 
 		return false;

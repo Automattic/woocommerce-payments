@@ -294,6 +294,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						'get_payment_method_ids_enabled_at_checkout',
 						'wc_payments_get_payment_gateway_by_id',
 						'get_selected_payment_method',
+						'get_upe_enabled_payment_method_ids',
 					]
 				)
 				->getMock();
@@ -380,6 +381,29 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function test_should_not_use_stripe_platform_on_checkout_page_for_upe() {
 		$payment_gateway = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 		$this->assertFalse( $payment_gateway->should_use_stripe_platform_on_checkout_page() );
+	}
+
+	public function test_link_payment_method_requires_mandate_data() {
+		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
+
+		$mock_upe_gateway
+			->expects( $this->once() )
+			->method( 'get_upe_enabled_payment_method_ids' )
+			->will(
+				$this->returnValue( [ 'link' ] )
+			);
+
+		$this->assertTrue( $mock_upe_gateway->is_mandate_data_required() );
+	}
+
+	public function test_sepa_debit_payment_method_requires_mandate_data() {
+		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::SEPA ];
+		$this->assertTrue( $mock_upe_gateway->is_mandate_data_required() );
+	}
+
+	public function test_non_required_mandate_data() {
+		$mock_gateway_not_requiring_mandate_data = $this->mock_payment_gateways[ Payment_Method::GIROPAY ];
+		$this->assertFalse( $mock_gateway_not_requiring_mandate_data->is_mandate_data_required() );
 	}
 
 	public function test_non_reusable_payment_method_is_not_available_when_subscription_is_in_cart() {
@@ -2191,7 +2215,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'countries'              => [],
 					'upePaymentIntentData'   => null,
 					'upeSetupIntentData'     => null,
-					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
+					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
 					'forceNetworkSavedCards' => false,
 				],
 				'link' => [

@@ -39,9 +39,22 @@ jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
 } ) );
 
+const BlocksCheckoutEnvironmentMock = ( { children } ) => (
+	<div>
+		<button className="wc-block-components-checkout-place-order-button">
+			Place order
+		</button>
+		<input type="text" id="phone" value="+12015555551" />
+		<input type="text" id="shipping-phone" value="+12015555552" />
+		<input type="text" id="billing-phone" value="+12015555553" />
+		{ children }
+	</div>
+);
+
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
 		useWooPayUser.mockImplementation( () => false );
+		extensionCartUpdate.mockResolvedValue( {} );
 
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: true,
@@ -65,7 +78,7 @@ describe( 'CheckoutPageSaveUser', () => {
 	} );
 
 	afterEach( () => {
-		jest.restoreAllMocks();
+		jest.resetAllMocks();
 	} );
 
 	it( 'should render checkbox for saving WooPay user when user is not registered and selected payment method is card', () => {
@@ -137,7 +150,9 @@ describe( 'CheckoutPageSaveUser', () => {
 	} );
 
 	it( 'should render the save user form when checkbox is checked for blocks checkout', () => {
-		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
+		render( <CheckoutPageSaveUser isBlocksCheckout={ true } />, {
+			wrapper: BlocksCheckoutEnvironmentMock,
+		} );
 
 		const label = screen.getByLabelText(
 			'Save my information for a faster and secure checkout'
@@ -173,18 +188,9 @@ describe( 'CheckoutPageSaveUser', () => {
 	} );
 
 	it( 'call `extensionCartUpdate` on blocks checkout when checkbox is clicked', async () => {
-		extensionCartUpdate.mockResolvedValue( {} );
-		const placeOrderButton = document.createElement( 'button' );
-		placeOrderButton.classList.add(
-			'wc-block-components-checkout-place-order-button'
-		);
-		document.body.appendChild( placeOrderButton );
-		const phoneField = document.createElement( 'input' );
-		phoneField.setAttribute( 'id', 'phone' );
-		phoneField.value = '+12015555555';
-		document.body.appendChild( phoneField );
-
-		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
+		render( <CheckoutPageSaveUser isBlocksCheckout={ true } />, {
+			wrapper: BlocksCheckoutEnvironmentMock,
+		} );
 
 		const label = screen.getByLabelText(
 			'Save my information for a faster and secure checkout'
@@ -206,7 +212,7 @@ describe( 'CheckoutPageSaveUser', () => {
 					woopay_is_blocks: true,
 					woopay_viewport: '0x0',
 					woopay_user_phone_field: {
-						full: '+12015555555',
+						full: '+12015555551',
 					},
 				},
 			} )
@@ -222,28 +228,65 @@ describe( 'CheckoutPageSaveUser', () => {
 				data: {},
 			} )
 		);
+	} );
 
-		document.body.removeChild(
-			document.querySelector(
-				'button.wc-block-components-checkout-place-order-button'
-			)
+	it( 'fills the phone input on blocks checkout with phone number field fallback', async () => {
+		render( <CheckoutPageSaveUser isBlocksCheckout={ true } />, {
+			wrapper: BlocksCheckoutEnvironmentMock,
+		} );
+
+		const saveMyInfoCheckbox = screen.getByLabelText(
+			'Save my information for a faster and secure checkout'
 		);
+		// initial state
+		expect( saveMyInfoCheckbox ).not.toBeChecked();
+
+		// click on the checkbox to show the phone field, input should be filled with the first phone input field
+		userEvent.click( saveMyInfoCheckbox );
+		expect( saveMyInfoCheckbox ).toBeChecked();
+		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
+			'2015555551'
+		);
+
+		// click on the checkbox to hide/show it again (and reset the previously entered values)
+		userEvent.click( saveMyInfoCheckbox );
+		document.getElementById( 'phone' ).remove();
+		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
+
+		userEvent.click( saveMyInfoCheckbox );
+		expect( saveMyInfoCheckbox ).toBeChecked();
+		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
+			'2015555552'
+		);
+
+		// click on the checkbox to hide/show it again (and reset the previously entered values)
+		userEvent.click( saveMyInfoCheckbox );
+		document.getElementById( 'shipping-phone' ).remove();
+		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
+
+		userEvent.click( saveMyInfoCheckbox );
+		expect( saveMyInfoCheckbox ).toBeChecked();
+		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
+			'2015555553'
+		);
+
+		// click on the checkbox to hide/show it again (and reset the previously entered values)
+		userEvent.click( saveMyInfoCheckbox );
+		document.getElementById( 'billing-phone' ).remove();
+		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
+
+		userEvent.click( saveMyInfoCheckbox );
+		expect( saveMyInfoCheckbox ).toBeChecked();
+		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
+			''
+		);
+		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
 	} );
 
 	it( 'call `extensionCartUpdate` on blocks checkout when checkbox is clicked with a phone without country code', async () => {
-		jest.clearAllMocks();
-		extensionCartUpdate.mockResolvedValue( {} );
-		const placeOrderButton = document.createElement( 'button' );
-		placeOrderButton.classList.add(
-			'wc-block-components-checkout-place-order-button'
-		);
-		document.body.appendChild( placeOrderButton );
-		const phoneField = document.createElement( 'input' );
-		phoneField.setAttribute( 'id', 'phone' );
-		phoneField.value = '2015555555';
-		document.body.appendChild( phoneField );
-
-		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
+		render( <CheckoutPageSaveUser isBlocksCheckout={ true } />, {
+			wrapper: BlocksCheckoutEnvironmentMock,
+		} );
 
 		const label = screen.getByLabelText(
 			'Save my information for a faster and secure checkout'
@@ -265,7 +308,7 @@ describe( 'CheckoutPageSaveUser', () => {
 					woopay_is_blocks: true,
 					woopay_viewport: '0x0',
 					woopay_user_phone_field: {
-						full: '+12015555555',
+						full: '+12015555551',
 					},
 				},
 			} )

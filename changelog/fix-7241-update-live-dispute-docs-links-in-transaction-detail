@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Comment: Behind a feature flag: Update documentation links (new/changed docs content) when notifying merchant that a dispute needs response.

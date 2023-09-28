@@ -17,10 +17,12 @@ class WC_Payments_Features {
 	const UPE_SPLIT_FLAG_NAME               = '_wcpay_feature_upe_split';
 	const UPE_DEFERRED_INTENT_FLAG_NAME     = '_wcpay_feature_upe_deferred_intent';
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
+	const STRIPE_BILLING_FLAG_NAME          = '_wcpay_feature_stripe_billing';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
 	const DISPUTE_ON_TRANSACTION_PAGE       = '_wcpay_feature_dispute_on_transaction_page';
+	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -58,13 +60,7 @@ class WC_Payments_Features {
 		if ( $upe_flag_value ) {
 			return true;
 		}
-
-		$upe_split_flag_value    = '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
-		$upe_deferred_flag_value = '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
-
-		// if the merchant is not eligible for the Split UPE, but they have the flag enabled, fallback to the "legacy" UPE (for now).
-		return ( $upe_split_flag_value || $upe_deferred_flag_value )
-			&& ! self::is_upe_split_eligible();
+		return false;
 	}
 
 	/**
@@ -78,7 +74,7 @@ class WC_Payments_Features {
 	 * Checks whether the Split UPE with deferred intent is enabled
 	 */
 	public static function is_upe_deferred_intent_enabled() {
-		return ( '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) && self::is_upe_split_eligible() ) || self::is_upe_split_enabled();
+		return ( '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) ) || self::is_upe_split_enabled();
 	}
 
 	/**
@@ -323,6 +319,60 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Stripe Billing feature is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_stripe_billing_enabled(): bool {
+		return '1' === get_option( self::STRIPE_BILLING_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks if the site is eligible for Stripe Billing.
+	 *
+	 * Only US merchants are eligible for Stripe Billing.
+	 *
+	 * @return bool
+	 */
+	public static function is_stripe_billing_eligible() {
+		if ( ! function_exists( 'wc_get_base_location' ) ) {
+			return false;
+		}
+
+		$store_base_location = wc_get_base_location();
+		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+	}
+
+	/**
+	 * Checks whether the merchant is using WCPay Subscription or opted into Stripe Billing.
+	 *
+	 * Note: Stripe Billing is only used when the merchant is using WooCommerce Subscriptions and turned it on or is still using WCPay Subscriptions.
+	 *
+	 * @return bool
+	 */
+	public static function should_use_stripe_billing() {
+		// We intentionally check for the existence of the 'WC_Subscriptions' class here as we want to confirm the Plugin is active.
+		if ( self::is_wcpay_subscriptions_enabled() && ! class_exists( 'WC_Subscriptions' ) ) {
+			return true;
+		}
+
+		if ( self::is_stripe_billing_enabled() && class_exists( 'WC_Subscriptions' ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether the pay for order flow is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_pay_for_order_flow_enabled() {
+		return '1' === get_option( self::PAY_FOR_ORDER_FLOW, '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -342,6 +392,7 @@ class WC_Payments_Features {
 				'isAuthAndCaptureEnabled'           => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'             => self::is_progressive_onboarding_enabled(),
 				'isDisputeOnTransactionPageEnabled' => self::is_dispute_on_transaction_page_enabled(),
+				'isPayForOrderFlowEnabled'          => self::is_pay_for_order_flow_enabled(),
 			]
 		);
 	}

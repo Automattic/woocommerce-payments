@@ -5,10 +5,17 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardFooter,
+	CardDivider,
+	Flex,
+} from '@wordpress/components';
 import moment from 'moment';
 import React, { useContext } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies.
@@ -28,6 +35,11 @@ import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
+import { ClickTooltip } from 'components/tooltip';
+import {
+	getDisputeFeeFormatted,
+	isAwaitingResponse,
+} from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
@@ -37,7 +49,8 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
-import DisputeDetails from '../dispute-details';
+import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
+import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 
 declare const window: any;
 
@@ -177,6 +190,20 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
 
+	const disputeFee =
+		charge.dispute && getDisputeFeeFormatted( charge.dispute );
+
+	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
+	const transactionFee = charge.balance_transaction
+		? {
+				fee: charge.balance_transaction.fee,
+				currency: charge.balance_transaction.currency,
+		  }
+		: {
+				fee: charge.application_fee_amount,
+				currency: charge.currency,
+		  };
+
 	// WP translation strings are injected into Moment.js for relative time terms, since Moment's own translation library increases the bundle size significantly.
 	moment.updateLocale( 'en', {
 		relativeTime: {
@@ -228,10 +255,17 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							) : null }
 							{ balance.refunded ? (
 								<p>
-									{ `${ __(
-										'Refunded',
-										'woocommerce-payments'
-									) }: ` }
+									{ `${
+										disputeFee
+											? __(
+													'Deducted',
+													'woocommerce-payments'
+											  )
+											: __(
+													'Refunded',
+													'woocommerce-payments'
+											  )
+									}: ` }
 									{ formatExplicitCurrency(
 										-balance.refunded,
 										balance.currency
@@ -246,12 +280,65 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									placeholder="Fee amount"
 								>
 									{ `${ __(
-										'Fee',
+										'Fees',
 										'woocommerce-payments'
 									) }: ` }
 									{ formatCurrency(
 										-balance.fee,
 										balance.currency
+									) }
+									{ disputeFee && (
+										<ClickTooltip
+											className="payment-details-summary__breakdown__fee-tooltip"
+											buttonIcon={ <HelpOutlineIcon /> }
+											buttonLabel={ __(
+												'Fee breakdown',
+												'woocommerce-payments'
+											) }
+											content={
+												<>
+													<Flex>
+														<label>
+															{ __(
+																'Transaction fee',
+																'woocommerce-payments'
+															) }
+														</label>
+														<span aria-label="Transaction fee">
+															{ formatCurrency(
+																transactionFee.fee,
+																transactionFee.currency
+															) }
+														</span>
+													</Flex>
+													<Flex>
+														<label>
+															{ __(
+																'Dispute fee',
+																'woocommerce-payments'
+															) }
+														</label>
+														<span aria-label="Dispute fee">
+															{ disputeFee }
+														</span>
+													</Flex>
+													<Flex>
+														<label>
+															{ __(
+																'Total fees',
+																'woocommerce-payments'
+															) }
+														</label>
+														<span aria-label="Total fees">
+															{ formatCurrency(
+																balance.fee,
+																balance.currency
+															) }
+														</span>
+													</Flex>
+												</>
+											}
+										/>
 									) }
 								</Loadable>
 							</p>
@@ -375,9 +462,21 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
+
 			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
-				<DisputeDetails dispute={ charge.dispute } />
+				<>
+					{ isAwaitingResponse( charge.dispute.status ) ? (
+						<DisputeAwaitingResponseDetails
+							dispute={ charge.dispute }
+							customer={ charge.billing_details }
+							chargeCreated={ charge.created }
+						/>
+					) : (
+						<DisputeResolutionFooter dispute={ charge.dispute } />
+					) }
+				</>
 			) }
+
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
@@ -394,7 +493,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											a: (
 												// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
 												<a
-													href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+													href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
 													target="_blank"
 													rel="noreferer"
 												/>
