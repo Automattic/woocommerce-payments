@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { getHistory } from '@woocommerce/navigation';
+import { Notice, Spinner } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -40,11 +41,10 @@ const RedirectToTransactionDetails = ( {
 
 	return (
 		<Page>
-			<h1>
-				We gonna redirect to
-				<a href={ transactionDetailsUrl }>transaction details</a>
-			</h1>
-			<pre>{ transactionDetailsUrl }</pre>
+			<Notice status="info" isDismissible={ false }>
+				<Spinner />
+				<p>Redirecting to transaction…</p>
+			</Notice>
 		</Page>
 	);
 };
