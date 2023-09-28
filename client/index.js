@@ -20,7 +20,7 @@ import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
 import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
-// import DisputeDetailsPage from 'disputes/details';
+import DisputeDetailsPage from 'disputes/details';
 import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
 import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
@@ -151,24 +151,51 @@ addFilter(
 			},
 			capability: 'manage_woocommerce',
 		} );
-		pages.push( {
-			container: RedirectToTransactionDetails,
-			path: '/payments/disputes/details',
-			wpOpenMenu: menuID,
-			breadcrumbs: [
-				rootLink,
-				[
-					'/payments/disputes',
-					__( 'Disputes', 'woocommerce-payments' ),
-				],
-				__( 'Dispute details', 'woocommerce-payments' ),
-			],
-			navArgs: {
-				id: 'wc-payments-disputes-details-legacy-redirect',
-				parentPath: '/payments/disputes',
-			},
-			capability: 'manage_woocommerce',
-		} );
+
+		// If disputes on transaction page feature is enabled, set up a soft
+		// redirect component; otherwise register the (legacy) dispute details page.
+		const isDisputeOnTransactionPageEnabled =
+			window.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled;
+		pages.push(
+			isDisputeOnTransactionPageEnabled
+				? {
+						container: RedirectToTransactionDetails,
+						path: '/payments/disputes/details',
+						wpOpenMenu: menuID,
+						breadcrumbs: [
+							rootLink,
+							[
+								'/payments/disputes',
+								__( 'Disputes', 'woocommerce-payments' ),
+							],
+							__( 'Dispute details', 'woocommerce-payments' ),
+						],
+						navArgs: {
+							id: 'wc-payments-disputes-details-legacy-redirect',
+							parentPath: '/payments/disputes',
+						},
+						capability: 'manage_woocommerce',
+				  }
+				: {
+						container: DisputeDetailsPage,
+						path: '/payments/disputes/details',
+						wpOpenMenu: menuID,
+						breadcrumbs: [
+							rootLink,
+							[
+								'/payments/disputes',
+								__( 'Disputes', 'woocommerce-payments' ),
+							],
+							__( 'Dispute details', 'woocommerce-payments' ),
+						],
+						navArgs: {
+							id: 'wc-payments-disputes-details',
+							parentPath: '/payments/disputes',
+						},
+						capability: 'manage_woocommerce',
+				  }
+		);
+
 		pages.push( {
 			container: DisputeEvidencePage,
 			path: '/payments/disputes/challenge',
