@@ -17,7 +17,7 @@ const RedirectToTransactionDetails = ( {
 	query: { id: disputeId },
 }: {
 	query: { id: string };
-} ): JSX.Element => {
+} ): JSX.Element | null => {
 	const { dispute, isLoading } = useDispute( disputeId );
 	const disputeObject = dispute || ( {} as Dispute );
 	const disputeIsAvailable = ! isLoading && dispute && disputeObject.id;
@@ -35,8 +35,7 @@ const RedirectToTransactionDetails = ( {
 			type: 'dispute',
 		} );
 		getHistory().replace( transactionDetailsUrl );
-		// Is there a way to return null here? This feels less readable.
-		return <></>;
+		return null;
 	}
 
 	return (
