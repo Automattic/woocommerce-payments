@@ -22,7 +22,8 @@ const RedirectToTransactionDetails = ( {
 	const { dispute, isLoading } = useDispute( disputeId );
 	const disputeObject = dispute || ( {} as Dispute );
 	const disputeIsAvailable = ! isLoading && dispute && disputeObject.id;
-	// Why would dispute.charge ever be a string?
+	// Dispute type allows charge as nested object or string ID,
+	// so we have to hint we expect a Charge object here.
 	const chargeObject = disputeObject.charge as Charge;
 
 	let transactionDetailsUrl = '';
