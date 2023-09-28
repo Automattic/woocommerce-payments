@@ -808,6 +808,29 @@ describe( 'PaymentDetailsSummary', () => {
 			).toBeNull();
 		} );
 
+		test( 'correctly renders dispute details for "warning_needs_response" inquiry disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'warning_needs_response';
+
+			renderCharge( charge );
+
+			// Dispute Notice
+			screen.getByText(
+				/The cardholder claims this is an unauthorized transaction/,
+				{ ignore: '.a11y-speak-region' }
+			);
+
+			// Actions
+			screen.getByRole( 'button', {
+				name: /Submit evidence/i,
+			} );
+			screen.getByRole( 'button', {
+				name: /Issue refund/i,
+			} );
+		} );
+
 		test( 'correctly renders dispute details for "warning_under_review" inquiry disputes', () => {
 			const charge = getBaseCharge();
 			charge.disputed = true;
