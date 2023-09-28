@@ -33,6 +33,7 @@ export const WoopayExpressCheckoutButton = ( {
 	const sessionDataPromiseRef = useRef( null );
 	const initWoopayRef = useRef( null );
 	const buttonRef = useRef( null );
+	const isLoadingRef = useRef( false );
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
@@ -109,9 +110,12 @@ export const WoopayExpressCheckoutButton = ( {
 			initWoopayRef.current = ( e ) => {
 				e.preventDefault();
 
-				if ( isPreview ) {
+				if ( isPreview || isLoadingRef.current ) {
 					return;
 				}
+
+				// Set isLoadingRef to true to prevent multiple clicks.
+				isLoadingRef.current = true;
 
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.WOOPAY_BUTTON_CLICK,
@@ -146,7 +150,24 @@ export const WoopayExpressCheckoutButton = ( {
 							{
 								_ajax_nonce: getConfig( 'woopaySessionNonce' ),
 							}
-						).then( ( response ) => {
+						)
+							.then( ( response ) => {
+								iframe.contentWindow.postMessage(
+									{
+										action: 'setPreemptiveSessionData',
+										value: response,
+									},
+									getConfig( 'woopayHost' )
+								);
+							} )
+							.catch( () => {
+								isLoadingRef.current = false;
+							} );
+					} );
+				} else {
+					// Non-product pages already have pre-fetched session data.
+					sessionDataPromiseRef.current
+						.then( ( response ) => {
 							iframe.contentWindow.postMessage(
 								{
 									action: 'setPreemptiveSessionData',
@@ -154,19 +175,10 @@ export const WoopayExpressCheckoutButton = ( {
 								},
 								getConfig( 'woopayHost' )
 							);
+						} )
+						.catch( () => {
+							isLoadingRef.current = false;
 						} );
-					} );
-				} else {
-					// Non-product pages already have pre-fetched session data.
-					sessionDataPromiseRef.current.then( ( response ) => {
-						iframe.contentWindow.postMessage(
-							{
-								action: 'setPreemptiveSessionData',
-								value: response,
-							},
-							getConfig( 'woopayHost' )
-						);
-					} );
 				}
 			};
 		} );
