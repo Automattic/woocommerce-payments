@@ -14,7 +14,7 @@ import { NAMESPACE, STORE_NAME } from 'wcpay/data/constants';
 import { Notice } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import DismissConfirmationModal from './capability-request-dismiss-modal';
-import { CapabilityNoticeProps } from './types';
+import { CapabilityNoticeProps, CapabilityAction } from './types';
 
 const CapabilityNotice = ( {
 	id,
@@ -162,7 +162,7 @@ const CapabilityNotice = ( {
 				status={ noticeData.status }
 				isDismissible={ true }
 				onRemove={ dismissModal }
-				actions={ actions as readonly Notice.Action[] }
+				actions={ actions as readonly CapabilityAction[] }
 				className="woopayments-request-jcb"
 			>
 				{ noticeData.content }

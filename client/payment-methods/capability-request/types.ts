@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { Status } from '@wordpress/notices';
+import { Notice } from '@wordpress/components';
 
 export interface CapabilityStatus {
 	status: Status;
@@ -30,3 +31,13 @@ export interface DismissConfirmationModalProps {
 	onSubmit: () => void;
 	label: string;
 }
+
+interface CapabilityActionButton extends Notice.ButtonAction {
+	isBusy?: boolean;
+	disabled?: boolean;
+}
+interface URLAction extends Notice.BaseAction {
+	url: string;
+}
+
+export type CapabilityAction = CapabilityActionButton | URLAction;
