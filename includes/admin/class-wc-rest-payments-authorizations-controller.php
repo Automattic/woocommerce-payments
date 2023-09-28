@@ -63,7 +63,7 @@ class WC_REST_Payments_Authorizations_Controller extends WC_Payments_REST_Contro
 	public function get_authorizations( WP_REST_Request $request ) {
 		$wcpay_request = List_Authorizations::from_rest_request( $request );
 
-		return $wcpay_request->handle_rest_request( 'wcpay_list_authorizations_request' );
+		return $wcpay_request->handle_rest_request();
 	}
 
 	/**

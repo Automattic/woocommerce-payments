@@ -14,6 +14,12 @@ use WC_Payments_API_Client;
  */
 class List_Authorizations extends Paginated {
 
+	/**
+	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 *
+	 * @var string $hook
+	 */
+	protected $hook = 'wcpay_list_authorizations_request';
 
 	/**
 	 * Returns the request's API.
