@@ -1305,7 +1305,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// If the setup intent is included in the request use that intent.
 				$setup_intent_request = Get_Setup_Intention::create( $woopay_intent_id );
 				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+				$intent = $setup_intent_request->send();
 
 				$intent_metadata          = $intent->get_metadata();
 				$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
@@ -3021,7 +3021,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// For $0 orders, fetch the Setup Intent instead.
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent    = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+				$intent    = $setup_intent_request->send();
 				$status    = $intent->get_status();
 				$charge_id = '';
 			}
@@ -3129,7 +3129,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
 			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+			$setup_intent = $setup_intent_request->send();
 
 			if ( Intent_Status::SUCCEEDED !== $setup_intent->get_status() ) {
 				throw new Add_Payment_Method_Exception(
