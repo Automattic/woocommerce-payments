@@ -225,7 +225,9 @@ describe( 'PaymentDetailsSummary', () => {
 		renderCharge( charge );
 
 		// Headline should show the store currency
-		const headlineAmount = screen.getByLabelText( /Payment amount$/i );
+		const headlineAmount = screen.getByLabelText(
+			/Payment amount in store's currency$/i
+		);
 		within( headlineAmount ).getByText( /\$30.80/ );
 		within( headlineAmount ).getByText( /USD/i );
 
