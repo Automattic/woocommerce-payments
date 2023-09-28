@@ -202,8 +202,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_dispute_on_transaction_page_enabled(): bool {
-		// TODO Remove this temporary change.
-		return true || '1' === get_option( self::DISPUTE_ON_TRANSACTION_PAGE, '0' );
+		return '1' === get_option( self::DISPUTE_ON_TRANSACTION_PAGE, '0' );
 	}
 
 	/**

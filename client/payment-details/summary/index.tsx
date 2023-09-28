@@ -463,7 +463,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				</LoadableBlock>
 			</CardBody>
 
-			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
+			{ charge.dispute && (
 				<>
 					{ isAwaitingResponse( charge.dispute.status ) ? (
 						<DisputeAwaitingResponseDetails
