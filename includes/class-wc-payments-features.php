@@ -39,7 +39,26 @@ class WC_Payments_Features {
 	 * @return string
 	 */
 	public static function get_enabled_upe_type() {
-		if ( self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled() ) {
+		// New stores created in 6.4.0 or 6.5.0, and legacy card stores that migrated to dUPE in 6.4.0 or 6.5.0.
+		$has_store_enabled_dupe_from_previous_plugin_version = self::has_store_enabled_dupe_from_previous_plugin_version();
+		$has_store_enabled_upe_and_dupe_server_flag          = self::has_store_enabled_upe_and_dupe_server_flag();
+
+		// Stores which first self-migrated and then forced migrated to dUPE.
+		if ( $has_store_enabled_dupe_from_previous_plugin_version && $has_store_enabled_upe_and_dupe_server_flag ) {
+			return 'dupe_without_fallback';
+		}
+
+		// Stores which forced migrated to dUPE.
+		if ( $has_store_enabled_upe_and_dupe_server_flag ) {
+			return 'dupe_without_fallback';
+		}
+
+		// Stores which self-migrated to dUPE.
+		if ( $has_store_enabled_dupe_from_previous_plugin_version ) {
+			return 'dupe_with_fallback';
+		}
+
+		if ( self::is_upe_split_enabled() ) {
 			return 'split';
 		}
 
@@ -70,22 +89,11 @@ class WC_Payments_Features {
 	 * Checks whether the Split UPE with deferred intent is enabled
 	 */
 	public static function is_upe_deferred_intent_enabled() {
-		// Support new stores created in [6.4.0, 6.5.0] and legacy card stores that migrated to dUPE in [6.4.0, 6.5.0]
-		// TODO remove this variable after 6.6.0.
+		// Support new stores created in 6.4.0 or 6.5.0, and legacy card stores that migrated to dUPE in 6.4.0 or 6.5.0.
 		$has_store_enabled_dupe_from_previous_plugin_version = self::has_store_enabled_dupe_from_previous_plugin_version();
-
-		// TODO refactor after 6.6.0 to avoid checking for UPE.
-		$has_store_enabled_upe_and_dupe_server_flag = self::has_store_enabled_upe_and_dupe_server_flag();
+		$has_store_enabled_upe_and_dupe_server_flag          = self::has_store_enabled_upe_and_dupe_server_flag();
 
 		return $has_store_enabled_dupe_from_previous_plugin_version || $has_store_enabled_upe_and_dupe_server_flag;
-	}
-
-	/**
-	 * Checks if the Deferred UPE server-side feature flag is enabled.
-	 */
-	private static function is_deferred_upe_server_flag_enabled() {
-		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		return is_array( $account ) && ( $account[ self::DEFERRED_UPE_SERVER_FLAG_NAME ] ?? false );
 	}
 
 	/**
@@ -100,6 +108,15 @@ class WC_Payments_Features {
 	 */
 	private static function has_store_enabled_upe_and_dupe_server_flag() {
 		return ( self::is_upe_split_enabled() || self::is_upe_legacy_enabled() ) && self::is_deferred_upe_server_flag_enabled();
+	}
+
+
+	/**
+	 * Checks if the Deferred UPE server-side feature flag is enabled.
+	 */
+	private static function is_deferred_upe_server_flag_enabled() {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		return is_array( $account ) && ( $account[ self::DEFERRED_UPE_SERVER_FLAG_NAME ] ?? false );
 	}
 
 	/**
