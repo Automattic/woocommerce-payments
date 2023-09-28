@@ -2,14 +2,15 @@
  * External dependencies
  */
 import React from 'react';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
  */
-import { useDispute } from 'data/index';
 import Page from 'components/page';
-import { Dispute } from 'wcpay/types/disputes';
+import { useDispute } from 'data/index';
 import { Charge } from 'wcpay/types/charges';
+import { Dispute } from 'wcpay/types/disputes';
 import { getAdminUrl } from 'wcpay/utils';
 
 const RedirectToTransactionDetails = ( {
@@ -33,8 +34,9 @@ const RedirectToTransactionDetails = ( {
 			transaction_id: chargeObject.balance_transaction,
 			type: 'dispute',
 		} );
-		// window.location = transactionDetailsUrl;
-		// return null;
+		getHistory().replace( transactionDetailsUrl );
+		// Is there a way to return null here? This feels less readable.
+		return <></>;
 	}
 
 	return (
