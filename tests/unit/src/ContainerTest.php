@@ -123,6 +123,14 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Checks if the container throws the right exception on `get` calls.
+	 */
+	public function test_get_throws_container_exception() {
+		$this->expectException( ContainerException::class );
+		$this->sut->get( 'Class_Name_That_Does_Not_Exist' );
+	}
+
+	/**
 	 * Checks if the delegate container provides a WooCommerce instance.
 	 */
 	public function test_container_delegates() {
