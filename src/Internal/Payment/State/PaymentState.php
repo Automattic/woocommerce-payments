@@ -107,9 +107,10 @@ abstract class PaymentState {
 	private function throw_unavailable_method_exception( string $method_name ) {
 		throw new MethodUnavailableException(
 			sprintf(
-				// translators: %s is the name of a method of the payment object.
-				__( 'The %s method is not available in the current payment state.', 'woocommerce-payments' ),
-				$method_name
+				// translators: %1$s is the name of a method of the payment object, %2$s is its current state.
+				__( 'The %1$s method is not available in the current payment state (%2$s).', 'woocommerce-payments' ),
+				$method_name,
+				get_class( $this )
 			)
 		);
 	}

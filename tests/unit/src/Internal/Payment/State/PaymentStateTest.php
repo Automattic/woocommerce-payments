@@ -81,7 +81,7 @@ class PaymentStateTest extends WCPAY_UnitTestCase {
 
 	public function test_process_throws_exception() {
 		$this->expectException( MethodUnavailableException::class );
-		$this->expectExceptionMessage( 'The WCPay\Internal\Payment\State\PaymentState::process method is not available in the current payment state.' );
+		$this->expectExceptionMessage( 'The WCPay\Internal\Payment\State\PaymentState::process method is not available in the current payment state (' . PureState::class . ').' );
 		$this->sut->process();
 	}
 }
