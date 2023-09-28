@@ -198,7 +198,7 @@ export const WoopayExpressCheckoutButton = ( {
 			);
 			const isConfirmSessionData =
 				event.data.action === 'confirmSetPreemptiveSessionData';
-			if ( ! isFromWoopayHost || ! isConfirmSessionData || isPreview ) {
+			if ( ! isFromWoopayHost || ! isConfirmSessionData ) {
 				return;
 			}
 
