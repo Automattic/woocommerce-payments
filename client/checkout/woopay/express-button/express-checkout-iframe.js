@@ -96,6 +96,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
 			{
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+				order_id: getConfig( 'order_id' ),
+				key: getConfig( 'key' ),
+				billing_email: getConfig( 'billing_email' ),
 			}
 		).then( ( response ) => {
 			if ( response?.data?.session ) {
