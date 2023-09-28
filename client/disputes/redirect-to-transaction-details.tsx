@@ -43,7 +43,7 @@ const RedirectToTransactionDetails = ( {
 		<Page>
 			<Notice status="info" isDismissible={ false }>
 				<Spinner />
-				<p>Redirecting to transaction…</p>
+				<span>Redirecting to payment details…</span>
 			</Notice>
 		</Page>
 	);
