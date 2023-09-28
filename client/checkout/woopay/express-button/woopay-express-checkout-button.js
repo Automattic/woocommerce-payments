@@ -173,7 +173,7 @@ export const WoopayExpressCheckoutButton = ( {
 				} else {
 					// Non-product pages already have pre-fetched session data.
 					sessionDataPromiseRef.current
-						.then( ( response ) => {
+						?.then( ( response ) => {
 							iframe.contentWindow.postMessage(
 								{
 									action: 'setPreemptiveSessionData',
