@@ -23,6 +23,13 @@ class Get_Account_Capital_Link extends Request {
 	];
 
 	/**
+	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 *
+	 * @var string $hook
+	 */
+	protected $hook = 'wcpay_get_account_capital_link';
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string

@@ -606,7 +606,7 @@ class WC_Payments_Account {
 			$request->set_return_url( $return_url );
 			$request->set_refresh_url( $refresh_url );
 
-			$capital_link = $request->send( 'wcpay_get_account_capital_link' );
+			$capital_link = $request->send();
 			$this->redirect_to( $capital_link['url'] );
 		} catch ( Exception $e ) {
 			$error_url = add_query_arg(
