@@ -358,7 +358,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$request->set_metadata( $metadata );
 			$request->set_capture_method( $manual_capture );
 			$request->set_fingerprint( $fingerprint );
-			$payment_intent = $request->send( 'wcpay_create_intent_request', $order );
+			$request->set_hook_args( $order );
+			$payment_intent = $request->send();
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$minimum_amount = $e->get_minimum_amount();
 

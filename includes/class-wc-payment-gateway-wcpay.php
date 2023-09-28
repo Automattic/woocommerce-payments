@@ -2693,7 +2693,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$wcpay_request = Update_Intention::create( $intent_id );
 			$wcpay_request->set_metadata( $merged_metadata );
-			$wcpay_request->send( 'wcpay_prepare_intention_for_capture', $order );
+			$wcpay_request->set_hook_args( $order );
+			$wcpay_request->send();
 
 			$capture_intention_request = Capture_Intention::create( $intent_id );
 			$capture_intention_request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
@@ -3231,7 +3232,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$request->set_metadata( $metadata );
 			$request->set_payment_method_types( $payment_methods );
 			$request->set_capture_method( $capture_method );
-			$intent = $request->send( 'wcpay_create_intent_request', $order );
+			$request->set_hook_args( $order );
+			$intent = $request->send();
 
 			return [
 				'id' => ! empty( $intent ) ? $intent->get_id() : null,

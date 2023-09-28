@@ -63,14 +63,7 @@ $request = Create_Intention::create();
 $request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 $request->set_currency( $order->get_currency() );
 $request->set_payment_method( $payment_information->get_payment_method() );
-
-/**
- * Sending a request to create and confirm a payment intention.
- * 
- * @param WC_Order            $order               The order which the intention belongs to. 
- * @param Payment_Information $payment_information Prepared payment information from the gateway.
- */
-$intention = $request->send( 'wcpay_create_intention_request', $order, $payment_information );
+$intention = $request->send();
 ```
 
 ### Generic requests

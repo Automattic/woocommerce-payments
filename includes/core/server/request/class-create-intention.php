@@ -23,6 +23,13 @@ class Create_Intention extends Request {
 	const REQUIRED_PARAMS  = [ 'amount', 'currency' ];
 
 	/**
+	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 *
+	 * @var string $hook
+	 */
+	protected $hook = 'wcpay_create_intent_request';
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string
