@@ -27,7 +27,6 @@ const RedirectToTransactionDetails = ( {
 
 	let transactionDetailsUrl = '';
 	if ( disputeIsAvailable ) {
-		const paymentIntentId = disputeObject.charge;
 		transactionDetailsUrl = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/transactions/details',
