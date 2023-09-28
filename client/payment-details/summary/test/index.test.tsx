@@ -50,6 +50,22 @@ jest.mock( 'wcpay/data', () => ( {
 	} ) ),
 } ) );
 
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( {
+		createErrorNotice: jest.fn(),
+	} ) ),
+	useSelect: jest.fn( () => ( { getNotices: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+} ) );
+
 const mockUseAuthorization = useAuthorization as jest.MockedFunction<
 	typeof useAuthorization
 >;
