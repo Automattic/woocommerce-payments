@@ -26,6 +26,13 @@ class Capture_Intention extends Request {
 	];
 
 	/**
+	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 *
+	 * @var string $hook
+	 */
+	protected $hook = 'wcpay_capture_intent_request';
+
+	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
 	 * @param string $id Sets the intent ID, which will be used in the request URL.
