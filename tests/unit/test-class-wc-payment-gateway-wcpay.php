@@ -1338,7 +1338,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'order_number'         => $order->get_order_number(),
 			'order_key'            => $order->get_order_key(),
 			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'classic',
+			'gateway_type'         => 'legacy_card',
 			'checkout_type'        => '',
 			'client_version'       => WCPAY_VERSION_NUMBER,
 			'subscription_payment' => 'no',
@@ -1985,7 +1985,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
-	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
+	public function test_timur_karimov_testing() {
 		delete_transient( 'wcpay_minimum_amount_usd' );
 
 		$amount   = 0.45;
