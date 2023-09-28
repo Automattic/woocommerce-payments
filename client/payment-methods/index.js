@@ -39,7 +39,6 @@ import DisableUPEModal from '../settings/disable-upe-modal';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
-import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 import CardBody from '../settings/card-body';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
@@ -271,17 +270,6 @@ const PaymentMethods = () => {
 									'woocommerce-payments'
 								) }
 							</span>
-							{ upeType !== 'split' && (
-								<>
-									{ ' ' }
-									<Pill>
-										{ __(
-											'Early access',
-											'woocommerce-payments'
-										) }
-									</Pill>
-								</>
-							) }
 						</h4>
 						<PaymentMethodsDropdownMenu
 							setOpenModal={ setOpenModalIdentifier }
