@@ -83,6 +83,7 @@ class WC_REST_Payments_Authorizations_Controller extends WC_Payments_REST_Contro
 	 */
 	public function get_authorizations_summary() {
 		$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
-		return $request->handle_rest_request( 'wc_pay_get_authorizations_summary' );
+		$request->apply_hook( 'wc_pay_get_authorizations_summary' );
+		return $request->handle_rest_request();
 	}
 }
