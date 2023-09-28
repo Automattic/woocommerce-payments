@@ -45,11 +45,11 @@ describe( 'Disputes > Submit winning dispute', () => {
 	} );
 
 	beforeEach( () => {
-		global.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = true;
+		window.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = true;
 	} );
 
 	afterEach( () => {
-		global.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = false;
+		window.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = false;
 	} );
 
 	it( 'should process and confirm a winning dispute', async () => {
