@@ -105,7 +105,7 @@ const getBaseDispute = (): Dispute =>
 		order: null,
 		balance_transactions: [
 			{
-				amount: -1500,
+				amount: -2000,
 				currency: 'usd',
 				fee: 1500,
 				reporting_category: 'dispute',
@@ -162,7 +162,7 @@ describe( 'PaymentDetailsSummary', () => {
 		global.wcpaySettings = {
 			isSubscriptionsActive: false,
 			shouldUseExplicitPrice: false,
-			zeroDecimalCurrencies: [],
+			zeroDecimalCurrencies: [ 'jpy' ],
 			connect: {
 				country: 'US',
 			},
@@ -178,6 +178,14 @@ describe( 'PaymentDetailsSummary', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+				},
+				JP: {
+					code: 'JPY',
+					symbol: '¥',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 0,
 				},
 			},
 		};
@@ -540,6 +548,70 @@ describe( 'PaymentDetailsSummary', () => {
 			screen.getByRole( 'button', {
 				name: /Accept dispute/,
 			} );
+		} );
+
+		test( 'renders the information of a disputed charge when the store/charge currency differ', () => {
+			// True when multi-currency is enabled.
+			global.wcpaySettings.shouldUseExplicitPrice = true;
+
+			// In this case, charge currency is JPY, but store currency is NOK.
+			const charge = getBaseCharge();
+			charge.currency = 'jpy';
+			charge.amount = 10000;
+			charge.balance_transaction = {
+				amount: 72581,
+				currency: 'nok',
+				reporting_category: 'charge',
+				fee: 4152,
+			};
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+			charge.dispute.amount = 10000;
+			charge.dispute.currency = 'jpy';
+			charge.dispute.balance_transactions = [
+				{
+					amount: -72581,
+					currency: 'nok',
+					fee: 15000,
+					reporting_category: 'dispute',
+				},
+			];
+			renderCharge( charge );
+
+			// Disputed amount should show the store (balance transaction) currency.
+			expect(
+				screen.getByText( /Dispute Amount/i ).nextSibling
+			).toHaveTextContent( /kr 725.81 NOK/i );
+		} );
+
+		test( 'renders the information of an inquiry when the store/charge currency differ', () => {
+			// True when multi-currency is enabled.
+			global.wcpaySettings.shouldUseExplicitPrice = true;
+
+			// In this case, charge currency is JPY, but store currency is NOK.
+			const charge = getBaseCharge();
+			charge.currency = 'jpy';
+			charge.amount = 10000;
+			charge.balance_transaction = {
+				amount: 72581,
+				currency: 'nok',
+				reporting_category: 'charge',
+				fee: 4152,
+			};
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'warning_needs_response';
+			charge.dispute.amount = 10000;
+			charge.dispute.currency = 'jpy';
+			// Inquiries don't have balance transactions.
+			charge.dispute.balance_transactions = [];
+			renderCharge( charge );
+
+			// Disputed amount should show the dispute/charge currency.
+			expect(
+				screen.getByText( /Dispute Amount/i ).nextSibling
+			).toHaveTextContent( /¥10,000 JPY/i );
 		} );
 
 		test( 'correctly renders dispute details for a dispute with staged evidence', () => {
