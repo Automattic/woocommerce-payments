@@ -216,7 +216,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						<p
 							className="payment-details-summary__amount"
 							aria-label={ __(
-								'Payment amount',
+								`Payment amount in store's currency`,
 								'woocommerce-payments'
 							) }
 						>
