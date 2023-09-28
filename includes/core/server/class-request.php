@@ -21,7 +21,7 @@ use WP_Error;
 /**
  * Base for requests to the WCPay server.
  */
-abstract class Request implements WC_Payments_Request_Interface {
+abstract class Request{
 	/**
 	 * Contains a set of params, which the class considers immutable by others.
 	 *

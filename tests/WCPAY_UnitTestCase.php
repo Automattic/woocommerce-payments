@@ -7,7 +7,6 @@
 
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Response;
-use WCPay\Core\Server\WC_Payments_Request_Interface;
 
 /**
  * This stub assists IDE in recognizing PHPUnit tests.
@@ -42,37 +41,28 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $request_class_constructor_id = null, $response = null, $api_client_mock = null, $http_mock = null ) {
 		$http_mock       = $http_mock ? $http_mock : $this->createMock( WC_Payments_Http::class );
 		$api_client_mock = $api_client_mock ? $api_client_mock : $this->createMock( WC_Payments_API_Client::class );
+
 		if ( 1 > $total_api_calls ) {
 			$api_client_mock->expects( $this->never() )->method( 'send_request' );
 
 			// No expectation for calls, return here.
 			return;
 		}
-		// Since we are mocking interface, we need add missing functions from interface (from request class).
-		$reflection_class = new \ReflectionClass( $request_class );
-		$methods          = $reflection_class->getMethods( \ReflectionMethod::IS_PUBLIC );
 
-		$methods_to_add = [ 'send', 'handle_rest_request' ];
-		foreach ( $methods as $method ) {
-			if ( ! $method->isFinal() ) {
-				$methods_to_add[] = $method->name;
-			}
-		}
+		$request = $this->getMockBuilder( $request_class )
+		                ->setConstructorArgs( [ $api_client_mock, $http_mock, $request_class_constructor_id ] )
+		                ->getMock();
 
-		$request = $this->getMockBuilder( WC_Payments_Request_Interface::class )
-			->setConstructorArgs( [ $api_client_mock, $http_mock, $request_class_constructor_id ] )
-			->setMethods( $methods_to_add )
-			->getMock();
-		$request->expects( $this->any() )
-			->method( 'send' )
-			->will(
-				$this->returnCallback(
-					function() use ( $request ) {
-
-						return $request->format_response( $this->anything() );
-					}
-				)
-			);
+		$api_client_mock->expects( $this->exactly( $total_api_calls ) )
+		                ->method( 'send_request' )
+		                ->with(
+			                $this->callback(
+			                // With filters there is a chance that mock will be changed. With this code we are sure that it belongs to same class.
+				                function( $argument ) use ( $request_class, $request ) {
+					                return get_class( $request ) === get_class( $argument ) || is_subclass_of( $argument, $request_class );
+				                }
+			                )
+		                );
 
 		if ( ! is_null( $response ) ) {
 			$request
@@ -86,6 +76,11 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 			if ( ! is_null( $existing_request ) ) {
 				return $existing_request; // Another `mock_wcpay_request` in action.
 			}
+
+			if ( ! ( $request instanceof $class_name ) ) {
+				return $existing_request; // Another mock.
+			}
+
 			// Only do this once.
 			remove_filter( 'wcpay_create_request', $fn );
 			return $request;
