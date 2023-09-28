@@ -14,6 +14,7 @@ import useExpressCheckoutProductHandler from './use-express-checkout-product-han
 import wcpayTracks from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
 import request from 'wcpay/checkout/utils/request';
+import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/woopay-utils';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
@@ -161,6 +162,11 @@ export const WoopayExpressCheckoutButton = ( {
 								);
 							} )
 							.catch( () => {
+								const errorMessage = __(
+									'Something went wrong. Please try again.',
+									'woocommerce-payments'
+								);
+								showErrorMessage( context, errorMessage );
 								isLoadingRef.current = false;
 							} );
 					} );
@@ -177,6 +183,11 @@ export const WoopayExpressCheckoutButton = ( {
 							);
 						} )
 						.catch( () => {
+							const errorMessage = __(
+								'Something went wrong. Please try again.',
+								'woocommerce-payments'
+							);
+							showErrorMessage( context, errorMessage );
 							isLoadingRef.current = false;
 						} );
 				}
@@ -221,6 +232,11 @@ export const WoopayExpressCheckoutButton = ( {
 			if ( isSessionDataSuccess ) {
 				window.location.href = event.data.value.redirect_url;
 			} else if ( istSessionDataError ) {
+				const errorMessage = __(
+					'WooPay is unavailable at this time. Please try again.',
+					'woocommerce-payments'
+				);
+				showErrorMessage( context, errorMessage );
 				isLoadingRef.current = false;
 			}
 		};
@@ -230,7 +246,7 @@ export const WoopayExpressCheckoutButton = ( {
 		return () => {
 			window.removeEventListener( 'message', onMessage );
 		};
-	}, [ isPreview, isProductPage, newIframe ] );
+	}, [ context, isPreview, isProductPage, newIframe ] );
 
 	useEffect( () => {
 		// Set button's default onClick handle to use modal checkout flow.
