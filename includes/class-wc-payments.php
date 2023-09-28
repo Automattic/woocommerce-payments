@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
+use WCPay\Core\Server\WC_Payments_Request_Interface;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -327,6 +328,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/exceptions/server/response/class-server-response-exception.php';
 
 		// Include core requests.
+		include_once __DIR__ . '/core/server/class-wc-payments-request-interface.php';
 		include_once __DIR__ . '/core/server/class-request.php';
 		include_once __DIR__ . '/core/server/class-response.php';
 		include_once __DIR__ . '/core/server/request/trait-intention.php';
@@ -1611,7 +1613,7 @@ class WC_Payments {
 	 *
 	 * @param  string $class_name The name of the request class. Must extend WCPay\Core\Server\Request.
 	 * @param  mixed  $id         The item ID, if the request needs it (Optional).
-	 * @return Request
+	 * @return Request|WC_Payments_Request_Interface
 	 * @throws Exception          If the request class is not really a request.
 	 */
 	public static function create_request( $class_name, $id = null ) {
@@ -1622,7 +1624,7 @@ class WC_Payments {
 		 * @param string  $class_name The name of the request class.
 		 */
 		$request = apply_filters( 'wcpay_create_request', null, $class_name, $id );
-		if ( $request instanceof Request ) {
+		if ( $request instanceof WC_Payments_Request_Interface ) {
 			return $request;
 		}
 

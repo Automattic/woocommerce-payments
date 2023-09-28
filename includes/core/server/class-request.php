@@ -21,7 +21,7 @@ use WP_Error;
 /**
  * Base for requests to the WCPay server.
  */
-abstract class Request {
+abstract class Request implements WC_Payments_Request_Interface {
 	/**
 	 * Contains a set of params, which the class considers immutable by others.
 	 *
@@ -409,7 +409,7 @@ abstract class Request {
 	 * @param string $key   The name of the parameter.
 	 * @param mixed  $value And the value to set.
 	 */
-	final protected function set_param( string $key, $value ) {
+	final public function set_param( string $key, $value ) {
 		if ( $this->protected_mode && in_array( $key, static::get_immutable_params(), true ) ) {
 			$this->throw_immutable_exception( $key );
 		}
@@ -438,7 +438,7 @@ abstract class Request {
 	 *
 	 * @param array $params The new parameters to use.
 	 */
-	private function set_params( $params ) {
+	public function set_params( $params ) {
 		$this->params = $params;
 	}
 
