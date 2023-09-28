@@ -109,8 +109,45 @@ jQuery( function ( $ ) {
 		) {
 			for ( const upeElement of $( '.wcpay-upe-element' ).toArray() ) {
 				await mountStripePaymentElement( api, upeElement );
+				restrictPaymentMethodToLocation( upeElement );
 			}
 			maybeEnableStripeLink( api );
+		}
+	}
+
+	function restrictPaymentMethodToLocation( upeElement ) {
+		const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+		const paymentMethodType = upeElement.dataset.paymentMethodType;
+		const isRestrictedInAnyCountry = !! paymentMethodsConfig[
+			paymentMethodType
+		].countries.length;
+
+		if ( isRestrictedInAnyCountry ) {
+			togglePaymentMethodForCountry(
+				paymentMethodType,
+				paymentMethodsConfig[ paymentMethodType ].countries
+			);
+			$( '#billing_country' ).on( 'change', function () {
+				togglePaymentMethodForCountry(
+					paymentMethodType,
+					paymentMethodsConfig[ paymentMethodType ].countries
+				);
+			} );
+		}
+	}
+	function togglePaymentMethodForCountry(
+		paymentMethodType,
+		supportedCountries
+	) {
+		const billingCountry = document.querySelector( '#billing_country' )
+			.value;
+		const upeContainer = document.querySelector(
+			'.payment_method_woocommerce_payments_' + paymentMethodType
+		);
+		if ( supportedCountries.includes( billingCountry ) ) {
+			upeContainer.style.display = 'block';
+		} else {
+			upeContainer.style.display = 'none';
 		}
 	}
 } );
