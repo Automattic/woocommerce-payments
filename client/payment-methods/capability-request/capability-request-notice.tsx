@@ -11,17 +11,17 @@ import methodsConfiguration from '../../payment-methods-map';
 import InlineNotice from 'components/inline-notice';
 import { select, useDispatch } from '@wordpress/data';
 import { NAMESPACE, STORE_NAME } from 'wcpay/data/constants';
-import { Notice } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import DismissConfirmationModal from './capability-request-dismiss-modal';
-import { CapabilityNoticeProps, CapabilityAction } from './types';
+import { CapabilityNoticeProps } from './types';
+import { Action } from 'wcpay/types/notices';
 
 const CapabilityNotice = ( {
 	id,
 	label,
 	country,
 	states,
-}: CapabilityNoticeProps ) => {
+}: CapabilityNoticeProps ): JSX.Element | null => {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { capabilityRequestNotices } = wcpaySettings;
@@ -162,7 +162,7 @@ const CapabilityNotice = ( {
 				status={ noticeData.status }
 				isDismissible={ true }
 				onRemove={ dismissModal }
-				actions={ actions as readonly CapabilityAction[] }
+				actions={ actions as readonly Action[] }
 				className="woopayments-request-jcb"
 			>
 				{ noticeData.content }
