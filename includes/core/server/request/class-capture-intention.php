@@ -77,6 +77,15 @@ class Capture_Intention extends Request {
 	}
 
 	/**
+	 * Setter for intent metadata.
+	 *
+	 * @param array $metadata Intent metadata that includes stuff like order details, card reader specifics, etc..
+	 */
+	public function set_metadata( array $metadata ): void {
+		$this->set_param( 'metadata', $metadata );
+	}
+
+	/**
 	 * Formats the response from the server.
 	 *
 	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
