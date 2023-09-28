@@ -82,7 +82,7 @@ $request = new Generic(
 		'amount' => 300
 	]
 );
-$intention = $request->send( 'custom_create_intention_request' );
+$intention = $request->send();
 ```
 
 However, once the rest of the related development is finished, please create a new request class before merging.
@@ -110,7 +110,8 @@ Here is a **good example**:
  * @param WC_Order            $order               The order which the intention belongs to. 
  * @param Payment_Information $payment_information Prepared payment information from the gateway.
  */
-$intention = $request->send( 'wcpay_update_intention_request', $order, $payment_information );
+$request->apply_hook( 'wcpay_update_intention_request', $order, $payment_information );
+$intention = $request->send();
 ```
 
 - This example includes everything needed in the `$order` and `$payment_information` parameters, and they are documented.
@@ -119,7 +120,9 @@ $intention = $request->send( 'wcpay_update_intention_request', $order, $payment_
 Here is a **bad example**:
 
 ```php
-$intention = $request->send( 'update_request', $intention_id );
+$request->apply_hook('update_request', $intention_id );
+
+$intention = $request->send();
 ```
 
 - This example uses `update_request`, which could appear in other hooks.

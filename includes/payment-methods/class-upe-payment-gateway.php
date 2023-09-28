@@ -373,7 +373,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			 * amount for the API.
 			 */
 			$request->set_amount( $minimum_amount );
-			$payment_intent = $request->send( 'wcpay_create_intent_request', $order );
+			$payment_intent = $request->send();
 		}
 
 		return [
