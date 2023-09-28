@@ -210,11 +210,19 @@ export const WoopayExpressCheckoutButton = ( {
 			);
 			const isSessionDataSuccess =
 				event.data.action === 'set_preemptive_session_data_success';
-			if ( ! isFromWoopayHost || ! isSessionDataSuccess ) {
+			const istSessionDataError =
+				event.data.action === 'set_preemptive_session_data_error';
+			const isSessionDataResponse =
+				isSessionDataSuccess || istSessionDataError;
+			if ( ! isFromWoopayHost || ! isSessionDataResponse ) {
 				return;
 			}
 
-			window.location.href = event.data.value.redirect_url;
+			if ( isSessionDataSuccess ) {
+				window.location.href = event.data.value.redirect_url;
+			} else if ( istSessionDataError ) {
+				isLoadingRef.current = false;
+			}
 		};
 
 		window.addEventListener( 'message', onMessage );
