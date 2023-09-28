@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-use Automattic\WooCommerce\StoreApi\Utilities\OrderAuthorizationTrait;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
