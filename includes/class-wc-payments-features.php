@@ -45,17 +45,17 @@ class WC_Payments_Features {
 
 		// Stores which first self-migrated and then forced migrated to dUPE.
 		if ( $has_store_enabled_dupe_from_previous_plugin_version && $has_store_enabled_upe_and_dupe_server_flag ) {
-			return 'dupe_without_fallback';
+			return 'deferred_intent_upe_without_fallback';
 		}
 
 		// Stores which forced migrated to dUPE.
 		if ( $has_store_enabled_upe_and_dupe_server_flag ) {
-			return 'dupe_without_fallback';
+			return 'deferred_intent_upe_without_fallback';
 		}
 
 		// Stores which self-migrated to dUPE.
 		if ( $has_store_enabled_dupe_from_previous_plugin_version ) {
-			return 'dupe_with_fallback';
+			return 'deferred_intent_upe_with_fallback';
 		}
 
 		if ( self::is_upe_split_enabled() ) {

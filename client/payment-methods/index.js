@@ -51,7 +51,8 @@ import interpolateComponents from '@automattic/interpolate-components';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
-	const isDisablePossible = isUpeEnabled && upeType === 'dupe_with_fallback';
+	const isDisablePossible =
+		isUpeEnabled && upeType !== 'deferred_intent_upe_without_fallback';
 	const label = isDisablePossible
 		? __( 'Add feedback or disable', 'woocommerce-payments' )
 		: __( 'Add feedback', 'woocommerce-payments' );
