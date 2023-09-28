@@ -8,7 +8,7 @@
 namespace WCPay;
 
 use Psr\Container\ContainerInterface;
-use WCPay\Internal\DependencyManagement\ContainerException;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\DependencyManagement\ExtendedContainer;
 use WCPay\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
 use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
