@@ -1339,6 +1339,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_customer( $customer_id );
 				$request->set_payment_method( $payment_information->get_payment_method() );
 				$request->set_metadata( $metadata );
+				$request->apply_hook( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_woopay );
 
 				if (
 					WC_Payments_Features::is_upe_deferred_intent_enabled() &&
@@ -1350,7 +1351,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent = $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_woopay );
+				$intent = $request->send();
 			}
 
 			$intent_id     = $intent->get_id();
@@ -3277,7 +3278,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$request = Create_And_Confirm_Setup_Intention::create();
 		$request->set_customer( $customer_id );
 		$request->set_payment_method( $payment_information->get_payment_method() );
-		return $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, $should_save_in_platform_account, false );
+		$request->apply_hook( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, $should_save_in_platform_account, false );
+		return $request->send();
 	}
 
 	/**

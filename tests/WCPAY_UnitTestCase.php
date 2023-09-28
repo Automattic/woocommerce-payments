@@ -49,11 +49,11 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 			return;
 		}
 		// Since setMethodsExcept is deprecated, this is the only alternative I came upon.
-		$methods_to_mock = array_diff( get_class_methods( $request_class ), [ 'set_hook_args' ] );
+		$methods_to_mock = array_diff( get_class_methods( $request_class ), [ 'set_hook_args', 'apply_hook' ] );
 
 		$request = $this->getMockBuilder( $request_class )
 			->setConstructorArgs( [ $api_client_mock, $http_mock, $request_class_constructor_id ] )
-			->onlyMethods( $methods_to_mock )  // Mock all methods except set_hook_args to accommodate filter args when apply_filters is called.
+			->onlyMethods( $methods_to_mock )  // Mock all methods except set_hook_args and apply_hook to accommodate filter args when apply_filters is called.
 			->getMock();
 
 		$api_client_mock->expects( $this->exactly( $total_api_calls ) )

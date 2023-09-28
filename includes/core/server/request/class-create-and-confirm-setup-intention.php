@@ -28,6 +28,13 @@ class Create_And_Confirm_Setup_Intention extends Request {
 	];
 
 	/**
+	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 *
+	 * @var string $hook
+	 */
+	protected $hook = 'wcpay_create_and_confirm_setup_intention_request';
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string
