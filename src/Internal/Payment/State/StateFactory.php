@@ -8,7 +8,7 @@
 namespace WCPay\Internal\Payment\State;
 
 use WCPay\Container;
-use WCPay\Internal\DependencyManagement\ContainerException;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
 
