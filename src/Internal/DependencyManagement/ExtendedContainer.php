@@ -9,6 +9,7 @@ namespace WCPay\Internal\DependencyManagement;
 
 use WCPay\Vendor\League\Container\Container;
 use WCPay\Vendor\League\Container\Definition\Definition;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 
 /**
  * Extends the League container to allow WCPay customizations.

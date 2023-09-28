@@ -13,7 +13,7 @@ use Automattic\WooCommerce\Utilities\PluginUtil;
 use stdClass;
 use WCPay\Container;
 use WCPay\Core\Mode;
-use WCPay\Internal\DependencyManagement\ContainerException;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\DependencyManagement\ExtendedContainer;
 use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
 use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
