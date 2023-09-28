@@ -26,7 +26,8 @@ const CapabilityRequestList: Array< CapabilityRequestMap > = [
 					'woocommerce-payments'
 				),
 				actions: 'link',
-				actionUrl: 'http://google.com',
+				actionUrl:
+					'https://woocommerce.com/document/woopayments/payment-methods/',
 				actionsLabel: __( 'Finish setup', 'woocommerce-payments' ),
 			},
 			pending: {
@@ -46,7 +47,7 @@ const CapabilityRequestList: Array< CapabilityRequestMap > = [
 			active: {
 				status: 'info',
 				content: __(
-					'The JCB payment method is now enabled on your store.',
+					'The JCB is now enabled on your store.',
 					'woocommerce-payments'
 				),
 			},

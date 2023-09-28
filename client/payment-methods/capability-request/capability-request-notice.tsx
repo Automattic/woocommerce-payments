@@ -29,6 +29,7 @@ const CapabilityNotice = ( {
 		capabilityRequestNotices[ id ] ?? false
 	);
 	const [ isDismissModalOpen, setDismissModalOpen ] = useState( false );
+	const [ isLoading, setIsLoading ] = useState( false );
 
 	const paymentMethodStatuses = useGetPaymentMethodStatuses() as Record<
 		string,
@@ -71,6 +72,8 @@ const CapabilityNotice = ( {
 	if ( ! noticeData ) return null;
 
 	const requestCapability = async () => {
+		setIsLoading( true );
+
 		try {
 			await apiFetch< string >( {
 				path: `${ NAMESPACE }/settings/request-capability`,
@@ -89,11 +92,15 @@ const CapabilityNotice = ( {
 					'woocommerce-payments'
 				)
 			);
+
+			setIsLoading( false );
 		} catch ( exception ) {
 			createNotice(
 				'error',
 				__( 'Error requesting the capability!', 'woocommerce-payments' )
 			);
+
+			setIsLoading( false );
 		}
 	};
 
@@ -139,6 +146,8 @@ const CapabilityNotice = ( {
 					noticeData.actions === 'request'
 						? requestCapability
 						: moreDetails,
+				isBusy: isLoading,
+				disabled: isLoading,
 			},
 		];
 	}

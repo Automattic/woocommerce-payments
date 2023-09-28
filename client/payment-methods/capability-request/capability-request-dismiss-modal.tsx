@@ -38,12 +38,13 @@ const DismissConfirmationModal: React.FC< DismissConfirmationModalProps > = ( {
 		>
 			<p>
 				{ sprintf(
-					/** translators: %s is the currency code, e.g. USD. */
+					/** translators: %s is the capability label. */
 					__(
-						'Please confirme, by chooising "Yes, continue" you will remove the option to add the ' +
-							'the %s payment method for your customers. This option will not appear again.',
+						'Choosing to continue will remove the option to accept %s cards from your customers. ' +
+							'The option to enable %s will not appear again.',
 						'woocommerce-payments'
 					),
+					label,
 					label
 				) }
 			</p>

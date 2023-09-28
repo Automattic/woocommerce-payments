@@ -72,6 +72,8 @@ function InlineNotice( props: InlineNoticeProps ): JSX.Element {
 				key={ index }
 				className={ actionClass }
 				onClick={ action.onClick }
+				isBusy={ action.isBusy ?? false }
+				disabled={ action.disabled ?? false }
 			>
 				{ action.label }
 			</Button>
