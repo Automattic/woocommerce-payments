@@ -18,6 +18,13 @@ class List_Documents extends Paginated {
 	use Date_Parameters;
 
 	/**
+	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 *
+	 * @var string $hook
+	 */
+	protected $hook = 'wcpay_list_documents_request';
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string
