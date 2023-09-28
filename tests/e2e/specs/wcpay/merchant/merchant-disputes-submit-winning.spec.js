@@ -44,14 +44,6 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await merchant.logout();
 	} );
 
-	beforeEach( () => {
-		window.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = true;
-	} );
-
-	afterEach( () => {
-		window.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = false;
-	} );
-
 	it( 'should process and confirm a winning dispute', async () => {
 		// Pull out and follow the link to avoid working in multiple tabs
 		const paymentDetailsLink = await page.$eval(
