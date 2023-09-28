@@ -231,7 +231,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		// Breakdown should show the charge currency
 		within(
-			screen.getByLabelText( /Payment amount in original currency/i )
+			screen.getByLabelText( /Payment amount in shopper's currency/i )
 		).getByText( /\$47.68 AUD/i );
 	} );
 

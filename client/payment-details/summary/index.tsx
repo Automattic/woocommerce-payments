@@ -242,9 +242,9 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						<div className="payment-details-summary__breakdown">
 							{ isStoreAndShopperCurrencyMismatched && (
 								<p
-									className="payment-details-summary__breakdown__original-amount"
+									className="payment-details-summary__breakdown__shopper-amount"
 									aria-label={ __(
-										'Payment amount in original currency',
+										`Payment amount in shopper's currency`,
 										'woocommerce-payments'
 									) }
 								>
