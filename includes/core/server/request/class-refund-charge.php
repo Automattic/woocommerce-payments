@@ -26,6 +26,13 @@ class Refund_Charge extends Request {
 	const REQUIRED_PARAMS = [ 'charge' ];
 
 	/**
+	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 *
+	 * @var string $hook
+	 */
+	protected $hook = 'wcpay_refund_charge_request';
+
+	/**
 	 * Sets the charge ID, which will be used in the request URL.
 	 *
 	 * @param string $charge_id Sets the charge ID, which will be used in the request URL.
