@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { getHistory } from '@woocommerce/navigation';
-import { Notice, Spinner } from '@wordpress/components';
+import { Notice, Spinner, Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -42,8 +42,14 @@ const RedirectToTransactionDetails = ( {
 	return (
 		<Page>
 			<Notice status="info" isDismissible={ false }>
-				<Spinner />
-				<span>Redirecting to payment details…</span>
+				<Flex justify="left">
+					<FlexItem>
+						<Spinner />
+					</FlexItem>
+					<FlexItem>
+						<span>Redirecting to payment details…</span>
+					</FlexItem>
+				</Flex>
 			</Notice>
 		</Page>
 	);
