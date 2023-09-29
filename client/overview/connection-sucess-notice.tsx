@@ -15,7 +15,11 @@ const ConnectionSuccessNotice: React.FC = () => {
 
 	const {
 		accountStatus: {
-			progressiveOnboarding: { isComplete, isEnabled },
+			progressiveOnboarding: {
+				isEnabled: isPoEnabled,
+				isComplete: isPoComplete,
+			},
+			status: accountStatus,
 		},
 		onboardingTestMode,
 	} = wcpaySettings;
@@ -41,9 +45,9 @@ const ConnectionSuccessNotice: React.FC = () => {
 		<Card className="wcpay-connection-success">
 			{ /* Show dismiss button only at the end of Progressive Onboarding //
 			or at the end of the full KYC flow. */ }
-			{ ! ( isEnabled && ! isComplete ) && <DismissMenu /> }
+			{ ! ( isPoEnabled && ! isPoComplete ) && <DismissMenu /> }
 			<img src={ ConfettiImage } alt="confetti" />
-			{ isEnabled && ! isComplete ? (
+			{ isPoEnabled && ! isPoComplete ? (
 				<>
 					<h2>
 						{ __(
@@ -60,12 +64,21 @@ const ConnectionSuccessNotice: React.FC = () => {
 				</>
 			) : (
 				<>
-					<h2>
-						{ __(
-							'Congratulations! Your store has been verified.',
-							'woocommerce-payments'
-						) }
-					</h2>
+					{ accountStatus !== 'complete' ? (
+						<h2>
+							{ __(
+								'Congratulations! Your store is being verified.',
+								'woocommerce-payments'
+							) }
+						</h2>
+					) : (
+						<h2>
+							{ __(
+								'Congratulations! Your store has been verified.',
+								'woocommerce-payments'
+							) }
+						</h2>
+					) }
 				</>
 			) }
 		</Card>

@@ -697,6 +697,9 @@ export default class WCPayAPI {
 				_wpnonce: nonce,
 				email: userEmail,
 				user_session: woopayUserSession,
+				order_id: getConfig( 'order_id' ),
+				key: getConfig( 'key' ),
+				billing_email: getConfig( 'billing_email' ),
 			} ).finally( () => {
 				this.isWooPayRequesting = false;
 			} );
