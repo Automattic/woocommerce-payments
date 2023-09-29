@@ -42,10 +42,8 @@ jQuery( function ( $ ) {
 
 		// Initialise handlers for Woo Subscriptions deactivate warning.
 		init_deactivate_wc_subscriptions_warning() {
-			const plugin_slug = this.get_woo_subscriptions_plugin_slug();
-
 			// Intercept click on Woo Subscriptions deactivate link to show modal.
-			$( '#deactivate-' + plugin_slug ).on(
+			$( '#deactivate-' + this.get_woo_subscriptions_plugin_slug() ).on(
 				'click',
 				this.display_wcs_warning
 			);
@@ -72,9 +70,10 @@ jQuery( function ( $ ) {
 				'busy'
 			);
 
-			window.location = $( '#deactivate-woocommerce-subscriptions' ).attr(
-				'href'
-			);
+			window.location = $(
+				'#deactivate-' +
+					wc_payments_plugin.get_woo_subscriptions_plugin_slug()
+			).attr( 'href' );
 		},
 		// Gets the Woo Subscriptions plugin slug. When the ite is connected to WooCommerce.com, the slug is different and includes a woocommerce-com- prefix.
 		get_woo_subscriptions_plugin_slug() {
