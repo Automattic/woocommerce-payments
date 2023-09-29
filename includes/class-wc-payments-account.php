@@ -1699,7 +1699,7 @@ class WC_Payments_Account {
 		// Get the loan summary.
 		try {
 			$request = Request::get( WC_Payments_API_Client::CAPITAL_API . '/active_loan_summary' );
-			$request->apply_hook( 'wcpay_get_active_loan_summary_request' );
+			$request->assign_hook( 'wcpay_get_active_loan_summary_request' );
 			$loan_details = $request->send();
 
 		} catch ( API_Exception $ex ) {

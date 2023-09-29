@@ -21,7 +21,7 @@ use WP_Error;
 /**
  * Base for requests to the WCPay server.
  */
-abstract class Request{
+abstract class Request {
 	/**
 	 * Contains a set of params, which the class considers immutable by others.
 	 *
@@ -383,11 +383,9 @@ abstract class Request{
 	 * Assign the WordPress filter hook and the arguments specific to the previously assigned hook.
 	 *
 	 * @param string $hook WordPress filter hook name.
-	 * @param mixed  ...$args Arguments for the filter hook.
 	 */
-	public function apply_hook( string $hook, ...$args ) {
-		$this->hook      = $hook;
-		$this->hook_args = $args;
+	public function assign_hook( string $hook ) {
+		$this->hook = $hook;
 	}
 
 	/**

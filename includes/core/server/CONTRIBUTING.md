@@ -112,7 +112,7 @@ add_filter( 'wcpay_my_request', function ( $request ) {
 
 $request = My_Request::create();
 $request->set_name( 'John' );
-$request->apply_hook( 'wcpay_my_request' );
+$request->assign_hook( 'wcpay_my_request' );
 $request->send();
 ```
 

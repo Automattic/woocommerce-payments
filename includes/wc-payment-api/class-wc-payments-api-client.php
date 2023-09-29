@@ -290,7 +290,7 @@ class WC_Payments_API_Client {
 	 */
 	public function list_fraud_outcome_transactions( $request ) {
 		// TODO: Refactor this.
-		$request->apply_hook( 'wcpay_list_fraud_outcome_transactions_request' );
+		$request->assign_hook( 'wcpay_list_fraud_outcome_transactions_request' );
 		$fraud_outcomes = $request->send();
 
 		$page      = $request->get_param( 'page' );
@@ -313,7 +313,7 @@ class WC_Payments_API_Client {
 	 */
 	public function list_fraud_outcome_transactions_summary( $request ) {
 		// TODO: Refactor this.
-		$request->apply_hook( 'wcpay_list_fraud_outcome_transactions_summary_request' );
+		$request->assign_hook( 'wcpay_list_fraud_outcome_transactions_summary_request' );
 		$fraud_outcomes = $request->send();
 
 		$total      = 0;
@@ -340,7 +340,7 @@ class WC_Payments_API_Client {
 	 */
 	public function get_fraud_outcome_transactions_search_autocomplete( $request ) {
 		// TODO: Refactor this.
-		$request->apply_hook( 'wcpay_get_fraud_outcome_transactions_search_autocomplete_request' );
+		$request->assign_hook( 'wcpay_get_fraud_outcome_transactions_search_autocomplete_request' );
 		$fraud_outcomes = $request->send();
 
 		$search_term = $request->get_param( 'search_term' );
@@ -392,7 +392,7 @@ class WC_Payments_API_Client {
 	 */
 	public function get_fraud_outcome_transactions_export( $request ) {
 		// TODO: Refactor this.
-		$request->apply_hook( 'wcpay_get_fraud_outcome_transactions_export_request' );
+		$request->assign_hook( 'wcpay_get_fraud_outcome_transactions_export_request' );
 		$fraud_outcomes = $request->send();
 
 		return [

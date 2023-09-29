@@ -50,7 +50,7 @@ class WC_REST_Payments_Capital_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function get_active_loan_summary() {
 		$request = Request::get( WC_Payments_API_Client::CAPITAL_API . '/active_loan_summary' );
-		$request->apply_hook( 'wcpay_get_active_loan_summary_request' );
+		$request->assign_hook( 'wcpay_get_active_loan_summary_request' );
 		return $request->handle_rest_request();
 	}
 
@@ -59,7 +59,7 @@ class WC_REST_Payments_Capital_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function get_loans() {
 		$request = Request::get( WC_Payments_API_Client::CAPITAL_API . '/loans' );
-		$request->apply_hook( 'wcpay_get_loans_request' );
+		$request->assign_hook( 'wcpay_get_loans_request' );
 		return $request->handle_rest_request();
 	}
 

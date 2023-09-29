@@ -35,6 +35,7 @@ $request->set_metadata( $metadata );
 $request->set_payment_method( $payment_method_id );
 $request->set_payment_method_types( $payment_method_types );
 $request->set_mandate_data( $mandate_data );
-$request->apply_hook( 'wcpay_create_and_confirm_setup_intent_request', $payment_information, $save_in_platform_account, $save_payment_method_to_platform );
+$request->assign_hook( 'wcpay_create_and_confirm_setup_intent_request' );
+$request->set_hook_args( $payment_information, $save_in_platform_account, $save_payment_method_to_platform );
 $request->send();
 ```

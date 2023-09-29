@@ -35,7 +35,7 @@ use WCPay\Core\Server\Request\Get_Intention;
 
 $intention_id = $this->order_service->get_intent_id_for_order( $order );
 $request      = Get_Intention::create( $intention_id );
-$request->apply_hook( 'my_get_intention_request', $order );
+$request->assign_hook( 'my_get_intention_request', $order );
 
 /**
  * Sends a request to retrieve an intention.
@@ -110,7 +110,8 @@ Here is a **good example**:
  * @param WC_Order            $order               The order which the intention belongs to. 
  * @param Payment_Information $payment_information Prepared payment information from the gateway.
  */
-$request->apply_hook( 'wcpay_update_intention_request', $order, $payment_information );
+$request->assign_hook( 'wcpay_update_intention_request' );
+$request->set_hook_args( $order, $payment_information )
 $intention = $request->send();
 ```
 
@@ -120,7 +121,7 @@ $intention = $request->send();
 Here is a **bad example**:
 
 ```php
-$request->apply_hook('update_request', $intention_id );
+$request->assign_hook('update_request', $intention_id );
 
 $intention = $request->send();
 ```

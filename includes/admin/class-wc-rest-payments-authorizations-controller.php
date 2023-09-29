@@ -74,7 +74,7 @@ class WC_REST_Payments_Authorizations_Controller extends WC_Payments_REST_Contro
 	public function get_authorization( WP_REST_Request $request ) {
 		$payment_intent_id = $request->get_param( 'payment_intent_id' );
 		$request           = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API, $payment_intent_id );
-		$request->apply_hook( 'wcpay_get_authorization_request' );
+		$request->assign_hook( 'wcpay_get_authorization_request' );
 		return $request->handle_rest_request();
 	}
 
@@ -83,7 +83,7 @@ class WC_REST_Payments_Authorizations_Controller extends WC_Payments_REST_Contro
 	 */
 	public function get_authorizations_summary() {
 		$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
-		$request->apply_hook( 'wc_pay_get_authorizations_summary' );
+		$request->assign_hook( 'wc_pay_get_authorizations_summary' );
 		return $request->handle_rest_request();
 	}
 }

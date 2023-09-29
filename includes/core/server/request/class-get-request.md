@@ -23,13 +23,13 @@ When creating `Get_Request` requests, the ID parameter could be passed to the `:
 
 ```php
 $request = Request::get( ('deposits', $id );
-$request->apply_hook( 'wcpay_get_deposit_request' );
+$request->assign_hook( 'wcpay_get_deposit_request' );
 $request->send();
 ```
 
 ```php
 $request = Request::get( ('deposits' ); // Without ID argument.
-$request->apply_hook( 'wcpay_get_deposits_request' );
+$request->assign_hook( 'wcpay_get_deposits_request' );
 $request->send();
 ```
 
@@ -37,6 +37,6 @@ You could also create request with the following code, but it is not recommended
 ```php
 $request = Get_Request::create( $id );
 $request->set_method ('deposits')
-$request->apply_hook( 'wcpay_get_deposit_request' );
+$request->assign_hook( 'wcpay_get_deposit_request' );
 $request->send();
 ```
