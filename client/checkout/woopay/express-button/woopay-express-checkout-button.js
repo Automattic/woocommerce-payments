@@ -297,6 +297,9 @@ export const WoopayExpressCheckoutButton = ( {
 					'woocommerce-payments'
 				);
 				showErrorMessage( context, errorMessage );
+
+				// Set button's default onClick handle to use modal checkout flow.
+				initWoopayRef.current = defaultOnClick;
 				isLoadingRef.current = false;
 			}
 		};
@@ -306,7 +309,7 @@ export const WoopayExpressCheckoutButton = ( {
 		return () => {
 			window.removeEventListener( 'message', onMessage );
 		};
-	}, [ context, isPreview, isProductPage, newIframe ] );
+	}, [ context, defaultOnClick, isPreview, isProductPage, newIframe ] );
 
 	useEffect( () => {
 		// Set button's default onClick handle to use modal checkout flow.
