@@ -14,7 +14,7 @@ import useExpressCheckoutProductHandler from './use-express-checkout-product-han
 import wcpayTracks from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
 import request from 'wcpay/checkout/utils/request';
-import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/woopay-utils';
+import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
