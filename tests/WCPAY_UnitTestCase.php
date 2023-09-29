@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Response;
 
@@ -17,6 +18,22 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	protected function is_wpcom() {
 		return defined( 'IS_WPCOM' ) && IS_WPCOM;
 	}
+
+	/**
+	 * Creates a mock object.
+	 *
+	 * This method does not work differently from `createMock`,
+	 * but the DocBlock comment indicates a proper return type,
+	 * combining `MockObject` and the provided class name.
+	 *
+	 * @template ID
+	 * @param class-string<ID> $original_class_name Name of the class to mock.
+	 * @return ID|MockObject
+	 */
+	public function createMock( string $original_class_name ): MockObject { // phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found
+		return parent::createMock( $original_class_name );
+	}
+
 
 	/**
 	 * Mocks an outgoing WCPay request (Those from WCPay\Core\Server\Request).
