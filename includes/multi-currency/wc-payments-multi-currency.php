@@ -17,6 +17,13 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 }
 
 add_action( 'plugins_loaded', 'WC_Payments_Multi_Currency', 12 );
+add_action(
+	'plugins_loaded',
+	function() {
+		WC_Payments_Multi_Currency()->init_hooks();
+	},
+	12
+);
 
 register_deactivation_hook( WCPAY_PLUGIN_FILE, 'wcpay_multi_currency_deactivated' );
 
