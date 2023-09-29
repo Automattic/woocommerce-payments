@@ -23,9 +23,9 @@ class Create_Setup_Intention extends Request {
 	const REQUIRED_PARAMS  = [ 'customer', 'payment_method_types' ];
 
 	/**
-	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
-	 * @var string $hook
+	 * @var string
 	 */
 	protected $hook = 'wcpay_create_setup_intention_request';
 

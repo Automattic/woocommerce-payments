@@ -17,9 +17,9 @@ use WC_Payments_API_Client;
 class Update_Account extends Request {
 
 	/**
-	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
-	 * @var string $hook
+	 * @var string
 	 */
 	protected $hook = 'wcpay_update_account_settings';
 	/**

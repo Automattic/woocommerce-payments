@@ -94,16 +94,16 @@ abstract class Request {
 	protected $id;
 
 	/**
-	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
-	 * @var string $hook
+	 * @var string
 	 */
 	protected $hook = '';
 
 	/**
-	 * Used to set WordPress filter hook arguments that will be executed when send() function is called.
+	 * Used to set the arguments for the request class WordPress hook. Make sure to add hook name first.
 	 *
-	 * @var array $hook_args
+	 * @var array
 	 */
 	protected $hook_args = [];
 

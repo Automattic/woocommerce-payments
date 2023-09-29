@@ -24,9 +24,9 @@ class Cancel_Intention extends Request {
 	const DEFAULT_PARAMS   = [];
 
 	/**
-	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
-	 * @var string $hook
+	 * @var string
 	 */
 	protected $hook = 'wcpay_cancel_intent_request';
 

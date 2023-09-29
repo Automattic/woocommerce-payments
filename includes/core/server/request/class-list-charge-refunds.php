@@ -25,9 +25,9 @@ class List_Charge_Refunds extends Request {
 	const REQUIRED_PARAMS = [ 'charge' ];
 
 	/**
-	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
-	 * @var string $hook
+	 * @var string
 	 */
 	protected $hook = 'wcpay_list_charge_refunds_request';
 

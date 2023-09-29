@@ -22,9 +22,9 @@ class Get_Account_Login_Data extends Request {
 	];
 
 	/**
-	 * Used to set WordPress filter hook that will be executed when send() function is called.
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
-	 * @var string $hook
+	 * @var string
 	 */
 	protected $hook = 'wpcay_get_account_login_data';
 
