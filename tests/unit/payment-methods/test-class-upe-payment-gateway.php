@@ -33,8 +33,10 @@ use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
 use WC_Payments_Token_Service;
 use Exception;
+use WC_Payments;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WC_Payments_Localization_Service;
+use WCPay\Database_Cache;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
@@ -182,6 +184,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 		$this->mock_wcpay_account->method( 'get_account_default_currency' )->willReturn( 'USD' );
 
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
+
 		$payment_methods = [
 			'link' => [
 				'base' => 0.1,
@@ -302,6 +309,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 */
 	public function tear_down() {
 		parent::tear_down();
+		WC_Payments::set_database_cache( $this->_cache );
 		update_option( '_wcpay_feature_upe', '0' );
 		update_option( '_wcpay_feature_upe_split', '0' );
 	}
@@ -1904,7 +1912,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_split_upe() {
-		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 
 		$data = [
 			'methods'  => [
@@ -1935,8 +1943,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_upe_with_deferred_intent_creation() {
-		update_option( '_wcpay_feature_upe_split', '0' );
-		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
+
 		$data = [
 			'methods'  => [
 				'card',

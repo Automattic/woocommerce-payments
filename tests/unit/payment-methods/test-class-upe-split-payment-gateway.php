@@ -38,6 +38,7 @@ use WCPay\WC_Payments_Checkout;
 use WCPay\Payment_Information;
 use WC_Payments;
 use WC_Payments_Localization_Service;
+use WCPay\Database_Cache;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
@@ -189,6 +190,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->mock_payment_gateways = [];
 		$this->mock_payment_methods  = [];
 
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
+
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
 		// return value of create_and_confirm_intention().
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
@@ -338,6 +344,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 */
 	public function tear_down() {
 		parent::tear_down();
+		WC_Payments::set_database_cache( $this->_cache );
 		update_option( '_wcpay_feature_upe_split', '0' );
 		update_option( '_wcpay_feature_upe_deferred_intent', '0' );
 	}
@@ -2125,7 +2132,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_link_payment_method_if_card_enabled() {
-		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
@@ -2422,13 +2429,13 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test get_payment_methods_from_gateway_id function.
+	 * Test get_payment_methods_from_gateway_id function with UPE enabled.
 	 *
 	 * @return void
 	 */
-	public function test_get_payment_methods_from_gateway_id() {
-		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
-		$order            = WC_Helper_Order::create_order();
+	public function test_get_payment_methods_from_gateway_id_upe() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
+		WC_Helper_Order::create_order();
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
@@ -2469,15 +2476,46 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::BANCONTACT );
 
 		$this->assertSame( [ Payment_Method::BANCONTACT ], $payment_methods );
+		WC_Payments::set_gateway( $gateway );
+	}
 
-		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
+	/**
+	 * Test get_payment_methods_from_gateway_id function with UPE disabled.
+	 *
+	 * @return void
+	 */
+	public function test_get_payment_methods_from_gateway_id_non_upe() {
+		$this->mock_cache
+			->method( 'get' )
+			->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => false ] );
 
-		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
+		$order            = WC_Helper_Order::create_order();
+		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_payment_methods[ Payment_Method::CARD ],
+					$this->mock_payment_methods,
+					$this->mock_rate_limiter,
+					$this->order_service,
+					$this->mock_dpps,
+					$this->mock_localization_service,
+				]
+			)
+			->setMethods(
+				[
+					'get_upe_enabled_payment_method_ids',
+					'get_payment_method_ids_enabled_at_checkout',
+				]
+			)
+			->getMock();
 
-		$this->assertSame( [ Payment_Method::CARD, Payment_Method::LINK ], $payment_methods );
-
-		update_option( '_wcpay_feature_upe_split', '0' );
-		update_option( '_wcpay_feature_upe_deferred_intent', '0' );
+		$gateway = WC_Payments::get_gateway();
+		WC_Payments::set_gateway( $mock_upe_gateway );
 
 		$mock_upe_gateway->expects( $this->any() )
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
