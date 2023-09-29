@@ -115,6 +115,11 @@ jQuery( function ( $ ) {
 		}
 	}
 
+	/**
+	 * Hides payment method if it has set specific countries in the PHP class.
+	 *
+	 * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
+	 **/
 	function restrictPaymentMethodToLocation( upeElement ) {
 		const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 		const paymentMethodType = upeElement.dataset.paymentMethodType;
@@ -135,6 +140,11 @@ jQuery( function ( $ ) {
 			} );
 		}
 	}
+
+	/**
+	 * @param {string} paymentMethodType The payment method type.
+	 * @param {Array}  supportedCountries A list of countries that given payment method is supported in.
+	 **/
 	function togglePaymentMethodForCountry(
 		paymentMethodType,
 		supportedCountries
