@@ -43,6 +43,7 @@ import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import InlineNotice from 'wcpay/components/inline-notice';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
