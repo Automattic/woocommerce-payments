@@ -221,17 +221,17 @@ export const WoopayExpressCheckoutButton = ( {
 			);
 			const isSessionDataSuccess =
 				event.data.action === 'set_preemptive_session_data_success';
-			const istSessionDataError =
+			const isSessionDataError =
 				event.data.action === 'set_preemptive_session_data_error';
 			const isSessionDataResponse =
-				isSessionDataSuccess || istSessionDataError;
+				isSessionDataSuccess || isSessionDataError;
 			if ( ! isFromWoopayHost || ! isSessionDataResponse ) {
 				return;
 			}
 
 			if ( isSessionDataSuccess ) {
 				window.location.href = event.data.value.redirect_url;
-			} else if ( istSessionDataError ) {
+			} else if ( isSessionDataError ) {
 				const errorMessage = __(
 					'WooPay is unavailable at this time. Please try again.',
 					'woocommerce-payments'
