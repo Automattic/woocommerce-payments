@@ -37,9 +37,16 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 		$this->id             = $this->multi_currency->id;
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
-		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_onboarding_cta', [ $this, 'currencies_settings_onboarding_cta' ] );
-
 		parent::__construct();
+	}
+
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_onboarding_cta', [ $this, 'currencies_settings_onboarding_cta' ] );
 	}
 
 	/**
