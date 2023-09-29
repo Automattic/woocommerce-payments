@@ -47,7 +47,6 @@ import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import InlineNotice from 'wcpay/components/inline-notice';
-import interpolateComponents from '@automattic/interpolate-components';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
@@ -285,19 +284,8 @@ const PaymentMethods = () => {
 							status="warning"
 							isDismissible={ false }
 						>
-							{ interpolateComponents( {
-								mixedString: __(
-									'You were rolled back from dUPE to legacy UPE. Stay tuned on next actions.' +
-										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-									'woocommerce-payments'
-								),
-								components: {
-									learnMoreLink: (
-										// eslint-disable-next-line max-len
-										<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#popular-payment-methods" />
-									),
-								},
-							} ) }
+							{ 'You have been switched from the new checkout to your previous checkout experience.' +
+								+'We will keep you posted on the new checkout availability.' }
 						</InlineNotice>
 					</CardHeader>
 				) }
