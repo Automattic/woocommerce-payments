@@ -1922,7 +1922,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
-	public function test_timur_karimov_testing() {
+	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
 		delete_transient( 'wcpay_minimum_amount_usd' );
 
 		$amount   = 0.45;
