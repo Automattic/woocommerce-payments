@@ -380,18 +380,18 @@ abstract class Request {
 		}
 	}
 	/**
-	 * Assign the WordPress filter hook and the arguments specific to the previously assigned hook.
+	 * Assign the WordPress hook and the arguments specific to the previously assigned hook.
 	 *
-	 * @param string $hook WordPress filter hook name.
+	 * @param string $hook WordPress hook name.
 	 */
 	public function assign_hook( string $hook ) {
 		$this->hook = $hook;
 	}
 
 	/**
-	 * Set hook arguments. Used when hook filter is predefined in the request class, but you want to pass hook args.
+	 * Set hook arguments. Used when hook is predefined in the request class, but you want to pass hook args.
 	 *
-	 * @param mixed ...$args Arguments for the filter hook.
+	 * @param mixed ...$args Arguments for the hook.
 	 * @return void
 	 */
 	public function set_hook_args( ...$args ) {
