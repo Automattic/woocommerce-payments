@@ -45,7 +45,7 @@ class CurrencySwitcherBlock {
 	}
 
 	/**
-	 * Initializes this class's WP hooks.
+	 * Initializes this class' WP hooks.
 	 *
 	 * @return void
 	 */

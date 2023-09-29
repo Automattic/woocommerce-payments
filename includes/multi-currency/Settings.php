@@ -49,7 +49,7 @@ class Settings extends \WC_Settings_Page {
 	}
 
 	/**
-	 * Initializes this class's WP hooks.
+	 * Initializes this class' WP hooks.
 	 *
 	 * @return void
 	 */
