@@ -71,6 +71,8 @@ const events = {
 	DISPUTE_CHALLENGE_CLICK: 'wcpay_dispute_challenge_click',
 	DISPUTE_ACCEPT_CLICK: 'wcpay_dispute_accept_click',
 	DISPUTE_ACCEPT_MODAL_VIEW: 'wcpay_dispute_accept_modal_view',
+	DISPUTE_INQUIRY_REFUND_MODAL_VIEW: 'wcpay_dispute_modal_refund_click',
+	DISPUTE_INQUIRY_REFUND_CLICK: 'wcpay_dispute_modal_refund_click',
 	ORDER_DISPUTE_NOTICE_BUTTON_CLICK:
 		'wcpay_order_dispute_notice_action_click',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
