@@ -199,6 +199,12 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 			$request
 		);
 		$mock_token = $this->createMock( WC_Payment_Token::class );
+		$mock_token->expects( $this->once() )
+			->method( 'get_token' )
+			->willReturn( 'pm_saved_method' );
+		$mock_token->expects( $this->once() )
+			->method( 'get_id' )
+			->willReturn( 123 );
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'call_static' )
 			->with( WC_Payment_Tokens::class, 'get', 123456 )
@@ -209,12 +215,11 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 
 		// Assert: correct type of instance.
 		$this->assertInstanceOf( SavedPaymentMethod::class, $pm );
-
-		// Assert: the same payment method string saved in the token object.
-		$mock_token->expects( $this->once() )
-			->method( 'get_token' )
-			->willReturn( 'pm_saved_method' );
-		$this->assertSame( $pm->get_id(), 'pm_saved_method' );
+		if ( $pm instanceof SavedPaymentMethod ) { // Let IDEs understand the type.
+			// Assert: the same payment method string saved in the token object.
+			$this->assertSame( 'pm_saved_method', $pm->get_id() );
+			$this->assertSame( 123, $pm->get_token_id() );
+		}
 	}
 
 	public function test_get_payment_return_new_payment_method() {

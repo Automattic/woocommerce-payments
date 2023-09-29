@@ -59,16 +59,36 @@ class PaymentProcessingService {
 	 */
 	public function process_payment( int $order_id ) {
 		// Start with a basis context.
-		$context = new PaymentContext();
-		$context->set_order_id( $order_id );
+		$context = $this->create_payment_context( $order_id );
 
 		// Add details from the request.
-		$request = new PaymentRequest( $this->legacy_proxy );
+		$request = $this->create_payment_request();
 		$request->populate_context( $context );
 
 		$state = $this->state_factory->create_state( InitialState::class, $context );
 		$state = $state->process();
 
 		return $state;
+	}
+
+	/**
+	 * Instantiates a new empty payment context.
+	 *
+	 * @param int $order_id ID of the order that the context belongs to.
+	 * @return PaymentContext
+	 */
+	protected function create_payment_context( int $order_id ): PaymentContext {
+		$context = new PaymentContext();
+		$context->set_order_id( $order_id );
+		return $context;
+	}
+
+	/**
+	 * Instantiates a new payment request.
+	 *
+	 * @return PaymentRequest
+	 */
+	protected function create_payment_request(): PaymentRequest {
+		return new PaymentRequest( $this->legacy_proxy );
 	}
 }

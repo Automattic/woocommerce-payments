@@ -13,7 +13,7 @@ use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 /**
  * A context object, which is shared between payment states.
  */
-final class PaymentContext {
+class PaymentContext {
 	/**
 	 * Contains all the context's data.
 	 *
