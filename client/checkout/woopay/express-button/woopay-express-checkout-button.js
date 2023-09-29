@@ -81,6 +81,66 @@ export const WoopayExpressCheckoutButton = ( {
 		}
 	}, [ isPreview, context ] );
 
+	const defaultOnClick = useCallback(
+		( e ) => {
+			e.preventDefault();
+
+			if ( isPreview ) {
+				return; // eslint-disable-line no-useless-return
+			}
+
+			wcpayTracks.recordUserEvent(
+				wcpayTracks.events.WOOPAY_BUTTON_CLICK,
+				{
+					source: context,
+				}
+			);
+
+			if ( isProductPage ) {
+				if ( isAddToCartDisabled ) {
+					alert(
+						window.wc_add_to_cart_variation_params
+							.i18n_make_a_selection_text
+					);
+					return;
+				}
+
+				const productData = getProductDataRef.current();
+				if ( ! productData ) {
+					return;
+				}
+
+				addToCartRef
+					.current( productData )
+					.then( ( res ) => {
+						if ( res.error ) {
+							if ( res.submit ) {
+								// Some extensions needs to submit the form
+								// to show error messages.
+								document.querySelector( 'form.cart' ).submit();
+							}
+							return;
+						}
+
+						expressCheckoutIframe( api, context, emailSelector );
+					} )
+					.catch( () => {
+						// handle error.
+					} );
+			} else {
+				expressCheckoutIframe( api, context, emailSelector );
+			}
+		},
+		[
+			api,
+			context,
+			emailSelector,
+			isAddToCartDisabled,
+			isPreview,
+			isProductPage,
+		]
+	);
+
 	const newIframe = useCallback( () => {
 		if ( ! getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			return;
@@ -250,63 +310,8 @@ export const WoopayExpressCheckoutButton = ( {
 
 	useEffect( () => {
 		// Set button's default onClick handle to use modal checkout flow.
-		initWoopayRef.current = ( e ) => {
-			e.preventDefault();
-
-			if ( isPreview ) {
-				return; // eslint-disable-line no-useless-return
-			}
-
-			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.WOOPAY_BUTTON_CLICK,
-				{
-					source: context,
-				}
-			);
-
-			if ( isProductPage ) {
-				if ( isAddToCartDisabled ) {
-					alert(
-						window.wc_add_to_cart_variation_params
-							.i18n_make_a_selection_text
-					);
-					return;
-				}
-
-				const productData = getProductDataRef.current();
-				if ( ! productData ) {
-					return;
-				}
-
-				addToCartRef
-					.current( productData )
-					.then( ( res ) => {
-						if ( res.error ) {
-							if ( res.submit ) {
-								// Some extensions needs to submit the form
-								// to show error messages.
-								document.querySelector( 'form.cart' ).submit();
-							}
-							return;
-						}
-
-						expressCheckoutIframe( api, context, emailSelector );
-					} )
-					.catch( () => {
-						// handle error.
-					} );
-			} else {
-				expressCheckoutIframe( api, context, emailSelector );
-			}
-		};
-	}, [
-		api,
-		context,
-		emailSelector,
-		isPreview,
-		isProductPage,
-		isAddToCartDisabled,
-	] );
+		initWoopayRef.current = defaultOnClick;
+	}, [ defaultOnClick ] );
 
 	return (
 		<button
