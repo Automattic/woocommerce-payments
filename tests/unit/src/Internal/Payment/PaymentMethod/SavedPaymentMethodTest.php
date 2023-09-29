@@ -7,8 +7,6 @@
 
 namespace WCPay\Tests\Internal\Payment\PaymentMethod;
 
-use WC_Helper_Token;
-use WC_Payment_Token;
 use WCPAY_UnitTestCase;
 use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
 
@@ -45,6 +43,10 @@ class SavedPaymentMethodTest extends WCPAY_UnitTestCase {
 
 	public function test_get_id() {
 		$this->assertSame( $this->payment_method_id, $this->sut->get_id() );
+	}
+
+	public function test_get_token_id() {
+		$this->assertSame( $this->saved_token_id, $this->sut->get_token_id() );
 	}
 
 	public function test_get_data() {

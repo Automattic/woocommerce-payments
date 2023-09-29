@@ -10,6 +10,7 @@ namespace WCPay\Tests\Internal\Payment;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payment_Token;
 use WC_Payment_Tokens;
+use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
 use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
 use WCPay\Internal\Payment\PaymentRequest;
@@ -248,5 +249,24 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 		$this->expectExceptionMessage( 'No valid payment method was selected.' );
 
 		$this->sut->get_payment_method();
+	}
+
+	public function test_populate_context() {
+		$payment_method_id = 'pm_XYZ';
+
+		$sut = new PaymentRequest(
+			$this->mock_legacy_proxy,
+			[
+				'payment_method'       => 'woocommerce_payments',
+				'wcpay-payment-method' => $payment_method_id,
+			]
+		);
+
+		$mock_context = $this->createMock( PaymentContext::class );
+		$mock_context->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( $this->isInstanceOf( NewPaymentMethod::class ) );
+
+		$sut->populate_context( $mock_context );
 	}
 }
