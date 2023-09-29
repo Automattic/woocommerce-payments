@@ -881,7 +881,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
-		$is_woopay_enabled = 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout', 'no' );
+		$is_woopay_enabled = WC_Payments_Features::is_woopay_enabled();
 		if ( ! $is_woopay_enabled ) {
 			return;
 		}
