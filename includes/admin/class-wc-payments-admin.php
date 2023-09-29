@@ -846,6 +846,7 @@ class WC_Payments_Admin {
 			'isWooPayStoreCountryAvailable' => WooPay_Utilities::is_store_country_available(),
 			'isStripeBillingEnabled'        => WC_Payments_Features::is_stripe_billing_enabled(),
 			'isStripeBillingEligible'       => WC_Payments_Features::is_stripe_billing_eligible(),
+			'storeName'                     => get_bloginfo( 'name' ),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
@@ -954,9 +955,12 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		$badge = self::MENU_NOTIFICATION_BADGE;
 		foreach ( $menu as $index => $menu_item ) {
-			if ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) {
-				$menu[ $index ][0] .= self::MENU_NOTIFICATION_BADGE; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			if ( false === strpos( $menu_item[0], $badge ) && ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) ) {
+				$menu[ $index ][0] .= $badge; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+				// One menu item with a badge is more than enough.
 				break;
 			}
 		}

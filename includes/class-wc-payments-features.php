@@ -22,6 +22,7 @@ class WC_Payments_Features {
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
 	const DISPUTE_ON_TRANSACTION_PAGE       = '_wcpay_feature_dispute_on_transaction_page';
+	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -59,13 +60,7 @@ class WC_Payments_Features {
 		if ( $upe_flag_value ) {
 			return true;
 		}
-
-		$upe_split_flag_value    = '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
-		$upe_deferred_flag_value = '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
-
-		// if the merchant is not eligible for the Split UPE, but they have the flag enabled, fallback to the "legacy" UPE (for now).
-		return ( $upe_split_flag_value || $upe_deferred_flag_value )
-			&& ! self::is_upe_split_eligible();
+		return false;
 	}
 
 	/**
@@ -79,7 +74,7 @@ class WC_Payments_Features {
 	 * Checks whether the Split UPE with deferred intent is enabled
 	 */
 	public static function is_upe_deferred_intent_enabled() {
-		return ( '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) && self::is_upe_split_eligible() ) || self::is_upe_split_enabled();
+		return ( '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) ) || self::is_upe_split_enabled();
 	}
 
 	/**
@@ -369,6 +364,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the pay for order flow is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_pay_for_order_flow_enabled() {
+		return '1' === get_option( self::PAY_FOR_ORDER_FLOW, '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -388,6 +392,7 @@ class WC_Payments_Features {
 				'isAuthAndCaptureEnabled'           => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'             => self::is_progressive_onboarding_enabled(),
 				'isDisputeOnTransactionPageEnabled' => self::is_dispute_on_transaction_page_enabled(),
+				'isPayForOrderFlowEnabled'          => self::is_pay_for_order_flow_enabled(),
 			]
 		);
 	}
