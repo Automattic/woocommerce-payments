@@ -61,7 +61,7 @@ class DisallowHooksInConstructorSniff implements Sniff {
 					"Usage of $currentTokenContent in __construct() is not allowed",
 					$i,
 					'WCPay.CodingStandards.DisallowHooksInConstructor',
-					$token['content']
+					[ $token['content'] ]
 				);
 			}
 		}
