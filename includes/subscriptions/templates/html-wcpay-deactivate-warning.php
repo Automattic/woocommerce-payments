@@ -1,13 +1,13 @@
 <?php
 /**
- * Admin WC Subscriptions plugin warning template.
+ * Admin WooPayments plugin warning template.
  *
  * @package WooCommerce\Payments
  */
 
 ?>
 <script type="text/template" id="tmpl-wcpay-plugin-deactivate-warning">
-	<div id="wcpay-plugin-deactivate-warning-notice" class="wc-backbone-modal">
+	<div id="wcpay-plugin-deactivate-warning-notice" class="wc-backbone-modal woopayments-plugin-warning-modal">
 		<div class="wc-backbone-modal-content">
 			<section class="wc-backbone-modal-main" role="main">
 				<header class="wc-backbone-modal-header">

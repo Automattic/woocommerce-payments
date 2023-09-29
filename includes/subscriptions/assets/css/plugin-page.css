@@ -27,7 +27,8 @@
 	> *:not( :first-child ) {
 	margin-left: 16px;
 }
-#wcpay-subscriptions-plugin-warning-notice h1 {
+#wcpay-subscriptions-plugin-warning-notice h1,
+#wcpay-plugin-deactivate-warning-notice h1 {
 	font-size: 1rem;
 	font-weight: 600;
 	line-height: 1;

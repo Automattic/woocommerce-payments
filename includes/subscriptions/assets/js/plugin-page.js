@@ -9,13 +9,6 @@ jQuery( function ( $ ) {
 
 		// Initialise handlers for WC Pay deactivate warning.
 		init_deactivate_wcpay_warning() {
-			// If the store doesn't have active WCPay (Stripe Billing) subscriptions, no warning needed.
-			if (
-				! wcpay_subscriptions_plugin_screen_data.store_has_active_wcpay_subscriptions
-			) {
-				return;
-			}
-
 			// Intercept click on WCPay deactivate link to show modal.
 			$( '#deactivate-woocommerce-payments' ).on(
 				'click',
@@ -47,10 +40,12 @@ jQuery( function ( $ ) {
 			);
 		},
 
-		// Initialise handlers for WC Subscriptions deactivate warning.
+		// Initialise handlers for Woo Subscriptions deactivate warning.
 		init_deactivate_wc_subscriptions_warning() {
-			// Intercept click on WCS deactivate link to show modal.
-			$( '#deactivate-woocommerce-subscriptions' ).on(
+			const plugin_slug = this.get_woo_subscriptions_plugin_slug();
+
+			// Intercept click on Woo Subscriptions deactivate link to show modal.
+			$( '#deactivate-' + plugin_slug ).on(
 				'click',
 				this.display_wcs_warning
 			);
@@ -80,6 +75,18 @@ jQuery( function ( $ ) {
 			window.location = $( '#deactivate-woocommerce-subscriptions' ).attr(
 				'href'
 			);
+		},
+		// Gets the Woo Subscriptions plugin slug. When the ite is connected to WooCommerce.com, the slug is different and includes a woocommerce-com- prefix.
+		get_woo_subscriptions_plugin_slug() {
+			const element = document.querySelector(
+				'[data-slug="woocommerce-com-woocommerce-subscriptions"]'
+			);
+
+			if ( element ) {
+				return 'woocommerce-com-woocommerce-subscriptions';
+			} else {
+				return 'woocommerce-subscriptions';
+			}
 		},
 	};
 
