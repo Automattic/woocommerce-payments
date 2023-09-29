@@ -1258,6 +1258,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the order service instance.
+	 *
+	 * @return WC_Payments_Order_Service
+	 */
+	public static function get_order_service(): WC_Payments_Order_Service {
+		return self::$order_service;
+	}
+
+	/**
 	 * Sets the customer service instance. This is needed only for tests.
 	 *
 	 * @param WC_Payments_Customer_Service $customer_service_class Instance of WC_Payments_Customer_Service.

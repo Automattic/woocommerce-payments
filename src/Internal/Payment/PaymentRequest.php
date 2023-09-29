@@ -134,7 +134,7 @@ class PaymentRequest {
 			if ( is_null( $token ) ) {
 				throw new PaymentRequestException( __( 'Invalid saved payment method (token) ID.', 'woocommerce-payments' ) );
 			}
-			return new SavedPaymentMethod( $token );
+			return new SavedPaymentMethod( $token->get_token(), $token->get_id() );
 		}
 
 		if ( ! empty( $request['wcpay-payment-method'] ) ) {
@@ -143,5 +143,15 @@ class PaymentRequest {
 		}
 
 		throw new PaymentRequestException( __( 'No valid payment method was selected.', 'woocommerce-payments' ) );
+	}
+
+	/**
+	 * Populates a payment context before processing a payment.
+	 *
+	 * @param PaymentContext $context Context to populate.
+	 * @throws PaymentRequestException When data is not available or invalid.
+	 */
+	public function populate_context( PaymentContext $context ) {
+		$context->set_payment_method( $this->get_payment_method() );
 	}
 }
