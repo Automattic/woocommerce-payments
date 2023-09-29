@@ -42,7 +42,6 @@ class StateFactory {
 	 * @param PaymentContext $context     Context for the new state.
 	 * @return PaymentState               The generated payment state instance.
 	 * @throws StateTransitionException   When the class name is not a state.
-	 * @throws ContainerException         In case the class was not found or could not be constructed.
 	 */
 	public function create_state( string $state_class, PaymentContext $context ): PaymentState {
 		if ( ! is_subclass_of( $state_class, PaymentState::class ) ) {
