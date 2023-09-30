@@ -810,9 +810,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array|null     Array if processed, null if the new process is not supported.
 	 */
 	public function new_process_payment( WC_Order $order ) {
+		$manual_capture = $this->get_capture_type() === Payment_Capture_Type::MANUAL();
+
 		// Important: No factors are provided here, they were meant just for `Feature`.
 		$service = wcpay_get_container()->get( PaymentProcessingService::class );
-		$state   = $service->process_payment( $order->get_id() );
+		$state   = $service->process_payment( $order->get_id(), $manual_capture );
 
 		if ( $state instanceof CompletedState ) {
 			return [

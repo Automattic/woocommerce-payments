@@ -146,6 +146,44 @@ class PaymentRequest {
 	}
 
 	/**
+	 * Extract the payment CVC confirmation from the request.
+	 *
+	 * @return string|null
+	 */
+	public function get_cvc_confirmation(): ?string {
+		$payment_method = $this->request['payment_method'] ?? null;
+		if ( null === $payment_method ) {
+			return null;
+		}
+
+		$cvc_request_key = 'wc-' . $payment_method . '-payment-cvc-confirmation';
+		if (
+			! isset( $this->request[ $cvc_request_key ] ) ||
+			'new' === $this->request[ $cvc_request_key ]
+		) {
+			return null;
+		}
+
+		return $this->request[ $cvc_request_key ];
+	}
+
+	/**
+	 * Extracts the fingerprint data from the request.
+	 *
+	 * @return string
+	 */
+	public function get_fingerprint(): ?string {
+		if ( ! empty( $this->request['wcpay-fingerprint'] ) ) {
+			$normalized = wc_clean( $this->request['wcpay-fingerprint'] );
+			if ( is_string( $normalized ) ) {
+				return $normalized;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Populates a payment context before processing a payment.
 	 *
 	 * @param PaymentContext $context Context to populate.
@@ -153,5 +191,7 @@ class PaymentRequest {
 	 */
 	public function populate_context( PaymentContext $context ) {
 		$context->set_payment_method( $this->get_payment_method() );
+		$context->set_cvc_confirmation( $this->get_cvc_confirmation() );
+		$context->set_fingerprint( $this->get_fingerprint() );
 	}
 }

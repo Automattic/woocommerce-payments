@@ -51,15 +51,16 @@ class PaymentProcessingService {
 	/**
 	 * Process payment.
 	 *
-	 * @param  int $order_id Order ID provided by WooCommerce core.
+	 * @param int  $order_id       Order ID provided by WooCommerce core.
+	 * @param bool $manual_capture Whether to only create an authorization instead of a charge (optional).
 	 *
 	 * @throws Exception
 	 * @throws StateTransitionException In case a state cannot be initialized.
 	 * @throws PaymentRequestException  When the request is malformed. This should be converted to a failure state.
 	 */
-	public function process_payment( int $order_id ) {
+	public function process_payment( int $order_id, bool $manual_capture = false ) {
 		// Start with a basis context.
-		$context = $this->create_payment_context( $order_id );
+		$context = $this->create_payment_context( $order_id, $manual_capture );
 
 		// Add details from the request.
 		$request = $this->create_payment_request();
@@ -74,12 +75,14 @@ class PaymentProcessingService {
 	/**
 	 * Instantiates a new empty payment context.
 	 *
-	 * @param int $order_id ID of the order that the context belongs to.
+	 * @param int  $order_id       ID of the order that the context belongs to.
+	 * @param bool $manual_capture Whether manual capture is enabled.
 	 * @return PaymentContext
 	 */
-	protected function create_payment_context( int $order_id ): PaymentContext {
+	protected function create_payment_context( int $order_id, bool $manual_capture = false ): PaymentContext {
 		$context = new PaymentContext();
 		$context->set_order_id( $order_id );
+		$context->toggle_manual_capture( $manual_capture );
 		return $context;
 	}
 

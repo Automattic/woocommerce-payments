@@ -22,6 +22,13 @@ use WCPay\Internal\Proxy\LegacyProxy;
  */
 class OrderService {
 	/**
+	 * Legacy proxy.
+	 *
+	 * @var LegacyProxy
+	 */
+	private $legacy_proxy;
+
+	/**
 	 * Legacy order service.
 	 *
 	 * TEMPORARY: The legacy order service should be migrated here
@@ -31,13 +38,6 @@ class OrderService {
 	 * @var WC_Payments_Order_Service
 	 */
 	private $legacy_service;
-
-	/**
-	 * Legacy proxy.
-	 *
-	 * @var LegacyProxy
-	 */
-	private $legacy_proxy;
 
 	/**
 	 * Class constructor.
