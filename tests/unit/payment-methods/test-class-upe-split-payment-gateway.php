@@ -39,6 +39,7 @@ use WCPay\Payment_Information;
 use WC_Payments;
 use WC_Payments_Localization_Service;
 use WCPay\Internal\Service\Level3Service;
+use WCPay\Internal\Service\OrderService;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
@@ -337,6 +338,13 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'get_data_from_order' )
 			->willReturn( [] );
 		wcpay_get_test_container()->replace( Level3Service::class, $mock_level3_service );
+
+		// Mock the order service to always return an empty array for meta.
+		$mock_order_service = $this->createMock( OrderService::class );
+		$mock_order_service->expects( $this->any() )
+			->method( 'get_payment_metadata' )
+			->willReturn( [] );
+		wcpay_get_test_container()->replace( OrderService::class, $mock_order_service );
 	}
 
 	/**
@@ -439,20 +447,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'create_customer_for_user' );
 
-		$metadata = [
-			'customer_name'        => 'Jeroen Sormani',
-			'customer_email'       => 'admin@example.org',
-			'site_url'             => 'http://example.org',
-			'order_id'             => $order_id,
-			'order_number'         => $order_number,
-			'order_key'            => $order->get_order_key(),
-			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'split_upe',
-			'checkout_type'        => '',
-			'client_version'       => WCPAY_VERSION_NUMBER,
-			'subscription_payment' => 'no',
-		];
-
 		// Test update_payment_intent on each payment gateway.
 		foreach ( $this->mock_payment_gateways as $mock_payment_gateway ) {
 			$request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent->get_id() );
@@ -460,7 +454,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$request->expects( $this->once() )->method( 'set_currency_code' )->with( 'usd' );
 			$request->expects( $this->once() )->method( 'setup_future_usage' );
 			$request->expects( $this->once() )->method( 'set_customer' )->with( 'cus_mock' );
-			$request->expects( $this->once() )->method( 'set_metadata' )->with( $metadata );
+			$request->expects( $this->once() )->method( 'set_metadata' )->with( [ 'gateway_type' => 'split_upe' ] );
 			$request->expects( $this->once() )
 				->method( 'format_response' )
 				->willReturn( $intent );
@@ -491,21 +485,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'create_customer_for_user' );
 
-		$metadata = [
-			'customer_name'        => 'Jeroen Sormani',
-			'customer_email'       => 'admin@example.org',
-			'site_url'             => 'http://example.org',
-			'order_id'             => $order_id,
-			'order_number'         => $order_number,
-			'order_key'            => $order->get_order_key(),
-			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'split_upe',
-			'checkout_type'        => '',
-			'client_version'       => WCPAY_VERSION_NUMBER,
-			'subscription_payment' => 'no',
-
-		];
-
 		/**
 		* In order to test each gateway, we need to setup mock_api_client so that
 		* its input are mocked in sequence, matching the gateways.
@@ -516,7 +495,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$request->expects( $this->once() )->method( 'set_currency_code' )->with( 'usd' );
 			$request->expects( $this->once() )->method( 'setup_future_usage' );
 			$request->expects( $this->once() )->method( 'set_customer' )->with( 'cus_mock' );
-			$request->expects( $this->once() )->method( 'set_metadata' )->with( $metadata );
+			$request->expects( $this->once() )->method( 'set_metadata' )->with( [ 'gateway_type' => 'split_upe' ] );
 			$request->expects( $this->once() )->method( 'set_payment_method_types' )->with( [ $payment_method_id ] );
 
 			$request->expects( $this->once() )
@@ -547,27 +526,13 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'create_customer_for_user' );
 
-		$metadata = [
-			'customer_name'        => 'Jeroen Sormani',
-			'customer_email'       => 'admin@example.org',
-			'site_url'             => 'http://example.org',
-			'order_id'             => $order_id,
-			'order_number'         => $order_number,
-			'order_key'            => $order->get_order_key(),
-			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'split_upe',
-			'checkout_type'        => '',
-			'client_version'       => WCPAY_VERSION_NUMBER,
-			'subscription_payment' => 'no',
-		];
-
 		// Test update_payment_intent on each payment gateway.
 		foreach ( $this->mock_payment_gateways as $mock_payment_gateway ) {
 			$request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent->get_id() );
 			$request->expects( $this->once() )->method( 'set_amount' )->with( 5000 );
 			$request->expects( $this->once() )->method( 'set_currency_code' )->with( 'usd' );
 			$request->expects( $this->once() )->method( 'set_customer' )->with( 'cus_mock' );
-			$request->expects( $this->once() )->method( 'set_metadata' )->with( $metadata );
+			$request->expects( $this->once() )->method( 'set_metadata' )->with( [ 'gateway_type' => 'split_upe' ] );
 			$request->expects( $this->once() )->method( 'set_payment_country' )->with( 'US' );
 			$request->expects( $this->once() )
 				->method( 'format_response' )
@@ -1188,7 +1153,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
 		$intent_status       = Intent_Status::SUCCEEDED;
-		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$client_secret       = 'cs_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'si_mock';

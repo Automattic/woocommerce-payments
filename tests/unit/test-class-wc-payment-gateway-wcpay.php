@@ -25,6 +25,7 @@ use WCPay\Internal\Payment\Factor;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Service\Level3Service;
+use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Payment_Information;
 use WCPay\WooPay\WooPay_Utilities;
@@ -207,6 +208,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_data_from_order' )
 			->willReturn( [] );
 		wcpay_get_test_container()->replace( Level3Service::class, $mock_level3_service );
+
+		// Mock the order service to always return an empty array for meta.
+		$mock_order_service = $this->createMock( OrderService::class );
+		$mock_order_service->expects( $this->any() )
+			->method( 'get_payment_metadata' )
+			->willReturn( [] );
+		wcpay_get_test_container()->replace( OrderService::class, $mock_order_service );
 	}
 
 	/**
@@ -450,7 +458,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( $this->anything() );
+			->with( [ 'gateway_type' => 'classic' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
@@ -505,7 +513,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( $this->anything() );
+			->with( [ 'gateway_type' => 'classic' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention( [ 'currency' => 'eur' ] ) );
@@ -557,7 +565,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( $this->anything() );
+			->with( [ 'gateway_type' => 'classic' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
@@ -612,7 +620,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( $this->anything() );
+			->with( [ 'gateway_type' => 'classic' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
@@ -669,7 +677,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( $this->anything() );
+			->with( [ 'gateway_type' => 'classic' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -731,7 +739,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( $this->anything() );
+			->with( [ 'gateway_type' => 'classic' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -789,7 +797,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( $this->anything() );
+			->with( [ 'gateway_type' => 'classic' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -841,33 +849,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$merged_metadata = [
-			'customer_name'        => 'Test',
-			'reader_ID'            => 'wisepad',
-			'customer_email'       => $order->get_billing_email(),
-			'site_url'             => esc_url( get_site_url() ),
-			'order_id'             => $order->get_id(),
-			'order_number'         => $order->get_order_number(),
-			'order_key'            => $order->get_order_key(),
-			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'classic',
-			'checkout_type'        => '',
-			'client_version'       => WCPAY_VERSION_NUMBER,
-			'subscription_payment' => 'no',
-		];
-
 		$capture_intent_request = $this->mock_wcpay_request( Capture_Intention::class, 1, $intent_id );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_amount_to_capture' )
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( $merged_metadata );
+			->with( [ 'gateway_type' => 'classic' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
 
-		$result = $this->wcpay_gateway->capture_charge( $order, true, $merged_metadata );
+		$result = $this->wcpay_gateway->capture_charge( $order, true, [] );
 
 		$note = wc_get_order_notes(
 			[
@@ -911,7 +904,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( $this->anything() );
+			->with( [ 'gateway_type' => 'classic' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
@@ -1517,19 +1510,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						$required_keys = [ 'customer_name', 'customer_email', 'site_url', 'order_id', 'order_number', 'order_key', 'payment_type' ];
-						foreach ( $required_keys as $key ) {
-							if ( ! array_key_exists( $key, $metadata ) ) {
-								return false;
-							}
-						}
-						return true;
-					}
-				)
-			);
+			->with( [ 'gateway_type' => 'classic' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )

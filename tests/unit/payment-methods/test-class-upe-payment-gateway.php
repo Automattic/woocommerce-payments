@@ -36,6 +36,7 @@ use Exception;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WC_Payments_Localization_Service;
 use WCPay\Internal\Service\Level3Service;
+use WCPay\Internal\Service\OrderService;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
@@ -301,6 +302,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'get_data_from_order' )
 			->willReturn( [] );
 		wcpay_get_test_container()->replace( Level3Service::class, $mock_level3_service );
+
+		// Mock the order service to always return an empty array for meta.
+		$mock_order_service = $this->createMock( OrderService::class );
+		$mock_order_service->expects( $this->any() )
+			->method( 'get_payment_metadata' )
+			->willReturn( [] );
+		wcpay_get_test_container()->replace( OrderService::class, $mock_order_service );
 	}
 
 	/**
@@ -381,21 +389,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				[
-					'customer_name'        => 'Jeroen Sormani',
-					'customer_email'       => 'admin@example.org',
-					'site_url'             => 'http://example.org',
-					'order_id'             => $order_id,
-					'order_number'         => $order_number,
-					'order_key'            => $order->get_order_key(),
-					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'upe',
-					'checkout_type'        => '',
-					'client_version'       => WCPAY_VERSION_NUMBER,
-					'subscription_payment' => 'no',
-				]
-			);
+			->with( [ 'gateway_type' => 'upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -457,21 +451,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				[
-					'customer_name'        => 'Jeroen Sormani',
-					'customer_email'       => 'admin@example.org',
-					'site_url'             => 'http://example.org',
-					'order_id'             => $order_id,
-					'order_number'         => $order_number,
-					'order_key'            => $order->get_order_key(),
-					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'upe',
-					'checkout_type'        => '',
-					'client_version'       => WCPAY_VERSION_NUMBER,
-					'subscription_payment' => 'no',
-				]
-			);
+			->with( [ 'gateway_type' => 'upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -529,21 +509,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				[
-					'customer_name'        => 'Jeroen Sormani',
-					'customer_email'       => 'admin@example.org',
-					'site_url'             => 'http://example.org',
-					'order_id'             => $order_id,
-					'order_number'         => $order_number,
-					'order_key'            => $order->get_order_key(),
-					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'upe',
-					'checkout_type'        => '',
-					'client_version'       => WCPAY_VERSION_NUMBER,
-					'subscription_payment' => 'no',
-				]
-			);
+			->with( [ 'gateway_type' => 'upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -571,13 +537,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return isset( $metadata['order_number'] );
-					}
-				)
-			);
+			->with( [ 'order_number' => $order->get_order_number() ] );
 
 		$request->expects( $this->once() )
 			->method( 'set_payment_method_types' );
@@ -684,10 +644,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'set_payment_method_types' )
 			->with( [ 'card' ] );
-		$request
-			->expects( $this->once() )
+
+		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'order_number' => $order_id ] );
+			->with( [ 'order_number' => $order->get_order_number() ] );
 		$request
 			->expects( $this->once() )
 			->method( 'set_fingerprint' )
@@ -1786,13 +1746,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return is_array( $metadata );
-					}
-				)
-			);
+			->with( [ 'gateway_type' => 'upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'set_level3' )
