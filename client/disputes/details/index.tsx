@@ -23,22 +23,14 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import '../style.scss';
 import { Dispute } from 'wcpay/types/disputes';
 
-const DisputeDetails = ( {
+const LegacyDisputeDetails = ( {
 	query: { id: disputeId },
 }: {
 	query: { id: string };
-} ): JSX.Element | null => {
+} ): JSX.Element => {
 	const { dispute, isLoading, doAccept } = useDispute( disputeId );
 	const disputeObject = dispute || ( {} as Dispute );
 	const disputeIsAvailable = ! isLoading && dispute && disputeObject.id;
-
-	// Bail early and return nothing if the feature flag is not enabled.
-	// Here as a hint/reminder to delete this file when the feature flag is removed.
-	const isDisputeOnTransactionPageEnabled =
-		wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled;
-	if ( isDisputeOnTransactionPageEnabled ) {
-		return null;
-	}
 
 	const actions = disputeIsAvailable && (
 		<Actions
@@ -164,4 +156,4 @@ const DisputeDetails = ( {
 	);
 };
 
-export default DisputeDetails;
+export default LegacyDisputeDetails;
