@@ -28,6 +28,13 @@ class Create_And_Confirm_Setup_Intention extends Request {
 	];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_create_and_confirm_setup_intention_request';
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string

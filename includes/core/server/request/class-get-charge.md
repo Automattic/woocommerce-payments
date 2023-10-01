@@ -16,11 +16,11 @@ There are no additional parameters for this request.
 When using this request, provide the following filter and arguments:
 
 - Name: `wcpay_get_charge_request`
-- Arguments: None
+- Arguments: None or charge id.
 
 ## Example:
 
 ```php
 $request = Get_Charge::create( $id );
-$request->send( 'wcpay_get_charge_request' );
+$request->send();
 ```
