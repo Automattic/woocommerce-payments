@@ -14,8 +14,10 @@ use WC_Payments_API_Charge;
 use WC_Payments_API_Payment_Intention;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
+use WC_Payments_Utils;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Proxy\LegacyProxy;
 
 /**
@@ -139,6 +141,28 @@ class OrderService {
 		}
 
 		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
+	}
+
+	/**
+	 * Imports the data from an order to a payment context.
+	 *
+	 * @param int            $order_id ID of the order.
+	 * @param PaymentContext $context  A payment context, awaiting order data.
+	 */
+	public function import_order_data_to_payment_context( int $order_id, PaymentContext $context ) {
+		$order = $this->legacy_service->get_order( $order_id );
+
+		$currency = strtolower( $order->get_currency() );
+		$amount   = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
+
+		$user = $order->get_user();
+		if ( false === $user ) { // Default to the current user.
+			$user = $this->legacy_proxy->call_function( 'wp_get_current_user' );
+		}
+
+		$context->set_currency( $currency );
+		$context->set_amount( $amount );
+		$context->set_user_id( $user->ID );
 	}
 
 	/**
