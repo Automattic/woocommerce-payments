@@ -15,6 +15,18 @@ namespace WCPay\Internal\Proxy;
  */
 class LegacyProxy {
 	/**
+	 * Checks if a function exists.
+	 *
+	 * Use this for WP, WC, and other generic non-native PHP functions.
+	 *
+	 * @param string $name Name of the function.
+	 * @return bool
+	 */
+	public function function_exists( string $name ): bool {
+		return function_exists( $name );
+	}
+
+	/**
 	 * Calls a function outside of `src`.
 	 *
 	 * Use this for WP, WC, and other generic non-native PHP functions.
