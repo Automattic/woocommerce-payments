@@ -8,6 +8,10 @@
 namespace WCPay\Internal\Service;
 
 use WC_Order;
+use WC_Payments_Account;
+use WC_Payments_API_Abstract_Intention;
+use WC_Payments_API_Charge;
+use WC_Payments_API_Payment_Intention;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WCPay\Constants\Payment_Type;
@@ -40,17 +44,27 @@ class OrderService {
 	private $legacy_service;
 
 	/**
+	 * Account instance.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param WC_Payments_Order_Service $legacy_service The legacy order service.
 	 * @param LegacyProxy               $legacy_proxy   Proxy for accessing non-src functionality.
+	 * @param WC_Payments_Account       $account        Account object.
 	 */
 	public function __construct(
 		WC_Payments_Order_Service $legacy_service,
-		LegacyProxy $legacy_proxy
+		LegacyProxy $legacy_proxy,
+		WC_Payments_Account $account
 	) {
 		$this->legacy_service = $legacy_service;
 		$this->legacy_proxy   = $legacy_proxy;
+		$this->account        = $account;
 	}
 
 	/**
@@ -125,5 +139,80 @@ class OrderService {
 		}
 
 		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
+	}
+
+	/**
+	 * God method for updating orders once a payment has succeeded.
+	 *
+	 * @param int                                $order_id ID of the order that was just paid.
+	 * @param WC_Payments_API_Abstract_Intention $intent   Remote object. To be abstracted.
+	 * @param PaymentContext                     $context  Context for the payment.
+	 */
+	public function update_order_from_successful_intent(
+		int $order_id,
+		WC_Payments_API_Abstract_Intention $intent,
+		PaymentContext $context
+	) {
+		$order = $this->legacy_service->get_order( $order_id );
+
+		$charge    = null;
+		$charge_id = null;
+		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
+			$charge    = $intent->get_charge();
+			$charge_id = $intent->get_charge()->get_id();
+		}
+
+		$this->legacy_service->attach_intent_info_to_order(
+			$order,
+			$intent->get_id(),
+			$intent->get_status(),
+			$context->get_payment_method()->get_id(),
+			$context->get_customer_id(),
+			$charge_id,
+			$context->get_currency()
+		);
+
+		$this->legacy_service->attach_transaction_fee_to_order( $order, $charge );
+		$this->legacy_service->update_order_status_from_intent( $order, $intent );
+
+		if ( ! is_null( $charge ) ) {
+			$this->attach_exchange_info_to_order( $order, $charge );
+		}
+	}
+
+	/**
+	 * Given the charge data, checks if there was an exchange and adds it to the given order as metadata
+	 *
+	 * @param WC_Order               $order  The order to update.
+	 * @param WC_Payments_API_Charge $charge Charge object.
+	 */
+	private function attach_exchange_info_to_order( $order, WC_Payments_API_Charge $charge ) {
+		// This is a good example of something, which should be a service.
+		$currency_store   = strtolower( get_option( 'woocommerce_currency' ) );
+		$currency_order   = strtolower( $order->get_currency() );
+		$currency_account = strtolower( $this->account->get_account_default_currency() );
+
+		// If the default currency for the store is different from the currency for the merchant's Stripe account,
+		// the conversion rate provided by Stripe won't make sense, so we should not attach it to the order meta data
+		// and instead we'll rely on the _wcpay_multi_currency_order_exchange_rate meta key for analytics.
+		if ( $currency_store !== $currency_account ) {
+			return;
+		}
+
+		// If the account and order currency are the same, there was no exchange.
+		if ( $currency_order === $currency_account ) {
+			return;
+		}
+
+		// Without the balance transaction, we cannot check the exchange rate.
+		$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
+		if ( is_null( $exchange_rate ) ) {
+			return;
+		}
+
+		// This is a pure method and can remain static.
+		$exchange_rate = WC_Payments_Utils::interpret_string_exchange_rate( $exchange_rate, $currency_order, $currency_account );
+		$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
+		$order->save_meta_data();
 	}
 }

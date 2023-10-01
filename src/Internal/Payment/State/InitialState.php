@@ -89,6 +89,7 @@ class InitialState extends PaymentState {
 		// tbd.
 
 		$intent = $this->create_intent();
+		$this->order_service->update_order_from_successful_intent( $order_id, $intent, $context );
 
 		return $this->create_state( CompletedState::class );
 	}
