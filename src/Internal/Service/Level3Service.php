@@ -10,10 +10,10 @@ namespace WCPay\Internal\Service;
 use stdClass;
 use WC_Order_Item;
 use WC_Order_Item_Product;
+use WC_Order_Item_Fee;
 use WC_Payments_Account;
 use WC_Payments_Utils;
 use WCPay\Internal\Service\OrderService;
-use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 
 /**
@@ -35,27 +35,17 @@ class Level3Service {
 	private $account;
 
 	/**
-	 * Legacy proxy.
-	 *
-	 * @var LegacyProxy
-	 */
-	private $legacy_proxy;
-
-	/**
 	 * Service constructor.
 	 *
 	 * @param OrderService        $order_service Order service.
 	 * @param WC_Payments_Account $account       WooPayments account.
-	 * @param LegacyProxy         $legacy_proxy  Legacy proxy.
 	 */
 	public function __construct(
 		OrderService $order_service,
-		WC_Payments_Account $account,
-		LegacyProxy $legacy_proxy
+		WC_Payments_Account $account
 	) {
 		$this->order_service = $order_service;
 		$this->account       = $account;
-		$this->legacy_proxy  = $legacy_proxy;
 	}
 
 	/**
@@ -116,9 +106,11 @@ class Level3Service {
 
 	/**
 	 * Processes a single order item.
+	 * Based on the queried items, this class should only receive
+	 * `WC_Order_Item_Product` or `WC_Order_Item_Fee` line items.
 	 *
-	 * @param WC_Order_Item $item     Item to process.
-	 * @param string        $currency Currency to use.
+	 * @param WC_Order_Item_Product|WC_Order_Item_Fee $item     Item to process.
+	 * @param string                                  $currency Currency to use.
 	 * @return \stdClass
 	 */
 	private function process_item( WC_Order_Item $item, string $currency ): stdClass {
@@ -195,6 +187,6 @@ class Level3Service {
 	 * @return int The amount in cents.
 	 */
 	private function prepare_amount( float $amount, string $currency ): int {
-		return $this->legacy_proxy->call_static( WC_Payments_Utils::class, 'prepare_amount', $amount, $currency );
+		return WC_Payments_Utils::prepare_amount( $amount, $currency );
 	}
 }

@@ -64,7 +64,7 @@ class OrderService {
 	 * @throws Order_Not_Found_Exception If the order could not be found.
 	 */
 	public function get_order( int $order_id ): WC_Order {
-		$order = wc_get_order( $order_id );
+		$order = $this->legacy_proxy->call_function( 'wc_get_order', $order_id );
 		if ( ! $order instanceof WC_Order ) {
 			throw new Order_Not_Found_Exception(
 				__( 'The requested order was not found.', 'woocommerce-payments' ),
