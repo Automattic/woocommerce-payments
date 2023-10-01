@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { getHistory } from '@woocommerce/navigation';
-import { Notice, Spinner, Flex, FlexItem } from '@wordpress/components';
+import { Spinner, Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -13,6 +13,8 @@ import { useDispute } from 'data/index';
 import { Charge } from 'wcpay/types/charges';
 import { Dispute } from 'wcpay/types/disputes';
 import { getAdminUrl } from 'wcpay/utils';
+
+import './style.scss';
 
 const RedirectToTransactionDetails = ( {
 	query: { id: disputeId },
@@ -41,16 +43,20 @@ const RedirectToTransactionDetails = ( {
 
 	return (
 		<Page>
-			<Notice status="info" isDismissible={ false }>
-				<Flex justify="left">
-					<FlexItem>
-						<Spinner />
-					</FlexItem>
-					<FlexItem>
-						<span>Redirecting to payment details…</span>
-					</FlexItem>
-				</Flex>
-			</Notice>
+			<Flex
+				direction="column"
+				className="wcpay-dispute-detail-legacy-redirect"
+			>
+				<FlexItem>
+					<Spinner />
+				</FlexItem>
+				<FlexItem>
+					<div>
+						<b>One moment please</b>
+					</div>
+					<div>Redirecting to payment details…</div>
+				</FlexItem>
+			</Flex>
 		</Page>
 	);
 };
