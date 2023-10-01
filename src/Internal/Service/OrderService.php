@@ -8,6 +8,7 @@
 namespace WCPay\Internal\Service;
 
 use WC_Order;
+use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
@@ -62,7 +63,7 @@ class OrderService {
 	 * @return WC_Order Order object.
 	 * @throws Order_Not_Found_Exception If the order could not be found.
 	 */
-	private function get_order( int $order_id ): WC_Order {
+	public function get_order( int $order_id ): WC_Order {
 		$order = wc_get_order( $order_id );
 		if ( ! $order instanceof WC_Order ) {
 			throw new Order_Not_Found_Exception(

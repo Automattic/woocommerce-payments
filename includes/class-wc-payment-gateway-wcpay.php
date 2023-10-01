@@ -45,6 +45,7 @@ use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Payment\Factor;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\CompletedState;
+use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 
 /**

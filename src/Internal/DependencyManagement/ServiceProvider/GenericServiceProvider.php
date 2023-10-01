@@ -7,8 +7,11 @@
 
 namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
+use WC_Payments_Account;
 use WC_Payments_Order_Service;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
+use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 
 /**
@@ -22,6 +25,7 @@ class GenericServiceProvider extends AbstractServiceProvider {
 	 */
 	protected $provides = [
 		OrderService::class,
+		Level3Service::class,
 	];
 
 	/**
@@ -31,6 +35,12 @@ class GenericServiceProvider extends AbstractServiceProvider {
 		$container = $this->getContainer();
 
 		$container->addShared( OrderService::class )
-			->addArgument( WC_Payments_Order_Service::class );
+			->addArgument( WC_Payments_Order_Service::class )
+			->addArgument( LegacyProxy::class );
+
+		$container->addShared( Level3Service::class )
+			->addArgument( OrderService::class )
+			->addArgument( WC_Payments_Account::class )
+			->addArgument( LegacyProxy::class );
 	}
 }

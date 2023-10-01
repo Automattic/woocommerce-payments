@@ -130,16 +130,16 @@ class Level3Service {
 				: $item->get_product_id();
 			$product_code = substr( $product_id, 0, 12 );
 		} else {
-			$subtotal     = $item->get_total(); // @psalm-suppress all
+			$subtotal     = $item->get_total();
 			$product_code = substr( sanitize_title( $item->get_name() ), 0, 12 );
 		}
 
 		$description = substr( $item->get_name(), 0, 26 );
 		$quantity    = ceil( $item->get_quantity() );
-		$tax_amount  = $this->prepare_amount( $item->get_total_tax(), $currency ); // @psalm-suppress all
+		$tax_amount  = $this->prepare_amount( $item->get_total_tax(), $currency );
 		if ( $subtotal >= 0 ) {
 			$unit_cost       = $this->prepare_amount( $subtotal / $quantity, $currency );
-			$discount_amount = $this->prepare_amount( $subtotal - $item->get_total(), $currency ); // @psalm-suppress all
+			$discount_amount = $this->prepare_amount( $subtotal - $item->get_total(), $currency );
 		} else {
 			// It's possible to create products with negative price - represent it as free one with discount.
 			$discount_amount = abs( $this->prepare_amount( $subtotal / $quantity, $currency ) );
