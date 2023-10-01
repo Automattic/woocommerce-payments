@@ -157,43 +157,28 @@ addFilter(
 		const isDisputeOnTransactionPageEnabled =
 			window.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled;
 		pages.push(
-			isDisputeOnTransactionPageEnabled
-				? {
-						container: RedirectToTransactionDetails,
-						path: '/payments/disputes/details',
-						wpOpenMenu: menuID,
-						breadcrumbs: [
-							rootLink,
-							[
-								'/payments/disputes',
-								__( 'Disputes', 'woocommerce-payments' ),
-							],
-							__( 'Dispute details', 'woocommerce-payments' ),
-						],
-						navArgs: {
-							id: 'wc-payments-disputes-details-legacy-redirect',
-							parentPath: '/payments/disputes',
-						},
-						capability: 'manage_woocommerce',
-				  }
-				: {
-						container: DisputeDetailsPage,
-						path: '/payments/disputes/details',
-						wpOpenMenu: menuID,
-						breadcrumbs: [
-							rootLink,
-							[
-								'/payments/disputes',
-								__( 'Disputes', 'woocommerce-payments' ),
-							],
-							__( 'Dispute details', 'woocommerce-payments' ),
-						],
-						navArgs: {
-							id: 'wc-payments-disputes-details',
-							parentPath: '/payments/disputes',
-						},
-						capability: 'manage_woocommerce',
-				  }
+			{
+				container: isDisputeOnTransactionPageEnabled
+					? RedirectToTransactionDetails
+					: DisputeDetailsPage,
+				path: '/payments/disputes/details',
+				wpOpenMenu: menuID,
+				breadcrumbs: [
+					rootLink,
+					[
+						'/payments/disputes',
+						__( 'Disputes', 'woocommerce-payments' ),
+					],
+					__( 'Dispute details', 'woocommerce-payments' ),
+				],
+				navArgs: {
+					id: isDisputeOnTransactionPageEnabled
+						? 'wc-payments-disputes-details-legacy-redirect'
+						: 'wc-payments-disputes-details',
+					parentPath: '/payments/disputes',
+				},
+				capability: 'manage_woocommerce',
+			  }
 		);
 
 		pages.push( {
