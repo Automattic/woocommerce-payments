@@ -8,6 +8,7 @@
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Internal\Service\Level3Service;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -136,12 +137,20 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_localization_service
 		);
 		$this->wcpay_gateway->init_hooks();
+
+		// Mock the level3 service to always return an empty array.
+		$mock_level3_service = $this->createMock( Level3Service::class );
+		$mock_level3_service->expects( $this->any() )
+			->method( 'get_data_from_order' )
+			->willReturn( [] );
+		wcpay_get_test_container()->replace( Level3Service::class, $mock_level3_service );
 	}
 
 	public static function tear_down_after_class() {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
 		WC_Subscriptions::set_wcs_is_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order( null );
+		wcpay_get_test_container()->reset_all_replacements();
 		parent::tear_down_after_class();
 	}
 

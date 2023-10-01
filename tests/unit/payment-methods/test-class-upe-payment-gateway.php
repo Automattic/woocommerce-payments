@@ -35,6 +35,7 @@ use WC_Payments_Token_Service;
 use Exception;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WC_Payments_Localization_Service;
+use WCPay\Internal\Service\Level3Service;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
@@ -293,6 +294,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'wcpay-payment-method' => 'pm_mock',
 			'payment_method'       => UPE_Payment_Gateway::GATEWAY_ID,
 		];
+
+		// Mock the level3 service to always return an empty array.
+		$mock_level3_service = $this->createMock( Level3Service::class );
+		$mock_level3_service->expects( $this->any() )
+			->method( 'get_data_from_order' )
+			->willReturn( [] );
+		wcpay_get_test_container()->replace( Level3Service::class, $mock_level3_service );
 	}
 
 	/**
@@ -304,6 +312,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 		update_option( '_wcpay_feature_upe', '0' );
 		update_option( '_wcpay_feature_upe_split', '0' );
+		wcpay_get_test_container()->reset_all_replacements();
 	}
 
 	public function test_payment_fields_outputs_fields() {
@@ -389,32 +398,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		$request->expects( $this->once() )
-			->method( 'set_level3' )
-			->with(
-				[
-					'merchant_reference' => (string) $order_id,
-					'customer_reference' => (string) $order_id,
-					'shipping_amount'    => 1000.0,
-					'line_items'         => [
-						(object) [
-							'product_code'        => 30,
-							'product_description' => 'Beanie with Logo',
-							'unit_cost'           => 1800,
-							'quantity'            => 1,
-							'tax_amount'          => 270,
-							'discount_amount'     => 0,
-							'product_code'        => $product_item->get_product_id(),
-							'product_description' => 'Dummy Product',
-							'unit_cost'           => 1000.0,
-							'quantity'            => 4,
-							'tax_amount'          => 0.0,
-							'discount_amount'     => 0.0,
-						],
-					],
-				]
-			);
-
-		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
 
@@ -491,32 +474,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		$request->expects( $this->once() )
-			->method( 'set_level3' )
-			->with(
-				[
-					'merchant_reference' => (string) $order_id,
-					'shipping_amount'    => 1000.0,
-					'line_items'         => [
-						(object) [
-							'product_code'        => 30,
-							'product_description' => 'Beanie with Logo',
-							'unit_cost'           => 1800,
-							'quantity'            => 1,
-							'tax_amount'          => 270,
-							'discount_amount'     => 0,
-							'product_code'        => $product_item->get_product_id(),
-							'product_description' => 'Dummy Product',
-							'unit_cost'           => 1000.0,
-							'quantity'            => 4,
-							'tax_amount'          => 0.0,
-							'discount_amount'     => 0.0,
-						],
-					],
-					'customer_reference' => (string) $order_id,
-				]
-			);
-
-		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
 
@@ -585,32 +542,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'checkout_type'        => '',
 					'client_version'       => WCPAY_VERSION_NUMBER,
 					'subscription_payment' => 'no',
-				]
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_level3' )
-			->with(
-				[
-					'merchant_reference' => (string) $order_id,
-					'shipping_amount'    => 1000.0,
-					'line_items'         => [
-						(object) [
-							'product_code'        => 30,
-							'product_description' => 'Beanie with Logo',
-							'unit_cost'           => 1800,
-							'quantity'            => 1,
-							'tax_amount'          => 270,
-							'discount_amount'     => 0,
-							'product_code'        => $product_item->get_product_id(),
-							'product_description' => 'Dummy Product',
-							'unit_cost'           => 1000.0,
-							'quantity'            => 4,
-							'tax_amount'          => 0.0,
-							'discount_amount'     => 0.0,
-						],
-					],
-					'customer_reference' => (string) $order_id,
 				]
 			);
 

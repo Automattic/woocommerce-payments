@@ -24,6 +24,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Internal\Payment\Factor;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\CompletedState;
+use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Payment_Information;
 use WCPay\WooPay\WooPay_Utilities;
@@ -199,6 +200,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
+
+		// Mock the level3 service to always return an empty array.
+		$mock_level3_service = $this->createMock( Level3Service::class );
+		$mock_level3_service->expects( $this->any() )
+			->method( 'get_data_from_order' )
+			->willReturn( [] );
+		wcpay_get_test_container()->replace( Level3Service::class, $mock_level3_service );
 	}
 
 	/**
@@ -229,6 +237,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			}
 			// phpcs:enable WordPress.Security.NonceVerification.Missing
 		}
+
+		wcpay_get_test_container()->reset_all_replacements();
 	}
 
 	public function test_attach_exchange_info_to_order_with_no_conversion() {
