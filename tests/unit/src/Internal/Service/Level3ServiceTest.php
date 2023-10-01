@@ -61,7 +61,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 		);
 	}
 
-	protected function create_mock_item( $name, $quantity, $subtotal, $total_tax, $product_id ) {
+	protected function create_mock_item( $name, $quantity, $subtotal, $total_tax, $product_id, $variable = false ) {
 		// Setup the item.
 		$mock_item = $this
 			->getMockBuilder( WC_Order_Item_Product::class )
@@ -101,7 +101,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 
 		$mock_item
 			->method( 'get_variation_id' )
-			->will( $this->returnValue( false ) );
+			->will( $this->returnValue( $variable ? 789 : false ) );
 
 		$mock_item
 			->method( 'get_product_id' )
@@ -116,9 +116,10 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			$with_negative_price_product = false,
 			$quantity = 1,
 			$basket_size = 1,
-			$product_id = 30
+			$product_id = 30,
+			$variable = false
 	) {
-		$mock_items[] = $this->create_mock_item( 'Beanie with Logo', $quantity, 18, 2.7, $product_id );
+		$mock_items[] = $this->create_mock_item( 'Beanie with Logo', $quantity, 18, 2.7, $product_id, $variable );
 
 		if ( $with_fee ) {
 			// Setup the fee.
@@ -209,10 +210,10 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			'shipping_amount'      => 3800,
 			'line_items'           => [
 				(object) [
-					'product_code'        => 30,
+					'product_code'        => 789,
 					'product_description' => 'Beanie with Logo',
 					'unit_cost'           => 1800,
-					'quantity'            => 1,
+					'quantity'            => 1.0,
 					'tax_amount'          => 270,
 					'discount_amount'     => 0,
 				],
@@ -224,7 +225,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 		update_option( 'woocommerce_store_postcode', '94110' );
 
 		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
-		$this->mock_level_3_order( '98012' );
+		$this->mock_level_3_order( '98012', false, false, 1, 1, 30, true );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
 		$this->assertEquals( $expected_data, $level_3_data );
