@@ -27,9 +27,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class MultiCurrency {
 
-	const CURRENCY_SESSION_KEY = 'wcpay_currency';
-	const CURRENCY_META_KEY    = 'wcpay_currency';
-	const FILTER_PREFIX        = 'wcpay_multi_currency_';
+	const CURRENCY_SESSION_KEY    = 'wcpay_currency';
+	const CURRENCY_META_KEY       = 'wcpay_currency';
+	const FILTER_PREFIX           = 'wcpay_multi_currency_';
+	const CUSTOMER_CURRENCIES_KEY = 'wcpay_multi_currency_stored_customer_currencies';
 
 	/**
 	 * The plugin's ID.
@@ -288,6 +289,9 @@ class MultiCurrency {
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
 
+		// Update the customer currencies option after an order status change.
+		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_update_customer_currencies_option' ] );
+
 		static::$is_initialized = true;
 	}
 
@@ -539,6 +543,32 @@ class MultiCurrency {
 		if ( in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
 			update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $exchange_rate_type ) );
 		}
+	}
+
+	/**
+	 * Updates the customer currencies option.
+	 *
+	 * @param int $order_id The order ID.
+	 *
+	 * @return void
+	 */
+	public function maybe_update_customer_currencies_option( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			return;
+		}
+
+		$currency   = strtoupper( $order->get_currency() );
+		$currencies = self::get_all_customer_currencies();
+
+		// Skip if the currency is already in the list.
+		if ( in_array( $currency, $currencies, true ) ) {
+			return;
+		}
+
+		$currencies[] = $currency;
+		update_option( self::CUSTOMER_CURRENCIES_KEY, $currencies );
 	}
 
 	/**
@@ -1487,12 +1517,18 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Function used to compute the customer used currencies, used as internal callable for get_all_customer_currencies function.
+	 * Get all the currencies that have been used in the store.
 	 *
 	 * @return array
 	 */
-	public function callable_get_customer_currencies() {
+	public function get_all_customer_currencies(): array {
 		global $wpdb;
+
+		$currencies = get_option( self::CUSTOMER_CURRENCIES_KEY );
+
+		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
+			return array_map( 'strtoupper', $currencies );
+		}
 
 		$currencies  = $this->get_available_currencies();
 		$query_union = [];
@@ -1521,32 +1557,9 @@ class MultiCurrency {
 		$query      = "SELECT currency_code FROM ( $sub_query ) as subquery WHERE subquery.exists_in_orders=1 ORDER BY currency_code ASC";
 		$currencies = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
-		return [
-			'currencies' => $currencies,
-			'updated'    => time(),
-		];
-	}
-
-	/**
-	 * Get all the currencies that have been used in the store.
-	 *
-	 * @return array
-	 */
-	public function get_all_customer_currencies(): array {
-
-		$data = $this->database_cache->get_or_add(
-			Database_Cache::CUSTOMER_CURRENCIES_KEY,
-			[ $this, 'callable_get_customer_currencies' ],
-			function ( $data ) {
-				// Return true if the data looks valid and was updated an hour or less ago.
-				return is_array( $data ) &&
-					isset( $data['currencies'], $data['updated'] ) &&
-					$data['updated'] >= ( time() - ( 5 * MINUTE_IN_SECONDS ) );
-			}
-		);
-
-		if ( ! empty( $data['currencies'] ) && is_array( $data['currencies'] ) ) {
-			return $data['currencies'];
+		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
+			update_option( self::CUSTOMER_CURRENCIES_KEY, $currencies );
+			return array_map( 'strtoupper', $currencies );
 		}
 
 		return [];
@@ -1584,5 +1597,16 @@ class MultiCurrency {
 		$message = 'Invalid currency passed to ' . $method . ': ' . $currency_code;
 		Logger::error( $message );
 		throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', $code );
+	}
+
+	/**
+	 * Checks if the customer currencies data is valid.
+	 *
+	 * @param mixed $currencies The currencies to check.
+	 *
+	 * @return bool
+	 */
+	private function is_customer_currencies_data_valid( $currencies ) {
+		return ! empty( $currencies ) && is_array( $currencies );
 	}
 }

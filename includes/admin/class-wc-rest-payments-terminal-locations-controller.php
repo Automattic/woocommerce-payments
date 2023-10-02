@@ -238,8 +238,8 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			}
 			// If the location is missing, fetch it individually and reload the transient.
 			$request = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API, $location_id );
-
-			$location = $request->send( 'wcpay_get_terminal_location' );
+			$request->assign_hook( 'wcpay_get_terminal_location' );
+			$location = $request->send();
 			$this->reload_locations();
 
 			return rest_ensure_response( $this->extract_location_fields( $location ) );
@@ -304,8 +304,9 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	private function fetch_locations(): array {
 		$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
 		if ( ! $locations ) {
-			$request   = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
-			$locations = $request->send( 'wcpay_get_terminal_locations' );
+			$request = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+			$request->assign_hook( 'wcpay_get_terminal_locations' );
+			$locations = $request->send();
 			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 		}
 
@@ -319,8 +320,10 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * @throws API_Exception If request to server fails.
 	 */
 	private function reload_locations() {
-		$request   = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
-		$locations = $request->send( 'wcpay_get_terminal_locations' );
+		$request = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->assign_hook( 'wcpay_get_terminal_locations' );
+
+		$locations = $request->send();
 		set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 	}
 }
