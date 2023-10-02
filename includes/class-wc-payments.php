@@ -297,10 +297,12 @@ class WC_Payments {
 
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
+		self::$database_cache->init_hooks();
 
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
 		self::$dependency_service = new WC_Payments_Dependency_Service();
+		self::$dependency_service->init_hooks();
 
 		if ( false === self::$dependency_service->has_valid_dependencies() ) {
 			return;
@@ -601,7 +603,7 @@ class WC_Payments {
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
-			new WC_Payments_Admin(
+			$admin = new WC_Payments_Admin(
 				self::$api_client,
 				self::get_gateway(),
 				self::$account,
@@ -610,16 +612,20 @@ class WC_Payments {
 				self::$incentives_service,
 				self::$database_cache
 			);
+			$admin->init_hooks();
 
-			new WC_Payments_Admin_Settings( self::get_gateway() );
+			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway() );
+			$admin_settings->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 
 			include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
-			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
+			$admin_sections_overwrite = new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
+			$admin_sections_overwrite->init_hooks();
 
-			new WC_Payments_Status( self::get_gateway(), self::get_wc_payments_http(), self::get_account_service() );
+			$wcpay_status = new WC_Payments_Status( self::get_gateway(), self::get_wc_payments_http(), self::get_account_service() );
+			$wcpay_status->init_hooks();
 
 			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 		}
@@ -945,6 +951,7 @@ class WC_Payments {
 
 		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
 			$http_class = new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
+			$http_class->init_hooks();
 		}
 
 		return $http_class;
