@@ -25,8 +25,6 @@ The `WCPay\Core\Server\Request\Create_Intention` class is used to construct the 
 
 ## Filter
 
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_create_intent_request`
 - Arguments: `WC_Order $order`
 
@@ -44,5 +42,5 @@ $request->set_mandate_data( $mandate_data );
 $request->set_metadata( $metadata );
 $request->set_payment_method( $payment_method_id );
 $request->set_payment_method_types( $payment_methods );
-$request->send( 'wcpay_create_intent_request', $order );
+$request->send();
 ```
