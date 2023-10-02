@@ -1455,6 +1455,37 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_set_payment_method_title_for_email_updates_title() {
+		$mock_visa_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'debit',
+			],
+		];
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_payment_method_id_for_order' )
+			->will(
+				$this->returnValue( 'pm_XXXXXXX' )
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->will(
+				$this->returnValue( $mock_visa_details )
+			);
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method_title( 'Popular Payment Methods' );
+
+		$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
+		$this->assertEquals( 'Visa debit card', $order->get_payment_method_title() );
+	}
+
 	public function test_correct_payment_method_title_for_order_when_set_for_email() {
 		$payment_methods = [
 			'cheque' => 'Check payments',
