@@ -13,6 +13,7 @@ use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPAY_UnitTestCase;
 use WCPay\Internal\Service\OrderService;
@@ -46,6 +47,11 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 	private $mock_legacy_proxy;
 
 	/**
+	 * @var HooksProxy|MockObject
+	 */
+	private $mock_hooks_proxy;
+
+	/**
 	 * Order ID used for mocks.
 	 *
 	 * @var int
@@ -60,9 +66,14 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		$this->mock_legacy_proxy   = $this->createMock( LegacyProxy::class );
 		$this->mock_legacy_service = $this->createMock( WC_Payments_Order_Service::class );
+		$this->mock_hooks_proxy    = $this->createMock( HooksProxy::class );
 
 		// Main service under test: OrderService.
-		$this->sut = new OrderService( $this->mock_legacy_service, $this->mock_legacy_proxy );
+		$this->sut = new OrderService(
+			$this->mock_legacy_service,
+			$this->mock_legacy_proxy,
+			$this->mock_hooks_proxy
+		);
 
 		// Same service under test, but with a mockable `get_order`.
 		$this->mock_sut = $this->getMockBuilder( OrderService::class )
@@ -71,6 +82,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 				[
 					$this->mock_legacy_service,
 					$this->mock_legacy_proxy,
+					$this->mock_hooks_proxy,
 				]
 			)
 			->getMock();
@@ -153,6 +165,12 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 				->willReturn( $value );
 		}
 
+		// Expect filters.
+		$this->mock_hooks_proxy->expects( $this->once() )
+			->method( 'apply_filters' )
+			->with( 'wcpay_metadata_from_order', $expected, $mock_order, Payment_Type::SINGLE() )
+			->willReturn( $expected );
+
 		// Act.
 		$result = $this->mock_sut->get_payment_metadata( $this->order_id, Payment_Type::SINGLE() );
 
@@ -187,6 +205,12 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->method( 'call_static' )
 			->with( WC_Payments_Features::class, 'should_use_stripe_billing' )
 			->willReturn( $wcpay_subscription );
+
+		// Expect filters.
+		$this->mock_hooks_proxy->expects( $this->once() )
+			->method( 'apply_filters' )
+			->with( 'wcpay_metadata_from_order', $this->callback( 'is_array' ), $mock_order, Payment_Type::RECURRING() )
+			->willReturnArgument( 1 );
 
 		// Act.
 		$result = $this->mock_sut->get_payment_metadata( $this->order_id, Payment_Type::RECURRING() );
