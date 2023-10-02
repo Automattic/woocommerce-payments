@@ -7,7 +7,6 @@
 
 namespace WCPay\Internal\Payment;
 
-use Automattic\WooCommerce\Blocks\Payments\PaymentMethodTypeInterface;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 
 /**
