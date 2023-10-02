@@ -52,5 +52,5 @@ $request->set_deposit_schedule_weekly_anchor( $deposit_schedule_weekly_anchor );
 $request->set_deposit_schedule_monthly_anchor( $deposit_schedule_monthly_anchor );
 $request->set_locale( $locale );
 
-$request->send( 'wcpay_update_account_settings' );
+$request->send();
 ```
