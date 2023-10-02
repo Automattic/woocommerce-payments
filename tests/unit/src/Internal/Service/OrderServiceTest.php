@@ -367,7 +367,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 	public function provider_attach_exchange_info_to_order() {
 		return [
 			'Different store and account currencies' => [ 'USD', 'USD', 'EUR', null, null ],
-			'Same order and account currencies'      => [ 'USD', 'EUR', 'EUR', null, null ],
+			'Same order and account currencies'      => [ 'EUR', 'EUR', 'EUR', null, null ],
 			'No exchange rate'                       => [ 'USD', 'EUR', 'USD', true, null ],
 			'With exchange rate'                     => [ 'USD', 'EUR', 'USD', true, 3.0 ],
 		];
