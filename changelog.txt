@@ -1,5 +1,34 @@
 *** WooPayments Changelog ***
 
+= 6.6.0-test-2 - 2023-xx-xx =
+* Add - Added docs for cancel_authorization endpoint
+* Add - Add functionality to enable WooPay first party auth behind feature flag.
+* Add - Add the feature flag check for pay-for-order flow
+* Add - Behind a feature flag: dispute message added to transactions screen for disputes not needing a response.
+* Add - Expand the data points added to the WooCommerce SSR to include all the main WooPayments features.
+* Fix - Comment: Behind a feature flag: Update documentation links (new/changed docs content) when notifying merchant that a dispute needs response.
+* Fix - Disable automatic currency switching and switcher widgets on pay_for_order page.
+* Fix - fix: save platform checkout info on blocks
+* Fix - Fix Apple Pay and Google Pay if card payments are disabled.
+* Fix - Fix init WooPay and empty cart error
+* Fix - Fix modal header alignment on safari browser
+* Fix - Fix WooPay express checkout button with product bundles on product page.
+* Fix - Improved product details script with enhanced price calculation, and fallbacks for potential undefined values.
+* Fix - Improve escaping around attributes.
+* Fix - Prevent charging completed or processing orders with a new payment intent ID
+* Fix - Prevent WooPay-related implementation to modify non-WooPay-specific webhooks by changing their data.
+* Fix - Prevent WooPay multiple redirect requests.
+* Fix - Speed up capturing terminal and authorized payments.
+* Fix - WooPay save my info phone number fallback for virtual products
+* Update - Adapt the PO congratulations card copy for pending account status.
+* Update - Allow deferred intent creation UPE to support SEPA payments.
+* Update - Increase GBP transaction limit for Afterpay
+* Update - Store customer currencies as an option to avoid expensive calculation.
+* Update - Updated Transaction Details summary with added fee breakdown tooltip for disputed transactions.
+* Dev - Migrate away from hooking into actions in certain classes
+* Dev - Move fraud related service hooks out of class constructors and into new init_hooks methods.
+* Dev - Refactored request class send() method
+
 = 6.5.1 - 2023-09-26 =
 * Fix - fix incorrect payment method title for non-WooPayments gateways
 
