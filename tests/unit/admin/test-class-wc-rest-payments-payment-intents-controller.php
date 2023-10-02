@@ -61,7 +61,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 				$mock_intent
 			);
 
-		$response = $this->controller->post_payment_intent( $request );
+		$response = $this->controller->create_payment_intent( $request );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( $mock_intent, $response->get_data() );
 	}
@@ -77,7 +77,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 			]
 		);
 
-		$response = $this->controller->post_payment_intent( $request );
+		$response = $this->controller->create_payment_intent( $request );
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
@@ -95,7 +95,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 			]
 		);
 
-		$response = $this->controller->post_payment_intent( $request );
+		$response = $this->controller->create_payment_intent( $request );
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
@@ -128,7 +128,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 				)
 			);
 
-		$response = $this->controller->post_payment_intent( $request );
+		$response = $this->controller->create_payment_intent( $request );
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
