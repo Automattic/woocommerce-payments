@@ -212,9 +212,10 @@ class OrderService {
 	 * @param WC_Order               $order  The order to update.
 	 * @param WC_Payments_API_Charge $charge Charge object.
 	 */
-	private function attach_exchange_info_to_order( $order, WC_Payments_API_Charge $charge ) {
+	public function attach_exchange_info_to_order( $order, WC_Payments_API_Charge $charge ) {
 		// This is a good example of something, which should be a service.
-		$currency_store   = strtolower( get_option( 'woocommerce_currency' ) );
+		$currency_store   = $this->legacy_proxy->call_function( 'get_option', 'woocommerce_currency' );
+		$currency_store   = strtolower( $currency_store );
 		$currency_order   = strtolower( $order->get_currency() );
 		$currency_account = strtolower( $this->account->get_account_default_currency() );
 

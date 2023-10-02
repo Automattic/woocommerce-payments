@@ -251,14 +251,83 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 		$this->sut->get_payment_method();
 	}
 
+	public function provider_get_cvc_confirmation() {
+		return [
+			'No payment method'                  => [
+				null,
+				null,
+				null,
+			],
+			'Payment method set, no CVC'         => [
+				'woocommerce_payments',
+				null,
+				null,
+			],
+			'Payment method set, new CVC'        => [
+				'woocommerce_payments',
+				'new',
+				null,
+			],
+			'Payment method set, meaningful CVC' => [
+				'woocommerce_payments',
+				'xyz1234',
+				'xyz1234',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_get_cvc_confirmation
+	 */
+	public function test_get_cvc_confirmation( $payment_method, $cvc, $expected ) {
+		$request = [];
+		if ( $payment_method ) {
+			$request['payment_method'] = $payment_method;
+		}
+
+		if ( $cvc ) {
+			$request[ 'wc-' . $payment_method . '-payment-cvc-confirmation' ] = $cvc;
+		}
+
+		$sut    = new PaymentRequest( $this->mock_legacy_proxy, $request );
+		$result = $sut->get_cvc_confirmation();
+		$this->assertSame( $expected, $result );
+	}
+
+	public function provider_get_fingerprint() {
+		return [
+			'Nothing provided'    => [ null, null ],
+			'Empty string'        => [ '', null ],
+			'Normal string'       => [ 'abc', 'abc' ],
+			'Needs normalization' => [ '<abc', '&lt;abc' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_get_fingerprint
+	 */
+	public function test_get_fingerprint( $provided, $expected ) {
+		$request = [];
+		if ( ! is_null( $provided ) ) {
+			$request['wcpay-fingerprint'] = $provided;
+		}
+
+		$sut    = new PaymentRequest( $this->mock_legacy_proxy, $request );
+		$result = $sut->get_fingerprint();
+		$this->assertSame( $expected, $result );
+	}
+
 	public function test_populate_context() {
 		$payment_method_id = 'pm_XYZ';
 
-		$sut = new PaymentRequest(
+		$cvc_key = 'wc-woocommerce_payments-payment-cvc-confirmation';
+		$sut     = new PaymentRequest(
 			$this->mock_legacy_proxy,
 			[
 				'payment_method'       => 'woocommerce_payments',
 				'wcpay-payment-method' => $payment_method_id,
+				$cvc_key               => 'CVCConfirmation',
+				'wcpay-fingerprint'    => 'finger-print',
 			]
 		);
 
@@ -266,6 +335,12 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 		$mock_context->expects( $this->once() )
 			->method( 'set_payment_method' )
 			->with( $this->isInstanceOf( NewPaymentMethod::class ) );
+		$mock_context->expects( $this->once() )
+			->method( 'set_cvc_confirmation' )
+			->with( 'CVCConfirmation' );
+		$mock_context->expects( $this->once() )
+			->method( 'set_fingerprint' )
+			->with( 'finger-print' );
 
 		$sut->populate_context( $mock_context );
 	}

@@ -10,13 +10,19 @@ namespace WCPay\Tests\Internal\Service;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Order;
 use WC_Payments_Account;
+use WC_Payments_API_Charge;
+use WC_Payments_API_Payment_Intention;
+use WC_Payments_API_Setup_Intention;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Internal\Payment\PaymentContext;
+use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPAY_UnitTestCase;
 use WCPay\Internal\Service\OrderService;
+use WP_User;
 
 /**
  * Order service unit tests.
@@ -73,7 +79,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		// Same service under test, but with a mockable `get_order`.
 		$this->mock_sut = $this->getMockBuilder( OrderService::class )
-			->onlyMethods( [ 'get_order' ] )
+			->onlyMethods( [ 'get_order', 'attach_exchange_info_to_order' ] )
 			->setConstructorArgs(
 				[
 					$this->mock_legacy_service,
@@ -213,5 +219,222 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			[ true, false ],
 			[ true, true ],
 		];
+	}
+
+	public function provider_import_order_data_to_payment_context() {
+		$existing_user     = new WP_User();
+		$existing_user->ID = 10;
+
+		return [
+			'No User' => [ null ],
+			'User'    => [ $existing_user ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_import_order_data_to_payment_context
+	 */
+	public function test_import_order_data_to_payment_context( $user ) {
+		// Create a mock order that will be used to extract data.
+		$mock_order = $this->createMock( WC_Order::class );
+		$this->mock_sut->expects( $this->once() )
+			->method( 'get_order' )
+			->willReturn( $mock_order );
+
+		// Create a context where data will be imported.
+		$mock_context = $this->createMock( PaymentContext::class );
+
+		// Currency and amount calls.
+		$currency = 'usd';
+		$mock_order->expects( $this->once() )->method( 'get_currency' )->willReturn( $currency );
+		$mock_context->expects( $this->once() )->method( 'set_currency' )->with( $currency );
+		$amount = 1234;
+		$mock_order->expects( $this->once() )->method( 'get_total' )->willReturn( $amount / 100 );
+		$mock_context->expects( $this->once() )->method( 'set_amount' )->with( $amount );
+
+		// Mock the user.
+		$mock_order->expects( $this->once() )
+			->method( 'get_user' )
+			->willReturn( $user ?? false );
+		if ( ! $user ) {
+			$user     = $this->createMock( WP_User::class );
+			$user->ID = 10;
+
+			$this->mock_legacy_proxy->expects( $this->once() )
+				->method( 'call_function' )
+				->with( 'wp_get_current_user' )
+				->willReturn( $user );
+		}
+		$mock_context->expects( $this->once() )
+			->method( 'set_user_id' )
+			->with( 10 );
+
+		// Act.
+		$this->mock_sut->import_order_data_to_payment_context( $this->order_id, $mock_context );
+	}
+
+	public function provider_update_order_from_successful_intent() {
+		$pi = $this->createMock( WC_Payments_API_Payment_Intention::class );
+		$si = $this->createMock( WC_Payments_API_Setup_Intention::class );
+
+		return [
+			'Payment Intent' => [ $pi ],
+			'Setup Intent'   => [ $si ],
+		];
+	}
+
+	/**
+	 * @param WC_Payments_API_Payment_Intention|WC_Payments_API_Setup_Intention|MockObject $intent
+	 * @dataProvider provider_update_order_from_successful_intent
+	 */
+	public function test_update_order_from_successful_intent( $intent ) {
+		$charge_id         = null;
+		$mock_charge       = null;
+		$intent_id         = 'pi_XYZ';
+		$intent_status     = 'success';
+		$customer_id       = 'cus_XYZ';
+		$currency          = 'usd';
+		$payment_method_id = 'pm_XYZ';
+
+		// Create a mock order that will be used.
+		$mock_order = $this->createMock( WC_Order::class );
+		$this->mock_sut->expects( $this->once() )
+			->method( 'get_order' )
+			->with( $this->order_id )
+			->willReturn( $mock_order );
+
+		if ( is_a( $intent, WC_Payments_API_Payment_Intention::class ) ) {
+			$charge_id   = 'ch_XYZ';
+			$mock_charge = $this->createMock( WC_Payments_API_Charge::class );
+
+			$mock_charge->expects( $this->once() )
+				->method( 'get_id' )
+				->willReturn( $charge_id );
+
+			$intent->expects( $this->exactly( 2 ) )
+				->method( 'get_charge' )
+				->willReturn( $mock_charge );
+		}
+
+		// Prepare all parameters for `attach_intent_info_to_order`.
+		$intent->expects( $this->once() )
+			->method( 'get_id' )
+			->willReturn( $intent_id );
+		$intent->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn( $intent_status );
+
+		$mock_context = $this->createMock( PaymentContext::class );
+		$mock_context->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->willReturn( new NewPaymentMethod( $payment_method_id ) );
+		$mock_context->expects( $this->once() )
+			->method( 'get_customer_id' )
+			->willReturn( $customer_id );
+		$mock_context->expects( $this->once() )
+			->method( 'get_currency' )
+			->willReturn( $currency );
+
+		$this->mock_legacy_service->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' )
+			->with(
+				$mock_order,
+				$intent_id,
+				$intent_status,
+				$payment_method_id,
+				$customer_id,
+				$charge_id,
+				$currency
+			);
+
+		// Prepare all additional calls.
+		$this->mock_legacy_service->expects( $this->once() )
+			->method( 'attach_transaction_fee_to_order' )
+			->with( $mock_order, $mock_charge );
+		$this->mock_legacy_service->expects( $this->once() )
+			->method( 'update_order_status_from_intent' )
+			->with( $mock_order, $intent );
+		if ( ! is_null( $mock_charge ) ) {
+			$this->mock_sut->expects( $this->once() )
+				->method( 'attach_exchange_info_to_order' )
+				->with( $mock_order, $mock_charge );
+		}
+
+		// Act.
+		$this->mock_sut->update_order_from_successful_intent( $this->order_id, $intent, $mock_context );
+	}
+
+	public function provider_attach_exchange_info_to_order() {
+		return [
+			'Different store and account currencies' => [ 'USD', 'USD', 'EUR', null, null ],
+			'Same order and account currencies'      => [ 'USD', 'EUR', 'EUR', null, null ],
+			'No exchange rate'                       => [ 'USD', 'EUR', 'USD', true, null ],
+			'With exchange rate'                     => [ 'USD', 'EUR', 'USD', true, 3.0 ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_attach_exchange_info_to_order
+	 */
+	public function test_attach_exchange_info_to_order( $store_currency, $order_currency, $account_currency, $has_charge = false, $exchange_rate = null ) {
+		/**
+		 * Create a SUT that doesn't mock the method here.
+		 *
+		 * @var OrderService|MockObject
+		 */
+		$this->mock_sut = $this->getMockBuilder( OrderService::class )
+			->onlyMethods( [ 'get_order' ] )
+			->setConstructorArgs(
+				[
+					$this->mock_legacy_service,
+					$this->mock_legacy_proxy,
+					$this->mock_account,
+				]
+			)
+			->getMock();
+
+		// Mock the store currency.
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'get_option', 'woocommerce_currency' )
+			->willReturn( $store_currency );
+
+		// Mock the order currency.
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order->expects( $this->once() )->method( 'get_currency' )->willReturn( $order_currency );
+
+		// Mock the account currency.
+		$this->mock_account->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( $account_currency );
+
+		// No charge means that the charge object should never be reached.
+		$mock_charge = $this->createMock( WC_Payments_API_Charge::class );
+		if ( ! $has_charge ) {
+			$mock_charge->expects( $this->never() )->method( 'get_balance_transaction' );
+			$this->mock_sut->attach_exchange_info_to_order( $mock_order, $mock_charge );
+			return;
+		}
+
+		$transaction = [ 'exchange_rate' => $exchange_rate ];
+		$mock_charge->expects( $this->once() )
+			->method( 'get_balance_transaction' )
+			->willReturn( $transaction );
+
+		// No exchange rate means that the order will never be updated.
+		if ( ! $exchange_rate ) {
+			$mock_order->expects( $this->never() )->method( 'update_meta_data' );
+			$this->mock_sut->attach_exchange_info_to_order( $mock_order, $mock_charge );
+			return;
+		}
+
+		$mock_order->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
+		$mock_order->expects( $this->once() )
+			->method( 'save_meta_data' );
+
+		// Act.
+		$this->mock_sut->attach_exchange_info_to_order( $mock_order, $mock_charge );
 	}
 }

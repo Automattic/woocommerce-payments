@@ -29,11 +29,7 @@ class PaymentContext {
 	 * @param mixed  $value Value to store.
 	 */
 	private function set( string $key, $value ) {
-		if ( null !== $value ) {
-			$this->data[ $key ] = $value;
-		} else {
-			unset( $this->data[ $key ] );
-		}
+		$this->data[ $key ] = $value;
 	}
 
 	/**
