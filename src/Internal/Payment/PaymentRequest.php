@@ -191,7 +191,15 @@ class PaymentRequest {
 	 */
 	public function populate_context( PaymentContext $context ) {
 		$context->set_payment_method( $this->get_payment_method() );
-		$context->set_cvc_confirmation( $this->get_cvc_confirmation() );
-		$context->set_fingerprint( $this->get_fingerprint() );
+
+		$cvc_confirmation = $this->get_cvc_confirmation();
+		if ( ! is_null( $cvc_confirmation ) ) {
+			$context->set_cvc_confirmation( $cvc_confirmation );
+		}
+
+		$fingerprint = $this->get_fingerprint();
+		if ( ! is_null( $fingerprint ) ) {
+			$context->set_fingerprint( $fingerprint );
+		}
 	}
 }

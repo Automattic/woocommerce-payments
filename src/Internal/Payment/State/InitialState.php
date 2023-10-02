@@ -18,6 +18,8 @@ use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\Level3Service;
 use WC_Payments_API_Payment_Intention;
 use WC_Payments_Customer_Service;
+use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
+use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 
 /**
  * Initial state, representing a freshly created payment.
@@ -78,6 +80,7 @@ class InitialState extends PaymentState {
 
 		$this->order_service->import_order_data_to_payment_context( $order_id, $context );
 		$context->set_metadata( $this->order_service->get_payment_metadata( $order_id ) );
+		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
 
 		$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
 			$context->get_user_id(),
@@ -88,7 +91,12 @@ class InitialState extends PaymentState {
 		// All data has been gathered now. Store whatever we can to avoid it from being lost later.
 		// tbd.
 
-		$intent = $this->create_intent();
+		try {
+			$intent = $this->create_intent();
+		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
+			return $this->create_state( SystemErrorState::class );
+		}
+
 		$this->order_service->update_order_from_successful_intent( $order_id, $intent, $context );
 
 		return $this->create_state( CompletedState::class );
@@ -99,8 +107,10 @@ class InitialState extends PaymentState {
 	 *
 	 * @return WC_Payments_API_Payment_Intention
 	 * @throws Invalid_Request_Parameter_Exception
+	 * @throws Extend_Request_Exception
+	 * @throws Immutable_Parameter_Exception
 	 */
-	private function create_intent() {
+	public function create_intent() {
 		$context = $this->get_context();
 
 		$request = Create_And_Confirm_Intention::create();
@@ -110,7 +120,7 @@ class InitialState extends PaymentState {
 		$request->set_customer( $context->get_customer_id() );
 		$request->set_capture_method( $context->should_capture_manually() );
 		$request->set_metadata( $context->get_metadata() );
-		$request->set_level3( $this->level3_service->get_data_from_order( $context->get_order_id() ) );
+		$request->set_level3( $context->get_level3_data() );
 		$request->set_payment_methods( [ 'card' ] ); // Initial payment process only supports cards.
 		$request->set_cvc_confirmation( $context->get_cvc_confirmation() );
 		$request->set_fingerprint( $context->get_fingerprint() );

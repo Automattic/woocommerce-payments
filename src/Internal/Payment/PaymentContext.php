@@ -128,6 +128,24 @@ class PaymentContext {
 	}
 
 	/**
+	 * Returns the order level 3 data if set.
+	 *
+	 * @return array|null
+	 */
+	public function get_level3_data(): ?array {
+		return $this->get( 'level3_data' );
+	}
+
+	/**
+	 * Stores the order level 3 data.
+	 *
+	 * @param array $level3_data level3_data to sent to the API.
+	 */
+	public function set_level3_data( array $level3_data ) {
+		$this->set( 'level3_data', $level3_data );
+	}
+
+	/**
 	 * Returns the order metadata if set.
 	 *
 	 * @return array|null

@@ -148,9 +148,10 @@ class OrderService {
 	 *
 	 * @param int            $order_id ID of the order.
 	 * @param PaymentContext $context  A payment context, awaiting order data.
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function import_order_data_to_payment_context( int $order_id, PaymentContext $context ) {
-		$order = $this->legacy_service->get_order( $order_id );
+		$order = $this->get_order( $order_id );
 
 		$currency = strtolower( $order->get_currency() );
 		$amount   = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
@@ -171,13 +172,14 @@ class OrderService {
 	 * @param int                                $order_id ID of the order that was just paid.
 	 * @param WC_Payments_API_Abstract_Intention $intent   Remote object. To be abstracted.
 	 * @param PaymentContext                     $context  Context for the payment.
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function update_order_from_successful_intent(
 		int $order_id,
 		WC_Payments_API_Abstract_Intention $intent,
 		PaymentContext $context
 	) {
-		$order = $this->legacy_service->get_order( $order_id );
+		$order = $this->get_order( $order_id );
 
 		$charge    = null;
 		$charge_id = null;
@@ -229,7 +231,8 @@ class OrderService {
 		}
 
 		// Without the balance transaction, we cannot check the exchange rate.
-		$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
+		$transaction   = $charge->get_balance_transaction();
+		$exchange_rate = $transaction['exchange_rate'] ?? null;
 		if ( is_null( $exchange_rate ) ) {
 			return;
 		}
