@@ -128,14 +128,14 @@ const StoreSettingsTask = () => {
 									) }
 								/>
 								<br />
+								<div className="wcpay-wizard-task__description-element is-muted-color">
+									{ __(
+										'A currency switcher is also available in your widgets.',
+										'woocommerce-payments'
+									) }
+								</div>
 							</>
 						) : null }
-						<div className="wcpay-wizard-task__description-element is-muted-color">
-							{ __(
-								'A currency switcher is also available in your widgets.',
-								'woocommerce-payments'
-							) }
-						</div>
 					</CardBody>
 				</Card>
 				<Button
