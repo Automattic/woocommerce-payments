@@ -23,6 +23,13 @@ class Create_Intention extends Request {
 	const REQUIRED_PARAMS  = [ 'amount', 'currency' ];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_create_intent_request';
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string

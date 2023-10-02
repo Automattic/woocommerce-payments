@@ -51,6 +51,7 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_account          = $this->createMock( WC_Payments_Account::class );
 
 		$this->fraud_service = new WC_Payments_Fraud_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_account );
+		$this->fraud_service->init_hooks();
 	}
 
 	public function test_registers_filters_and_actions_properly() {
