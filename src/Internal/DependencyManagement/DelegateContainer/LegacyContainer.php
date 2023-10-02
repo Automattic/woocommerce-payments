@@ -9,7 +9,7 @@ namespace WCPay\Internal\DependencyManagement\DelegateContainer;
 
 use Psr\Container\ContainerInterface;
 use WC_Payments;
-use WCPay\Internal\DependencyManagement\ContainerException;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 
 /**
  * WooPayments Legacy Container Delegate.

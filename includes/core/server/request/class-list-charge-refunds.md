@@ -17,8 +17,6 @@ The `WCPay\Core\Server\Request\List_Charge_Refunds` class is used to construct t
 
 ## Filter
 
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_list_charge_refunds_request`
 - Arguments: None
 
@@ -28,5 +26,5 @@ When using this request, provide the following filter and arguments:
 $request = List_Charge_Refunds::create();
 $request->set_charge( 'ch_id' );
 $request->set_limit( 100 ); // It is not required. You can also skip this setter.
-$request->send( 'wcpay_refund_charge_request' );
+$request->send();
 ```
