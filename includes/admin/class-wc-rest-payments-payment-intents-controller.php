@@ -47,7 +47,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 			'/' . $this->rest_base,
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'post_payment_intent' ],
+				'callback'            => [ $this, 'create_payment_intent' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -80,7 +80,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	 *
 	 * @param WP_REST_Request $request data about the request.
 	 */
-	public function post_payment_intent( $request ) {
+	public function create_payment_intent( $request ) {
 		try {
 
 			$order_id = $request->get_param( 'order_id' );
