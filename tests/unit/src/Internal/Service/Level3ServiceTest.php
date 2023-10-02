@@ -16,6 +16,7 @@ use WCPAY_UnitTestCase;
 use WC_Payments_Account;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
+use WCPay\Internal\Proxy\LegacyProxy;
 
 /**
  * Level3 data service unit tests.
@@ -39,6 +40,11 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 	private $mock_account;
 
 	/**
+	 * @var LegacyProxy|MockObject
+	 */
+	private $legacy_proxy;
+
+	/**
 	 * Order ID used for mocks.
 	 *
 	 * @var int
@@ -53,11 +59,13 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service = $this->createMock( OrderService::class );
 		$this->mock_account       = $this->createMock( WC_Payments_Account::class );
+		$this->legacy_proxy       = $this->createMock( LegacyProxy::class );
 
 		// Main service under test: Level3Service.
 		$this->sut = new Level3Service(
 			$this->mock_order_service,
-			$this->mock_account
+			$this->mock_account,
+			$this->legacy_proxy
 		);
 	}
 
@@ -222,7 +230,10 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			'shipping_from_zip'    => '94110',
 		];
 
-		update_option( 'woocommerce_store_postcode', '94110' );
+		$this->legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'get_option', 'woocommerce_store_postcode' )
+			->willReturn( '94110' );
 
 		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
 		$this->mock_level_3_order( '98012', false, false, 1, 1, 30, true );
@@ -250,7 +261,10 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			'shipping_from_zip'    => '94110',
 		];
 
-		update_option( 'woocommerce_store_postcode', '94110' );
+		$this->legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'get_option', 'woocommerce_store_postcode' )
+			->willReturn( '94110' );
 
 		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
 		$this->mock_level_3_order( '98012', false, false, 1, 1, 123456789123456 );
@@ -286,7 +300,10 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			'shipping_from_zip'    => '94110',
 		];
 
-		update_option( 'woocommerce_store_postcode', '94110' );
+		$this->legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'get_option', 'woocommerce_store_postcode' )
+			->willReturn( '94110' );
 
 		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
 		$this->mock_level_3_order( '98012', true );
@@ -322,7 +339,10 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			'shipping_from_zip'    => '94110',
 		];
 
-		update_option( 'woocommerce_store_postcode', '94110' );
+		$this->legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'get_option', 'woocommerce_store_postcode' )
+			->willReturn( '94110' );
 
 		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
 		$this->mock_level_3_order( '98012', false, true, 1, 1 );
@@ -359,7 +379,10 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 		];
 
 		// Use a non-US postcode.
-		update_option( 'woocommerce_store_postcode', '9000' );
+		$this->legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'get_option', 'woocommerce_store_postcode' )
+			->willReturn( '9000' );
 
 		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
 		$this->mock_level_3_order( '98012' );
@@ -397,7 +420,10 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			'shipping_from_zip'    => '94110',
 		];
 
-		update_option( 'woocommerce_store_postcode', '94110' );
+		$this->legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'get_option', 'woocommerce_store_postcode' )
+			->willReturn( '94110' );
 
 		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
 		$this->mock_level_3_order( '98012', false, false, 3.7 );
@@ -425,7 +451,10 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			'shipping_from_zip'    => '94110',
 		];
 
-		update_option( 'woocommerce_store_postcode', '94110' );
+		$this->legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'get_option', 'woocommerce_store_postcode' )
+			->willReturn( '94110' );
 
 		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
 		$this->mock_level_3_order( '98012', false, false, 0.4 );

@@ -15,6 +15,7 @@ use WC_Payments_Account;
 use WC_Payments_Utils;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Internal\Proxy\LegacyProxy;
 
 /**
  * Service for generating Level 3 data from orders.
@@ -35,17 +36,27 @@ class Level3Service {
 	private $account;
 
 	/**
+	 * Legacy proxy.
+	 *
+	 * @var LegacyProxy
+	 */
+	private $legacy_proxy;
+
+	/**
 	 * Service constructor.
 	 *
 	 * @param OrderService        $order_service Order service.
 	 * @param WC_Payments_Account $account       WooPayments account.
+	 * @param LegacyProxy         $legacy_proxy  Legacy proxy.
 	 */
 	public function __construct(
 		OrderService $order_service,
-		WC_Payments_Account $account
+		WC_Payments_Account $account,
+		LegacyProxy $legacy_proxy
 	) {
 		$this->order_service = $order_service;
 		$this->account       = $account;
+		$this->legacy_proxy  = $legacy_proxy;
 	}
 
 	/**
@@ -96,7 +107,7 @@ class Level3Service {
 		}
 
 		// The merchant’s U.S. shipping ZIP code.
-		$store_postcode = get_option( 'woocommerce_store_postcode' );
+		$store_postcode = $this->legacy_proxy->call_function( 'get_option', 'woocommerce_store_postcode' );
 		if ( WC_Payments_Utils::is_valid_us_zip_code( $store_postcode ) ) {
 			$level3_data['shipping_from_zip'] = $store_postcode;
 		}
