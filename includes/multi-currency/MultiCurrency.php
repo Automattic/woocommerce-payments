@@ -196,6 +196,7 @@ class MultiCurrency {
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
 			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service(), WC_Payments::get_localization_service(), WC_Payments::get_database_cache() );
+			self::$instance->init_hooks();
 		}
 		return self::$instance;
 	}
