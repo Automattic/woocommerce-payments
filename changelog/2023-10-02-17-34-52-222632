@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Hide tooltip related to Storefront theme in Multi-Currency settings when Storefront is not the active theme.

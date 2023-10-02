@@ -139,44 +139,35 @@ const StoreSettings = () => {
 								) }
 							</div>
 							{ storeSettings.site_theme === 'Storefront' ? (
-								<>
-									<CheckboxControl
-										checked={
-											isStorefrontSwitcherEnabledValue
-										}
-										onChange={
-											handleIsStorefrontSwitcherEnabledClick
-										}
-										data-testid={
-											'enable_storefront_switcher'
-										}
-										label={ __(
-											'Add a currency switcher to the Storefront theme on breadcrumb section.',
-											'woocommerce-payments'
-										) }
-									/>
-									<div className="multi-currency-settings__description">
-										{ createInterpolateElement(
-											sprintf(
-												/* translators: %s: url to the widgets page */
-												__(
-													'A currency switcher is also available in your widgets. ' +
-														'<linkToWidgets>Configure now</linkToWidgets>',
-													'woocommerce-payments'
-												),
-												'widgets.php'
-											),
-											{
-												// eslint-disable-next-line jsx-a11y/anchor-has-content
-												linkToWidgets: (
-													// eslint-disable-next-line jsx-a11y/anchor-has-content
-													<a href="widgets.php" />
-												),
-											}
-										) }
-									</div>
-								</>
+								<CheckboxControl
+									checked={ isStorefrontSwitcherEnabledValue }
+									onChange={
+										handleIsStorefrontSwitcherEnabledClick
+									}
+									data-testid={ 'enable_storefront_switcher' }
+									label={ __(
+										'Add a currency switcher to the Storefront theme on breadcrumb section.',
+										'woocommerce-payments'
+									) }
+								/>
 							) : null }
+							<div className="multi-currency-settings__description">
+								{ createInterpolateElement(
+									sprintf(
+										/* translators: %s: url to the widgets page */
+										__(
+											'A currency switcher is also available in your widgets. ' +
+												'<linkToWidgets>Configure now</linkToWidgets>',
+											'woocommerce-payments'
+										),
+										'widgets.php'
+									),
+									{
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										linkToWidgets: <a href="widgets.php" />,
+									}
+								) }
+							</div>
 						</CardBody>
 						<PreviewModal
 							isPreviewModalOpen={ isPreviewModalOpen }
