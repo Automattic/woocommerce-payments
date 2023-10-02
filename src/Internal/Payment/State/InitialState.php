@@ -7,19 +7,15 @@
 
 namespace WCPay\Internal\Payment\State;
 
-use WC_Customer;
-use WC_Order;
-use WC_Payments_API_Abstract_Intention;
-use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
-use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
-use WCPay\Internal\Payment\Exception\StateTransitionException;
-use WCPay\Exceptions\Order_Not_Found_Exception;
+use WC_Payments_Customer_Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\Level3Service;
-use WC_Payments_API_Payment_Intention;
-use WC_Payments_Customer_Service;
+use WCPay\Internal\Service\PaymentRequestService;
+use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 
 /**
  * Initial state, representing a freshly created payment.
@@ -47,24 +43,34 @@ class InitialState extends PaymentState {
 	private $level3_service;
 
 	/**
+	 * Payment request service.
+	 *
+	 * @var PaymentRequestService
+	 */
+	private $payment_request_service;
+
+	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory                 $state_factory    Factory for payment states.
-	 * @param OrderService                 $order_service    Service for order-related actions.
-	 * @param WC_Payments_Customer_Service $customer_service Service for managing remote customers.
-	 * @param Level3Service                $level3_service   Service for Level3 Data.
+	 * @param StateFactory                 $state_factory           Factory for payment states.
+	 * @param OrderService                 $order_service           Service for order-related actions.
+	 * @param WC_Payments_Customer_Service $customer_service        Service for managing remote customers.
+	 * @param Level3Service                $level3_service          Service for Level3 Data.
+	 * @param PaymentRequestService        $payment_request_service Connection with the server.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
 		OrderService $order_service,
 		WC_Payments_Customer_Service $customer_service,
-		Level3Service $level3_service
+		Level3Service $level3_service,
+		PaymentRequestService $payment_request_service
 	) {
 		parent::__construct( $state_factory );
 
-		$this->order_service    = $order_service;
-		$this->customer_service = $customer_service;
-		$this->level3_service   = $level3_service;
+		$this->order_service           = $order_service;
+		$this->customer_service        = $customer_service;
+		$this->level3_service          = $level3_service;
+		$this->payment_request_service = $payment_request_service;
 	}
 
 	/**
@@ -78,53 +84,29 @@ class InitialState extends PaymentState {
 		$context  = $this->get_context();
 		$order_id = $context->get_order_id();
 
+		// Start by setting up all local objects.
 		$this->order_service->import_order_data_to_payment_context( $order_id, $context );
 		$context->set_metadata( $this->order_service->get_payment_metadata( $order_id ) );
 		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
 
+		// Customer management involves a remote call.
 		$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
 			$context->get_user_id(),
 			$this->order_service->get_order( $order_id )
 		);
 		$context->set_customer_id( $customer_id );
 
-		// All data has been gathered now. Store whatever we can to avoid it from being lost later.
-		// tbd.
-
+		// Payments are currently based on intents, request one from the API.
 		try {
-			$intent = $this->create_intent();
+			$intent = $this->payment_request_service->create_intent( $context );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
 		}
 
+		// Intent available, complete processing.
 		$this->order_service->update_order_from_successful_intent( $order_id, $intent, $context );
 
+		// If everything went well, transition to the completed state.
 		return $this->create_state( CompletedState::class );
-	}
-
-	/**
-	 * Creates a payment intent. To be replaced by an abstraction soon.
-	 *
-	 * @return WC_Payments_API_Payment_Intention
-	 * @throws Invalid_Request_Parameter_Exception
-	 * @throws Extend_Request_Exception
-	 * @throws Immutable_Parameter_Exception
-	 */
-	public function create_intent() {
-		$context = $this->get_context();
-
-		$request = Create_And_Confirm_Intention::create();
-		$request->set_amount( $context->get_amount() );
-		$request->set_currency_code( $context->get_currency() );
-		$request->set_payment_method( $this->get_context()->get_payment_method()->get_id() );
-		$request->set_customer( $context->get_customer_id() );
-		$request->set_capture_method( $context->should_capture_manually() );
-		$request->set_metadata( $context->get_metadata() );
-		$request->set_level3( $context->get_level3_data() );
-		$request->set_payment_methods( [ 'card' ] ); // Initial payment process only supports cards.
-		$request->set_cvc_confirmation( $context->get_cvc_confirmation() );
-		$request->set_fingerprint( $context->get_fingerprint() );
-
-		return $request->send( 'wcpay_create_and_confirm_intent_request_2' ); // @todo: This is weird.
 	}
 }

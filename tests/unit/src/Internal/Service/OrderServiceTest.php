@@ -9,6 +9,7 @@ namespace WCPay\Tests\Internal\Service;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Order;
+use WC_Payments_Account;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WCPay\Constants\Payment_Type;
@@ -46,6 +47,11 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 	private $mock_legacy_proxy;
 
 	/**
+	 * @var WC_Payments_Account|MockObject
+	 */
+	private $mock_account;
+
+	/**
 	 * Order ID used for mocks.
 	 *
 	 * @var int
@@ -60,9 +66,10 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		$this->mock_legacy_proxy   = $this->createMock( LegacyProxy::class );
 		$this->mock_legacy_service = $this->createMock( WC_Payments_Order_Service::class );
+		$this->mock_account        = $this->createMock( WC_Payments_Account::class );
 
 		// Main service under test: OrderService.
-		$this->sut = new OrderService( $this->mock_legacy_service, $this->mock_legacy_proxy );
+		$this->sut = new OrderService( $this->mock_legacy_service, $this->mock_legacy_proxy, $this->mock_account );
 
 		// Same service under test, but with a mockable `get_order`.
 		$this->mock_sut = $this->getMockBuilder( OrderService::class )
@@ -71,6 +78,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 				[
 					$this->mock_legacy_service,
 					$this->mock_legacy_proxy,
+					$this->mock_account,
 				]
 			)
 			->getMock();
