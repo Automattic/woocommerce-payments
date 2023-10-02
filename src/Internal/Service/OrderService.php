@@ -12,6 +12,7 @@ use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 
 /**
@@ -40,17 +41,27 @@ class OrderService {
 	private $legacy_proxy;
 
 	/**
+	 * Hooks proxy.
+	 *
+	 * @var HooksProxy
+	 */
+	private $hooks_proxy;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param WC_Payments_Order_Service $legacy_service The legacy order service.
 	 * @param LegacyProxy               $legacy_proxy   Proxy for accessing non-src functionality.
+	 * @param HooksProxy                $hooks_proxy    Proxy for triggering hooks.
 	 */
 	public function __construct(
 		WC_Payments_Order_Service $legacy_service,
-		LegacyProxy $legacy_proxy
+		LegacyProxy $legacy_proxy,
+		HooksProxy $hooks_proxy
 	) {
 		$this->legacy_service = $legacy_service;
 		$this->legacy_proxy   = $legacy_proxy;
+		$this->hooks_proxy    = $hooks_proxy;
 	}
 
 	/**
@@ -124,6 +135,6 @@ class OrderService {
 			$metadata['payment_context']      = $use_stripe_billing ? 'wcpay_subscription' : 'regular_subscription';
 		}
 
-		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
+		return $this->hooks_proxy->apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
 	}
 }
