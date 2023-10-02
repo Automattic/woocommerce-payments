@@ -15,10 +15,6 @@
 	<exclude-pattern>*/includes/woopay-user/*</exclude-pattern>
 	<exclude-pattern>*/includes/class-wc-payments-order-success-page.php</exclude-pattern>
 
-	<!-- https://github.com/Automattic/woocommerce-payments/issues/7261 -->
-	<exclude-pattern>*/includes/class-wc-payments-fraud-service.php</exclude-pattern>
-	<exclude-pattern>*/includes/fraud-prevention/*</exclude-pattern>
-
 	<!-- https://github.com/Automattic/woocommerce-payments/issues/7262 -->
 	<exclude-pattern>*/includes/class-wc-payments-account.php</exclude-pattern>
 	<exclude-pattern>*/includes/class-wc-payments-incentives-service.php</exclude-pattern>
