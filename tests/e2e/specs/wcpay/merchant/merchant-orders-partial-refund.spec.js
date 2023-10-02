@@ -48,24 +48,6 @@ const dataTable = [
 	],
 ];
 
-/**
- * Extracts a floating number from the provided DOM element's text content.
- *
- * @param {HTMLElement} el - The DOM element from which to extract the number.
- * @return {number|null} The extracted number or null if not matched.
- */
-const extractNumberFromElement = ( el ) => {
-	// This regex matches numbers in the format d+.d{2}
-	// For example:
-	// '123.45' matches and returns 123.45
-	// '52.05' matches and returns 52.05
-	// 'hello 34.56 world' matches and returns 34.56
-	const regex = /(\d+\.\d{2})/;
-	const str = el.textContent || el.innerText;
-	const match = str.match( regex );
-	return match ? parseFloat( match[ 1 ] ) : null;
-};
-
 describe.each( dataTable )(
 	'Order > Partial refund',
 	( testName, { lineItems, refundInputs } ) => {
@@ -89,7 +71,7 @@ describe.each( dataTable )(
 			);
 			orderTotal = await page.$eval(
 				'.woocommerce-order-overview__total strong',
-				extractNumberFromElement
+				( el ) => Number( el.innerText.replace( '$', '' ) )
 			);
 
 			// Login as merchant
