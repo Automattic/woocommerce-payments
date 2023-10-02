@@ -15,11 +15,12 @@ import classNames from 'classnames';
  */
 import type { Dispute } from 'wcpay/types/disputes';
 import { HorizontalList } from 'wcpay/components/horizontal-list';
-import { formatCurrency } from 'wcpay/utils/currency';
+import { formatExplicitCurrency } from 'wcpay/utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
 import { formatStringValue } from 'wcpay/utils';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import Paragraphs from 'wcpay/components/paragraphs';
+import { getDisputeDeductedBalanceTransaction } from 'wcpay/disputes/utils';
 
 interface Props {
 	dispute: Dispute;
@@ -38,11 +39,22 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute, daysRemaining } ) => {
 		reasons[ dispute.reason ]?.display || dispute.reason
 	);
 	const disputeReasonSummary = reasons[ dispute.reason ]?.summary || [];
+	const disputeBalanceTransaction = getDisputeDeductedBalanceTransaction(
+		dispute
+	);
+	// If there is a dispute deduction balance transaction, show the dispute amount in the store's currency.
+	// Otherwise (if the dispute is an inquiry) use the dispute/charge amount and currency.
+	const disputeAmountFormatted = disputeBalanceTransaction
+		? formatExplicitCurrency(
+				Math.abs( disputeBalanceTransaction.amount ),
+				disputeBalanceTransaction.currency
+		  )
+		: formatExplicitCurrency( dispute.amount, dispute.currency );
 
 	const columns = [
 		{
 			title: __( 'Dispute Amount', 'woocommerce-payments' ),
-			content: formatCurrency( dispute.amount, dispute.currency ),
+			content: disputeAmountFormatted,
 		},
 		{
 			title: __( 'Disputed On', 'woocommerce-payments' ),
@@ -103,18 +115,22 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute, daysRemaining } ) => {
 								daysRemaining < 7 && daysRemaining > 2,
 						} ) }
 					>
-						{ daysRemaining === 0
-							? __( '(Last day today)', 'woocommerce-payments' )
-							: sprintf(
-									// Translators: %s is the number of days left to respond to the dispute.
-									_n(
-										'(%s day left to respond)',
-										'(%s days left to respond)',
-										daysRemaining,
-										'woocommerce-payments'
-									),
-									daysRemaining
-							  ) }
+						{ daysRemaining > 0 &&
+							sprintf(
+								// Translators: %s is the number of days left to respond to the dispute.
+								_n(
+									'(%s day left to respond)',
+									'(%s days left to respond)',
+									daysRemaining,
+									'woocommerce-payments'
+								),
+								daysRemaining
+							) }
+
+						{ daysRemaining === 0 &&
+							__( '(Last day today)', 'woocommerce-payments' ) }
+						{ daysRemaining < 0 &&
+							__( '(Past due)', 'woocommerce-payments' ) }
 					</span>
 				</span>
 			),
