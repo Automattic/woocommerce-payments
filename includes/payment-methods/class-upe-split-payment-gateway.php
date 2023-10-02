@@ -362,7 +362,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		try {
 			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
 			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+			$setup_intent = $setup_intent_request->send();
 
 			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
