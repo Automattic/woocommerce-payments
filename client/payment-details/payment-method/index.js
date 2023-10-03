@@ -20,7 +20,7 @@ import IdealDetails from './ideal';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
-import KlarnaDetails from 'wcpay/payment-details/payment-method/klarna';
+import KlarnaDetails from './klarna';
 
 const detailsComponentMap = {
 	card: CardDetails,
