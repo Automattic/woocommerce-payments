@@ -23,6 +23,13 @@ class Get_Account_Capital_Link extends Request {
 	];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_get_account_capital_link';
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string
