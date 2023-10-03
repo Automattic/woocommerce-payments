@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Move fraud related service hooks out of class constructors and into new init_hooks methods.

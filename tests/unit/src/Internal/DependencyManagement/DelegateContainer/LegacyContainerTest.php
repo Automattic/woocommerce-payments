@@ -11,7 +11,7 @@ use WCPAY_UnitTestCase;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
-use WCPay\Internal\DependencyManagement\ContainerException;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 
 /**
  * Tests for the legacy container.
