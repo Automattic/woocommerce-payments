@@ -4,13 +4,12 @@
  * External dependencies
  */
 import React from 'react';
-import { __, _n, sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { ExternalLink } from '@wordpress/components';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
-import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -20,55 +19,18 @@ import { ChargeBillingDetails } from 'wcpay/types/charges';
 import { formatExplicitCurrency } from 'utils/currency';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
+import DisputeDueByDate from './dispute-due-by-date';
 
 interface Props {
 	dispute: Dispute;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
-	daysRemaining: number;
 }
-
-const DueByDate: React.FC< {
-	dueBy: number;
-	daysRemaining: number;
-} > = ( { dueBy, daysRemaining } ) => {
-	const respondByDate = dateI18n(
-		'M j, Y, g:ia',
-		moment( dueBy * 1000 ).toISOString()
-	);
-	return (
-		<span className="dispute-steps__steps__response-date">
-			{ respondByDate }
-			<span
-				className={ classNames( {
-					'dispute-steps__steps__response-date--urgent':
-						daysRemaining < 3,
-					'dispute-steps__steps__response-date--warning':
-						daysRemaining < 7 && daysRemaining > 2,
-				} ) }
-			>
-				{ daysRemaining === 0
-					? __( '(Last day today)', 'woocommerce-payments' )
-					: sprintf(
-							// Translators: %s is the number of days left to respond to the dispute.
-							_n(
-								'(%s day left to respond)',
-								'(%s days left to respond)',
-								daysRemaining,
-								'woocommerce-payments'
-							),
-							daysRemaining
-					  ) }
-			</span>
-		</span>
-	);
-};
 
 const DisputeSteps: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
-	daysRemaining,
 } ) => {
 	let emailLink;
 	if ( customer?.email ) {
@@ -191,9 +153,8 @@ const DisputeSteps: React.FC< Props > = ( {
 								/>
 							),
 							dueByDate: (
-								<DueByDate
+								<DisputeDueByDate
 									dueBy={ dispute.evidence_details.due_by }
-									daysRemaining={ daysRemaining }
 								/>
 							),
 						}
@@ -208,7 +169,6 @@ const InquirySteps: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
-	daysRemaining,
 } ) => {
 	let emailLink;
 	if ( customer?.email ) {
@@ -305,9 +265,8 @@ const InquirySteps: React.FC< Props > = ( {
 								/>
 							),
 							dueByDate: (
-								<DueByDate
+								<DisputeDueByDate
 									dueBy={ dispute.evidence_details.due_by }
-									daysRemaining={ daysRemaining }
 								/>
 							),
 						}
@@ -322,7 +281,6 @@ const DisputeStepsWrapper: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
-	daysRemaining,
 } ) => {
 	if ( isInquiry( dispute ) ) {
 		return (
@@ -330,7 +288,6 @@ const DisputeStepsWrapper: React.FC< Props > = ( {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ chargeCreated }
-				daysRemaining={ daysRemaining }
 			/>
 		);
 	}
@@ -340,7 +297,6 @@ const DisputeStepsWrapper: React.FC< Props > = ( {
 			dispute={ dispute }
 			customer={ customer }
 			chargeCreated={ chargeCreated }
-			daysRemaining={ daysRemaining }
 		/>
 	);
 };

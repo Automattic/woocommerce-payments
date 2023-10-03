@@ -76,15 +76,11 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							) }
 						</InlineNotice>
 					) }
-					<DisputeSummaryRow
-						dispute={ dispute }
-						daysRemaining={ countdownDays }
-					/>
+					<DisputeSummaryRow dispute={ dispute } />
 					<DisputeSteps
 						dispute={ dispute }
 						customer={ customer }
 						chargeCreated={ chargeCreated }
-						daysRemaining={ countdownDays }
 					/>
 					<IssuerEvidenceList
 						issuerEvidence={ dispute.issuer_evidence }
