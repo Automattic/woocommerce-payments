@@ -26,9 +26,8 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 	// so we have to hint we expect a Charge object here.
 	const chargeObject = disputeObject.charge as Charge;
 
-	let transactionDetailsUrl = '';
 	if ( disputeIsAvailable ) {
-		transactionDetailsUrl = getAdminUrl( {
+		const transactionDetailsUrl = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/transactions/details',
 			id: chargeObject.payment_intent,
