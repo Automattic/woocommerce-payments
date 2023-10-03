@@ -3,7 +3,7 @@
  */
 import React, { useEffect } from 'react';
 import { getHistory } from '@woocommerce/navigation';
-import { Spinner, Flex, FlexItem } from '@wordpress/components';
+import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -14,16 +14,15 @@ import { Charge } from 'wcpay/types/charges';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
+import warning from 'wcpay/components/icons/warning';
 
 const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 	query: { id: disputeId },
 } ) => {
-	const { dispute, isLoading } = useDispute( disputeId );
+	const { dispute, error, isLoading } = useDispute( disputeId );
 
 	useEffect( () => {
-		const disputeChargeIsAvailable = ! isLoading && dispute?.charge;
-
-		if ( disputeChargeIsAvailable ) {
+		if ( ! isLoading && dispute?.charge ) {
 			// Dispute type allows charge as nested object or string ID,
 			// so we have to hint we expect a Charge object here.
 			const chargeObject = dispute.charge as Charge;
@@ -44,15 +43,31 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 				direction="column"
 				className="wcpay-dispute-detail-legacy-redirect"
 			>
-				<FlexItem>
-					<Spinner />
-				</FlexItem>
-				<FlexItem>
-					<div>
-						<b>One moment please</b>
-					</div>
-					<div>Redirecting to payment details…</div>
-				</FlexItem>
+				{ error ? (
+					<>
+						<FlexItem>
+							<Icon icon={ warning } type="warning" size={ 32 } />
+						</FlexItem>
+						<FlexItem>
+							<div>
+								<b>Error retrieving dispute</b>
+							</div>
+							<div>Please check your network and try again.</div>
+						</FlexItem>
+					</>
+				) : (
+					<>
+						<FlexItem>
+							<Spinner />
+						</FlexItem>
+						<FlexItem>
+							<div>
+								<b>One moment please</b>
+							</div>
+							<div>Redirecting to payment details…</div>
+						</FlexItem>
+					</>
+				) }
 			</Flex>
 		</Page>
 	);
