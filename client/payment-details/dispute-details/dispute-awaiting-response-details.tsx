@@ -6,13 +6,7 @@
 import React, { useState } from 'react';
 import moment from 'moment';
 import { __, sprintf } from '@wordpress/i18n';
-import {
-	backup,
-	edit,
-	lock,
-	chevronRightSmall,
-	arrowRight,
-} from '@wordpress/icons';
+import { backup, edit, lock, arrowRight } from '@wordpress/icons';
 import { useDispatch } from '@wordpress/data';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
