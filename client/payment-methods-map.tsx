@@ -256,7 +256,6 @@ const PaymentMethodInformationObject: Record<
 		},
 		description: __(
 			// translators: %s is the store currency.
-			// TODO: Is "Available to all customers paying in %s." correct for BNPLs given the introduction of domestic check for PMs?.
 			'Allow customers to pay over time with Klarna. Available to all customers paying in %s.',
 			'woocommerce-payments'
 		),
