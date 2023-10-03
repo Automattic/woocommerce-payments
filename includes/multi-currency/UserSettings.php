@@ -28,7 +28,14 @@ class UserSettings {
 	 */
 	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		// Only show currency selector if more than one currency is enabled.
 		if ( 1 < count( $this->multi_currency->get_enabled_currencies() ) ) {
 			add_action( 'woocommerce_edit_account_form', [ $this, 'add_presentment_currency_switch' ] );
