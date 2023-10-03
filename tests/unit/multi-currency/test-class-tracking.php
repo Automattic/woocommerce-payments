@@ -113,6 +113,7 @@ class WCPay_Multi_Currency_Tracking_Tests extends WCPAY_UnitTestCase {
 			->willReturn( $this->mock_default_currency );
 
 		$this->tracking = new WCPay\MultiCurrency\Tracking( $this->mock_multi_currency );
+		$this->tracking->init_hooks();
 	}
 
 	public function tear_down() {

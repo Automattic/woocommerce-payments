@@ -197,6 +197,7 @@ class MultiCurrency {
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
 			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service(), WC_Payments::get_localization_service(), WC_Payments::get_database_cache() );
+			self::$instance->init_hooks();
 		}
 		return self::$instance;
 	}
@@ -220,7 +221,14 @@ class MultiCurrency {
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->compatibility           = new Compatibility( $this, $this->utils );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			// Enqueue the scripts after the main WC_Payments_Admin does.
@@ -241,6 +249,8 @@ class MultiCurrency {
 			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
 			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
+
+		$this->currency_switcher_block->init_hooks();
 	}
 
 	/**
@@ -266,9 +276,9 @@ class MultiCurrency {
 			$this->update_manual_rate_currencies_notice_option();
 		}
 
-		new PaymentMethodsCompatibility( $this, WC_Payments::get_gateway() );
-		new AdminNotices();
-		new UserSettings( $this );
+		$payment_method_compat = new PaymentMethodsCompatibility( $this, WC_Payments::get_gateway() );
+		$admin_notices         = new AdminNotices();
+		$user_settings         = new UserSettings( $this );
 		new Analytics( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
@@ -276,6 +286,16 @@ class MultiCurrency {
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 		$this->order_meta_helper   = new OrderMetaHelper( $this->payments_api_client );
+
+		// Init all of the hooks.
+		$payment_method_compat->init_hooks();
+		$admin_notices->init_hooks();
+		$user_settings->init_hooks();
+		$this->frontend_prices->init_hooks();
+		$this->frontend_currencies->init_hooks();
+		$this->backend_currencies->init_hooks();
+		$this->tracking->init_hooks();
+		$this->order_meta_helper->init_hooks();
 
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
@@ -331,9 +351,15 @@ class MultiCurrency {
 		}
 
 		if ( $this->payments_account->is_stripe_connected() ) {
-			$settings_pages[] = new Settings( $this );
+			$settings = new Settings( $this );
+			$settings->init_hooks();
+
+			$settings_pages[] = $settings;
 		} else {
-			$settings_pages[] = new SettingsOnboardCta( $this );
+			$settings_onboard_cta = new SettingsOnboardCta( $this );
+			$settings_onboard_cta->init_hooks();
+
+			$settings_pages[] = $settings_onboard_cta;
 		}
 
 		return $settings_pages;
