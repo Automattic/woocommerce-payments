@@ -5,6 +5,9 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Server\Request;
+use WCPay\Exceptions\API_Exception;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -52,6 +55,20 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => [ $this, 'get_customer_payment_methods' ],
 					'permission_callback' => [ $this, 'check_permission' ],
+					'args'                => $this->get_collection_params(),
+				],
+				'schema' => [ $this, 'get_item_schema' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<customer_id>\d+)/payment_methods/(?P<payment_method_id>\w+)',
+			[
+				[
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => [ $this, 'get_single_customer_payment_methods' ],
+					'permission_callback' => [ $this, 'check_permission' ],
 				],
 				'schema' => [ $this, 'get_item_schema' ],
 			]
@@ -64,12 +81,25 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_customer_payment_methods( $request ) {
-		$payment_customer_id = $this->customer_service->get_customer_id_by_user_id( $request->get_param( 'customer_id' ) );
-
+		$payment_customer_id   = $this->customer_service->get_customer_id_by_user_id( $request->get_param( 'customer_id' ) );
+		$type                  = $request->get_param( 'type' );
+		$payment_methods_types = $type ? [ $type ] : WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids();
 		if ( ! $payment_customer_id ) {
 			return rest_ensure_response( [] ); // Return empty array if customer doesn't exist. Maybe we can return an error here.
 		}
-		$payment_methods = $this->customer_service->retrieve_usable_customer_payment_methods( $payment_customer_id );
+		// Perhaps we can fetch it directly from server and avoid this caching.
+		foreach ( $payment_methods_types as $type ) {
+			try {
+				$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $payment_customer_id, $type );
+			} catch ( API_Exception $e ) {
+				wp_send_json_error(
+					wp_strip_all_tags( $e->getMessage() ),
+					403
+				);
+			}
+		}
+
+		$payment_methods = array_merge( ...$payment_methods );
 		$data            = [];
 		foreach ( $payment_methods as $payment_method ) {
 			$response = $this->prepare_item_for_response( $payment_method, $request );
@@ -77,6 +107,39 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return rest_ensure_response( $data );
+	}
+
+	/**
+	 * Retrieve single transaction to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 *
+	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
+	 */
+	public function get_single_customer_payment_methods( $request ) {
+		$payment_customer_id = $this->customer_service->get_customer_id_by_user_id( $request->get_param( 'customer_id' ) );
+
+		if ( ! $payment_customer_id ) {
+			return rest_ensure_response( [] ); // Return empty array if customer doesn't exist. Maybe we can return an error here.
+		}
+		$wcpay_request = Request::get( WC_Payments_API_Client::PAYMENT_METHODS_API, $request->get_param( 'payment_method_id' ) );
+		$wcpay_request->assign_hook( 'wcpay_get_payment_method_request' );
+		try {
+			$payment_method = $wcpay_request->send();
+		} catch ( \Exception $e ) {
+			wp_send_json_error(
+				wp_strip_all_tags( $e->getMessage() ),
+				403
+			);
+		}
+		if ( array_key_exists( 'customer', $payment_method ) && $payment_customer_id !== $payment_method['customer'] ) {
+			return rest_ensure_response( [] ); // Payment method exist, but it doesn't belong to the customer. Return empty array.
+		}
+
+		return rest_ensure_response( $this->prepare_item_for_response( $payment_method, $request ) );
 	}
 
 	/**
@@ -125,6 +188,24 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 
 		return rest_ensure_response( $prepared_item );
 	}
+
+	/**
+	 * Collection args params.
+	 *
+	 * @return array[]
+	 */
+	public function get_collection_params() {
+		return [
+			'type' => [
+				'description'       => __( 'Filter payment methods where type is a specific value.', 'woocommerce-payments' ),
+				'type'              => 'string',
+				'required'          => false,
+				'validate_callback' => 'rest_validate_request_arg',
+				'enum'              => WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(),
+			],
+		];
+	}
+
 	/**
 	 * Item schema.
 	 *

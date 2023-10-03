@@ -242,36 +242,6 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
-	 * Get customer's saved payment methods that are enabled by store.
-	 *
-	 * @param string $customer_id Customer id.
-	 *
-	 * @return array
-	 * @throws \WCPay\Exceptions\API_Exception
-	 */
-	public function retrieve_usable_customer_payment_methods ( $customer_id ) {
-
-		$enabled_payment_methods          = WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids();
-		$retrievable_payment_method_types = [ Payment_Method::CARD ];
-
-		if ( in_array( Payment_Method::SEPA, $enabled_payment_methods, true ) ) {
-			$retrievable_payment_method_types[] = Payment_Method::SEPA;
-		}
-
-		if ( in_array( Payment_Method::LINK, $enabled_payment_methods, true ) ) {
-			$retrievable_payment_method_types[] = Payment_Method::LINK;
-		}
-
-		$payment_methods = [];
-
-		foreach ( $retrievable_payment_method_types as $type ) {
-			$payment_methods[] = $this->get_payment_methods_for_customer( $customer_id, $type );
-		}
-
-		return array_merge( ...$payment_methods );
-	}
-
-	/**
 	 * Updates a customer payment method.
 	 *
 	 * @param string   $payment_method_id The payment method ID.
