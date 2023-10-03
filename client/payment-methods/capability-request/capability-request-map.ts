@@ -47,7 +47,7 @@ const CapabilityRequestList: Array< CapabilityRequestMap > = [
 			active: {
 				status: 'info',
 				content: __(
-					'The JCB is now enabled on your store.',
+					'JCB is now enabled on your store.',
 					'woocommerce-payments'
 				),
 			},

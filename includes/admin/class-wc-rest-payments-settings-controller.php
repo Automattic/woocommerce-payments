@@ -1010,11 +1010,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
 		$stripe_key              = $capability_key_map[ $id ] ?? null;
 
-		if ( array_key_exists( $stripe_key, $payment_method_statuses ) ) {
-			if ( 'unrequested' === $payment_method_statuses[ $stripe_key ]['status'] ) {
-				$request_result = $this->api_client->request_capability( $stripe_key, true );
-				$this->wcpay_gateway->refresh_cached_account_data();
-			}
+		if ( array_key_exists( $stripe_key, $payment_method_statuses )
+			&& 'unrequested' === $payment_method_statuses[ $stripe_key ]['status'] ) {
+			$request_result = $this->api_client->request_capability( $stripe_key, true );
+			$this->wcpay_gateway->refresh_cached_account_data();
 		}
 
 		return rest_ensure_response( $request_result );
