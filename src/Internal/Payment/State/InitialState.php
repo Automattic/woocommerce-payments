@@ -7,6 +7,7 @@
 
 namespace WCPay\Internal\Payment\State;
 
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Service\OrderService;
@@ -40,8 +41,9 @@ class InitialState extends PaymentState {
 	/**
 	 * Initialtes the payment process.
 	 *
-	 * @return CompletedState The next state.
-	 * @throws StateTransitionException Completed state could not be initialized.
+	 * @return CompletedState            The next state.
+	 * @throws StateTransitionException  In case the completed state could not be initialized.
+	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception Order could not be found.
 	 */
 	public function process() {

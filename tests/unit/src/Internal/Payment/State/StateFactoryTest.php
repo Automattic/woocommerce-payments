@@ -81,14 +81,4 @@ class StateFactoryTest extends WCPAY_UnitTestCase {
 		$this->expectException( StateTransitionException::class );
 		$this->sut->create_state( PaymentProcessingService::class, $this->mock_context );
 	}
-
-	public function test_create_state_handles_container_exceptions() {
-		$this->mock_container->expects( $this->once() )
-			->method( 'get' )
-			->with( UnmanagedState::class )
-			->willThrowException( new ContainerException( 'Error' ) );
-
-		$this->expectException( StateTransitionException::class );
-		$this->sut->create_state( UnmanagedState::class, $this->mock_context );
-	}
 }
