@@ -71,6 +71,7 @@ abstract class PaymentState {
 	 * @param string $state_class The class of the state to crate.
 	 * @return PaymentState
 	 * @throws StateTransitionException In case the new state could not be created.
+	 * @throws ContainerException       When the dependency container cannot instantiate the state.
 	 */
 	protected function create_state( string $state_class ) {
 		$state = $this->state_factory->create_state( $state_class, $this->context );

@@ -40,6 +40,7 @@ class PaymentProcessingService {
 	 *
 	 * @throws Exception
 	 * @throws StateTransitionException In case a state cannot be initialized.
+	 * @throws ContainerException       When the dependency container cannot instantiate the state.
 	 */
 	public function process_payment( int $order_id ) {
 		$context = new PaymentContext();
