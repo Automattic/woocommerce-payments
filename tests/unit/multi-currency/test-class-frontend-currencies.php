@@ -66,6 +66,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 			->willReturn( new Currency( 'USD' ) );
 
 		$this->frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->mock_localization_service, $this->mock_utils, $this->mock_compatibility );
+		$this->frontend_currencies->init_hooks();
 	}
 
 	public function tear_down() {
