@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { getHistory } from '@woocommerce/navigation';
 import { Spinner, Flex, FlexItem } from '@wordpress/components';
 
@@ -20,23 +20,24 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 	query: { id: disputeId },
 } ) => {
 	const { dispute, isLoading } = useDispute( disputeId );
-	const disputeObject = dispute || ( {} as Dispute );
-	const disputeIsAvailable = ! isLoading && dispute && disputeObject.id;
-	// Dispute type allows charge as nested object or string ID,
-	// so we have to hint we expect a Charge object here.
-	const chargeObject = disputeObject.charge as Charge;
 
-	if ( disputeIsAvailable ) {
-		const transactionDetailsUrl = getAdminUrl( {
-			page: 'wc-admin',
-			path: '/payments/transactions/details',
-			id: chargeObject.payment_intent,
-			transaction_id: chargeObject.balance_transaction,
-			type: 'dispute',
-		} );
-		getHistory().replace( transactionDetailsUrl );
-		return null;
-	}
+	useEffect( () => {
+		const disputeObject = dispute || ( {} as Dispute );
+		const disputeIsAvailable = ! isLoading && dispute && disputeObject.id;
+		// Dispute type allows charge as nested object or string ID,
+		// so we have to hint we expect a Charge object here.
+		const chargeObject = disputeObject.charge as Charge;
+		if ( disputeIsAvailable ) {
+			const transactionDetailsUrl = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/transactions/details',
+				id: chargeObject.payment_intent,
+				transaction_id: chargeObject.balance_transaction,
+				type: 'dispute',
+			} );
+			getHistory().replace( transactionDetailsUrl );
+		}
+	}, [ dispute, isLoading ] );
 
 	return (
 		<Page>
