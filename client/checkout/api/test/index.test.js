@@ -19,7 +19,15 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 describe( 'WCPayAPI', () => {
 	test( 'does not initialize woopay if already requesting', async () => {
 		buildAjaxURL.mockReturnValue( 'https://example.org/' );
-		getConfig.mockReturnValue( 'foo' );
+		getConfig.mockImplementation( ( key ) => {
+			const mockProperties = {
+				initWooPayNonce: 'foo',
+				order_id: 1,
+				key: 'testkey',
+				billing_email: 'test@example.com',
+			};
+			return mockProperties[ key ];
+		} );
 
 		const api = new WCPayAPI( {}, request );
 		api.isWooPayRequesting = true;
@@ -31,7 +39,15 @@ describe( 'WCPayAPI', () => {
 
 	test( 'initializes woopay using config params', async () => {
 		buildAjaxURL.mockReturnValue( 'https://example.org/' );
-		getConfig.mockReturnValue( 'foo' );
+		getConfig.mockImplementation( ( key ) => {
+			const mockProperties = {
+				initWooPayNonce: 'foo',
+				order_id: 1,
+				key: 'testkey',
+				billing_email: 'test@example.com',
+			};
+			return mockProperties[ key ];
+		} );
 
 		const api = new WCPayAPI( {}, request );
 		await api.initWooPay( 'foo@bar.com', 'qwerty123' );
@@ -40,6 +56,9 @@ describe( 'WCPayAPI', () => {
 			_wpnonce: 'foo',
 			email: 'foo@bar.com',
 			user_session: 'qwerty123',
+			order_id: 1,
+			key: 'testkey',
+			billing_email: 'test@example.com',
 		} );
 		expect( api.isWooPayRequesting ).toBe( false );
 	} );
