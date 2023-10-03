@@ -808,6 +808,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order Order that needs payment.
 	 * @return array|null     Array if processed, null if the new process is not supported.
+	 * @throws Exception      If the payment process could not be completed.
 	 */
 	public function new_process_payment( WC_Order $order ) {
 		// Important: No factors are provided here, they were meant just for `Feature`.
@@ -820,6 +821,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'redirect' => $this->get_return_url( $order ),
 			];
 		}
+
+		throw new Exception( __( 'The payment process could not be completed.', 'woocommerce-payments' ) );
 	}
 
 	/**
