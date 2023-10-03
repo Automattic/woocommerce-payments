@@ -21,9 +21,11 @@ class AdminNotices {
 	private $notices = [];
 
 	/**
-	 * Constructor
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
 	 */
-	public function __construct() {
+	public function init_hooks() {
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 		add_action( 'wp_loaded', [ $this, 'hide_notices' ] );
 	}

@@ -439,7 +439,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'order_number'         => $order_number,
 			'order_key'            => $order->get_order_key(),
 			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'split_upe',
+			'gateway_type'         => 'split_upe_with_deferred_intent_creation',
 			'checkout_type'        => '',
 			'client_version'       => WCPAY_VERSION_NUMBER,
 			'subscription_payment' => 'no',
@@ -514,7 +514,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'order_number'         => $order_number,
 			'order_key'            => $order->get_order_key(),
 			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'split_upe',
+			'gateway_type'         => 'split_upe_with_deferred_intent_creation',
 			'checkout_type'        => '',
 			'client_version'       => WCPAY_VERSION_NUMBER,
 			'subscription_payment' => 'no',
@@ -593,7 +593,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'order_number'         => $order_number,
 			'order_key'            => $order->get_order_key(),
 			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'split_upe',
+			'gateway_type'         => 'split_upe_with_deferred_intent_creation',
 			'checkout_type'        => '',
 			'client_version'       => WCPAY_VERSION_NUMBER,
 			'subscription_payment' => 'no',
@@ -2125,6 +2125,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_link_payment_method_if_card_enabled() {
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
@@ -2426,6 +2427,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_get_payment_methods_from_gateway_id() {
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
 		$order            = WC_Helper_Order::create_order();
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
 			->setConstructorArgs(
