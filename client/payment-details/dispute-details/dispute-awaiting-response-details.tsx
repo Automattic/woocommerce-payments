@@ -85,70 +85,68 @@ interface AcceptDisputeProps {
  * @param dispute
  */
 function getAcceptDisputeProps( dispute: Dispute ): AcceptDisputeProps {
-	const isDispute = ! isInquiry( dispute );
-
-	if ( isDispute ) {
+	if ( isInquiry( dispute ) ) {
 		return {
-			acceptButtonLabel: __( 'Accept dispute', 'woocommerce-payments' ),
+			acceptButtonLabel: __( 'Issue refund', 'woocommerce-payments' ),
 			acceptButtonTracksEvent:
-				wcpayTracks.events.DISPUTE_ACCEPT_MODAL_VIEW,
-			modalTitle: __( 'Accept the dispute?', 'woocommerce-payments' ),
+				wcpayTracks.events.DISPUTE_INQUIRY_REFUND_MODAL_VIEW,
+			modalTitle: __( 'Issue a refund?', 'woocommerce-payments' ),
 			modalLines: [
 				{
 					icon: <Icon icon={ backup } size={ 24 } />,
-					description: createInterpolateElement(
-						sprintf(
-							/* translators: %s: dispute fee, <em>: emphasis HTML element. */
-							__(
-								'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account.',
-								'woocommerce-payments'
-							),
-							getDisputeFeeFormatted( dispute, true ) ?? '-'
-						),
-						{
-							em: <em />,
-						}
+					description: __(
+						'Issuing a refund will close the inquiry, returning the amount in question back to the cardholder. No additional fees apply.',
+						'woocommerce-payments'
 					),
 				},
 				{
-					icon: <Icon icon={ lock } size={ 24 } />,
+					icon: <Icon icon={ arrowRight } size={ 24 } />,
 					description: __(
-						'This action is final and cannot be undone.',
+						'You will be taken to the order, where you must complete the refund process manually.',
 						'woocommerce-payments'
 					),
 				},
 			],
-			modalButtonLabel: __( 'Accept dispute', 'woocommerce-payments' ),
-			modalButtonTracksEvent: wcpayTracks.events.DISPUTE_ACCEPT_CLICK,
+			modalButtonLabel: __(
+				'View order to issue refund',
+				'woocommerce-payments'
+			),
+			modalButtonTracksEvent:
+				wcpayTracks.events.DISPUTE_INQUIRY_REFUND_CLICK,
 		};
 	}
 
 	return {
-		acceptButtonLabel: __( 'Issue refund', 'woocommerce-payments' ),
-		acceptButtonTracksEvent:
-			wcpayTracks.events.DISPUTE_INQUIRY_REFUND_MODAL_VIEW,
-		modalTitle: __( 'Issue a refund?', 'woocommerce-payments' ),
+		acceptButtonLabel: __( 'Accept dispute', 'woocommerce-payments' ),
+		acceptButtonTracksEvent: wcpayTracks.events.DISPUTE_ACCEPT_MODAL_VIEW,
+		modalTitle: __( 'Accept the dispute?', 'woocommerce-payments' ),
 		modalLines: [
 			{
 				icon: <Icon icon={ backup } size={ 24 } />,
-				description: __(
-					'Issuing a refund will close the inquiry, returning the amount in question back to the cardholder. No additional fees apply.',
-					'woocommerce-payments'
+				description: createInterpolateElement(
+					sprintf(
+						/* translators: %s: dispute fee, <em>: emphasis HTML element. */
+						__(
+							'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account.',
+							'woocommerce-payments'
+						),
+						getDisputeFeeFormatted( dispute, true ) ?? '-'
+					),
+					{
+						em: <em />,
+					}
 				),
 			},
 			{
-				icon: <Icon icon={ arrowRight } size={ 24 } />,
+				icon: <Icon icon={ lock } size={ 24 } />,
 				description: __(
-					'You will be taken to the order, where you must complete the refund process manually.',
+					'This action is final and cannot be undone.',
 					'woocommerce-payments'
 				),
 			},
 		],
-		modalButtonLabel: __(
-			'View order to issue refund',
-			'woocommerce-payments'
-		),
-		modalButtonTracksEvent: wcpayTracks.events.DISPUTE_INQUIRY_REFUND_CLICK,
+		modalButtonLabel: __( 'Accept dispute', 'woocommerce-payments' ),
+		modalButtonTracksEvent: wcpayTracks.events.DISPUTE_ACCEPT_CLICK,
 	};
 }
 
