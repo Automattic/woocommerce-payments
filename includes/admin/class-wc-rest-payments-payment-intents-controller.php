@@ -112,8 +112,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 			$wcpay_server_request->set_off_session( true );
 			$wcpay_server_request->set_capture_method( WC_Payments::get_gateway()->get_option( 'manual_capture' ) && ( 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) );
 
-			$payment_information = new Payment_Information( $request->get_param( 'payment_method' ), $order, Payment_Type::SINGLE(), null, null, null, null, '', 'card' );
-			$wcpay_server_request->set_hook_args( $payment_information );
+			$wcpay_server_request->assign_hook( 'wcpay_create_and_confirm_intent_request_api' );
 			$intent = $wcpay_server_request->send();
 			return rest_ensure_response( $intent );
 		} catch ( \Throwable $e ) {
