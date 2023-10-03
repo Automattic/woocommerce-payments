@@ -167,7 +167,6 @@ const StoreSettings = () => {
 												'widgets.php'
 											),
 											{
-												// eslint-disable-next-line jsx-a11y/anchor-has-content
 												linkToWidgets: (
 													// eslint-disable-next-line jsx-a11y/anchor-has-content
 													<a href="widgets.php" />
