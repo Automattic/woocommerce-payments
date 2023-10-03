@@ -473,10 +473,10 @@ class WC_Payments_Admin {
 				]
 			);
 
-			$isDisputeOnTransactionPageEnabled = WC_Payments_Features::is_dispute_on_transaction_page_enabled();
+			$is_dispute_on_transaction_page_enabled = WC_Payments_Features::is_dispute_on_transaction_page_enabled();
 			wc_admin_register_page(
 				[
-					'id'     => $isDisputeOnTransactionPageEnabled
+					'id'     => $is_dispute_on_transaction_page_enabled
 						? 'wc-payments-disputes-details-legacy-redirect'
 						: 'wc-payments-disputes-details',
 					'title'  => __( 'Dispute details', 'woocommerce-payments' ),
