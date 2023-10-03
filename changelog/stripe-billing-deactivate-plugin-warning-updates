@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-Updates the content of modals that are displayed when deactivating WooPayments or Woo Subscriptions when the store has active Stripe Billing subscriptions.
+Update the content of modals that are displayed when deactivating the WooPayments or Woo Subscriptions plugins when the store has active Stripe Billing subscriptions.
