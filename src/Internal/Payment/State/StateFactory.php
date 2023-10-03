@@ -41,6 +41,7 @@ class StateFactory {
 	 * @param string         $state_class Name of the state class.
 	 * @param PaymentContext $context     Context for the new state.
 	 * @return PaymentState               The generated payment state instance.
+	 * @throws ContainerException         When the dependency container cannot instantiate the state.
 	 * @throws StateTransitionException   When the class name is not a state.
 	 */
 	public function create_state( string $state_class, PaymentContext $context ): PaymentState {
@@ -55,12 +56,7 @@ class StateFactory {
 			);
 		}
 
-		try {
-			$state = $this->container->get( $state_class );
-		} catch ( ContainerException $e ) {
-			throw new StateTransitionException( $e->getMessage(), $e->getCode(), $e );
-		}
-
+		$state = $this->container->get( $state_class );
 		$state->set_context( $context );
 		return $state;
 	}

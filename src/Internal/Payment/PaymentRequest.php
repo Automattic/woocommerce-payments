@@ -186,6 +186,11 @@ class PaymentRequest {
 	/**
 	 * Populates a payment context before processing a payment.
 	 *
+	 * This method is the link between the payment request, and the payment process.
+	 * Use it to make sure that all necessary parameters are provided in advance,
+	 * or throw an exception otherwise. Once done, the payment process would rely
+	 * on all needed parameters being in place.
+	 *
 	 * @param PaymentContext $context Context to populate.
 	 * @throws PaymentRequestException When data is not available or invalid.
 	 */

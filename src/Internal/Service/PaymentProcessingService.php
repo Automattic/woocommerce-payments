@@ -8,6 +8,7 @@
 namespace WCPay\Internal\Service;
 
 use Exception; // Temporary exception! This service would have its own exception when more business logics are added.
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\StateFactory;
@@ -57,6 +58,7 @@ class PaymentProcessingService {
 	 * @throws Exception
 	 * @throws StateTransitionException In case a state cannot be initialized.
 	 * @throws PaymentRequestException  When the request is malformed. This should be converted to a failure state.
+	 * @throws ContainerException       When the dependency container cannot instantiate the state.
 	 */
 	public function process_payment( int $order_id, bool $manual_capture = false ) {
 		// Start with a basis context.

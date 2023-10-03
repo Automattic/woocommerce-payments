@@ -8,10 +8,11 @@
 namespace WCPay\Internal\Payment\State;
 
 use WC_Payments_Customer_Service;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
+use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\PaymentRequestService;
-use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
@@ -76,8 +77,9 @@ class InitialState extends PaymentState {
 	/**
 	 * Initialtes the payment process.
 	 *
-	 * @return CompletedState The next state.
-	 * @throws StateTransitionException Completed state could not be initialized.
+	 * @return CompletedState            The next state.
+	 * @throws StateTransitionException  In case the completed state could not be initialized.
+	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception Order could not be found.
 	 */
 	public function process() {
