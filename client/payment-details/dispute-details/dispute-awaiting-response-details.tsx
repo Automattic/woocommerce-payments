@@ -219,6 +219,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 
 											<Button
 												variant="primary"
+												href={ orderUrl }
 												onClick={ () => {
 													wcpayTracks.recordEvent(
 														wcpayTracks.events
@@ -228,11 +229,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 																dispute.status,
 														}
 													);
-													setModalOpen( false );
 
-													if ( orderUrl ) {
-														window.location.href = orderUrl;
-													} else {
+													if ( ! orderUrl ) {
 														createErrorNotice(
 															__(
 																'Unable to view order. Order not found.',
