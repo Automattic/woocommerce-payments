@@ -16,11 +16,9 @@ import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
 
-const RedirectToTransactionDetails = ( {
+const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 	query: { id: disputeId },
-}: {
-	query: { id: string };
-} ): JSX.Element | null => {
+} ) => {
 	const { dispute, isLoading } = useDispute( disputeId );
 	const disputeObject = dispute || ( {} as Dispute );
 	const disputeIsAvailable = ! isLoading && dispute && disputeObject.id;
