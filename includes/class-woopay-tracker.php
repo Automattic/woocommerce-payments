@@ -170,6 +170,12 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false ) {
 
+		// Don't track if the gateway is not enabled.
+		$gateway = \WC_Payments::get_gateway();
+		if ( ! $gateway->is_enabled() ) {
+			return false;
+		}
+
 		// Don't track if the account is not connected.
 		$account = WC_Payments::get_account_service();
 		if ( is_null( $account ) || ! $account->is_stripe_connected() ) {
@@ -208,7 +214,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		}
 
 		// For the remaining events, don't track when woopay is disabled.
-		$gateway            = \WC_Payments::get_gateway();
 		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
 		$is_woopay_enabled  = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
 		if ( ! ( $is_woopay_eligible && $is_woopay_enabled ) ) {

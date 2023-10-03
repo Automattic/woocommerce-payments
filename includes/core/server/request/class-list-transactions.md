@@ -30,8 +30,6 @@ The `WCPay\Core\Server\Request\List_Transactions` class is used to construct the
 
 ## Filter
 
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_list_transactions_request`
 - Arguments: `$request`
 
@@ -54,5 +52,5 @@ $request->set_type_is( $type_is );
 $request->set_type_is_not( $type_is_not );
 $request->set_source_device_is( $source_device_is );
 $request->set_source_device_is_not( $source_device_is_not );
-$request->send( 'wcpay_list_transactions_request', $request );
+$request->send();
 ```
