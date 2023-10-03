@@ -235,6 +235,11 @@ const PaymentMethods = () => {
 
 	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
+	const rollbackNoticeForLegacyUPE = __(
+		// eslint-disable-next-line max-len
+		'You have been switched from the new checkout to your previous checkout experience. We will keep you posted on the new checkout availability.',
+		'woocommerce-payments'
+	);
 
 	return (
 		<>
@@ -284,8 +289,7 @@ const PaymentMethods = () => {
 							status="warning"
 							isDismissible={ false }
 						>
-							{ 'You have been switched from the new checkout to your previous checkout experience.' +
-								+'We will keep you posted on the new checkout availability.' }
+							{ rollbackNoticeForLegacyUPE }
 						</InlineNotice>
 					</CardHeader>
 				) }
