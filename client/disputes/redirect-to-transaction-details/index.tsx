@@ -21,9 +21,9 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 	const { dispute, isLoading } = useDispute( disputeId );
 
 	useEffect( () => {
-		const disputeIsAvailable = ! isLoading && dispute?.charge;
+		const disputeChargeIsAvailable = ! isLoading && dispute?.charge;
 
-		if ( disputeIsAvailable ) {
+		if ( disputeChargeIsAvailable ) {
 			// Dispute type allows charge as nested object or string ID,
 			// so we have to hint we expect a Charge object here.
 			const chargeObject = dispute.charge as Charge;
