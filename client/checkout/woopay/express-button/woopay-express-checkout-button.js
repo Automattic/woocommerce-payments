@@ -156,7 +156,9 @@ export const WoopayExpressCheckoutButton = ( {
 			urlParams.append( 'source_url', window.location.href );
 			urlParams.append( 'tracksUserIdentity', tracksUserId );
 
-			return getConfig( 'woopayHost' ) + '/otp/?' + urlParams.toString();
+			return (
+				getConfig( 'woopayHost' ) + '/connect/?' + urlParams.toString()
+			);
 		};
 
 		const iframe = document.createElement( 'iframe' );
