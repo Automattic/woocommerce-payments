@@ -5,17 +5,12 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Rest_Request_Exception;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
- * REST controller for account details and status.
+ * REST controller for customers.
  */
 class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
-
-	const RESULT_BAD_REQUEST = 'bad_request';
 
 	/**
 	 * Onboarding Service.
