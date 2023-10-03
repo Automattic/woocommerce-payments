@@ -9,7 +9,7 @@ namespace WCPay\Tests\Internal\Payment\State;
 
 use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Internal\Payment\Exception\MethodUnavailableException;
+use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\PaymentState;
@@ -80,7 +80,7 @@ class PaymentStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_process_throws_exception() {
-		$this->expectException( MethodUnavailableException::class );
+		$this->expectException( StateTransitionException::class );
 		$this->expectExceptionMessage( 'The WCPay\Internal\Payment\State\PaymentState::process method is not available in the current payment state (' . PureState::class . ').' );
 		$this->sut->process();
 	}
