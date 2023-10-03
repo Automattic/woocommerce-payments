@@ -8,6 +8,7 @@
 namespace WCPay\Internal\Service;
 
 use Exception; // Temporary exception! This service would have its own exception when more business logics are added.
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\StateFactory;

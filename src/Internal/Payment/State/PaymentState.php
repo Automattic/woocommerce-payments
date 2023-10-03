@@ -7,6 +7,7 @@
 
 namespace WCPay\Internal\Payment\State;
 
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\MethodUnavailableException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
