@@ -1185,7 +1185,6 @@ class WC_Payments_Account {
 		// Clear persisted onboarding flow state.
 		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
 
-		$current_user = wp_get_current_user();
 		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
 		if ( ! empty( $additional_args ) ) {
 			$return_url = add_query_arg( $additional_args, $return_url );
@@ -1259,14 +1258,19 @@ class WC_Payments_Account {
 			$account_data = [];
 		}
 
+		$site_data = [
+			'site_username' => wp_get_current_user()->user_login,
+			'site_locale'   => get_locale(),
+		];
+
+		$user_data = $this->get_onboarding_user_data();
+
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
-			[
-				'site_username' => $current_user->user_login,
-				'site_locale'   => get_locale(),
-			],
-			$this->get_actioned_notes(),
+			$site_data,
+			array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 			array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+			$this->get_actioned_notes(),
 			$progressive,
 			$collect_payout_requirements
 		);
@@ -1801,5 +1805,23 @@ class WC_Payments_Account {
 		wc_admin_record_tracks_event( $name, $properties );
 
 		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
+	}
+
+	/**
+	 * Get user data to send to the onboarding flow.
+	 *
+	 * @return array The user data.
+	 */
+	private function get_onboarding_user_data(): array {
+		return [
+			'user_id'    => get_current_user_id(),
+			'ip_address' => \WC_Geolocation::get_ip_address(),
+			'browser'    => [
+				'user_agent'       => isset( $_SERVER['HTTP_USER_AGENT'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
+				'accept_language'  => isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '',
+				'content_language' => empty( get_user_locale() ) ? 'en-US' : str_replace( '_', '-', get_user_locale() ),
+			],
+			'referer'    => isset( $_SERVER['HTTP_REFERER'] ) ? sanitize_url( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
+		];
 	}
 }
