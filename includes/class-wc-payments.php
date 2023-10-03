@@ -491,7 +491,11 @@ class WC_Payments {
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
+		// Initialise hooks.
+		self::$account->init_hooks();
 		self::$fraud_service->init_hooks();
+		self::$onboarding_service->init_hooks();
+		self::$incentives_service->init_hooks();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service );
 

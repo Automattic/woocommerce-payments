@@ -70,6 +70,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 
 		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service );
+		$this->wcpay_account->init_hooks();
 	}
 
 	public function tear_down() {
@@ -78,17 +79,20 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	/**
-	 * @param bool $can_manage_woocommerce
-	 *
-	 * @return Closure
-	 */
-	private function create_can_manage_woocommerce_cap_override( bool $can_manage_woocommerce ) {
-		return function ( $allcaps ) use ( $can_manage_woocommerce ) {
-			$allcaps['manage_woocommerce'] = $can_manage_woocommerce;
-
-			return $allcaps;
-		};
+	public function test_filters_registered_properly() {
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_handle_onboarding' ] ), 'maybe_handle_onboarding action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_onboarding' ] ), 'maybe_redirect_to_onboarding action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_wcpay_connect' ] ), 'maybe_redirect_to_wcpay_connect action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_capital_offer' ] ), 'maybe_redirect_to_capital_offer action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_server_link' ] ), 'maybe_redirect_to_server_link action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_activate_woopay' ] ), 'maybe_activate_woopay action does not exist.' );
+		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_instant_deposits_inbox_note' ] ), 'handle_instant_deposits_inbox_note action does not exist.' );
+		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_loan_approved_inbox_note' ] ), 'handle_loan_approved_inbox_note action does not exist.' );
+		$this->assertNotFalse( has_action( 'wcpay_instant_deposit_reminder', [ $this->wcpay_account, 'handle_instant_deposits_inbox_reminder' ] ), 'handle_instant_deposits_inbox_reminder action does not exist.' );
+		$this->assertNotFalse( has_filter( 'allowed_redirect_hosts', [ $this->wcpay_account, 'allowed_redirect_hosts' ] ), 'allowed_redirect_hooks filter does not exist.' );
+		$this->assertNotFalse( has_action( 'jetpack_site_registered', [ $this->wcpay_account, 'clear_cache' ] ), 'jetpack_site_registered action does not exist.' );
+		$this->assertNotFalse( has_action( 'updated_option', [ $this->wcpay_account, 'possibly_update_wcpay_account_locale' ] ), 'updated_option action does not exist.' );
+		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->wcpay_account, 'clear_cache' ] ), 'woocommerce_woocommerce_payments_updated action does not exist.' );
 	}
 
 	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {
@@ -1187,6 +1191,19 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					return $validator( $res ) ? $res : null;
 				}
 			);
+	}
+
+	/**
+	 * @param bool $can_manage_woocommerce
+	 *
+	 * @return Closure
+	 */
+	private function create_can_manage_woocommerce_cap_override( bool $can_manage_woocommerce ) {
+		return function ( $allcaps ) use ( $can_manage_woocommerce ) {
+			$allcaps['manage_woocommerce'] = $can_manage_woocommerce;
+
+			return $allcaps;
+		};
 	}
 
 	/**

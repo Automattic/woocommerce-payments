@@ -70,9 +70,10 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 
 		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
 		$this->wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setMethods( [ 'redirect_to' ] )
+			->setMethods( [ 'redirect_to', 'init_hooks' ] )
 			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service ] )
 			->getMock();
+		$this->wcpay_account->init_hooks();
 	}
 
 	public function tear_down() {
@@ -88,8 +89,10 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 
 	public function test_maybe_redirect_to_capital_offer_will_run() {
 		$wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
+			->setMethodsExcept( [ 'maybe_redirect_to_capital_offer', 'init_hooks' ] )
 			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service ] )
 			->getMock();
+		$wcpay_account->init_hooks();
 
 		$this->assertNotFalse(
 			has_action( 'admin_init', [ $wcpay_account, 'maybe_redirect_to_capital_offer' ] )
