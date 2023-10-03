@@ -21,6 +21,7 @@ import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
 import AffirmDetails from './affirm';
+import AfterpayClearpayDetails from './afterpay-clearpay';
 
 const detailsComponentMap = {
 	card: CardDetails,
@@ -34,6 +35,7 @@ const detailsComponentMap = {
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
 	affirm: AffirmDetails,
+	afterpay_clearpay: AfterpayClearpayDetails,
 };
 
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
