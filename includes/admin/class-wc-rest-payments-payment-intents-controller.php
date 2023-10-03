@@ -109,6 +109,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 			$wcpay_server_request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
 			$wcpay_server_request->set_payment_method( $request->get_param( 'payment_method' ) );
 			$wcpay_server_request->set_payment_method_types( [ 'card' ] );
+			$wcpay_server_request->set_off_session( true );
 			$wcpay_server_request->set_capture_method( WC_Payments::get_gateway()->get_option( 'manual_capture' ) && ( 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) );
 
 			$payment_information = new Payment_Information( $request->get_param( 'payment_method' ), $order, Payment_Type::SINGLE(), null, null, null, null, '', 'card' );
