@@ -11,7 +11,6 @@ import { Spinner, Flex, FlexItem } from '@wordpress/components';
 import Page from 'components/page';
 import { useDispute } from 'data/index';
 import { Charge } from 'wcpay/types/charges';
-import { Dispute } from 'wcpay/types/disputes';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
@@ -22,12 +21,12 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 	const { dispute, isLoading } = useDispute( disputeId );
 
 	useEffect( () => {
-		const disputeObject = dispute || ( {} as Dispute );
-		const disputeIsAvailable = ! isLoading && dispute && disputeObject.id;
-		// Dispute type allows charge as nested object or string ID,
-		// so we have to hint we expect a Charge object here.
-		const chargeObject = disputeObject.charge as Charge;
+		const disputeIsAvailable = ! isLoading && dispute?.charge;
+
 		if ( disputeIsAvailable ) {
+			// Dispute type allows charge as nested object or string ID,
+			// so we have to hint we expect a Charge object here.
+			const chargeObject = dispute.charge as Charge;
 			const transactionDetailsUrl = getAdminUrl( {
 				page: 'wc-admin',
 				path: '/payments/transactions/details',
