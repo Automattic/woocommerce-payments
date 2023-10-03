@@ -20,22 +20,16 @@ const formatPaymentMethodDetails = ( charge ) => {
 	const { billing_details: billingDetails, payment_method: id } = charge;
 
 	const {
-		country: countryCode,
-		verified_name: verifiedName,
 		payment_method_category: paymentMethodCategory,
 		preferred_locale: preferredLocale,
 	} = charge.payment_method_details.klarna;
 
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
 	// Use the full country name.
-	const country = wcSettings.countries[ countryCode ];
-
 	return {
-		verifiedName,
 		id,
 		name,
 		email,
-		country,
 		formattedAddress,
 		paymentMethodCategory,
 		preferredLocale,
@@ -46,13 +40,12 @@ const formatPaymentMethodDetails = ( charge ) => {
  * Placeholders to display while loading.
  */
 const paymentMethodPlaceholders = {
-	verifiedName: 'verified name placeholder',
-	fingerprint: 'fingerprint placeholder',
 	id: 'id placeholder',
 	name: 'name placeholder',
 	email: 'email placeholder',
 	formattedAddress: 'address placeholder',
-	country: 'country placeholder',
+	paymentMethodCategory: 'category placeholder',
+	preferredLocale: 'locale placeholder',
 };
 
 const KlarnaDetails = ( { charge = {}, isLoading } ) => {
@@ -61,11 +54,9 @@ const KlarnaDetails = ( { charge = {}, isLoading } ) => {
 		: paymentMethodPlaceholders;
 
 	const {
-		verifiedName,
 		id,
 		name,
 		email,
-		country,
 		formattedAddress,
 		paymentMethodCategory,
 		preferredLocale,
@@ -102,13 +93,6 @@ const KlarnaDetails = ( { charge = {}, isLoading } ) => {
 			<div className="payment-method-details__column">
 				<Detail
 					isLoading={ isLoading }
-					label={ __( 'Verified name', 'woocommerce-payments' ) }
-				>
-					{ verifiedName }
-				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
 					label={ __( 'Owner', 'woocommerce-payments' ) }
 				>
 					{ name }
@@ -130,13 +114,6 @@ const KlarnaDetails = ( { charge = {}, isLoading } ) => {
 							__html: formattedAddress,
 						} }
 					/>
-				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
-					label={ __( 'Origin', 'woocommerce-payments' ) }
-				>
-					{ country }
 				</Detail>
 			</div>
 		</div>
