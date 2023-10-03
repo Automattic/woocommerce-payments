@@ -97,6 +97,10 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 			[
 				'type' => 'wcpay_currencies_settings_onboarding_cta',
 			],
+			[
+				'type' => 'sectionend',
+				'id'   => $this->id . '_enabled_currencies',
+			],
 		];
 	}
 }
