@@ -44,5 +44,6 @@ $request->set_metadata( $metadata );
 $request->set_payment_method( $payment_method_id );
 $request->set_payment_method_types( $payment_methods );
 $request->set_save_payment_method_to_platform( $toggle );
-$request->send( 'wcpay_create_intent_request', $order );
+$request->set_hook_args( $order );
+$request->send();
 ```

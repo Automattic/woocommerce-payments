@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Move hooks out of MultiCurrency constructor into own init_hooks method.
