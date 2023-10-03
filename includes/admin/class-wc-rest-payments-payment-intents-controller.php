@@ -7,6 +7,8 @@
 
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Logger;
+use WCPay\Payment_Information;
+use WCPay\Constants\Payment_Type;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -108,8 +110,10 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 			$wcpay_server_request->set_payment_method( $request->get_param( 'payment_method' ) );
 			$wcpay_server_request->set_payment_method_types( [ 'card' ] );
 			$wcpay_server_request->set_capture_method( WC_Payments::get_gateway()->get_option( 'manual_capture' ) && ( 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) );
-
-			$intent = $wcpay_server_request->send( 'wcpay_create_intent_request', $order );
+			
+			$payment_information = new Payment_Information( $request->get_param( 'payment_method' ), $order, Payment_Type::SINGLE(), null, null, null, null, '', 'card' );
+			$wcpay_server_request->set_hook_args( $payment_information );
+			$intent = $wcpay_server_request->send();
 			return rest_ensure_response( $intent );
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create an intention via REST API: ' . $e );
