@@ -51,6 +51,14 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 
+		// We won't mock retrieve_usable_customer_payment_methods since we are planning to mock othermethods that are called within retrieve_usable_customer_payment_methods.
+		$methods_to_mock = array_diff( get_class_methods( WC_Payments_Customer_Service::class ), [ 'retrieve_usable_customer_payment_methods' ] );
+
+		$this->mock_customer_service = $this->getMockBuilder( WC_Payments_Customer_Service::class )
+			->disableOriginalConstructor()
+			->onlyMethods( $methods_to_mock )
+			->getMock();
+
 		$this->token_service = new WC_Payments_Token_Service( $this->mock_api_client, $this->mock_customer_service );
 	}
 
