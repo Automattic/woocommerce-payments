@@ -38,5 +38,5 @@ $request->set_sort_by( $sort );
 $request->set_sort_direction( $direction );
 $request->set_type_is( $type_is );
 $request->set_type_is_not( $type_is_not );
-$request->send( 'wcpay_list_documents_request', $request );
+$request->send();
 ```
