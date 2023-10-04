@@ -123,7 +123,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 								<ClickTooltip
 									buttonIcon={ <HelpOutlineIcon /> }
 									buttonLabel={ __(
-										'Challenge the dispute',
+										'Challenge the dispute tooltip',
 										'woocommerce-payments'
 									) }
 									content={ __(
@@ -136,7 +136,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 								<ClickTooltip
 									buttonIcon={ <HelpOutlineIcon /> }
 									buttonLabel={ __(
-										'Accept the dispute',
+										'Accept the dispute tooltip',
 										'woocommerce-payments'
 									) }
 									content={ sprintf(
@@ -248,7 +248,7 @@ export const InquirySteps: React.FC< Props > = ( {
 								<ClickTooltip
 									buttonIcon={ <HelpOutlineIcon /> }
 									buttonLabel={ __(
-										'Submit evidence',
+										'Submit evidence tooltip',
 										'woocommerce-payments'
 									) }
 									content={ createInterpolateElement(

@@ -50,6 +50,22 @@ jest.mock( 'wcpay/data', () => ( {
 	} ) ),
 } ) );
 
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( {
+		createErrorNotice: jest.fn(),
+	} ) ),
+	useSelect: jest.fn( () => ( { getNotices: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+} ) );
+
 const mockUseAuthorization = useAuthorization as jest.MockedFunction<
 	typeof useAuthorization
 >;
@@ -811,7 +827,15 @@ describe( 'PaymentDetailsSummary', () => {
 			screen.getByRole( 'link', {
 				name: /Email the customer/i,
 			} );
-			screen.getByText( /Submit evidence/i );
+			screen.getByText( /Submit evidence /i );
+
+			// Actions
+			screen.getByRole( 'button', {
+				name: /Submit evidence$/i,
+			} );
+			screen.getByRole( 'button', {
+				name: /Issue refund/i,
+			} );
 		} );
 
 		test( 'correctly renders dispute details for "warning_under_review" inquiry disputes', () => {
