@@ -34,8 +34,8 @@ export const WoopayExpressCheckoutButton = ( {
 	const sessionDataPromiseRef = useRef( null );
 	const initWoopayRef = useRef( null );
 	const buttonRef = useRef( null );
-	const isLoadingRef = useRef( false );
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
+	const [ isLoading, setIsLoading ] = useState( false );
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
 	);
@@ -171,12 +171,12 @@ export const WoopayExpressCheckoutButton = ( {
 			initWoopayRef.current = ( e ) => {
 				e.preventDefault();
 
-				if ( isPreview || isLoadingRef.current ) {
+				if ( isPreview || isLoading ) {
 					return;
 				}
 
-				// Set isLoadingRef to true to prevent multiple clicks.
-				isLoadingRef.current = true;
+				// Set isLoading to true to prevent multiple clicks.
+				setIsLoading( true );
 
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.WOOPAY_BUTTON_CLICK,
@@ -227,7 +227,7 @@ export const WoopayExpressCheckoutButton = ( {
 									'woocommerce-payments'
 								);
 								showErrorMessage( context, errorMessage );
-								isLoadingRef.current = false;
+								setIsLoading( false );
 							} );
 					} );
 				} else {
@@ -248,14 +248,14 @@ export const WoopayExpressCheckoutButton = ( {
 								'woocommerce-payments'
 							);
 							showErrorMessage( context, errorMessage );
-							isLoadingRef.current = false;
+							setIsLoading( false );
 						} );
 				}
 			};
 		} );
 
 		return iframe;
-	}, [ isProductPage, context, isPreview, listenForCartChanges ] );
+	}, [ isProductPage, isPreview, isLoading, context, listenForCartChanges ] );
 
 	useEffect( () => {
 		if ( isPreview || ! getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
@@ -300,7 +300,7 @@ export const WoopayExpressCheckoutButton = ( {
 
 				// Set button's default onClick handle to use modal checkout flow.
 				initWoopayRef.current = defaultOnClick;
-				isLoadingRef.current = false;
+				setIsLoading( false );
 			}
 		};
 
@@ -328,9 +328,16 @@ export const WoopayExpressCheckoutButton = ( {
 			data-theme={ theme }
 			data-width-type={ buttonWidthType }
 			style={ { height: `${ height }px` } }
+			disabled={ isLoading }
 		>
-			{ text }
-			<ThemedWooPayIcon />
+			{ isLoading ? (
+				<span className="wc-block-components-spinner" />
+			) : (
+				<>
+					{ text }
+					<ThemedWooPayIcon />
+				</>
+			) }
 		</button>
 	);
 };
