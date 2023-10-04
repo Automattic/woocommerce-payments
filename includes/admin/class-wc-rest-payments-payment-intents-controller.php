@@ -142,7 +142,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 				],
 				'amount'   => [
 					'description' => __( 'The amount of the transaction.', 'woocommerce-payments' ),
-					'type'        => 'string',
+					'type'        => 'integer',
 					'context'     => [ 'view' ],
 				],
 				'currency' => [
@@ -291,11 +291,11 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 						],
 						'application_fee_amount' => [
 							'description' => 'The application fee amount.',
-							'type'        => 'string',
+							'type'        => 'integer',
 							'context'     => [ 'view' ],
 						],
 						'status'                 => [
-							'description' => 'The application fee amount.',
+							'description' => 'The status of the payment intent created.',
 							'type'        => 'string',
 							'context'     => [ 'view' ],
 						],
