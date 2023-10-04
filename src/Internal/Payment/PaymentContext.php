@@ -14,11 +14,36 @@ use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
  */
 class PaymentContext {
 	/**
+	 * ID of the order, receiving a payment.
+	 *
+	 * @var int
+	 */
+	private $order_id;
+
+	/**
 	 * Contains all the context's data.
 	 *
 	 * @var array
 	 */
 	private $data = [];
+
+	/**
+	 * Constructs the class, receiving an order ID.
+	 *
+	 * @param int $order_id ID of the order, receiving a payment.
+	 */
+	public function __construct( int $order_id ) {
+		$this->order_id = $order_id;
+	}
+
+	/**
+	 * Returns the ID of the order requiring payment.
+	 *
+	 * @return int
+	 */
+	public function get_order_id(): ?int {
+		return $this->order_id;
+	}
 
 	/**
 	 * Stores an internal value.
@@ -39,24 +64,6 @@ class PaymentContext {
 	 */
 	private function get( string $key ) {
 		return $this->data[ $key ] ?? null;
-	}
-
-	/**
-	 * Stores the order requiring payment.
-	 *
-	 * @param int $order_id ID of the order.
-	 */
-	public function set_order_id( int $order_id ) {
-		$this->set( 'order_id', $order_id );
-	}
-
-	/**
-	 * Returns the ID of the order requiring payment.
-	 *
-	 * @return int
-	 */
-	public function get_order_id(): ?int {
-		return $this->get( 'order_id' );
 	}
 
 	/**
