@@ -288,8 +288,9 @@ class WC_Payments_Invoice_Service {
 	 */
 	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
 		try {
-			$request       = Get_Intention::create( $intent_id );
-			$intent_object = $request->send( 'wcpay_get_intent_request', $order );
+			$request = Get_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+			$intent_object = $request->send();
 
 		} catch ( API_Exception $e ) {
 			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );

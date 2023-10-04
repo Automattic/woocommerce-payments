@@ -28,7 +28,6 @@ class Analytics {
 
 	const SUPPORTED_CONTEXTS = [ 'orders', 'products', 'variations', 'categories', 'coupons', 'taxes' ];
 
-
 	/**
 	 * SQL string replacements made by the analytics Multi-Currency extension.
 	 *
@@ -120,6 +119,7 @@ class Analytics {
 		$currency_options     = [];
 
 		$default_currency = $this->multi_currency->get_default_currency();
+
 		// Add default currency to the list if it does not exist.
 		if ( ! in_array( $default_currency->get_code(), $currencies, true ) ) {
 			$currencies[] = $default_currency->get_code();
@@ -136,10 +136,8 @@ class Analytics {
 				'value' => $currency_details->get_code(),
 			];
 		}
-		$data_registry = Package::container()->get(
-			AssetDataRegistry::class
-		);
 
+		$data_registry = Package::container()->get( AssetDataRegistry::class );
 		$data_registry->add( 'customerCurrencies', $currency_options, true );
 	}
 

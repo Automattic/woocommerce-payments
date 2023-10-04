@@ -354,7 +354,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$intent_id = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
 
 		$request = Get_Intention::create( $intent_id );
-		$intent  = $request->send( 'wcpay_get_intent_request', $order );
+		$request->set_hook_args( $order );
+		$intent = $request->send();
 
 		$intent_status = $intent->get_status();
 

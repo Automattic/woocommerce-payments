@@ -136,21 +136,6 @@ class WC_Payments_Admin {
 		$this->incentives_service  = $incentives_service;
 		$this->database_cache      = $database_cache;
 
-		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
-		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
-
-		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
-
-		// Add menu items.
-		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
-		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_redirect_overview_to_connect' ], 1 ); // Run this late (after `admin_init`) but before any scripts are actually enqueued.
-		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ], 9 );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 9 );
-		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
-		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
-		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
-
 		$this->admin_child_pages = [
 			'wc-payments-overview'     => [
 				'id'       => 'wc-payments-overview',
@@ -193,6 +178,28 @@ class WC_Payments_Admin {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
+		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
+
+		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
+
+		// Add menu items.
+		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
+		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_redirect_overview_to_connect' ], 1 ); // Run this late (after `admin_init`) but before any scripts are actually enqueued.
+		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ], 9 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 9 );
+		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
+		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
+		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
 	}
 
 	/**
@@ -465,14 +472,19 @@ class WC_Payments_Admin {
 					'path'   => '/payments/transactions/details',
 				]
 			);
+
+			$is_dispute_on_transaction_page_enabled = WC_Payments_Features::is_dispute_on_transaction_page_enabled();
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-disputes-details',
+					'id'     => $is_dispute_on_transaction_page_enabled
+						? 'wc-payments-disputes-details-legacy-redirect'
+						: 'wc-payments-disputes-details',
 					'title'  => __( 'Dispute details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-disputes',
 					'path'   => '/payments/disputes/details',
 				]
 			);
+
 			wc_admin_register_page(
 				[
 					'id'     => 'wc-payments-disputes-challenge',
@@ -1209,7 +1221,8 @@ class WC_Payments_Admin {
 	private function get_disputes_awaiting_response_count() {
 		$send_callback = function() {
 			$request = Request::get( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
-			return $request->send( 'wcpay_get_dispute_status_counts' );
+			$request->assign_hook( 'wcpay_get_dispute_status_counts' );
+			return $request->send();
 		};
 
 		$disputes_status_counts = $this->database_cache->get_or_add(
@@ -1238,7 +1251,8 @@ class WC_Payments_Admin {
 
 		$send_callback         = function() {
 			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
-			return $request->send( 'wc_pay_get_authorizations_summary' );
+			$request->assign_hook( 'wc_pay_get_authorizations_summary' );
+			return $request->send();
 		};
 		$authorization_summary = $this->database_cache->get_or_add(
 			$cache_key,
