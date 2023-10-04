@@ -31,7 +31,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
 import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
-import DisputeSteps from './dispute-steps';
+import { DisputeSteps, InquirySteps } from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
@@ -77,11 +77,21 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 						</InlineNotice>
 					) }
 					<DisputeSummaryRow dispute={ dispute } />
-					<DisputeSteps
-						dispute={ dispute }
-						customer={ customer }
-						chargeCreated={ chargeCreated }
-					/>
+
+					{ isInquiry( dispute ) ? (
+						<InquirySteps
+							dispute={ dispute }
+							customer={ customer }
+							chargeCreated={ chargeCreated }
+						/>
+					) : (
+						<DisputeSteps
+							dispute={ dispute }
+							customer={ customer }
+							chargeCreated={ chargeCreated }
+						/>
+					) }
+
 					<IssuerEvidenceList
 						issuerEvidence={ dispute.issuer_evidence }
 					/>

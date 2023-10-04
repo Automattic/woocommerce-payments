@@ -18,7 +18,7 @@ import type { Dispute } from 'wcpay/types/disputes';
 import { ChargeBillingDetails } from 'wcpay/types/charges';
 import { formatExplicitCurrency } from 'utils/currency';
 import { ClickTooltip } from 'wcpay/components/tooltip';
-import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
+import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import DisputeDueByDate from './dispute-due-by-date';
 
 interface Props {
@@ -27,7 +27,7 @@ interface Props {
 	chargeCreated: number;
 }
 
-const DisputeSteps: React.FC< Props > = ( {
+export const DisputeSteps: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
@@ -165,7 +165,7 @@ const DisputeSteps: React.FC< Props > = ( {
 	);
 };
 
-const InquirySteps: React.FC< Props > = ( {
+export const InquirySteps: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
@@ -276,29 +276,3 @@ const InquirySteps: React.FC< Props > = ( {
 		</div>
 	);
 };
-
-const DisputeStepsWrapper: React.FC< Props > = ( {
-	dispute,
-	customer,
-	chargeCreated,
-} ) => {
-	if ( isInquiry( dispute ) ) {
-		return (
-			<InquirySteps
-				dispute={ dispute }
-				customer={ customer }
-				chargeCreated={ chargeCreated }
-			/>
-		);
-	}
-
-	return (
-		<DisputeSteps
-			dispute={ dispute }
-			customer={ customer }
-			chargeCreated={ chargeCreated }
-		/>
-	);
-};
-
-export default DisputeStepsWrapper;
