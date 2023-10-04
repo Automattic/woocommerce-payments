@@ -13,6 +13,7 @@ import {
 	updateDispute,
 	updateDisputes,
 	updateDisputesSummary,
+	updateErrorForDispute,
 } from '../actions';
 import { getDispute, getDisputes, getDisputesSummary } from '../resolvers';
 
@@ -67,6 +68,9 @@ describe( 'getDispute resolver', () => {
 					'createErrorNotice',
 					expect.any( String )
 				)
+			);
+			expect( generator.next().value ).toEqual(
+				updateErrorForDispute( 'dp_mock1', undefined, errorResponse )
 			);
 		} );
 	} );
