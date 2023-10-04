@@ -36,20 +36,30 @@ class WC_Payments_Fraud_Service {
 	private $customer_service;
 
 	/**
+	 * WC_Payments_Session_Service instance for working with session information
+	 *
+	 * @var WC_Payments_Session_Service
+	 */
+	private $session_service;
+
+	/**
 	 * Constructor for WC_Payments_Fraud_Service.
 	 *
 	 * @param WC_Payments_API_Client       $payments_api_client      - WooCommerce Payments API client.
 	 * @param WC_Payments_Customer_Service $customer_service         - Customer class instance.
 	 * @param WC_Payments_Account          $account                  - Account class instance.
+	 * @param WC_Payments_Session_Service  $session_service          - Session Service class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Customer_Service $customer_service,
-		WC_Payments_Account $account
+		WC_Payments_Account $account,
+		WC_Payments_Session_Service $session_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->customer_service    = $customer_service;
 		$this->account             = $account;
+		$this->session_service     = $session_service;
 	}
 
 	/**
@@ -59,7 +69,6 @@ class WC_Payments_Fraud_Service {
 	 */
 	public function init_hooks() {
 		add_filter( 'wcpay_prepare_fraud_config', [ $this, 'prepare_fraud_config' ], 10, 2 );
-		add_filter( 'wcpay_onboarding_user_data', [ $this, 'fill_onboarding_user_data' ] );
 		add_action( 'init', [ $this, 'link_session_if_user_just_logged_in' ] );
 		add_action( 'admin_print_footer_scripts', [ $this, 'add_sift_js_tracker' ] );
 	}
@@ -78,29 +87,6 @@ class WC_Payments_Fraud_Service {
 				return $this->prepare_sift_config( $config );
 		}
 		return $config;
-	}
-
-	/**
-	 * Get the Sift session ID for the current browsing session.
-	 *
-	 * @return string|null The Sift session ID or null if it can't be determined.
-	 */
-	public function get_sift_session_id(): ?string {
-		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
-		if ( ! $wpcom_blog_id ) {
-			// No session ID if Jetpack hasn't been connected yet.
-			return null;
-		}
-
-		if ( $this->check_if_user_just_logged_in() ) {
-			return $this->get_cookie_session_id();
-		}
-
-		if ( is_a( WC()->session, 'WC_Session' ) ) {
-			return $wpcom_blog_id . '_' . WC()->session->get_customer_id();
-		}
-
-		return null; // We do not have a valid session for the current process.
 	}
 
 	/**
@@ -136,52 +122,9 @@ class WC_Payments_Fraud_Service {
 			}
 		}
 
-		$config['session_id'] = $this->get_sift_session_id();
+		$config['session_id'] = $this->session_service->get_sift_session_id();
 
 		return $config;
-	}
-
-	/**
-	 * Called after the WooCommerce session has been initialized. Check if the current user has just logged in,
-	 * and sends that information to the server to link the current browser session with the user.
-	 *
-	 * @return boolean True if the user has just logged in, false in any other case.
-	 */
-	public function check_if_user_just_logged_in() {
-		if ( ! get_current_user_id() ) {
-			return false;
-		}
-		WC()->initialize_session();
-		$session_handler = WC()->session;
-		// The Store API SessionHandler (used by WooPay) doesn't provide this method.
-		if ( ! method_exists( $session_handler, 'get_session_cookie' ) ) {
-			return false;
-		}
-		$cookie = $session_handler->get_session_cookie();
-		if ( ! $cookie ) {
-			return false;
-		}
-		$cookie_customer_id = $cookie[0];
-		return $session_handler->get_customer_id() !== $cookie_customer_id;
-	}
-
-	/**
-	 * Add Sift onboarding user data to the onboarding user data array.
-	 *
-	 * @param mixed $user_data The filtered user data.
-	 *
-	 * @return array|mixed The modified user data.
-	 */
-	public function fill_onboarding_user_data( $user_data ) {
-		if ( ! is_array( $user_data ) ) {
-			return $user_data;
-		}
-
-		if ( ! isset( $user_data['sift_session_id'] ) ) {
-			$user_data['sift_session_id'] = $this->get_sift_session_id();
-		}
-
-		return $user_data;
 	}
 
 	/**
@@ -195,7 +138,7 @@ class WC_Payments_Fraud_Service {
 			return;
 		}
 
-		if ( ! $this->check_if_user_just_logged_in() ) {
+		if ( ! $this->session_service->user_just_logged_in() ) {
 			return;
 		}
 
@@ -213,37 +156,10 @@ class WC_Payments_Fraud_Service {
 		}
 
 		try {
-			$this->payments_api_client->link_session_to_customer( $this->get_cookie_session_id(), $customer_id );
+			$this->session_service->link_current_session_to_customer( $customer_id );
 		} catch ( API_Exception $e ) {
 			Logger::log( '[Tracking] Error when linking session with user: ' . $e->getMessage() );
 		}
-	}
-
-	/**
-	 * Get the session ID used until now for the current browsing session.
-	 *
-	 * @return string|NULL Session ID, or NULL if unknown.
-	 */
-	private function get_cookie_session_id() {
-		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
-		if ( ! $wpcom_blog_id ) {
-			return null;
-		}
-
-		$session_handler = WC()->session;
-		if ( ! $session_handler ) {
-			return null;
-		}
-		// The Store API SessionHandler (used by WooPay) doesn't provide this method.
-		if ( ! method_exists( $session_handler, 'get_session_cookie' ) ) {
-			return null;
-		}
-		$cookie = $session_handler->get_session_cookie();
-		if ( ! $cookie ) {
-			return null;
-		}
-		$cookie_customer_id = $cookie[0];
-		return $wpcom_blog_id . '_' . $cookie_customer_id;
 	}
 
 	/**
