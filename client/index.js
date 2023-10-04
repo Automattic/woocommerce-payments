@@ -20,7 +20,6 @@ import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
 import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
-import LegacyDisputeDetailsPage from 'disputes/details';
 import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
 import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
