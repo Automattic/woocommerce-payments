@@ -52,6 +52,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 			$this->mock_multi_currency,
 			$this->mock_compatibility
 		);
+		$this->currency_switcher_block->init_hooks();
 	}
 
 	/**

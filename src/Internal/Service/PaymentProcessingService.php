@@ -82,8 +82,7 @@ class PaymentProcessingService {
 	 * @return PaymentContext
 	 */
 	protected function create_payment_context( int $order_id, bool $manual_capture = false ): PaymentContext {
-		$context = new PaymentContext();
-		$context->set_order_id( $order_id );
+		$context = new PaymentContext( $order_id );
 		$context->toggle_manual_capture( $manual_capture );
 		return $context;
 	}

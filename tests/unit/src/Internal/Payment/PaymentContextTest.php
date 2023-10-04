@@ -23,19 +23,23 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 	private $sut;
 
 	/**
+	 * Order ID to use throughout the tests.
+	 *
+	 * @var int
+	 */
+	private $order_id = 123;
+
+	/**
 	 * Tests setup.
 	 */
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->sut = new PaymentContext();
+		$this->sut = new PaymentContext( $this->order_id );
 	}
 
 	public function test_order_id() {
-		$order_id = 123;
-
-		$this->sut->set_order_id( $order_id );
-		$this->assertSame( $order_id, $this->sut->get_order_id() );
+		$this->assertSame( $this->order_id, $this->sut->get_order_id() );
 	}
 
 	public function test_amount() {

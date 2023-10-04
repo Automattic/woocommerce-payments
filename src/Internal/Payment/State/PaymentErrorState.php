@@ -13,6 +13,6 @@ namespace WCPay\Internal\Payment\State;
  * Though this is an erroneous state, it is not unexpected, and
  * represents an error on the buyer's side, which cannot be fixed through code.
  */
-class PaymentErrorState extends PaymentState {
+class PaymentErrorState extends AbstractPaymentState {
 
 }

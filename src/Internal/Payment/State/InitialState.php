@@ -21,7 +21,7 @@ use WCPay\Exceptions\Order_Not_Found_Exception;
 /**
  * Initial state, representing a freshly created payment.
  */
-class InitialState extends PaymentState {
+class InitialState extends AbstractPaymentState {
 	/**
 	 * Order service.
 	 *

@@ -13,6 +13,6 @@ namespace WCPay\Internal\Payment\State;
  * Consider this state an exception: Ideally it would never be entered,
  * but in case any sort of software issue arrises, it will be used.
  */
-class SystemErrorState extends PaymentState {
+class SystemErrorState extends AbstractPaymentState {
 
 }

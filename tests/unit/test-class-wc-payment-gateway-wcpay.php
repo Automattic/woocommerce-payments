@@ -458,7 +458,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'classic' ] );
+			->with( [ 'gateway_type' => 'legacy_card' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
@@ -513,7 +513,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'classic' ] );
+			->with( [ 'gateway_type' => 'legacy_card' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention( [ 'currency' => 'eur' ] ) );
@@ -565,7 +565,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'classic' ] );
+			->with( [ 'gateway_type' => 'legacy_card' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
@@ -620,7 +620,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'classic' ] );
+			->with( [ 'gateway_type' => 'legacy_card' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
@@ -677,7 +677,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'classic' ] );
+			->with( [ 'gateway_type' => 'legacy_card' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -739,7 +739,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'classic' ] );
+			->with( [ 'gateway_type' => 'legacy_card' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -797,7 +797,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'classic' ] );
+			->with( [ 'gateway_type' => 'legacy_card' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -855,7 +855,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'classic' ] );
+			->with( [ 'gateway_type' => 'legacy_card' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
@@ -904,7 +904,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'classic' ] );
+			->with( [ 'gateway_type' => 'legacy_card' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
@@ -1510,7 +1510,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'classic' ] );
+			->with( [ 'gateway_type' => 'legacy_card' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )

@@ -40,6 +40,8 @@ class PaymentRequestService {
 		$request->set_cvc_confirmation( $context->get_cvc_confirmation() );
 		$request->set_fingerprint( $context->get_fingerprint() );
 
-		return $request->send( 'wcpay_create_and_confirm_intent_request_2' ); // @todo: This is weird.
+		// ToDo: The WooPay service should accept the old and new payment contexts.
+		$request->assign_hook( 'wcpay_create_and_confirm_intent_request_new' );
+		return $request->send();
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class PaymentState
+ * Class AbstractPaymentState
  *
  * @package WooCommerce\Payments
  */
@@ -8,14 +8,13 @@
 namespace WCPay\Internal\Payment\State;
 
 use WCPay\Vendor\League\Container\Exception\ContainerException;
-use WCPay\Internal\Payment\Exception\MethodUnavailableException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
 
 /**
  * Base class for payment states.
  */
-abstract class PaymentState {
+abstract class AbstractPaymentState {
 	/**
 	 * Holds the context of the payments.
 	 *
@@ -70,7 +69,7 @@ abstract class PaymentState {
 	 * to the next state, as each new state will be considered the payment's latest one.
 	 *
 	 * @param string $state_class The class of the state to crate.
-	 * @return PaymentState
+	 * @return AbstractPaymentState
 	 * @throws StateTransitionException In case the new state could not be created.
 	 * @throws ContainerException       When the dependency container cannot instantiate the state.
 	 */
@@ -91,9 +90,8 @@ abstract class PaymentState {
 	/**
 	 * Initialtes the payment process.
 	 *
-	 * @return PaymentState The next state.
-	 * @throws MethodUnavailableException When the method is not available in the current state.
-	 * @throws StateTransitionException In case the completed state could not be initialized.
+	 * @return AbstractPaymentState The next state.
+	 * @throws StateTransitionException In case the new state was not found or could not be initialized.
 	 * @psalm-suppress InvalidReturnType If this method does not throw, it will return a new state.
 	 */
 	public function process() {
@@ -104,10 +102,10 @@ abstract class PaymentState {
 	 * Throws an exception, indicating that a given method is not available.
 	 *
 	 * @param string $method_name The name of the called method.
-	 * @throws MethodUnavailableException
+	 * @throws StateTransitionException
 	 */
 	private function throw_unavailable_method_exception( string $method_name ) {
-		throw new MethodUnavailableException(
+		throw new StateTransitionException(
 			sprintf(
 				// translators: %1$s is the name of a method of the payment object, %2$s is its current state.
 				__( 'The %1$s method is not available in the current payment state (%2$s).', 'woocommerce-payments' ),

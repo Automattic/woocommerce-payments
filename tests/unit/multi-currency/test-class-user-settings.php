@@ -43,6 +43,7 @@ class WCPay_Multi_Currency_User_Settings_Tests extends WCPAY_UnitTestCase {
 			);
 
 		$this->user_settings = new WCPay\MultiCurrency\UserSettings( $this->mock_multi_currency );
+		$this->user_settings->init_hooks();
 	}
 
 	public function test_add_presentment_currency_switch_renders_markup() {
