@@ -324,32 +324,40 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 		$prepared_item['payment_method'] = $item->get_payment_method_id();
 		$prepared_item['status']         = $item->get_status();
 
-		$charge                            = $item->get_charge();
-		$prepared_item['charge']['id']     = $charge->get_id();
-		$prepared_item['charge']['amount'] = $charge->get_amount();
-		$prepared_item['charge']['application_fee_amount'] = $charge->get_application_fee_amount();
-		$prepared_item['charge']['status']                 = $charge->get_status();
+		try {
+			$charge                            = $item->get_charge();
+			$prepared_item['charge']['id']     = $charge->get_id();
+			$prepared_item['charge']['amount'] = $charge->get_amount();
+			$prepared_item['charge']['application_fee_amount'] = $charge->get_application_fee_amount();
+			$prepared_item['charge']['status']                 = $charge->get_status();
 
-		$billing_details = $charge->get_billing_details();
-		$prepared_item['charge']['billing_details']['address']['city']        = $billing_details['address']['city'];
-		$prepared_item['charge']['billing_details']['address']['country']     = $billing_details['address']['country'];
-		$prepared_item['charge']['billing_details']['address']['line1']       = $billing_details['address']['line1'];
-		$prepared_item['charge']['billing_details']['address']['line2']       = $billing_details['address']['line2'];
-		$prepared_item['charge']['billing_details']['address']['postal_code'] = $billing_details['address']['postal_code'];
-		$prepared_item['charge']['billing_details']['address']['state']       = $billing_details['address']['state'];
-		$prepared_item['charge']['billing_details']['email']                  = $billing_details['email'];
-		$prepared_item['charge']['billing_details']['name']                   = $billing_details['name'];
-		$prepared_item['charge']['billing_details']['phone']                  = $billing_details['phone'];
+			$billing_details = $charge->get_billing_details();
+			if ( isset( $billing_details['address'] ) ) {
+				$prepared_item['charge']['billing_details']['address']['city']        = $billing_details['address']['city'] ?? '';
+				$prepared_item['charge']['billing_details']['address']['country']     = $billing_details['address']['country'] ?? '';
+				$prepared_item['charge']['billing_details']['address']['line1']       = $billing_details['address']['line1'] ?? '';
+				$prepared_item['charge']['billing_details']['address']['line2']       = $billing_details['address']['line2'] ?? '';
+				$prepared_item['charge']['billing_details']['address']['postal_code'] = $billing_details['address']['postal_code'] ?? '';
+				$prepared_item['charge']['billing_details']['address']['state']       = $billing_details['address']['state'] ?? '';
+			}
+			$prepared_item['charge']['billing_details']['email'] = $billing_details['email'] ?? '';
+			$prepared_item['charge']['billing_details']['name']  = $billing_details['name'] ?? '';
+			$prepared_item['charge']['billing_details']['phone'] = $billing_details['phone'] ?? '';
 
-		$payment_method_details = $charge->get_payment_method_details();
-		$prepared_item['charge']['payment_method_details']['card']['amount_authorized'] = $payment_method_details['card']['amount_authorized'];
-		$prepared_item['charge']['payment_method_details']['card']['brand']             = $payment_method_details['card']['brand'];
-		$prepared_item['charge']['payment_method_details']['card']['capture_before']    = $payment_method_details['card']['capture_before'];
-		$prepared_item['charge']['payment_method_details']['card']['country']           = $payment_method_details['card']['country'];
-		$prepared_item['charge']['payment_method_details']['card']['exp_month']         = $payment_method_details['card']['exp_month'];
-		$prepared_item['charge']['payment_method_details']['card']['exp_year']          = $payment_method_details['card']['exp_year'];
-		$prepared_item['charge']['payment_method_details']['card']['last4']             = $payment_method_details['card']['last4'];
-		$prepared_item['charge']['payment_method_details']['card']['three_d_secure']    = $payment_method_details['card']['three_d_secure'];
+			$payment_method_details = $charge->get_payment_method_details();
+			if ( isset( $payment_method_details['card'] ) ) {
+				$prepared_item['charge']['payment_method_details']['card']['amount_authorized'] = $payment_method_details['card']['amount_authorized'] ?? '';
+				$prepared_item['charge']['payment_method_details']['card']['brand']             = $payment_method_details['card']['brand'] ?? '';
+				$prepared_item['charge']['payment_method_details']['card']['capture_before']    = $payment_method_details['card']['capture_before'] ?? '';
+				$prepared_item['charge']['payment_method_details']['card']['country']           = $payment_method_details['card']['country'] ?? '';
+				$prepared_item['charge']['payment_method_details']['card']['exp_month']         = $payment_method_details['card']['exp_month'] ?? '';
+				$prepared_item['charge']['payment_method_details']['card']['exp_year']          = $payment_method_details['card']['exp_year'] ?? '';
+				$prepared_item['charge']['payment_method_details']['card']['last4']             = $payment_method_details['card']['last4'] ?? '';
+				$prepared_item['charge']['payment_method_details']['card']['three_d_secure']    = $payment_method_details['card']['three_d_secure'] ?? '';
+			}
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to prepare payment intent for response: ' . $e );
+		}
 
 		$context       = $request['context'] ?? 'view';
 		$prepared_item = $this->add_additional_fields_to_object( $prepared_item, $request );

@@ -74,7 +74,11 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 
 		$response = $this->controller->create_payment_intent( $request );
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( $mock_intent, $response->get_data() );
+		$data = $response->get_data();
+		$this->assertSame( $mock_intent->get_id(), $data['id'] );
+		$this->assertSame( $mock_intent->get_currency(), $data['currency'] );
+		$this->assertSame( $mock_intent->get_amount(), $data['amount'] );
+		$this->assertSame( $mock_intent->get_charge()->get_id(), $data['charge']['id'] );
 	}
 
 	public function test_create_payment_intent_no_order() {
