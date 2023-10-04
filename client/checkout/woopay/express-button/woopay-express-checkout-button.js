@@ -316,6 +316,21 @@ export const WoopayExpressCheckoutButton = ( {
 		initWoopayRef.current = defaultOnClick;
 	}, [ defaultOnClick ] );
 
+	useEffect( () => {
+		const handlePageShow = ( event ) => {
+			// Re-enable the button after navigating back/forward to the page if bfcache is used.
+			if ( event?.persisted ) {
+				setIsLoading( false );
+			}
+		};
+
+		window.addEventListener( 'pageshow', handlePageShow );
+
+		return () => {
+			window.removeEventListener( 'pageshow', handlePageShow );
+		};
+	}, [] );
+
 	return (
 		<button
 			ref={ buttonRef }
