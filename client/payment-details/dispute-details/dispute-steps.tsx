@@ -55,7 +55,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 		const emailBody = sprintf(
 			// Translators: %1$s is the customer name, %2$s is the dispute date, %3$s is the dispute amount with currency-code e.g. $15 USD, %4$s is the charge date.
 			__(
-				`Hello %1$s\n\n` +
+				`Hello %1$s,\n\n` +
 					`We noticed that on %2$s, you disputed a %3$s charge on %4$s. We wanted to contact you to make sure everything was all right with your purchase and see if there's anything else we can do to resolve any problems you might have had.\n\n` +
 					`Alternatively, if the dispute was a mistake, you can easily withdraw it by calling the number on the back of your card. Thank you so much - we appreciate your business and look forward to working with you.`,
 				'woocommerce-payments'
@@ -193,7 +193,7 @@ export const InquirySteps: React.FC< Props > = ( {
 		const emailBody = sprintf(
 			// Translators: %1$s is the customer name, %2$s is the dispute date, %3$s is the dispute amount with currency-code e.g. $15 USD, %4$s is the charge date.
 			__(
-				`Hello %1$s\n\n` +
+				`Hello %1$s,\n\n` +
 					`We noticed that on %2$s, you disputed a %3$s charge on %4$s. We wanted to contact you to make sure everything was all right with your purchase and see if there's anything else we can do to resolve any problems you might have had.\n\n` +
 					`Alternatively, if the dispute was a mistake, you can easily withdraw it by calling the number on the back of your card. Thank you so much - we appreciate your business and look forward to working with you.`,
 				'woocommerce-payments'
