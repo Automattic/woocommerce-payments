@@ -381,7 +381,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'         => $order_number,
 					'order_key'            => $order->get_order_key(),
 					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'upe',
+					'gateway_type'         => 'legacy_upe',
 					'checkout_type'        => '',
 					'client_version'       => WCPAY_VERSION_NUMBER,
 					'subscription_payment' => 'no',
@@ -483,7 +483,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'         => $order_number,
 					'order_key'            => $order->get_order_key(),
 					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'upe',
+					'gateway_type'         => 'legacy_upe',
 					'checkout_type'        => '',
 					'client_version'       => WCPAY_VERSION_NUMBER,
 					'subscription_payment' => 'no',
@@ -581,7 +581,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'         => $order_number,
 					'order_key'            => $order->get_order_key(),
 					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'upe',
+					'gateway_type'         => 'legacy_upe',
 					'checkout_type'        => '',
 					'client_version'       => WCPAY_VERSION_NUMBER,
 					'subscription_payment' => 'no',
@@ -1904,8 +1904,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_split_upe() {
-		update_option( '_wcpay_feature_upe_split', '1' );
-		update_option( '_wcpay_feature_upe_deferred_intent', '0' );
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
 
 		$data = [
 			'methods'  => [

@@ -21,5 +21,5 @@ When using this request, provide the following filter:
 
 ```php
 $request = Get_Account::create();
-$request->send( 'wcpay_get_account' );
+$request->send();
 ```

@@ -94,11 +94,25 @@ abstract class Request {
 	protected $id;
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = '';
+
+	/**
+	 * Used to set the arguments for the request class WordPress hook. Make sure to add hook name first.
+	 *
+	 * @var array
+	 */
+	protected $hook_args = [];
+
+	/**
 	 * Creates a new request, loading dependencies in there.
 	 *
 	 * @param mixed $id The identifier for various update/get/delete requests.
 	 *
-	 * @indexof $this->>routeList
+	 * @indexof $this->routeList
 	 *
 	 * @return static
 	 */
@@ -301,17 +315,15 @@ abstract class Request {
 	/**
 	 * Allows the request to be modified, and then sends it.
 	 *
-	 * @param string $hook    The filter to use.
-	 * @param mixed  ...$args      Other parameters for the hook.
 	 * @return mixed               Either the response array, or the correct object.
 	 *
 	 * @throws Extend_Request_Exception
 	 * @throws Immutable_Parameter_Exception
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	final public function send( $hook, ...$args ) {
+	final public function send() {
 		return $this->format_response(
-			$this->api_client->send_request( $this->apply_filters( $hook, ...$args ) )
+			$this->api_client->send_request( $this->apply_filters( $this->hook, ...$this->hook_args ) )
 		);
 	}
 
@@ -319,17 +331,15 @@ abstract class Request {
 	 * This is mimic of send method, but where API execption is handled.
 	 * The reason behind this is that sometimes API request can fail for valid reasons and instead of handling this exception on every request, you could use this function.
 	 *
-	 * @param string $hook         The filter to use.
-	 * @param mixed  ...$args      Other parameters for the hook.
 	 * @return mixed               Either the response array, or the correct object.
 	 *
 	 * @throws Extend_Request_Exception
 	 * @throws Immutable_Parameter_Exception
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	final public function handle_rest_request( $hook, ...$args ) {
+	final public function handle_rest_request() {
 		try {
-			$data = $this->send( $hook, ...$args );
+			$data = $this->send();
 			// Make sure to return array if $data is instance or has parent as a Response class.
 			if ( is_a( $data, Response::class ) ) {
 				return $data->to_array();
@@ -368,6 +378,24 @@ abstract class Request {
 				throw new Invalid_Request_Parameter_Exception( 'This request requires an item ID.', 'wcpay_core_invalid_request_parameter_missing_id' );
 			}
 		}
+	}
+	/**
+	 * Assign the WordPress hook and the arguments specific to the previously assigned hook.
+	 *
+	 * @param string $hook WordPress hook name.
+	 */
+	public function assign_hook( string $hook ) {
+		$this->hook = $hook;
+	}
+
+	/**
+	 * Set hook arguments. Used when hook is predefined in the request class, but you want to pass hook args.
+	 *
+	 * @param mixed ...$args Arguments for the hook.
+	 * @return void
+	 */
+	public function set_hook_args( ...$args ) {
+		$this->hook_args = $args;
 	}
 
 	/**
