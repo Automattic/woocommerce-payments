@@ -15,7 +15,6 @@ declare global {
 			customSearch: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
-			isDisputeOnTransactionPageEnabled: boolean;
 		};
 		fraudServices: unknown[];
 		testMode: boolean;

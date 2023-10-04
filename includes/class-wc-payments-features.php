@@ -22,7 +22,6 @@ class WC_Payments_Features {
 	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME = '_wcpay_feature_woopay_first_party_auth';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
-	const DISPUTE_ON_TRANSACTION_PAGE       = '_wcpay_feature_dispute_on_transaction_page';
 	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
 	const DEFERRED_UPE_SERVER_FLAG_NAME     = 'is_deferred_intent_creation_upe_enabled';
 
@@ -248,15 +247,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Deposits details UI on Transaction Details page is enabled. Disabled by default.
-	 *
-	 * @return bool
-	 */
-	public static function is_dispute_on_transaction_page_enabled(): bool {
-		return '1' === get_option( self::DISPUTE_ON_TRANSACTION_PAGE, '0' );
-	}
-
-	/**
 	 * Checks whether the merchant has chosen Subscription product types during onboarding
 	 * WooCommerce and is elible for WCPay Subscriptions, if so, enables the feature flag.
 	 *
@@ -451,7 +441,6 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'             => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled'           => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'             => self::is_progressive_onboarding_enabled(),
-				'isDisputeOnTransactionPageEnabled' => self::is_dispute_on_transaction_page_enabled(),
 				'isPayForOrderFlowEnabled'          => self::is_pay_for_order_flow_enabled(),
 			]
 		);
