@@ -55,7 +55,6 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => [ $this, 'get_customer_payment_methods' ],
 					'permission_callback' => [ $this, 'check_permission' ],
-					'args'                => $this->get_collection_params(),
 				],
 				'schema' => [ $this, 'get_item_schema' ],
 			]
@@ -69,8 +68,8 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function get_customer_payment_methods( $request ) {
 		$customer_id           = $request->get_param( 'customer_id' );
-		$type                  = $request->get_param( 'type' );
-		$payment_methods_types = $type ? [ $type ] : WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids();
+		$payment_methods_types = WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() ?? [];
+		$payment_methods       = [];
 
 		// Perhaps we can fetch it directly from server and avoid looping to get payment methods from cache.
 		foreach ( $payment_methods_types as $type ) {
@@ -139,23 +138,6 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 		$prepared_item = $this->filter_response_by_context( $prepared_item, $context );
 
 		return rest_ensure_response( $prepared_item );
-	}
-
-	/**
-	 * Collection args params.
-	 *
-	 * @return array[]
-	 */
-	public function get_collection_params() {
-		return [
-			'type' => [
-				'description'       => __( 'Filter payment methods where type is a specific value.', 'woocommerce-payments' ),
-				'type'              => 'string',
-				'required'          => false,
-				'validate_callback' => 'rest_validate_request_arg',
-				'enum'              => WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(),
-			],
-		];
 	}
 
 	/**

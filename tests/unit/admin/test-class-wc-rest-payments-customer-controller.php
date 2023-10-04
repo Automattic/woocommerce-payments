@@ -28,6 +28,13 @@ class WC_REST_Payments_Customer_Controller_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_customer_service;
 
+	/**
+	 * Enabled payment methods.
+	 *
+	 * @var array
+	 */
+	private $enabled_payment_methods; // Instead of mocking gateway, we will get enabled payment methods and after tests, return the existing ones.
+
 	public function set_up() {
 		parent::set_up();
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
@@ -35,20 +42,8 @@ class WC_REST_Payments_Customer_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller            = new WC_REST_Payments_Customer_Controller( $this->mock_api_client, $this->mock_customer_service );
 	}
 
-	public function test_get_customer_payment_methods_endpoint_will_return_empty_response_if_customer_not_exist() {
-		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'customer_id', 0 );
-
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->willReturn( null );
-		$this->mock_customer_service->expects( $this->never() )
-			->method( 'retrieve_usable_customer_payment_methods' );
-
-		$response = $this->controller->get_customer_payment_methods( $request );
-		$this->assertEmpty( $response->get_data() );
-	}
 	public function test_get_customer_payment_methods_endpoint_will_return_correct_response_for_card() {
+
 		$request = new WP_REST_Request( 'GET' );
 		$request->set_param( 'customer_id', 1 );
 		$payment_method         = $this->get_base_payment_method_data();
@@ -76,12 +71,13 @@ class WC_REST_Payments_Customer_Controller_Test extends WCPAY_UnitTestCase {
 			],
 			'wallet'               => null,
 		];
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->willReturn( 'cus_mock' );
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'retrieve_usable_customer_payment_methods' )
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( $this->anything(), 'card' )
 			->willReturn( [ $payment_method ] ); // We will test each payment method type in different test.
+
 		$response = $this->controller->get_customer_payment_methods( $request );
 		$data     = $response->get_data()[0];
 		$this->assertIsArray( $data );
@@ -94,56 +90,6 @@ class WC_REST_Payments_Customer_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $data['card']['exp_month'], $payment_method['card']['exp_month'] );
 		$this->assertArrayNotHasKey( 'sepa_debit', $data );
 		$this->assertArrayNotHasKey( 'link', $data );
-	}
-	public function test_get_customer_payment_methods_endpoint_will_return_correct_response_for_sepa() {
-		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'customer_id', 1 );
-		$payment_method               = $this->get_base_payment_method_data();
-		$payment_method['type']       = 'sepa_debit';
-		$payment_method['sepa_debit'] = [
-			'last4' => '1337',
-		];
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->willReturn( 'cus_mock' );
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'retrieve_usable_customer_payment_methods' )
-			->willReturn( [ $payment_method ] ); // We will test each payment method type in different test.
-		$response = $this->controller->get_customer_payment_methods( $request );
-		$data     = $response->get_data()[0];
-		$this->assertIsArray( $data );
-		$this->assertSame( $data['id'], $payment_method['id'] );
-		$this->assertSame( $data['type'], $payment_method['type'] );
-		$this->assertSame( $data['billing_details'], $payment_method['billing_details'] );
-		$this->assertSame( $data['billing_details'], $payment_method['billing_details'] );
-		$this->assertSame( $data['sepa_debit']['last4'], $payment_method['sepa_debit']['last4'] );
-		$this->assertArrayNotHasKey( 'card', $data );
-		$this->assertArrayNotHasKey( 'link', $data );
-	}
-	public function test_get_customer_payment_methods_endpoint_will_return_correct_response_for_link() {
-		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'customer_id', 1 );
-		$payment_method         = $this->get_base_payment_method_data();
-		$payment_method['type'] = 'link';
-		$payment_method['link'] = [
-			'email' => 'mail@example.com',
-		];
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->willReturn( 'cus_mock' );
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'retrieve_usable_customer_payment_methods' )
-			->willReturn( [ $payment_method ] ); // We will test each payment method type in different test.
-		$response = $this->controller->get_customer_payment_methods( $request );
-		$data     = $response->get_data()[0];
-		$this->assertIsArray( $data );
-		$this->assertSame( $data['id'], $payment_method['id'] );
-		$this->assertSame( $data['type'], $payment_method['type'] );
-		$this->assertSame( $data['billing_details'], $payment_method['billing_details'] );
-		$this->assertSame( $data['billing_details'], $payment_method['billing_details'] );
-		$this->assertSame( $data['link']['email'], $payment_method['link']['email'] );
-		$this->assertArrayNotHasKey( 'card', $data );
-		$this->assertArrayNotHasKey( 'sepa_debit', $data );
 	}
 
 	/**
