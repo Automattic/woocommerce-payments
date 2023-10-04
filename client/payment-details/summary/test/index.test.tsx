@@ -50,6 +50,22 @@ jest.mock( 'wcpay/data', () => ( {
 	} ) ),
 } ) );
 
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( {
+		createErrorNotice: jest.fn(),
+	} ) ),
+	useSelect: jest.fn( () => ( { getNotices: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+} ) );
+
 const mockUseAuthorization = useAuthorization as jest.MockedFunction<
 	typeof useAuthorization
 >;
@@ -790,6 +806,29 @@ describe( 'PaymentDetailsSummary', () => {
 					name: /Accept/i,
 				} )
 			).toBeNull();
+		} );
+
+		test( 'correctly renders dispute details for "warning_needs_response" inquiry disputes', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'warning_needs_response';
+
+			renderCharge( charge );
+
+			// Dispute Notice
+			screen.getByText(
+				/The cardholder claims this is an unauthorized transaction/,
+				{ ignore: '.a11y-speak-region' }
+			);
+
+			// Actions
+			screen.getByRole( 'button', {
+				name: /Submit evidence/i,
+			} );
+			screen.getByRole( 'button', {
+				name: /Issue refund/i,
+			} );
 		} );
 
 		test( 'correctly renders dispute details for "warning_under_review" inquiry disputes', () => {
