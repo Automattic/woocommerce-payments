@@ -60,19 +60,6 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 				'schema' => [ $this, 'get_item_schema' ],
 			]
 		);
-
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/(?P<customer_id>\w+)/payment_methods/(?P<payment_method_id>\w+)',
-			[
-				[
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_single_customer_payment_methods' ],
-					'permission_callback' => [ $this, 'check_permission' ],
-				],
-				'schema' => [ $this, 'get_item_schema' ],
-			]
-		);
 	}
 
 	/**
@@ -85,7 +72,7 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 		$type                  = $request->get_param( 'type' );
 		$payment_methods_types = $type ? [ $type ] : WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids();
 
-		// Perhaps we can fetch it directly from server and avoid this caching.
+		// Perhaps we can fetch it directly from server and avoid looping to get payment methods from cache.
 		foreach ( $payment_methods_types as $type ) {
 			try {
 				$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
@@ -105,36 +92,6 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return rest_ensure_response( $data );
-	}
-
-	/**
-	 * Retrieve single transaction to respond with via API.
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 *
-	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
-	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
-	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception
-	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
-	 */
-	public function get_single_customer_payment_methods( $request ) {
-		$customer_id = $request->get_param( 'customer_id' );
-
-		$wcpay_request = Request::get( WC_Payments_API_Client::PAYMENT_METHODS_API, $request->get_param( 'payment_method_id' ) );
-		$wcpay_request->assign_hook( 'wcpay_get_payment_method_request' );
-		try {
-			$payment_method = $wcpay_request->send();
-		} catch ( \Exception $e ) {
-			wp_send_json_error(
-				wp_strip_all_tags( $e->getMessage() ),
-				403
-			);
-		}
-		if ( array_key_exists( 'customer', $payment_method ) && $customer_id !== $payment_method['customer'] ) {
-			return rest_ensure_response( [] ); // Payment method exist, but it doesn't belong to the customer. Return empty array.
-		}
-
-		return rest_ensure_response( $this->prepare_item_for_response( $payment_method, $request ) );
 	}
 
 	/**
