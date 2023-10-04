@@ -47,16 +47,21 @@ const BusinessDetails: React.FC = () => {
 
 	return (
 		<>
-			<OnboardingTextField name="business_name" />
-			<OnboardingTextField name="url" />
+			<OnboardingTextField
+				className="business-details__name"
+				name="business_name"
+			/>
+			<OnboardingTextField className="business-details__url" name="url" />
 			<OnboardingSelectField
 				name="country"
+				className="business-details__country"
 				options={ countries }
 				onChange={ handleTiedChange }
 			/>
 			{ selectedCountry && selectedCountry.types.length > 0 && (
 				<OnboardingSelectField
 					name="business_type"
+					className="business-details__type"
 					options={ selectedCountry.types }
 					onChange={ handleTiedChange }
 				>
@@ -81,6 +86,7 @@ const BusinessDetails: React.FC = () => {
 
 			<OnboardingGroupedSelectField
 				name="mcc"
+				className="business-details__mcc"
 				options={ mccsFlatList }
 				searchable
 			/>

@@ -27,10 +27,12 @@ const StoreDetails: React.FC = () => {
 		<>
 			<OnboardingSelectField
 				name="annual_revenue"
+				className="store-details__annual_revenue"
 				options={ annualRevenues }
 			/>
 			<OnboardingSelectField
 				name="go_live_timeframe"
+				className="store-details__go_live_timeframe"
 				options={ goLiveTimeframes }
 			/>
 		</>

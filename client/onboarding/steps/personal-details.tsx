@@ -16,14 +16,26 @@ const PersonalDetails: React.FC = () => {
 		<>
 			<Flex align="top">
 				<FlexBlock>
-					<OnboardingTextField name="individual.first_name" />
+					<OnboardingTextField
+						className="personal-details__firstname"
+						name="individual.first_name"
+					/>
 				</FlexBlock>
 				<FlexBlock>
-					<OnboardingTextField name="individual.last_name" />
+					<OnboardingTextField
+						className="personal-details__lastname"
+						name="individual.last_name"
+					/>
 				</FlexBlock>
 			</Flex>
-			<OnboardingTextField name="email" />
-			<OnboardingPhoneNumberField name="phone" />
+			<OnboardingTextField
+				className="personal-details__email"
+				name="email"
+			/>
+			<OnboardingPhoneNumberField
+				className="personal-details__phone"
+				name="phone"
+			/>
 			<InlineNotice
 				status="info"
 				className="personal-details-notice"
