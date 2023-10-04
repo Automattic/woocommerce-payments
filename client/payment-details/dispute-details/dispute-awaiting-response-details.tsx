@@ -23,8 +23,7 @@ import {
 /**
  * Internal dependencies
  */
-import type { Dispute } from 'wcpay/types/disputes';
-import type { ChargeBillingDetails } from 'wcpay/types/charges';
+import type { ChargeBillingDetails, ChargeDispute } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
@@ -37,7 +36,7 @@ import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
 interface Props {
-	dispute: Dispute;
+	dispute: ChargeDispute;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
 	orderUrl: string | undefined;

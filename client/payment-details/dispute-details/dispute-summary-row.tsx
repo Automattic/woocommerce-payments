@@ -13,7 +13,7 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import type { Dispute } from 'wcpay/types/disputes';
+import type { ChargeDispute } from 'wcpay/types/charges';
 import { HorizontalList } from 'wcpay/components/horizontal-list';
 import { formatExplicitCurrency } from 'wcpay/utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
@@ -23,7 +23,7 @@ import Paragraphs from 'wcpay/components/paragraphs';
 import { getDisputeDeductedBalanceTransaction } from 'wcpay/disputes/utils';
 
 interface Props {
-	dispute: Dispute;
+	dispute: ChargeDispute;
 	daysRemaining: number;
 }
 

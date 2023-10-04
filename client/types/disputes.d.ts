@@ -98,7 +98,7 @@ export interface Dispute {
 	issuer_evidence: IssuerEvidence | null;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
-	charge: Charge | string;
+	charge: Charge;
 	amount: number;
 	currency: string;
 	created: number;

@@ -57,7 +57,7 @@ export const useDispute = (
  * Does not return or fetch the dispute object.
  */
 export const useDisputeAccept = (
-	dispute: Dispute
+	dispute: Pick< Dispute, 'id' | 'payment_intent' >
 ): {
 	doAccept: () => void;
 	isLoading: boolean;

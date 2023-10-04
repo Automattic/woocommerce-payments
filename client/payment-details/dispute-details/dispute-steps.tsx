@@ -15,14 +15,13 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import type { Dispute } from 'wcpay/types/disputes';
-import { ChargeBillingDetails } from 'wcpay/types/charges';
+import type { ChargeBillingDetails, ChargeDispute } from 'wcpay/types/charges';
 import { formatExplicitCurrency } from 'utils/currency';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 
 interface Props {
-	dispute: Dispute;
+	dispute: ChargeDispute;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
 	daysRemaining: number;

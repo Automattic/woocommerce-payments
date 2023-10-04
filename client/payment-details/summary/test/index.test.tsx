@@ -11,8 +11,7 @@ import '@wordpress/jest-console';
 /**
  * Internal dependencies
  */
-import type { Charge } from 'wcpay/types/charges';
-import type { Dispute } from 'wcpay/types/disputes';
+import type { Charge, ChargeDispute } from 'wcpay/types/charges';
 import PaymentDetailsSummary from '../';
 import { useAuthorization } from 'wcpay/data';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
@@ -113,7 +112,7 @@ const getBaseCharge = (): Charge =>
 		},
 	} as any );
 
-const getBaseDispute = (): Dispute =>
+const getBaseDispute = (): ChargeDispute =>
 	( {
 		id: 'dp_1',
 		amount: 2000,
@@ -146,7 +145,7 @@ const getBaseDispute = (): Dispute =>
 		payment_intent: 'pi_1',
 		reason: 'fraudulent',
 		status: 'needs_response',
-	} as Dispute );
+	} as ChargeDispute );
 
 const getBaseMetadata = () => ( {
 	platform: 'ios',
@@ -330,7 +329,7 @@ describe( 'PaymentDetailsSummary', () => {
 						reporting_category: 'dispute',
 					},
 				],
-			} as Dispute,
+			} as ChargeDispute,
 		};
 
 		renderCharge( charge );

@@ -51,6 +51,10 @@ export type OutcomeRiskLevel =
 	| 'not_assessed'
 	| 'unknown';
 
+interface ChargeDispute extends Dispute {
+	charge: string;
+}
+
 export interface Charge {
 	id: string;
 	amount: number;
@@ -62,7 +66,7 @@ export interface Charge {
 	captured?: boolean;
 	created: number;
 	currency: string;
-	dispute?: null | Dispute;
+	dispute?: null | ChargeDispute;
 	disputed: boolean;
 	order: null | OrderDetails;
 	outcome: null | {

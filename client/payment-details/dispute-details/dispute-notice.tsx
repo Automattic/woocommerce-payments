@@ -14,11 +14,11 @@ import { createInterpolateElement } from '@wordpress/element';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { reasons } from 'wcpay/disputes/strings';
-import { Dispute } from 'wcpay/types/disputes';
+import type { Dispute } from 'wcpay/types/disputes';
 import { isInquiry } from 'wcpay/disputes/utils';
 
 interface DisputeNoticeProps {
-	dispute: Dispute;
+	dispute: Pick< Dispute, 'reason' | 'status' >;
 	isUrgent: boolean;
 }
 
