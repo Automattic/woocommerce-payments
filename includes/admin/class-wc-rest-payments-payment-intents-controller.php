@@ -100,7 +100,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 			$wcpay_server_request->set_currency_code( $currency );
 			$wcpay_server_request->set_amount( $amount );
 
-			$metadata = $this->gateway->get_metadata_from_order( $order, Payment_Type::SINGLE );
+			$metadata = $this->gateway->get_metadata_from_order( $order, Payment_Type::SINGLE() );
 			$wcpay_server_request->set_metadata( $metadata );
 
 			$wcpay_server_request->set_customer( $request->get_param( 'customer' ) );

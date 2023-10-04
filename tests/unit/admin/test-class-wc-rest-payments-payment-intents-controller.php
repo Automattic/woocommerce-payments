@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Payment_Type;
 
 /**
  * WC_REST_Payments_Payment_Intents_Controller unit tests.
@@ -45,7 +46,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'get_metadata_from_order' )
-			->with( $this->isInstanceOf( WC_Order::class ), 'single' )
+			->with( $this->isInstanceOf( WC_Order::class ), Payment_Type::SINGLE() )
 			->willReturn(
 				[
 					'order_id' => $current_order->get_id(),
@@ -101,7 +102,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'get_metadata_from_order' )
-			->with( $this->isInstanceOf( WC_Order::class ), 'single' )
+			->with( $this->isInstanceOf( WC_Order::class ), Payment_Type::SINGLE() )
 			->willReturn(
 				[
 					'order_id' => $current_order->get_id(),
@@ -128,7 +129,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'get_metadata_from_order' )
-			->with( $this->isInstanceOf( WC_Order::class ), 'single' )
+			->with( $this->isInstanceOf( WC_Order::class ), Payment_Type::SINGLE() )
 			->willReturn(
 				[
 					'order_id' => $current_order->get_id(),
