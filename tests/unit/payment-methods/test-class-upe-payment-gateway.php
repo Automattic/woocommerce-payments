@@ -93,11 +93,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_rate_limiter;
 
 	/**
-	 * WC_Payments_Order_Service.
+	 * Mock WC_Payments_Order_Service.
 	 *
-	 * @var WC_Payments_Order_Service
+	 * @var WC_Payments_Order_Service|PHPUnit_Framework_MockObject_MockObject
 	 */
-	private $order_service;
+	private $mock_order_service;
 
 	/**
 	 * Array of mock UPE payment methods.
@@ -240,7 +240,18 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 		}
 
-		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
+		$this->mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+				]
+			)
+			->setMethods(
+				[
+					'get_payment_method_id_for_order',
+				]
+			)
+			->getMock();
 
 		// Arrange: Mock UPE_Payment_Gateway so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -254,7 +265,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
-					$this->order_service,
+					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 				]
@@ -381,7 +392,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'         => $order_number,
 					'order_key'            => $order->get_order_key(),
 					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'upe',
+					'gateway_type'         => 'legacy_upe',
 					'checkout_type'        => '',
 					'client_version'       => WCPAY_VERSION_NUMBER,
 					'subscription_payment' => 'no',
@@ -483,7 +494,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'         => $order_number,
 					'order_key'            => $order->get_order_key(),
 					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'upe',
+					'gateway_type'         => 'legacy_upe',
 					'checkout_type'        => '',
 					'client_version'       => WCPAY_VERSION_NUMBER,
 					'subscription_payment' => 'no',
@@ -581,7 +592,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'         => $order_number,
 					'order_key'            => $order->get_order_key(),
 					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'upe',
+					'gateway_type'         => 'legacy_upe',
 					'checkout_type'        => '',
 					'client_version'       => WCPAY_VERSION_NUMBER,
 					'subscription_payment' => 'no',
@@ -1444,6 +1455,89 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_set_payment_method_title_for_email_updates_title() {
+		$mock_visa_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'debit',
+			],
+		];
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_payment_method_id_for_order' )
+			->will(
+				$this->returnValue( 'pm_XXXXXXX' )
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->will(
+				$this->returnValue( $mock_visa_details )
+			);
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method_title( 'Popular Payment Methods' );
+
+		$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
+		$this->assertEquals( 'Visa debit card', $order->get_payment_method_title() );
+	}
+
+	public function test_correct_payment_method_title_for_order_when_set_for_email() {
+		$payment_methods = [
+			'cheque' => 'Check payments',
+			'cod'    => 'Cash on delivery',
+			'bacs'   => 'Direct bank transfer',
+		];
+
+		// Emulates order creation which sets the payment method and title.
+		$order = WC_Helper_Order::create_order();
+
+		foreach ( $payment_methods as $method => $title ) {
+			$order->set_payment_method( $method );
+			$order->set_payment_method_title( $title );
+
+			$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
+			$this->assertEquals( $title, $order->get_payment_method_title() );
+		}
+	}
+
+	public function test_set_payment_method_title_for_email_fallback() {
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_payment_method_id_for_order' )
+			->will(
+				$this->returnValue( '' )
+			);
+
+			$order = WC_Helper_Order::create_order();
+			$order->set_payment_method( 'woocommerce_payments' );
+			$order->set_payment_method_title( 'Popular Payment Methods' );
+
+			$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
+			$this->assertEquals( 'WooPayments', $order->get_payment_method_title() );
+	}
+
+	public function test_set_payment_method_title_for_email_only_runs_for_legacy_upe() {
+		update_option( '_wcpay_feature_upe', '0' );
+		update_option( '_wcpay_feature_upe_split', '1' );
+
+		// set_payment_method_title_for_email should return before this functions runs.
+		$this->mock_order_service
+			->expects( $this->never() )
+			->method( 'get_payment_method_id_for_order' );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method_title( 'Credit / Debit Card' );
+
+		$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
+		$this->assertEquals( 'Credit / Debit Card', $order->get_payment_method_title() );
+	}
+
 	public function test_payment_methods_show_correct_default_outputs() {
 		$mock_token = WC_Helper_Token::create_token( 'pm_mock' );
 		$this->mock_token_service->expects( $this->any() )
@@ -1904,8 +1998,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_split_upe() {
-		update_option( '_wcpay_feature_upe_split', '1' );
-		update_option( '_wcpay_feature_upe_deferred_intent', '0' );
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
 
 		$data = [
 			'methods'  => [
@@ -1978,7 +2071,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
-					$this->order_service,
+					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 				]
@@ -2027,7 +2120,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
-					$this->order_service,
+					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 				]

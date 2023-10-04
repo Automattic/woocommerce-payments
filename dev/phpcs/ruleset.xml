@@ -2,9 +2,6 @@
 <ruleset name="WCPay" namespace="WCPay\CodingStandards">
 	<description>WCPay custom coding standards.</description>
 
-	<!-- https://github.com/Automattic/woocommerce-payments/issues/7258 -->
-	<exclude-pattern>*/includes/multi-currency/*</exclude-pattern>
-
 	<!-- https://github.com/Automattic/woocommerce-payments/issues/7259 -->
 	<exclude-pattern>*/includes/subscriptions/*</exclude-pattern>
 	<exclude-pattern>*/includes/compat/subscriptions/*</exclude-pattern>

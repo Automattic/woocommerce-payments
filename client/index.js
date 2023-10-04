@@ -20,7 +20,8 @@ import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
 import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
-import DisputeDetailsPage from 'disputes/details';
+import LegacyDisputeDetailsPage from 'disputes/details';
+import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
 import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
 import MultiCurrencySetupPage from 'wcpay/multi-currency-setup';
@@ -150,8 +151,15 @@ addFilter(
 			},
 			capability: 'manage_woocommerce',
 		} );
+
+		// If disputes on transaction page feature is enabled, set up a soft
+		// redirect component; otherwise register the (legacy) dispute details page.
+		const isDisputeOnTransactionPageEnabled =
+			window.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled;
 		pages.push( {
-			container: DisputeDetailsPage,
+			container: isDisputeOnTransactionPageEnabled
+				? RedirectToTransactionDetails
+				: LegacyDisputeDetailsPage,
 			path: '/payments/disputes/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -163,11 +171,14 @@ addFilter(
 				__( 'Dispute details', 'woocommerce-payments' ),
 			],
 			navArgs: {
-				id: 'wc-payments-disputes-details',
+				id: isDisputeOnTransactionPageEnabled
+					? 'wc-payments-disputes-details-legacy-redirect'
+					: 'wc-payments-disputes-details',
 				parentPath: '/payments/disputes',
 			},
 			capability: 'manage_woocommerce',
 		} );
+
 		pages.push( {
 			container: DisputeEvidencePage,
 			path: '/payments/disputes/challenge',

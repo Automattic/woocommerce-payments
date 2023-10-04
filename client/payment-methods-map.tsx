@@ -238,14 +238,9 @@ const PaymentMethodInformationObject: Record<
 		),
 		icon: iconComponent( JCBIcon, 'JCB' ),
 		currencies: [ 'JPY' ],
-		stripe_key: 'card_payments',
+		stripe_key: 'jcb_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
-		setup_required: true,
-		setup_tooltip: __(
-			'JCB is coming soon to your country.',
-			'woocommerce-payments'
-		),
 	},
 };
 
