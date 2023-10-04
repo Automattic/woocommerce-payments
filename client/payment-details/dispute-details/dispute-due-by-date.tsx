@@ -7,13 +7,8 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import classNames from 'classnames';
 import moment from 'moment';
 
-/**
- * Internal dependencies
- */
-import type { EvidenceDetails } from 'wcpay/types/disputes';
-
 const DisputeDueByDate: React.FC< {
-	dueBy: EvidenceDetails[ 'due_by' ];
+	dueBy: number;
 } > = ( { dueBy } ) => {
 	const daysRemaining = Math.floor(
 		moment.unix( dueBy ).diff( moment(), 'days', true )
