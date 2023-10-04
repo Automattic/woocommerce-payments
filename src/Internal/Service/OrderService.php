@@ -67,6 +67,10 @@ class OrderService {
 	/**
 	 * Retrieves the order object.
 	 *
+	 * This method should be only used internally within this service.
+	 * Other `src` methods and services should not access and manipulate
+	 * order data directly, utilizing this service instead.
+	 *
 	 * Unlike the legacy service, this one only accepts integer IDs,
 	 * and returns only the `WC_Order` object, no refunds.
 	 *
@@ -74,7 +78,7 @@ class OrderService {
 	 * @return WC_Order Order object.
 	 * @throws Order_Not_Found_Exception If the order could not be found.
 	 */
-	public function get_order( int $order_id ): WC_Order {
+	private function get_order( int $order_id ): WC_Order {
 		$order = $this->legacy_proxy->call_function( 'wc_get_order', $order_id );
 		if ( ! $order instanceof WC_Order ) {
 			throw new Order_Not_Found_Exception(
@@ -83,6 +87,23 @@ class OrderService {
 			);
 		}
 		return $order;
+	}
+
+	/**
+	 * Retrieves the order object.
+	 *
+	 * Please restrain from using this method!
+	 * It can only be used to (temporarily) provide the order object
+	 * to legacy (`includes`) services, which are not adapted to work
+	 * with order IDs yet.
+	 *
+	 * @see https://github.com/Automattic/woocommerce-payments/issues/7367
+	 * @param int $order_id ID of the order.
+	 * @return WC_Order Order object.
+	 * @throws Order_Not_Found_Exception If the order could not be found.
+	 */
+	public function _deprecated_get_order( int $order_id ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+		return $this->get_order( $order_id );
 	}
 
 	/**
