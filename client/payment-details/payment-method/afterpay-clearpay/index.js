@@ -19,11 +19,6 @@ import Detail from '../detail';
 const formatPaymentMethodDetails = ( charge ) => {
 	const { billing_details: billingDetails, payment_method: id } = charge;
 
-	const {
-		order_id: orderId,
-		reference,
-	} = charge.payment_method_details.afterpay_clearpay;
-
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
 
 	return {
@@ -31,8 +26,6 @@ const formatPaymentMethodDetails = ( charge ) => {
 		name,
 		email,
 		formattedAddress,
-		orderId,
-		reference,
 	};
 };
 
@@ -44,8 +37,6 @@ const paymentMethodPlaceholders = {
 	name: 'name placeholder',
 	email: 'email placeholder',
 	formattedAddress: 'address placeholder',
-	orderId: 'order id placeholder',
-	reference: 'reference placeholder',
 };
 
 const CardDetails = ( { charge = {}, isLoading } ) => {
@@ -54,7 +45,7 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 			? formatPaymentMethodDetails( charge )
 			: paymentMethodPlaceholders;
 
-	const { id, name, email, formattedAddress, orderId, reference } = details;
+	const { id, name, email, formattedAddress } = details;
 
 	return (
 		<div className="payment-method-details">
@@ -64,20 +55,6 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 					label={ __( 'ID', 'woocommerce-payments' ) }
 				>
 					{ !! id ? id : '–' }
-				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
-					label={ __( 'Order', 'woocommerce-payments' ) }
-				>
-					{ !! orderId ? orderId : '–' }
-				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
-					label={ __( 'Reference', 'woocommerce-payments' ) }
-				>
-					{ !! reference ? reference : '–' }
 				</Detail>
 			</div>
 			<div className="payment-method-details__column">
