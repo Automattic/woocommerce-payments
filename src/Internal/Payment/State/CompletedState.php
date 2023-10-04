@@ -10,6 +10,6 @@ namespace WCPay\Internal\Payment\State;
 /**
  * The state, which indicates that the payment processing has been completed.
  */
-class CompletedState extends PaymentState {
+class CompletedState extends AbstractPaymentState {
 
 }

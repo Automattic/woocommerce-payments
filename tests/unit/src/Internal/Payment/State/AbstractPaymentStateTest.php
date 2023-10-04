@@ -1,6 +1,6 @@
 <?php
 /**
- * Class PaymentStateTest
+ * Class AbstractPaymentStateTest
  *
  * @package WooCommerce\Payments
  */
@@ -12,7 +12,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\CompletedState;
-use WCPay\Internal\Payment\State\PaymentState;
+use WCPay\Internal\Payment\State\AbstractPaymentState;
 use WCPay\Internal\Payment\State\StateFactory;
 
 // phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
@@ -20,7 +20,7 @@ use WCPay\Internal\Payment\State\StateFactory;
 /**
  * Pure state implementation, used to test the base state.
  */
-class PureState extends PaymentState {
+class PureState extends AbstractPaymentState {
 	public function create_test_state( string $state_class ) {
 		return $this->create_state( $state_class );
 	}
@@ -29,7 +29,7 @@ class PureState extends PaymentState {
 /**
  * Tests for the base payment state class.
  */
-class PaymentStateTest extends WCPAY_UnitTestCase {
+class AbstractPaymentStateTest extends WCPAY_UnitTestCase {
 	/**
 	 * Service under test.
 	 *
@@ -81,7 +81,7 @@ class PaymentStateTest extends WCPAY_UnitTestCase {
 
 	public function test_process_throws_exception() {
 		$this->expectException( StateTransitionException::class );
-		$this->expectExceptionMessage( 'The WCPay\Internal\Payment\State\PaymentState::process method is not available in the current payment state (' . PureState::class . ').' );
+		$this->expectExceptionMessage( 'The WCPay\Internal\Payment\State\AbstractPaymentState::process method is not available in the current payment state (' . PureState::class . ').' );
 		$this->sut->process();
 	}
 }

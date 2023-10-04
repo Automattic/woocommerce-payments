@@ -14,7 +14,7 @@ use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
-use WCPay\Internal\Payment\State\PaymentState;
+use WCPay\Internal\Payment\State\AbstractPaymentState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Service\PaymentProcessingService;
 
@@ -24,7 +24,7 @@ use WCPay\Internal\Service\PaymentProcessingService;
 /**
  * A class, which exists, but is not registered with the container.
  */
-class UnmanagedState extends PaymentState {
+class UnmanagedState extends AbstractPaymentState {
 }
 
 /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class PaymentState
+ * Class AbstractPaymentState
  *
  * @package WooCommerce\Payments
  */
@@ -14,7 +14,7 @@ use WCPay\Internal\Payment\PaymentContext;
 /**
  * Base class for payment states.
  */
-abstract class PaymentState {
+abstract class AbstractPaymentState {
 	/**
 	 * Holds the context of the payments.
 	 *
@@ -69,7 +69,7 @@ abstract class PaymentState {
 	 * to the next state, as each new state will be considered the payment's latest one.
 	 *
 	 * @param string $state_class The class of the state to crate.
-	 * @return PaymentState
+	 * @return AbstractPaymentState
 	 * @throws StateTransitionException In case the new state could not be created.
 	 * @throws ContainerException       When the dependency container cannot instantiate the state.
 	 */
@@ -90,7 +90,7 @@ abstract class PaymentState {
 	/**
 	 * Initialtes the payment process.
 	 *
-	 * @return PaymentState The next state.
+	 * @return AbstractPaymentState The next state.
 	 * @throws StateTransitionException In case the new state was not found or could not be initialized.
 	 * @psalm-suppress InvalidReturnType If this method does not throw, it will return a new state.
 	 */
