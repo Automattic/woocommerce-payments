@@ -206,7 +206,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			->will( $this->returnValue( $shipping_postcode ) );
 
 		$this->mock_order_service->expects( $this->once() )
-			->method( 'get_order' )
+			->method( '_deprecated_get_order' )
 			->with( $this->order_id )
 			->willReturn( $mock_order );
 	}

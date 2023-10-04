@@ -83,6 +83,10 @@ class OrderService {
 	/**
 	 * Retrieves the order object.
 	 *
+	 * This method should be only used internally within this service.
+	 * Other `src` methods and services should not access and manipulate
+	 * order data directly, utilizing this service instead.
+	 *
 	 * Unlike the legacy service, this one only accepts integer IDs,
 	 * and returns only the `WC_Order` object, no refunds.
 	 *
@@ -90,7 +94,7 @@ class OrderService {
 	 * @return WC_Order Order object.
 	 * @throws Order_Not_Found_Exception If the order could not be found.
 	 */
-	public function get_order( int $order_id ): WC_Order {
+	protected function get_order( int $order_id ): WC_Order {
 		$order = $this->legacy_proxy->call_function( 'wc_get_order', $order_id );
 		if ( ! $order instanceof WC_Order ) {
 			throw new Order_Not_Found_Exception(
@@ -99,6 +103,23 @@ class OrderService {
 			);
 		}
 		return $order;
+	}
+
+	/**
+	 * Retrieves the order object.
+	 *
+	 * Please restrain from using this method!
+	 * It can only be used to (temporarily) provide the order object
+	 * to legacy (`includes`) services, which are not adapted to work
+	 * with order IDs yet.
+	 *
+	 * @see https://github.com/Automattic/woocommerce-payments/issues/7367
+	 * @param int $order_id ID of the order.
+	 * @return WC_Order Order object.
+	 * @throws Order_Not_Found_Exception If the order could not be found.
+	 */
+	public function _deprecated_get_order( int $order_id ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+		return $this->get_order( $order_id );
 	}
 
 	/**
@@ -213,17 +234,20 @@ class OrderService {
 		$this->legacy_service->update_order_status_from_intent( $order, $intent );
 
 		if ( ! is_null( $charge ) ) {
-			$this->attach_exchange_info_to_order( $order, $charge );
+			$this->attach_exchange_info_to_order( $order_id, $charge );
 		}
 	}
 
 	/**
 	 * Given the charge data, checks if there was an exchange and adds it to the given order as metadata
 	 *
-	 * @param WC_Order               $order  The order to update.
-	 * @param WC_Payments_API_Charge $charge Charge object.
+	 * @param int                    $order_id The order to update.
+	 * @param WC_Payments_API_Charge $charge   Charge object.
+	 * @throws Order_Not_Found_Exception
 	 */
-	public function attach_exchange_info_to_order( $order, WC_Payments_API_Charge $charge ) {
+	public function attach_exchange_info_to_order( int $order_id, WC_Payments_API_Charge $charge ) {
+		$order = $this->get_order( $order_id );
+
 		// This is a good example of something, which should be a service.
 		$currency_store   = $this->legacy_proxy->call_function( 'get_option', 'woocommerce_currency' );
 		$currency_store   = strtolower( $currency_store );

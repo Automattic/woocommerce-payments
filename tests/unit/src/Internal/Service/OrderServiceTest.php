@@ -32,16 +32,9 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 	/**
 	 * Service under test.
 	 *
-	 * @var OrderService
+	 * @var MockObject|OrderService
 	 */
 	private $sut;
-
-	/**
-	 * Service under test, but with mockable `get_order`.
-	 *
-	 * @var OrderService|MockObject
-	 */
-	private $mock_sut;
 
 	/**
 	 * @var WC_Payments_Order_Service|MockObject
@@ -81,19 +74,8 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$this->mock_account        = $this->createMock( WC_Payments_Account::class );
 		$this->mock_hooks_proxy    = $this->createMock( HooksProxy::class );
 
-		// Main service under test: OrderService.
-		$this->sut = new OrderService( $this->mock_legacy_service, $this->mock_legacy_proxy, $this->mock_account, $this->mock_hooks_proxy );
-
-		// Main service under test: OrderService.
-		$this->sut = new OrderService(
-			$this->mock_legacy_service,
-			$this->mock_legacy_proxy,
-			$this->mock_account,
-			$this->mock_hooks_proxy
-		);
-
-		// Same service under test, but with a mockable `get_order`.
-		$this->mock_sut = $this->getMockBuilder( OrderService::class )
+		// Service under test, but with mockable methods.
+		$this->sut = $this->getMockBuilder( OrderService::class )
 			->onlyMethods( [ 'get_order', 'attach_exchange_info_to_order' ] )
 			->setConstructorArgs(
 				[
@@ -107,26 +89,49 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_order_returns_order() {
-		$mock_order = $this->createMock( WC_Order::class );
+		$this->sut = new OrderService(
+			$this->mock_legacy_service,
+			$this->mock_legacy_proxy,
+			$this->mock_account,
+			$this->mock_hooks_proxy
+		);
 
+		$mock_order = $this->createMock( WC_Order::class );
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'call_function' )
 			->with( 'wc_get_order', $this->order_id )
 			->willReturn( $mock_order );
 
-		$result = $this->sut->get_order( $this->order_id );
+		// Go through `_deprecated_get_order` to call `get_order`.
+		$result = $this->sut->_deprecated_get_order( $this->order_id );
 		$this->assertSame( $mock_order, $result );
 	}
 
 	public function test_get_order_throws_exception() {
+		$this->sut = new OrderService(
+			$this->mock_legacy_service,
+			$this->mock_legacy_proxy,
+			$this->mock_account,
+			$this->mock_hooks_proxy
+		);
+
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'call_function' )
 			->with( 'wc_get_order', $this->order_id )
-			->willReturn( false );
+			->willThrowException( new Order_Not_Found_Exception( 'The requested order was not found.', 'order_not_found' ) );
 
 		$this->expectException( Order_Not_Found_Exception::class );
 		$this->expectExceptionMessage( 'The requested order was not found.' );
-		$this->sut->get_order( $this->order_id );
+
+		// Go through `_deprecated_get_order` to call `get_order`.
+		$this->sut->_deprecated_get_order( $this->order_id );
+	}
+
+	public function test__deprecated_get_order_returns_order() {
+		$mock_order = $this->mock_get_order();
+
+		$result = $this->sut->_deprecated_get_order( $this->order_id );
+		$this->assertSame( $mock_order, $result );
 	}
 
 	public function test_set_payment_method_id() {
@@ -162,11 +167,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		];
 
 		// Setup the mock order.
-		$mock_order = $this->createMock( WC_Order::class );
-		$this->mock_sut->expects( $this->once() )
-			->method( 'get_order' )
-			->with( $this->order_id )
-			->willReturn( $mock_order );
+		$mock_order = $this->mock_get_order();
 
 		$order_methods = [
 			'get_id'                 => $this->order_id,
@@ -190,7 +191,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->willReturn( $expected );
 
 		// Act.
-		$result = $this->mock_sut->get_payment_metadata( $this->order_id, Payment_Type::SINGLE() );
+		$result = $this->sut->get_payment_metadata( $this->order_id, Payment_Type::SINGLE() );
 
 		// Assert.
 		$this->assertEquals( $expected, $result );
@@ -200,11 +201,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 	 * @dataProvider provider_subscription_details
 	 */
 	public function test_get_payment_metadata_with_subscription( bool $is_renewal, bool $wcpay_subscription ) {
-		$mock_order = $this->createMock( WC_Order::class );
-		$this->mock_sut->expects( $this->once() )
-			->method( 'get_order' )
-			->with( $this->order_id )
-			->willReturn( $mock_order );
+		$mock_order = $this->mock_get_order();
 
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'function_exists' )
@@ -231,7 +228,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->willReturnArgument( 1 );
 
 		// Act.
-		$result = $this->mock_sut->get_payment_metadata( $this->order_id, Payment_Type::RECURRING() );
+		$result = $this->sut->get_payment_metadata( $this->order_id, Payment_Type::RECURRING() );
 
 		// Assert.
 		$this->assertIsArray( $result );
@@ -265,7 +262,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 	public function test_import_order_data_to_payment_context( $user ) {
 		// Create a mock order that will be used to extract data.
 		$mock_order = $this->createMock( WC_Order::class );
-		$this->mock_sut->expects( $this->once() )
+		$this->sut->expects( $this->once() )
 			->method( 'get_order' )
 			->willReturn( $mock_order );
 
@@ -298,7 +295,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->with( 10 );
 
 		// Act.
-		$this->mock_sut->import_order_data_to_payment_context( $this->order_id, $mock_context );
+		$this->sut->import_order_data_to_payment_context( $this->order_id, $mock_context );
 	}
 
 	public function provider_update_order_from_successful_intent() {
@@ -326,7 +323,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		// Create a mock order that will be used.
 		$mock_order = $this->createMock( WC_Order::class );
-		$this->mock_sut->expects( $this->once() )
+		$this->sut->expects( $this->once() )
 			->method( 'get_order' )
 			->with( $this->order_id )
 			->willReturn( $mock_order );
@@ -383,13 +380,13 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->method( 'update_order_status_from_intent' )
 			->with( $mock_order, $intent );
 		if ( ! is_null( $mock_charge ) ) {
-			$this->mock_sut->expects( $this->once() )
+			$this->sut->expects( $this->once() )
 				->method( 'attach_exchange_info_to_order' )
-				->with( $mock_order, $mock_charge );
+				->with( $this->order_id, $mock_charge );
 		}
 
 		// Act.
-		$this->mock_sut->update_order_from_successful_intent( $this->order_id, $intent, $mock_context );
+		$this->sut->update_order_from_successful_intent( $this->order_id, $intent, $mock_context );
 	}
 
 	public function provider_attach_exchange_info_to_order() {
@@ -410,7 +407,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		 *
 		 * @var OrderService|MockObject
 		 */
-		$this->mock_sut = $this->getMockBuilder( OrderService::class )
+		$this->sut = $this->getMockBuilder( OrderService::class )
 			->onlyMethods( [ 'get_order' ] )
 			->setConstructorArgs(
 				[
@@ -429,7 +426,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->willReturn( $store_currency );
 
 		// Mock the order currency.
-		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order = $this->mock_get_order();
 		$mock_order->expects( $this->once() )->method( 'get_currency' )->willReturn( $order_currency );
 
 		// Mock the account currency.
@@ -441,7 +438,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$mock_charge = $this->createMock( WC_Payments_API_Charge::class );
 		if ( ! $has_charge ) {
 			$mock_charge->expects( $this->never() )->method( 'get_balance_transaction' );
-			$this->mock_sut->attach_exchange_info_to_order( $mock_order, $mock_charge );
+			$this->sut->attach_exchange_info_to_order( $this->order_id, $mock_charge );
 			return;
 		}
 
@@ -453,7 +450,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		// No exchange rate means that the order will never be updated.
 		if ( ! $exchange_rate ) {
 			$mock_order->expects( $this->never() )->method( 'update_meta_data' );
-			$this->mock_sut->attach_exchange_info_to_order( $mock_order, $mock_charge );
+			$this->sut->attach_exchange_info_to_order( $this->order_id, $mock_charge );
 			return;
 		}
 
@@ -464,6 +461,24 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->method( 'save_meta_data' );
 
 		// Act.
-		$this->mock_sut->attach_exchange_info_to_order( $mock_order, $mock_charge );
+		$this->sut->attach_exchange_info_to_order( $this->order_id, $mock_charge );
+	}
+
+	/**
+	 * Mocks order retrieval.
+	 *
+	 * @param int $order_id ID of the order to mock.
+	 * @return WC_Order|MockObject The mock order, ready for setup.
+	 */
+	private function mock_get_order( int $order_id = null ) {
+		$order_id   = $order_id ?? $this->order_id;
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$this->sut->expects( $this->once() )
+			->method( 'get_order' )
+			->with( $order_id )
+			->willReturn( $mock_order );
+
+		return $mock_order;
 	}
 }

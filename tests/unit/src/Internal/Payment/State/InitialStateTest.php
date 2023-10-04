@@ -152,7 +152,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->method( 'get_user_id' )
 			->willReturn( $user_id );
 		$this->mock_order_service->expects( $this->once() )
-			->method( 'get_order' )
+			->method( '_deprecated_get_order' )
 			->with( $order_id )
 			->willReturn( $mock_order );
 		$this->mock_customer_service->expects( $this->once() )

@@ -67,7 +67,7 @@ class Level3Service {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_data_from_order( int $order_id ): array {
-		$order = $this->order_service->get_order( $order_id );
+		$order = $this->order_service->_deprecated_get_order( $order_id );
 
 		$merchant_country = $this->account->get_account_country();
 		// We do not need to send level3 data if merchant account country is non-US.
