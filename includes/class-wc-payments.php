@@ -23,7 +23,6 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\Payment_Methods\JCB_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\WooPay_Tracker;
@@ -297,10 +296,12 @@ class WC_Payments {
 
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
+		self::$database_cache->init_hooks();
 
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
 		self::$dependency_service = new WC_Payments_Dependency_Service();
+		self::$dependency_service->init_hooks();
 
 		if ( false === self::$dependency_service->has_valid_dependencies() ) {
 			return;
@@ -395,7 +396,6 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-link-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-affirm-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-jcb-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -489,6 +489,8 @@ class WC_Payments {
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
+		self::$fraud_service->init_hooks();
+
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service );
 
 		$payment_method_classes = [
@@ -504,7 +506,6 @@ class WC_Payments {
 			Link_Payment_Method::class,
 			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
-			JCB_Payment_Method::class,
 		];
 		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_methods = [];
@@ -601,7 +602,7 @@ class WC_Payments {
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
-			new WC_Payments_Admin(
+			$admin = new WC_Payments_Admin(
 				self::$api_client,
 				self::get_gateway(),
 				self::$account,
@@ -610,18 +611,23 @@ class WC_Payments {
 				self::$incentives_service,
 				self::$database_cache
 			);
+			$admin->init_hooks();
 
-			new WC_Payments_Admin_Settings( self::get_gateway() );
+			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway() );
+			$admin_settings->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 
 			include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
-			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
+			$admin_sections_overwrite = new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
+			$admin_sections_overwrite->init_hooks();
 
-			new WC_Payments_Status( self::get_gateway(), self::get_wc_payments_http(), self::get_account_service() );
+			$wcpay_status = new WC_Payments_Status( self::get_gateway(), self::get_wc_payments_http(), self::get_account_service() );
+			$wcpay_status->init_hooks();
 
-			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
+			$wcpay_order_frt_meta_box = new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
+			$wcpay_order_frt_meta_box->init_hooks();
 		}
 
 		// Load Stripe Billing subscription integration.
@@ -945,6 +951,7 @@ class WC_Payments {
 
 		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
 			$http_class = new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
+			$http_class->init_hooks();
 		}
 
 		return $http_class;
@@ -1641,7 +1648,7 @@ class WC_Payments {
 
 	/**
 	 * Inject an inline script with WCPay assets properties.
-	 * window.wcpayAssets.url – Dist URL, required to properly load chunks on sites with JS concatenation enabled.
+	 * window.wcpayAssets.url – Dist URL, required to properly load chunks on sites with JS concatenation enabled.
 	 *
 	 * @return void
 	 */
