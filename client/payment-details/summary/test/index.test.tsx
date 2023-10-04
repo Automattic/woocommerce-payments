@@ -822,9 +822,16 @@ describe( 'PaymentDetailsSummary', () => {
 				{ ignore: '.a11y-speak-region' }
 			);
 
+			// Steps to resolve
+			screen.getByText( /Steps to resolve/i );
+			screen.getByRole( 'link', {
+				name: /Email the customer/i,
+			} );
+			screen.getByText( /Submit evidence /i );
+
 			// Actions
 			screen.getByRole( 'button', {
-				name: /Submit evidence/i,
+				name: /Submit evidence$/i,
 			} );
 			screen.getByRole( 'button', {
 				name: /Issue refund/i,
