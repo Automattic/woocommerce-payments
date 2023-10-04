@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies.
  */
-import PaymentDetailsPaymentMethodDetail from '../detail';
+import Detail from '../detail';
 
 /**
  * Extracts and formats payment method details from a charge.
@@ -72,9 +72,6 @@ const KlarnaDetails = ( { charge = {}, isLoading } ) => {
 		paymentMethodCategory,
 		preferredLocale,
 	} = details;
-
-	// Shorthand for more readable code.
-	const Detail = PaymentDetailsPaymentMethodDetail;
 
 	return (
 		<div className="payment-method-details">
