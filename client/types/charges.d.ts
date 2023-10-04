@@ -39,10 +39,10 @@ export interface PaymentMethodDetails {
 		| 'eps'
 		| 'giropay'
 		| 'ideal'
+		| 'klarna'
 		| 'p24'
 		| 'sepa_debit'
-		| 'sofort'
-		| 'klarna';
+		| 'sofort';
 }
 
 export type OutcomeRiskLevel =
