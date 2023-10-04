@@ -538,10 +538,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_fraud_protection_settings( $request );
 		$this->update_is_stripe_billing_enabled( $request );
 
-		$update_account = $this->update_account( $request );
+		$update_account_result = $this->update_account( $request );
 
-		if ( is_wp_error( $update_account ) ) {
-			return new WP_REST_Response( [ 'server_error' => $update_account->get_error_message() ], 400 );
+		if ( is_wp_error( $update_account_result ) ) {
+			return new WP_REST_Response( [ 'server_error' => $update_account_result->get_error_message() ], 400 );
 		}
 
 		return new WP_REST_Response( [], 200 );

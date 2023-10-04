@@ -2596,14 +2596,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$request = $this->account->update_stripe_account( $account_settings );
+		$stripe_account_update_response = $this->account->update_stripe_account( $account_settings );
 
-		if ( is_wp_error( $request ) ) {
-			$msg = __( 'Failed to update Stripe account. ', 'woocommerce-payments' ) . $request->get_error_message();
+		if ( is_wp_error( $stripe_account_update_response ) ) {
+			$msg = __( 'Failed to update Stripe account. ', 'woocommerce-payments' ) . $stripe_account_update_response->get_error_message();
 			$this->add_error( $msg );
 		}
 
-		return $request;
+		return $stripe_account_update_response;
 	}
 
 	/**
