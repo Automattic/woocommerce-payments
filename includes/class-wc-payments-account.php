@@ -1813,7 +1813,10 @@ class WC_Payments_Account {
 	 * @return array The user data.
 	 */
 	private function get_onboarding_user_data(): array {
-		return [
+		/**
+		 * Filters the user data sent to the onboarding flow.
+		 */
+		return apply_filters( 'wcpay_onboarding_user_data', [
 			'user_id'    => get_current_user_id(),
 			'ip_address' => \WC_Geolocation::get_ip_address(),
 			'browser'    => [
@@ -1822,6 +1825,6 @@ class WC_Payments_Account {
 				'content_language' => empty( get_user_locale() ) ? 'en-US' : str_replace( '_', '-', get_user_locale() ),
 			],
 			'referer'    => isset( $_SERVER['HTTP_REFERER'] ) ? sanitize_url( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
-		];
+		] );
 	}
 }

@@ -56,6 +56,7 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_registers_filters_and_actions_properly() {
 		$this->assertNotFalse( has_filter( 'wcpay_prepare_fraud_config', [ $this->fraud_service, 'prepare_fraud_config' ] ) );
+		$this->assertNotFalse( has_filter( 'wcpay_onboarding_user_data', [ $this->fraud_service, 'fill_onboarding_user_data' ] ) );
 		$this->assertNotFalse( has_action( 'init', [ $this->fraud_service, 'link_session_if_user_just_logged_in' ] ) );
 	}
 

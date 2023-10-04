@@ -59,6 +59,7 @@ class WC_Payments_Fraud_Service {
 	 */
 	public function init_hooks() {
 		add_filter( 'wcpay_prepare_fraud_config', [ $this, 'prepare_fraud_config' ], 10, 2 );
+		add_filter( 'wcpay_onboarding_user_data', [ $this, 'fill_onboarding_user_data' ] );
 		add_action( 'init', [ $this, 'link_session_if_user_just_logged_in' ] );
 		add_action( 'admin_print_footer_scripts', [ $this, 'add_sift_js_tracker' ] );
 	}
@@ -77,6 +78,29 @@ class WC_Payments_Fraud_Service {
 				return $this->prepare_sift_config( $config );
 		}
 		return $config;
+	}
+
+	/**
+	 * Get the Sift session ID for the current browsing session.
+	 *
+	 * @return string|null The Sift session ID or null if it can't be determined.
+	 */
+	public function get_sift_session_id(): ?string {
+		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
+		if ( ! $wpcom_blog_id ) {
+			// No session ID if Jetpack hasn't been connected yet.
+			return null;
+		}
+
+		if ( $this->check_if_user_just_logged_in() ) {
+			return $this->get_cookie_session_id();
+		}
+
+		if ( is_a( WC()->session, 'WC_Session' ) ) {
+			return $wpcom_blog_id . '_' . WC()->session->get_customer_id();
+		}
+
+		return null; // We do not have a valid session for the current process.
 	}
 
 	/**
@@ -112,15 +136,7 @@ class WC_Payments_Fraud_Service {
 			}
 		}
 
-		if ( $this->check_if_user_just_logged_in() ) {
-			$config['session_id'] = $this->get_cookie_session_id();
-		} else {
-			if ( is_a( WC()->session, 'WC_Session' ) ) {
-				$config['session_id'] = $wpcom_blog_id . '_' . WC()->session->get_customer_id();
-			} else {
-				return null; // we do not have a valid session for the current process.
-			}
-		}
+		$config['session_id'] = $this->get_sift_session_id();
 
 		return $config;
 	}
@@ -147,6 +163,25 @@ class WC_Payments_Fraud_Service {
 		}
 		$cookie_customer_id = $cookie[0];
 		return $session_handler->get_customer_id() !== $cookie_customer_id;
+	}
+
+	/**
+	 * Add Sift onboarding user data to the onboarding user data array.
+	 *
+	 * @param mixed $user_data The filtered user data.
+	 *
+	 * @return array|mixed The modified user data.
+	 */
+	public function fill_onboarding_user_data( $user_data ) {
+		if ( ! is_array( $user_data ) ) {
+			return $user_data;
+		}
+
+		if ( ! isset( $user_data['sift_session_id'] ) ) {
+			$user_data['sift_session_id'] = $this->get_sift_session_id();
+		}
+
+		return $user_data;
 	}
 
 	/**
