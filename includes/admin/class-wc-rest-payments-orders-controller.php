@@ -172,7 +172,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process intents that can't be captured.
 			$request = Get_Intention::create( $intent_id );
-			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+			$request->set_hook_args( $order );
+			$intent = $request->send();
 
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
@@ -272,7 +273,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process intents that can't be captured.
 			$request = Get_Intention::create( $intent_id );
-			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+			$request->set_hook_args( $order );
+			$intent = $request->send();
 
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
@@ -405,7 +407,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$wcpay_server_request->set_metadata( $metadata );
 			$wcpay_server_request->set_payment_method_types( $this->get_terminal_intent_payment_method( $request ) );
 			$wcpay_server_request->set_capture_method( 'manual' === $this->get_terminal_intent_capture_method( $request ) );
-			$intent = $wcpay_server_request->send( 'wcpay_create_intent_request', $order );
+			$wcpay_server_request->set_hook_args( $order );
+			$intent = $wcpay_server_request->send();
 
 			return rest_ensure_response(
 				[
@@ -497,7 +500,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process intents that can't be canceled.
 			$request = Get_Intention::create( $intent_id );
-			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+			$request->set_hook_args( $order );
+			$intent = $request->send();
 
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
