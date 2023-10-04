@@ -112,6 +112,7 @@ declare global {
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
+		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 	};
 
