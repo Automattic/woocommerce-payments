@@ -46,6 +46,7 @@ import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
+import CapabilityRequestNotice from './capability-request';
 import InlineNotice from 'wcpay/components/inline-notice';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
@@ -295,6 +296,8 @@ const PaymentMethods = () => {
 				) }
 
 				<CardBody size={ null }>
+					<CapabilityRequestNotice />
+
 					<PaymentMethodsList className="payment-methods__available-methods">
 						{ availableMethods.map(
 							( {

@@ -472,14 +472,19 @@ class WC_Payments_Admin {
 					'path'   => '/payments/transactions/details',
 				]
 			);
+
+			$is_dispute_on_transaction_page_enabled = WC_Payments_Features::is_dispute_on_transaction_page_enabled();
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-disputes-details',
+					'id'     => $is_dispute_on_transaction_page_enabled
+						? 'wc-payments-disputes-details-legacy-redirect'
+						: 'wc-payments-disputes-details',
 					'title'  => __( 'Dispute details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-disputes',
 					'path'   => '/payments/disputes/details',
 				]
 			);
+
 			wc_admin_register_page(
 				[
 					'id'     => 'wc-payments-disputes-challenge',
@@ -853,6 +858,7 @@ class WC_Payments_Admin {
 			'isWooPayStoreCountryAvailable' => WooPay_Utilities::is_store_country_available(),
 			'isStripeBillingEnabled'        => WC_Payments_Features::is_stripe_billing_enabled(),
 			'isStripeBillingEligible'       => WC_Payments_Features::is_stripe_billing_eligible(),
+			'capabilityRequestNotices'      => get_option( 'wcpay_capability_request_dismissed_notices ', [] ),
 			'storeName'                     => get_bloginfo( 'name' ),
 		];
 
