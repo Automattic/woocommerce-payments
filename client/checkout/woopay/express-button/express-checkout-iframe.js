@@ -2,8 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
 import { getConfig } from 'utils/checkout';
 import request from 'wcpay/checkout/utils/request';
+import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 import {
 	getTargetElement,
@@ -129,52 +134,6 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	// Add the iframe to the wrapper.
 	iframeWrapper.insertBefore( iframe, null );
 
-	const showErrorMessage = () => {
-		// Set the notice text.
-		const errorMessage = __(
-			'WooPay is unavailable at this time. Sorry for the inconvenience.',
-			'woocommerce-payments'
-		);
-
-		// Handle Blocks Cart and Checkout notices.
-		if ( wcSettings.wcBlocksConfig && context !== 'product' ) {
-			// This handles adding the error notice to the cart page.
-			wp.data
-				.dispatch( 'core/notices' )
-				?.createNotice( 'error', errorMessage, {
-					context: `wc/${ context }`,
-				} );
-		} else {
-			// We're either on a shortcode cart/checkout or single product page.
-			fetch( getConfig( 'ajaxUrl' ), {
-				method: 'POST',
-				body: new URLSearchParams( {
-					action: 'woopay_express_checkout_button_show_error_notice',
-					_ajax_nonce: getConfig( 'woopayButtonNonce' ),
-					context,
-					message: errorMessage,
-				} ),
-			} )
-				.then( ( response ) => response.json() )
-				.then( ( response ) => {
-					if ( response.success ) {
-						// We need to manually add the notice to the page.
-						const noticesWrapper = document.querySelector(
-							'.woocommerce-notices-wrapper'
-						);
-						const wrapper = document.createElement( 'div' );
-						wrapper.innerHTML = response.data.notice;
-						noticesWrapper.insertBefore( wrapper, null );
-
-						noticesWrapper.scrollIntoView( {
-							behavior: 'smooth',
-							block: 'center',
-						} );
-					}
-				} );
-		}
-	};
-
 	const closeIframe = () => {
 		window.removeEventListener( 'resize', getWindowSize );
 		window.removeEventListener( 'resize', setPopoverPosition );
@@ -282,7 +241,12 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 							response.url
 						);
 					} else {
-						showErrorMessage();
+						// Set the notice text.
+						const errorMessage = __(
+							'WooPay is unavailable at this time. Sorry for the inconvenience.',
+							'woocommerce-payments'
+						);
+						showErrorMessage( context, errorMessage );
 						closeIframe( false );
 					}
 				} );

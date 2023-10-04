@@ -28,6 +28,13 @@ class List_Transactions extends Paginated {
 	];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_list_transactions_request';
+
+	/**
 	 * Set deposit id.
 	 *
 	 * @param mixed $deposit_id Deposit id.
