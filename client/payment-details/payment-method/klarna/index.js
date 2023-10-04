@@ -24,14 +24,25 @@ const formatPaymentMethodDetails = ( charge ) => {
 		preferred_locale: preferredLocale,
 	} = charge.payment_method_details.klarna;
 
+	const paymentMethodCategoryTranslations = {
+		pay_later: __( 'pay_later', 'woocommerce-payments' ),
+		pay_now: __( 'pay_now', 'woocommerce-payments' ),
+		pay_with_financing: __( 'pay_with_financing', 'woocommerce-payments' ),
+		pay_in_installments: __(
+			'pay_in_installments',
+			'woocommerce-payments'
+		),
+	};
+
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
-	// Use the full country name.
+
 	return {
 		id,
 		name,
 		email,
 		formattedAddress,
-		paymentMethodCategory,
+		paymentMethodCategory:
+			paymentMethodCategoryTranslations[ paymentMethodCategory ],
 		preferredLocale,
 	};
 };
