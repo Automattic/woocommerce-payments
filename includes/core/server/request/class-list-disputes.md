@@ -27,8 +27,6 @@ The `WCPay\Core\Server\Request\List_Disputes` class is used to construct the req
 
 ## Filter
 
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_list_disputes_request`
 - Arguments: `$request`
 
@@ -48,5 +46,5 @@ $request->set_sort_by( $sort );
 $request->set_sort_direction( $direction );
 $request->set_status_is( $status_is );
 $request->set_status_is_not( $status_is_not );
-$request->send( 'wcpay_list_disputes_request', $request );
+$request->send();
 ```

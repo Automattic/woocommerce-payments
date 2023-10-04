@@ -39,7 +39,6 @@ import DisableUPEModal from '../settings/disable-upe-modal';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
-import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 import CardBody from '../settings/card-body';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
@@ -49,23 +48,34 @@ import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import CapabilityRequestNotice from './capability-request';
 import InlineNotice from 'wcpay/components/inline-notice';
-import interpolateComponents from '@automattic/interpolate-components';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
+	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
+	const isDisablePossible =
+		isUpeEnabled && upeType !== 'deferred_intent_upe_without_fallback';
+	const label = isDisablePossible
+		? __( 'Add feedback or disable', 'woocommerce-payments' )
+		: __( 'Add feedback', 'woocommerce-payments' );
+
+	const buttons = [
+		{
+			title: __( 'Provide feedback', 'woocommerce-payments' ),
+			onClick: () => setOpenModal( 'survey' ),
+		},
+	];
+
+	if ( isDisablePossible ) {
+		buttons.push( {
+			title: 'Disable',
+			onClick: () => setOpenModal( 'disable' ),
+		} );
+	}
+
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
-			label={ __( 'Add feedback or disable', 'woocommerce-payments' ) }
-			controls={ [
-				{
-					title: __( 'Provide feedback', 'woocommerce-payments' ),
-					onClick: () => setOpenModal( 'survey' ),
-				},
-				{
-					title: 'Disable',
-					onClick: () => setOpenModal( 'disable' ),
-				},
-			] }
+			label={ label }
+			controls={ buttons }
 		/>
 	);
 };
@@ -226,6 +236,11 @@ const PaymentMethods = () => {
 
 	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
+	const rollbackNoticeForLegacyUPE = __(
+		// eslint-disable-next-line max-len
+		'You have been switched from the new checkout to your previous checkout experience. We will keep you posted on the new checkout availability.',
+		'woocommerce-payments'
+	);
 
 	return (
 		<>
@@ -261,17 +276,6 @@ const PaymentMethods = () => {
 									'woocommerce-payments'
 								) }
 							</span>
-							{ upeType !== 'split' && (
-								<>
-									{ ' ' }
-									<Pill>
-										{ __(
-											'Early access',
-											'woocommerce-payments'
-										) }
-									</Pill>
-								</>
-							) }
 						</h4>
 						<PaymentMethodsDropdownMenu
 							setOpenModal={ setOpenModalIdentifier }
@@ -286,19 +290,7 @@ const PaymentMethods = () => {
 							status="warning"
 							isDismissible={ false }
 						>
-							{ interpolateComponents( {
-								mixedString: __(
-									'The new WooPayments checkout experience will become the default on October 11, 2023.' +
-										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-									'woocommerce-payments'
-								),
-								components: {
-									learnMoreLink: (
-										// eslint-disable-next-line max-len
-										<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#popular-payment-methods" />
-									),
-								},
-							} ) }
+							{ rollbackNoticeForLegacyUPE }
 						</InlineNotice>
 					</CardHeader>
 				) }
