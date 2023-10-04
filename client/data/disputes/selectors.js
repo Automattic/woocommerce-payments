@@ -26,6 +26,11 @@ export const getDispute = ( state, id ) => {
 	return disputeById[ id ];
 };
 
+export const getDisputeError = ( state, id ) => {
+	const disputeById = getDisputesState( state ).byId || {};
+	return disputeById[ id ]?.error;
+};
+
 export const getCachedDispute = ( state, id ) => {
 	const disputeById = getDisputesState( state ).cached || {};
 	return disputeById[ id ];

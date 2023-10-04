@@ -399,6 +399,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'affirm'            => 'affirm_payments',
 			'afterpay_clearpay' => 'afterpay_clearpay_payments',
 			'klarna'            => 'klarna_payments',
+			'jcb'               => 'jcb_payments',
 		];
 
 		// WooPay utilities.
@@ -1604,11 +1605,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
 		if ( $this instanceof UPE_Split_Payment_Gateway ) {
-			$gateway_type = 'split_upe';
+			$gateway_type = 'split_upe_with_deferred_intent_creation';
 		} elseif ( $this instanceof UPE_Payment_Gateway ) {
-			$gateway_type = 'upe';
+			$gateway_type = 'legacy_upe';
 		} else {
-			$gateway_type = 'classic';
+			$gateway_type = 'legacy_card';
 		}
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email    = sanitize_email( $order->get_billing_email() );

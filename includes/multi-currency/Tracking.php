@@ -27,7 +27,14 @@ class Tracking {
 	 */
 	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_filter( 'woocommerce_tracker_data', [ $this, 'add_tracker_data' ], 50 );
 	}
 

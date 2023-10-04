@@ -20,6 +20,5 @@ export type PaymentMethod =
 	| 'p24'
 	| 'sepa_debit'
 	| 'sofort'
-	| 'jcb'
 	| 'affirm'
 	| 'afterpay_clearpay';

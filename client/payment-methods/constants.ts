@@ -18,7 +18,6 @@ enum PAYMENT_METHOD_IDS {
 	P24 = 'p24',
 	SEPA_DEBIT = 'sepa_debit',
 	SOFORT = 'sofort',
-	JCB = 'jcb',
 }
 
 // This constant is used for rendering tooltip titles for payment methods in transaction list and details pages.
