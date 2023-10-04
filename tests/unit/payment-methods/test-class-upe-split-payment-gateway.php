@@ -454,7 +454,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$request->expects( $this->once() )->method( 'set_currency_code' )->with( 'usd' );
 			$request->expects( $this->once() )->method( 'setup_future_usage' );
 			$request->expects( $this->once() )->method( 'set_customer' )->with( 'cus_mock' );
-			$request->expects( $this->once() )->method( 'set_metadata' )->with( [ 'gateway_type' => 'split_upe' ] );
+			$request->expects( $this->once() )->method( 'set_metadata' )->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 			$request->expects( $this->once() )
 				->method( 'format_response' )
 				->willReturn( $intent );
@@ -495,7 +495,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$request->expects( $this->once() )->method( 'set_currency_code' )->with( 'usd' );
 			$request->expects( $this->once() )->method( 'setup_future_usage' );
 			$request->expects( $this->once() )->method( 'set_customer' )->with( 'cus_mock' );
-			$request->expects( $this->once() )->method( 'set_metadata' )->with( [ 'gateway_type' => 'split_upe' ] );
+			$request->expects( $this->once() )->method( 'set_metadata' )->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 			$request->expects( $this->once() )->method( 'set_payment_method_types' )->with( [ $payment_method_id ] );
 
 			$request->expects( $this->once() )
@@ -532,7 +532,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$request->expects( $this->once() )->method( 'set_amount' )->with( 5000 );
 			$request->expects( $this->once() )->method( 'set_currency_code' )->with( 'usd' );
 			$request->expects( $this->once() )->method( 'set_customer' )->with( 'cus_mock' );
-			$request->expects( $this->once() )->method( 'set_metadata' )->with( [ 'gateway_type' => 'split_upe' ] );
+			$request->expects( $this->once() )->method( 'set_metadata' )->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 			$request->expects( $this->once() )->method( 'set_payment_country' )->with( 'US' );
 			$request->expects( $this->once() )
 				->method( 'format_response' )
@@ -2028,6 +2028,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_link_payment_method_if_card_enabled() {
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
@@ -2329,6 +2330,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_get_payment_methods_from_gateway_id() {
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
 		$order            = WC_Helper_Order::create_order();
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
 			->setConstructorArgs(

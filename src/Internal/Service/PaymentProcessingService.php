@@ -80,9 +80,7 @@ class PaymentProcessingService {
 	 * @return PaymentContext
 	 */
 	protected function create_payment_context( int $order_id ): PaymentContext {
-		$context = new PaymentContext();
-		$context->set_order_id( $order_id );
-		return $context;
+		return new PaymentContext( $order_id );
 	}
 
 	/**

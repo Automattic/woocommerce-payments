@@ -15,7 +15,7 @@ use WCPay\Internal\Service\OrderService;
 /**
  * Initial state, representing a freshly created payment.
  */
-class InitialState extends PaymentState {
+class InitialState extends AbstractPaymentState {
 	/**
 	 * Order service.
 	 *
