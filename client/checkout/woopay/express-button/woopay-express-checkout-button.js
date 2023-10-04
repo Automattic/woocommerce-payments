@@ -100,7 +100,11 @@ export const WoopayExpressCheckoutButton = ( {
 				if ( isAddToCartDisabled ) {
 					alert(
 						window.wc_add_to_cart_variation_params
-							.i18n_make_a_selection_text
+							?.i18n_make_a_selection_text ||
+							__(
+								'Please select all required options to continue.',
+								'woocommerce-payments'
+							)
 					);
 					return;
 				}
