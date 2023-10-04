@@ -152,14 +152,8 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 
-		// If disputes on transaction page feature is enabled, set up a soft
-		// redirect component; otherwise register the (legacy) dispute details page.
-		const isDisputeOnTransactionPageEnabled =
-			window.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled;
 		pages.push( {
-			container: isDisputeOnTransactionPageEnabled
-				? RedirectToTransactionDetails
-				: LegacyDisputeDetailsPage,
+			container: RedirectToTransactionDetails,
 			path: '/payments/disputes/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -171,9 +165,7 @@ addFilter(
 				__( 'Dispute details', 'woocommerce-payments' ),
 			],
 			navArgs: {
-				id: isDisputeOnTransactionPageEnabled
-					? 'wc-payments-disputes-details-legacy-redirect'
-					: 'wc-payments-disputes-details',
+				id: 'wc-payments-disputes-details-legacy-redirect',
 				parentPath: '/payments/disputes',
 			},
 			capability: 'manage_woocommerce',
