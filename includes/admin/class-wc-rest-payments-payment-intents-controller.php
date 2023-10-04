@@ -7,7 +7,7 @@
 
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Logger;
-use WCPay\Payment_Information;
+use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Constants\Payment_Type;
 
 defined( 'ABSPATH' ) || exit;
@@ -87,33 +87,30 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 
 			$order_id = $request->get_param( 'order_id' );
 			$order    = wc_get_order( $order_id );
-			$currency = strtolower( $order->get_currency() );
-			$amount   = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-			$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-			$email    = sanitize_email( $order->get_billing_email() );
-			$metadata = [
-				'customer_name'  => $name,
-				'customer_email' => $email,
-				'site_url'       => esc_url( get_site_url() ),
-				'order_id'       => $order->get_id(),
-				'order_number'   => $order->get_order_number(),
-				'order_key'      => $order->get_order_key(),
-				'payment_type'   => 'single',
-			];
+			if ( ! $order ) {
+				throw new Rest_Request_Exception( __( 'Order not found', 'woocommerce-payments' ) );
+			}
 
 			$wcpay_server_request = Create_And_Confirm_Intention::create();
+
+			$currency = strtolower( $order->get_currency() );
+			$amount   = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
 			$wcpay_server_request->set_currency_code( $currency );
 			$wcpay_server_request->set_amount( $amount );
+
+			$metadata = $this->gateway->get_metadata_from_order( $order, Payment_Type::SINGLE );
 			$wcpay_server_request->set_metadata( $metadata );
+
 			$wcpay_server_request->set_customer( $request->get_param( 'customer' ) );
 			$wcpay_server_request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
 			$wcpay_server_request->set_payment_method( $request->get_param( 'payment_method' ) );
 			$wcpay_server_request->set_payment_method_types( [ 'card' ] );
 			$wcpay_server_request->set_off_session( true );
-			$wcpay_server_request->set_capture_method( WC_Payments::get_gateway()->get_option( 'manual_capture' ) && ( 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) );
+			$wcpay_server_request->set_capture_method( $this->gateway->get_option( 'manual_capture' ) && ( 'yes' === $this->gateway->get_option( 'manual_capture' ) ) );
 
 			$wcpay_server_request->assign_hook( 'wcpay_create_and_confirm_intent_request_api' );
 			$intent = $wcpay_server_request->send();
+
 			return rest_ensure_response( $intent );
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create an intention via REST API: ' . $e );

@@ -1601,7 +1601,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array Array of keyed metadata values.
 	 */
-	protected function get_metadata_from_order( $order, $payment_type ) {
+	public function get_metadata_from_order( $order, $payment_type ) {
 		if ( $this instanceof UPE_Split_Payment_Gateway ) {
 			$gateway_type = 'split_upe';
 		} elseif ( $this instanceof UPE_Payment_Gateway ) {
