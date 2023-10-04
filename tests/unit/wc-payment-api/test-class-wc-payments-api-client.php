@@ -250,6 +250,30 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws API_Exception
 	 */
 	public function test_get_onboarding_data() {
+		$site_data = [
+			'site_username' => 'admin',
+			'site_locale'   => 'en_US',
+		];
+
+		$user_data = [
+			'user_id'    => 1,
+			'ip_address' => '0.0.0.0',
+			'browser'    => [
+				'user_agent'       => 'Unit Test Agent/0.1.0',
+				'accept_language'  => 'en-US,en;q=0.5',
+				'content_language' => 'en-US,en;q=0.5',
+			],
+			'referer'    => 'https://example.com',
+		];
+
+		$account_data = [];
+
+		$actioned_notes = [
+			'd' => 4,
+			'e' => 5,
+			'f' => 6,
+		];
+
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )
@@ -265,19 +289,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 					[
 						'test_mode'                   => false,
 						'return_url'                  => 'http://localhost',
-						'site_data'                   => [
-							'site_username' => 'admin',
-							'site_locale'   => 'en_US',
-						],
+						'site_data'                   => $site_data,
+						'user_data'                   => $user_data,
+						'account_data'                => $account_data,
+						'actioned_notes'              => $actioned_notes,
 						'create_live_account'         => true,
-						'actioned_notes'              => [
-							'd' => 4,
-							'e' => 5,
-							'f' => 6,
-						],
 						'progressive'                 => false,
 						'collect_payout_requirements' => false,
-						'account_data'                => [],
 					]
 				),
 				true,
@@ -296,15 +314,10 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		// Call the method under test.
 		$result = $this->payments_api_client->get_onboarding_data(
 			'http://localhost',
-			[
-				'site_username' => 'admin',
-				'site_locale'   => 'en_US',
-			],
-			[
-				'd' => 4,
-				'e' => 5,
-				'f' => 6,
-			]
+			$site_data,
+			$user_data,
+			$account_data,
+			$actioned_notes
 		);
 
 		// Assert the response is correct.
