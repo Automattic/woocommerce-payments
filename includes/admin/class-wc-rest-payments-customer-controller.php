@@ -27,7 +27,7 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @var string
 	 */
-	protected $rest_base = 'payments/customer';
+	protected $rest_base = 'payments/customers';
 
 	/**
 	 * Constructor.
