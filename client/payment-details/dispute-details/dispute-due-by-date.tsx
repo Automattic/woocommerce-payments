@@ -30,10 +30,10 @@ const DisputeDueByDate: React.FC< {
 			>
 				{ daysRemaining > 0 &&
 					sprintf(
-						// Translators: %s is the number of days left to respond to the dispute.
+						// Translators: %d is the number of days left to respond to the dispute.
 						_n(
-							'(%s day left to respond)',
-							'(%s days left to respond)',
+							'(%d day left to respond)',
+							'(%d days left to respond)',
 							daysRemaining,
 							'woocommerce-payments'
 						),
