@@ -262,7 +262,7 @@ export const WoopayExpressCheckoutButton = ( {
 			return;
 		}
 
-		if ( ! isProductPage && sessionDataPromiseRef.current === null ) {
+		if ( ! isProductPage ) {
 			// Start to pre-fetch session data for non-product pages.
 			sessionDataPromiseRef.current = request(
 				buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
