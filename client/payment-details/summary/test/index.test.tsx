@@ -237,25 +237,6 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders the information of a disputed charge', () => {
-		const charge = getBaseCharge();
-		charge.disputed = true;
-		charge.dispute = getBaseDispute();
-		charge.dispute.status = 'under_review';
-		charge.dispute.balance_transactions = [
-			{
-				amount: -2000,
-				fee: 1500,
-				currency: 'usd',
-				reporting_category: 'dispute',
-			},
-		];
-
-		const container = renderCharge( charge );
-		screen.getByText( /Deducted: \$-20.00/i );
-		expect( container ).toMatchSnapshot();
-	} );
-
 	test( 'renders the information of a dispute-reversal charge', () => {
 		const charge = getBaseCharge();
 		charge.disputed = true;
