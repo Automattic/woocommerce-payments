@@ -12,6 +12,7 @@ use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * WC_Payments_Account unit tests.
@@ -31,23 +32,30 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WC_Payments_API_Client.
 	 *
-	 * @var WC_Payments_API_Client|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_API_Client|MockObject
 	 */
 	private $mock_api_client;
 
 	/**
 	 * Mock Database_Cache
 	 *
-	 * @var Database_Cache|PHPUnit_Framework_MockObject_MockObject
+	 * @var Database_Cache|MockObject
 	 */
 	private $mock_database_cache;
 
 	/**
 	 * Mock WC_Payments_Action_Scheduler_Service
 	 *
-	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Action_Scheduler_Service|MockObject
 	 */
 	private $mock_action_scheduler_service;
+
+	/**
+	 * Mock WC_Payments_Session_Service.
+	 *
+	 * @var WC_Payments_Session_Service|MockObject
+	 */
+	private $mock_session_service;
 
 	/**
 	 * Pre-test setup
@@ -68,8 +76,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+		$this->mock_session_service          = $this->createMock( WC_Payments_Session_Service::class );
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service );
+		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service );
 	}
 
 	public function tear_down() {
@@ -303,7 +312,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
 		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
 			->getMock();
 
 		$mock_wcpay_account->expects( $this->once() )->method( 'redirect_to' );
@@ -911,8 +920,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->willThrowException(
 				new API_Exception( 'test', 'bad_request', 400 )
 			);
-		$error_msg = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
-		$this->assertEquals( 'test', $error_msg, 'Error message expected' );
+
+		$result = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
 	}
 
 	/**

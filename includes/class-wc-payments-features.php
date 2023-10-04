@@ -321,7 +321,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_woopay_first_party_auth_enabled() {
-		return '1' === get_option( self::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '0' ) && self::is_woopay_express_checkout_enabled();
+		return '1' === get_option( self::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '1' ) && self::is_woopay_express_checkout_enabled();
 	}
 
 	/**
