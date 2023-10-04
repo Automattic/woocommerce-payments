@@ -53,6 +53,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			phoneFieldValue =
 				document.getElementById( 'phone' )?.value ||
 				document.getElementById( 'shipping-phone' )?.value ||
+				// in case of virtual products, the shipping phone is not available. So we also need to check the billing phone.
+				document.getElementById( 'billing-phone' )?.value ||
 				'';
 		} else {
 			// for classic checkout.
@@ -99,7 +101,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		if ( isChecked ) {
 			setPhoneNumber( getPhoneFieldValue() );
 		} else {
-			setPhoneNumber( null );
+			setPhoneNumber( '' );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
@@ -307,11 +309,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							value={ `${ viewportWidth }x${ viewportHeight }` }
 						/>
 						<PhoneNumberInput
-							value={
-								phoneNumber === null
-									? getPhoneFieldValue()
-									: phoneNumber
-							}
+							value={ phoneNumber }
 							onValueChange={ setPhoneNumber }
 							onValidationChange={ onPhoneValidationChange }
 							inputProps={ {

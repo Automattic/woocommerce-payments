@@ -118,7 +118,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 
 		$wcpay_request = List_Transactions::from_rest_request( $request );
 
-		return $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+		return $wcpay_request->handle_rest_request();
 	}
 
 	/**

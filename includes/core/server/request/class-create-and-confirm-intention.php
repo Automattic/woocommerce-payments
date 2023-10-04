@@ -37,6 +37,13 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_create_and_confirm_intent_request';
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string
@@ -80,14 +87,6 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	 * @throws Invalid_Request_Parameter_Exception  When there are no payment methods provided.
 	 */
 	public function set_payment_methods( array $payment_methods ) {
-		// Hard to validate without hardcoding a list here.
-		if ( empty( $payment_methods ) ) {
-			throw new Invalid_Request_Parameter_Exception(
-				__( 'Intentions require at least one payment method', 'woocommerce-payments' ),
-				'wcpay_core_invalid_request_parameter_missing_payment_method_types'
-			);
-		}
-
 		$this->set_param( 'payment_method_types', $payment_methods );
 	}
 

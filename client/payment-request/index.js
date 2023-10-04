@@ -397,14 +397,37 @@ jQuery( ( $ ) => {
 
 				$.when( wcpayPaymentRequest.getSelectedProductData() )
 					.then( ( response ) => {
-						$.when(
-							paymentRequest.update( {
-								total: response.total,
-								displayItems: response.displayItems,
-							} )
-						).then( () => {
+						// If a variation doesn't need shipping, re-init the `wcpayPaymentRequest` with response params.
+						if (
+							wcpayPaymentRequestParams.product.needs_shipping !==
+							response.needs_shipping
+						) {
+							wcpayPaymentRequestParams.product.needs_shipping =
+								response.needs_shipping;
+							wcpayPaymentRequestParams.product.total =
+								response.total;
+							wcpayPaymentRequestParams.product.displayItems =
+								response.displayItems;
+							wcpayPaymentRequest.init();
 							wcpayPaymentRequest.unblockPaymentRequestButton();
-						} );
+						} else {
+							const responseTotal = response.total;
+
+							// If a variation `needs_shipping` is `false`, the `pending` param needs to be set to `false`.
+							// Because the additional shipping address call is not executed to set the pending to `false`.
+							if ( response.needs_shipping === false ) {
+								responseTotal.pending = false;
+							}
+
+							$.when(
+								paymentRequest.update( {
+									total: responseTotal,
+									displayItems: response.displayItems,
+								} )
+							).then( () => {
+								wcpayPaymentRequest.unblockPaymentRequestButton();
+							} );
+						}
 					} )
 					.catch( () => {
 						wcpayPaymentRequest.hide();
