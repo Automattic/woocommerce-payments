@@ -3,25 +3,25 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
 import Loadable from 'components/loadable';
-import CardDetails from './card';
-import CardPresentDetails from './card-present';
+import AffirmDetails from './affirm';
+import AfterpayClearpayDetails from './afterpay-clearpay';
 import BancontactDetails from './bancontact';
 import BecsDetails from './becs';
+import CardDetails from './card';
+import CardPresentDetails from './card-present';
 import EpsDetails from './eps';
 import GiropayDetails from './giropay';
 import IdealDetails from './ideal';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
-import AffirmDetails from './affirm';
-import AfterpayClearpayDetails from './afterpay-clearpay';
 
 const detailsComponentMap = {
 	card: CardDetails,
