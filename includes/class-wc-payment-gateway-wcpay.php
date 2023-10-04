@@ -1602,7 +1602,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array Array of keyed metadata values.
 	 */
-	protected function get_metadata_from_order( $order, $payment_type ) {
+	public function get_metadata_from_order( $order, $payment_type ) {
 		if ( $this instanceof UPE_Split_Payment_Gateway ) {
 			$gateway_type = 'split_upe_with_deferred_intent_creation';
 		} elseif ( $this instanceof UPE_Payment_Gateway ) {
@@ -2068,16 +2068,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Map fields that need to be updated and update the fields server side.
 	 *
 	 * @param array $settings Plugin settings.
-	 * @return array Updated fields.
+	 *
+	 * @return array|WP_Error Updated fields.
 	 */
-	public function update_account_settings( array $settings ) : array {
+	public function update_account_settings( array $settings ) {
 		$account_settings = [];
 		foreach ( static::ACCOUNT_SETTINGS_MAPPING as $name => $account_key ) {
 			if ( isset( $settings[ $name ] ) ) {
 				$account_settings[ $account_key ] = $settings[ $name ];
 			}
 		}
-		$this->update_account( $account_settings );
+
+		$result = $this->update_account( $account_settings );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
 
 		return $account_settings;
 	}
@@ -2588,18 +2594,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Supported: statement_descriptor, business_name, business_url, business_support_address,
 	 * business_support_email, business_support_phone, branding_logo, branding_icon,
 	 * branding_primary_color, branding_secondary_color.
+	 *
+	 * $return array | WP_Error Update account result.
+	 *
+	 * @throws Exception
 	 */
 	public function update_account( $account_settings ) {
 		if ( empty( $account_settings ) ) {
 			return;
 		}
 
-		$error_message = $this->account->update_stripe_account( $account_settings );
+		$stripe_account_update_response = $this->account->update_stripe_account( $account_settings );
 
-		if ( is_string( $error_message ) ) {
-			$msg = __( 'Failed to update Stripe account. ', 'woocommerce-payments' ) . $error_message;
+		if ( is_wp_error( $stripe_account_update_response ) ) {
+			$msg = __( 'Failed to update Stripe account. ', 'woocommerce-payments' ) . $stripe_account_update_response->get_error_message();
 			$this->add_error( $msg );
 		}
+
+		return $stripe_account_update_response;
 	}
 
 	/**
