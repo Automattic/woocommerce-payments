@@ -81,6 +81,8 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	 * Create a payment intent.
 	 *
 	 * @param WP_REST_Request $request data about the request.
+	 *
+	 * @throws Rest_Request_Exception
 	 */
 	public function create_payment_intent( $request ) {
 		try {

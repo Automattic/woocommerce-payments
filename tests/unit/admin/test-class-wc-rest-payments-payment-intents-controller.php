@@ -42,7 +42,17 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 	public function test_create_payment_intent_success() {
 		$current_order    = WC_Helper_Order::create_order();
 		$current_order_id = $current_order->get_id();
-		$request          = new WP_REST_Request( 'POST' );
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'get_metadata_from_order' )
+			->with( $this->isInstanceOf( WC_Order::class ), 'single' )
+			->willReturn(
+				[
+					'order_id' => $current_order->get_id(),
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
 				'order_id'             => $current_order_id,
@@ -88,7 +98,17 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 	public function test_create_payment_intent_missing_required_params() {
 		$current_order    = WC_Helper_Order::create_order();
 		$current_order_id = $current_order->get_id();
-		$request          = new WP_REST_Request( 'POST' );
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'get_metadata_from_order' )
+			->with( $this->isInstanceOf( WC_Order::class ), 'single' )
+			->willReturn(
+				[
+					'order_id' => $current_order->get_id(),
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
 				'order_id' => $current_order_id,
@@ -105,7 +125,17 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 	public function test_create_payment_intent_server_error() {
 		$current_order    = WC_Helper_Order::create_order();
 		$current_order_id = $current_order->get_id();
-		$request          = new WP_REST_Request( 'POST' );
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'get_metadata_from_order' )
+			->with( $this->isInstanceOf( WC_Order::class ), 'single' )
+			->willReturn(
+				[
+					'order_id' => $current_order->get_id(),
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
 				'order_id'             => $current_order_id,
