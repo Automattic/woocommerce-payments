@@ -74,7 +74,7 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 
 		let data = {
 			product_id: productId,
-			qty: document.querySelector( '.quantity .qty' ).value,
+			quantity: document.querySelector( '.quantity .qty' ).value,
 		};
 
 		if ( variation && ! bundleForm ) {
@@ -169,6 +169,7 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 		};
 
 		const bundleForm = document.querySelector( '.bundle_form' );
+		const mixAndMatchForm = document.querySelector( '.mnm_form' );
 		const variationForm = document.querySelector( '.variations_form' );
 
 		if ( bundleForm ) {
@@ -179,6 +180,14 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 					'woocommerce-product-bundle-hide',
 					disableAddToCartButton
 				);
+		} else if ( mixAndMatchForm ) {
+			// eslint-disable-next-line no-undef
+			jQuery( mixAndMatchForm )
+				.on(
+					'wc-mnm-display-add-to-cart-button',
+					enableAddToCartButton
+				)
+				.on( 'wc-mnm-hide-add-to-cart-button', disableAddToCartButton );
 		} else if ( variationForm ) {
 			// eslint-disable-next-line no-undef
 			jQuery( variationForm )
@@ -196,6 +205,17 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 					)
 					.off(
 						'woocommerce-product-bundle-hide',
+						disableAddToCartButton
+					);
+			} else if ( mixAndMatchForm ) {
+				// eslint-disable-next-line no-undef
+				jQuery( mixAndMatchForm )
+					.off(
+						'wc-mnm-display-add-to-cart-button',
+						enableAddToCartButton
+					)
+					.off(
+						'wc-mnm-hide-add-to-cart-button',
 						disableAddToCartButton
 					);
 			} else if ( variationForm ) {
