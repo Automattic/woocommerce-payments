@@ -99,7 +99,14 @@ class FrontendCurrencies {
 		$this->localization_service = $localization_service;
 		$this->utils                = $utils;
 		$this->compatibility        = $compatibility;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Currency hooks.
 			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 900 );

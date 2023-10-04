@@ -606,7 +606,7 @@ class WC_Payments_Account {
 			$request->set_return_url( $return_url );
 			$request->set_refresh_url( $refresh_url );
 
-			$capital_link = $request->send( 'wcpay_get_account_capital_link' );
+			$capital_link = $request->send();
 			$this->redirect_to( $capital_link['url'] );
 		} catch ( Exception $e ) {
 			$error_url = add_query_arg(
@@ -1118,7 +1118,7 @@ class WC_Payments_Account {
 		$request = Get_Account_Login_Data::create();
 		$request->set_redirect_url( $redirect_url );
 
-		$response   = $request->send( 'wpcay_get_account_login_data' );
+		$response   = $request->send();
 		$login_data = $response->to_array();
 		wp_safe_redirect( $login_data['url'] );
 		exit;
@@ -1386,7 +1386,7 @@ class WC_Payments_Account {
 					delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
 
 					$request  = Get_Account::create();
-					$response = $request->send( 'wcpay_get_account' );
+					$response = $request->send();
 					$account  = $response->to_array();
 
 				} catch ( API_Exception $e ) {
@@ -1504,7 +1504,9 @@ class WC_Payments_Account {
 	 *
 	 * @param array $stripe_account_settings Settings to update.
 	 *
-	 * @return null|string Error message if update failed.
+	 * @return null|WP_Error Account update result.
+	 *
+	 * @throws Exception
 	 */
 	public function update_stripe_account( $stripe_account_settings ) {
 		try {
@@ -1514,13 +1516,14 @@ class WC_Payments_Account {
 			}
 
 			$request         = Update_Account::from_account_settings( $stripe_account_settings );
-			$response        = $request->send( 'wcpay_update_account_settings' );
+			$response        = $request->send();
 			$updated_account = $response->to_array();
 
 			$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to update Stripe account ' . $e );
-			return $e->getMessage();
+
+			return new WP_Error( 'wcpay_failed_to_update_stripe_account', $e->getMessage() );
 		}
 	}
 
@@ -1558,7 +1561,7 @@ class WC_Payments_Account {
 				];
 
 				$request         = Update_Account::from_account_settings( $account_settings );
-				$response        = $request->send( 'wcpay_update_account_settings' );
+				$response        = $request->send();
 				$updated_account = $response->to_array();
 
 				$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
@@ -1698,8 +1701,9 @@ class WC_Payments_Account {
 
 		// Get the loan summary.
 		try {
-			$request      = Request::get( WC_Payments_API_Client::CAPITAL_API . '/active_loan_summary' );
-			$loan_details = $request->send( 'wcpay_get_active_loan_summary_request' );
+			$request = Request::get( WC_Payments_API_Client::CAPITAL_API . '/active_loan_summary' );
+			$request->assign_hook( 'wcpay_get_active_loan_summary_request' );
+			$loan_details = $request->send();
 
 		} catch ( API_Exception $ex ) {
 			return;

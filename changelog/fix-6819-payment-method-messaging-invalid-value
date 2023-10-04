@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improved product details script with enhanced price calculation, and fallbacks for potential undefined values.
