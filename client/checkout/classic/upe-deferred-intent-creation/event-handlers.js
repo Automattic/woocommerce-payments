@@ -8,7 +8,9 @@ import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
 	isLinkEnabled,
+	isPaymentMethodRestrictedToLocation,
 	isUsingSavedPaymentMethod,
+	togglePaymentMethodForCountry,
 } from '../../utils/upe';
 import {
 	processPayment,
@@ -115,49 +117,12 @@ jQuery( function ( $ ) {
 		}
 	}
 
-	/**
-	 * Hides payment method if it has set specific countries in the PHP class.
-	 *
-	 * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
-	 **/
 	function restrictPaymentMethodToLocation( upeElement ) {
-		const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-		const paymentMethodType = upeElement.dataset.paymentMethodType;
-		const isRestrictedInAnyCountry = !! paymentMethodsConfig[
-			paymentMethodType
-		].countries.length;
-
-		if ( isRestrictedInAnyCountry ) {
-			togglePaymentMethodForCountry(
-				paymentMethodType,
-				paymentMethodsConfig[ paymentMethodType ].countries
-			);
+		if ( isPaymentMethodRestrictedToLocation( upeElement ) ) {
+			togglePaymentMethodForCountry( upeElement );
 			$( '#billing_country' ).on( 'change', function () {
-				togglePaymentMethodForCountry(
-					paymentMethodType,
-					paymentMethodsConfig[ paymentMethodType ].countries
-				);
+				togglePaymentMethodForCountry( upeElement );
 			} );
-		}
-	}
-
-	/**
-	 * @param {string} paymentMethodType The payment method type.
-	 * @param {Array}  supportedCountries A list of countries that given payment method is supported in.
-	 **/
-	function togglePaymentMethodForCountry(
-		paymentMethodType,
-		supportedCountries
-	) {
-		const billingCountry = document.querySelector( '#billing_country' )
-			.value;
-		const upeContainer = document.querySelector(
-			'.payment_method_woocommerce_payments_' + paymentMethodType
-		);
-		if ( supportedCountries.includes( billingCountry ) ) {
-			upeContainer.style.display = 'block';
-		} else {
-			upeContainer.style.display = 'none';
 		}
 	}
 } );
