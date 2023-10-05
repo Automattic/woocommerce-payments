@@ -461,11 +461,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
-
-		// Load customer multi-currency if feature is enabled.
-		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
-			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
-		}
+		include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();

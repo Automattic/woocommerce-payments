@@ -3,7 +3,7 @@
 The Payment Intents API provides comprehensive functionality for managing payment intents. You can create and manage them seamlessly through its endpoints.
 
 
-## Create payment intenr
+## Create payment intent
 
 _@since v6.6.0_
 
