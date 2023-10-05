@@ -167,10 +167,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.currency && balance.currency !== charge.currency;
 
 	const {
-		featureFlags: {
-			isAuthAndCaptureEnabled,
-			isDisputeOnTransactionPageEnabled,
-		},
+		featureFlags: { isAuthAndCaptureEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
@@ -463,13 +460,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				</LoadableBlock>
 			</CardBody>
 
-			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
+			{ charge.dispute && (
 				<>
 					{ isAwaitingResponse( charge.dispute.status ) ? (
 						<DisputeAwaitingResponseDetails
 							dispute={ charge.dispute }
 							customer={ charge.billing_details }
 							chargeCreated={ charge.created }
+							orderUrl={ charge.order?.url }
 						/>
 					) : (
 						<DisputeResolutionFooter dispute={ charge.dispute } />
