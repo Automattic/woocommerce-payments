@@ -47,18 +47,9 @@ describe( 'Admin merchant progressive onboarding', () => {
 		await expect( page ).toMatchElement( 'h1.stepper__heading', {
 			text: 'First, you’ll need to create an account',
 		} );
-		await expect( page ).toFill(
-			'[name="individual.first_name"] input.components-text-control__input',
-			'Test'
-		);
-		await expect( page ).toFill(
-			'[name="individual.last_name"] input.components-text-control__input',
-			'Test'
-		);
-		await expect( page ).toFill(
-			'[name="email"] input.components-text-control__input',
-			'test@gmail.com'
-		);
+		await expect( page ).toFill( '[name="individual.first_name"]', 'Test' );
+		await expect( page ).toFill( '[name="individual.last_name"]', 'Test' );
+		await expect( page ).toFill( '[name="email"]', 'test@gmail.com' );
 		await page.waitForSelector(
 			'div.wcpay-component-phone-number-control input[type="text"]'
 		);
