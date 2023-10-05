@@ -1101,7 +1101,7 @@ class WC_Payments_Admin {
 
 	/**
 	 * Prevent access to onboarding flow if the server is not connected.
-	 * Redirect back to the connect page with a error message.
+	 * Redirect back to the connect page with an error message.
 	 */
 	public function maybe_redirect_onboarding_flow_to_connect(): void {
 		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
