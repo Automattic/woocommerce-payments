@@ -456,10 +456,10 @@ describe( 'PaymentDetailsSummary', () => {
 		];
 		renderCharge( charge );
 
-		// Disputed amount should show the store (balance transaction) currency.
+		// Disputed amount should show the shopper/transaction currency.
 		expect(
 			screen.getByText( /Dispute Amount/i ).nextSibling
-		).toHaveTextContent( /kr 725.81 NOK/i );
+		).toHaveTextContent( /¥10,000 JPY/i );
 	} );
 
 	test( 'renders the information of a dispute-reversal charge', () => {
@@ -567,7 +567,7 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.dispute.balance_transactions = [];
 		renderCharge( charge );
 
-		// Disputed amount should show the dispute/charge currency.
+		// Disputed amount should show the shopper/transaction currency.
 		expect(
 			screen.getByText( /Dispute Amount/i ).nextSibling
 		).toHaveTextContent( /¥10,000 JPY/i );
