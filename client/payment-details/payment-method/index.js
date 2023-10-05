@@ -19,23 +19,25 @@ import CardPresentDetails from './card-present';
 import EpsDetails from './eps';
 import GiropayDetails from './giropay';
 import IdealDetails from './ideal';
+import KlarnaDetails from './klarna';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
 
 const detailsComponentMap = {
-	card: CardDetails,
-	card_present: CardPresentDetails,
+	affirm: AffirmDetails,
+	afterpay_clearpay: AfterpayClearpayDetails,
 	au_becs_debit: BecsDetails,
 	bancontact: BancontactDetails,
+	card: CardDetails,
+	card_present: CardPresentDetails,
 	eps: EpsDetails,
 	giropay: GiropayDetails,
 	ideal: IdealDetails,
+	klarna: KlarnaDetails,
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
-	affirm: AffirmDetails,
-	afterpay_clearpay: AfterpayClearpayDetails,
 };
 
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
