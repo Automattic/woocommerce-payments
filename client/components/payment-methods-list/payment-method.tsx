@@ -22,6 +22,7 @@ import LoadableCheckboxControl from '../loadable-checkbox';
 import Pill from '../pill';
 import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import './payment-method.scss';
+import Chip from '../chip';
 
 interface PaymentMethodProps {
 	id: string;
@@ -71,9 +72,13 @@ const PaymentMethodLabel = ( {
 						'woocommerce-payments'
 					) }
 				>
-					<Pill className={ 'payment-status-pending-approval' }>
-						{ __( 'Pending approval', 'woocommerce-payments' ) }
-					</Pill>
+					<Chip
+						message={ __(
+							'Pending approval',
+							'woocommerce-payments'
+						) }
+						type="warning"
+					/>
 				</HoverTooltip>
 			) }
 			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
@@ -88,19 +93,24 @@ const PaymentMethodLabel = ( {
 						wcpaySettings?.accountEmail ?? ''
 					) }
 				>
-					<Pill className={ 'payment-status-pending-verification' }>
-						{ __( 'Pending activation', 'woocommerce-payments' ) }
-					</Pill>
+					<Chip
+						message={ __(
+							'Pending activation',
+							'woocommerce-payments'
+						) }
+						type="warning"
+					/>
 				</HoverTooltip>
 			) }
 			{ disabled && (
 				<PaymentMethodDisabledTooltip id={ id }>
-					<Pill className={ 'payment-status-' + status }>
-						{ __(
+					<Chip
+						message={ __(
 							'More information needed',
 							'woocommerce-payments'
 						) }
-					</Pill>
+						type="warning"
+					/>
 				</PaymentMethodDisabledTooltip>
 			) }
 		</>
