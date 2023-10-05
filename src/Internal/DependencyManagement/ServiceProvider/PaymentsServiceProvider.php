@@ -25,6 +25,7 @@ use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
+use WCPay\Internal\Service\PaymentRequestService;
 
 /**
  * WCPay payments service provider.
@@ -45,6 +46,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		PaymentErrorState::class,
 		ExampleService::class,
 		ExampleServiceWithDependencies::class,
+		PaymentRequestService::class,
 	];
 
 	/**
@@ -60,11 +62,14 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( StateFactory::class )
 			->addArgument( LegacyProxy::class );
 
+		$container->addShared( PaymentRequestService::class );
+
 		$container->add( InitialState::class )
 			->addArgument( StateFactory::class )
 			->addArgument( OrderService::class )
 			->addArgument( WC_Payments_Customer_Service::class )
-			->addArgument( Level3Service::class );
+			->addArgument( Level3Service::class )
+			->addArgument( PaymentRequestService::class );
 
 		$container->add( CompletedState::class )
 			->addArgument( StateFactory::class );

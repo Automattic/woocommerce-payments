@@ -10,6 +10,7 @@ namespace WCPay\Tests\Internal\Payment\State;
 use Exception;
 use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit_Utils;
 use ReflectionClass;
 use WC_Order;
 use WC_Payments_API_Payment_Intention;
@@ -196,7 +197,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$this->mock_context->expects( $this->once() )->method( 'set_fingerprint' )->with( $fingerprint );
 
 		// Use reflection to acces.
-		$this->call_protected_method( $this->sut, 'populate_context_from_request', $mock_request );
+		PHPUnit_Utils::call_method( $this->sut, 'populate_context_from_request', [ $mock_request ] );
 	}
 
 	public function test_populate_context_from_order() {
@@ -251,21 +252,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->method( 'set_customer_id' )
 			->with( $customer_id );
 
-		$this->call_protected_method( $this->sut, 'populate_context_from_order' );
-	}
-
-	/**
-	 * Calls a protected/private method of the object.
-	 *
-	 * @param object  $object      The object with the method.
-	 * @param string  $method_name Name of the method.
-	 * @param mixed[] ...$args     Arguments for the invokation.
-	 * @return mixed               Result of the call.
-	 */
-	private function call_protected_method( $object, $method_name, ...$args ) {
-		$reflection = new ReflectionClass( get_class( $object ) );
-		$method     = $reflection->getMethod( $method_name );
-		$method->setAccessible( true );
-		return $method->invokeArgs( $object, $args );
+		PHPUnit_Utils::call_method( $this->sut, 'populate_context_from_order', [] );
 	}
 }

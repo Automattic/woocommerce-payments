@@ -79,10 +79,6 @@ class LegacyProxyTest extends WCPAY_UnitTestCase {
 		$this->mock_object = $this->createMock( ProxyObject::class );
 	}
 
-	public function test_function_exists() {
-		$this->assertTrue( $this->sut->function_exists( 'get_post' ) );
-	}
-
 	public function test_call_function() {
 		$param         = 'mock123';
 		$mock_response = 'response123';
