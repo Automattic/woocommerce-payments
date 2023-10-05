@@ -32,7 +32,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
 import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
-import DisputeSteps from './dispute-steps';
+import { DisputeSteps, InquirySteps } from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
@@ -164,8 +164,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	const { createErrorNotice } = useDispatch( 'core/notices' );
-	// This is a temporary restriction and can be removed once steps and actions for inquiries are implemented.
-	const showDisputeSteps = ! isInquiry( dispute );
 
 	const onModalClose = () => {
 		setModalOpen( false );
@@ -207,18 +205,23 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							) }
 						</InlineNotice>
 					) }
-					<DisputeSummaryRow
-						dispute={ dispute }
-						daysRemaining={ countdownDays }
-					/>
-					{ showDisputeSteps && (
+
+					<DisputeSummaryRow dispute={ dispute } />
+
+					{ isInquiry( dispute ) ? (
+						<InquirySteps
+							dispute={ dispute }
+							customer={ customer }
+							chargeCreated={ chargeCreated }
+						/>
+					) : (
 						<DisputeSteps
 							dispute={ dispute }
 							customer={ customer }
 							chargeCreated={ chargeCreated }
-							daysRemaining={ countdownDays }
 						/>
 					) }
+
 					<IssuerEvidenceList
 						issuerEvidence={ dispute.issuer_evidence }
 					/>
