@@ -51,7 +51,7 @@ import CancelAuthorizationButton from '../../components/cancel-authorization-but
 import { PaymentIntent } from '../../types/payment-intents';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
-import ErrorBoundary from 'wcpay/components/error-boundary';
+import ErrorBoundary from 'components/error-boundary';
 
 declare const window: any;
 
