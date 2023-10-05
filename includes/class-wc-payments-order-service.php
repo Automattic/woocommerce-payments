@@ -1270,7 +1270,7 @@ class WC_Payments_Order_Service {
 	/**
 	 * Composes url for dispute details page.
 	 *
-	 * @param string $charge_id Charge ID.
+	 * @param string $charge_id The disputed charge ID.
 	 *
 	 * @return string Transaction details page url.
 	 */
