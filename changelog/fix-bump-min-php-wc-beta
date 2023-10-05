@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Update automated test matrix to remove PHP 7.3 tests against WooCommerce beta.
+Comment: Update automated test matrix to remove PHP 7.3 testing against WooCommerce beta.
