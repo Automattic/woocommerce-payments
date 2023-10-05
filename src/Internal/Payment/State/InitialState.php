@@ -17,6 +17,9 @@ use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Internal\Payment\PaymentContext;
+use WCPay\Internal\Payment\PaymentRequest;
+use WCPay\Internal\Payment\PaymentRequestException;
 
 /**
  * Initial state, representing a freshly created payment.
@@ -77,14 +80,19 @@ class InitialState extends AbstractPaymentState {
 	/**
 	 * Initialtes the payment process.
 	 *
+	 * @param PaymentRequest $request    The incoming payment processing request.
 	 * @return CompletedState            The next state.
 	 * @throws StateTransitionException  In case the completed state could not be initialized.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception Order could not be found.
+	 * @throws PaymentRequestException   When data is not available or invalid.
 	 */
-	public function process() {
+	public function process( PaymentRequest $request ) {
 		$context  = $this->get_context();
 		$order_id = $context->get_order_id();
+
+		// Populate basic details from the request.
+		$this->populate_context_from_request( $request );
 
 		// Start by setting up all local objects.
 		$this->order_service->import_order_data_to_payment_context( $order_id, $context );
@@ -110,5 +118,32 @@ class InitialState extends AbstractPaymentState {
 
 		// If everything went well, transition to the completed state.
 		return $this->create_state( CompletedState::class );
+	}
+
+	/**
+	 * Populates the payment context before processing a payment.
+	 *
+	 * This method is the link between the payment request, and the payment process.
+	 * Use it to make sure that all necessary parameters are provided in advance,
+	 * or throw an exception otherwise. Once done, the payment process would rely
+	 * on all needed parameters being in place.
+	 *
+	 * @param PaymentRequest $request The request to use.
+	 * @throws PaymentRequestException When data is not available or invalid.
+	 */
+	private function populate_context_from_request( PaymentRequest $request ) {
+		$context = $this->get_context();
+
+		$context->set_payment_method( $request->get_payment_method() );
+
+		$cvc_confirmation = $request->get_cvc_confirmation();
+		if ( ! is_null( $cvc_confirmation ) ) {
+			$context->set_cvc_confirmation( $cvc_confirmation );
+		}
+
+		$fingerprint = $request->get_fingerprint();
+		if ( ! is_null( $fingerprint ) ) {
+			$context->set_fingerprint( $fingerprint );
+		}
 	}
 }

@@ -182,29 +182,4 @@ class PaymentRequest {
 
 		return null;
 	}
-
-	/**
-	 * Populates a payment context before processing a payment.
-	 *
-	 * This method is the link between the payment request, and the payment process.
-	 * Use it to make sure that all necessary parameters are provided in advance,
-	 * or throw an exception otherwise. Once done, the payment process would rely
-	 * on all needed parameters being in place.
-	 *
-	 * @param PaymentContext $context Context to populate.
-	 * @throws PaymentRequestException When data is not available or invalid.
-	 */
-	public function populate_context( PaymentContext $context ) {
-		$context->set_payment_method( $this->get_payment_method() );
-
-		$cvc_confirmation = $this->get_cvc_confirmation();
-		if ( ! is_null( $cvc_confirmation ) ) {
-			$context->set_cvc_confirmation( $cvc_confirmation );
-		}
-
-		$fingerprint = $this->get_fingerprint();
-		if ( ! is_null( $fingerprint ) ) {
-			$context->set_fingerprint( $fingerprint );
-		}
-	}
 }

@@ -18,6 +18,8 @@ use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\PaymentContext;
+use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
+use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\SystemErrorState;
 use WCPay\Internal\Service\Level3Service;
@@ -110,11 +112,14 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	 * @dataProvider provider_process
 	 */
 	public function test_process( Exception $exception = null ) {
-		$order_id    = 123;
-		$user_id     = 456;
-		$customer_id = 'cus_123';
-		$metadata    = [ 'gateway_type' => 'reengineered' ];
-		$level3_data = [ 'items' => [] ];
+		$order_id         = 123;
+		$user_id          = 456;
+		$customer_id      = 'cus_123';
+		$metadata         = [ 'gateway_type' => 'reengineered' ];
+		$level3_data      = [ 'items' => [] ];
+		$payment_method   = new NewPaymentMethod( 'pm_123' );
+		$fingerprint      = 'fingerprint';
+		$cvc_confirmation = 'CVCConfirmation';
 
 		$mock_order  = $this->createMock( WC_Order::class );
 		$mock_intent = $this->createMock( WC_Payments_API_Payment_Intention::class );
@@ -123,6 +128,29 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$this->mock_context->expects( $this->once() )
 			->method( 'get_order_id' )
 			->willReturn( $order_id );
+
+		// Setup the mock request.
+		$mock_request = $this->createMock( PaymentRequest::class );
+		$mock_request->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->willReturn( $payment_method );
+		$mock_request->expects( $this->once() )
+			->method( 'get_cvc_confirmation' )
+			->willReturn( $cvc_confirmation );
+		$mock_request->expects( $this->once() )
+			->method( 'get_fingerprint' )
+			->willReturn( $fingerprint );
+
+		// Assume that everything from the request would be imported into the context.
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( $payment_method );
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_cvc_confirmation' )
+			->with( $cvc_confirmation );
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_fingerprint' )
+			->with( $fingerprint );
 
 		// Arrange the import of order data to the payment.
 		$this->mock_order_service->expects( $this->once() )
@@ -190,7 +218,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->willReturn( $mock_final_state );
 
 		// Act: Process.
-		$result = $this->sut->process();
+		$result = $this->sut->process( $mock_request );
 
 		// Assert: Successful transition.
 		$this->assertSame( $mock_final_state, $result );

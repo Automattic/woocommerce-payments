@@ -10,7 +10,6 @@ namespace WCPay\Tests\Internal\Payment;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payment_Token;
 use WC_Payment_Tokens;
-use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
 use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
 use WCPay\Internal\Payment\PaymentRequest;
@@ -315,33 +314,5 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 		$sut    = new PaymentRequest( $this->mock_legacy_proxy, $request );
 		$result = $sut->get_fingerprint();
 		$this->assertSame( $expected, $result );
-	}
-
-	public function test_populate_context() {
-		$payment_method_id = 'pm_XYZ';
-
-		$cvc_key = 'wc-woocommerce_payments-payment-cvc-confirmation';
-		$sut     = new PaymentRequest(
-			$this->mock_legacy_proxy,
-			[
-				'payment_method'       => 'woocommerce_payments',
-				'wcpay-payment-method' => $payment_method_id,
-				$cvc_key               => 'CVCConfirmation',
-				'wcpay-fingerprint'    => 'finger-print',
-			]
-		);
-
-		$mock_context = $this->createMock( PaymentContext::class );
-		$mock_context->expects( $this->once() )
-			->method( 'set_payment_method' )
-			->with( $this->isInstanceOf( NewPaymentMethod::class ) );
-		$mock_context->expects( $this->once() )
-			->method( 'set_cvc_confirmation' )
-			->with( 'CVCConfirmation' );
-		$mock_context->expects( $this->once() )
-			->method( 'set_fingerprint' )
-			->with( 'finger-print' );
-
-		$sut->populate_context( $mock_context );
 	}
 }
