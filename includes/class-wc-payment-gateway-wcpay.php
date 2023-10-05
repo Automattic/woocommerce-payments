@@ -44,6 +44,7 @@ use WCPay\Tracker;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Payment\Factor;
 use WCPay\Internal\Payment\Router;
+use WCPay\Internal\Payment\State\CompletedState;
 
 /**
  * Gateway class for WooPayments
@@ -398,6 +399,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'link'              => 'link_payments',
 			'affirm'            => 'affirm_payments',
 			'afterpay_clearpay' => 'afterpay_clearpay_payments',
+			'klarna'            => 'klarna_payments',
 			'jcb'               => 'jcb_payments',
 		];
 
@@ -806,11 +808,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order Order that needs payment.
 	 * @return array|null     Array if processed, null if the new process is not supported.
+	 * @throws Exception      If the payment process could not be completed.
 	 */
 	public function new_process_payment( WC_Order $order ) {
 		// Important: No factors are provided here, they were meant just for `Feature`.
 		$service = wcpay_get_container()->get( PaymentProcessingService::class );
-		return $service->process_payment( $order->get_id() );
+		$state   = $service->process_payment( $order->get_id() );
+
+		if ( $state instanceof CompletedState ) {
+			return [
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			];
+		}
+
+		throw new Exception( __( 'The payment process could not be completed.', 'woocommerce-payments' ) );
 	}
 
 	/**
@@ -1602,7 +1614,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array Array of keyed metadata values.
 	 */
-	protected function get_metadata_from_order( $order, $payment_type ) {
+	public function get_metadata_from_order( $order, $payment_type ) {
 		if ( $this instanceof UPE_Split_Payment_Gateway ) {
 			$gateway_type = 'split_upe_with_deferred_intent_creation';
 		} elseif ( $this instanceof UPE_Payment_Gateway ) {

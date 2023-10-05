@@ -76,7 +76,7 @@ export type DisputeStatus =
 export interface Dispute {
 	status: DisputeStatus;
 	id: string;
-	evidence_details?: EvidenceDetails;
+	evidence_details: EvidenceDetails;
 	metadata: {
 		/* eslint-disable @typescript-eslint/naming-convention -- required to allow underscores in keys */
 		/**
