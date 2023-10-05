@@ -23,6 +23,15 @@ export function updateDispute( data ) {
 	};
 }
 
+export function updateErrorForDispute( id, data, error ) {
+	return {
+		type: TYPES.SET_ERROR_FOR_DISPUTE,
+		id,
+		data,
+		error,
+	};
+}
+
 export function updateDisputes( query, data ) {
 	return {
 		type: TYPES.SET_DISPUTES,
