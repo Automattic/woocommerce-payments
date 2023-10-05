@@ -80,6 +80,14 @@ class WooPay_Utilities {
 	}
 
 	/**
+	 * Check conditions to determine if woopay first party auth is enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_woopay_first_party_auth_enabled() {
+		return WC_Payments_Features::is_woopay_first_party_auth_enabled() && $this->is_country_available( WC_Payments::get_gateway() ); // Feature flag.
+	}
+	/**
 	 * Generates a hash based on the store's blog token, merchant ID, and the time step window.
 	 *
 	 * @return string

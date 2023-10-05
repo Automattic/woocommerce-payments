@@ -19,10 +19,6 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	const GIFT_CARDS_API            = 'woocommerce-gift-cards';
 	const GIFT_CARDS_BLOCKS         = 'wc-gift-cards-blocks';
 
-	const WOOCOMMERCE_MULTICURRENCY      = 'woocommerce-multicurrency';
-	const WOOCOMMERCE_MULTICURRENCY_PATH = 'woocommerce-multicurrency/woocommerce-multicurrency.php';
-	const AFFILIATE_FOR_WOOCOMMERCE      = 'affiliate-for-woocommerce';
-	const AFFILIATE_FOR_WOOCOMMERCE_PATH = 'affiliate-for-woocommerce/affiliate-for-woocommerce.php';
 	const AUTEMATEWOO_REFERRALS          = 'automatewoo-referrals';
 	const AUTEMATEWOO_REFERRALS_PATH     = 'automatewoo-referrals/automatewoo-referrals.php';
 
@@ -172,14 +168,14 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	public function get_extension_data() {
 		$extension_data = [];
 
-		if ( is_plugin_active( self::WOOCOMMERCE_MULTICURRENCY_PATH ) ) {
-			$extension_data[ self::WOOCOMMERCE_MULTICURRENCY ] = [
+		if ( defined( 'WOOCOMMERCE_MULTICURRENCY_VERSION' ) ) {
+			$extension_data[ 'woocommerce-multicurrency' ] = [
 				'currency' => get_woocommerce_currency(),
 			];
 		}
 
-		if ( is_plugin_active( self::AFFILIATE_FOR_WOOCOMMERCE_PATH ) && function_exists( 'afwc_get_referrer_id' ) ) {
-			$extension_data[ self::AFFILIATE_FOR_WOOCOMMERCE ] = [
+		if ( defined( 'AFWC_PLUGIN_FILE' ) && function_exists( 'afwc_get_referrer_id' ) ) {
+			$extension_data[ 'affiliate-for-woocommerce' ] = [
 				'affiliate-user' => afwc_get_referrer_id(),
 			];
 		}

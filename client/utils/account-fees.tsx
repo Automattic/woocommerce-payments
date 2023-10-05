@@ -395,6 +395,8 @@ export const getTransactionsPaymentMethodName = (
 			return __( 'Affirm transactions', 'woocommerce-payments' );
 		case 'afterpay_clearpay':
 			return __( 'Afterpay transactions', 'woocommerce-payments' );
+		case 'klarna':
+			return __( 'Klarna transactions', 'woocommerce-payments' );
 		default:
 			return __( 'Unknown transactions', 'woocommerce-payments' );
 	}

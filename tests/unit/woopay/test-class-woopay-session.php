@@ -5,10 +5,12 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\WooPay\WooPay_Session;
 use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
 use WCPay\Platform_Checkout\SessionHandler;
 use WCPay\WooPay\WooPay_Scheduler;
+use WCPay\MultiCurrency\MultiCurrency;
 
 /**
  * WooPay_Session unit tests.
@@ -18,6 +20,20 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 * @var Database_Cache|MockObject
 	 */
 	protected $mock_cache;
+
+	/**
+	 * Mock WC_Payments_Customer_Service.
+	 *
+	 * @var WC_Payments_Customer_Service|MockObject
+	 */
+	private $mock_customer_service;
+
+	/**
+	 * WC_Payments_Customer_Service.
+	 *
+	 * @var WC_Payments_Customer_Service
+	 */
+	private $original_customer_service;
 
 	public function set_up() {
 		parent::set_up();
@@ -33,6 +49,15 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
 		$_SERVER['REQUEST_URI']     = '/wp-json/wc/store/v1/checkout';
+
+		$this->mock_customer_service     = $this->createMock( WC_Payments_Customer_Service::class );
+		$this->original_customer_service = WC_Payments::get_customer_service();
+		WC_Payments::set_customer_service( $this->mock_customer_service );
+	}
+
+	public function tear_down() {
+		WC_Payments::set_customer_service( $this->original_customer_service );
+		parent::tear_down();
 	}
 
 	public function test_get_user_id_from_cart_token_with_guest_user() {
@@ -186,6 +211,62 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$updated_order = wc_get_order( $order->get_id() );
 		$this->assertEquals( $updated_order->get_meta( 'woopay_merchant_customer_id' ), $verified_user->ID );
 		$this->assertEquals( $updated_order->get_customer_id(), 0 );
+	}
+
+	public function test_session_currency_set_for_multi_currency_enabled() {
+		$user_id = 1;
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( $user_id )
+			->willReturn( $user_id );
+
+		// For multi-currency enabled.
+		update_option( '_wcpay_feature_customer_multi_currency', '1' );
+
+		// Set mismatched user and session currency codes.
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'ABC' );
+		wp_set_current_user( $user_id );
+		update_user_meta( $user_id, MultiCurrency::CURRENCY_META_KEY, 'DEF' );
+
+		WooPay_Session::get_frontend_init_session_request();
+
+		// Currency in session should have been modified.
+		$this->assertSame(
+			'DEF',
+			WC()->session->get( MultiCurrency::CURRENCY_SESSION_KEY )
+		);
+
+		// Destroy session data.
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, null );
+	}
+
+	public function test_session_currency_not_set_for_multi_currency_disabled() {
+		$user_id = 1;
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( $user_id )
+			->willReturn( $user_id );
+
+		// For multi-currency disabled.
+		update_option( '_wcpay_feature_customer_multi_currency', '0' );
+
+		// Set mismatched user and session currency codes.
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'ABC' );
+		wp_set_current_user( $user_id );
+		update_user_meta( $user_id, MultiCurrency::CURRENCY_META_KEY, 'DEF' );
+
+		WooPay_Session::get_frontend_init_session_request();
+
+		// Currency in session should NOT have been modified.
+		$this->assertSame(
+			'ABC',
+			WC()->session->get( MultiCurrency::CURRENCY_SESSION_KEY )
+		);
+
+		// Destroy session data.
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, null );
 	}
 
 	private function setup_session( $customer_id, $customer_email = null ) {

@@ -118,7 +118,8 @@ export function* submitCurrencySettings( currencyCode, settings ) {
 
 export function* submitStoreSettingsUpdate(
 	isAutoSwitchEnabled,
-	isStorefrontSwitcherEnabled
+	isStorefrontSwitcherEnabled,
+	suppressNotices = false
 ) {
 	try {
 		const result = yield apiFetch( {
@@ -135,6 +136,8 @@ export function* submitStoreSettingsUpdate(
 		} );
 
 		yield updateStoreSettings( result );
+
+		if ( suppressNotices ) return;
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			__( 'Store settings saved.', 'woocommerce-payments' )

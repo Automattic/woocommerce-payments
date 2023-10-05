@@ -70,7 +70,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		];
 		$wcpay_request->set_filters( $filters );
 
-		$response = $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+		$response = $wcpay_request->handle_rest_request();
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
@@ -96,7 +96,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		$wcpay_request->set_sort_by( 'date' ); // Default sort.
 		$wcpay_request->set_page_size( 1 ); // Set page size to limit to only one record.
 
-		$response = $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+		$response = $wcpay_request->handle_rest_request();
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
