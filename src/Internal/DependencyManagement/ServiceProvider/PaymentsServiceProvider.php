@@ -8,10 +8,14 @@
 namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
 use Automattic\WooCommerce\Utilities\PluginUtil;
+use WCPay\Container;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Payment\Router;
+use WCPay\Internal\Payment\State\CompletedState;
+use WCPay\Internal\Payment\State\InitialState;
+use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
@@ -28,6 +32,9 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	protected $provides = [
 		PaymentProcessingService::class,
 		Router::class,
+		StateFactory::class,
+		InitialState::class,
+		CompletedState::class,
 		ExampleService::class,
 		ExampleServiceWithDependencies::class,
 	];
@@ -38,7 +45,17 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	public function register(): void {
 		$container = $this->getContainer();
 
-		$container->addShared( PaymentProcessingService::class );
+		$container->addShared( StateFactory::class )
+			->addArgument( Container::class );
+
+		$container->addShared( PaymentProcessingService::class )
+			->addArgument( StateFactory::class );
+
+		$container->add( InitialState::class )
+			->addArgument( StateFactory::class );
+
+		$container->add( CompletedState::class )
+			->addArgument( StateFactory::class );
 
 		$container->addShared( Router::class )
 			->addArgument( Database_Cache::class );

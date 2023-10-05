@@ -23,6 +23,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Internal\Payment\Factor;
 use WCPay\Internal\Payment\Router;
+use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Payment_Information;
 use WCPay\WooPay\WooPay_Utilities;
@@ -2555,10 +2556,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// The new payment process is only accessible in dev mode.
 		WC_Payments::mode()->dev();
 
-		$mock_service  = $this->createMock( PaymentProcessingService::class );
-		$mock_router   = $this->createMock( Router::class );
-		$order         = WC_Helper_Order::create_order();
-		$mock_response = [ 'success' => 'maybe' ];
+		$mock_service = $this->createMock( PaymentProcessingService::class );
+		$mock_router  = $this->createMock( Router::class );
+		$order        = WC_Helper_Order::create_order();
+		$mock_state   = $this->createMock( CompletedState::class );
 
 		wcpay_get_test_container()->replace( PaymentProcessingService::class, $mock_service );
 		wcpay_get_test_container()->replace( Router::class, $mock_router );
@@ -2571,10 +2572,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_service->expects( $this->once() )
 			->method( 'process_payment' )
 			->with( $order->get_id() )
-			->willReturn( $mock_response );
+			->willReturn( $mock_state );
 
 		$result = $this->wcpay_gateway->process_payment( $order->get_id() );
-		$this->assertSame( $mock_response, $result );
+		$this->assertSame(
+			[
+				'result'   => 'success',
+				'redirect' => $order->get_checkout_order_received_url(),
+			],
+			$result
+		);
 	}
 
 	/**
