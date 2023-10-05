@@ -121,7 +121,7 @@ class OrderService {
 
 		if (
 			'recurring' === (string) $payment_type
-			&& $this->legacy_proxy->function_exists( 'wcs_order_contains_subscription' )
+			&& $this->legacy_proxy->call_function( 'function_exists', 'wcs_order_contains_subscription' )
 			&& $this->legacy_proxy->call_function( 'wcs_order_contains_subscription', $order, 'any' )
 		) {
 			$use_stripe_billing = $this->legacy_proxy->call_static( WC_Payments_Features::class, 'should_use_stripe_billing' );

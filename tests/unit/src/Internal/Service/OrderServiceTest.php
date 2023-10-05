@@ -161,20 +161,17 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 	public function test_get_payment_metadata_with_subscription( bool $is_renewal, bool $wcpay_subscription ) {
 		$mock_order = $this->createMock( WC_Order::class );
 
-		$this->mock_legacy_proxy->expects( $this->once() )
-			->method( 'function_exists' )
-			->with( 'wcs_order_contains_subscription' )
-			->willReturn( true );
-
-		$this->mock_legacy_proxy->expects( $this->exactly( 3 ) )
+		$this->mock_legacy_proxy->expects( $this->exactly( 4 ) )
 			->method( 'call_function' )
 			->withConsecutive(
 				[ 'wc_get_order', $this->order_id ],
+				[ 'function_exists', 'wcs_order_contains_subscription' ],
 				[ 'wcs_order_contains_subscription', $mock_order, 'any' ],
 				[ 'wcs_order_contains_renewal', $mock_order ]
 			)
 			->willReturnOnConsecutiveCalls(
 				$mock_order,
+				true,
 				true,
 				$is_renewal
 			);

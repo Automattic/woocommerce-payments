@@ -10,22 +10,10 @@ namespace WCPay\Internal\Proxy;
 /**
  * Legacy Proxy
  *
- * Used for accessing legacy code, incl. functions, static methods, and globals.
+ * Used for accessing legacy code (everything outside `src`), incl. functions, static methods, and globals.
  * Classes are handled through WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer.
  */
 class LegacyProxy {
-	/**
-	 * Checks if a function exists.
-	 *
-	 * Use this for WP, WC, and other generic non-native PHP functions.
-	 *
-	 * @param string $name Name of the function.
-	 * @return bool
-	 */
-	public function function_exists( string $name ): bool {
-		return function_exists( $name );
-	}
-
 	/**
 	 * Calls a function outside of `src`.
 	 *
