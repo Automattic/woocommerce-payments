@@ -54,8 +54,32 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/customers/cus_123456/paym
       "exp_month": 10,
       "exp_year": 2028
     }
+  },
+  {
+    "id": "pm_2BcYd3e6hKjZLQWQmMnOjK45",
+    "type": "card",
+    "billing_details": {
+      "address": {
+        "city": "New York",
+        "country": "US",
+        "line1": "456 Broadway Ave",
+        "line2": null,
+        "postal_code": "10012",
+        "state": "NY"
+      },
+      "email": "jane.smith@example.com",
+      "name": "Jane Smith",
+      "phone": null
+    },
+    "card": {
+      "brand": "mastercard",
+      "last4": "3344",
+      "exp_month": 12,
+      "exp_year": 2027
+    }
   }
 ]
+
 ```
 
 ```json
