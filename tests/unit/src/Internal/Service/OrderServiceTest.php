@@ -88,7 +88,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->willReturn( false );
 
 		$this->expectException( Order_Not_Found_Exception::class );
-		$this->expectExceptionMessage( 'The requested order was not found.' );
+		$this->expectExceptionMessage( "The requested order (ID $this->order_id) was not found." );
 		$this->sut->_deprecated_get_order( $this->order_id );
 	}
 
