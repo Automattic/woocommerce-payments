@@ -421,3 +421,35 @@ export const getShippingDetails = ( fields ) => {
 
 	return billingAsShippingAddress;
 };
+
+/**
+ * Hides payment method if it has set specific countries in the PHP class.
+ *
+ * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ * @return {boolean} Whether the payment method is restricted to selected billing country.
+ **/
+export const isPaymentMethodRestrictedToLocation = ( upeElement ) => {
+	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+	const paymentMethodType = upeElement.dataset.paymentMethodType;
+	return !! paymentMethodsConfig[ paymentMethodType ].countries.length;
+};
+
+/**
+ * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ **/
+export const togglePaymentMethodForCountry = ( upeElement ) => {
+	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+	const paymentMethodType = upeElement.dataset.paymentMethodType;
+	const supportedCountries =
+		paymentMethodsConfig[ paymentMethodType ].countries;
+
+	const billingCountry = document.getElementById( 'billing_country' ).value;
+	const upeContainer = document.querySelector(
+		'.payment_method_woocommerce_payments_' + paymentMethodType
+	);
+	if ( supportedCountries.includes( billingCountry ) ) {
+		upeContainer.style.display = 'block';
+	} else {
+		upeContainer.style.display = 'none';
+	}
+};

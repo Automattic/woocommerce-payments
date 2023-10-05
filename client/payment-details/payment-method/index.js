@@ -3,32 +3,38 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
 import Loadable from 'components/loadable';
-import CardDetails from './card';
-import CardPresentDetails from './card-present';
+import AffirmDetails from './affirm';
+import AfterpayClearpayDetails from './afterpay-clearpay';
 import BancontactDetails from './bancontact';
 import BecsDetails from './becs';
+import CardDetails from './card';
+import CardPresentDetails from './card-present';
 import EpsDetails from './eps';
 import GiropayDetails from './giropay';
 import IdealDetails from './ideal';
+import KlarnaDetails from './klarna';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
 
 const detailsComponentMap = {
-	card: CardDetails,
-	card_present: CardPresentDetails,
+	affirm: AffirmDetails,
+	afterpay_clearpay: AfterpayClearpayDetails,
 	au_becs_debit: BecsDetails,
 	bancontact: BancontactDetails,
+	card: CardDetails,
+	card_present: CardPresentDetails,
 	eps: EpsDetails,
 	giropay: GiropayDetails,
 	ideal: IdealDetails,
+	klarna: KlarnaDetails,
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
