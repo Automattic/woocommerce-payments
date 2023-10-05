@@ -48,7 +48,6 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 		$this->sut->set_amount( $amount );
 		$this->assertSame( $amount, $this->sut->get_amount() );
 	}
-
 	public function test_payment_method() {
 		$payment_method = new NewPaymentMethod( 'pm_XYZ' );
 
