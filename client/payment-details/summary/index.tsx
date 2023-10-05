@@ -36,6 +36,7 @@ import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
 import { ClickTooltip } from 'components/tooltip';
+import DisputeStatusChip from 'components/dispute-status-chip';
 import {
 	getDisputeFeeFormatted,
 	isAwaitingResponse,
@@ -233,12 +234,22 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<span className="payment-details-summary__amount-currency">
 									{ charge.currency || 'USD' }
 								</span>
-								<PaymentStatusChip
-									status={ getChargeStatus(
-										charge,
-										paymentIntent
-									) }
-								/>
+								{ charge.dispute ? (
+									<DisputeStatusChip
+										status={ charge.dispute.status }
+										dueBy={
+											charge.dispute.evidence_details
+												?.due_by
+										}
+									/>
+								) : (
+									<PaymentStatusChip
+										status={ getChargeStatus(
+											charge,
+											paymentIntent
+										) }
+									/>
+								) }
 							</Loadable>
 						</p>
 						<div className="payment-details-summary__breakdown">
