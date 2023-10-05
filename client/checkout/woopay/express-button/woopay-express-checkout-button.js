@@ -34,6 +34,7 @@ export const WoopayExpressCheckoutButton = ( {
 	const sessionDataPromiseRef = useRef( null );
 	const initWoopayRef = useRef( null );
 	const buttonRef = useRef( null );
+	const isLoadingRef = useRef( false );
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
 	const [ isLoading, setIsLoading ] = useState( false );
 	const [ buttonWidthType, setButtonWidthType ] = useState(
@@ -177,11 +178,12 @@ export const WoopayExpressCheckoutButton = ( {
 			initWoopayRef.current = ( e ) => {
 				e.preventDefault();
 
-				if ( isPreview || isLoading ) {
+				if ( isPreview || isLoadingRef.current ) {
 					return;
 				}
 
-				// Set isLoading to true to prevent multiple clicks.
+				// Set isLoadingRef to true to prevent multiple clicks.
+				isLoadingRef.current = true;
 				setIsLoading( true );
 
 				wcpayTracks.recordUserEvent(
@@ -233,6 +235,7 @@ export const WoopayExpressCheckoutButton = ( {
 									'woocommerce-payments'
 								);
 								showErrorMessage( context, errorMessage );
+								isLoadingRef.current = false;
 								setIsLoading( false );
 							} );
 					} );
@@ -254,6 +257,7 @@ export const WoopayExpressCheckoutButton = ( {
 								'woocommerce-payments'
 							);
 							showErrorMessage( context, errorMessage );
+							isLoadingRef.current = false;
 							setIsLoading( false );
 						} );
 				}
@@ -261,7 +265,7 @@ export const WoopayExpressCheckoutButton = ( {
 		} );
 
 		return iframe;
-	}, [ isProductPage, isPreview, isLoading, context, listenForCartChanges ] );
+	}, [ isProductPage, context, isPreview, listenForCartChanges ] );
 
 	useEffect( () => {
 		if ( isPreview || ! getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
@@ -306,6 +310,7 @@ export const WoopayExpressCheckoutButton = ( {
 
 				// Set button's default onClick handle to use modal checkout flow.
 				initWoopayRef.current = defaultOnClick;
+				isLoadingRef.current = false;
 				setIsLoading( false );
 			}
 		};
@@ -315,6 +320,7 @@ export const WoopayExpressCheckoutButton = ( {
 		return () => {
 			window.removeEventListener( 'message', onMessage );
 		};
+		// Note: Any changes to this dependency array may cause a duplicate iframe to be appended.
 	}, [ context, defaultOnClick, isPreview, isProductPage, newIframe ] );
 
 	useEffect( () => {
@@ -326,6 +332,7 @@ export const WoopayExpressCheckoutButton = ( {
 		const handlePageShow = ( event ) => {
 			// Re-enable the button after navigating back/forward to the page if bfcache is used.
 			if ( event?.persisted ) {
+				isLoadingRef.current = false;
 				setIsLoading( false );
 			}
 		};
