@@ -170,7 +170,7 @@ function CustomSelectControl< ItemType extends Item >( {
 						'components-custom-select-control__button',
 						{ placeholder: ! itemString }
 					),
-					name: name,
+					name,
 				} ) }
 			>
 				<span className="components-custom-select-control__button-value">

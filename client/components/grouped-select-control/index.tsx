@@ -178,7 +178,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 						'components-text-control__input wcpay-component-grouped-select-control__button',
 						{ placeholder }
 					),
-					name: name,
+					name,
 				} ) }
 			>
 				<span className="wcpay-component-grouped-select-control__button-value">
