@@ -82,7 +82,6 @@ class WC_Payments_Account {
 		$this->database_cache           = $database_cache;
 		$this->action_scheduler_service = $action_scheduler_service;
 		$this->session_service          = $session_service;
-
 	}
 
 	/**
