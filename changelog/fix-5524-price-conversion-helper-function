@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add helper function/method for raw currency amount conversion.
