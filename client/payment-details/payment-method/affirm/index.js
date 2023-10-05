@@ -63,14 +63,14 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 					isLoading={ isLoading }
 					label={ __( 'Owner', 'woocommerce-payments' ) }
 				>
-					{ name }
+					{ name || '–' }
 				</Detail>
 
 				<Detail
 					isLoading={ isLoading }
 					label={ __( 'Owner email', 'woocommerce-payments' ) }
 				>
-					{ email }
+					{ email || '–' }
 				</Detail>
 
 				<Detail
@@ -79,7 +79,7 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 				>
 					<span
 						dangerouslySetInnerHTML={ {
-							__html: formattedAddress,
+							__html: formattedAddress || '–',
 						} }
 					/>
 				</Detail>
