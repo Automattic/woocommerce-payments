@@ -118,10 +118,10 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'call_function' )
 			->with( 'wc_get_order', $this->order_id )
-			->willThrowException( new Order_Not_Found_Exception( 'The requested order was not found.', 'order_not_found' ) );
+			->willThrowException( new Order_Not_Found_Exception( "The requested order (ID $this->order_id) was not found.", 'order_not_found' ) );
 
 		$this->expectException( Order_Not_Found_Exception::class );
-		$this->expectExceptionMessage( 'The requested order was not found.' );
+		$this->expectExceptionMessage( "The requested order (ID $this->order_id) was not found." );
 
 		// Go through `_deprecated_get_order` to call `get_order`.
 		$this->sut->_deprecated_get_order( $this->order_id );

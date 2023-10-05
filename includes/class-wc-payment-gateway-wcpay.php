@@ -1618,7 +1618,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
 		$service  = wcpay_get_container()->get( OrderService::class );
-		$metadata = $service->get_payment_metadata( $order->get_id(), $payment_type ) ?? [];
+		$metadata = $service->get_payment_metadata( $order->get_id(), $payment_type );
 
 		if ( $this instanceof UPE_Split_Payment_Gateway ) {
 			$gateway_type = 'split_upe_with_deferred_intent_creation';
