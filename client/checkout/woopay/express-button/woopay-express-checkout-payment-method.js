@@ -42,7 +42,7 @@ const WooPayExpressCheckoutButtonContainer = () => {
 	return <span ref={ onRefChange } />;
 };
 
-const WooPayExpressCheckoutPaymentMethod = () => ( {
+const wooPayExpressCheckoutPaymentMethod = () => ( {
 	name: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	content: <WooPayExpressCheckoutButtonContainer />,
 	edit: (
@@ -59,4 +59,4 @@ const WooPayExpressCheckoutPaymentMethod = () => ( {
 	},
 } );
 
-export default WooPayExpressCheckoutPaymentMethod;
+export default wooPayExpressCheckoutPaymentMethod;
