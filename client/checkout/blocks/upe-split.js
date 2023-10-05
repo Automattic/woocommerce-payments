@@ -30,6 +30,7 @@ import {
 	PAYMENT_METHOD_NAME_SOFORT,
 	PAYMENT_METHOD_NAME_AFFIRM,
 	PAYMENT_METHOD_NAME_AFTERPAY,
+	PAYMENT_METHOD_NAME_KLARNA,
 } from '../constants.js';
 import { getSplitUPEFields } from './upe-split-fields';
 import { getDeferredIntentCreationUPEFields } from './upe-deferred-intent-creation/payment-elements';
@@ -46,6 +47,7 @@ const upeMethods = {
 	sofort: PAYMENT_METHOD_NAME_SOFORT,
 	affirm: PAYMENT_METHOD_NAME_AFFIRM,
 	afterpay_clearpay: PAYMENT_METHOD_NAME_AFTERPAY,
+	klarna: PAYMENT_METHOD_NAME_KLARNA,
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );

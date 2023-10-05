@@ -34,6 +34,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 		$this->incentives_service  = new WC_Payments_Incentives_Service( $this->mock_database_cache );
+		$this->incentives_service->init_hooks();
 
 		global $menu;
 		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
@@ -48,27 +49,6 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		global $menu;
 		$menu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 	}
-
-	/**
-	 * Mocked incentive data.
-	 *
-	 * @var array
-	 */
-	private $mock_incentive_data = [
-		'incentive'    => [
-			'id'          => 'incentive_id',
-			'type'        => 'connect_page',
-			'description' => 'incentive_description',
-			'tc_url'      => 'incentive_tc_url',
-		],
-		// This is the hash of the test store context:
-		// 'country' => 'US',
-		// 'locale' => 'en_US',
-		// 'has_orders' => false,
-		// 'has_payments' => false,
-		// 'has_wcpay' => false.
-		'context_hash' => '6d37bc19d822af681f896b21065134c7',
-	];
 
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_action( 'admin_menu', [ $this->incentives_service, 'add_payments_menu_badge' ] ) );
@@ -267,4 +247,25 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			}
 		);
 	}
+
+	/**
+	 * Mocked incentive data.
+	 *
+	 * @var array
+	 */
+	private $mock_incentive_data = [
+		'incentive'    => [
+			'id'          => 'incentive_id',
+			'type'        => 'connect_page',
+			'description' => 'incentive_description',
+			'tc_url'      => 'incentive_tc_url',
+		],
+		// This is the hash of the test store context:
+		// 'country' => 'US',
+		// 'locale' => 'en_US',
+		// 'has_orders' => false,
+		// 'has_payments' => false,
+		// 'has_wcpay' => false.
+		'context_hash' => '6d37bc19d822af681f896b21065134c7',
+	];
 }

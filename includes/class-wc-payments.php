@@ -17,6 +17,7 @@ use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
+use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
@@ -39,6 +40,8 @@ use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Internal\Service\Level3Service;
+use WCPay\Internal\Service\OrderService;
 use WCPay\WooPay\WooPay_Scheduler;
 use WCPay\WooPay\WooPay_Session;
 
@@ -404,6 +407,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-link-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-affirm-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-klarna-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -457,11 +461,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
-
-		// Load customer multi-currency if feature is enabled.
-		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
-			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
-		}
+		include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();
@@ -498,7 +498,11 @@ class WC_Payments {
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
+		// Initialise hooks.
+		self::$account->init_hooks();
 		self::$fraud_service->init_hooks();
+		self::$onboarding_service->init_hooks();
+		self::$incentives_service->init_hooks();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service );
 
@@ -515,6 +519,7 @@ class WC_Payments {
 			Link_Payment_Method::class,
 			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
+			Klarna_Payment_Method::class,
 		];
 		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_methods = [];
@@ -1066,7 +1071,12 @@ class WC_Payments {
 		}
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
-		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller(
+			self::$api_client,
+			self::get_gateway(),
+			wcpay_get_container()->get( OrderService::class ),
+			wcpay_get_container()->get( Level3Service::class )
+		);
 		$payment_intents_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
@@ -1275,6 +1285,15 @@ class WC_Payments {
 	 */
 	public static function get_customer_service_api(): WC_Payments_Customer_Service_API {
 		return self::$customer_service_api;
+	}
+
+	/**
+	 * Returns the order service instance.
+	 *
+	 * @return WC_Payments_Order_Service
+	 */
+	public static function get_order_service(): WC_Payments_Order_Service {
+		return self::$order_service;
 	}
 
 	/**

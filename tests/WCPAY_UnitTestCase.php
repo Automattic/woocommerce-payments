@@ -53,7 +53,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 * @param  WC_Payments_API_Client $api_client_mock              Specific API client mock if necessary.
 	 * @param  WC_Payments_Http       $http_mock                    Specific HTTP mock if necessary.
 	 *
-	 * @return Request                                                      The mocked request.
+	 * @return Request|MockObject                                   The mocked request.
 	 */
 	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $request_class_constructor_id = null, $response = null, $api_client_mock = null, $http_mock = null ) {
 		$http_mock       = $http_mock ? $http_mock : $this->createMock( WC_Payments_Http::class );
