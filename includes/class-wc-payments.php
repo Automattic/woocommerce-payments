@@ -40,6 +40,8 @@ use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Internal\Service\Level3Service;
+use WCPay\Internal\Service\OrderService;
 use WCPay\WooPay\WooPay_Scheduler;
 use WCPay\WooPay\WooPay_Session;
 
@@ -1073,7 +1075,12 @@ class WC_Payments {
 		}
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
-		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client, self::get_gateway() );
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller(
+			self::$api_client,
+			self::get_gateway(),
+			wcpay_get_container()->get( OrderService::class ),
+			wcpay_get_container()->get( Level3Service::class )
+		);
 		$payment_intents_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
