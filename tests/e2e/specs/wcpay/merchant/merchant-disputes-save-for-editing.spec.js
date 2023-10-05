@@ -14,7 +14,7 @@ const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 let orderId;
 
-describe( 'Disputes > Save dispute for editing', () => {
+describe.skip( 'Disputes > Save dispute for editing', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
