@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
  */
 import { PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT } from '../../constants';
 import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
-import { getConfig } from 'wcpay/utils/checkout';
+import { getConfig } from '../../../utils/checkout';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
 
