@@ -1,6 +1,6 @@
 # Customer
 
-The Customers API endpoints provide access to customer data. This includes payment methods and other key information useful for your applications.
+The Customers API endpoints provide access to customer data. This includes payment methods and other key information useful for your application.
 
 
 ## Get customer's payment methods
