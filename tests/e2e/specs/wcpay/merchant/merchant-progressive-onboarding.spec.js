@@ -69,24 +69,20 @@ describe( 'Admin merchant progressive onboarding', () => {
 			text: 'Tell us about your business',
 		} );
 		// pick Individual business entity
-		await expect( page ).toClick(
-			'[name="business_type"] button.components-custom-select-control__button'
-		);
+		await expect( page ).toClick( '[name="business_type"]' );
 		await page.waitForSelector(
-			'[name="business_type"] li.components-custom-select-control__item'
+			'[name="business_type"] ~ ul li.components-custom-select-control__item'
 		);
 		await expect( page ).toClick(
-			'[name="business_type"] li.components-custom-select-control__item'
+			'[name="business_type"] ~ ul li.components-custom-select-control__item'
 		);
 		// pick Software type of goods
-		await expect( page ).toClick(
-			'[name="mcc"] button.wcpay-component-grouped-select-control__button'
-		);
+		await expect( page ).toClick( '[name="mcc"]' );
 		await page.waitForSelector(
-			'[name="mcc"] li.wcpay-component-grouped-select-control__item:not(.is-group)'
+			'[name="mcc"] ~ ul li.wcpay-component-grouped-select-control__item:not(.is-group)'
 		);
 		await expect( page ).toClick(
-			'[name="mcc"] li.wcpay-component-grouped-select-control__item:not(.is-group)'
+			'[name="mcc"] ~ ul li.wcpay-component-grouped-select-control__item:not(.is-group)'
 		);
 		await expect( page ).toClick(
 			'div.stepper__content button.components-button.is-primary',
@@ -99,23 +95,19 @@ describe( 'Admin merchant progressive onboarding', () => {
 		await expect( page ).toMatchElement( 'h1.stepper__heading', {
 			text: 'Please share a few more details',
 		} );
-		await expect( page ).toClick(
-			'[name="annual_revenue"] button.components-custom-select-control__button'
-		);
+		await expect( page ).toClick( '[name="annual_revenue"]' );
 		await page.waitForSelector(
-			'[name="annual_revenue"] li.components-custom-select-control__item'
+			'[name="annual_revenue"] ~ ul li.components-custom-select-control__item'
 		);
 		await expect( page ).toClick(
-			'[name="annual_revenue"] li.components-custom-select-control__item'
+			'[name="annual_revenue"] ~ ul li.components-custom-select-control__item'
 		);
-		await expect( page ).toClick(
-			'[name="go_live_timeframe"] button.components-custom-select-control__button'
-		);
+		await expect( page ).toClick( '[name="go_live_timeframe"]' );
 		await page.waitForSelector(
-			'[name="go_live_timeframe"] li.components-custom-select-control__item'
+			'[name="go_live_timeframe"] ~ ul li.components-custom-select-control__item'
 		);
 		await expect( page ).toClick(
-			'[name="go_live_timeframe"] li.components-custom-select-control__item'
+			'[name="go_live_timeframe"] ~ ul li.components-custom-select-control__item'
 		);
 		await expect( page ).toClick(
 			'div.stepper__content button.components-button.is-primary',
