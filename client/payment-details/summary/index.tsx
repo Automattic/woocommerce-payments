@@ -241,6 +241,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											charge.dispute.evidence_details
 												?.due_by
 										}
+										includeTransactionType={ true }
 									/>
 								) : (
 									<PaymentStatusChip
