@@ -67,31 +67,6 @@ class OrderService {
 	/**
 	 * Retrieves the order object.
 	 *
-	 * This method should be only used internally within this service.
-	 * Other `src` methods and services should not access and manipulate
-	 * order data directly, utilizing this service instead.
-	 *
-	 * Unlike the legacy service, this one only accepts integer IDs,
-	 * and returns only the `WC_Order` object, no refunds.
-	 *
-	 * @param int $order_id ID of the order.
-	 * @return WC_Order Order object.
-	 * @throws Order_Not_Found_Exception If the order could not be found.
-	 */
-	private function get_order( int $order_id ): WC_Order {
-		$order = $this->legacy_proxy->call_function( 'wc_get_order', $order_id );
-		if ( ! $order instanceof WC_Order ) {
-			throw new Order_Not_Found_Exception(
-				__( 'The requested order was not found.', 'woocommerce-payments' ),
-				'order_not_found'
-			);
-		}
-		return $order;
-	}
-
-	/**
-	 * Retrieves the order object.
-	 *
 	 * Please restrain from using this method!
 	 * It can only be used to (temporarily) provide the order object
 	 * to legacy (`includes`) services, which are not adapted to work
@@ -157,5 +132,34 @@ class OrderService {
 		}
 
 		return $this->hooks_proxy->apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
+	}
+
+	/**
+	 * Retrieves the order object.
+	 *
+	 * This method should be only used internally within this service.
+	 * Other `src` methods and services should not access and manipulate
+	 * order data directly, utilizing this service instead.
+	 *
+	 * Unlike the legacy service, this one only accepts integer IDs,
+	 * and returns only the `WC_Order` object, no refunds.
+	 *
+	 * @param int $order_id ID of the order.
+	 * @return WC_Order Order object.
+	 * @throws Order_Not_Found_Exception If the order could not be found.
+	 */
+	private function get_order( int $order_id ): WC_Order {
+		$order = $this->legacy_proxy->call_function( 'wc_get_order', $order_id );
+		if ( ! $order instanceof WC_Order ) {
+			throw new Order_Not_Found_Exception(
+				sprintf(
+					// Translators: %d is the ID of an order.
+					__( 'The requested order (ID %d) was not found.', 'woocommerce-payments' ),
+					$order_id
+				),
+				'order_not_found'
+			);
+		}
+		return $order;
 	}
 }
