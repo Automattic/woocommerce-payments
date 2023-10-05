@@ -27,11 +27,13 @@ export interface GroupedSelectControlProps< ItemType > {
 	value?: ItemType | null;
 	placeholder?: string;
 	searchable?: boolean;
+	name?: string;
 	className?: string;
 	onChange?: ( changes: Partial< UseSelectState< ItemType > > ) => void;
 }
 
 const GroupedSelectControl = < ItemType extends ListItem >( {
+	name,
 	className,
 	label,
 	options: listItems,
@@ -176,6 +178,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 						'components-text-control__input wcpay-component-grouped-select-control__button',
 						{ placeholder }
 					),
+					name,
 				} ) }
 			>
 				<span className="wcpay-component-grouped-select-control__button-value">
