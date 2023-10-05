@@ -48,6 +48,7 @@ class LegacyContainerTest extends WCPAY_UnitTestCase {
 			[ \WC_Payments_Action_Scheduler_Service::class ],
 			[ \WC_Payments_Fraud_Service::class ],
 			[ \WC_Payments_Customer_Service::class ],
+			[ \WC_Payments_Order_Service::class ],
 		];
 	}
 

@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Refactor to move hook initialisation out of constructors.
