@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Redirect back to the connect page when attempting to access the new onboarding flow without a server connection.
