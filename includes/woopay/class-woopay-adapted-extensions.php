@@ -19,9 +19,6 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	const GIFT_CARDS_API            = 'woocommerce-gift-cards';
 	const GIFT_CARDS_BLOCKS         = 'wc-gift-cards-blocks';
 
-	const AUTEMATEWOO_REFERRALS          = 'automatewoo-referrals';
-	const AUTEMATEWOO_REFERRALS_PATH     = 'automatewoo-referrals/automatewoo-referrals.php';
-
 	/**
 	 * Initializa WC Blocks regitered integrations.
 	 */
@@ -180,19 +177,11 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 			];
 		}
 
-		if ( is_plugin_active( self::AUTEMATEWOO_REFERRALS_PATH ) &&
-			function_exists( 'AW_Referrals' ) &&
-			method_exists( AW_Referrals(), 'options' ) &&
-			AW_Referrals()->options()->type === 'link' &&
-			class_exists(
-				'\AutomateWoo\Referrals\Referral_Manager'
-			) &&
-			method_exists( \AutomateWoo\Referrals\Referral_Manager::class, 'get_advocate_key_from_cookie' )
-		) {
-			$advocate_from_key_cookie = \AutomateWoo\Referrals\Referral_Manager::get_advocate_key_from_cookie();
+		if ( $this->is_automate_woo_referrals_enabled() ) {
+			$advocate_id = $this->get_automate_woo_advocate_id_from_cookie();
 
-			$extension_data[ self::AUTEMATEWOO_REFERRALS ] = [
-				'advocate_id' => $advocate_from_key_cookie->get_advocate_id(),
+			$extension_data[ 'automatewoo-referrals' ] = [
+				'advocate_id' => $advocate_id,
 			];
 		}
 
@@ -208,11 +197,9 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	 * @param int $order_id The successful WooPay order.
 	 */
 	public function update_order_extension_data( $order_id ) {
-		if ( ! empty( $_GET['affiliate'] ) // phpcs:ignore WordPress.Security.NonceVerification
-			&& is_plugin_active( self::AFFILIATE_FOR_WOOCOMMERCE_PATH )
-			&& class_exists( 'AFWC_API' )
-			&& method_exists( 'AFWC_API', 'get_instance' )
-			&& method_exists( 'AFWC_API', 'track_conversion' )
+		if (
+			! empty( $_GET['affiliate'] ) && // phpcs:ignore WordPress.Security.NonceVerification
+			$this->is_automate_woo_referrals_enabled()
 		) {
 			$affiliate_id = wc_clean( wp_unslash( $_GET['affiliate'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
@@ -240,5 +227,32 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if Automate Woo Referrals is enabled and
+	 * its functions used on WCPay are available.
+	 *
+	 * @return boolean
+	 */
+	private function is_automate_woo_referrals_enabled() {
+		return is_plugin_active( 'automatewoo-referrals/automatewoo-referrals.php' ) &&
+		function_exists( 'AW_Referrals' ) &&
+		method_exists( AW_Referrals(), 'options' ) &&
+		AW_Referrals()->options()->type === 'link' &&
+		class_exists( '\AutomateWoo\Referrals\Referral_Manager' ) &&
+		method_exists( \AutomateWoo\Referrals\Referral_Manager::class, 'get_advocate_key_from_cookie' ) && class_exists( 'AFWC_API' ) &&
+		method_exists( 'AFWC_API', 'get_instance' ) &&
+		method_exists( 'AFWC_API', 'track_conversion' );
+	}
+
+	/**
+	 * Get AutomateWoo advocate id from cookie.
+	 *
+	 * @return string|null
+	 */
+	private function get_automate_woo_advocate_id_from_cookie() {
+		$advocate_from_key_cookie = \AutomateWoo\Referrals\Referral_Manager::get_advocate_key_from_cookie();
+		return $advocate_from_key_cookie ? $advocate_from_key_cookie->get_advocate_id() : null;
 	}
 }
