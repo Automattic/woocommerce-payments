@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add current user data to the onboarding init request payload. This data is used for fraud prevention.
