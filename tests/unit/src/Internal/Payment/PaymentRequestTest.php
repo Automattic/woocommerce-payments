@@ -10,6 +10,7 @@ namespace WCPay\Tests\Internal\Payment;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payment_Token;
 use WC_Payment_Tokens;
+use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
 use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
 use WCPay\Internal\Payment\PaymentRequest;
@@ -199,6 +200,12 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 			$request
 		);
 		$mock_token = $this->createMock( WC_Payment_Token::class );
+		$mock_token->expects( $this->once() )
+			->method( 'get_token' )
+			->willReturn( 'pm_saved_method' );
+		$mock_token->expects( $this->once() )
+			->method( 'get_id' )
+			->willReturn( 123 );
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'call_static' )
 			->with( WC_Payment_Tokens::class, 'get', 123456 )
@@ -209,12 +216,11 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 
 		// Assert: correct type of instance.
 		$this->assertInstanceOf( SavedPaymentMethod::class, $pm );
-
-		// Assert: the same payment method string saved in the token object.
-		$mock_token->expects( $this->once() )
-			->method( 'get_token' )
-			->willReturn( 'pm_saved_method' );
-		$this->assertSame( $pm->get_id(), 'pm_saved_method' );
+		if ( $pm instanceof SavedPaymentMethod ) { // Let IDEs understand the type.
+			// Assert: the same payment method string saved in the token object.
+			$this->assertSame( 'pm_saved_method', $pm->get_id() );
+			$this->assertSame( 123, $pm->get_token_id() );
+		}
 	}
 
 	public function test_get_payment_return_new_payment_method() {
@@ -243,5 +249,24 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 		$this->expectExceptionMessage( 'No valid payment method was selected.' );
 
 		$this->sut->get_payment_method();
+	}
+
+	public function test_populate_context() {
+		$payment_method_id = 'pm_XYZ';
+
+		$sut = new PaymentRequest(
+			$this->mock_legacy_proxy,
+			[
+				'payment_method'       => 'woocommerce_payments',
+				'wcpay-payment-method' => $payment_method_id,
+			]
+		);
+
+		$mock_context = $this->createMock( PaymentContext::class );
+		$mock_context->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( $this->isInstanceOf( NewPaymentMethod::class ) );
+
+		$sut->populate_context( $mock_context );
 	}
 }
