@@ -227,7 +227,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		// Set mismatched user and session currency codes.
 		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'ABC' );
 		wp_set_current_user( $user_id );
-		update_user_meta( 1, MultiCurrency::CURRENCY_META_KEY, 'DEF' );
+		update_user_meta( $user_id, MultiCurrency::CURRENCY_META_KEY, 'DEF' );
 
 		WooPay_Session::get_frontend_init_session_request();
 
