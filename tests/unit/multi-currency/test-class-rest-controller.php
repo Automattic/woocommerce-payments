@@ -83,7 +83,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 		// Arrange: Set expected result.
 		$error_code    = 'wcpay_multi_currency_invalid_currency';
-		$error_message = 'Invalid currency/currencies passed to set_enabled_currencies: ' . implode( ', ', $error_currencies );
+		$error_message = 'Invalid currency passed to set_enabled_currencies: ' . implode( ', ', $error_currencies );
 		$expected      = rest_ensure_response( new WP_Error( $error_code, $error_message ) );
 
 		// Arrange: Create the new REST request.

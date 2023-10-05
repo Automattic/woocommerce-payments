@@ -58,10 +58,10 @@ interface OnboardingTextFieldProps extends Partial< TextFieldProps > {
 	name: keyof OnboardingFields;
 }
 
-export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
-	name,
-	...rest
-} ) => {
+export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = (
+	props
+) => {
+	const { name } = props;
 	const { data, setData, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 	const inputRef = React.useRef< HTMLInputElement >( null );
@@ -85,7 +85,7 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 				if ( event.key === 'Enter' ) validate();
 			} }
 			error={ error() }
-			{ ...rest }
+			{ ...props }
 		/>
 	);
 };
@@ -95,10 +95,10 @@ interface OnboardingPhoneNumberFieldProps
 	name: keyof OnboardingFields;
 }
 
-export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldProps > = ( {
-	name,
-	...rest
-} ) => {
+export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldProps > = (
+	props
+) => {
+	const { name } = props;
 	const { data, setData, temp, setTemp, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
@@ -117,7 +117,7 @@ export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldPro
 			onKeyDown={ ( event: React.KeyboardEvent< HTMLInputElement > ) => {
 				if ( event.key === 'Enter' ) validate();
 			} }
-			{ ...rest }
+			{ ...props }
 		/>
 	);
 };
@@ -129,10 +129,10 @@ interface OnboardingSelectFieldProps< ItemType >
 }
 
 export const OnboardingSelectField = < ItemType extends SelectItem >( {
-	name,
 	onChange,
 	...rest
 }: OnboardingSelectFieldProps< ItemType > ): JSX.Element => {
+	const { name } = rest;
 	const { data, setData } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
@@ -169,10 +169,10 @@ interface OnboardingGroupedSelectFieldProps< ItemType >
 export const OnboardingGroupedSelectField = <
 	ListItemType extends GroupedSelectItem
 >( {
-	name,
 	onChange,
 	...rest
 }: OnboardingGroupedSelectFieldProps< ListItemType > ): JSX.Element => {
+	const { name } = rest;
 	const { data, setData } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 

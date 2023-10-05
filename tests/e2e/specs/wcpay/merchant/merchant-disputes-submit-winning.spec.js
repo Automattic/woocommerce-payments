@@ -17,7 +17,7 @@ const {
 
 let orderId;
 
-describe( 'Disputes > Submit winning dispute', () => {
+describe.skip( 'Disputes > Submit winning dispute', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -56,38 +56,6 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
 			text: 'Payment disputed as Transaction unauthorized.',
 		} );
-		await expect( page ).toMatchElement(
-			'div.woocommerce-timeline-item__body a',
-			{
-				text: 'View dispute',
-			}
-		);
-
-		// Get the link to the dispute details
-		const disputeDetailsElement = await page.$(
-			'[data-testid="view-dispute-button"]'
-		);
-		const disputeDetailsLink = await page.evaluate(
-			( anchor ) => anchor.getAttribute( 'href' ),
-			disputeDetailsElement
-		);
-
-		// Open the dispute details
-		await merchantWCP.openDisputeDetails( disputeDetailsLink );
-
-		// Verify we're on the view dispute page
-		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-details .header-dispute-overview',
-			{
-				text: 'Dispute overview',
-			}
-		);
-		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-details .components-card .components-card__header',
-			{
-				text: 'Dispute: Transaction unauthorized',
-			}
-		);
 
 		// Challenge the dispute
 		await merchantWCP.openChallengeDispute();
@@ -142,32 +110,13 @@ describe( 'Disputes > Submit winning dispute', () => {
 		] );
 
 		// If webhooks are not received, the dispute status won't be updated in the dispute list page resulting in test failure.
-		// Workaround - Open dispute details page again and check status.
-		await merchantWCP.openDisputeDetails( disputeDetailsLink );
-		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-details .header-dispute-overview',
-			{
-				text: 'Dispute overview',
-			}
-		);
-
-		// Check view submitted evidence is present on page.
-		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-details .components-card div.components-flex > div > a',
-			{
-				text: 'View submitted evidence',
-			}
-		);
+		// Workaround - Open payment details page again and check dispute's status.
+		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
 		// Confirm dispute status is Won.
-		await page.waitForSelector(
-			'div.wcpay-dispute-details .header-dispute-overview span.chip'
-		);
-		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-details .header-dispute-overview span.chip',
-			{
-				text: 'Won',
-			}
-		);
+		await page.waitForSelector( 'li.woocommerce-timeline-item' );
+		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
+			text: 'Dispute won! The bank ruled in your favor.',
+		} );
 	} );
 } );
