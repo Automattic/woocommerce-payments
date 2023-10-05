@@ -2418,296 +2418,49 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
           </li>
         </ul>
       </div>
-    </div>
-    <div
-      aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
-      data-wp-c16t="true"
-      data-wp-component="Elevation"
-    />
-    <div
-      aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
-      data-wp-c16t="true"
-      data-wp-component="Elevation"
-    />
-  </div>
-</div>
-`;
-
-exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] = `
-<div>
-  <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
-    data-wp-c16t="true"
-    data-wp-component="Card"
-  >
-    <div
-      class="css-mgwsf4-View-Content em57xhy0"
-    >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer transaction-details-dispute-footer css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
-        data-wp-component="CardBody"
+        data-wp-component="CardFooter"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="components-flex-item css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
           >
-            <p
-              class="payment-details-summary__amount"
+            Good news! You won this dispute on -. The disputed amount and the dispute fee have been credited back to your account. 
+            <a
+              href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+              rel="noopener noreferrer"
+              target="_blank"
             >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-primary"
-              >
-                Disputed: Under review
-              </span>
-            </p>
-            <div
-              class="payment-details-summary__breakdown"
-            >
-              <p>
-                Deducted: 
-                $-20.00
-              </p>
-              <p>
-                Fees: 
-                $-15.70
-                <button
-                  class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
-                  type="button"
-                >
-                  <div
-                    class="wcpay-tooltip__content-wrapper"
-                  >
-                    <div
-                      aria-label="Fee breakdown"
-                      role="button"
-                      tabindex="0"
-                    >
-                      <svg
-                        class="gridicon gridicons-help-outline"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                  </div>
-                </button>
-              </p>
-              
-              <p>
-                Net: 
-                $-15.70
-              </p>
-            </div>
+              Learn more about preventing disputes
+            </a>
+            .
           </div>
           <div
-            class="payment-details-summary__section"
+            class="components-flex-item transaction-details-dispute-footer__actions css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
           >
-            <div
-              class="payment-details-summary__id"
+            <a
+              data-link-type="wc-admin"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_1"
             >
-              Payment ID: 
-              ch_38jdHA39KKA
-            </div>
+              <button
+                class="components-button is-secondary"
+                type="button"
+              >
+                View dispute details
+              </button>
+            </a>
           </div>
         </div>
-      </div>
-      <hr
-        aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
-        data-wp-c16t="true"
-        data-wp-component="CardDivider"
-        role="separator"
-      />
-      <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
-        <ul
-          class="woocommerce-list woocommerce-list--horizontal"
-          role="menu"
-        >
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Date
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  Sep 19, 2019, 5:24pm
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Channel
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  <span>
-                    Online
-                  </span>
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Customer
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  <a
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
-                  >
-                    Customer name
-                  </a>
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Order
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  <a
-                    data-link-type="external"
-                    href="https://somerandomorderurl.com/?edit_order=45981"
-                  >
-                    45981
-                  </a>
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Payment method
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  <span
-                    class="payment-method-details"
-                  >
-                    <button
-                      class="wcpay-tooltip__content-wrapper"
-                      type="button"
-                    >
-                      <div
-                        class="wcpay-tooltip__content-wrapper"
-                      >
-                        <span
-                          aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
-                      </div>
-                    </button>
-                     •••• 
-                    4242
-                  </span>
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Risk evaluation
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  Normal
-                </span>
-              </div>
-            </div>
-          </li>
-        </ul>
       </div>
     </div>
     <div

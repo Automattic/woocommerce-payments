@@ -8,7 +8,9 @@ import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
 	isLinkEnabled,
+	isPaymentMethodRestrictedToLocation,
 	isUsingSavedPaymentMethod,
+	togglePaymentMethodForCountry,
 } from '../../utils/upe';
 import {
 	processPayment,
@@ -109,8 +111,18 @@ jQuery( function ( $ ) {
 		) {
 			for ( const upeElement of $( '.wcpay-upe-element' ).toArray() ) {
 				await mountStripePaymentElement( api, upeElement );
+				restrictPaymentMethodToLocation( upeElement );
 			}
 			maybeEnableStripeLink( api );
+		}
+	}
+
+	function restrictPaymentMethodToLocation( upeElement ) {
+		if ( isPaymentMethodRestrictedToLocation( upeElement ) ) {
+			togglePaymentMethodForCountry( upeElement );
+			$( '#billing_country' ).on( 'change', function () {
+				togglePaymentMethodForCountry( upeElement );
+			} );
 		}
 	}
 } );
