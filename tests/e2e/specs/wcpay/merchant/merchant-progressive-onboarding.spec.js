@@ -13,7 +13,6 @@ describe( 'Admin merchant progressive onboarding', () => {
 		await merchant.login();
 		await merchantWCP.enableProgressiveOnboarding();
 		await merchantWCP.enableActAsDisconnectedFromWCPay();
-		// todo clear/mock wcpaySettings.onboardingFlowState = null, so no previous session is restored
 	} );
 
 	afterAll( async () => {
@@ -49,15 +48,15 @@ describe( 'Admin merchant progressive onboarding', () => {
 			text: 'First, you’ll need to create an account',
 		} );
 		await expect( page ).toFill(
-			'.personal-details__firstname input.components-text-control__input',
+			'[name="individual.first_name"] input.components-text-control__input',
 			'Test'
 		);
 		await expect( page ).toFill(
-			'.personal-details__lastname input.components-text-control__input',
+			'[name="individual.last_name"] input.components-text-control__input',
 			'Test'
 		);
 		await expect( page ).toFill(
-			'.personal-details__email input.components-text-control__input',
+			'[name="email"] input.components-text-control__input',
 			'test@gmail.com'
 		);
 		await page.waitForSelector(
@@ -80,23 +79,23 @@ describe( 'Admin merchant progressive onboarding', () => {
 		} );
 		// pick Individual business entity
 		await expect( page ).toClick(
-			'.business-details__type button.components-custom-select-control__button'
+			'[name="business_type"] button.components-custom-select-control__button'
 		);
 		await page.waitForSelector(
-			'.business-details__type li.components-custom-select-control__item'
+			'[name="business_type"] li.components-custom-select-control__item'
 		);
 		await expect( page ).toClick(
-			'.business-details__type li.components-custom-select-control__item'
+			'[name="business_type"] li.components-custom-select-control__item'
 		);
 		// pick Software type of goods
 		await expect( page ).toClick(
-			'.business-details__mcc button.wcpay-component-grouped-select-control__button'
+			'[name="mcc"] button.wcpay-component-grouped-select-control__button'
 		);
 		await page.waitForSelector(
-			'.business-details__mcc li.wcpay-component-grouped-select-control__item:not(.is-group)'
+			'[name="mcc"] li.wcpay-component-grouped-select-control__item:not(.is-group)'
 		);
 		await expect( page ).toClick(
-			'.business-details__mcc li.wcpay-component-grouped-select-control__item:not(.is-group)'
+			'[name="mcc"] li.wcpay-component-grouped-select-control__item:not(.is-group)'
 		);
 		await expect( page ).toClick(
 			'div.stepper__content button.components-button.is-primary',
@@ -110,22 +109,22 @@ describe( 'Admin merchant progressive onboarding', () => {
 			text: 'Please share a few more details',
 		} );
 		await expect( page ).toClick(
-			'.store-details__annual_revenue button.components-custom-select-control__button'
+			'[name="annual_revenue"] button.components-custom-select-control__button'
 		);
 		await page.waitForSelector(
-			'.store-details__annual_revenue li.components-custom-select-control__item'
+			'[name="annual_revenue"] li.components-custom-select-control__item'
 		);
 		await expect( page ).toClick(
-			'.store-details__annual_revenue li.components-custom-select-control__item'
+			'[name="annual_revenue"] li.components-custom-select-control__item'
 		);
 		await expect( page ).toClick(
-			'.store-details__go_live_timeframe button.components-custom-select-control__button'
+			'[name="go_live_timeframe"] button.components-custom-select-control__button'
 		);
 		await page.waitForSelector(
-			'.store-details__go_live_timeframe li.components-custom-select-control__item'
+			'[name="go_live_timeframe"] li.components-custom-select-control__item'
 		);
 		await expect( page ).toClick(
-			'.store-details__go_live_timeframe li.components-custom-select-control__item'
+			'[name="go_live_timeframe"] li.components-custom-select-control__item'
 		);
 		await expect( page ).toClick(
 			'div.stepper__content button.components-button.is-primary',
