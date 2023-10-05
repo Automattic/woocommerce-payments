@@ -20,9 +20,6 @@ The `WCPay\Core\Server\Request\WooPay_Create_and_Confirm_Setup_Intention` class 
 
 
 ## Filter
-
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_create_and_confirm_setup_intent_request`
 - Arguments: 
    - `WCPay\Payment_Information $payment_information`
@@ -39,5 +36,7 @@ $request->set_metadata( $metadata );
 $request->set_payment_method( $payment_method_id );
 $request->set_save_in_platform_account( $save );
 $request->set_save_payment_method_to_platform( $save );
-$request->send( 'wcpay_create_and_confirm_setup_intent_request', $payment_information, $save_in_platform_account, $save_payment_method_to_platform );
+$request->assign_hook( 'wcpay_create_and_confirm_setup_intent_request' );
+$request->set_hook_args( $payment_information, $save_in_platform_account, $save_payment_method_to_platform );
+$request->send();
 ```

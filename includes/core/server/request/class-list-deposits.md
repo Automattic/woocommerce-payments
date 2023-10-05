@@ -40,5 +40,5 @@ $request->set_sort_direction( $direction );
 $request->set_status_is( $status_is );
 $request->set_status_is_not( $status_is_not );
 $request->set_store_currency_is( $store_currency_is );
-$request->send( 'wcpay_list_deposits_request', $request );
+$request->send();
 ```

@@ -174,6 +174,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					'get_level3_data_from_order', // To avoid needing to mock the order items.
 					'should_use_stripe_platform_on_checkout_page',
 					'get_payment_method_ids_enabled_at_checkout',
+					'get_metadata_from_order',
 				]
 			)
 			->getMock();
@@ -186,10 +187,16 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( $this->return_url )
 			);
 
+			$this->mock_wcpay_gateway
+				->expects( $this->any() )
+				->method( 'get_payment_method_ids_enabled_at_checkout' )
+				->willReturn( [ Payment_Method::CARD ] );
+
+		// Plenty of methods require metadata, but it will be tested elsewhere.
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
-			->willReturn( [ Payment_Method::CARD ] );
+			->method( 'get_metadata_from_order' )
+			->willReturn( [] );
 
 		$this->wcpay_gateway = WC_Payments::get_gateway();
 		WC_Payments::set_gateway( $this->mock_wcpay_gateway );
@@ -502,10 +509,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::AUTOMATIC() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Arrange: Throw an exception in create_and_confirm_intention.
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
-
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->will(
@@ -1462,20 +1469,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						$required_keys = [ 'customer_name', 'customer_email', 'site_url', 'order_id', 'order_number', 'order_key', 'payment_type' ];
-						foreach ( $required_keys as $key ) {
-							if ( ! array_key_exists( $key, $metadata ) ) {
-								return false;
-							}
-						}
-						return true;
-					}
-				)
-			)
-				->willReturn( $request );
+			->with( [] )
+			->willReturn( $request );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
