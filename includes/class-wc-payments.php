@@ -17,6 +17,7 @@ use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
+use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
@@ -404,6 +405,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-link-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-affirm-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-klarna-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -519,6 +521,7 @@ class WC_Payments {
 			Link_Payment_Method::class,
 			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
+			Klarna_Payment_Method::class,
 		];
 		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_methods = [];

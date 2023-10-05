@@ -399,6 +399,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'link'              => 'link_payments',
 			'affirm'            => 'affirm_payments',
 			'afterpay_clearpay' => 'afterpay_clearpay_payments',
+			'klarna'            => 'klarna_payments',
 			'jcb'               => 'jcb_payments',
 		];
 
