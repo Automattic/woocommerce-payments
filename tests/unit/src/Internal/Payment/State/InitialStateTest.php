@@ -203,7 +203,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$order_id    = 123;
 		$user_id     = 456;
 		$customer_id = 'cus_123';
-		$metadata    = [ 'gateway_type' => 'reengineered' ];
+		$metadata    = [ 'sample' => 'true' ];
 		$level3_data = [ 'items' => [] ];
 		$mock_order  = $this->createMock( WC_Order::class );
 
@@ -224,7 +224,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->willReturn( $metadata );
 		$this->mock_context->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( $metadata );
+			->with( array_merge( $metadata, [ 'gateway_type' => 'src' ] ) );
 
 		// Arrange level 3 data import.
 		$this->mock_level3_service->expects( $this->once() )

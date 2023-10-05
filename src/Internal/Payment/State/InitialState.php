@@ -150,7 +150,12 @@ class InitialState extends AbstractPaymentState {
 
 		// Start by setting up all local objects.
 		$this->order_service->import_order_data_to_payment_context( $order_id, $context );
-		$context->set_metadata( $this->order_service->get_payment_metadata( $order_id ) );
+		$context->set_metadata(
+			array_merge(
+				$this->order_service->get_payment_metadata( $order_id ),
+				[ 'gateway_type' => 'src' ]
+			)
+		);
 		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
 
 		// Customer management involves a remote call.
