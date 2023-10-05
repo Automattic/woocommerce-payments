@@ -883,10 +883,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_dispute_created_exits_if_order_invalid() {
 		// Arrange: Set the charge_id and reason, and the order status.
-		$charge_id  = 'ch_123';
-		$amount     = '$123.45';
-		$reason     = 'product_not_received';
-		$deadline   = 'June 7, 2023';
+		$charge_id = 'ch_123';
+		$amount    = '$123.45';
+		$reason    = 'product_not_received';
+		$deadline  = 'June 7, 2023';
 
 		$order_status   = $this->order->get_status();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
