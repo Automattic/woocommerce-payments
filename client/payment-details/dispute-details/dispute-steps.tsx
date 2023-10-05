@@ -142,7 +142,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 									content={ sprintf(
 										// Translators: %s is a formatted currency amount, eg $10.00.
 										__(
-											`Accepting this dispute will automatically close it. Your account will be charged a %s fee, and the disputed amount will be refunded to the cardholder.`,
+											`Accepting this dispute will automatically close it. The disputed amount and the %s dispute fee will not be returned to you.`,
 											'woocommerce-payments'
 										),
 										getDisputeFeeFormatted(
