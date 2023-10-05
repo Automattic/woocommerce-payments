@@ -61,7 +61,7 @@ export const getDisputeResolutionTask = (
 			history.push(
 				getAdminUrl( {
 					page: 'wc-admin',
-					path: `/payments/transactions/details`,
+					path: '/payments/transactions/details',
 					id: chargeId,
 				} )
 			);
