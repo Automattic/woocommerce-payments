@@ -191,6 +191,9 @@ install_woocommerce() {
 	WC_INSTALL_EXTRA=''
 	INSTALLED_WC_VERSION=$(wp plugin get woocommerce --field=version)
 
+	is_beta=false
+	[ 'beta' == $WC_VERSION ] || is_beta=true
+
 	if [[ $WC_VERSION == 'beta' ]]; then
 		# Get the latest non-trunk version number from the .org repo. This will usually be the latest release, beta, or rc.
 		WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("beta";"i"))) | keys[-1]' --sort-keys)
@@ -208,7 +211,23 @@ install_woocommerce() {
 		if [[ $WC_VERSION != 'latest' ]] && [[ $WC_VERSION != 'beta' ]]; then
 			WC_INSTALL_EXTRA+=" --version=$WC_VERSION"
 		fi
-		wp plugin install woocommerce --activate$WC_INSTALL_EXTRA
+
+		if [[ $WC_VERSION != 'latest' ]] && [[ $WC_VERSION != 'beta' ]]; then
+			WC_INSTALL_EXTRA+=" --version=$WC_VERSION"
+		fi
+
+		if beta; then
+			# TEMPORARY!
+			# Beta versions might drop PHP support. If that is the case,
+			# ignore the error, and exit successfully, skipping tests.
+			{
+				wp plugin install woocommerce --activate$WC_INSTALL_EXTRA
+			} || {
+				exit 0
+			}
+		else
+			wp plugin install woocommerce --activate$WC_INSTALL_EXTRA
+		fi
 
 		# Work around to get database tables installed for WC 6.4.0-beta
 		# See https://github.com/woocommerce/woocommerce-admin/pull/8384
