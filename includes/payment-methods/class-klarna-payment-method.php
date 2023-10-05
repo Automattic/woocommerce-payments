@@ -32,6 +32,20 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		$this->currencies                   = [ 'USD', 'GBP', 'EUR' ];
 		$this->accept_only_domestic_payment = true;
 		$this->countries                    = [ 'US', 'GB', 'AT', 'DE', 'NL', 'BE', 'ES', 'IT' ];
+		$this->limits_per_currency          = [
+			'USD' => [
+				'min' => 1000,
+				'max' => 500000,
+			], // Represents USD 10 - 5,000 AUD.
+			'GBP' => [
+				'min' => 1000,
+				'max' => 500000,
+			], // Represents GBP 10 - 5,000 AUD.
+			'EUR' => [
+				'min' => 1000,
+				'max' => 500000,
+			], // Represents EUR 10 - 5,000 AUD.
+		];
 	}
 
 	/**
