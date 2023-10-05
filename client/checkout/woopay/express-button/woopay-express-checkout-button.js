@@ -3,6 +3,7 @@
  */
 import { sprintf, __ } from '@wordpress/i18n';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -350,7 +351,9 @@ export const WoopayExpressCheckoutButton = ( {
 			key={ `${ buttonType }-${ theme }-${ size }` }
 			aria-label={ buttonType !== 'default' ? text : __( 'WooPay' ) }
 			onClick={ ( e ) => initWoopayRef.current( e ) }
-			className="woopay-express-button"
+			className={ classNames( 'woopay-express-button', {
+				'is-loading': isLoading,
+			} ) }
 			data-type={ buttonType }
 			data-size={ size }
 			data-theme={ theme }

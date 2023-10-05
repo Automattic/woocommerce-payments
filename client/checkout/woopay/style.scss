@@ -152,6 +152,12 @@
 		cursor: not-allowed;
 	}
 
+	&.is-loading,
+	&.is-loading:hover,
+	&.is-loading:disabled {
+		opacity: 1 !important;
+	}
+
 	svg {
 		fill: $studio-woocommerce-purple-60;
 		position: relative;
