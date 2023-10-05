@@ -231,6 +231,11 @@ class WooPay_Session {
 	 * and disable the schedules when plugin is disabled.
 	 */
 	public static function run_and_remove_woopay_restore_order_customer_id_schedules() {
+		// WooCommerce is disabled when disabling WCPay.
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return;
+		}
+
 		$args = [
 			'meta_key' => 'woopay_merchant_customer_id', //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 			'return'   => 'ids',

@@ -217,14 +217,14 @@ class WC_Payments_WooPay_Button_Handler {
 		WC()->shipping->reset_shipping();
 
 		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
-		$qty          = ! isset( $_POST['qty'] ) ? 1 : absint( $_POST['qty'] );
+		$quantity     = ! isset( $_POST['quantity'] ) ? 1 : absint( $_POST['quantity'] );
 		$product      = wc_get_product( $product_id );
 		$product_type = $product->get_type();
 
 		// First empty the cart to prevent wrong calculation.
 		WC()->cart->empty_cart();
 
-		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $qty );
+		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity );
 
 		if ( ! $is_add_to_cart_valid ) {
 			// Some extensions error messages needs to be
@@ -245,11 +245,11 @@ class WC_Payments_WooPay_Button_Handler {
 			$data_store   = WC_Data_Store::load( 'product' );
 			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
 
-			WC()->cart->add_to_cart( $product->get_id(), $qty, $variation_id, $attributes );
+			WC()->cart->add_to_cart( $product->get_id(), $quantity, $variation_id, $attributes );
 		}
 
-		if ( 'simple' === $product_type || 'subscription' === $product_type || 'bundle' === $product_type ) {
-			WC()->cart->add_to_cart( $product->get_id(), $qty );
+		if ( in_array( $product_type, [ 'simple', 'subscription', 'bundle', 'mix-and-match' ], true ) ) {
+			WC()->cart->add_to_cart( $product->get_id(), $quantity );
 		}
 
 		WC()->cart->calculate_totals();

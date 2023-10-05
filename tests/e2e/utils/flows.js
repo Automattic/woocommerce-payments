@@ -602,7 +602,8 @@ export const merchantWCP = {
 	openChallengeDispute: async () => {
 		await Promise.all( [
 			evalAndClick(
-				'div.wcpay-dispute-details a.components-button.is-primary'
+				// eslint-disable-next-line max-len
+				'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-primary'
 			),
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
 			uiLoaded(),
@@ -613,12 +614,13 @@ export const merchantWCP = {
 		await Promise.all( [
 			page.removeAllListeners( 'dialog' ),
 			evalAndClick(
-				'div.wcpay-dispute-details button.components-button.is-secondary'
+				// eslint-disable-next-line max-len
+				'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-tertiary'
 			),
-			page.on( 'dialog', async ( dialog ) => {
-				await dialog.accept();
-			} ),
-			uiUnblocked(),
+			evalAndClick(
+				// eslint-disable-next-line max-len
+				'.transaction-details-dispute-accept-modal__actions button.components-button.is-primary'
+			),
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
 			uiLoaded(),
 		] );
