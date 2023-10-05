@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
+import { Action } from 'wcpay/types/notices';
 
 /**
  * Internal dependencies.
@@ -21,6 +22,8 @@ interface InlineNoticeProps extends Notice.Props {
 	 * @default undefined
 	 */
 	icon?: boolean | JSX.Element;
+
+	actions?: readonly Action[] | undefined;
 }
 
 /**
@@ -72,6 +75,8 @@ function InlineNotice( props: InlineNoticeProps ): JSX.Element {
 				key={ index }
 				className={ actionClass }
 				onClick={ action.onClick }
+				isBusy={ action.isBusy ?? false }
+				disabled={ action.disabled ?? false }
 			>
 				{ action.label }
 			</Button>
