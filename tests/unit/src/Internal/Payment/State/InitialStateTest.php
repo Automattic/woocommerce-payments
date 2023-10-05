@@ -10,6 +10,7 @@ namespace WCPay\Tests\Internal\Payment\State;
 use Exception;
 use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionClass;
 use WC_Order;
 use WC_Payments_API_Payment_Intention;
 use WC_Payments_Customer_Service;
@@ -85,7 +86,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			$this->mock_order_service,
 			$this->mock_customer_service,
 			$this->mock_level3_service,
-			$this->mock_payment_request_service,
+			$this->mock_payment_request_service
 		);
 		$this->sut->set_context( $this->mock_context );
 	}
@@ -112,22 +113,76 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	 * @dataProvider provider_process
 	 */
 	public function test_process( Exception $exception = null ) {
-		$order_id         = 123;
-		$user_id          = 456;
-		$customer_id      = 'cus_123';
-		$metadata         = [ 'gateway_type' => 'reengineered' ];
-		$level3_data      = [ 'items' => [] ];
-		$payment_method   = new NewPaymentMethod( 'pm_123' );
-		$fingerprint      = 'fingerprint';
-		$cvc_confirmation = 'CVCConfirmation';
+		$order_id     = 123;
+		$mock_request = $this->createMock( PaymentRequest::class );
+		$mock_intent  = $this->createMock( WC_Payments_API_Payment_Intention::class );
 
-		$mock_order  = $this->createMock( WC_Order::class );
-		$mock_intent = $this->createMock( WC_Payments_API_Payment_Intention::class );
+		/**
+		 * This test works with the root `process` method, which calls a few
+		 * internal methods. We want to mock them for the purpose of this test.
+		 *
+		 * @var MockObject|InitialState
+		 */
+		$this->sut = $this->getMockBuilder( InitialState::class )
+			->onlyMethods( [ 'populate_context_from_request', 'populate_context_from_order' ] )
+			->setConstructorArgs(
+				[
+					$this->mock_state_factory,
+					$this->mock_order_service,
+					$this->mock_customer_service,
+					$this->mock_level3_service,
+					$this->mock_payment_request_service,
+				]
+			)
+			->getMock();
+		$this->sut->set_context( $this->mock_context );
 
 		// There's a single call to get the order ID.
 		$this->mock_context->expects( $this->once() )
 			->method( 'get_order_id' )
 			->willReturn( $order_id );
+
+		// Verify that the context is populated.
+		$this->sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
+		$this->sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Arrange intent creation.
+		if ( $exception ) {
+			$this->mock_payment_request_service->expects( $this->once() )
+				->method( 'create_intent' )
+				->with( $this->mock_context )
+				->willThrowException( $exception );
+		} else {
+			$this->mock_payment_request_service->expects( $this->once() )
+				->method( 'create_intent' )
+				->with( $this->mock_context )
+				->willReturn( $mock_intent );
+
+			// Assert order update.
+			$this->mock_order_service->expects( $this->once() )
+				->method( 'update_order_from_successful_intent' )
+				->with( $order_id, $mock_intent, $this->mock_context );
+		}
+
+		// Arrange the final state.
+		$state_class      = $exception ? SystemErrorState::class : CompletedState::class;
+		$mock_final_state = $this->createMock( $state_class );
+		$this->mock_state_factory->expects( $this->once() )
+			->method( 'create_state' )
+			->with( $state_class, $this->mock_context )
+			->willReturn( $mock_final_state );
+
+		// Act: Process.
+		$result = $this->sut->process( $mock_request );
+
+		// Assert: Successful transition.
+		$this->assertSame( $mock_final_state, $result );
+	}
+
+	public function test_populate_context_from_request() {
+		$payment_method   = new NewPaymentMethod( 'pm_123' );
+		$fingerprint      = 'fingerprint';
+		$cvc_confirmation = 'CVCConfirmation';
 
 		// Setup the mock request.
 		$mock_request = $this->createMock( PaymentRequest::class );
@@ -140,9 +195,26 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$this->mock_context->expects( $this->once() )->method( 'set_cvc_confirmation' )->with( $cvc_confirmation );
 		$this->mock_context->expects( $this->once() )->method( 'set_fingerprint' )->with( $fingerprint );
 
+		// Use reflection to acces.
+		$this->call_protected_method( $this->sut, 'populate_context_from_request', $mock_request );
+	}
+
+	public function test_populate_context_from_order() {
+		$order_id    = 123;
+		$user_id     = 456;
+		$customer_id = 'cus_123';
+		$metadata    = [ 'gateway_type' => 'reengineered' ];
+		$level3_data = [ 'items' => [] ];
+		$mock_order  = $this->createMock( WC_Order::class );
+
+		// Prepare the order ID.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $order_id );
+
 		// Arrange the import of order data to the payment.
 		$this->mock_order_service->expects( $this->once() )
-			->method( 'populate_context_from_order' )
+			->method( 'import_order_data_to_payment_context' )
 			->with( $order_id, $this->mock_context );
 
 		// Arrange metadata import.
@@ -179,36 +251,21 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->method( 'set_customer_id' )
 			->with( $customer_id );
 
-		// Arrange intent creation.
-		if ( $exception ) {
-			$this->mock_payment_request_service->expects( $this->once() )
-				->method( 'create_intent' )
-				->with( $this->mock_context )
-				->willThrowException( $exception );
-		} else {
-			$this->mock_payment_request_service->expects( $this->once() )
-				->method( 'create_intent' )
-				->with( $this->mock_context )
-				->willReturn( $mock_intent );
+		$this->call_protected_method( $this->sut, 'populate_context_from_order' );
+	}
 
-			// Assert order update.
-			$this->mock_order_service->expects( $this->once() )
-				->method( 'update_order_from_successful_intent' )
-				->with( $order_id, $mock_intent, $this->mock_context );
-		}
-
-		// Arrange the final state.
-		$state_class      = $exception ? SystemErrorState::class : CompletedState::class;
-		$mock_final_state = $this->createMock( $state_class );
-		$this->mock_state_factory->expects( $this->once() )
-			->method( 'create_state' )
-			->with( $state_class, $this->mock_context )
-			->willReturn( $mock_final_state );
-
-		// Act: Process.
-		$result = $this->sut->process( $mock_request );
-
-		// Assert: Successful transition.
-		$this->assertSame( $mock_final_state, $result );
+	/**
+	 * Calls a protected/private method of the object.
+	 *
+	 * @param object  $object      The object with the method.
+	 * @param string  $method_name Name of the method.
+	 * @param mixed[] ...$args     Arguments for the invokation.
+	 * @return mixed               Result of the call.
+	 */
+	private function call_protected_method( $object, $method_name, ...$args ) {
+		$reflection = new ReflectionClass( get_class( $object ) );
+		$method     = $reflection->getMethod( $method_name );
+		$method->setAccessible( true );
+		return $method->invokeArgs( $object, $args );
 	}
 }

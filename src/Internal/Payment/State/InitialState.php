@@ -94,17 +94,8 @@ class InitialState extends AbstractPaymentState {
 		// Populate basic details from the request.
 		$this->populate_context_from_request( $request );
 
-		// Start by setting up all local objects.
-		$this->order_service->populate_context_from_order( $order_id, $context );
-		$context->set_metadata( $this->order_service->get_payment_metadata( $order_id ) );
-		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
-
-		// Customer management involves a remote call.
-		$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
-			$context->get_user_id(),
-			$this->order_service->_deprecated_get_order( $order_id )
-		);
-		$context->set_customer_id( $customer_id );
+		// Populate further details from the order.
+		$this->populate_context_from_order();
 
 		// Payments are currently based on intents, request one from the API.
 		try {
@@ -131,7 +122,7 @@ class InitialState extends AbstractPaymentState {
 	 * @param PaymentRequest $request The request to use.
 	 * @throws PaymentRequestException When data is not available or invalid.
 	 */
-	private function populate_context_from_request( PaymentRequest $request ) {
+	protected function populate_context_from_request( PaymentRequest $request ) {
 		$context = $this->get_context();
 
 		$context->set_payment_method( $request->get_payment_method() );
@@ -145,5 +136,28 @@ class InitialState extends AbstractPaymentState {
 		if ( ! is_null( $fingerprint ) ) {
 			$context->set_fingerprint( $fingerprint );
 		}
+	}
+
+	/**
+	 * Populates the context with details, available in the order.
+	 * This includes the update/creation of a customer.
+	 *
+	 * @throws Order_Not_Found_Exception In case the order could not be found.
+	 */
+	protected function populate_context_from_order() {
+		$context  = $this->get_context();
+		$order_id = $context->get_order_id();
+
+		// Start by setting up all local objects.
+		$this->order_service->import_order_data_to_payment_context( $order_id, $context );
+		$context->set_metadata( $this->order_service->get_payment_metadata( $order_id ) );
+		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
+
+		// Customer management involves a remote call.
+		$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
+			$context->get_user_id(),
+			$this->order_service->_deprecated_get_order( $order_id )
+		);
+		$context->set_customer_id( $customer_id );
 	}
 }
