@@ -142,7 +142,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		// Arrange the import of order data to the payment.
 		$this->mock_order_service->expects( $this->once() )
-			->method( 'import_order_data_to_payment_context' )
+			->method( 'populate_context_from_order' )
 			->with( $order_id, $this->mock_context );
 
 		// Arrange metadata import.

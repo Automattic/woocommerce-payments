@@ -95,7 +95,7 @@ class InitialState extends AbstractPaymentState {
 		$this->populate_context_from_request( $request );
 
 		// Start by setting up all local objects.
-		$this->order_service->import_order_data_to_payment_context( $order_id, $context );
+		$this->order_service->populate_context_from_order( $order_id, $context );
 		$context->set_metadata( $this->order_service->get_payment_metadata( $order_id ) );
 		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
 

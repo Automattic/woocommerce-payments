@@ -157,7 +157,7 @@ class OrderService {
 	 * @param PaymentContext $context  A payment context, awaiting order data.
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function import_order_data_to_payment_context( int $order_id, PaymentContext $context ) {
+	public function populate_context_from_order( int $order_id, PaymentContext $context ) {
 		$order = $this->get_order( $order_id );
 
 		$currency = strtolower( $order->get_currency() );

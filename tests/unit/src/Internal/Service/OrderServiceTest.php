@@ -246,7 +246,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		];
 	}
 
-	public function provider_import_order_data_to_payment_context() {
+	public function provider_populate_context_from_order() {
 		$existing_user     = new WP_User();
 		$existing_user->ID = 10;
 
@@ -257,9 +257,9 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * @dataProvider provider_import_order_data_to_payment_context
+	 * @dataProvider provider_populate_context_from_order
 	 */
-	public function test_import_order_data_to_payment_context( $user ) {
+	public function test_populate_context_from_order( $user ) {
 		// Create a mock order that will be used to extract data.
 		$mock_order = $this->createMock( WC_Order::class );
 		$this->sut->expects( $this->once() )
@@ -295,7 +295,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->with( 10 );
 
 		// Act.
-		$this->sut->import_order_data_to_payment_context( $this->order_id, $mock_context );
+		$this->sut->populate_context_from_order( $this->order_id, $mock_context );
 	}
 
 	public function provider_update_order_from_successful_intent() {
