@@ -271,7 +271,7 @@ class WC_Payments_Captured_Event_Note {
 	 * @return bool True if the only applied fee is the base fee
 	 */
 	private function is_base_fee_only(): bool {
-		if ( ! isset( $this->captured_event['fee_rates']['history'] ) ) {
+		if ( ! isset( $this->captured_event['fee_rates']['history'] ) || ! is_countable( $this->captured_event['fee_rates']['history'] ) ) {
 			return false;
 		}
 
