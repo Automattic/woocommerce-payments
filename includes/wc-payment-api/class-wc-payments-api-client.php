@@ -289,7 +289,9 @@ class WC_Payments_API_Client {
 	 * @return array
 	 */
 	public function list_fraud_outcome_transactions( $request ) {
-		$fraud_outcomes = $request->send( 'wcpay_list_fraud_outcome_transactions_request' );
+		// TODO: Refactor this.
+		$request->assign_hook( 'wcpay_list_fraud_outcome_transactions_request' );
+		$fraud_outcomes = $request->send();
 
 		$page      = $request->get_param( 'page' );
 		$page_size = $request->get_param( 'pagesize' );
@@ -310,7 +312,9 @@ class WC_Payments_API_Client {
 	 * @return array
 	 */
 	public function list_fraud_outcome_transactions_summary( $request ) {
-		$fraud_outcomes = $request->send( 'wcpay_list_fraud_outcome_transactions_summary_request' );
+		// TODO: Refactor this.
+		$request->assign_hook( 'wcpay_list_fraud_outcome_transactions_summary_request' );
+		$fraud_outcomes = $request->send();
 
 		$total      = 0;
 		$currencies = [];
@@ -335,7 +339,9 @@ class WC_Payments_API_Client {
 	 * @return array|WP_Error Search results.
 	 */
 	public function get_fraud_outcome_transactions_search_autocomplete( $request ) {
-		$fraud_outcomes = $request->send( 'wcpay_get_fraud_outcome_transactions_search_autocomplete_request' );
+		// TODO: Refactor this.
+		$request->assign_hook( 'wcpay_get_fraud_outcome_transactions_search_autocomplete_request' );
+		$fraud_outcomes = $request->send();
 
 		$search_term = $request->get_param( 'search_term' );
 
@@ -385,7 +391,9 @@ class WC_Payments_API_Client {
 	 * @return array
 	 */
 	public function get_fraud_outcome_transactions_export( $request ) {
-		$fraud_outcomes = $request->send( 'wcpay_get_fraud_outcome_transactions_export_request' );
+		// TODO: Refactor this.
+		$request->assign_hook( 'wcpay_get_fraud_outcome_transactions_export_request' );
+		$fraud_outcomes = $request->send();
 
 		return [
 			'data' => $fraud_outcomes,
@@ -837,28 +845,29 @@ class WC_Payments_API_Client {
 	/**
 	 * Get data needed to initialize the onboarding flow
 	 *
-	 * @param string $return_url     - URL to redirect to at the end of the flow.
-	 * @param array  $site_data      - Data to track ToS agreement.
-	 * @param array  $actioned_notes - Actioned WCPay note names to be sent to the on-boarding flow.
-	 * @param array  $account_data   - Data to prefill the onboarding.
-	 * @param bool   $progressive    - Whether we need to enable progressive onboarding prefill.
+	 * @param string $return_url                  - URL to redirect to at the end of the flow.
+	 * @param array  $site_data                   - Data to track ToS agreement.
+	 * @param array  $user_data                   - Data about the user doing the onboarding (location and device).
+	 * @param array  $account_data                - Data to prefill the onboarding.
+	 * @param array  $actioned_notes              - Actioned WCPay note names to be sent to the onboarding flow.
+	 * @param bool   $progressive                 - Whether we need to enable progressive onboarding prefill.
 	 * @param bool   $collect_payout_requirements - Whether we need to redirect user to Stripe KYC to complete their payouts data.
 	 *
-	 * @return array An array containing the url and state fields.
-	 *
 	 * @throws API_Exception Exception thrown on request failure.
+	 * @return array An array containing the url and state fields.
 	 */
-	public function get_onboarding_data( $return_url, array $site_data = [], array $actioned_notes = [], $account_data = [], bool $progressive = false, $collect_payout_requirements = false ) {
+	public function get_onboarding_data( string $return_url, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
 				'return_url'                  => $return_url,
 				'site_data'                   => $site_data,
-				'create_live_account'         => ! WC_Payments::mode()->is_dev(),
+				'user_data'                   => $user_data,
+				'account_data'                => $account_data,
 				'actioned_notes'              => $actioned_notes,
+				'create_live_account'         => ! WC_Payments::mode()->is_dev(),
 				'progressive'                 => $progressive,
 				'collect_payout_requirements' => $collect_payout_requirements,
-				'account_data'                => $account_data,
 			]
 		);
 

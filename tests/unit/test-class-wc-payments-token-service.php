@@ -111,9 +111,10 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test add SEPA token to user with split UPE.
+	 * Test add SEPA token to user with deferred intent creation UPE.
 	 */
-	public function test_add_token_to_user_for_sepa_split_upe() {
+	public function test_add_token_to_user_for_sepa_deferred_intent_creation_upe() {
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
 		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
 		$mock_payment_method = [
 			'id'         => 'pm_mock',
@@ -542,7 +543,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens_not_added_from_different_gateway() {
-		update_option( '_wcpay_feature_upe_split', '1' );
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
 		$gateway_id      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$tokens          = [];
 		$payment_methods = [ Payment_Method::CARD, Payment_Method::SEPA ];
