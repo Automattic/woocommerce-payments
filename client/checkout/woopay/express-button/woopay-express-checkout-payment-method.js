@@ -63,10 +63,7 @@ const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 				listenForCartChanges={ listenForCartChanges }
 				buttonSettings={ getConfig( 'woopayButton' ) }
 				api={ api }
-				isProductPage={
-					!! woopayContainer.getAttribute( 'data-product_page' )
-				}
-				emailSelector="#billing_email"
+				emailSelector="#email"
 			/>,
 			woopayContainer
 		);
