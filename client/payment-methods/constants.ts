@@ -11,13 +11,13 @@ enum PAYMENT_METHOD_IDS {
 	CARD = 'card',
 	CARD_PRESENT = 'card_present',
 	EPS = 'eps',
+	KLARNA = 'klarna',
 	GIROPAY = 'giropay',
 	IDEAL = 'ideal',
 	LINK = 'link',
 	P24 = 'p24',
 	SEPA_DEBIT = 'sepa_debit',
 	SOFORT = 'sofort',
-	JCB = 'jcb',
 }
 
 // This constant is used for rendering tooltip titles for payment methods in transaction list and details pages.

@@ -45,12 +45,18 @@ const ContinueButton = ( {
 	setCompleted,
 	setSaving,
 } ) => {
+	const isDisabled =
+		enabledCurrencyCodes.length <= 1 && selectedCurrencyCodesLength < 1;
+
 	const handleContinueClick = () => {
-		setSaving( true );
-		submitEnabledCurrenciesUpdate(
-			[ ...enabledCurrencyCodes, ...selectedCurrencyCodes ].sort()
-		);
-		setSaving( false );
+		if ( selectedCurrencyCodesLength > 0 ) {
+			setSaving( true );
+			submitEnabledCurrenciesUpdate(
+				[ ...enabledCurrencyCodes, ...selectedCurrencyCodes ].sort()
+			);
+			setSaving( false );
+		}
+
 		setCompleted(
 			{
 				initialCurrencies: enabledCurrencyCodes,
@@ -59,24 +65,34 @@ const ContinueButton = ( {
 		);
 	};
 
+	const renderText = () => {
+		if ( selectedCurrencyCodesLength === 0 ) {
+			if ( enabledCurrencyCodes.length > 1 ) {
+				return __( 'Continue', 'woocommerce-payments' );
+			}
+
+			return __( 'Add currencies', 'woocommerce-payments' );
+		}
+
+		return sprintf(
+			_n(
+				'Add %s currency',
+				'Add %s currencies',
+				selectedCurrencyCodesLength,
+				'woocommerce-payments'
+			),
+			selectedCurrencyCodesLength
+		);
+	};
+
 	return (
 		<Button
 			isBusy={ isSaving }
-			disabled={ isSaving || selectedCurrencyCodesLength < 1 }
+			disabled={ isSaving || isDisabled }
 			onClick={ handleContinueClick }
-			isPrimary
+			variant="primary"
 		>
-			{ selectedCurrencyCodesLength === 0
-				? __( 'Add currencies', 'woocommerce-payments' )
-				: sprintf(
-						_n(
-							'Add %s currency',
-							'Add %s currencies',
-							selectedCurrencyCodesLength,
-							'woocommerce-payments'
-						),
-						selectedCurrencyCodesLength
-				  ) }
+			{ renderText() }
 		</Button>
 	);
 };

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Apple Pay and Google Pay if card payments are disabled.

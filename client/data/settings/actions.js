@@ -225,6 +225,12 @@ export function* saveSettings() {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error saving settings.', 'woocommerce-payments' )
 		);
+
+		if ( error.server_error ) {
+			yield dispatch( 'core/notices' ).createErrorNotice(
+				error.server_error
+			);
+		}
 	} finally {
 		yield updateIsSavingSettings( false, error );
 	}

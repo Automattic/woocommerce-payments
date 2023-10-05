@@ -31,10 +31,10 @@ class Payment_Method extends Base_Constant {
 	const P24             = 'p24';
 	const SEPA            = 'sepa_debit';
 	const SOFORT          = 'sofort';
-	const JCB             = 'jcb';
 	const US_BANK_ACCOUNT = 'us_bank_account';
 	const AFFIRM          = 'affirm';
 	const AFTERPAY        = 'afterpay_clearpay';
+	const KLARNA          = 'klarna';
 
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,
@@ -44,5 +44,6 @@ class Payment_Method extends Base_Constant {
 	const BNPL_PAYMENT_METHODS = [
 		self::AFFIRM,
 		self::AFTERPAY,
+		self::KLARNA,
 	];
 }

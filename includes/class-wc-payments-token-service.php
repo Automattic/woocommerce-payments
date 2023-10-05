@@ -1,6 +1,6 @@
 <?php
 /**
- * WC_Payments_Payment_Tokens class
+ * WC_Payments_Token_Service class
  *
  * @package WooCommerce\Payments
  */
