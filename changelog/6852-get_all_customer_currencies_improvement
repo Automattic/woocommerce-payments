@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Improved `get_all_customer_currencies` method to retrieve existing order currencies faster.

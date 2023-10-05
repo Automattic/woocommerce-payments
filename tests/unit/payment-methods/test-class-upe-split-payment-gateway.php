@@ -294,6 +294,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						'get_payment_method_ids_enabled_at_checkout',
 						'wc_payments_get_payment_gateway_by_id',
 						'get_selected_payment_method',
+						'get_upe_enabled_payment_method_ids',
 					]
 				)
 				->getMock();
@@ -382,6 +383,29 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $payment_gateway->should_use_stripe_platform_on_checkout_page() );
 	}
 
+	public function test_link_payment_method_requires_mandate_data() {
+		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
+
+		$mock_upe_gateway
+			->expects( $this->once() )
+			->method( 'get_upe_enabled_payment_method_ids' )
+			->will(
+				$this->returnValue( [ 'link' ] )
+			);
+
+		$this->assertTrue( $mock_upe_gateway->is_mandate_data_required() );
+	}
+
+	public function test_sepa_debit_payment_method_requires_mandate_data() {
+		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::SEPA ];
+		$this->assertTrue( $mock_upe_gateway->is_mandate_data_required() );
+	}
+
+	public function test_non_required_mandate_data() {
+		$mock_gateway_not_requiring_mandate_data = $this->mock_payment_gateways[ Payment_Method::GIROPAY ];
+		$this->assertFalse( $mock_gateway_not_requiring_mandate_data->is_mandate_data_required() );
+	}
+
 	public function test_non_reusable_payment_method_is_not_available_when_subscription_is_in_cart() {
 		$non_reusable_payment_method = Payment_Method::BANCONTACT;
 		$payment_gateway             = $this->mock_payment_gateways[ $non_reusable_payment_method ];
@@ -415,7 +439,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'order_number'         => $order_number,
 			'order_key'            => $order->get_order_key(),
 			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'split_upe',
+			'gateway_type'         => 'split_upe_with_deferred_intent_creation',
 			'checkout_type'        => '',
 			'client_version'       => WCPAY_VERSION_NUMBER,
 			'subscription_payment' => 'no',
@@ -490,7 +514,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'order_number'         => $order_number,
 			'order_key'            => $order->get_order_key(),
 			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'split_upe',
+			'gateway_type'         => 'split_upe_with_deferred_intent_creation',
 			'checkout_type'        => '',
 			'client_version'       => WCPAY_VERSION_NUMBER,
 			'subscription_payment' => 'no',
@@ -569,7 +593,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'order_number'         => $order_number,
 			'order_key'            => $order->get_order_key(),
 			'payment_type'         => Payment_Type::SINGLE(),
-			'gateway_type'         => 'split_upe',
+			'gateway_type'         => 'split_upe_with_deferred_intent_creation',
 			'checkout_type'        => '',
 			'client_version'       => WCPAY_VERSION_NUMBER,
 			'subscription_payment' => 'no',
@@ -2101,6 +2125,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_link_payment_method_if_card_enabled() {
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
@@ -2402,6 +2427,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_get_payment_methods_from_gateway_id() {
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
 		$order            = WC_Helper_Order::create_order();
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
 			->setConstructorArgs(

@@ -16,6 +16,14 @@ use WC_Payments_API_Client;
  * Request class for getting setup intents.
  */
 class Get_Setup_Intention extends Request {
+
+	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_get_setup_intent_request';
+
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
