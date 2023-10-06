@@ -36,7 +36,7 @@ export const BuildMissingCurrenciesTooltipMessage = (
 	return sprintf(
 		__(
 			'%s requires the %s %s. In order to enable ' +
-				'the payment method, you must add %s %s to your store.',
+				'the payment method, you must add %s to your store.',
 			'woocommerce-payments'
 		),
 		paymentMethodLabel,
@@ -47,10 +47,9 @@ export const BuildMissingCurrenciesTooltipMessage = (
 			missingCurrencies.length,
 			'woocommerce-payments'
 		),
-		_n( 'this', 'these', missingCurrencies.length, 'woocommerce-payments' ),
 		_n(
-			'currency',
-			'currencies',
+			'this currency',
+			'these currencies',
 			missingCurrencies.length,
 			'woocommerce-payments'
 		)
