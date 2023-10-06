@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useContext, useState } from 'react';
-import { __, _n, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -48,8 +48,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import CapabilityRequestNotice from './capability-request';
 import InlineNotice from 'wcpay/components/inline-notice';
-import interpolateComponents from '@automattic/interpolate-components';
-import { ListToCommaSeparatedSentencePartConverter } from 'wcpay/components/currency-information-for-methods';
+import { BuildMissingCurrenciesTooltipMessage } from 'wcpay/components/currency-information-for-methods';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
@@ -319,34 +318,9 @@ const PaymentMethods = () => {
 										wcpaySettings.storeCurrency;
 									if ( currencies.indexOf( currency ) < 0 ) {
 										isSetupRequired = true;
-										setupTooltip = sprintf(
-											__(
-												'%s requires the %s %s. In order to enable ' +
-													'the payment method, you must add %s %s to your store.',
-												'woocommerce-payments'
-											),
+										setupTooltip = BuildMissingCurrenciesTooltipMessage(
 											label,
-											ListToCommaSeparatedSentencePartConverter(
-												currencies
-											),
-											_n(
-												'currency',
-												'currencies',
-												currencies.length,
-												'woocommerce-payments'
-											),
-											_n(
-												'this',
-												'these',
-												currencies.length,
-												'woocommerce-payments'
-											),
-											_n(
-												'currency',
-												'currencies',
-												currencies.length,
-												'woocommerce-payments'
-											)
+											currencies
 										);
 									}
 								}

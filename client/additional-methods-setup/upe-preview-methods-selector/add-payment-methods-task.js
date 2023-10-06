@@ -8,7 +8,7 @@ import React, {
 	useMemo,
 	useState,
 } from 'react';
-import { __, _n, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -36,7 +36,7 @@ import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/p
 import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
 import CurrencyInformationForMethods, {
-	ListToCommaSeparatedSentencePartConverter,
+	BuildMissingCurrenciesTooltipMessage,
 } from '../../components/currency-information-for-methods';
 import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
@@ -228,34 +228,9 @@ const AddPaymentMethodsTask = () => {
 					const currency = wcpaySettings.storeCurrency;
 					if ( currencies.indexOf( currency ) < 0 ) {
 						isSetupRequired = true;
-						setupTooltip = sprintf(
-							__(
-								'%s requires the %s %s. In order to enable ' +
-									'the payment method, you must add %s %s to your store.',
-								'woocommerce-payments'
-							),
+						setupTooltip = BuildMissingCurrenciesTooltipMessage(
 							label,
-							ListToCommaSeparatedSentencePartConverter(
-								currencies
-							),
-							_n(
-								'currency',
-								'currencies',
-								currencies.length,
-								'woocommerce-payments'
-							),
-							_n(
-								'this',
-								'these',
-								currencies.length,
-								'woocommerce-payments'
-							),
-							_n(
-								'currency',
-								'currencies',
-								currencies.length,
-								'woocommerce-payments'
-							)
+							currencies
 						);
 					}
 				}

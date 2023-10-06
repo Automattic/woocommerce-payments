@@ -14,7 +14,7 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import InlineNotice from 'components/inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
 
-export const ListToCommaSeparatedSentencePartConverter = ( items ) => {
+const ListToCommaSeparatedSentencePartConverter = ( items ) => {
 	if ( items.length === 1 ) {
 		return items[ 0 ];
 	} else if ( items.length === 2 ) {
@@ -26,6 +26,34 @@ export const ListToCommaSeparatedSentencePartConverter = ( items ) => {
 		__( ', and', 'woocommerce-payments' ) +
 		' ' +
 		lastItem
+	);
+};
+
+export const BuildMissingCurrenciesTooltipMessage = (
+	paymentMethodLabel,
+	missingCurrencies
+) => {
+	return sprintf(
+		__(
+			'%s requires the %s %s. In order to enable ' +
+				'the payment method, you must add %s %s to your store.',
+			'woocommerce-payments'
+		),
+		paymentMethodLabel,
+		ListToCommaSeparatedSentencePartConverter( missingCurrencies ),
+		_n(
+			'currency',
+			'currencies',
+			missingCurrencies.length,
+			'woocommerce-payments'
+		),
+		_n( 'this', 'these', missingCurrencies.length, 'woocommerce-payments' ),
+		_n(
+			'currency',
+			'currencies',
+			missingCurrencies.length,
+			'woocommerce-payments'
+		)
 	);
 };
 
