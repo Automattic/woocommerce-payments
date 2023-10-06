@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useContext, useState } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -49,6 +49,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import InlineNotice from 'wcpay/components/inline-notice';
 import interpolateComponents from '@automattic/interpolate-components';
+import { ListToCommaSeparatedSentencePartConverter } from 'wcpay/components/currency-information-for-methods';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -312,56 +313,99 @@ const PaymentMethods = () => {
 								allows_manual_capture: isAllowingManualCapture,
 								setup_required: isSetupRequired,
 								setup_tooltip: setupTooltip,
-							} ) => (
-								<PaymentMethod
-									id={ id }
-									key={ id }
-									label={ label }
-									description={ getPaymentMethodDescription(
-										id,
-										stripeAccountDomesticCurrency
-									) }
-									checked={
-										enabledMethodIds.includes( id ) &&
-										upeCapabilityStatuses.INACTIVE !==
+								currencies,
+							} ) => {
+								if (
+									! wcpaySettings.isMultiCurrencyEnabled &&
+									id !== PAYMENT_METHOD_IDS.CARD
+								) {
+									const currency =
+										wcpaySettings.storeCurrency;
+									if ( currencies.indexOf( currency ) < 0 ) {
+										isSetupRequired = true;
+										setupTooltip = sprintf(
+											__(
+												'%s requires the %s %s. In order to enable ' +
+													'the payment method, you must add %s %s to your store.',
+												'woocommerce-payments'
+											),
+											label,
+											ListToCommaSeparatedSentencePartConverter(
+												currencies
+											),
+											_n(
+												'currency',
+												'currencies',
+												currencies.length,
+												'woocommerce-payments'
+											),
+											_n(
+												'this',
+												'these',
+												currencies.length,
+												'woocommerce-payments'
+											),
+											_n(
+												'currency',
+												'currencies',
+												currencies.length,
+												'woocommerce-payments'
+											)
+										);
+									}
+								}
+								return (
+									<PaymentMethod
+										id={ id }
+										key={ id }
+										label={ label }
+										description={ getPaymentMethodDescription(
+											id,
+											stripeAccountDomesticCurrency
+										) }
+										checked={
+											enabledMethodIds.includes( id ) &&
+											upeCapabilityStatuses.INACTIVE !==
+												getStatusAndRequirements( id )
+													.status
+										}
+										// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
+										required={
+											PAYMENT_METHOD_IDS.CARD === id &&
+											isUpeEnabled
+										}
+										locked={
+											PAYMENT_METHOD_IDS.CARD === id &&
+											isCreditCardEnabled &&
+											isUpeEnabled
+										}
+										Icon={ Icon }
+										status={
 											getStatusAndRequirements( id )
 												.status
-									}
-									// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
-									required={
-										PAYMENT_METHOD_IDS.CARD === id &&
-										isUpeEnabled
-									}
-									locked={
-										PAYMENT_METHOD_IDS.CARD === id &&
-										isCreditCardEnabled &&
-										isUpeEnabled
-									}
-									Icon={ Icon }
-									status={
-										getStatusAndRequirements( id ).status
-									}
-									isSetupRequired={ isSetupRequired }
-									setupTooltip={ setupTooltip }
-									isAllowingManualCapture={
-										isAllowingManualCapture
-									}
-									onUncheckClick={ () => {
-										handleUncheckClick( id );
-									} }
-									onCheckClick={ () => {
-										handleCheckClick( id );
-									} }
-									isPoEnabled={
-										wcpaySettings?.progressiveOnboarding
-											?.isEnabled
-									}
-									isPoComplete={
-										wcpaySettings?.progressiveOnboarding
-											?.isComplete
-									}
-								/>
-							)
+										}
+										isSetupRequired={ isSetupRequired }
+										setupTooltip={ setupTooltip }
+										isAllowingManualCapture={
+											isAllowingManualCapture
+										}
+										onUncheckClick={ () => {
+											handleUncheckClick( id );
+										} }
+										onCheckClick={ () => {
+											handleCheckClick( id );
+										} }
+										isPoEnabled={
+											wcpaySettings?.progressiveOnboarding
+												?.isEnabled
+										}
+										isPoComplete={
+											wcpaySettings?.progressiveOnboarding
+												?.isComplete
+										}
+									/>
+								);
+							}
 						) }
 					</PaymentMethodsList>
 				</CardBody>

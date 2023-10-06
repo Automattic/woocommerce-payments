@@ -8,7 +8,7 @@ import React, {
 	useMemo,
 	useState,
 } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -35,11 +35,14 @@ import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
-import CurrencyInformationForMethods from '../../components/currency-information-for-methods';
+import CurrencyInformationForMethods, {
+	ListToCommaSeparatedSentencePartConverter,
+} from '../../components/currency-information-for-methods';
 import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
 import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
 import './add-payment-methods-task.scss';
+import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
 
 const usePaymentMethodsCheckboxState = () => {
 	// For UPE, the card payment method is required and always active.
@@ -211,9 +214,52 @@ const AddPaymentMethodsTask = () => {
 	};
 
 	const prepareUpePaymentMethods = ( upeMethodIds ) => {
-		return upeMethodIds.map(
-			( key ) =>
-				availablePaymentMethods.includes( key ) && (
+		return upeMethodIds.map( ( key ) => {
+			const { label, currencies } = paymentMethodsMap[ key ];
+
+			if ( availablePaymentMethods.includes( key ) ) {
+				let isSetupRequired = false;
+				let setupTooltip = '';
+
+				if (
+					! wcpaySettings.isMultiCurrencyEnabled &&
+					key !== PAYMENT_METHOD_IDS.CARD
+				) {
+					const currency = wcpaySettings.storeCurrency;
+					if ( currencies.indexOf( currency ) < 0 ) {
+						isSetupRequired = true;
+						setupTooltip = sprintf(
+							__(
+								'%s requires the %s %s. In order to enable ' +
+									'the payment method, you must add %s %s to your store.',
+								'woocommerce-payments'
+							),
+							label,
+							ListToCommaSeparatedSentencePartConverter(
+								currencies
+							),
+							_n(
+								'currency',
+								'currencies',
+								currencies.length,
+								'woocommerce-payments'
+							),
+							_n(
+								'this',
+								'these',
+								currencies.length,
+								'woocommerce-payments'
+							),
+							_n(
+								'currency',
+								'currencies',
+								currencies.length,
+								'woocommerce-payments'
+							)
+						);
+					}
+				}
+				return (
 					<PaymentMethodCheckbox
 						key={ key }
 						checked={
@@ -221,6 +267,8 @@ const AddPaymentMethodsTask = () => {
 							upeCapabilityStatuses.INACTIVE !==
 								getStatusAndRequirements( key ).status
 						}
+						setupTooltip={ setupTooltip }
+						isSetupRequired={ isSetupRequired }
 						status={ getStatusAndRequirements( key ).status }
 						locked={ isPoInProgress }
 						onChange={ ( name, status ) => {
@@ -228,8 +276,10 @@ const AddPaymentMethodsTask = () => {
 						} }
 						name={ key }
 					/>
-				)
-		);
+				);
+			}
+			return '';
+		} );
 	};
 
 	const availableBuyNowPayLaterUpeMethods = upeMethods.filter(
