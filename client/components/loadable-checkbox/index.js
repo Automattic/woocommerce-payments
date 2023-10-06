@@ -94,7 +94,10 @@ const LoadableCheckboxControl = ( {
 					className="loadable-checkbox__icon"
 					style={ { marginRight: '16px' } }
 				>
-					<HoverTooltip content={ setupTooltip }>
+					<HoverTooltip
+						content={ setupTooltip }
+						className="wcpay-tooltip__tooltip--dark"
+					>
 						<div>
 							<NoticeOutlineIcon
 								style={ {
