@@ -233,6 +233,9 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	 * Check if Automate Woo Referrals is enabled and
 	 * its functions used on WCPay are available.
 	 *
+	 * @psalm-suppress UndefinedClass
+	 * @psalm-suppress UndefinedFunction
+	 *
 	 * @return boolean
 	 */
 	private function is_automate_woo_referrals_enabled() {
@@ -248,6 +251,8 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 
 	/**
 	 * Get AutomateWoo advocate id from cookie.
+	 *
+	 * @psalm-suppress UndefinedClass
 	 *
 	 * @return string|null
 	 */
