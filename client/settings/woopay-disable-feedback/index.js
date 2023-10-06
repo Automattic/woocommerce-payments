@@ -10,14 +10,22 @@ import { Modal } from '@wordpress/components';
  */
 import './style.scss';
 import Loadable from 'wcpay/components/loadable';
+import WooPayIcon from 'assets/images/woopay.svg?asset';
 
 const WooPayDisableFeedback = ( { onRequestClose } ) => {
 	const [ isLoading, setIsLoading ] = useState( true );
 
 	return (
 		<Modal
-			title={ __( 'WooPay Feedback', 'woocommerce-payments' ) }
+			title={
+				<img
+					src={ WooPayIcon }
+					alt={ __( 'WooPay Logo', 'woocommerce-payments' ) }
+					className="woopay-disable-feedback-logo"
+				/>
+			}
 			isDismissible={ true }
+			shouldCloseOnClickOutside={ false } // Should be false because of the iframe.
 			shouldCloseOnEsc={ true }
 			onRequestClose={ onRequestClose }
 			className="woopay-disable-feedback"
