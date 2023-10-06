@@ -68,7 +68,7 @@ const events = {
 	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
 	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download',
 	DISPUTES_ROW_ACTION_CLICK: 'wcpay_disputes_row_action_click',
-	DISPUTE_CHALLENGE_CLICK: 'wcpay_dispute_challenge_click',
+	DISPUTE_CHALLENGE_CLICK: 'wcpay_dispute_challenge_clicked',
 	DISPUTE_ACCEPT_CLICK: 'wcpay_dispute_accept_click',
 	DISPUTE_ACCEPT_MODAL_VIEW: 'wcpay_dispute_accept_modal_view',
 	DISPUTE_INQUIRY_REFUND_CLICK: 'wcpay_dispute_inquiry_refund_click',
@@ -84,7 +84,7 @@ const events = {
 		'wcpay_overview_deposits_change_schedule_click',
 	OVERVIEW_TASK_CLICK: 'wcpay_overview_task_click',
 	PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK:
-		'wcpay_payment_details_view_dispute_evidence_button_click',
+		'wcpay_view_submitted_evidence_clicked',
 	SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK:
 		'wcpay_settings_deposits_manage_in_stripe_click',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
