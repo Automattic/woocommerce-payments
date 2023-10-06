@@ -95,7 +95,7 @@ export interface Dispute {
 	};
 	order: null | OrderDetails;
 	evidence: Evidence;
-	issuer_evidence: IssuerEvidence | null;
+	issuer_evidence: IssuerEvidence[] | null;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
 	charge: Charge | string;
