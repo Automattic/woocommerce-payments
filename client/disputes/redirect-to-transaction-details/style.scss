@@ -1,0 +1,9 @@
+.wcpay-dispute-detail-legacy-redirect {
+	// Shift the redirect spinner to approx center of viewport.
+	top: 10vh;
+	position: relative;
+
+	.components-flex-item {
+		text-align: center;
+	}
+}

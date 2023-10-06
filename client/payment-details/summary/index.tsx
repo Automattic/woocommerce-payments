@@ -51,6 +51,7 @@ import CancelAuthorizationButton from '../../components/cancel-authorization-but
 import { PaymentIntent } from '../../types/payment-intents';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
+import ErrorBoundary from 'components/error-boundary';
 
 declare const window: any;
 
@@ -167,10 +168,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.currency && balance.currency !== charge.currency;
 
 	const {
-		featureFlags: {
-			isAuthAndCaptureEnabled,
-			isDisputeOnTransactionPageEnabled,
-		},
+		featureFlags: { isAuthAndCaptureEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
@@ -463,18 +461,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				</LoadableBlock>
 			</CardBody>
 
-			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
-				<>
+			{ charge.dispute && (
+				<ErrorBoundary>
 					{ isAwaitingResponse( charge.dispute.status ) ? (
 						<DisputeAwaitingResponseDetails
 							dispute={ charge.dispute }
 							customer={ charge.billing_details }
 							chargeCreated={ charge.created }
+							orderUrl={ charge.order?.url }
 						/>
 					) : (
 						<DisputeResolutionFooter dispute={ charge.dispute } />
 					) }
-				</>
+				</ErrorBoundary>
 			) }
 
 			{ isAuthAndCaptureEnabled &&

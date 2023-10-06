@@ -721,17 +721,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   </div>
                   <div
                     class="woocommerce-timeline-item__body"
-                  >
-                    <span>
-                      <a
-                        data-link-type="wc-admin"
-                        data-testid="view-dispute-button"
-                        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=some_id"
-                      >
-                        View dispute
-                      </a>
-                    </span>
-                  </div>
+                  />
                 </li>
                 <li
                   class="woocommerce-timeline-item"

@@ -13,6 +13,8 @@ use WCPay\Internal\DependencyManagement\ExtendedContainer;
 use WCPay\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
 use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
 use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
+use WCPay\Internal\DependencyManagement\ServiceProvider\GenericServiceProvider;
+use WCPay\Internal\DependencyManagement\ServiceProvider\ProxiesServiceProvider;
 
 /**
  * WCPay Dependency Injection Container.
@@ -99,6 +101,8 @@ class Container implements ContainerInterface {
 	 * Loads all available providers into the container.
 	 */
 	private function load_providers() {
+		$this->container->addServiceProvider( new GenericServiceProvider() );
 		$this->container->addServiceProvider( new PaymentsServiceProvider() );
+		$this->container->addServiceProvider( new ProxiesServiceProvider() );
 	}
 }
