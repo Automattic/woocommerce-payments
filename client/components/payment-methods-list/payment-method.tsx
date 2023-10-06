@@ -66,52 +66,28 @@ const PaymentMethodLabel = ( {
 				</span>
 			) }
 			{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
-				<HoverTooltip
-					content={ __(
-						'This payment method is pending approval. Once approved, you will be able to use it.',
-						'woocommerce-payments'
-					) }
-				>
-					<Chip
-						message={ __(
-							'Pending approval',
-							'woocommerce-payments'
-						) }
-						type="warning"
-					/>
-				</HoverTooltip>
+				<Chip
+					message={ __( 'Pending approval', 'woocommerce-payments' ) }
+					type="warning"
+				/>
 			) }
 			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
-				<HoverTooltip
-					content={ sprintf(
-						__(
-							"%s won't be visible to your customers until you provide the required " +
-								'information. Follow the instructions sent by our partner Stripe to %s.',
-							'woocommerce-payments'
-						),
-						label,
-						wcpaySettings?.accountEmail ?? ''
+				<Chip
+					message={ __(
+						'Pending activation',
+						'woocommerce-payments'
 					) }
-				>
-					<Chip
-						message={ __(
-							'Pending activation',
-							'woocommerce-payments'
-						) }
-						type="warning"
-					/>
-				</HoverTooltip>
+					type="warning"
+				/>
 			) }
 			{ disabled && (
-				<PaymentMethodDisabledTooltip id={ id }>
-					<Chip
-						message={ __(
-							'More information needed',
-							'woocommerce-payments'
-						) }
-						type="warning"
-					/>
-				</PaymentMethodDisabledTooltip>
+				<Chip
+					message={ __(
+						'More information needed',
+						'woocommerce-payments'
+					) }
+					type="warning"
+				/>
 			) }
 		</>
 	);
@@ -146,9 +122,16 @@ const PaymentMethod = ( {
 	);
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
+	const needsAttention = [
+		upeCapabilityStatuses.INACTIVE,
+		upeCapabilityStatuses.PENDING_APPROVAL,
+		upeCapabilityStatuses.PENDING_VERIFICATION,
+	].includes( status );
+
 	const needsOverlay =
 		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
-		isSetupRequired;
+		isSetupRequired ||
+		needsAttention;
 
 	const handleChange = ( newStatus: string ) => {
 		// If the payment method control is locked, reject any changes.
@@ -183,6 +166,8 @@ const PaymentMethod = ( {
 					isAllowingManualCapture={ isAllowingManualCapture }
 					isSetupRequired={ isSetupRequired }
 					setupTooltip={ setupTooltip }
+					needsAttention={ needsAttention }
+					paymentMethodId={ id }
 				/>
 			</div>
 			<div className="payment-method__text-container">
