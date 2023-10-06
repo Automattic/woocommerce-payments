@@ -521,7 +521,6 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	private function process_webhook_dispute_created( $event_body ) {
-		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
@@ -566,7 +565,6 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	private function process_webhook_dispute_closed( $event_body ) {
-		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
