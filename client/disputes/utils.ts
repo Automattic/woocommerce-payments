@@ -76,7 +76,7 @@ export const isInquiry = ( dispute: Pick< Dispute, 'status' > ): boolean => {
  * Returns the dispute fee balance transaction for a dispute if it exists
  * and the deduction has not been reversed.
  */
-export const getDisputeDeductedBalanceTransaction = (
+const getDisputeDeductedBalanceTransaction = (
 	dispute: Pick< Dispute, 'balance_transactions' >
 ): BalanceTransaction | undefined => {
 	// Note that there can only be, at most, two balance transactions for a given dispute:

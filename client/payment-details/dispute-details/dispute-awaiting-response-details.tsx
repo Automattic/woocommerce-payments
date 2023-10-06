@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import moment from 'moment';
 import { __, sprintf } from '@wordpress/i18n';
 import { backup, edit, lock, arrowRight } from '@wordpress/icons';
@@ -34,6 +34,7 @@ import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
 import { DisputeSteps, InquirySteps } from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import './style.scss';
 
 interface Props {
@@ -127,7 +128,7 @@ function getAcceptDisputeProps( dispute: Dispute ): AcceptDisputeProps {
 					sprintf(
 						/* translators: %s: dispute fee, <em>: emphasis HTML element. */
 						__(
-							'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account.',
+							'Accepting the dispute marks it as <em>Lost</em>. The disputed amount and the %s dispute fee will not be returned to you.',
 							'woocommerce-payments'
 						),
 						getDisputeFeeFormatted( dispute, true ) ?? '-'
@@ -164,6 +165,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	const { createErrorNotice } = useDispatch( 'core/notices' );
+
+	const {
+		featureFlags: { isDisputeIssuerEvidenceEnabled },
+	} = useContext( WCPaySettingsContext );
 
 	const onModalClose = () => {
 		setModalOpen( false );
@@ -222,9 +227,11 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 						/>
 					) }
 
-					<IssuerEvidenceList
-						issuerEvidence={ dispute.issuer_evidence }
-					/>
+					{ isDisputeIssuerEvidenceEnabled && (
+						<IssuerEvidenceList
+							issuerEvidence={ dispute.issuer_evidence }
+						/>
+					) }
 
 					{ /* Dispute Actions */ }
 					{
