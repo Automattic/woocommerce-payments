@@ -223,8 +223,8 @@ class WC_Payments_Task_Disputes extends Task {
 				add_query_arg(
 					[
 						'page' => 'wc-admin',
-						'path' => '%2Fpayments%2Fdisputes%2Fdetails',
-						'id'   => $dispute['dispute_id'],
+						'path' => '%2Fpayments%2Ftransactions%2Fdetails',
+						'id'   => $dispute['charge_id'],
 					],
 					'admin.php'
 				)

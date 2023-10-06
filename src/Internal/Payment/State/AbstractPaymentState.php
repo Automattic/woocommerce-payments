@@ -10,6 +10,9 @@ namespace WCPay\Internal\Payment\State;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
+use WCPay\Internal\Payment\PaymentRequest;
+use WCPay\Internal\Payment\PaymentRequestException;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 
 /**
  * Base class for payment states.
@@ -90,11 +93,15 @@ abstract class AbstractPaymentState {
 	/**
 	 * Initialtes the payment process.
 	 *
-	 * @return AbstractPaymentState The next state.
-	 * @throws StateTransitionException In case the new state was not found or could not be initialized.
+	 * @param PaymentRequest $request    The incoming payment processing request.
+	 * @return CompletedState            The next state.
+	 * @throws StateTransitionException  In case the completed state could not be initialized.
+	 * @throws ContainerException        When the dependency container cannot instantiate the state.
+	 * @throws Order_Not_Found_Exception Order could not be found.
+	 * @throws PaymentRequestException   When data is not available or invalid.
 	 * @psalm-suppress InvalidReturnType If this method does not throw, it will return a new state.
 	 */
-	public function process() {
+	public function process( PaymentRequest $request ) {
 		$this->throw_unavailable_method_exception( __METHOD__ );
 	}
 
