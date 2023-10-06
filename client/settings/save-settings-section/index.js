@@ -32,7 +32,7 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 	const [
 		isWooPayDisableFeedbackOpen,
 		setIsWooPayDisableFeedbackOpen,
-	] = useState( true );
+	] = useState( false );
 
 	if (
 		initialIsPaymentRequestEnabled === null &&
