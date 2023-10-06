@@ -73,20 +73,14 @@ const PaymentRequestExpressComponent = ( {
 	const onPaymentRequestButtonClick = () => {
 		onButtonClick();
 
-		if ( paymentRequestType === 'google_pay' ) {
-			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
-				{
-					source: 'checkout',
-				}
-			);
-		} else if ( paymentRequestType === 'apple_pay' ) {
-			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
-				{
-					source: 'checkout',
-				}
-			);
+		const paymentRequestTypeEvents = {
+			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
+			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+		};
+
+		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
+			const event = paymentRequestTypeEvents[ paymentRequestType ];
+			wcpayTracks.recordUserEvent( event, { source: 'checkout' } );
 		}
 	};
 

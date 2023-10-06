@@ -48,6 +48,19 @@ jQuery( ( $ ) => {
 
 	let paymentRequestType;
 
+	// Track the payment request button click event.
+	const trackPaymentRequestButtonClick = ( source ) => {
+		const paymentRequestTypeEvents = {
+			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
+			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+		};
+
+		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
+			const event = paymentRequestTypeEvents[ paymentRequestType ];
+			wcpayTracks.recordUserEvent( event, { source } );
+		}
+	};
+
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
@@ -342,21 +355,8 @@ jQuery( ( $ ) => {
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
-				if ( paymentRequestType === 'google_pay' ) {
-					wcpayTracks.recordUserEvent(
-						wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
-						{
-							source: 'product',
-						}
-					);
-				} else if ( paymentRequestType === 'apple_pay' ) {
-					wcpayTracks.recordUserEvent(
-						wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
-						{
-							source: 'product',
-						}
-					);
-				}
+				trackPaymentRequestButtonClick( 'product' );
+
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( wcpayPaymentRequestParams.login_confirmation ) {
 					evt.preventDefault();
@@ -475,22 +475,7 @@ jQuery( ( $ ) => {
 					evt.preventDefault();
 					displayLoginConfirmation( paymentRequestType );
 				}
-
-				if ( paymentRequestType === 'google_pay' ) {
-					wcpayTracks.recordUserEvent(
-						wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
-						{
-							source: wcpayPaymentRequestParams.button_context,
-						}
-					);
-				} else if ( paymentRequestType === 'apple_pay' ) {
-					wcpayTracks.recordUserEvent(
-						wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
-						{
-							source: wcpayPaymentRequestParams.button_context,
-						}
-					);
-				}
+				trackPaymentRequestButtonClick( 'checkout' );
 			} );
 		},
 
