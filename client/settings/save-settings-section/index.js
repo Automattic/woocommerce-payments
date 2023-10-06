@@ -101,6 +101,7 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 
 			// Prevent show modal again.
 			setInitialIsPaymentRequestEnabled( true );
+			wcpaySettings.woopayLastDisableDate = new Date();
 		}
 	};
 
