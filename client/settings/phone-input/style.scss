@@ -7,11 +7,6 @@
 	flex-direction: column;
 	gap: $gap;
 
-	&:empty {
-		margin-top: 0 !important;
-		margin-bottom: 0 !important;
-	}
-
 	&:not( :empty ) {
 		#payment .wc_payment_methods.payment_methods.methods + & {
 			margin-top: $gap-large;
