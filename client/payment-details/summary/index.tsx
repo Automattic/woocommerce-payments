@@ -51,6 +51,7 @@ import CancelAuthorizationButton from '../../components/cancel-authorization-but
 import { PaymentIntent } from '../../types/payment-intents';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
+import ErrorBoundary from 'components/error-boundary';
 
 declare const window: any;
 
@@ -461,7 +462,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			</CardBody>
 
 			{ charge.dispute && (
-				<>
+				<ErrorBoundary>
 					{ isAwaitingResponse( charge.dispute.status ) ? (
 						<DisputeAwaitingResponseDetails
 							dispute={ charge.dispute }
@@ -472,7 +473,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					) : (
 						<DisputeResolutionFooter dispute={ charge.dispute } />
 					) }
-				</>
+				</ErrorBoundary>
 			) }
 
 			{ isAuthAndCaptureEnabled &&

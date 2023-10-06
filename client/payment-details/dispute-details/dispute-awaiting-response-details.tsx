@@ -128,7 +128,7 @@ function getAcceptDisputeProps( dispute: Dispute ): AcceptDisputeProps {
 					sprintf(
 						/* translators: %s: dispute fee, <em>: emphasis HTML element. */
 						__(
-							'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account.',
+							'Accepting the dispute marks it as <em>Lost</em>. The disputed amount and the %s dispute fee will not be returned to you.',
 							'woocommerce-payments'
 						),
 						getDisputeFeeFormatted( dispute, true ) ?? '-'
