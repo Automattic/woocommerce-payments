@@ -75,7 +75,7 @@ const events = {
 	DISPUTE_INQUIRY_REFUND_CLICK: 'wcpay_dispute_inquiry_refund_click',
 	DISPUTE_INQUIRY_REFUND_MODAL_VIEW:
 		'wcpay_dispute_inquiry_refund_modal_view',
-  GOOGLEPAY_BUTTON_CLICK: 'googlepay_button_click',
+	GOOGLEPAY_BUTTON_CLICK: 'googlepay_button_click',
 	ORDER_DISPUTE_NOTICE_BUTTON_CLICK:
 		'wcpay_order_dispute_notice_action_click',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
