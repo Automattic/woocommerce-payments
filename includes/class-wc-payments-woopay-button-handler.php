@@ -112,7 +112,11 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		if ( ! $this->gateway->get_option( 'platform_checkout_button_locations' ) ) {
-			$this->gateway->update_option( 'platform_checkout_button_locations', [ 'product', 'cart', 'checkout' ] );
+			$all_locations = $this->gateway->form_fields['platform_checkout_button_locations']['options'];
+
+			$this->gateway->update_option( 'platform_checkout_button_locations', array_keys( $all_locations ) );
+
+			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $woopay_enabled_locations );
 		}
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
