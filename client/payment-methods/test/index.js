@@ -80,6 +80,8 @@ describe( 'PaymentMethods', () => {
 		} );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		global.wcpaySettings = {
+			isMultiCurrencyEnabled: true,
+			storeCurrency: 'USD',
 			accountEmail: 'admin@example.com',
 		};
 		useAccountDomesticCurrency.mockReturnValue( 'usd' );
