@@ -231,6 +231,11 @@ class WooPay_Session {
 	 * and disable the schedules when plugin is disabled.
 	 */
 	public static function run_and_remove_woopay_restore_order_customer_id_schedules() {
+		// WooCommerce is disabled when disabling WCPay.
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return;
+		}
+
 		$args = [
 			'meta_key' => 'woopay_merchant_customer_id', //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 			'return'   => 'ids',
@@ -345,7 +350,7 @@ class WooPay_Session {
 			$customer_id   = WC_Payments::get_customer_service()->create_customer_for_user( $user, $customer_data );
 		}
 
-		if ( 0 !== $user->ID ) {
+		if ( WC_Payments_Features::is_customer_multi_currency_enabled() && 0 !== $user->ID ) {
 			// Multicurrency selection is stored on user meta when logged in and WC session when logged out.
 			// This code just makes sure that currency selection is available on WC session for WooPay.
 			$currency      = get_user_meta( $user->ID, MultiCurrency::CURRENCY_META_KEY, true );

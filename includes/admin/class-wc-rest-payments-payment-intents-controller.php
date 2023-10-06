@@ -9,6 +9,8 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Logger;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Constants\Payment_Type;
+use WCPay\Internal\Service\Level3Service;
+use WCPay\Internal\Service\OrderService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,6 +25,20 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private $gateway;
+
+	/**
+	 * Order service instance.
+	 *
+	 * @var OrderService
+	 */
+	private $order_service;
+
+	/**
+	 * Level3 service instance.
+	 *
+	 * @var Level3Service
+	 */
+	private $level3_service;
 
 	/**
 	 * Endpoint path.
@@ -61,10 +77,20 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	 *
 	 * @param WC_Payments_API_Client   $api_client       WooCommerce Payments API client.
 	 * @param WC_Payment_Gateway_WCPay $gateway          WooCommerce Payments payment gateway.
+	 * @param OrderService             $order_service    The new order servie.
+	 * @param Level3Service            $level3_service   Level3 service instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct(
+		WC_Payments_API_Client $api_client,
+		WC_Payment_Gateway_WCPay $gateway,
+		OrderService $order_service,
+		Level3Service $level3_service
+	) {
 		parent::__construct( $api_client );
-		$this->gateway = $gateway;
+
+		$this->gateway        = $gateway;
+		$this->order_service  = $order_service;
+		$this->level3_service = $level3_service;
 	}
 
 	/**
@@ -101,11 +127,11 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 			$wcpay_server_request->set_currency_code( $currency );
 			$wcpay_server_request->set_amount( $amount );
 
-			$metadata = $this->gateway->get_metadata_from_order( $order, Payment_Type::SINGLE() );
+			$metadata = $this->order_service->get_payment_metadata( $order_id, Payment_Type::SINGLE() );
 			$wcpay_server_request->set_metadata( $metadata );
 
 			$wcpay_server_request->set_customer( $request->get_param( 'customer' ) );
-			$wcpay_server_request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
+			$wcpay_server_request->set_level3( $this->level3_service->get_data_from_order( $order_id ) );
 			$wcpay_server_request->set_payment_method( $request->get_param( 'payment_method' ) );
 			$wcpay_server_request->set_payment_method_types( [ 'card' ] );
 			$wcpay_server_request->set_off_session( true );

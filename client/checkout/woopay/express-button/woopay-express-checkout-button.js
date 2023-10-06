@@ -100,7 +100,11 @@ export const WoopayExpressCheckoutButton = ( {
 				if ( isAddToCartDisabled ) {
 					alert(
 						window.wc_add_to_cart_variation_params
-							.i18n_make_a_selection_text
+							?.i18n_make_a_selection_text ||
+							__(
+								'Please select all required options to continue.',
+								'woocommerce-payments'
+							)
 					);
 					return;
 				}
@@ -156,7 +160,9 @@ export const WoopayExpressCheckoutButton = ( {
 			urlParams.append( 'source_url', window.location.href );
 			urlParams.append( 'tracksUserIdentity', tracksUserId );
 
-			return getConfig( 'woopayHost' ) + '/otp/?' + urlParams.toString();
+			return (
+				getConfig( 'woopayHost' ) + '/connect/?' + urlParams.toString()
+			);
 		};
 
 		const iframe = document.createElement( 'iframe' );
