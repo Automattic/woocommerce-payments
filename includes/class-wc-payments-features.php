@@ -24,6 +24,7 @@ class WC_Payments_Features {
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
 	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
 	const DEFERRED_UPE_SERVER_FLAG_NAME     = 'is_deferred_intent_creation_upe_enabled';
+	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -423,6 +424,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Dispute issuer evidence feature should be enabled. Disabled by default.
+	 *
+	 * @return bool
+	 */
+	public static function is_dispute_issuer_evidence_enabled(): bool {
+		return '1' === get_option( self::DISPUTE_ISSUER_EVIDENCE, '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -430,18 +440,19 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'upe'                      => self::is_upe_enabled(),
-				'upeSplit'                 => self::is_upe_split_enabled(),
-				'upeDeferred'              => self::is_upe_deferred_intent_enabled(),
-				'upeSettingsPreview'       => self::is_upe_settings_preview_enabled(),
-				'multiCurrency'            => self::is_customer_multi_currency_enabled(),
-				'woopay'                   => self::is_woopay_eligible(),
-				'documents'                => self::is_documents_section_enabled(),
-				'clientSecretEncryption'   => self::is_client_secret_encryption_enabled(),
-				'woopayExpressCheckout'    => self::is_woopay_express_checkout_enabled(),
-				'isAuthAndCaptureEnabled'  => self::is_auth_and_capture_enabled(),
-				'progressiveOnboarding'    => self::is_progressive_onboarding_enabled(),
-				'isPayForOrderFlowEnabled' => self::is_pay_for_order_flow_enabled(),
+				'upe'                            => self::is_upe_enabled(),
+				'upeSplit'                       => self::is_upe_split_enabled(),
+				'upeDeferred'                    => self::is_upe_deferred_intent_enabled(),
+				'upeSettingsPreview'             => self::is_upe_settings_preview_enabled(),
+				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),
+				'woopay'                         => self::is_woopay_eligible(),
+				'documents'                      => self::is_documents_section_enabled(),
+				'clientSecretEncryption'         => self::is_client_secret_encryption_enabled(),
+				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
+				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
+				'progressiveOnboarding'          => self::is_progressive_onboarding_enabled(),
+				'isPayForOrderFlowEnabled'       => self::is_pay_for_order_flow_enabled(),
+				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 			]
 		);
 	}
