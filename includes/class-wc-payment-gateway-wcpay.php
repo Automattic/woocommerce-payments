@@ -2034,6 +2034,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->update_option( 'platform_checkout', $is_woopay_enabled ? 'yes' : 'no' );
 
 			if ( ! $is_woopay_enabled ) {
+				$this->update_option( 'platform_checkout_last_disable_date', gmdate( 'Y-m-d' ) );
+			}
+
+			if ( ! $is_woopay_enabled ) {
 				WooPay_Order_Status_Sync::remove_webhook();
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 				update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
