@@ -475,7 +475,9 @@ jQuery( ( $ ) => {
 					evt.preventDefault();
 					displayLoginConfirmation( paymentRequestType );
 				}
-				trackPaymentRequestButtonClick( 'checkout' );
+				trackPaymentRequestButtonClick(
+					wcpayPaymentRequestParams.button_context
+				);
 			} );
 		},
 
