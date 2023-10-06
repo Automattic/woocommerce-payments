@@ -69,11 +69,8 @@ class PaymentRequestServiceTest extends WCPAY_UnitTestCase {
 			'set_level3'           => [ 'level3data' ],
 			'set_payment_methods'  => [ 'card' ],
 			'set_cvc_confirmation' => 'confirmation',
+			'set_fingerprint'      => $fingerprint ?? '',
 		];
-
-		if ( ! is_null( $fingerprint ) ) {
-			$request_data['set_fingerprint'] = 'fingerprint';
-		}
 
 		$context = $this->createMock( PaymentContext::class );
 		$intent  = $this->createMock( WC_Payments_API_Payment_Intention::class );

@@ -38,11 +38,8 @@ class PaymentRequestService {
 		$request->set_level3( $context->get_level3_data() );
 		$request->set_payment_methods( [ 'card' ] ); // Initial payment process only supports cards.
 		$request->set_cvc_confirmation( $context->get_cvc_confirmation() );
-
-		$fingerprint = $context->get_fingerprint();
-		if ( ! is_null( $fingerprint ) ) {
-			$request->set_fingerprint( $fingerprint );
-		}
+		// Empty string to trigger the link to `Buyer_Fingerprinting_Service`.
+		$request->set_fingerprint( $context->get_fingerprint() ?? '' );
 
 		// ToDo: The WooPay service should accept the old and new payment contexts.
 		$request->assign_hook( 'wcpay_create_and_confirm_intent_request_new' );
