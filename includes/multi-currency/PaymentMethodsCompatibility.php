@@ -40,7 +40,14 @@ class PaymentMethodsCompatibility {
 	public function __construct( MultiCurrency $multi_currency, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->multi_currency = $multi_currency;
 		$this->gateway        = $gateway;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action(
 			'update_option_woocommerce_woocommerce_payments_settings',
 			[ $this, 'add_missing_currencies' ]
