@@ -158,7 +158,10 @@ const DisputeNotice = ( { chargeId } ) => {
 			// Disable the refund button.
 			refundButton.disabled = true;
 
-			const disputeDetailsLink = getDetailsURL( dispute.id, 'disputes' );
+			const disputeDetailsLink = getDetailsURL(
+				chargeId,
+				'transactions'
+			);
 
 			let tooltipText = '';
 
@@ -315,8 +318,8 @@ const DisputeNotice = ( { chargeId } ) => {
 							}
 						);
 						window.location = getDetailsURL(
-							dispute.id,
-							'disputes'
+							chargeId,
+							'transactions'
 						);
 					},
 				},
