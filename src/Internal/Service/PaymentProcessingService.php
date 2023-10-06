@@ -52,43 +52,35 @@ class PaymentProcessingService {
 	/**
 	 * Process payment.
 	 *
-	 * @param  int $order_id Order ID provided by WooCommerce core.
+	 * @param int  $order_id       Order ID provided by WooCommerce core.
+	 * @param bool $manual_capture Whether to only create an authorization instead of a charge (optional).
 	 *
 	 * @throws Exception
 	 * @throws StateTransitionException In case a state cannot be initialized.
 	 * @throws PaymentRequestException  When the request is malformed. This should be converted to a failure state.
 	 * @throws ContainerException       When the dependency container cannot instantiate the state.
 	 */
-	public function process_payment( int $order_id ) {
+	public function process_payment( int $order_id, bool $manual_capture = false ) {
 		// Start with a basis context.
-		$context = $this->create_payment_context( $order_id );
+		$context = $this->create_payment_context( $order_id, $manual_capture );
 
-		// Add details from the request.
-		$request = $this->create_payment_request();
-		$request->populate_context( $context );
+		$request         = new PaymentRequest( $this->legacy_proxy );
+		$initial_state   = $this->state_factory->create_state( InitialState::class, $context );
+		$completed_state = $initial_state->process( $request );
 
-		$state = $this->state_factory->create_state( InitialState::class, $context );
-		$state = $state->process();
-
-		return $state;
+		return $completed_state;
 	}
 
 	/**
 	 * Instantiates a new empty payment context.
 	 *
-	 * @param int $order_id ID of the order that the context belongs to.
+	 * @param int  $order_id       ID of the order that the context belongs to.
+	 * @param bool $manual_capture Whether manual capture is enabled.
 	 * @return PaymentContext
 	 */
-	protected function create_payment_context( int $order_id ): PaymentContext {
-		return new PaymentContext( $order_id );
-	}
-
-	/**
-	 * Instantiates a new payment request.
-	 *
-	 * @return PaymentRequest
-	 */
-	protected function create_payment_request(): PaymentRequest {
-		return new PaymentRequest( $this->legacy_proxy );
+	protected function create_payment_context( int $order_id, bool $manual_capture = false ): PaymentContext {
+		$context = new PaymentContext( $order_id );
+		$context->toggle_manual_capture( $manual_capture );
+		return $context;
 	}
 }

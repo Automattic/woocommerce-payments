@@ -38,6 +38,7 @@ class GenericServiceProvider extends AbstractServiceProvider {
 		$container->addShared( OrderService::class )
 			->addArgument( WC_Payments_Order_Service::class )
 			->addArgument( LegacyProxy::class )
+			->addArgument( WC_Payments_Account::class )
 			->addArgument( HooksProxy::class );
 
 		$container->addShared( Level3Service::class )

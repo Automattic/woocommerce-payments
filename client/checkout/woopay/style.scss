@@ -142,9 +142,20 @@
 	white-space: nowrap;
 	text-transform: none;
 
-	&:hover {
+	&:not( :disabled ):hover {
 		background: #d9baff !important;
 		cursor: pointer;
+	}
+
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	&.is-loading,
+	&.is-loading:hover,
+	&.is-loading:disabled {
+		opacity: 1 !important;
 	}
 
 	svg {
@@ -179,14 +190,14 @@
 		svg {
 			fill: $white;
 		}
-		&:hover {
+		&:not( :disabled ):hover {
 			background: #533582 !important;
 		}
 	}
 
 	&[data-theme='light-outline'] {
 		border-color: #674399 !important;
-		&:hover {
+		&:not( :disabled ):hover {
 			background: #d9baff !important;
 		}
 	}
