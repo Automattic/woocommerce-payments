@@ -34,7 +34,7 @@ import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
 import { DisputeSteps, InquirySteps } from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
-import WCPaySettingsContext from '../../settings/wcpay-settings-context';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import './style.scss';
 
 interface Props {
