@@ -415,7 +415,7 @@ describe( 'PaymentDetailsSummary', () => {
 			name: /Email the customer/i,
 		} );
 		screen.getByRole( 'link', {
-			name: /guidance on dispute withdrawal/i,
+			name: /in withdrawing their dispute/i,
 		} );
 
 		// Actions
