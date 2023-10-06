@@ -55,12 +55,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 					$this->mock_legacy_proxy,
 				]
 			)
-			->onlyMethods(
-				[
-					'create_payment_context',
-					'create_payment_request',
-				]
-			)
+			->onlyMethods( [ 'create_payment_context' ] )
 			->getMock();
 	}
 
@@ -70,7 +65,6 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 	public function test_process_payment_happy_path() {
 		// Prepare all required mocks.
 		$mock_context         = $this->createMock( PaymentContext::class );
-		$mock_request         = $this->createMock( PaymentRequest::class );
 		$mock_initial_state   = $this->createMock( InitialState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
@@ -80,14 +74,6 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->with( 1 )
 			->willReturn( $mock_context );
 
-		$this->sut->expects( $this->once() )
-			->method( 'create_payment_request' )
-			->willReturn( $mock_request );
-
-		$mock_request->expects( $this->once() )
-			->method( 'populate_context' )
-			->with( $mock_context );
-
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
 			->with( InitialState::class, $this->isInstanceOf( PaymentContext::class ) )
@@ -95,6 +81,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 
 		$mock_initial_state->expects( $this->once() )
 			->method( 'process' )
+			->with( $this->isInstanceOf( PaymentRequest::class ) )
 			->willReturn( $mock_completed_state );
 
 		$result = $this->sut->process_payment( 1 );
@@ -121,6 +108,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 
 		$mock_initial_state->expects( $this->once() )
 			->method( 'process' )
+			->with( $this->isInstanceOf( PaymentRequest::class ) )
 			->willReturn( $mock_completed_state );
 
 		$result = $sut->process_payment( 1 );
