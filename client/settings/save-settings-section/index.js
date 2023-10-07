@@ -101,7 +101,9 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 
 			// Prevent show modal again.
 			setInitialIsPaymentRequestEnabled( true );
-            // Set last disable date to prevent feedback window opening up on successive "Save button" clicks. This value is overwritten on page refresh.
+            // Set last disable date to prevent feedback window opening up
+			// on successive "Save button" clicks. This value is overwritten
+			// on page refresh.
 			wcpaySettings.woopayLastDisableDate = new Date();
 		}
 	};
