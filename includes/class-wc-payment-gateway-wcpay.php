@@ -813,9 +813,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception      If the payment process could not be completed.
 	 */
 	public function new_process_payment( WC_Order $order ) {
+		$manual_capture = $this->get_capture_type() === Payment_Capture_Type::MANUAL();
+
 		// Important: No factors are provided here, they were meant just for `Feature`.
 		$service = wcpay_get_container()->get( PaymentProcessingService::class );
-		$state   = $service->process_payment( $order->get_id() );
+		$state   = $service->process_payment( $order->get_id(), $manual_capture );
 
 		if ( $state instanceof CompletedState ) {
 			return [
@@ -2032,6 +2034,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 
 			$this->update_option( 'platform_checkout', $is_woopay_enabled ? 'yes' : 'no' );
+
+			if ( ! $is_woopay_enabled ) {
+				$this->update_option( 'platform_checkout_last_disable_date', gmdate( 'Y-m-d' ) );
+			}
 
 			if ( ! $is_woopay_enabled ) {
 				WooPay_Order_Status_Sync::remove_webhook();

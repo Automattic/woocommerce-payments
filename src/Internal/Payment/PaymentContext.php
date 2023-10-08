@@ -85,6 +85,114 @@ class PaymentContext {
 	}
 
 	/**
+	 * Stores the payment currency.
+	 *
+	 * @param string $currency Lowercase payment currency.
+	 */
+	public function set_currency( string $currency ) {
+		$this->set( 'currency', $currency );
+	}
+
+	/**
+	 * Returns the payment currency in lowercase.
+	 *
+	 * @return string|null
+	 */
+	public function get_currency(): ?string {
+		return $this->get( 'currency' );
+	}
+
+	/**
+	 * Controls whether manual capture is enabled.
+	 *
+	 * @param bool $manual_capture Whether to enable it or not.
+	 */
+	public function toggle_manual_capture( bool $manual_capture ) {
+		$this->set( 'manual_capture', $manual_capture );
+	}
+
+	/**
+	 * Indicates whether the payment should be captured manually.
+	 *
+	 * @return bool
+	 */
+	public function should_capture_manually(): bool {
+		return $this->get( 'manual_capture' ) ?? false;
+	}
+
+	/**
+	 * Stores the order metadata.
+	 *
+	 * @param array $metadata Metadata to sent to the API.
+	 */
+	public function set_metadata( array $metadata ) {
+		$this->set( 'metadata', $metadata );
+	}
+
+	/**
+	 * Returns the order level 3 data if set.
+	 *
+	 * @return array|null
+	 */
+	public function get_level3_data(): ?array {
+		return $this->get( 'level3_data' );
+	}
+
+	/**
+	 * Stores the order level 3 data.
+	 *
+	 * @param array $level3_data level3_data to sent to the API.
+	 */
+	public function set_level3_data( array $level3_data ) {
+		$this->set( 'level3_data', $level3_data );
+	}
+
+	/**
+	 * Returns the order metadata if set.
+	 *
+	 * @return array|null
+	 */
+	public function get_metadata(): ?array {
+		return $this->get( 'metadata' );
+	}
+
+	/**
+	 * Stores the CVC confirmation.
+	 *
+	 * @param string $cvc_confirmation The confirmation.
+	 */
+	public function set_cvc_confirmation( string $cvc_confirmation = null ) {
+		$this->set( 'cvc_confirmation', $cvc_confirmation );
+	}
+
+	/**
+	 * Returns the CVC confirmation if set.
+	 *
+	 * @return string|null
+	 */
+	public function get_cvc_confirmation(): ?string {
+		return $this->get( 'cvc_confirmation' );
+	}
+
+	/**
+	 * Stores a payment's fingerprint.
+	 *
+	 * @param string $fingerprint The fingerprint.
+	 */
+	public function set_fingerprint( string $fingerprint ) {
+		$this->set( 'fingerprint', $fingerprint );
+	}
+
+	/**
+	 * Returns a payment's fingerprint if set.
+	 *
+	 * @return string|null
+	 */
+	public function get_fingerprint(): ?string {
+		return $this->get( 'fingerprint' );
+	}
+
+	/**
 	 * Stores a payment method within the context.
 	 *
 	 * @param PaymentMethodInterface $payment_method The payment method to use.
@@ -100,5 +208,41 @@ class PaymentContext {
 	 */
 	public function get_payment_method(): ?PaymentMethodInterface {
 		return $this->get( 'payment_method' );
+	}
+
+	/**
+	 * Stores the WP user ID, associated with the payment.
+	 *
+	 * @param int $user_id ID of the user.
+	 */
+	public function set_user_id( int $user_id ) {
+		$this->set( 'user_id', $user_id );
+	}
+
+	/**
+	 * Returns the ID of the user if any.
+	 *
+	 * @return int|null
+	 */
+	public function get_user_id(): ?int {
+		return $this->get( 'user_id' );
+	}
+
+	/**
+	 * Stores the remote customer ID.
+	 *
+	 * @param string $customer_id ID of the customer.
+	 */
+	public function set_customer_id( string $customer_id ) {
+		$this->set( 'customer_id', $customer_id );
+	}
+
+	/**
+	 * Returns the remote customer ID.
+	 *
+	 * @return string|null
+	 */
+	public function get_customer_id(): ?string {
+		return $this->get( 'customer_id' );
 	}
 }
