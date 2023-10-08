@@ -258,7 +258,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 												.DISPUTE_CHALLENGE_CLICKED,
 											{
 												dispute_status: dispute.status,
-												on_page: 'transactions_details',
+												on_page: 'transaction_details',
 											}
 										);
 									} }
@@ -280,7 +280,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										disputeAcceptAction.acceptButtonTracksEvent,
 										{
 											dispute_status: dispute.status,
-											on_page: 'transactions_details',
+											on_page: 'transaction_details',
 										}
 									);
 									setModalOpen( true );
@@ -340,7 +340,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 														dispute_status:
 															dispute.status,
 														on_page:
-															'transactions_details',
+															'transaction_details',
 													}
 												);
 												setModalOpen( false );

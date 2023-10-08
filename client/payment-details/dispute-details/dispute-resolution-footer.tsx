@@ -73,7 +73,7 @@ const DisputeUnderReviewFooter: React.FC< {
 										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 									{
 										dispute_status: dispute.status,
-										on_page: 'transactions_details',
+										on_page: 'transaction_details',
 									}
 								);
 							} }
@@ -145,7 +145,7 @@ const DisputeWonFooter: React.FC< {
 										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 									{
 										dispute_status: dispute.status,
-										on_page: 'transactions_details',
+										on_page: 'transaction_details',
 									}
 								);
 							} }
@@ -255,7 +255,7 @@ const DisputeLostFooter: React.FC< {
 											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 										{
 											dispute_status: dispute.status,
-											on_page: 'transactions_details',
+											on_page: 'transaction_details',
 										}
 									);
 								} }
@@ -328,7 +328,7 @@ const InquiryUnderReviewFooter: React.FC< {
 										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 									{
 										dispute_status: dispute.status,
-										on_page: 'transactions_details',
+										on_page: 'transaction_details',
 									}
 								);
 							} }
@@ -403,7 +403,7 @@ const InquiryClosedFooter: React.FC< {
 											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 										{
 											dispute_status: dispute.status,
-											on_page: 'transactions_details',
+											on_page: 'transaction_details',
 										}
 									);
 								} }
