@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Introduce filter `wcpay_payment_request_is_cart_supported`.
