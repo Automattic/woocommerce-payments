@@ -7,7 +7,7 @@
 
 ?>
 <script type="text/template" id="tmpl-wcpay-subscriptions-plugin-warning">
-	<div id="wcpay-subscriptions-plugin-warning-notice" class="wc-backbone-modal">
+	<div id="wcpay-subscriptions-plugin-warning-notice" class="wc-backbone-modal woopayments-plugin-warning-modal">
 		<div class="wc-backbone-modal-content">
 			<section class="wc-backbone-modal-main" role="main">
 				<header class="wc-backbone-modal-header">
@@ -20,35 +20,50 @@
 					<p>
 						<?php
 							printf(
-								// Translators: placeholders are opening and closing strong HTML tags. %5$s: WooPayments, %6$s: WooCommerce Subscriptions.
-								esc_html__( 'By deactivating the %1$s%6$s%2$s plugin, your store will switch to using the subscriptions functionality %1$sbuilt into %5$s%2$s. %1$s%3$sLearn more.%4$s%2$s', 'woocommerce-payments' ),
+								// Translators: %1-%4 placeholders are opening and closing a or strong HTML tags. %5$s: WooPayments, %6$s: Woo Subscriptions.
+								esc_html__( 'Your store has subscriptions using %5$s Stripe Billing functionality for payment processing. Due to the %1$soff-site billing engine%2$s these subscriptions use,%3$s they will continue to renew even after you deactivate %6$s%4$s.', 'woocommerce-payments' ),
+								'<a href="https://woocommerce.com/document/woopayments/built-in-subscriptions/comparison/#billing-engine" target="_blank">',
+								'</a>',
 								'<strong>',
 								'</strong>',
-								'<a href="https://woocommerce.com/document/subscriptions/renewal-process/#section-4" target="_blank" rel="noopener noreferrer">',
-								'</a>',
 								'WooPayments',
-								'WooCommerce Subscriptions'
+								'Woo Subscriptions'
 							);
 							?>
 						</br>
 						</br>
 						<?php
 							printf(
-								// Translators: $1 and $2 placeholders are opening and closing strong HTML tags. $3 and $4 are opening and closing link HTML tags.
-								esc_html__( 'Existing subscribers will need to pay for their next renewal manually, after which automatic payments will resume. You will also no longer have access to the %1$s%3$sadvanced features%4$s%2$s of WooCommerce Subscriptions.', 'woocommerce-payments' ),
-								'<strong>',
-								'</strong>',
-								'<a href="https://woocommerce.com/document/woopayments/built-in-subscriptions/comparison/" target="_blank" rel="noopener noreferrer">',
-								'</a>'
+								// translators: $1 $2 placeholders are opening and closing HTML link tags, linking to documentation. $3 is WooPayments.
+								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel these subscriptions%2$s prior to deactivating %3$s.', 'woocommerce-payments' ),
+								'<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#cancel-or-suspend-subscription" target="_blank">',
+								'</a>',
+								'Woo Subscriptions'
 							);
 							?>
 					</p>
-					<strong><?php esc_html_e( 'Are you sure you want to deactivate WooCommerce Subscriptions?', 'woocommerce-payments' ); ?></strong>
+					<strong>
+						<?php
+							printf(
+								// translators: Placeholder is "Woo Subscriptions"".
+								esc_html__( 'Are you sure you want to deactivate %s?', 'woocommerce-payments' ),
+								'Woo Subscriptions'
+							);
+							?>
+					</strong>
 				</article>
 				<footer>
 					<div class="inner">
 						<button class="modal-close button button-secondary button-large"><?php esc_html_e( 'Cancel', 'woocommerce-payments' ); ?></button>
-						<button id="wcpay-subscriptions-plugin-deactivation-submit" class="button button-primary button-large"><?php esc_html_e( 'Yes, deactivate WooCommerce Subscriptions', 'woocommerce-payments' ); ?></button>
+						<button id="wcpay-subscriptions-plugin-deactivation-submit" class="button button-primary button-large">
+							<?php
+								printf(
+									// translators: Placeholder is "Woo Subscriptions"".
+									esc_html__( 'Yes, deactivate %s', 'woocommerce-payments' ),
+									'Woo Subscriptions'
+								);
+								?>
+						</button>
 					</div>
 				</footer>
 			</section>

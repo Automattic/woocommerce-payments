@@ -37,9 +37,16 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 		$this->id             = $this->multi_currency->id;
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
-		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_onboarding_cta', [ $this, 'currencies_settings_onboarding_cta' ] );
-
 		parent::__construct();
+	}
+
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_onboarding_cta', [ $this, 'currencies_settings_onboarding_cta' ] );
 	}
 
 	/**
@@ -76,6 +83,10 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 	 * @return array
 	 */
 	public function get_settings( $current_section = '' ) {
+		// Hide the save button because there are no settings to save.
+		global $hide_save_button;
+		$hide_save_button = true;
+
 		return [
 			[
 				'title' => __( 'Enabled currencies', 'woocommerce-payments' ),
@@ -89,6 +100,10 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 			],
 			[
 				'type' => 'wcpay_currencies_settings_onboarding_cta',
+			],
+			[
+				'type' => 'sectionend',
+				'id'   => $this->id . '_enabled_currencies',
 			],
 		];
 	}

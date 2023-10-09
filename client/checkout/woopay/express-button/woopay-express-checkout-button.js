@@ -3,6 +3,7 @@
  */
 import { sprintf, __ } from '@wordpress/i18n';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -36,6 +37,7 @@ export const WoopayExpressCheckoutButton = ( {
 	const buttonRef = useRef( null );
 	const isLoadingRef = useRef( false );
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
+	const [ isLoading, setIsLoading ] = useState( false );
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
 	);
@@ -100,7 +102,11 @@ export const WoopayExpressCheckoutButton = ( {
 				if ( isAddToCartDisabled ) {
 					alert(
 						window.wc_add_to_cart_variation_params
-							.i18n_make_a_selection_text
+							?.i18n_make_a_selection_text ||
+							__(
+								'Please select all required options to continue.',
+								'woocommerce-payments'
+							)
 					);
 					return;
 				}
@@ -156,7 +162,9 @@ export const WoopayExpressCheckoutButton = ( {
 			urlParams.append( 'source_url', window.location.href );
 			urlParams.append( 'tracksUserIdentity', tracksUserId );
 
-			return getConfig( 'woopayHost' ) + '/otp/?' + urlParams.toString();
+			return (
+				getConfig( 'woopayHost' ) + '/connect/?' + urlParams.toString()
+			);
 		};
 
 		const iframe = document.createElement( 'iframe' );
@@ -177,6 +185,7 @@ export const WoopayExpressCheckoutButton = ( {
 
 				// Set isLoadingRef to true to prevent multiple clicks.
 				isLoadingRef.current = true;
+				setIsLoading( true );
 
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.WOOPAY_BUTTON_CLICK,
@@ -228,6 +237,7 @@ export const WoopayExpressCheckoutButton = ( {
 								);
 								showErrorMessage( context, errorMessage );
 								isLoadingRef.current = false;
+								setIsLoading( false );
 							} );
 					} );
 				} else {
@@ -249,6 +259,7 @@ export const WoopayExpressCheckoutButton = ( {
 							);
 							showErrorMessage( context, errorMessage );
 							isLoadingRef.current = false;
+							setIsLoading( false );
 						} );
 				}
 			};
@@ -301,6 +312,7 @@ export const WoopayExpressCheckoutButton = ( {
 				// Set button's default onClick handle to use modal checkout flow.
 				initWoopayRef.current = defaultOnClick;
 				isLoadingRef.current = false;
+				setIsLoading( false );
 			}
 		};
 
@@ -309,6 +321,7 @@ export const WoopayExpressCheckoutButton = ( {
 		return () => {
 			window.removeEventListener( 'message', onMessage );
 		};
+		// Note: Any changes to this dependency array may cause a duplicate iframe to be appended.
 	}, [ context, defaultOnClick, isPreview, isProductPage, newIframe ] );
 
 	useEffect( () => {
@@ -316,21 +329,46 @@ export const WoopayExpressCheckoutButton = ( {
 		initWoopayRef.current = defaultOnClick;
 	}, [ defaultOnClick ] );
 
+	useEffect( () => {
+		const handlePageShow = ( event ) => {
+			// Re-enable the button after navigating back/forward to the page if bfcache is used.
+			if ( event?.persisted ) {
+				isLoadingRef.current = false;
+				setIsLoading( false );
+			}
+		};
+
+		window.addEventListener( 'pageshow', handlePageShow );
+
+		return () => {
+			window.removeEventListener( 'pageshow', handlePageShow );
+		};
+	}, [] );
+
 	return (
 		<button
 			ref={ buttonRef }
 			key={ `${ buttonType }-${ theme }-${ size }` }
 			aria-label={ buttonType !== 'default' ? text : __( 'WooPay' ) }
 			onClick={ ( e ) => initWoopayRef.current( e ) }
-			className="woopay-express-button"
+			className={ classNames( 'woopay-express-button', {
+				'is-loading': isLoading,
+			} ) }
 			data-type={ buttonType }
 			data-size={ size }
 			data-theme={ theme }
 			data-width-type={ buttonWidthType }
 			style={ { height: `${ height }px` } }
+			disabled={ isLoading }
 		>
-			{ text }
-			<ThemedWooPayIcon />
+			{ isLoading ? (
+				<span className="wc-block-components-spinner" />
+			) : (
+				<>
+					{ text }
+					<ThemedWooPayIcon />
+				</>
+			) }
 		</button>
 	);
 };

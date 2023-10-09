@@ -32,7 +32,6 @@ declare const global: {
 			country: string;
 		};
 		featureFlags: {
-			isDisputeOnTransactionPageEnabled: boolean;
 			isAuthAndCaptureEnabled: boolean;
 		};
 	};
@@ -48,6 +47,22 @@ jest.mock( 'wcpay/data', () => ( {
 		doAccept: mockDisputeDoAccept,
 		isLoading: false,
 	} ) ),
+} ) );
+
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( {
+		createErrorNotice: jest.fn(),
+	} ) ),
+	useSelect: jest.fn( () => ( { getNotices: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
 const mockUseAuthorization = useAuthorization as jest.MockedFunction<
@@ -168,7 +183,6 @@ describe( 'PaymentDetailsSummary', () => {
 			},
 			featureFlags: {
 				isAuthAndCaptureEnabled: true,
-				isDisputeOnTransactionPageEnabled: false,
 			},
 			currencyData: {
 				US: {
@@ -237,107 +251,6 @@ describe( 'PaymentDetailsSummary', () => {
 		const container = renderCharge( charge );
 		screen.getByText( /Refunded: \$-20.00/i );
 		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'renders the information of a disputed charge', () => {
-		const charge = getBaseCharge();
-		charge.disputed = true;
-		charge.dispute = getBaseDispute();
-		charge.dispute.status = 'under_review';
-		charge.dispute.balance_transactions = [
-			{
-				amount: -2000,
-				fee: 1500,
-				currency: 'usd',
-				reporting_category: 'dispute',
-			},
-		];
-
-		const container = renderCharge( charge );
-		screen.getByText( /Deducted: \$-20.00/i );
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'renders the information of a dispute-reversal charge', () => {
-		const charge = getBaseCharge();
-		charge.disputed = true;
-		charge.dispute = getBaseDispute();
-		charge.dispute.status = 'won';
-
-		charge.dispute.balance_transactions = [
-			{
-				amount: -2000,
-				fee: 1500,
-				currency: 'usd',
-				reporting_category: 'dispute',
-			},
-			{
-				amount: 2000,
-				fee: -1500,
-				currency: 'usd',
-				reporting_category: 'dispute_reversal',
-			},
-		];
-
-		const container = renderCharge( charge );
-		expect(
-			screen.queryByText( /Deducted: \$-15.00/i )
-		).not.toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'button', {
-				name: /Fee breakdown/i,
-			} )
-		).not.toBeInTheDocument();
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'renders the fee breakdown tooltip of a disputed charge', () => {
-		const charge = {
-			...getBaseCharge(),
-			currency: 'jpy',
-			amount: 10000,
-			balance_transaction: {
-				amount: 2000,
-				currency: 'usd',
-				fee: 70,
-			},
-			disputed: true,
-			dispute: {
-				...getBaseDispute(),
-				amount: 10000,
-				status: 'under_review',
-				balance_transactions: [
-					{
-						amount: -1500,
-						fee: 1500,
-						currency: 'usd',
-						reporting_category: 'dispute',
-					},
-				],
-			} as Dispute,
-		};
-
-		renderCharge( charge );
-
-		// Open tooltip content
-		const tooltipButton = screen.getByRole( 'button', {
-			name: /Fee breakdown/i,
-		} );
-		userEvent.click( tooltipButton );
-
-		// Check fee breakdown calculated correctly
-		const tooltipContent = screen.getByRole( 'tooltip' );
-		expect(
-			within( tooltipContent ).getByLabelText( /Transaction fee/ )
-		).toHaveTextContent( /\$0.70/ );
-
-		expect(
-			within( tooltipContent ).getByLabelText( /Dispute fee/ )
-		).toHaveTextContent( /\$15.00/ );
-
-		expect(
-			within( tooltipContent ).getByLabelText( /Total fees/ )
-		).toHaveTextContent( /\$15.70/ );
 	} );
 
 	test( 'renders the Tap to Pay channel from metadata', () => {
@@ -461,390 +374,491 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 	} );
 
-	describe( 'with feature flag isDisputeOnTransactionPageEnabled', () => {
-		beforeEach( () => {
-			global.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = true;
+	test( 'renders the information of a disputed charge', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'needs_response';
+
+		renderCharge( charge );
+
+		// Dispute Notice
+		screen.getByText(
+			/The cardholder claims this is an unauthorized transaction/,
+			{ ignore: '.a11y-speak-region' }
+		);
+
+		// Don't render the staged evidence message
+		expect(
+			screen.queryByText( /You initiated a challenge to this dispute/, {
+				ignore: '.a11y-speak-region',
+			} )
+		).toBeNull();
+
+		// Dispute Summary Row
+		expect(
+			screen.getByText( /Dispute Amount/i ).nextSibling
+		).toHaveTextContent( /\$20.00/ );
+		expect(
+			screen.getByText( /Disputed On/i ).nextSibling
+		).toHaveTextContent( /Aug 30, 2023/ );
+		expect( screen.getByText( /Reason/i ).nextSibling ).toHaveTextContent(
+			/Transaction unauthorized/
+		);
+		expect(
+			screen.getByText( /Respond By/i ).nextSibling
+		).toHaveTextContent( /Sep 9, 2023/ );
+
+		// Steps to resolve
+		screen.getByText( /Steps to resolve/i );
+		screen.getByRole( 'link', {
+			name: /Email the customer/i,
+		} );
+		screen.getByRole( 'link', {
+			name: /in withdrawing their dispute/i,
 		} );
 
-		afterEach( () => {
-			global.wcpaySettings.featureFlags.isDisputeOnTransactionPageEnabled = false;
+		// Actions
+		screen.getByRole( 'button', {
+			name: /Challenge dispute/,
 		} );
-
-		test( 'renders the information of a disputed charge', () => {
-			const charge = getBaseCharge();
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'needs_response';
-
-			renderCharge( charge );
-
-			// Dispute Notice
-			screen.getByText(
-				/The cardholder claims this is an unauthorized transaction/,
-				{ ignore: '.a11y-speak-region' }
-			);
-
-			// Don't render the staged evidence message
-			expect(
-				screen.queryByText(
-					/You initiated a challenge to this dispute/,
-					{ ignore: '.a11y-speak-region' }
-				)
-			).toBeNull();
-
-			// Dispute Summary Row
-			expect(
-				screen.getByText( /Dispute Amount/i ).nextSibling
-			).toHaveTextContent( /\$20.00/ );
-			expect(
-				screen.getByText( /Disputed On/i ).nextSibling
-			).toHaveTextContent( /Aug 30, 2023/ );
-			expect(
-				screen.getByText( /Reason/i ).nextSibling
-			).toHaveTextContent( /Transaction unauthorized/ );
-			expect(
-				screen.getByText( /Respond By/i ).nextSibling
-			).toHaveTextContent( /Sep 9, 2023/ );
-
-			// Steps to resolve
-			screen.getByText( /Steps to resolve/i );
-			screen.getByRole( 'link', {
-				name: /Email the customer/i,
-			} );
-			screen.getByRole( 'link', {
-				name: /guidance on dispute withdrawal/i,
-			} );
-
-			// Actions
-			screen.getByRole( 'button', {
-				name: /Challenge dispute/,
-			} );
-			screen.getByRole( 'button', {
-				name: /Accept dispute/,
-			} );
+		screen.getByRole( 'button', {
+			name: /Accept dispute/,
 		} );
+	} );
 
-		test( 'renders the information of a disputed charge when the store/charge currency differ', () => {
-			// True when multi-currency is enabled.
-			global.wcpaySettings.shouldUseExplicitPrice = true;
+	test( 'renders the information of a disputed charge when the store/charge currency differ', () => {
+		// True when multi-currency is enabled.
+		global.wcpaySettings.shouldUseExplicitPrice = true;
 
-			// In this case, charge currency is JPY, but store currency is NOK.
-			const charge = getBaseCharge();
-			charge.currency = 'jpy';
-			charge.amount = 10000;
-			charge.balance_transaction = {
-				amount: 72581,
+		// In this case, charge currency is JPY, but store currency is NOK.
+		const charge = getBaseCharge();
+		charge.currency = 'jpy';
+		charge.amount = 10000;
+		charge.balance_transaction = {
+			amount: 72581,
+			currency: 'nok',
+			reporting_category: 'charge',
+			fee: 4152,
+		};
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'needs_response';
+		charge.dispute.amount = 10000;
+		charge.dispute.currency = 'jpy';
+		charge.dispute.balance_transactions = [
+			{
+				amount: -72581,
 				currency: 'nok',
-				reporting_category: 'charge',
-				fee: 4152,
-			};
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'needs_response';
-			charge.dispute.amount = 10000;
-			charge.dispute.currency = 'jpy';
-			charge.dispute.balance_transactions = [
-				{
-					amount: -72581,
-					currency: 'nok',
-					fee: 15000,
-					reporting_category: 'dispute',
-				},
-			];
-			renderCharge( charge );
+				fee: 15000,
+				reporting_category: 'dispute',
+			},
+		];
+		renderCharge( charge );
 
-			// Disputed amount should show the store (balance transaction) currency.
-			expect(
-				screen.getByText( /Dispute Amount/i ).nextSibling
-			).toHaveTextContent( /kr 725.81 NOK/i );
+		// Disputed amount should show the shopper/transaction currency.
+		expect(
+			screen.getByText( /Dispute Amount/i ).nextSibling
+		).toHaveTextContent( /¥10,000 JPY/i );
+	} );
+
+	test( 'renders the information of a dispute-reversal charge', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'won';
+
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				fee: 1500,
+				currency: 'usd',
+				reporting_category: 'dispute',
+			},
+			{
+				amount: 2000,
+				fee: -1500,
+				currency: 'usd',
+				reporting_category: 'dispute_reversal',
+			},
+		];
+
+		const container = renderCharge( charge );
+		expect(
+			screen.queryByText( /Deducted: \$-15.00/i )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Fee breakdown/i,
+			} )
+		).not.toBeInTheDocument();
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders the fee breakdown tooltip of a disputed charge', () => {
+		const charge = {
+			...getBaseCharge(),
+			currency: 'jpy',
+			amount: 10000,
+			balance_transaction: {
+				amount: 2000,
+				currency: 'usd',
+				fee: 70,
+			},
+			disputed: true,
+			dispute: {
+				...getBaseDispute(),
+				amount: 10000,
+				status: 'under_review',
+				balance_transactions: [
+					{
+						amount: -1500,
+						fee: 1500,
+						currency: 'usd',
+						reporting_category: 'dispute',
+					},
+				],
+			} as Dispute,
+		};
+
+		renderCharge( charge );
+
+		// Open tooltip content
+		const tooltipButton = screen.getByRole( 'button', {
+			name: /Fee breakdown/i,
+		} );
+		userEvent.click( tooltipButton );
+
+		// Check fee breakdown calculated correctly
+		const tooltipContent = screen.getByRole( 'tooltip' );
+		expect(
+			within( tooltipContent ).getByLabelText( /Transaction fee/ )
+		).toHaveTextContent( /\$0.70/ );
+
+		expect(
+			within( tooltipContent ).getByLabelText( /Dispute fee/ )
+		).toHaveTextContent( /\$15.00/ );
+
+		expect(
+			within( tooltipContent ).getByLabelText( /Total fees/ )
+		).toHaveTextContent( /\$15.70/ );
+	} );
+
+	test( 'renders the information of an inquiry when the store/charge currency differ', () => {
+		// True when multi-currency is enabled.
+		global.wcpaySettings.shouldUseExplicitPrice = true;
+
+		// In this case, charge currency is JPY, but store currency is NOK.
+		const charge = getBaseCharge();
+		charge.currency = 'jpy';
+		charge.amount = 10000;
+		charge.balance_transaction = {
+			amount: 72581,
+			currency: 'nok',
+			reporting_category: 'charge',
+			fee: 4152,
+		};
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'warning_needs_response';
+		charge.dispute.amount = 10000;
+		charge.dispute.currency = 'jpy';
+		// Inquiries don't have balance transactions.
+		charge.dispute.balance_transactions = [];
+		renderCharge( charge );
+
+		// Disputed amount should show the shopper/transaction currency.
+		expect(
+			screen.getByText( /Dispute Amount/i ).nextSibling
+		).toHaveTextContent( /¥10,000 JPY/i );
+	} );
+
+	test( 'correctly renders dispute details for a dispute with staged evidence', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'needs_response';
+		charge.dispute.evidence_details = {
+			has_evidence: true,
+			due_by: 1694303999,
+			past_due: false,
+			submission_count: 0,
+		};
+
+		renderCharge( charge );
+
+		screen.getByText(
+			/The cardholder claims this is an unauthorized transaction/,
+			{ ignore: '.a11y-speak-region' }
+		);
+
+		// Render the staged evidence message
+		screen.getByText( /You initiated a challenge to this dispute/, {
+			ignore: '.a11y-speak-region',
 		} );
 
-		test( 'renders the information of an inquiry when the store/charge currency differ', () => {
-			// True when multi-currency is enabled.
-			global.wcpaySettings.shouldUseExplicitPrice = true;
+		screen.getByRole( 'button', {
+			name: /Continue with challenge/,
+		} );
+	} );
 
-			// In this case, charge currency is JPY, but store currency is NOK.
-			const charge = getBaseCharge();
-			charge.currency = 'jpy';
-			charge.amount = 10000;
-			charge.balance_transaction = {
-				amount: 72581,
-				currency: 'nok',
-				reporting_category: 'charge',
-				fee: 4152,
-			};
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'warning_needs_response';
-			charge.dispute.amount = 10000;
-			charge.dispute.currency = 'jpy';
-			// Inquiries don't have balance transactions.
-			charge.dispute.balance_transactions = [];
-			renderCharge( charge );
+	test( 'correctly renders the accept dispute modal and accepts', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'needs_response';
 
-			// Disputed amount should show the dispute/charge currency.
-			expect(
-				screen.getByText( /Dispute Amount/i ).nextSibling
-			).toHaveTextContent( /¥10,000 JPY/i );
+		renderCharge( charge );
+
+		const openModalButton = screen.getByRole( 'button', {
+			name: /Accept dispute/,
 		} );
 
-		test( 'correctly renders dispute details for a dispute with staged evidence', () => {
-			const charge = getBaseCharge();
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'needs_response';
-			charge.dispute.evidence_details = {
-				has_evidence: true,
-				due_by: 1694303999,
-				past_due: false,
-				submission_count: 0,
-			};
+		// Open the modal
+		openModalButton.click();
 
-			renderCharge( charge );
-
-			screen.getByText(
-				/The cardholder claims this is an unauthorized transaction/,
-				{ ignore: '.a11y-speak-region' }
-			);
-
-			// Render the staged evidence message
-			screen.getByText( /You initiated a challenge to this dispute/, {
-				ignore: '.a11y-speak-region',
-			} );
-
-			screen.getByRole( 'button', {
-				name: /Continue with challenge/,
-			} );
+		screen.getByRole( 'heading', {
+			name: /Accept the dispute?/,
+		} );
+		screen.getByText( /\$15.00 dispute fee/, {
+			ignore: '.a11y-speak-region',
 		} );
 
-		test( 'correctly renders the accept dispute modal and accepts', () => {
-			const charge = getBaseCharge();
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'needs_response';
-
-			renderCharge( charge );
-
-			const openModalButton = screen.getByRole( 'button', {
-				name: /Accept dispute/,
-			} );
-
-			// Open the modal
-			openModalButton.click();
-
-			screen.getByRole( 'heading', {
-				name: /Accept the dispute?/,
-			} );
-			screen.getByText( /\$15.00 dispute fee/, {
-				ignore: '.a11y-speak-region',
-			} );
-
-			screen.getByRole( 'button', {
-				name: /Cancel/,
-			} );
-			const acceptButton = screen.getByRole( 'button', {
-				name: /Accept dispute/,
-			} );
-
-			// Accept the dispute
-			acceptButton.click();
-
-			expect( mockDisputeDoAccept ).toHaveBeenCalledTimes( 1 );
+		screen.getByRole( 'button', {
+			name: /Cancel/,
+		} );
+		const acceptButton = screen.getByRole( 'button', {
+			name: /Accept dispute/,
 		} );
 
-		test( 'navigates to the dispute challenge screen when the challenge button is clicked', () => {
-			const charge = getBaseCharge();
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'needs_response';
-			charge.dispute.id = 'dp_test123';
+		// Accept the dispute
+		acceptButton.click();
 
-			renderCharge( charge );
+		expect( mockDisputeDoAccept ).toHaveBeenCalledTimes( 1 );
+	} );
 
-			const challengeButton = screen.getByRole( 'button', {
-				name: /Challenge dispute/,
-			} );
+	test( 'navigates to the dispute challenge screen when the challenge button is clicked', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'needs_response';
+		charge.dispute.id = 'dp_test123';
 
-			challengeButton.click();
+		renderCharge( charge );
 
-			expect( window.location.href ).toContain(
-				`admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=${ charge.dispute.id }`
-			);
+		const challengeButton = screen.getByRole( 'button', {
+			name: /Challenge dispute/,
 		} );
 
-		test( 'correctly renders dispute details for "won" disputes', () => {
-			const charge = getBaseCharge();
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'won';
-			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
-			renderCharge( charge );
+		challengeButton.click();
 
-			screen.getByText( /You won this dispute on/i, {
-				ignore: '.a11y-speak-region',
-			} );
-			screen.getByRole( 'button', { name: /View dispute details/i } );
+		expect( window.location.href ).toContain(
+			`admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=${ charge.dispute.id }`
+		);
+	} );
 
-			// No actions or steps rendered
-			expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Challenge/i,
-				} )
-			).toBeNull();
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Accept/i,
-				} )
-			).toBeNull();
+	test( 'correctly renders dispute details for "won" disputes', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'won';
+		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+		renderCharge( charge );
+
+		screen.getByText( /You won this dispute on/i, {
+			ignore: '.a11y-speak-region',
+		} );
+		screen.getByRole( 'button', { name: /View dispute details/i } );
+
+		// No actions or steps rendered
+		expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Challenge/i,
+			} )
+		).toBeNull();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Accept/i,
+			} )
+		).toBeNull();
+	} );
+
+	test( 'correctly renders dispute details for "under_review" disputes', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'under_review';
+		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+
+		renderCharge( charge );
+
+		screen.getByText( /You submitted evidence for this dispute/i, {
+			ignore: '.a11y-speak-region',
+		} );
+		screen.getByRole( 'button', { name: /View submitted evidence/i } );
+
+		// No actions or steps rendered
+		expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Challenge/i,
+			} )
+		).toBeNull();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Accept/i,
+			} )
+		).toBeNull();
+	} );
+
+	test( 'correctly renders dispute details for "accepted" disputes', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'lost';
+		charge.dispute.metadata.__closed_by_merchant = '1';
+		charge.dispute.metadata.__dispute_closed_at = '1693453017';
+
+		renderCharge( charge );
+
+		screen.getByText( /This dispute was accepted/i, {
+			ignore: '.a11y-speak-region',
+		} );
+		// Check for the correct fee amount
+		screen.getByText( /\$15.00 fee/i, {
+			ignore: '.a11y-speak-region',
 		} );
 
-		test( 'correctly renders dispute details for "under_review" disputes', () => {
-			const charge = getBaseCharge();
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'under_review';
-			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+		// No actions or steps rendered
+		expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Challenge/i,
+			} )
+		).toBeNull();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Accept/i,
+			} )
+		).toBeNull();
+	} );
 
-			renderCharge( charge );
+	test( 'correctly renders dispute details for "lost" disputes', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'lost';
+		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+		charge.dispute.metadata.__dispute_closed_at = '1693453017';
 
-			screen.getByText( /You submitted evidence for this dispute/i, {
-				ignore: '.a11y-speak-region',
-			} );
-			screen.getByRole( 'button', { name: /View submitted evidence/i } );
+		renderCharge( charge );
 
-			// No actions or steps rendered
-			expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Challenge/i,
-				} )
-			).toBeNull();
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Accept/i,
-				} )
-			).toBeNull();
+		screen.getByText( /This dispute was lost/i, {
+			ignore: '.a11y-speak-region',
 		} );
-
-		test( 'correctly renders dispute details for "accepted" disputes', () => {
-			const charge = getBaseCharge();
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'lost';
-			charge.dispute.metadata.__closed_by_merchant = '1';
-			charge.dispute.metadata.__dispute_closed_at = '1693453017';
-
-			renderCharge( charge );
-
-			screen.getByText( /This dispute was accepted/i, {
-				ignore: '.a11y-speak-region',
-			} );
-			// Check for the correct fee amount
-			screen.getByText( /\$15.00 fee/i, {
-				ignore: '.a11y-speak-region',
-			} );
-
-			// No actions or steps rendered
-			expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Challenge/i,
-				} )
-			).toBeNull();
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Accept/i,
-				} )
-			).toBeNull();
+		// Check for the correct fee amount
+		screen.getByText( /\$15.00 fee/i, {
+			ignore: '.a11y-speak-region',
 		} );
+		screen.getByRole( 'button', { name: /View dispute details/i } );
 
-		test( 'correctly renders dispute details for "lost" disputes', () => {
-			const charge = getBaseCharge();
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'lost';
-			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
-			charge.dispute.metadata.__dispute_closed_at = '1693453017';
+		// No actions or steps rendered
+		expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Challenge/i,
+			} )
+		).toBeNull();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Accept/i,
+			} )
+		).toBeNull();
+	} );
 
-			renderCharge( charge );
+	test( 'correctly renders dispute details for "warning_needs_response" inquiry disputes', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'warning_needs_response';
 
-			screen.getByText( /This dispute was lost/i, {
-				ignore: '.a11y-speak-region',
-			} );
-			// Check for the correct fee amount
-			screen.getByText( /\$15.00 fee/i, {
-				ignore: '.a11y-speak-region',
-			} );
-			screen.getByRole( 'button', { name: /View dispute details/i } );
+		renderCharge( charge );
 
-			// No actions or steps rendered
-			expect( screen.queryByText( /Steps to resolve/i ) ).toBeNull();
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Challenge/i,
-				} )
-			).toBeNull();
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Accept/i,
-				} )
-			).toBeNull();
+		// Dispute Notice
+		screen.getByText(
+			/The cardholder claims this is an unauthorized transaction/,
+			{ ignore: '.a11y-speak-region' }
+		);
+
+		// Steps to resolve
+		screen.getByText( /Steps to resolve/i );
+		screen.getByRole( 'link', {
+			name: /Email the customer/i,
 		} );
+		screen.getByText( /Submit evidence /i );
 
-		test( 'correctly renders dispute details for "warning_under_review" inquiry disputes', () => {
-			const charge = getBaseCharge();
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'warning_under_review';
-			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
-
-			renderCharge( charge );
-
-			screen.getByText( /You submitted evidence for this inquiry/i, {
-				ignore: '.a11y-speak-region',
-			} );
-			screen.getByRole( 'button', { name: /View submitted evidence/i } );
-
-			// No actions rendered
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Challenge/i,
-				} )
-			).toBeNull();
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Accept/i,
-				} )
-			).toBeNull();
+		// Actions
+		screen.getByRole( 'button', {
+			name: /Submit evidence$/i,
 		} );
-
-		test( 'correctly renders dispute details for "warning_closed" inquiry disputes', () => {
-			const charge = getBaseCharge();
-			charge.disputed = true;
-			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'warning_closed';
-			charge.dispute.metadata.__evidence_submitted_at = '1693400000';
-			charge.dispute.metadata.__dispute_closed_at = '1693453017';
-
-			renderCharge( charge );
-
-			screen.getByText( /This inquiry was closed/i, {
-				ignore: '.a11y-speak-region',
-			} );
-			screen.getByRole( 'button', { name: /View submitted evidence/i } );
-
-			// No actions rendered
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Challenge/i,
-				} )
-			).toBeNull();
-			expect(
-				screen.queryByRole( 'button', {
-					name: /Accept/i,
-				} )
-			).toBeNull();
+		screen.getByRole( 'button', {
+			name: /Issue refund/i,
 		} );
+	} );
+
+	test( 'correctly renders dispute details for "warning_under_review" inquiry disputes', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'warning_under_review';
+		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+
+		renderCharge( charge );
+
+		screen.getByText( /You submitted evidence for this inquiry/i, {
+			ignore: '.a11y-speak-region',
+		} );
+		screen.getByRole( 'button', { name: /View submitted evidence/i } );
+
+		// No actions rendered
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Challenge/i,
+			} )
+		).toBeNull();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Accept/i,
+			} )
+		).toBeNull();
+	} );
+
+	test( 'correctly renders dispute details for "warning_closed" inquiry disputes', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'warning_closed';
+		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
+		charge.dispute.metadata.__dispute_closed_at = '1693453017';
+
+		renderCharge( charge );
+
+		screen.getByText( /This inquiry was closed/i, {
+			ignore: '.a11y-speak-region',
+		} );
+		screen.getByRole( 'button', { name: /View submitted evidence/i } );
+
+		// No actions rendered
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Challenge/i,
+			} )
+		).toBeNull();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Accept/i,
+			} )
+		).toBeNull();
 	} );
 } );

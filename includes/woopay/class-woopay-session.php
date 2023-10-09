@@ -231,6 +231,11 @@ class WooPay_Session {
 	 * and disable the schedules when plugin is disabled.
 	 */
 	public static function run_and_remove_woopay_restore_order_customer_id_schedules() {
+		// WooCommerce is disabled when disabling WCPay.
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return;
+		}
+
 		$args = [
 			'meta_key' => 'woopay_merchant_customer_id', //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 			'return'   => 'ids',
@@ -345,7 +350,7 @@ class WooPay_Session {
 			$customer_id   = WC_Payments::get_customer_service()->create_customer_for_user( $user, $customer_data );
 		}
 
-		if ( 0 !== $user->ID ) {
+		if ( WC_Payments_Features::is_customer_multi_currency_enabled() && 0 !== $user->ID ) {
 			// Multicurrency selection is stored on user meta when logged in and WC session when logged out.
 			// This code just makes sure that currency selection is available on WC session for WooPay.
 			$currency      = get_user_meta( $user->ID, MultiCurrency::CURRENCY_META_KEY, true );
@@ -392,7 +397,7 @@ class WooPay_Session {
 				'custom_message'                 => self::get_formatted_custom_message(),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
-				'blog_checkout_url'              => wc_get_checkout_url(),
+				'blog_checkout_url'              => ! $is_pay_for_order ? wc_get_checkout_url() : $order->get_checkout_payment_url(),
 				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
 				'store_api_url'                  => self::get_store_api_url(),
 				'account_id'                     => $account_id,
@@ -401,7 +406,7 @@ class WooPay_Session {
 				'is_subscriptions_plugin_active' => WC_Payments::get_gateway()->is_subscriptions_plugin_active(),
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
 				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
-				'return_url'                     => wc_get_cart_url(),
+				'return_url'                     => ! $is_pay_for_order ? wc_get_cart_url() : $order->get_checkout_payment_url(),
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],

@@ -197,13 +197,8 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 
 		$this->mock_multi_currency
 			->expects( $this->once() )
-			->method( 'get_enabled_currencies' )
-			->willReturn( [ $item_currency->get_code() => $item_currency ] );
-
-		$this->mock_multi_currency
-			->expects( $this->once() )
-			->method( 'get_price' )
-			->with( $nyp_value / $item_currency->get_rate() )
+			->method( 'get_raw_conversion' )
+			->with( $nyp_value, $selected_currency->get_code(), $item_currency->get_code() )
 			->willReturn( $expected_value );
 
 		// Act: Attempt to convert the cart item amount.
@@ -242,8 +237,9 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 
 		$this->mock_multi_currency
 			->expects( $this->once() )
-			->method( 'get_enabled_currencies' )
-			->willReturn( [ $item_currency->get_code() => $item_currency ] );
+			->method( 'get_raw_conversion' )
+			->with( $nyp_value, $selected_currency->get_code(), $item_currency->get_code() )
+			->willReturn( $expected_value );
 
 		// Act: Attempt to convert the cart item amount.
 		$cart_item = $this->woocommerce_nyp->convert_cart_currency( $cart_item, null );
@@ -253,7 +249,6 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 
 		// Assert: Confirm the cart_item value matches the expected value.
 		$this->assertEquals( $expected_value, $cart_item['nyp'] );
-
 	}
 
 	// If the method is passed false it should return false.
@@ -320,6 +315,123 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 
 		// Assert: Confirm true is returned.
 		$this->assertTrue( $this->woocommerce_nyp->should_convert_product_price( true, $product ) );
+	}
+
+	public function test_edit_in_cart_args() {
+		// Arrange: Set up the currency  used for the test.
+		$selected_currency = new Currency( 'EUR', 2.0 );
+
+		// Arrange: Set up the mock_multi_currency method mock.
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_selected_currency' )
+			->willReturn( $selected_currency );
+
+		// Act: Edit the in cart args.
+		$result = $this->woocommerce_nyp->edit_in_cart_args( [], [] );
+
+		// Assert: Confirm that the currency code was added to the arg array.
+		$this->assertSame( $selected_currency->get_code(), $result['nyp_currency'] );
+	}
+
+	/**
+	 * Runs through all the checks in the method returning the initial price until the last one passes all the checks.
+	 *
+	 * @dataProvider provider_get_initial_price
+	 */
+	public function test_get_initial_price( $initial_price, $suffix, $request, $get_selected_currency, $get_raw_conversion ) {
+		// Arrange: Set the initial expected price and the currencies that may be used.
+		$expected_price    = $initial_price;
+		$selected_currency = new Currency( 'EUR', 2.0 );
+		$store_currency    = new Currency( 'USD', 1 );
+
+		// Arrange: Set expectations for calls to get_selected_currency method.
+		if ( $get_selected_currency ) {
+			$this->mock_multi_currency
+				->expects( $this->once() )
+				->method( 'get_selected_currency' )
+				->willReturn( $selected_currency );
+		} else {
+			$this->mock_multi_currency
+				->expects( $this->never() )
+				->method( 'get_selected_currency' );
+		}
+
+		// Arrange: Set expectations for calls to get_raw_conversion method and update expected price.
+		if ( $get_raw_conversion ) {
+			$expected_price = $initial_price * ( $selected_currency->get_rate() / $store_currency->get_rate() );
+
+			$this->mock_multi_currency
+				->expects( $this->once() )
+				->method( 'get_raw_conversion' )
+				->with( $initial_price, $selected_currency->get_code(), $store_currency->get_code() )
+				->willReturn( $expected_price );
+		} else {
+			$this->mock_multi_currency
+				->expects( $this->never() )
+				->method( 'get_raw_conversion' );
+		}
+
+		// Arrange: Manually set the request prarameters.
+		foreach ( $request as $key => $value ) {
+			$_REQUEST[ $key ] = $value;
+		}
+
+		// Act: Get the initial price.
+		$result = $this->woocommerce_nyp->get_initial_price( $initial_price, '', $suffix );
+
+		// Assert: Confirm the initial price is returned.
+		$this->assertSame( $expected_price, $result );
+	}
+
+	public function provider_get_initial_price() {
+		return [
+			'Both requests false - return initial_price'  => [
+				'initial_price'         => 10.00,
+				'suffix'                => '',
+				'request'               => [],
+				'get_selected_currency' => false,
+				'get_raw_conversion'    => false,
+			],
+			'First request true - return initial_price'   => [
+				'initial_price'         => 10.00,
+				'suffix'                => '_suffix',
+				'request'               => [
+					'nyp_raw_suffix' => 'test',
+				],
+				'get_selected_currency' => false,
+				'get_raw_conversion'    => false,
+			],
+			'Second request true - return initial_price'  => [
+				'initial_price'         => 10.00,
+				'suffix'                => '_suffix',
+				'request'               => [
+					'nyp_currency' => 'test',
+				],
+				'get_selected_currency' => false,
+				'get_raw_conversion'    => false,
+			],
+			'Both requests true - return initial_price'   => [
+				'initial_price'         => 10.00,
+				'suffix'                => '_suffix',
+				'request'               => [
+					'nyp_raw_suffix' => 10.00,
+					'nyp_currency'   => 'EUR',
+				],
+				'get_selected_currency' => true,
+				'get_raw_conversion'    => false,
+			],
+			'Both requests true - return converted price' => [
+				'initial_price'         => 10.00,
+				'suffix'                => '_suffix',
+				'request'               => [
+					'nyp_raw_suffix' => 10.00,
+					'nyp_currency'   => 'USD',
+				],
+				'get_selected_currency' => true,
+				'get_raw_conversion'    => true,
+			],
+		];
 	}
 
 	/**
