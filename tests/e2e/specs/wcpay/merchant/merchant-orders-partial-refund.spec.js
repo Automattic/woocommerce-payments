@@ -55,6 +55,13 @@ describe.each( dataTable )(
 		let orderTotal;
 
 		beforeAll( async () => {
+			// Disable multi currency in the merchant settings.
+			await merchant.login();
+			await merchantWCP.openWCPSettings();
+			await merchantWCP.unsetCheckboxByTestId( 'multi-currency-toggle' );
+			await merchantWCP.wcpSettingsSaveChanges();
+			await merchant.logout();
+
 			// Set up the test order
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' ),
