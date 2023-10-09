@@ -59,6 +59,11 @@
 		.info-button {
 			border: none;
 			background: transparent;
+			padding: 0;
+
+			&:focus {
+				outline: none;
+			}
 
 			&:focus + .save-details-flyout {
 				display: none;
