@@ -132,6 +132,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 
 		$this->onboarding_service = new WC_Payments_Onboarding_Service( $this->mock_api_client, $this->mock_database_cache );
+		$this->onboarding_service->init_hooks();
 	}
 
 	public function test_filters_registered_properly() {

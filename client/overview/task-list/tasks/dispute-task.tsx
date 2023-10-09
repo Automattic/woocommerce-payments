@@ -56,13 +56,13 @@ export const getDisputeResolutionTask = (
 		} );
 		const history = getHistory();
 		if ( activeDisputeCount === 1 ) {
-			// Redirect to the dispute details page if there is only one dispute.
-			const disputeId = activeDisputes[ 0 ].dispute_id;
+			// Redirect to the transaction details page if there is only one dispute.
+			const chargeId = activeDisputes[ 0 ].charge_id;
 			history.push(
 				getAdminUrl( {
 					page: 'wc-admin',
-					path: '/payments/disputes/details',
-					id: disputeId,
+					path: '/payments/transactions/details',
+					id: chargeId,
 				} )
 			);
 		} else {
