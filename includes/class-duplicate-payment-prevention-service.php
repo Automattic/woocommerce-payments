@@ -149,6 +149,14 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		}
 
+		if ( ! $current_order->has_status( wc_get_is_pending_statuses() ) ) {
+			return;
+		}
+
+		if ( $session_order->get_id() === $current_order->get_id() ) {
+			return;
+		}
+
 		$session_order->add_order_note(
 			sprintf(
 				/* translators: order ID integer number */

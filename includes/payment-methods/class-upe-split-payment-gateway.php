@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use Exception;
 use WC_Payments_API_Setup_Intention;
+use WC_Payments_Features;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
@@ -98,8 +99,10 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @return void
 	 */
 	public function init_hooks() {
-		add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
-		add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
+		if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
+			add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
+		}
 		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
 
 		parent::init_hooks();
