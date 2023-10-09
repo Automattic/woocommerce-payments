@@ -199,6 +199,12 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 			$request
 		);
 		$mock_token = $this->createMock( WC_Payment_Token::class );
+		$mock_token->expects( $this->once() )
+			->method( 'get_token' )
+			->willReturn( 'pm_saved_method' );
+		$mock_token->expects( $this->once() )
+			->method( 'get_id' )
+			->willReturn( 123 );
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'call_static' )
 			->with( WC_Payment_Tokens::class, 'get', 123456 )
@@ -209,12 +215,11 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 
 		// Assert: correct type of instance.
 		$this->assertInstanceOf( SavedPaymentMethod::class, $pm );
-
-		// Assert: the same payment method string saved in the token object.
-		$mock_token->expects( $this->once() )
-			->method( 'get_token' )
-			->willReturn( 'pm_saved_method' );
-		$this->assertSame( $pm->get_id(), 'pm_saved_method' );
+		if ( $pm instanceof SavedPaymentMethod ) { // Let IDEs understand the type.
+			// Assert: the same payment method string saved in the token object.
+			$this->assertSame( 'pm_saved_method', $pm->get_id() );
+			$this->assertSame( 123, $pm->get_token_id() );
+		}
 	}
 
 	public function test_get_payment_return_new_payment_method() {
@@ -243,5 +248,71 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 		$this->expectExceptionMessage( 'No valid payment method was selected.' );
 
 		$this->sut->get_payment_method();
+	}
+
+	public function provider_get_cvc_confirmation() {
+		return [
+			'No payment method'                  => [
+				null,
+				null,
+				null,
+			],
+			'Payment method set, no CVC'         => [
+				'woocommerce_payments',
+				null,
+				null,
+			],
+			'Payment method set, new CVC'        => [
+				'woocommerce_payments',
+				'new',
+				null,
+			],
+			'Payment method set, meaningful CVC' => [
+				'woocommerce_payments',
+				'xyz1234',
+				'xyz1234',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_get_cvc_confirmation
+	 */
+	public function test_get_cvc_confirmation( $payment_method, $cvc, $expected ) {
+		$request = [];
+		if ( $payment_method ) {
+			$request['payment_method'] = $payment_method;
+		}
+
+		if ( $cvc ) {
+			$request[ 'wc-' . $payment_method . '-payment-cvc-confirmation' ] = $cvc;
+		}
+
+		$sut    = new PaymentRequest( $this->mock_legacy_proxy, $request );
+		$result = $sut->get_cvc_confirmation();
+		$this->assertSame( $expected, $result );
+	}
+
+	public function provider_get_fingerprint() {
+		return [
+			'Nothing provided'    => [ null, null ],
+			'Empty string'        => [ '', null ],
+			'Normal string'       => [ 'abc', 'abc' ],
+			'Needs normalization' => [ '<abc', '&lt;abc' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_get_fingerprint
+	 */
+	public function test_get_fingerprint( $provided, $expected ) {
+		$request = [];
+		if ( ! is_null( $provided ) ) {
+			$request['wcpay-fingerprint'] = $provided;
+		}
+
+		$sut    = new PaymentRequest( $this->mock_legacy_proxy, $request );
+		$result = $sut->get_fingerprint();
+		$this->assertSame( $expected, $result );
 	}
 }

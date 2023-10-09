@@ -91,8 +91,9 @@ class Duplicate_Payment_Prevention_Service {
 		}
 
 		try {
-			$request       = Get_Intention::create( $intent_id );
-			$intent        = $request->send( 'wcpay_get_intention_request' );
+			$request = Get_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+			$intent        = $request->send();
 			$intent_status = $intent->get_status();
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch attached payment intent: ' . $e );

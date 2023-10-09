@@ -59,8 +59,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_express_checkout_buttons' ], 1 );
 		}
 
-		if ( class_exists( '\Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '10.8.0', '>=' ) ) {
-			add_action( 'before_woocommerce_pay_form', [ $this, 'add_pay_for_order_params_to_js_config' ] );
+		if ( WC_Payments_Features::is_pay_for_order_flow_enabled() && class_exists( '\Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '11.1.0', '>=' ) ) {
+			add_action( 'wp_enqueue_scripts', [ $this, 'add_pay_for_order_params_to_js_config' ], 5 );
 			add_action( 'woocommerce_pay_order_before_payment', [ $this, 'display_express_checkout_buttons' ], 1 );
 		}
 	}
@@ -114,12 +114,13 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 
 	/**
 	 * Add the Pay for order params to the JS config.
-	 *
-	 * @param WC_Order $order The pay-for-order order.
 	 */
-	public function add_pay_for_order_params_to_js_config( $order ) {
+	public function add_pay_for_order_params_to_js_config() {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) ) {
+			global $wp;
+			$order_id = $wp->query_vars['order-pay'];
+			$order    = wc_get_order( $order_id );
 			add_filter(
 				'wcpay_payment_fields_js_config',
 				function( $js_config ) use ( $order ) {

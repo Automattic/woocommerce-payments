@@ -231,6 +231,11 @@ class WooPay_Session {
 	 * and disable the schedules when plugin is disabled.
 	 */
 	public static function run_and_remove_woopay_restore_order_customer_id_schedules() {
+		// WooCommerce is disabled when disabling WCPay.
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return;
+		}
+
 		$args = [
 			'meta_key' => 'woopay_merchant_customer_id', //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 			'return'   => 'ids',
@@ -345,7 +350,7 @@ class WooPay_Session {
 			$customer_id   = WC_Payments::get_customer_service()->create_customer_for_user( $user, $customer_data );
 		}
 
-		if ( 0 !== $user->ID ) {
+		if ( WC_Payments_Features::is_customer_multi_currency_enabled() && 0 !== $user->ID ) {
 			// Multicurrency selection is stored on user meta when logged in and WC session when logged out.
 			// This code just makes sure that currency selection is available on WC session for WooPay.
 			$currency      = get_user_meta( $user->ID, MultiCurrency::CURRENCY_META_KEY, true );
@@ -358,7 +363,14 @@ class WooPay_Session {
 
 		$account_id = WC_Payments::get_account_service()->get_stripe_account_id();
 
-		$store_logo = WC_Payments::get_gateway()->get_option( 'platform_checkout_store_logo' );
+		$site_logo_id      = get_theme_mod( 'custom_logo' );
+		$site_logo_url     = $site_logo_id ? ( wp_get_attachment_image_src( $site_logo_id, 'full' )[0] ?? '' ) : '';
+		$woopay_store_logo = WC_Payments::get_gateway()->get_option( 'platform_checkout_store_logo' );
+
+		$store_logo = $site_logo_url;
+		if ( ! empty( $woopay_store_logo ) ) {
+			$store_logo = get_rest_url( null, 'wc/v3/payments/file/' . $woopay_store_logo );
+		}
 
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
@@ -381,8 +393,8 @@ class WooPay_Session {
 			'email'                => '',
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
-				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
-				'custom_message'                 => WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' ),
+				'store_logo'                     => $store_logo,
+				'custom_message'                 => self::get_formatted_custom_message(),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
 				'blog_checkout_url'              => ! $is_pay_for_order ? wc_get_checkout_url() : $order->get_checkout_payment_url(),

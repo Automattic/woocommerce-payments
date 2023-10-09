@@ -240,6 +240,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$request->set_level3( $this->get_level3_data_from_order( $order ) );
 			$request->set_payment_method_types( $payment_methods );
 			$request->set_fingerprint( $fingerprint );
+			$request->set_hook_args( $order, $payment_intent_id );
 			if ( $payment_country ) {
 				$request->set_payment_country( $payment_country );
 			}
@@ -250,7 +251,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$request->set_customer( $customer_id );
 			}
 
-			$updated_payment_intent = $request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
+			$updated_payment_intent = $request->send();
 
 			// Attach the intent and exchange info to the order before doing the redirect,
 			// so that when processing redirect, the up-to-date intent information is available.
@@ -357,7 +358,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$request->set_metadata( $metadata );
 			$request->set_capture_method( $manual_capture );
 			$request->set_fingerprint( $fingerprint );
-			$payment_intent = $request->send( 'wcpay_create_intent_request', $order );
+			$request->set_hook_args( $order );
+			$payment_intent = $request->send();
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$minimum_amount = $e->get_minimum_amount();
 
@@ -371,7 +373,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			 * amount for the API.
 			 */
 			$request->set_amount( $minimum_amount );
-			$payment_intent = $request->send( 'wcpay_create_intent_request', $order );
+			$payment_intent = $request->send();
 		}
 
 		return [
@@ -438,7 +440,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$request->set_customer( $customer_id );
 		$request->set_payment_method_types( array_values( $displayed_payment_methods ) );
 		/** @var WC_Payments_API_Setup_Intention $setup_intent */  // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-		$setup_intent = $request->send( 'wcpay_create_setup_intention_request' );
+		$setup_intent = $request->send();
 
 		return [
 			'id'            => $setup_intent->get_id(),
@@ -546,6 +548,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					$request->set_metadata( $this->get_metadata_from_order( $order, $payment_type ) );
 					$request->set_level3( $this->get_level3_data_from_order( $order ) );
 					$request->set_payment_method_types( $payment_methods );
+					$request->set_hook_args( $order, $payment_intent_id );
 					if ( $payment_country ) {
 						$request->set_payment_country( $payment_country );
 					}
@@ -560,7 +563,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						$request->setup_future_usage();
 						$request->set_payment_method_options( $payment_method_options );
 					}
-					$updated_payment_intent = $request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
+					$updated_payment_intent = $request->send();
 				} catch ( Amount_Too_Small_Exception $e ) {
 					// This code would only be reached if the cache has already expired.
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
@@ -757,8 +760,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			// Get payment intent to confirm status.
 			if ( $payment_needed ) {
 				$request = Get_Intention::create( $intent_id );
+				$request->set_hook_args( $order );
 				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
+				$intent                 = $request->send();
 				$client_secret          = $intent->get_client_secret();
 				$status                 = $intent->get_status();
 				$charge                 = $intent->get_charge();
@@ -777,7 +781,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			} else {
 				$request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent                 = $request->send( 'wcpay_get_setup_intent_request' );
+				$intent                 = $request->send();
 				$client_secret          = $intent->get_client_secret();
 				$status                 = $intent->get_status();
 				$charge_id              = '';
@@ -933,7 +937,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		try {
 			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
 			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+			$setup_intent = $setup_intent_request->send();
 
 			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
@@ -989,6 +993,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$enabled_payment_methods = [];
 		$active_payment_methods  = $this->get_upe_enabled_payment_method_statuses();
+
 		foreach ( $upe_enabled_payment_methods as $payment_method_id ) {
 			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
 			if ( isset( $this->payment_methods[ $payment_method_id ] ) ) {
@@ -1064,11 +1069,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-
-		// List JCB method for Japanese account only.
-		if ( 'JP' === $this->account->get_account_country() ) {
-			$available_methods[] = JCB_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		}
+		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
 			apply_filters(
@@ -1077,21 +1078,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			)
 		);
 
-		$methods_with_fees           = array_keys( $this->account->get_fees() );
-		$available_methods_with_fees = array_intersect( $available_methods, $methods_with_fees );
+		$methods_with_fees = array_keys( $this->account->get_fees() );
 
-		// As the JCB is not a real payment method it doesn't have fees.
-		// If JCB is still available after the filter, bypass it to the available payment methods with fees.
-		if ( in_array(
-			JCB_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			$available_methods,
-			true
-		)
-		) {
-			$available_methods_with_fees[] = JCB_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		}
-
-		return array_values( $available_methods_with_fees );
+		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
 	}
 
 	/**
@@ -1278,8 +1267,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			// Get charge data from WCPay Server.
-			$request     = Get_Charge::create( $charge_id );
-			$charge_data = $request->send( 'wcpay_get_charge_request', $charge_id );
+			$request = Get_Charge::create( $charge_id );
+			$request->set_hook_args( $charge_id );
+			$charge_data = $request->send();
 			$order_id    = $charge_data['metadata']['order_id'];
 
 			// Validate Order ID and proceed with logging errors and updating order status.
@@ -1291,7 +1281,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$intent_id = $charge_data['payment_intent'] ?? $order->get_meta( '_intent_id' );
 
 			$request = Get_Intention::create( $intent_id );
-			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+			$request->set_hook_args( $order );
+			$intent = $request->send();
 
 			$intent_status = $intent->get_status();
 			$error_message = esc_html( rtrim( $charge_data['failure_message'], '.' ) );
