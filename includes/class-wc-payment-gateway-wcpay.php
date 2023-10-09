@@ -435,8 +435,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
 
-			add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-			add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+			// confirm the use-case here and probably remove as well 
+			// add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
 			// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 			add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
@@ -3230,45 +3230,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
 		$request->set_hook_args( $payment_information, $should_save_in_platform_account, false );
 		return $request->send();
-	}
-
-	/**
-	 * Handle AJAX request for creating a setup intent when adding cards using the my account page.
-	 *
-	 * @throws Add_Payment_Method_Exception - If nonce or setup intent is invalid.
-	 */
-	public function create_setup_intent_ajax() {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Add_Payment_Method_Exception(
-					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
-					'invalid_referrer'
-				);
-			}
-
-			$setup_intent        = $this->create_and_confirm_setup_intent();
-			$setup_intent_output = [
-				'id'            => $setup_intent->get_id(),
-				'status'        => $setup_intent->get_status(),
-				'client_secret' => WC_Payments_Utils::encrypt_client_secret(
-					$this->account->get_stripe_account_id(),
-					$setup_intent->get_client_secret()
-				),
-			];
-
-			wp_send_json_success( $setup_intent_output, 200 );
-		} catch ( Exception $e ) {
-			// Send back error so it can be displayed to the customer.
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
-					],
-				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
-			);
-		}
 	}
 
 	/**

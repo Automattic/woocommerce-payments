@@ -9,7 +9,7 @@ import { getConfig } from 'utils/checkout';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
-import { isWCPayChosen } from '../utils/upe';
+import { appendPaymentMethodIdToForm, isWCPayChosen } from '../utils/upe';
 import { isPreviewing } from '../preview';
 import {
 	getFingerprint,
@@ -267,17 +267,8 @@ jQuery( function ( $ ) {
 	 * @param {Object} paymentMethod Payment method object.
 	 */
 	const handleAddCard = ( $form, paymentMethod ) => {
-		$form.append(
-			`<input type="hidden" id="wcpay-payment-method" name="wcpay-payment-method" value="${ paymentMethod.id }" />`
-		);
-						// WC core calls block() when add_payment_form is submitted, so we need to enable the ignore flag here to avoid
-				// the overlay blink when the form is blocked twice. We can restore its default value once the form is submitted.
-				const defaultIgnoreIfBlocked =
-					$.blockUI.defaults.ignoreIfBlocked;
-				$.blockUI.defaults.ignoreIfBlocked = true;
+		appendPaymentMethodIdToForm( $form, paymentMethod.id );
 		$form.removeClass( 'processing' ).submit();
-		// Restore default value for ignoreIfBlocked.
-		$.blockUI.defaults.ignoreIfBlocked = defaultIgnoreIfBlocked;
 	};
 
 	/**
