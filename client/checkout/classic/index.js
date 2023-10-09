@@ -267,37 +267,17 @@ jQuery( function ( $ ) {
 	 * @param {Object} paymentMethod Payment method object.
 	 */
 	const handleAddCard = ( $form, paymentMethod ) => {
-		api.setupIntent( paymentMethod.id )
-			.then( function ( confirmedSetupIntent ) {
-				// Populate form with the setup intent and re-submit.
-				$form.append(
-					$( '<input type="hidden" />' )
-						.attr( 'id', 'wcpay-setup-intent' )
-						.attr( 'name', 'wcpay-setup-intent' )
-						.val( confirmedSetupIntent.id )
-				);
-
-				// WC core calls block() when add_payment_form is submitted, so we need to enable the ignore flag here to avoid
+		$form.append(
+			`<input type="hidden" id="wcpay-payment-method" name="wcpay-payment-method" value="${ paymentMethod.id }" />`
+		);
+						// WC core calls block() when add_payment_form is submitted, so we need to enable the ignore flag here to avoid
 				// the overlay blink when the form is blocked twice. We can restore its default value once the form is submitted.
 				const defaultIgnoreIfBlocked =
 					$.blockUI.defaults.ignoreIfBlocked;
 				$.blockUI.defaults.ignoreIfBlocked = true;
-
-				// Re-submit the form.
-				$form.removeClass( 'processing' ).submit();
-
-				// Restore default value for ignoreIfBlocked.
-				$.blockUI.defaults.ignoreIfBlocked = defaultIgnoreIfBlocked;
-			} )
-			.catch( function ( error ) {
-				paymentMethodGenerated = null;
-				$form.removeClass( 'processing' ).unblock();
-				if ( error.responseJSON && ! error.responseJSON.success ) {
-					showError( error.responseJSON.data.error.message );
-				} else if ( error.message ) {
-					showError( error.message );
-				}
-			} );
+		$form.removeClass( 'processing' ).submit();
+		// Restore default value for ignoreIfBlocked.
+		$.blockUI.defaults.ignoreIfBlocked = defaultIgnoreIfBlocked;
 	};
 
 	/**
