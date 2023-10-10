@@ -1073,13 +1073,17 @@ class WC_Payments {
 		}
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
-		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller(
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
+		$payment_intents_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-create-controller.php';
+		$payment_intents_create_controller = new WC_REST_Payments_Payment_Intents_Create_Controller(
 			self::$api_client,
 			self::get_gateway(),
 			wcpay_get_container()->get( OrderService::class ),
 			wcpay_get_container()->get( Level3Service::class )
 		);
-		$payment_intents_controller->register_routes();
+		$payment_intents_create_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
 		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
