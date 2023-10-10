@@ -60,6 +60,7 @@ function recordUserEvent( eventName, eventProperties, isLegacy = false ) {
 }
 
 const events = {
+	APPLEPAY_BUTTON_CLICK: 'applepay_button_click',
 	CONNECT_ACCOUNT_CLICKED: 'wcpay_connect_account_clicked',
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
@@ -74,6 +75,7 @@ const events = {
 	DISPUTE_INQUIRY_REFUND_CLICK: 'wcpay_dispute_inquiry_refund_click',
 	DISPUTE_INQUIRY_REFUND_MODAL_VIEW:
 		'wcpay_dispute_inquiry_refund_modal_view',
+	GOOGLEPAY_BUTTON_CLICK: 'gpay_button_click',
 	ORDER_DISPUTE_NOTICE_BUTTON_CLICK:
 		'wcpay_order_dispute_notice_action_click',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
@@ -104,6 +106,7 @@ const events = {
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
 	TRANSACTIONS_DOWNLOAD_CSV_CLICK: 'wcpay_transactions_download_csv_click',
+	WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
 	WOOPAY_OFFERED: 'woopay_offered',
 	WOOPAY_OTP_START: 'woopay_otp_prompt_start',
 	WOOPAY_OTP_COMPLETE: 'woopay_otp_prompt_complete',
@@ -113,6 +116,12 @@ const events = {
 	WOOPAY_BUTTON_LOAD: 'woopay_button_load',
 	WOOPAY_BUTTON_CLICK: 'woopay_button_click',
 	WOOPAY_SAVE_MY_INFO_CLICK: 'checkout_save_my_info_click',
+	WOOPAY_SAVE_MY_INFO_TOS_CLICK: 'checkout_save_my_info_tos_click',
+	WOOPAY_SAVE_MY_INFO_PRIVACY_CLICK:
+		'checkout_save_my_info_privacy_policy_click',
+	WOOPAY_SAVE_MY_INFO_TOOLTIP_HOVER: 'checkout_save_my_info_tooltip_hover',
+	WOOPAY_SAVE_MY_INFO_TOOLTIP_LEARN_MORE_CLICK:
+		'checkout_save_my_info_tooltip_learn_more_click',
 	// Onboarding flow.
 	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
 	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',
