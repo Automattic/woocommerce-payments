@@ -1080,6 +1080,7 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-create-controller.php';
 		$payment_intents_create_controller = new WC_REST_Payments_Payment_Intents_Create_Controller(
 			self::$api_client,
+			self::get_gateway(),
 			wcpay_get_container()->get( OrderService::class ),
 			wcpay_get_container()->get( Level3Service::class )
 		);
