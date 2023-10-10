@@ -1,0 +1,23 @@
+.woopay-disable-feedback {
+	@media ( min-width: 960px ) {
+		max-height: calc( 100% - 120px );
+	}
+
+	.components-modal__content {
+		padding: 0;
+	}
+
+	&-iframe {
+		width: 100%;
+		height: 100%;
+
+		@media ( min-width: 600px ) {
+			width: 600px;
+			height: 650px;
+		}
+	}
+
+	&-logo {
+		height: 40px;
+	}
+}

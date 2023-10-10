@@ -67,7 +67,7 @@ export const isUnderReview = ( status: DisputeStatus | string ): boolean => {
 	return disputeUnderReviewStatuses.includes( status );
 };
 
-export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
+export const isInquiry = ( dispute: Pick< Dispute, 'status' > ): boolean => {
 	// Inquiry dispute statuses are one of `warning_needs_response`, `warning_under_review` or `warning_closed`.
 	return dispute.status.startsWith( 'warning' );
 };
@@ -77,7 +77,7 @@ export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
  * and the deduction has not been reversed.
  */
 const getDisputeDeductedBalanceTransaction = (
-	dispute: Dispute
+	dispute: Pick< Dispute, 'balance_transactions' >
 ): BalanceTransaction | undefined => {
 	// Note that there can only be, at most, two balance transactions for a given dispute:
 
@@ -103,7 +103,7 @@ const getDisputeDeductedBalanceTransaction = (
  * and the deduction has not been reversed.
  */
 export const getDisputeFeeFormatted = (
-	dispute: Dispute,
+	dispute: Pick< Dispute, 'balance_transactions' >,
 	appendCurrencyCode?: boolean
 ): string | undefined => {
 	const disputeFee = getDisputeDeductedBalanceTransaction( dispute );

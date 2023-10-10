@@ -25,6 +25,13 @@ class Get_Intention extends Request {
 	private $intent_id;
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_get_intent_request';
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param WC_Payments_API_Client     $api_client Api client.

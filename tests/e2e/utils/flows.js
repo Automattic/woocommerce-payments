@@ -30,6 +30,8 @@ const WC_ADMIN_BASE_URL = baseUrl + 'wp-admin/';
 const MY_ACCOUNT_SUBSCRIPTIONS = baseUrl + 'my-account/subscriptions';
 const MY_ACCOUNT_EDIT = baseUrl + 'my-account/edit-account';
 const MY_ACCOUNT_ORDERS = SHOP_MY_ACCOUNT_PAGE + 'orders/';
+const WCPAY_CONNECT =
+	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/connect';
 const WCPAY_DISPUTES =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/disputes';
 const WCPAY_DEPOSITS =
@@ -462,6 +464,79 @@ export const merchantWCP = {
 		} );
 	},
 
+	enableProgressiveOnboarding: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if (
+			! ( await page.$(
+				'#_wcpay_feature_progressive_onboarding:checked'
+			) )
+		) {
+			await expect( page ).toClick(
+				'label[for="_wcpay_feature_progressive_onboarding"]'
+			);
+		}
+
+		await expect( page ).toClick( 'input#submit' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	disableProgressiveOnboarding: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if (
+			await page.$( '#_wcpay_feature_progressive_onboarding:checked' )
+		) {
+			await expect( page ).toClick(
+				'label[for="_wcpay_feature_progressive_onboarding"]'
+			);
+		}
+
+		await expect( page ).toClick( 'input#submit' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	enableActAsDisconnectedFromWCPay: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( ! ( await page.$( '#wcpaydev_force_disconnected:checked' ) ) ) {
+			await expect( page ).toClick(
+				'label[for="wcpaydev_force_disconnected"]'
+			);
+		}
+
+		await expect( page ).toClick( 'input#submit' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	disableActAsDisconnectedFromWCPay: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( await page.$( '#wcpaydev_force_disconnected:checked' ) ) {
+			await expect( page ).toClick(
+				'label[for="wcpaydev_force_disconnected"]'
+			);
+		}
+		await expect( page ).toClick( 'input#submit' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
 	enablePaymentMethod: async ( paymentMethods ) => {
 		await page.goto( WCPAY_PAYMENT_SETTINGS, {
 			waitUntil: 'networkidle0',
@@ -527,7 +602,8 @@ export const merchantWCP = {
 	openChallengeDispute: async () => {
 		await Promise.all( [
 			evalAndClick(
-				'div.wcpay-dispute-details a.components-button.is-primary'
+				// eslint-disable-next-line max-len
+				'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-primary'
 			),
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
 			uiLoaded(),
@@ -538,12 +614,13 @@ export const merchantWCP = {
 		await Promise.all( [
 			page.removeAllListeners( 'dialog' ),
 			evalAndClick(
-				'div.wcpay-dispute-details button.components-button.is-secondary'
+				// eslint-disable-next-line max-len
+				'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-tertiary'
 			),
-			page.on( 'dialog', async ( dialog ) => {
-				await dialog.accept();
-			} ),
-			uiUnblocked(),
+			evalAndClick(
+				// eslint-disable-next-line max-len
+				'.transaction-details-dispute-accept-modal__actions button.components-button.is-primary'
+			),
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
 			uiLoaded(),
 		] );
@@ -600,6 +677,13 @@ export const merchantWCP = {
 
 	openMultiCurrency: async () => {
 		await page.goto( WCPAY_MULTI_CURRENCY, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+	},
+
+	openConnectPage: async () => {
+		await page.goto( WCPAY_CONNECT, {
 			waitUntil: 'networkidle0',
 		} );
 		await uiLoaded();

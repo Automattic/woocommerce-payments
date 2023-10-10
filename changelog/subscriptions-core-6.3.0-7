@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+When HPOS is enabled, deleting a customer will now delete their subscriptions.
