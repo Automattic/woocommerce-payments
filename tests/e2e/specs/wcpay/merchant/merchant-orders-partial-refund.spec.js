@@ -57,9 +57,7 @@ describe.each( dataTable )(
 		beforeAll( async () => {
 			// Disable multi currency in the merchant settings.
 			await merchant.login();
-			await merchantWCP.openWCPSettings();
-			await merchantWCP.unsetCheckboxByTestId( 'multi-currency-toggle' );
-			await merchantWCP.wcpSettingsSaveChanges();
+			await merchantWCP.deactivateMulticurrency();
 			await merchant.logout();
 
 			// Set up the test order
@@ -86,6 +84,7 @@ describe.each( dataTable )(
 		}, 200000 );
 
 		afterAll( async () => {
+			await merchantWCP.activateMulticurrency();
 			await merchant.logout();
 		} );
 
