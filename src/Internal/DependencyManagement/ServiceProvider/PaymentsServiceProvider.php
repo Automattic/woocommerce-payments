@@ -20,6 +20,7 @@ use WCPay\Internal\Payment\State\PaymentErrorState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\State\SystemErrorState;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
@@ -47,6 +48,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		ExampleService::class,
 		ExampleServiceWithDependencies::class,
 		PaymentRequestService::class,
+		DuplicatePaymentPreventionService::class,
 	];
 
 	/**
@@ -63,6 +65,8 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( LegacyProxy::class );
 
 		$container->addShared( PaymentRequestService::class );
+		$container->addShared( DuplicatePaymentPreventionService::class )
+			->addArgument( OrderService::class );
 
 		$container->add( InitialState::class )
 			->addArgument( StateFactory::class )
