@@ -13,8 +13,6 @@ There are no additional parameters for this request.
 
 ## Filter
 
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_cancel_intent_request`
 - Arguments: `WC_Order $order`
 
@@ -22,5 +20,6 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = Cancel_Intention::create( $id );
-$request->send( 'wcpay_cancel_intent_request', $order );
+$request->set_hook_args( $order )
+$request->send();
 ```

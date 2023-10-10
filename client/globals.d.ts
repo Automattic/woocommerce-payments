@@ -15,7 +15,7 @@ declare global {
 			customSearch: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
-			isDisputeOnTransactionPageEnabled: boolean;
+			isDisputeIssuerEvidenceEnabled: boolean;
 		};
 		fraudServices: unknown[];
 		testMode: boolean;
@@ -113,6 +113,7 @@ declare global {
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
+		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 	};
 

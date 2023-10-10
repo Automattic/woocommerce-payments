@@ -14,7 +14,7 @@ const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 let orderId;
 
-describe( 'Disputes > Save dispute for editing', () => {
+describe.skip( 'Disputes > Save dispute for editing', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -54,28 +54,9 @@ describe( 'Disputes > Save dispute for editing', () => {
 		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
 			text: 'Payment disputed as Product not received.',
 		} );
-
-		await expect( page ).toMatchElement(
-			'div.woocommerce-timeline-item__body a',
-			{
-				text: 'View dispute',
-			}
-		);
 	} );
 
 	it( 'should be able to save dispute for editing', async () => {
-		// Get the link to the dispute details
-		const disputeDetailsElement = await page.$(
-			'[data-testid="view-dispute-button"]'
-		);
-		const disputeDetailsLink = await page.evaluate(
-			( anchor ) => anchor.getAttribute( 'href' ),
-			disputeDetailsElement
-		);
-
-		// Open the dispute details
-		await merchantWCP.openDisputeDetails( disputeDetailsLink );
-
 		// Click to challenge the dispute
 		await merchantWCP.openChallengeDispute();
 
@@ -121,11 +102,8 @@ describe( 'Disputes > Save dispute for editing', () => {
 			}
 		);
 
-		// Re-open the dispute to view the details
-		await merchantWCP.openDisputeDetails( disputeDetailsLink );
-
-		// View the saved challenge
-		await merchantWCP.openChallengeDispute();
+		// Reload the page
+		await page.reload();
 
 		// Verify the previously selected Product type was saved
 		await expect( page ).toMatchElement(

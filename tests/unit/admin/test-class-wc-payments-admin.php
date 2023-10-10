@@ -24,6 +24,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $mock_gateway;
 
 	/**
+	 * Mock WC_Payments_API_Client.
+	 *
+	 * @var WC_Payments_API_Client|MockObject
+	 */
+	private $mock_api_client;
+
+	/**
 	 * Mock Onboarding Service.
 	 *
 	 * @var WC_Payments_Onboarding_Service|MockObject;
@@ -62,7 +69,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$menu    = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$submenu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 
-		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
+		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -99,7 +106,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->payments_admin = new WC_Payments_Admin(
-			$mock_api_client,
+			$this->mock_api_client,
 			$this->mock_gateway,
 			$this->mock_account,
 			$this->mock_onboarding_service,
@@ -368,6 +375,82 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 				[
 					'page' => 'wc-admin',
 					'path' => '/payments/overview',
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider data_maybe_redirect_onboarding_flow_to_connect
+	 */
+	public function test_maybe_redirect_onboarding_flow_to_connect( $expected_times_redirect_called, $is_server_connected, $get_params ) {
+		$_GET = $get_params;
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( $is_server_connected );
+
+		$this->mock_account
+			->expects( $this->exactly( $expected_times_redirect_called ) )
+			->method( 'redirect_to_onboarding_welcome_page' );
+
+		$this->payments_admin->maybe_redirect_onboarding_flow_to_connect();
+	}
+
+	/**
+	 * Data provider for test_maybe_redirect_onboarding_flow_to_connect
+	 */
+	public function data_maybe_redirect_onboarding_flow_to_connect() {
+		return [
+			'no_get_params'        => [
+				0,
+				false,
+				[],
+			],
+			'empty_page_param'     => [
+				0,
+				false,
+				[
+					'path' => '/payments/onboarding',
+				],
+			],
+			'incorrect_page_param' => [
+				0,
+				false,
+				[
+					'page' => 'wc-settings',
+					'path' => '/payments/onboarding',
+				],
+			],
+			'empty_path_param'     => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+				],
+			],
+			'incorrect_path_param' => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/does-not-exist',
+				],
+			],
+			'server_connected'     => [
+				0,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/onboarding',
+				],
+			],
+			'happy_path'           => [
+				1,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/onboarding',
 				],
 			],
 		];

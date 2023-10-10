@@ -17,8 +17,6 @@ The `WCPay\Core\Server\Request\Create_Setup_Intention` class is used to construc
 
 ## Filter
 
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_create_setup_intent_request`
 - Arguments: None
 
@@ -28,5 +26,5 @@ When using this request, provide the following filter and arguments:
 $request = Create_Setup_Intention::create();
 $request->set_customer( $customer_id );
 $request->set_payment_method_types( $payment_methods );
-$request->send( 'wcpay_create_setup_intent_request' );
+$request->send();
 ```

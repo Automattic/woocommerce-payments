@@ -37,6 +37,8 @@ use WC_Payments;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WC_Payments_Localization_Service;
 use WCPay\Database_Cache;
+use WCPay\Internal\Service\Level3Service;
+use WCPay\Internal\Service\OrderService;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
@@ -95,11 +97,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_rate_limiter;
 
 	/**
-	 * WC_Payments_Order_Service.
+	 * Mock WC_Payments_Order_Service.
 	 *
-	 * @var WC_Payments_Order_Service
+	 * @var WC_Payments_Order_Service|PHPUnit_Framework_MockObject_MockObject
 	 */
-	private $order_service;
+	private $mock_order_service;
 
 	/**
 	 * Array of mock UPE payment methods.
@@ -247,7 +249,18 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 		}
 
-		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
+		$this->mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+				]
+			)
+			->setMethods(
+				[
+					'get_payment_method_id_for_order',
+				]
+			)
+			->getMock();
 
 		// Arrange: Mock UPE_Payment_Gateway so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -261,7 +274,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
-					$this->order_service,
+					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 				]
@@ -300,6 +313,20 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'wcpay-payment-method' => 'pm_mock',
 			'payment_method'       => UPE_Payment_Gateway::GATEWAY_ID,
 		];
+
+		// Mock the level3 service to always return an empty array.
+		$mock_level3_service = $this->createMock( Level3Service::class );
+		$mock_level3_service->expects( $this->any() )
+			->method( 'get_data_from_order' )
+			->willReturn( [] );
+		wcpay_get_test_container()->replace( Level3Service::class, $mock_level3_service );
+
+		// Mock the order service to always return an empty array for meta.
+		$mock_order_service = $this->createMock( OrderService::class );
+		$mock_order_service->expects( $this->any() )
+			->method( 'get_payment_metadata' )
+			->willReturn( [] );
+		wcpay_get_test_container()->replace( OrderService::class, $mock_order_service );
 	}
 
 	/**
@@ -312,6 +339,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_database_cache( $this->_cache );
 		update_option( '_wcpay_feature_upe', '0' );
 		update_option( '_wcpay_feature_upe_split', '0' );
+		wcpay_get_test_container()->reset_all_replacements();
 	}
 
 	public function test_payment_fields_outputs_fields() {
@@ -380,47 +408,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				[
-					'customer_name'        => 'Jeroen Sormani',
-					'customer_email'       => 'admin@example.org',
-					'site_url'             => 'http://example.org',
-					'order_id'             => $order_id,
-					'order_number'         => $order_number,
-					'order_key'            => $order->get_order_key(),
-					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'legacy_upe',
-					'checkout_type'        => '',
-					'client_version'       => WCPAY_VERSION_NUMBER,
-					'subscription_payment' => 'no',
-				]
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_level3' )
-			->with(
-				[
-					'merchant_reference' => (string) $order_id,
-					'customer_reference' => (string) $order_id,
-					'shipping_amount'    => 1000.0,
-					'line_items'         => [
-						(object) [
-							'product_code'        => 30,
-							'product_description' => 'Beanie with Logo',
-							'unit_cost'           => 1800,
-							'quantity'            => 1,
-							'tax_amount'          => 270,
-							'discount_amount'     => 0,
-							'product_code'        => $product_item->get_product_id(),
-							'product_description' => 'Dummy Product',
-							'unit_cost'           => 1000.0,
-							'quantity'            => 4,
-							'tax_amount'          => 0.0,
-							'discount_amount'     => 0.0,
-						],
-					],
-				]
-			);
+			->with( [ 'gateway_type' => 'legacy_upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -482,47 +470,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				[
-					'customer_name'        => 'Jeroen Sormani',
-					'customer_email'       => 'admin@example.org',
-					'site_url'             => 'http://example.org',
-					'order_id'             => $order_id,
-					'order_number'         => $order_number,
-					'order_key'            => $order->get_order_key(),
-					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'legacy_upe',
-					'checkout_type'        => '',
-					'client_version'       => WCPAY_VERSION_NUMBER,
-					'subscription_payment' => 'no',
-				]
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_level3' )
-			->with(
-				[
-					'merchant_reference' => (string) $order_id,
-					'shipping_amount'    => 1000.0,
-					'line_items'         => [
-						(object) [
-							'product_code'        => 30,
-							'product_description' => 'Beanie with Logo',
-							'unit_cost'           => 1800,
-							'quantity'            => 1,
-							'tax_amount'          => 270,
-							'discount_amount'     => 0,
-							'product_code'        => $product_item->get_product_id(),
-							'product_description' => 'Dummy Product',
-							'unit_cost'           => 1000.0,
-							'quantity'            => 4,
-							'tax_amount'          => 0.0,
-							'discount_amount'     => 0.0,
-						],
-					],
-					'customer_reference' => (string) $order_id,
-				]
-			);
+			->with( [ 'gateway_type' => 'legacy_upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -580,47 +528,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				[
-					'customer_name'        => 'Jeroen Sormani',
-					'customer_email'       => 'admin@example.org',
-					'site_url'             => 'http://example.org',
-					'order_id'             => $order_id,
-					'order_number'         => $order_number,
-					'order_key'            => $order->get_order_key(),
-					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'legacy_upe',
-					'checkout_type'        => '',
-					'client_version'       => WCPAY_VERSION_NUMBER,
-					'subscription_payment' => 'no',
-				]
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_level3' )
-			->with(
-				[
-					'merchant_reference' => (string) $order_id,
-					'shipping_amount'    => 1000.0,
-					'line_items'         => [
-						(object) [
-							'product_code'        => 30,
-							'product_description' => 'Beanie with Logo',
-							'unit_cost'           => 1800,
-							'quantity'            => 1,
-							'tax_amount'          => 270,
-							'discount_amount'     => 0,
-							'product_code'        => $product_item->get_product_id(),
-							'product_description' => 'Dummy Product',
-							'unit_cost'           => 1000.0,
-							'quantity'            => 4,
-							'tax_amount'          => 0.0,
-							'discount_amount'     => 0.0,
-						],
-					],
-					'customer_reference' => (string) $order_id,
-				]
-			);
+			->with( [ 'gateway_type' => 'legacy_upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -648,13 +556,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return isset( $metadata['order_number'] );
-					}
-				)
-			);
+			->with( [ 'order_number' => $order->get_order_number() ] );
 
 		$request->expects( $this->once() )
 			->method( 'set_payment_method_types' );
@@ -761,10 +663,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'set_payment_method_types' )
 			->with( [ 'card' ] );
-		$request
-			->expects( $this->once() )
+
+		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'order_number' => $order_id ] );
+			->with( [ 'order_number' => $order->get_order_number() ] );
 		$request
 			->expects( $this->once() )
 			->method( 'set_fingerprint' )
@@ -1452,6 +1354,89 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_set_payment_method_title_for_email_updates_title() {
+		$mock_visa_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'debit',
+			],
+		];
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_payment_method_id_for_order' )
+			->will(
+				$this->returnValue( 'pm_XXXXXXX' )
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->will(
+				$this->returnValue( $mock_visa_details )
+			);
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method_title( 'Popular Payment Methods' );
+
+		$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
+		$this->assertEquals( 'Visa debit card', $order->get_payment_method_title() );
+	}
+
+	public function test_correct_payment_method_title_for_order_when_set_for_email() {
+		$payment_methods = [
+			'cheque' => 'Check payments',
+			'cod'    => 'Cash on delivery',
+			'bacs'   => 'Direct bank transfer',
+		];
+
+		// Emulates order creation which sets the payment method and title.
+		$order = WC_Helper_Order::create_order();
+
+		foreach ( $payment_methods as $method => $title ) {
+			$order->set_payment_method( $method );
+			$order->set_payment_method_title( $title );
+
+			$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
+			$this->assertEquals( $title, $order->get_payment_method_title() );
+		}
+	}
+
+	public function test_set_payment_method_title_for_email_fallback() {
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_payment_method_id_for_order' )
+			->will(
+				$this->returnValue( '' )
+			);
+
+			$order = WC_Helper_Order::create_order();
+			$order->set_payment_method( 'woocommerce_payments' );
+			$order->set_payment_method_title( 'Popular Payment Methods' );
+
+			$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
+			$this->assertEquals( 'WooPayments', $order->get_payment_method_title() );
+	}
+
+	public function test_set_payment_method_title_for_email_only_runs_for_legacy_upe() {
+		update_option( '_wcpay_feature_upe', '0' );
+		update_option( '_wcpay_feature_upe_split', '1' );
+
+		// set_payment_method_title_for_email should return before this functions runs.
+		$this->mock_order_service
+			->expects( $this->never() )
+			->method( 'get_payment_method_id_for_order' );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method_title( 'Credit / Debit Card' );
+
+		$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
+		$this->assertEquals( 'Credit / Debit Card', $order->get_payment_method_title() );
+	}
+
 	public function test_payment_methods_show_correct_default_outputs() {
 		$mock_token = WC_Helper_Token::create_token( 'pm_mock' );
 		$this->mock_token_service->expects( $this->any() )
@@ -1863,13 +1848,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return is_array( $metadata );
-					}
-				)
-			);
+			->with( [ 'gateway_type' => 'legacy_upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'set_level3' )
@@ -1985,7 +1964,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
-					$this->order_service,
+					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 				]
@@ -2034,7 +2013,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
-					$this->order_service,
+					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 				]

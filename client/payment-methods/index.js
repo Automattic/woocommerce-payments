@@ -5,12 +5,7 @@
  */
 import React, { useContext, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CardHeader,
-	DropdownMenu,
-	ExternalLink,
-} from '@wordpress/components';
+import { Card, CardHeader, DropdownMenu } from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
 import classNames from 'classnames';
 
@@ -42,8 +37,8 @@ import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants'
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
+import CapabilityRequestNotice from './capability-request';
 import InlineNotice from 'wcpay/components/inline-notice';
-import interpolateComponents from '@automattic/interpolate-components';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
@@ -176,6 +171,15 @@ const PaymentMethods = () => {
 
 	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
+	const rollbackNoticeForLegacyUPE = __(
+		// eslint-disable-next-line max-len
+		'You have been switched from the new checkout to your previous checkout experience. We will keep you posted on the new checkout availability.',
+		'woocommerce-payments'
+	);
+	const rollbackNoticeForLegacyCard = __(
+		// eslint-disable-next-line max-len
+		'You have been switched from the new checkout to your previous card experience. We will keep you posted on the new checkout availability.'
+	);
 
 	return (
 		<>
@@ -225,8 +229,7 @@ const PaymentMethods = () => {
 							status="warning"
 							isDismissible={ false }
 						>
-							{ 'You have been switched from the new checkout to your previous checkout experience.' +
-								+'We will keep you posted on the new checkout availability.' }
+							{ rollbackNoticeForLegacyUPE }
 						</InlineNotice>
 					</CardHeader>
 				) }
@@ -238,24 +241,14 @@ const PaymentMethods = () => {
 							status="warning"
 							isDismissible={ false }
 						>
-							{ interpolateComponents( {
-								mixedString: __(
-									'You were rolled back from dUPE to legacy card. Stay tuned on next actions.' +
-										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-									'woocommerce-payments'
-								),
-								components: {
-									learnMoreLink: (
-										// eslint-disable-next-line max-len
-										<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#popular-payment-methods" />
-									),
-								},
-							} ) }
+							{ rollbackNoticeForLegacyCard }
 						</InlineNotice>
 					</CardHeader>
 				) }
 
 				<CardBody size={ null }>
+					<CapabilityRequestNotice />
+
 					<PaymentMethodsList className="payment-methods__available-methods">
 						{ availableMethods.map(
 							( {
