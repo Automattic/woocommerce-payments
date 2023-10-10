@@ -42,17 +42,6 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	}
 
 	/**
-	 * WC_REST_Payments_Payment_Intents_Controller constructor.
-	 *
-	 * @param WC_Payments_API_Client   $api_client       WooCommerce Payments API client.
-	 */
-	public function __construct(
-		WC_Payments_API_Client $api_client
-	) {
-		parent::__construct( $api_client );
-	}
-
-	/**
 	 * Retrieve charge to respond with via API.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
