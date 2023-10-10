@@ -9,7 +9,6 @@ namespace WCPay\Internal\Service;
 
 use Exception;
 use WC_Order;
-use WC_Payment_Gateway_WCPay;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 
@@ -39,18 +38,11 @@ class DuplicatePaymentPreventionService {
 	const FLAG_PREVIOUS_SUCCESSFUL_INTENT = 'wcpay_previous_successful_intent';
 
 	/**
-	 * WC_Payments_Order_Service instance.
+	 * OrderService instance.
 	 *
-	 * @var WC_Payments_Order_Service
+	 * @var OrderService
 	 */
-	protected $order_service;
-
-	/**
-	 * Gateway instance.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	protected $gateway;
+	private $order_service;
 
 	/**
 	 * Initializes all dependencies and hooks, related to the service.
@@ -108,8 +100,11 @@ class DuplicatePaymentPreventionService {
 		}
 		$this->order_service->update_order_status_from_intent( $order, $intent );
 
-		$return_url = $this->gateway->get_return_url( $order );
-		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
+		$return_url = add_query_arg(
+			self::FLAG_PREVIOUS_SUCCESSFUL_INTENT,
+			'yes',
+			$order->get_checkout_order_received_url()
+		);
 		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
 			'result'                               => 'success',
 			'redirect'                             => $return_url,
@@ -154,8 +149,11 @@ class DuplicatePaymentPreventionService {
 
 		$this->remove_session_processing_order( $session_order_id );
 
-		$return_url = $this->gateway->get_return_url( $session_order );
-		$return_url = add_query_arg( self::FLAG_PREVIOUS_ORDER_PAID, 'yes', $return_url );
+		$return_url = add_query_arg(
+			self::FLAG_PREVIOUS_ORDER_PAID,
+			'yes',
+			$session_order->get_checkout_order_received_url()
+		);
 
 		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
 			'result'                            => 'success',
