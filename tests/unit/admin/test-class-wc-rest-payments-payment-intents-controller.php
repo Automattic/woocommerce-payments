@@ -54,7 +54,6 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 
 		$this->controller = new WC_REST_Payments_Payment_Intents_Controller(
 			$this->mock_api_client,
-			$this->mock_gateway,
 			$this->mock_order_service,
 			$this->mock_level3_service
 		);

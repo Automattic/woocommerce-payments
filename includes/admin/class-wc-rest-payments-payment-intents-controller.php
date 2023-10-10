@@ -20,13 +20,6 @@ defined( 'ABSPATH' ) || exit;
 class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Controller {
 
 	/**
-	 * Instance of WC_Payment_Gateway_WCPay
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $gateway;
-
-	/**
 	 * Order service instance.
 	 *
 	 * @var OrderService
@@ -82,13 +75,11 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
-		WC_Payment_Gateway_WCPay $gateway,
 		OrderService $order_service,
 		Level3Service $level3_service
 	) {
 		parent::__construct( $api_client );
 
-		$this->gateway        = $gateway;
 		$this->order_service  = $order_service;
 		$this->level3_service = $level3_service;
 	}
@@ -135,7 +126,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 			$wcpay_server_request->set_payment_method( $request->get_param( 'payment_method' ) );
 			$wcpay_server_request->set_payment_method_types( [ 'card' ] );
 			$wcpay_server_request->set_off_session( true );
-			$wcpay_server_request->set_capture_method( $this->gateway->get_option( 'manual_capture' ) && ( 'yes' === $this->gateway->get_option( 'manual_capture' ) ) );
+			$wcpay_server_request->set_capture_method( WC_Payments::get_gateway()->get_option( 'manual_capture' ) && ( 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) );
 
 			$wcpay_server_request->assign_hook( 'wcpay_create_and_confirm_intent_request_api' );
 			$intent = $wcpay_server_request->send();
