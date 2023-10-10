@@ -136,21 +136,6 @@ class WC_Payments_Admin {
 		$this->incentives_service  = $incentives_service;
 		$this->database_cache      = $database_cache;
 
-		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
-		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
-
-		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
-
-		// Add menu items.
-		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
-		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_redirect_overview_to_connect' ], 1 ); // Run this late (after `admin_init`) but before any scripts are actually enqueued.
-		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 12 );
-		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
-		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
-		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
-
 		$this->admin_child_pages = [
 			'wc-payments-overview'     => [
 				'id'       => 'wc-payments-overview',
@@ -193,6 +178,29 @@ class WC_Payments_Admin {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
+		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
+
+		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
+
+		// Add menu items.
+		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
+		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_redirect_overview_to_connect' ], 1 ); // Run this late (after `admin_init`) but before any scripts are actually enqueued.
+		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_redirect_onboarding_flow_to_connect' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ], 9 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 9 );
+		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
+		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
+		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
 	}
 
 	/**
@@ -465,14 +473,16 @@ class WC_Payments_Admin {
 					'path'   => '/payments/transactions/details',
 				]
 			);
+
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-disputes-details',
+					'id'     => 'wc-payments-disputes-details-legacy-redirect',
 					'title'  => __( 'Dispute details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-disputes',
 					'path'   => '/payments/disputes/details',
 				]
 			);
+
 			wc_admin_register_page(
 				[
 					'id'     => 'wc-payments-disputes-challenge',
@@ -772,6 +782,13 @@ class WC_Payments_Admin {
 			Logger::log( sprintf( 'WCPay JS settings: Could not determine if WCPay should be in test mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
+		$dev_mode = false;
+		try {
+			$dev_mode = WC_Payments::mode()->is_dev();
+		} catch ( Exception $e ) {
+			Logger::log( sprintf( 'WCPay JS settings: Could not determine if WCPay should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
+		}
+
 		$connect_url       = WC_Payments_Account::get_connect_url();
 		$connect_incentive = $this->incentives_service->get_cached_connect_incentive();
 		// If we have an incentive ID, attach it to the connect URL.
@@ -787,6 +804,7 @@ class WC_Payments_Admin {
 				'availableStates'    => WC()->countries->get_states(),
 			],
 			'connectIncentive'              => $connect_incentive,
+			'devMode'                       => $dev_mode,
 			'testMode'                      => $test_mode,
 			'onboardingTestMode'            => WC_Payments_Onboarding_Service::is_test_mode_enabled(),
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
@@ -829,17 +847,46 @@ class WC_Payments_Admin {
 			'fraudProtection'               => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
+			'enabledPaymentMethods'         => $this->get_enabled_payment_method_ids(),
 			'progressiveOnboarding'         => $this->account->get_progressive_onboarding_details(),
 			'accountDefaultCurrency'        => $this->account->get_account_default_currency(),
 			'frtDiscoverBannerSettings'     => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 			'storeCurrency'                 => get_option( 'woocommerce_currency' ),
 			'isBnplAffirmAfterpayEnabled'   => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
 			'isWooPayStoreCountryAvailable' => WooPay_Utilities::is_store_country_available(),
+			'woopayLastDisableDate'         => $this->wcpay_gateway->get_option( 'platform_checkout_last_disable_date' ),
 			'isStripeBillingEnabled'        => WC_Payments_Features::is_stripe_billing_enabled(),
 			'isStripeBillingEligible'       => WC_Payments_Features::is_stripe_billing_eligible(),
+			'capabilityRequestNotices'      => get_option( 'wcpay_capability_request_dismissed_notices ', [] ),
+			'storeName'                     => get_bloginfo( 'name' ),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
+	}
+
+	/**
+	 * Helper function to retrieve enabled UPE payment methods.
+	 *
+	 * TODO: This is duplicating code located in the settings container, we should refactor so that
+	 * this is stored in a centralised place and can be retrieved from there.
+	 *
+	 * @return array
+	 */
+	private function get_enabled_payment_method_ids(): array {
+		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
+		/**
+		 * It might be possible that enabled payment methods settings have an invalid state. As an example,
+		 * if an account is switched to a new country and earlier country had PM's that are no longer valid; or if the PM is not available anymore.
+		 * To keep saving settings working, we are ensuring the enabled payment methods are yet available.
+		 */
+		$enabled_payment_methods = array_values(
+			array_intersect(
+				$this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
+				$available_upe_payment_methods
+			)
+		);
+
+		return $enabled_payment_methods;
 	}
 
 	/**
@@ -920,9 +967,12 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		$badge = self::MENU_NOTIFICATION_BADGE;
 		foreach ( $menu as $index => $menu_item ) {
-			if ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) {
-				$menu[ $index ][0] .= self::MENU_NOTIFICATION_BADGE; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			if ( false === strpos( $menu_item[0], $badge ) && ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) ) {
+				$menu[ $index ][0] .= $badge; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+				// One menu item with a badge is more than enough.
 				break;
 			}
 		}
@@ -1051,6 +1101,25 @@ class WC_Payments_Admin {
 	}
 
 	/**
+	 * Prevent access to onboarding flow if the server is not connected.
+	 * Redirect back to the connect page with an error message.
+	 */
+	public function maybe_redirect_onboarding_flow_to_connect(): void {
+		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( isset( $url_params['page'] ) && 'wc-admin' === $url_params['page']
+			&& isset( $url_params['path'] ) && '/payments/onboarding' === $url_params['path'] && ! $this->payments_api_client->is_server_connected() ) {
+				$this->account->redirect_to_onboarding_welcome_page(
+					sprintf(
+					/* translators: %s: WooPayments */
+						__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
+						'WooPayments'
+					)
+				);
+			return;
+		}
+	}
+
+	/**
 	 * Add woopay as a payment method to the edit order on admin.
 	 *
 	 * @param int $order_id order_id.
@@ -1171,7 +1240,8 @@ class WC_Payments_Admin {
 	private function get_disputes_awaiting_response_count() {
 		$send_callback = function() {
 			$request = Request::get( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
-			return $request->send( 'wcpay_get_dispute_status_counts' );
+			$request->assign_hook( 'wcpay_get_dispute_status_counts' );
+			return $request->send();
 		};
 
 		$disputes_status_counts = $this->database_cache->get_or_add(
@@ -1200,7 +1270,8 @@ class WC_Payments_Admin {
 
 		$send_callback         = function() {
 			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
-			return $request->send( 'wc_pay_get_authorizations_summary' );
+			$request->assign_hook( 'wc_pay_get_authorizations_summary' );
+			return $request->send();
 		};
 		$authorization_summary = $this->database_cache->get_or_add(
 			$cache_key,

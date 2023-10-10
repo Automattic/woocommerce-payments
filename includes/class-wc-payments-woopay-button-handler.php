@@ -217,12 +217,27 @@ class WC_Payments_WooPay_Button_Handler {
 		WC()->shipping->reset_shipping();
 
 		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
-		$qty          = ! isset( $_POST['qty'] ) ? 1 : absint( $_POST['qty'] );
+		$quantity     = ! isset( $_POST['quantity'] ) ? 1 : absint( $_POST['quantity'] );
 		$product      = wc_get_product( $product_id );
 		$product_type = $product->get_type();
 
 		// First empty the cart to prevent wrong calculation.
 		WC()->cart->empty_cart();
+
+		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity );
+
+		if ( ! $is_add_to_cart_valid ) {
+			// Some extensions error messages needs to be
+			// submitted to show error messages.
+			wp_send_json(
+				[
+					'error'  => true,
+					'submit' => true,
+				],
+				400
+			);
+			return;
+		}
 
 		if ( ( 'variable' === $product_type || 'variable-subscription' === $product_type ) && isset( $_POST['attributes'] ) ) {
 			$attributes = wc_clean( wp_unslash( $_POST['attributes'] ) );
@@ -230,11 +245,11 @@ class WC_Payments_WooPay_Button_Handler {
 			$data_store   = WC_Data_Store::load( 'product' );
 			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
 
-			WC()->cart->add_to_cart( $product->get_id(), $qty, $variation_id, $attributes );
+			WC()->cart->add_to_cart( $product->get_id(), $quantity, $variation_id, $attributes );
 		}
 
-		if ( 'simple' === $product_type || 'subscription' === $product_type ) {
-			WC()->cart->add_to_cart( $product->get_id(), $qty );
+		if ( in_array( $product_type, [ 'simple', 'subscription', 'bundle', 'mix-and-match' ], true ) ) {
+			WC()->cart->add_to_cart( $product->get_id(), $quantity );
 		}
 
 		WC()->cart->calculate_totals();
@@ -526,10 +541,6 @@ class WC_Payments_WooPay_Button_Handler {
 		// Cart has unsupported product type.
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart have unsupported product type ( WooPay Express button disabled )' );
-			return false;
-		}
-
-		if ( $this->is_pay_for_order_page() ) {
 			return false;
 		}
 

@@ -6,7 +6,11 @@ import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from '../../payment-request/utils';
-import { getTargetElement, validateEmail } from './utils';
+import {
+	getTargetElement,
+	validateEmail,
+	appendRedirectionParams,
+} from './utils';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -186,6 +190,9 @@ export const handleWooPayEmailInput = async (
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
 			{
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+				order_id: getConfig( 'order_id' ),
+				key: getConfig( 'key' ),
+				billing_email: getConfig( 'billing_email' ),
 			}
 		).then( ( response ) => {
 			if ( response?.data?.session ) {
@@ -332,6 +339,8 @@ export const handleWooPayEmailInput = async (
 		if ( parentDiv.contains( errorMessage ) ) {
 			parentDiv.removeChild( errorMessage );
 		}
+
+		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_EMAIL_CHECK );
 
 		request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_signature' ),
@@ -534,7 +543,9 @@ export const handleWooPayEmailInput = async (
 					true
 				);
 				if ( e.data.redirectUrl ) {
-					window.location = e.data.redirectUrl;
+					window.location = appendRedirectionParams(
+						e.data.redirectUrl
+					);
 				}
 				break;
 			case 'redirect_to_platform_checkout':

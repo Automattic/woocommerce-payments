@@ -36,15 +36,13 @@ class WCPay_Multi_Currency_Settings_Tests extends WCPAY_UnitTestCase {
 
 		// The settings pages file is only included in woocommerce_get_settings_pages, so we need to manually include it here.
 		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency );
+		$this->settings->init_hooks();
 	}
 
 	/**
 	 * @dataProvider woocommerce_action_provider
 	 */
 	public function test_registers_internal_actions_with_account( $action, $function_name ) {
-		// Init Settings again to get proper registration of hooks/filters.
-		$this->settings = new WCPay\MultiCurrency\Settings( $this->mock_multi_currency );
-
 		$this->assertNotFalse(
 			has_action( $action, [ $this->settings, $function_name ] ),
 			"Action '$action' was not registered with '$function_name'"

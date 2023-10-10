@@ -27,9 +27,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class MultiCurrency {
 
-	const CURRENCY_SESSION_KEY = 'wcpay_currency';
-	const CURRENCY_META_KEY    = 'wcpay_currency';
-	const FILTER_PREFIX        = 'wcpay_multi_currency_';
+	const CURRENCY_SESSION_KEY    = 'wcpay_currency';
+	const CURRENCY_META_KEY       = 'wcpay_currency';
+	const FILTER_PREFIX           = 'wcpay_multi_currency_';
+	const CUSTOMER_CURRENCIES_KEY = 'wcpay_multi_currency_stored_customer_currencies';
 
 	/**
 	 * The plugin's ID.
@@ -196,6 +197,7 @@ class MultiCurrency {
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
 			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service(), WC_Payments::get_localization_service(), WC_Payments::get_database_cache() );
+			self::$instance->init_hooks();
 		}
 		return self::$instance;
 	}
@@ -219,7 +221,14 @@ class MultiCurrency {
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->compatibility           = new Compatibility( $this, $this->utils );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			// Enqueue the scripts after the main WC_Payments_Admin does.
@@ -240,6 +249,8 @@ class MultiCurrency {
 			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
 			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
+
+		$this->currency_switcher_block->init_hooks();
 	}
 
 	/**
@@ -265,9 +276,9 @@ class MultiCurrency {
 			$this->update_manual_rate_currencies_notice_option();
 		}
 
-		new PaymentMethodsCompatibility( $this, WC_Payments::get_gateway() );
-		new AdminNotices();
-		new UserSettings( $this );
+		$payment_method_compat = new PaymentMethodsCompatibility( $this, WC_Payments::get_gateway() );
+		$admin_notices         = new AdminNotices();
+		$user_settings         = new UserSettings( $this );
 		new Analytics( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
@@ -275,6 +286,16 @@ class MultiCurrency {
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 		$this->order_meta_helper   = new OrderMetaHelper( $this->payments_api_client );
+
+		// Init all of the hooks.
+		$payment_method_compat->init_hooks();
+		$admin_notices->init_hooks();
+		$user_settings->init_hooks();
+		$this->frontend_prices->init_hooks();
+		$this->frontend_currencies->init_hooks();
+		$this->backend_currencies->init_hooks();
+		$this->tracking->init_hooks();
+		$this->order_meta_helper->init_hooks();
 
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
@@ -287,6 +308,9 @@ class MultiCurrency {
 		if ( is_admin() ) {
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
+
+		// Update the customer currencies option after an order status change.
+		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_update_customer_currencies_option' ] );
 
 		static::$is_initialized = true;
 	}
@@ -327,9 +351,15 @@ class MultiCurrency {
 		}
 
 		if ( $this->payments_account->is_stripe_connected() ) {
-			$settings_pages[] = new Settings( $this );
+			$settings = new Settings( $this );
+			$settings->init_hooks();
+
+			$settings_pages[] = $settings;
 		} else {
-			$settings_pages[] = new SettingsOnboardCta( $this );
+			$settings_onboard_cta = new SettingsOnboardCta( $this );
+			$settings_onboard_cta->init_hooks();
+
+			$settings_pages[] = $settings_onboard_cta;
 		}
 
 		return $settings_pages;
@@ -491,9 +521,7 @@ class MultiCurrency {
 	public function get_single_currency_settings( string $currency_code ): array {
 		// Confirm the currency code is valid before trying to get the settings.
 		if ( ! array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() ) ) {
-			$message = 'Invalid currency passed to get_single_currency_settings: ' . $currency_code;
-			Logger::error( $message );
-			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+			$this->log_and_throw_invalid_currency_exception( __FUNCTION__, $currency_code );
 		}
 
 		$currency_code = strtolower( $currency_code );
@@ -522,10 +550,10 @@ class MultiCurrency {
 	public function update_single_currency_settings( string $currency_code, string $exchange_rate_type, float $price_rounding, float $price_charm, $manual_rate = null ) {
 		// Confirm the currency code is valid before trying to update the settings.
 		if ( ! array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() ) ) {
-			$message = 'Invalid currency passed to update_single_currency_settings: ' . $currency_code;
-			Logger::error( $message );
-			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+			$this->log_and_throw_invalid_currency_exception( __FUNCTION__, $currency_code );
 		}
+
+		$currency_code = strtolower( $currency_code );
 
 		if ( 'manual' === $exchange_rate_type && ! is_null( $manual_rate ) ) {
 			if ( ! is_numeric( $manual_rate ) || 0 >= $manual_rate ) {
@@ -536,12 +564,37 @@ class MultiCurrency {
 			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
 		}
 
-		$currency_code = strtolower( $currency_code );
 		update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, $price_rounding );
 		update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, $price_charm );
 		if ( in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
 			update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $exchange_rate_type ) );
 		}
+	}
+
+	/**
+	 * Updates the customer currencies option.
+	 *
+	 * @param int $order_id The order ID.
+	 *
+	 * @return void
+	 */
+	public function maybe_update_customer_currencies_option( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			return;
+		}
+
+		$currency   = strtoupper( $order->get_currency() );
+		$currencies = self::get_all_customer_currencies();
+
+		// Skip if the currency is already in the list.
+		if ( in_array( $currency, $currencies, true ) ) {
+			return;
+		}
+
+		$currencies[] = $currency;
+		update_option( self::CUSTOMER_CURRENCIES_KEY, $currencies );
 	}
 
 	/**
@@ -689,9 +742,7 @@ class MultiCurrency {
 		// Confirm the currencies submitted are available/valid currencies.
 		$invalid_currencies = array_diff( $currencies, array_keys( $this->get_available_currencies() ) );
 		if ( 0 < count( $invalid_currencies ) ) {
-			$message = 'Invalid currency/currencies passed to set_enabled_currencies: ' . implode( ', ', $invalid_currencies );
-			Logger::error( $message );
-			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+			$this->log_and_throw_invalid_currency_exception( __FUNCTION__, implode( ', ', $invalid_currencies ) );
 		}
 
 		// Get the currencies that were removed before they are updated.
@@ -781,8 +832,8 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_geolocation() {
-		// We only want to automatically set the currency if this option is enabled.
-		if ( ! $this->is_using_auto_currency_switching() ) {
+		// We only want to automatically set the currency if the option is enabled and it shouldn't be disabled for any reason.
+		if ( ! $this->is_using_auto_currency_switching() || $this->compatibility->should_disable_currency_switching() ) {
 			return;
 		}
 
@@ -842,6 +893,52 @@ class MultiCurrency {
 		: in_array( $type, $charm_compatible_types, true );
 
 		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing, $currency );
+	}
+
+	/**
+	 * Gets a raw converted amount based on the amount and currency codes passed.
+	 * This is a helper method for external conversions, if needed.
+	 *
+	 * @param float  $amount        The amount to be converted.
+	 * @param string $to_currency   The 3 letter currency code to convert the amount to.
+	 * @param string $from_currency The 3 letter currency code to convert the amount from.
+	 *
+	 * @return float The converted amount.
+	 *
+	 * @throws InvalidCurrencyException
+	 * @throws InvalidCurrencyRateException
+	 */
+	public function get_raw_conversion( float $amount, string $to_currency, string $from_currency = '' ): float {
+		$enabled_currencies = $this->get_enabled_currencies();
+
+		// If the from_currency is not set, use the store currency.
+		if ( '' === $from_currency ) {
+			$from_currency = $this->get_default_currency()->get_code();
+		}
+
+		// We throw an exception if either of the currencies are not enabled.
+		$to_currency   = strtoupper( $to_currency );
+		$from_currency = strtoupper( $from_currency );
+		foreach ( [ $to_currency, $from_currency ] as $code ) {
+			if ( ! isset( $enabled_currencies[ $code ] ) ) {
+				$this->log_and_throw_invalid_currency_exception( __FUNCTION__, $code );
+			}
+		}
+
+		// Get the rates.
+		$to_currency_rate   = $enabled_currencies[ $to_currency ]->get_rate();
+		$from_currency_rate = $enabled_currencies[ $from_currency ]->get_rate();
+
+		// Throw an exception in case from_currency_rate is less than or equal to 0.
+		if ( 0 >= $from_currency_rate ) {
+			$message = 'Invalid rate for from_currency in get_raw_conversion: ' . $from_currency_rate;
+			Logger::error( $message );
+			throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 );
+		}
+
+		$amount = $amount * ( $to_currency_rate / $from_currency_rate );
+
+		return (float) $amount;
 	}
 
 	/**
@@ -1451,32 +1548,44 @@ class MultiCurrency {
 	 * @return array
 	 */
 	public function get_all_customer_currencies(): array {
-		$data = $this->database_cache->get_or_add(
-			Database_Cache::CUSTOMER_CURRENCIES_KEY,
-			function() {
-				global $wpdb;
-				if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
-						\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-					$currencies = $wpdb->get_col( "SELECT DISTINCT(currency) FROM {$wpdb->prefix}wc_orders" );
-				} else {
-					$currencies = $wpdb->get_col( "SELECT DISTINCT(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = '_order_currency'" );
-				}
+		global $wpdb;
 
-				return [
-					'currencies' => $currencies,
-					'updated'    => time(),
-				];
-			},
-			function ( $data ) {
-				// Return true if the data looks valid and was updated an hour or less ago.
-				return is_array( $data ) &&
-					isset( $data['currencies'], $data['updated'] ) &&
-					$data['updated'] >= ( time() - ( 5 * MINUTE_IN_SECONDS ) );
+		$currencies = get_option( self::CUSTOMER_CURRENCIES_KEY );
+
+		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
+			return array_map( 'strtoupper', $currencies );
+		}
+
+		$currencies  = $this->get_available_currencies();
+		$query_union = [];
+
+		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
+					\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			foreach ( $currencies as $currency ) {
+				$query_union[] = $wpdb->prepare(
+					"SELECT %s AS currency_code, EXISTS(SELECT currency FROM {$wpdb->prefix}wc_orders WHERE currency=%s LIMIT 1) AS exists_in_orders",
+					$currency->code,
+					$currency->code
+				);
 			}
-		);
+		} else {
+			foreach ( $currencies as $currency ) {
+				$query_union[] = $wpdb->prepare(
+					"SELECT %s AS currency_code, EXISTS(SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key=%s AND meta_value=%s LIMIT 1) AS exists_in_orders",
+					$currency->code,
+					'_order_currency',
+					$currency->code
+				);
+			}
+		}
 
-		if ( ! empty( $data['currencies'] ) && is_array( $data['currencies'] ) ) {
-			return $data['currencies'];
+		$sub_query  = join( ' UNION ALL ', $query_union );
+		$query      = "SELECT currency_code FROM ( $sub_query ) as subquery WHERE subquery.exists_in_orders=1 ORDER BY currency_code ASC";
+		$currencies = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
+			update_option( self::CUSTOMER_CURRENCIES_KEY, $currencies );
+			return array_map( 'strtoupper', $currencies );
 		}
 
 		return [];
@@ -1499,5 +1608,31 @@ class MultiCurrency {
 	 */
 	public static function is_initialized() : bool {
 		return static::$is_initialized;
+	}
+
+	/**
+	 * Logs a message and throws InvalidCurrencyException.
+	 *
+	 * @param string $method        The method that's actually throwing the exception.
+	 * @param string $currency_code The currency code that was invalid.
+	 * @param int    $code          The exception code.
+	 *
+	 * @throws InvalidCurrencyException
+	 */
+	private function log_and_throw_invalid_currency_exception( $method, $currency_code, $code = 500 ) {
+		$message = 'Invalid currency passed to ' . $method . ': ' . $currency_code;
+		Logger::error( $message );
+		throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', $code );
+	}
+
+	/**
+	 * Checks if the customer currencies data is valid.
+	 *
+	 * @param mixed $currencies The currencies to check.
+	 *
+	 * @return bool
+	 */
+	private function is_customer_currencies_data_valid( $currencies ) {
+		return ! empty( $currencies ) && is_array( $currencies );
 	}
 }

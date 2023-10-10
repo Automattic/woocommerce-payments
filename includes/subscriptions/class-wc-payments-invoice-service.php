@@ -288,8 +288,9 @@ class WC_Payments_Invoice_Service {
 	 */
 	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
 		try {
-			$request       = Get_Intention::create( $intent_id );
-			$intent_object = $request->send( 'wcpay_get_intent_request', $order );
+			$request = Get_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+			$intent_object = $request->send();
 
 		} catch ( API_Exception $e ) {
 			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
@@ -306,6 +307,20 @@ class WC_Payments_Invoice_Service {
 			$intent_object->get_customer_id(),
 			$charge ? $charge->get_id() : null,
 			$intent_object->get_currency()
+		);
+	}
+
+	/**
+	 * Sends a request to server to record the store's context for an invoice payment.
+	 *
+	 * @param string $invoice_id The subscription invoice ID.
+	 */
+	public function record_subscription_payment_context( string $invoice_id ) {
+		$this->payments_api_client->update_invoice(
+			$invoice_id,
+			[
+				'subscription_context' => class_exists( 'WC_Subscriptions' ) && WC_Payments_Features::is_stripe_billing_enabled() ? 'stripe_billing' : 'legacy_wcpay_subscription',
+			]
 		);
 	}
 

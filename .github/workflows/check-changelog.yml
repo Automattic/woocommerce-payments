@@ -11,7 +11,7 @@ concurrency:
 jobs:
   check-changelog:
     name:    Check changelog
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # clone the repository
       - uses: actions/checkout@v3
@@ -22,11 +22,8 @@ jobs:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.4'
-          tools:    composer
-          coverage: none
+      - name: "Set up PHP"
+        uses: ./.github/actions/setup-php
       # Install composer packages.
       - run: composer self-update && composer install --no-progress
       # Fetch the target branch before running the check.

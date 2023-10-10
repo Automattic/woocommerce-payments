@@ -16,7 +16,7 @@ defaults:
 jobs:
   create-release:
     name: "Create the pre-release"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
 

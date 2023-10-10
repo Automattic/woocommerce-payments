@@ -8,6 +8,7 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
  */
 import { useInitialization } from './use-initialization';
 import { getPaymentRequestData } from '../utils';
+import wcpayTracks from 'tracks';
 
 /**
  * PaymentRequestExpressComponent
@@ -53,9 +54,39 @@ const PaymentRequestExpressComponent = ( {
 		return null;
 	}
 
+	let paymentRequestType = '';
+
+	// Check the availability of the Payment Request API first.
+	paymentRequest.canMakePayment().then( ( result ) => {
+		if ( ! result ) {
+			return;
+		}
+
+		// Set the payment request type.
+		if ( result.applePay ) {
+			paymentRequestType = 'apple_pay';
+		} else if ( result.googlePay ) {
+			paymentRequestType = 'google_pay';
+		}
+	} );
+
+	const onPaymentRequestButtonClick = () => {
+		onButtonClick();
+
+		const paymentRequestTypeEvents = {
+			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
+			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+		};
+
+		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
+			const event = paymentRequestTypeEvents[ paymentRequestType ];
+			wcpayTracks.recordUserEvent( event, { source: 'checkout' } );
+		}
+	};
+
 	return (
 		<PaymentRequestButtonElement
-			onClick={ onButtonClick }
+			onClick={ onPaymentRequestButtonClick }
 			options={ {
 				style: paymentRequestButtonStyle,
 				paymentRequest,

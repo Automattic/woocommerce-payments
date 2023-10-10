@@ -15,7 +15,7 @@ concurrency:
 jobs:
   generate-wc-compat-matrix:
     name: "Generate the matrix for woocommerce compatibility dynamically"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -29,7 +29,7 @@ jobs:
   woocommerce-compatibility:
     name: "WC compatibility"
     needs: generate-wc-compat-matrix
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
@@ -57,21 +57,21 @@ jobs:
   
   generate-wc-compat-beta-matrix:
     name: "Generate the matrix for compatibility-woocommerce-beta dynamically"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"8.0\", \"8.1\"]" )
+          PHP_VERSIONS=$( echo "[\"7.4\", \"8.0\", \"8.1\"]" )
           echo "matrix={\"woocommerce\":[\"beta\"],\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":$PHP_VERSIONS}" >> $GITHUB_OUTPUT
 
   # a dedicated job, as allowed to fail
   compatibility-woocommerce-beta:
     name: Environment - WC beta
     needs: generate-wc-compat-beta-matrix
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate-wc-compat-beta-matrix.outputs.matrix) }}
