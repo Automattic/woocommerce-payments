@@ -369,7 +369,7 @@ describe( 'PaymentMethods', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should only be able to leave feedback only for deferred intent creation UPE', () => {
+	it( 'should only be able to leave feedback', () => {
 		render(
 			<WcPayUpeContextProvider
 				defaultIsUpeEnabled={ true }
@@ -388,69 +388,6 @@ describe( 'PaymentMethods', () => {
 
 		expect( kebabMenuWithFeedbackOnly ).toBeInTheDocument();
 		expect( kebabMenuWithFeedbackAndDisable ).not.toBeInTheDocument();
-	} );
-
-	it( 'should only be able to leave feedback when deferred upe after migration is enabled', () => {
-		render(
-			<WcPayUpeContextProvider
-				defaultIsUpeEnabled={ true }
-				defaultUpeType={ 'deferred_intent_upe_without_fallback' }
-			>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-		const kebabMenuWithFeedbackOnly = screen.queryByRole( 'button', {
-			name: 'Add feedback',
-		} );
-
-		const kebabMenuWithFeedbackAndDisable = screen.queryByRole( 'button', {
-			name: 'Add feedback or disable',
-		} );
-
-		expect( kebabMenuWithFeedbackOnly ).toBeInTheDocument();
-		expect( kebabMenuWithFeedbackAndDisable ).not.toBeInTheDocument();
-	} );
-
-	it( 'should only be able to leave feedback and disable when deferred upe was enabled manually for legacy card stores', () => {
-		render(
-			<WcPayUpeContextProvider
-				defaultIsUpeEnabled={ true }
-				defaultUpeType={ 'deferred_intent_upe_with_fallback' }
-			>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-		const kebabMenuWithFeedbackOnly = screen.queryByRole( 'button', {
-			name: 'Add feedback',
-		} );
-
-		const kebabMenuWithFeedbackAndDisable = screen.queryByRole( 'button', {
-			name: 'Add feedback or disable',
-		} );
-
-		expect( kebabMenuWithFeedbackAndDisable ).toBeInTheDocument();
-		expect( kebabMenuWithFeedbackOnly ).not.toBeInTheDocument();
-	} );
-
-	it( 'should be able to leave feedback and disable for non-deferred-upe', () => {
-		render(
-			<WcPayUpeContextProvider
-				defaultIsUpeEnabled={ true }
-				defaultUpeType={ 'legacy' }
-			>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-		const kebabMenuWithFeedbackOnly = screen.queryByRole( 'button', {
-			name: 'Add feedback',
-		} );
-
-		const kebabMenuWithFeedbackAndDisable = screen.queryByRole( 'button', {
-			name: 'Add feedback or disable',
-		} );
-
-		expect( kebabMenuWithFeedbackAndDisable ).toBeInTheDocument();
-		expect( kebabMenuWithFeedbackOnly ).not.toBeInTheDocument();
 	} );
 
 	it( 'should render the activation modal when requirements exist for the payment method', () => {
