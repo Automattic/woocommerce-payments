@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.6.0 - 2023-10-11 =
+= 6.6.0-test-4 - unreleased =
 * Add - Add a notice on the Settings page to request JCB capability for Japanese customers.
 * Add - Add current user data to the onboarding init request payload. This data is used for fraud prevention.
 * Add - Added API endpoint to fetch customer's saved payment methods.
