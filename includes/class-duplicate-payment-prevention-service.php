@@ -100,7 +100,7 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		};
 
-		if ( ! in_array( $intent_status, WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true ) ) {
+		if ( ! in_array( $intent_status, Intent_Status::SUCCESSFUL_STATUSES, true ) ) {
 			return;
 		}
 

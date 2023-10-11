@@ -26,4 +26,15 @@ class Intent_Status extends Base_Constant {
 	const REQUIRES_CAPTURE        = 'requires_capture';
 	const CANCELED                = 'canceled';
 	const SUCCEEDED               = 'succeeded';
+
+	/**
+	 * Stripe intents that are treated as successfully created.
+	 *
+	 * @type array
+	 */
+	const SUCCESSFUL_STATUSES = [
+		self::SUCCEEDED,
+		self::REQUIRES_CAPTURE,
+		self::PROCESSING,
+	];
 }

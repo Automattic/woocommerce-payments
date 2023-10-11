@@ -90,17 +90,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		'deposit_schedule_monthly_anchor'    => 'deposit_schedule_monthly_anchor',
 	];
 
-	/**
-	 * Stripe intents that are treated as successfully created.
-	 *
-	 * @type array
-	 */
-	const SUCCESSFUL_INTENT_STATUS = [
-		Intent_Status::SUCCEEDED,
-		Intent_Status::REQUIRES_CAPTURE,
-		Intent_Status::PROCESSING,
-	];
-
 	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';
 
 	/**
@@ -1383,7 +1372,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( ! empty( $intent ) ) {
-			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
+			if ( ! in_array( $status, Intent_Status::SUCCESSFUL_STATUSES, true ) ) {
 				$intent_failed = true;
 			}
 
@@ -2972,7 +2961,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 
-			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
+			if ( in_array( $status, Intent_Status::SUCCESSFUL_STATUSES, true ) ) {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
