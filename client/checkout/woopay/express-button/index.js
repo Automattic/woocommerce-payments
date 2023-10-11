@@ -13,7 +13,9 @@ import WCPayAPI from '../../api';
 import request from '../../utils/request';
 import '../../express-checkout-buttons.scss';
 
-const renderWooPayExpressCheckoutButton = () => {
+const oldWoopayContainers = [];
+
+const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 	// Create an API object, which will be used throughout the checkout.
 	const api = new WCPayAPI(
 		{
@@ -28,8 +30,17 @@ const renderWooPayExpressCheckoutButton = () => {
 	const woopayContainer = document.getElementById( 'wcpay-woopay-button' );
 
 	if ( woopayContainer ) {
+		while ( oldWoopayContainers.length > 0 ) {
+			// Ensure previous buttons are unmounted and cleaned up.
+			const oldWoopayContainer = oldWoopayContainers.pop();
+			ReactDOM.unmountComponentAtNode( oldWoopayContainer );
+		}
+
+		oldWoopayContainers.push( woopayContainer );
+
 		ReactDOM.render(
 			<WoopayExpressCheckoutButton
+				listenForCartChanges={ listenForCartChanges }
 				buttonSettings={ getConfig( 'woopayButton' ) }
 				api={ api }
 				isProductPage={
@@ -42,10 +53,31 @@ const renderWooPayExpressCheckoutButton = () => {
 	}
 };
 
-window.addEventListener( 'load', renderWooPayExpressCheckoutButton );
+let listenForCartChanges = null;
+const renderWooPayExpressCheckoutButtonWithCallbacks = () => {
+	renderWooPayExpressCheckoutButton( listenForCartChanges );
+};
 
 jQuery( ( $ ) => {
-	$( document.body ).on( 'updated_cart_totals', () => {
-		renderWooPayExpressCheckoutButton();
-	} );
+	listenForCartChanges = {
+		start: () => {
+			$( document.body ).on(
+				'updated_cart_totals',
+				renderWooPayExpressCheckoutButtonWithCallbacks
+			);
+		},
+		stop: () => {
+			$( document.body ).off(
+				'updated_cart_totals',
+				renderWooPayExpressCheckoutButtonWithCallbacks
+			);
+		},
+	};
+
+	listenForCartChanges.start();
 } );
+
+window.addEventListener(
+	'load',
+	renderWooPayExpressCheckoutButtonWithCallbacks
+);

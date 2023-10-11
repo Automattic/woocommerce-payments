@@ -70,9 +70,10 @@ const DisputeUnderReviewFooter: React.FC< {
 							onClick={ () => {
 								wcpayTracks.recordEvent(
 									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 									{
 										dispute_status: dispute.status,
+										on_page: 'transaction_details',
 									}
 								);
 							} }
@@ -141,9 +142,10 @@ const DisputeWonFooter: React.FC< {
 							onClick={ () => {
 								wcpayTracks.recordEvent(
 									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 									{
 										dispute_status: dispute.status,
+										on_page: 'transaction_details',
 									}
 								);
 							} }
@@ -250,9 +252,10 @@ const DisputeLostFooter: React.FC< {
 								onClick={ () => {
 									wcpayTracks.recordEvent(
 										wcpayTracks.events
-											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 										{
 											dispute_status: dispute.status,
+											on_page: 'transaction_details',
 										}
 									);
 								} }
@@ -322,9 +325,10 @@ const InquiryUnderReviewFooter: React.FC< {
 							onClick={ () => {
 								wcpayTracks.recordEvent(
 									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 									{
 										dispute_status: dispute.status,
+										on_page: 'transaction_details',
 									}
 								);
 							} }
@@ -396,9 +400,10 @@ const InquiryClosedFooter: React.FC< {
 								onClick={ () => {
 									wcpayTracks.recordEvent(
 										wcpayTracks.events
-											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 										{
 											dispute_status: dispute.status,
+											on_page: 'transaction_details',
 										}
 									);
 								} }

@@ -289,6 +289,14 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 		$this->fraud_risk_tools = new Fraud_Risk_Tools( $this->mock_wcpay_account );
 	}
 
+	public function test_registers_action_properly() {
+		wp_set_current_user( 1 );
+		$this->set_is_admin( true );
+		$this->set_current_user_can( true );
+		$this->fraud_risk_tools->init_hooks();
+		$this->assertNotFalse( has_action( 'admin_menu', [ $this->fraud_risk_tools, 'init_advanced_settings_page' ] ) );
+	}
+
 	public function test_it_gets_basic_protection_settings() {
 		update_option( 'woocommerce_allowed_countries', 'all' );
 
@@ -357,5 +365,38 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'high'     => [ $this->high_protection_level, 'high' ],
 			'advanced' => [ $this->advanced_protection_level, 'advanced' ],
 		];
+	}
+
+	/**
+	 * @param bool $is_admin
+	 */
+	private function set_is_admin( bool $is_admin ) {
+		global $current_screen;
+
+		if ( ! $is_admin ) {
+			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+			return;
+		}
+
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+		$current_screen = $this->getMockBuilder( \stdClass::class )
+			->addMethods( [ 'in_admin' ] )
+			->getMock();
+
+		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
+	}
+
+	/**
+	 * @param bool $can
+	 */
+	private function set_current_user_can( bool $can ) {
+		global $current_user_can;
+
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+		$current_user_can = $this->getMockBuilder( \stdClass::class )
+			->addMethods( [ 'current_user_can' ] )
+			->getMock();
+
+		$current_user_can->method( 'current_user_can' )->willReturn( $can );
 	}
 }

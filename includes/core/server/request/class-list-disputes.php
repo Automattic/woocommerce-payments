@@ -23,6 +23,13 @@ class List_Disputes extends Paginated {
 	use Order_Info;
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_list_disputes_request';
+
+	/**
 	 * Get api URI.
 	 *
 	 * @return string

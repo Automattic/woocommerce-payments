@@ -25,6 +25,13 @@ class List_Charge_Refunds extends Request {
 	const REQUIRED_PARAMS = [ 'charge' ];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_list_charge_refunds_request';
+
+	/**
 	 * Sets the charge ID, which will be used in the request URL.
 	 *
 	 * @param string $charge_id Sets the charge ID, which will be used in the request URL.
