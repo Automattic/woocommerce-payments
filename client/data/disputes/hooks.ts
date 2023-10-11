@@ -47,7 +47,7 @@ export const useDispute = (
 	);
 
 	const { acceptDispute } = useDispatch( STORE_NAME );
-	const doAccept = () => acceptDispute( id );
+	const doAccept = () => acceptDispute( dispute );
 
 	return { dispute, isLoading, error, doAccept };
 };

@@ -27,7 +27,7 @@ describe( 'acceptDispute action', () => {
 	} );
 
 	test( 'should close dispute and update state with dispute data', () => {
-		const generator = acceptDispute( 'dp_mock1' );
+		const generator = acceptDispute( mockDispute );
 
 		expect( generator.next().value ).toEqual(
 			controls.dispatch( 'wc/payments', 'startResolution', 'getDispute', [
@@ -65,7 +65,7 @@ describe( 'acceptDispute action', () => {
 	} );
 
 	test( 'should show notice on error', () => {
-		const generator = acceptDispute( 'dp_mock1' );
+		const generator = acceptDispute( mockDispute );
 
 		generator.next();
 		expect( generator.throw( { code: 'error' } ).value ).toEqual(
