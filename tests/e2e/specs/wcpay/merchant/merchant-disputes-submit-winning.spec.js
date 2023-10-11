@@ -17,7 +17,7 @@ const {
 
 let orderId;
 
-describe.skip( 'Disputes > Submit winning dispute', () => {
+describe( 'Disputes > Submit winning dispute', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -53,8 +53,8 @@ describe.skip( 'Disputes > Submit winning dispute', () => {
 		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
 		// Verify we have a dispute for this purchase
-		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Payment disputed as Transaction unauthorized.',
+		await expect( page ).toMatchElement( '.dispute-notice', {
+			text: 'The cardholder claims this is an unauthorized transaction',
 		} );
 
 		// Challenge the dispute
