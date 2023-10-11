@@ -660,6 +660,10 @@ class WC_Payments_Utils {
 			return '';
 		}
 
+		if ( strpos( $primary_id, 'seti_' ) !== false ) {
+			return '';
+		}
+
 		return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			array_merge(
 				[
