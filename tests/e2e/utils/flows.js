@@ -611,7 +611,7 @@ export const merchantWCP = {
 
 	openPaymentDetails: async ( paymentDetailsLink ) => {
 		await Promise.all( [
-			await page.goto( paymentDetailsLink, {
+			page.goto( paymentDetailsLink, {
 				waitUntil: 'networkidle0',
 			} ),
 			uiLoaded(),
