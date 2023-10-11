@@ -10,12 +10,14 @@ import { controls } from '@wordpress/data';
  * Internal dependencies
  */
 import { acceptDispute, updateDispute } from '../actions';
+import { getPaymentIntent } from '../../payment-intents/resolvers';
 
 describe( 'acceptDispute action', () => {
 	const mockDispute = {
 		id: 'dp_mock1',
 		reason: 'product_unacceptable',
 		status: 'lost',
+		payment_intent: 'payment_intent',
 	};
 
 	beforeEach( () => {
@@ -44,6 +46,9 @@ describe( 'acceptDispute action', () => {
 			updateDispute( mockDispute )
 		);
 		expect( generator.next().value ).toEqual(
+			getPaymentIntent( mockDispute.payment_intent )
+		);
+		expect( generator.next().value ).toEqual(
 			controls.dispatch(
 				'wc/payments',
 				'finishResolution',
@@ -53,7 +58,6 @@ describe( 'acceptDispute action', () => {
 		);
 
 		const noticeAction = generator.next().value;
-		expect( window.location.replace ).toHaveBeenCalledTimes( 1 );
 		expect( noticeAction ).toEqual(
 			controls.dispatch(
 				'core/notices',
