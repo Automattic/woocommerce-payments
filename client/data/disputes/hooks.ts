@@ -72,8 +72,8 @@ export const useDisputeAccept = (
 		},
 		[ dispute.id ]
 	);
-	const { acceptTransactionDetailsDispute } = useDispatch( STORE_NAME );
-	const doAccept = () => acceptTransactionDetailsDispute( dispute );
+	const { acceptDispute } = useDispatch( STORE_NAME );
+	const doAccept = () => acceptDispute( dispute );
 	return { doAccept, isLoading };
 };
 
