@@ -589,7 +589,7 @@ export const merchantWCP = {
 	},
 
 	openChallengeDispute: async () => {
-		// Click the challenge dispute button
+		// Click the challenge dispute button.
 		await evalAndClick( '[data-testid="challenge-dispute-button"]' );
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 		await uiLoaded();
@@ -597,13 +597,16 @@ export const merchantWCP = {
 
 	openAcceptDispute: async () => {
 		await page.removeAllListeners( 'dialog' );
-		// Open the accept dispute modal
+		// Open the accept dispute modal.
 		await evalAndClick( '[data-testid="open-accept-dispute-modal-button"' );
 		await uiLoaded();
-		// Click the accept dispute button
+		// Click the accept dispute button.
 		await evalAndClick( '[data-testid="accept-dispute-button"]' );
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-		await uiLoaded();
+		// Wait for the accept POST request to resolve and the status chip to update with the new status.
+		await expect( page ).toMatchElement( '.chip', {
+			text: 'Disputed: Lost',
+			timeout: 10000,
+		} );
 	},
 
 	openPaymentDetails: async ( paymentDetailsLink ) => {

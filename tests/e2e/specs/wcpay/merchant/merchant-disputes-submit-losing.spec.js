@@ -12,7 +12,7 @@ const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 let orderId;
 
-describe.skip( 'Disputes > Submit losing dispute', () => {
+describe( 'Disputes > Submit losing dispute', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -49,37 +49,27 @@ describe.skip( 'Disputes > Submit losing dispute', () => {
 		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
 		// Verify we have a dispute for this purchase
-		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Payment disputed as Product not received.',
+		await expect( page ).toMatchElement( '.dispute-notice', {
+			text: 'The cardholder claims the product was not received',
 		} );
 
 		// Accept the dispute
 		await merchantWCP.openAcceptDispute();
 
-		// If webhooks are not received, the dispute status won't be updated in the dispute list page resulting in test failure.
-		// Workaround - Open payment details page again and check dispute's status.
-		await merchantWCP.openPaymentDetails( paymentDetailsLink );
+		// Check the dispute details footer
+		await expect( page ).toMatchElement(
+			'.transaction-details-dispute-footer *',
+			{
+				text: 'This dispute was accepted and lost',
+			}
+		);
 
 		// Confirm buttons are not present anymore since a dispute has been accepted.
 		await expect( page ).not.toMatchElement(
-			// eslint-disable-next-line max-len
-			'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-primary',
-			{
-				text: 'Challenge dispute',
-			}
+			'[data-testid="challenge-dispute-button"]'
 		);
 		await expect( page ).not.toMatchElement(
-			// eslint-disable-next-line max-len
-			'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-tertiary',
-			{
-				text: 'Accept dispute',
-			}
+			'[data-testid="open-accept-dispute-modal-button"]'
 		);
-
-		// Confirm dispute status is Lost.
-		await page.waitForSelector( 'li.woocommerce-timeline-item' );
-		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Dispute lost. The bank ruled in favor of your customer.',
-		} );
 	} );
 } );
