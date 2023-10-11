@@ -114,12 +114,10 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 				'li.payment_method_woocommerce_payments_affirm'
 			);
 			await uiUnblocked();
-
-			await Promise.all( [
-				shopper.placeOrder(),
-				page.waitForNavigation(),
-			] );
-
+			await shopper.placeOrder();
+			await page.waitForSelector(
+				'a.common-Button.common-Button--default[name="success"][href^="https://affirm-hooks.stripe.com/affirm/"]'
+			);
 			await expect( page ).toClick( 'a', {
 				text: 'Authorize Test Payment',
 			} );
