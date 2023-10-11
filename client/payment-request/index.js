@@ -14,6 +14,8 @@ import {
 	paymentMethodHandler,
 	payForOrderHandler,
 } from './event-handlers.js';
+import '../checkout/express-checkout-buttons.scss';
+import wcpayTracks from 'tracks';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
@@ -46,6 +48,19 @@ jQuery( ( $ ) => {
 
 	let paymentRequestType;
 
+	// Track the payment request button click event.
+	const trackPaymentRequestButtonClick = ( source ) => {
+		const paymentRequestTypeEvents = {
+			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
+			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+		};
+
+		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
+			const event = paymentRequestTypeEvents[ paymentRequestType ];
+			wcpayTracks.recordUserEvent( event, { source } );
+		}
+	};
+
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
@@ -62,7 +77,7 @@ jQuery( ( $ ) => {
 					$( this ).attr( 'name' );
 				const value = $( this ).val() || '';
 
-				if ( 0 < value.length ) {
+				if ( value.length > 0 ) {
 					chosen++;
 				}
 
@@ -340,6 +355,8 @@ jQuery( ( $ ) => {
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
+				trackPaymentRequestButtonClick( 'product' );
+
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( wcpayPaymentRequestParams.login_confirmation ) {
 					evt.preventDefault();
@@ -366,7 +383,7 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				if ( 0 < paymentRequestError.length ) {
+				if ( paymentRequestError.length > 0 ) {
 					evt.preventDefault();
 					window.alert( paymentRequestError );
 					return;
@@ -380,14 +397,37 @@ jQuery( ( $ ) => {
 
 				$.when( wcpayPaymentRequest.getSelectedProductData() )
 					.then( ( response ) => {
-						$.when(
-							paymentRequest.update( {
-								total: response.total,
-								displayItems: response.displayItems,
-							} )
-						).then( () => {
+						// If a variation doesn't need shipping, re-init the `wcpayPaymentRequest` with response params.
+						if (
+							wcpayPaymentRequestParams.product.needs_shipping !==
+							response.needs_shipping
+						) {
+							wcpayPaymentRequestParams.product.needs_shipping =
+								response.needs_shipping;
+							wcpayPaymentRequestParams.product.total =
+								response.total;
+							wcpayPaymentRequestParams.product.displayItems =
+								response.displayItems;
+							wcpayPaymentRequest.init();
 							wcpayPaymentRequest.unblockPaymentRequestButton();
-						} );
+						} else {
+							const responseTotal = response.total;
+
+							// If a variation `needs_shipping` is `false`, the `pending` param needs to be set to `false`.
+							// Because the additional shipping address call is not executed to set the pending to `false`.
+							if ( response.needs_shipping === false ) {
+								responseTotal.pending = false;
+							}
+
+							$.when(
+								paymentRequest.update( {
+									total: responseTotal,
+									displayItems: response.displayItems,
+								} )
+							).then( () => {
+								wcpayPaymentRequest.unblockPaymentRequestButton();
+							} );
+						}
 					} )
 					.catch( () => {
 						wcpayPaymentRequest.hide();
@@ -435,6 +475,9 @@ jQuery( ( $ ) => {
 					evt.preventDefault();
 					displayLoginConfirmation( paymentRequestType );
 				}
+				trackPaymentRequestButtonClick(
+					wcpayPaymentRequestParams.button_context
+				);
 			} );
 		},
 

@@ -28,6 +28,7 @@ jest.mock( '../../../data', () => ( {
 	useWooPayLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
+	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -50,6 +51,14 @@ jest.mock( 'payment-request/utils', () => ( {
 		accountId: '0001',
 		locale: 'en',
 	} ),
+} ) );
+
+jest.mock( '@woocommerce/components', () => ( {
+	Link: jest
+		.fn()
+		.mockImplementation( ( { href, children } ) => (
+			<a href={ href }>{ children }</a>
+		) ),
 } ) );
 
 describe( 'ExpressCheckoutSettings', () => {

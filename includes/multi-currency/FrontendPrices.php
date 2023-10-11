@@ -38,33 +38,40 @@ class FrontendPrices {
 	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
 		$this->multi_currency = $multi_currency;
 		$this->compatibility  = $compatibility;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Simple product price hooks.
-			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price_string' ], 900, 2 );
-			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price_string' ], 900, 2 );
-			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price_string' ], 900, 2 );
+			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price_string' ], 99, 2 );
+			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price_string' ], 99, 2 );
+			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price_string' ], 99, 2 );
 
 			// Variation price hooks.
-			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price_string' ], 900, 2 );
-			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price_string' ], 900, 2 );
-			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price_string' ], 900, 2 );
+			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price_string' ], 99, 2 );
+			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price_string' ], 99, 2 );
+			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price_string' ], 99, 2 );
 
 			// Variation price range hooks.
-			add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 900 );
-			add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 900 );
+			add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 99 );
+			add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 99 );
 
 			// Shipping methods hooks.
-			add_action( 'init', [ $this, 'register_free_shipping_filters' ], 900 );
-			add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'convert_shipping_method_rate_cost' ], 900 );
+			add_action( 'init', [ $this, 'register_free_shipping_filters' ], 99 );
+			add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'convert_shipping_method_rate_cost' ], 99 );
 
 			// Coupon hooks.
-			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 900, 2 );
-			add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 900 );
-			add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 900 );
+			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 99, 2 );
+			add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 99 );
+			add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 99 );
 
 			// Order hooks.
-			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 900, 2 );
+			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 99, 2 );
 		}
 	}
 
@@ -215,7 +222,7 @@ class FrontendPrices {
 			foreach ( $shipping_zone['shipping_methods'] as $shipping_method ) {
 				if ( 'free_shipping' === $shipping_method->id ) {
 					$option_name = 'option_woocommerce_' . trim( $shipping_method->id ) . '_' . (int) $shipping_method->instance_id . '_settings';
-					add_filter( $option_name, [ $this, 'get_free_shipping_min_amount' ], 900 );
+					add_filter( $option_name, [ $this, 'get_free_shipping_min_amount' ], 99 );
 				}
 			}
 		}

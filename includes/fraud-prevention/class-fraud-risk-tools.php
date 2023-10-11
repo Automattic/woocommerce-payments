@@ -48,6 +48,7 @@ class Fraud_Risk_Tools {
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
 			self::$instance = new self( WC_Payments::get_account_service() );
+			self::$instance->init_hooks();
 		}
 		return self::$instance;
 	}
@@ -66,6 +67,14 @@ class Fraud_Risk_Tools {
 	 */
 	public function __construct( WC_Payments_Account $payments_account ) {
 		$this->payments_account = $payments_account;
+	}
+
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_action( 'admin_menu', [ $this, 'init_advanced_settings_page' ] );
 		}
@@ -82,7 +91,7 @@ class Fraud_Risk_Tools {
 			return;
 		}
 
-		if ( ! $this->payments_account->is_stripe_connected() ) {
+		if ( ! $this->payments_account->is_stripe_account_valid() ) {
 			return;
 		}
 

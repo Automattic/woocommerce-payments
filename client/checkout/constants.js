@@ -10,6 +10,7 @@ export const PAYMENT_METHOD_NAME_SOFORT = 'woocommerce_payments_sofort';
 export const PAYMENT_METHOD_NAME_AFFIRM = 'woocommerce_payments_affirm';
 export const PAYMENT_METHOD_NAME_AFTERPAY =
 	'woocommerce_payments_afterpay_clearpay';
+export const PAYMENT_METHOD_NAME_KLARNA = 'woocommerce_payments_klarna';
 export const PAYMENT_METHOD_NAME_UPE = 'woocommerce_payments_upe';
 export const PAYMENT_METHOD_NAME_PAYMENT_REQUEST =
 	'woocommerce_payments_payment_request';
@@ -30,5 +31,47 @@ export function getPaymentMethodsConstants() {
 		PAYMENT_METHOD_NAME_AFFIRM,
 		PAYMENT_METHOD_NAME_AFTERPAY,
 		PAYMENT_METHOD_NAME_CARD,
+		PAYMENT_METHOD_NAME_KLARNA,
 	];
 }
+
+export const BLOCKS_SHIPPING_ADDRESS_FIELDS = {
+	line1: 'shipping-address_1',
+	line2: 'shipping-address_2',
+	city: 'shipping-city',
+	state: 'components-form-token-input-1',
+	postal_code: 'shipping-postcode',
+	country: 'components-form-token-input-0',
+	first_name: 'shipping-first_name',
+	last_name: 'shipping-last_name',
+};
+export const BLOCKS_BILLING_ADDRESS_FIELDS = {
+	line1: 'billing-address_1',
+	line2: 'billing-address_2',
+	city: 'billing-city',
+	state: 'components-form-token-input-3',
+	postal_code: 'billing-postcode',
+	country: 'components-form-token-input-2',
+	first_name: 'billing-first_name',
+	last_name: 'billing-last_name',
+};
+export const SHORTCODE_SHIPPING_ADDRESS_FIELDS = {
+	line1: 'shipping_address_1',
+	line2: 'shipping_address_2',
+	city: 'shipping_city',
+	state: 'shipping_state',
+	postal_code: 'shipping_postcode',
+	country: 'shipping_country',
+	first_name: 'shipping_first_name',
+	last_name: 'shipping_last_name',
+};
+export const SHORTCODE_BILLING_ADDRESS_FIELDS = {
+	line1: 'billing_address_1',
+	line2: 'billing_address_2',
+	city: 'billing_city',
+	state: 'billing_state',
+	postal_code: 'billing_postcode',
+	country: 'billing_country',
+	first_name: 'billing_first_name',
+	last_name: 'billing_last_name',
+};

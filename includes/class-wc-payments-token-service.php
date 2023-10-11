@@ -1,6 +1,6 @@
 <?php
 /**
- * WC_Payments_Payment_Tokens class
+ * WC_Payments_Token_Service class
  *
  * @package WooCommerce\Payments
  */
@@ -21,7 +21,7 @@ class WC_Payments_Token_Service {
 	const REUSABLE_GATEWAYS_BY_PAYMENT_METHOD = [
 		Payment_Method::CARD => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 		Payment_Method::SEPA => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
-		Payment_Method::LINK => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK,
+		Payment_Method::LINK => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 	];
 
 	/**
@@ -52,7 +52,9 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
+		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_link' ], 10, 2 );
 		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_sepa_label' ] );
+		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_stripe_link_label' ] );
 	}
 
 	/**
@@ -69,7 +71,7 @@ class WC_Payments_Token_Service {
 		switch ( $payment_method['type'] ) {
 			case Payment_Method::SEPA:
 				$token      = new WC_Payment_Token_WCPay_SEPA();
-				$gateway_id = WC_Payments_Features::is_upe_split_enabled() ?
+				$gateway_id = WC_Payments_Features::is_upe_deferred_intent_enabled() ?
 					WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA :
 					CC_Payment_Gateway::GATEWAY_ID;
 				$token->set_gateway_id( $gateway_id );
@@ -77,9 +79,7 @@ class WC_Payments_Token_Service {
 				break;
 			case Payment_Method::LINK:
 				$token      = new WC_Payment_Token_WCPay_Link();
-				$gateway_id = WC_Payments_Features::is_upe_split_enabled() ?
-					WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK :
-					CC_Payment_Gateway::GATEWAY_ID;
+				$gateway_id = CC_Payment_Gateway::GATEWAY_ID;
 				$token->set_gateway_id( $gateway_id );
 				$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
 				break;
@@ -119,7 +119,7 @@ class WC_Payments_Token_Service {
 	 * @return bool                       True, if payment method type matches gateway, false if otherwise.
 	 */
 	public function is_valid_payment_method_type_for_gateway( $payment_method_type, $gateway_id ) {
-		if ( WC_Payments_Features::is_upe_split_enabled() ) {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			return self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD[ $payment_method_type ] === $gateway_id;
 		} else {
 			return WC_Payments::get_gateway()->id === $gateway_id;
@@ -265,6 +265,21 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
+	 * Controls the output for Stripe Link on the My account page.
+	 *
+	 * @param  array                                        $item          Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_Link $payment_token The payment token associated with this method entry.
+	 * @return array                                        Filtered item
+	 */
+	public function get_account_saved_payment_methods_list_item_link( $item, $payment_token ) {
+		if ( WC_Payment_Token_WCPay_Link::TYPE === strtolower( $payment_token->get_type() ) ) {
+			$item['method']['last4'] = $payment_token->get_redacted_email();
+			$item['method']['brand'] = esc_html__( 'Stripe Link email', 'woocommerce-payments' );
+		}
+		return $item;
+	}
+
+	/**
 	 * Normalizes the SEPA IBAN label on My Account page.
 	 *
 	 * @param string $label Token label.
@@ -273,6 +288,20 @@ class WC_Payments_Token_Service {
 	public function normalize_sepa_label( $label ) {
 		if ( 'sepa iban' === strtolower( $label ) ) {
 			return 'SEPA IBAN';
+		}
+
+		return $label;
+	}
+
+	/**
+	 * Normalizes the Stripe Link label on My Account page.
+	 *
+	 * @param string $label Token label.
+	 * @return string $label Capitalized SEPA IBAN label.
+	 */
+	public function normalize_stripe_link_label( $label ) {
+		if ( 'stripe link email' === strtolower( $label ) ) {
+			return 'Stripe Link email';
 		}
 
 		return $label;

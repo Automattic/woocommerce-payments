@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WCPay Live Branches
 // @namespace    https://wordpress.com/
-// @version      1.1
+// @version      1.2
 // @description  Adds links to PRs pointing to Jurassic Ninja sites for live-testing a changeset
 // @grant        GM_xmlhttpRequest
 // @connect      jurassic.ninja
@@ -186,6 +186,7 @@
 								{
 									label: 'WooCommerce Payments Dev Tools',
 									name: 'woocommerce-payments-dev-tools',
+									checked: true,
 								},
 								{
 									label: 'WooCommerce Smooth Generator',

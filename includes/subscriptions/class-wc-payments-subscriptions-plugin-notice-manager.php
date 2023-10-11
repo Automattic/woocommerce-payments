@@ -41,7 +41,7 @@ class WC_Payments_Subscriptions_Plugin_Notice_Manager {
 	 * Enqueues the admin scripts needed on the plugins screen.
 	 */
 	public function enqueue_scripts_and_styles() {
-		if ( ! $this->is_admin_plugins_screen() ) {
+		if ( ! $this->is_admin_plugins_screen() || ! WC_Payments_Subscription_Service::store_has_active_wcpay_subscriptions() ) {
 			return;
 		}
 
@@ -58,28 +58,29 @@ class WC_Payments_Subscriptions_Plugin_Notice_Manager {
 
 		wp_enqueue_script( 'wcpay-subscriptions-plugin' );
 
-		// Enqueue script data - does this store have active WCPay subscriptions?
-		$script_data = [
-			'store_has_active_wcpay_subscriptions' => WC_Payments_Subscription_Service::store_has_active_wcpay_subscriptions(),
-		];
-		wp_localize_script( 'wcpay-subscriptions-plugin', 'wcpay_subscriptions_plugin_screen_data', $script_data );
-
-		wp_register_style(
+		WC_Payments_Utils::enqueue_style(
 			'wcpay-subscriptions-plugin-styles',
 			plugins_url( 'includes/subscriptions/assets/css/plugin-page.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WCPAY_VERSION_NUMBER
+			WCPAY_VERSION_NUMBER,
+			'all'
 		);
-
-		wp_enqueue_style( 'wcpay-subscriptions-plugin-styles' );
 	}
 
 	/**
 	 * Enqueues templates for plugin deactivation warnings on the admin plugin screen.
 	 */
 	public function output_notice_template() {
-		if ( $this->is_admin_plugins_screen() ) {
-			wc_get_template( 'html-subscriptions-plugin-notice.php', [], '', dirname( __DIR__ ) . '/subscriptions/templates/' );
+		if ( ! $this->is_admin_plugins_screen() ) {
+			return;
+		}
+
+		wc_get_template( 'html-subscriptions-plugin-notice.php', [], '', dirname( __DIR__ ) . '/subscriptions/templates/' );
+
+		// Load a slightly different notice for folks still using the legacy WCPay Subscriptions functionality.
+		if ( WC_Payments::get_gateway()->is_subscriptions_plugin_active() ) {
+			wc_get_template( 'html-woo-payments-deactivate-warning.php', [], '', dirname( __DIR__ ) . '/subscriptions/templates/' );
+		} else {
 			wc_get_template( 'html-wcpay-deactivate-warning.php', [], '', dirname( __DIR__ ) . '/subscriptions/templates/' );
 		}
 	}

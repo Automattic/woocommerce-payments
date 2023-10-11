@@ -76,7 +76,6 @@
 				"definedTags": [ "format" ]
 			}
 		],
-		"yoda": [ "error", "always" ],
 		/* partially disable rules to get @woocommerce/eslint-plugin integration done */
 		"jsdoc/no-undefined-types": "off",
 		"jsdoc/require-param": "off",
@@ -138,7 +137,10 @@
 				"wpcalypso/jsx-classname-namespace": "off",
 				"react/react-in-jsx-scope": "error",
 				"no-shadow": "off",
-				"@typescript-eslint/no-shadow": "error"
+				"@typescript-eslint/no-shadow": "error",
+				"jsdoc/require-param-type": 0,
+				"jsdoc/require-returns-type": 0,
+				"valid-jsdoc": "off"
 			}
 		}
 	]

@@ -7,12 +7,14 @@
 	<arg name="extensions" value="php"/>
 
     <!-- Exclude paths -->
+	<exclude-pattern>./dev/*</exclude-pattern>
 	<exclude-pattern>./dist/*</exclude-pattern>
 	<exclude-pattern>./release/*</exclude-pattern>
 	<exclude-pattern>./docker/*</exclude-pattern>
 	<exclude-pattern>./node_modules/*</exclude-pattern>
 	<exclude-pattern>./vendor/*</exclude-pattern>
 	<exclude-pattern>./vendor-dist/*</exclude-pattern>
+	<exclude-pattern>./lib/*</exclude-pattern>
 
 	<!-- Configs -->
 	<config name="minimum_supported_wp_version" value="6.0" />
@@ -50,6 +52,7 @@
 	<rule ref="WordPress.Files.FileName">
 		<exclude-pattern>tests/*</exclude-pattern>
 		<exclude-pattern>includes/multi-currency</exclude-pattern>
+		<exclude-pattern>src</exclude-pattern>
 	</rule>
 
 	<rule ref="Generic.Commenting">
@@ -68,4 +71,7 @@
 	</rule>
 
 	<rule ref="PEAR.WhiteSpace.ObjectOperatorIndent" />
+
+	<!-- Custom WCPay rules -->
+	<rule ref="./dev/phpcs/ruleset.xml"/>
 </ruleset>

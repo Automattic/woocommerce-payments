@@ -7,7 +7,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import React, { useEffect, useState } from 'react';
 import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import classNames from 'classnames';
-import { Icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -15,7 +14,7 @@ import { Icon } from '@wordpress/icons';
 import { useManualCapture } from 'wcpay/data';
 import { HoverTooltip } from 'components/tooltip';
 import './style.scss';
-import Warning from 'components/icons/warning';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 const LoadableCheckboxControl = ( {
 	label,
@@ -24,8 +23,11 @@ const LoadableCheckboxControl = ( {
 	onChange,
 	hideLabel = false,
 	isAllowingManualCapture = false,
+	isSetupRequired = false,
+	setupTooltip = '',
 	delayMsOnCheck = 0,
 	delayMsOnUncheck = 0,
+	needsAttention = false,
 } ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const [ checkedState, setCheckedState ] = useState( checked );
@@ -33,7 +35,7 @@ const LoadableCheckboxControl = ( {
 
 	const handleOnChange = ( status ) => {
 		const timeout = status ? delayMsOnCheck : delayMsOnUncheck;
-		if ( 0 < timeout ) {
+		if ( timeout > 0 ) {
 			setLoading( true );
 			setTimeout( () => {
 				onChange( status );
@@ -85,36 +87,44 @@ const LoadableCheckboxControl = ( {
 					</svg>
 				</div>
 			) }
-			{ isManualCaptureEnabled && ! isAllowingManualCapture ? (
-				<HoverTooltip
-					content={ sprintf(
-						/* translators: %s: a payment method name. */
-						__(
-							'%s is not available to your customers when the "manual capture" setting is enabled.',
-							'woocommerce-payments'
-						),
-						label
-					) }
+			{ ( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
+			isSetupRequired ||
+			needsAttention ? (
+				<div
+					className="loadable-checkbox__icon"
+					style={ { marginRight: '16px' } }
 				>
-					<div className="loadable-checkbox__icon">
-						<Icon icon={ Warning } />
-						<div
-							className="loadable-checkbox__icon-warning"
-							data-testid="loadable-checkbox-icon-warning"
-						>
-							<VisuallyHidden>
-								{ sprintf(
-									/* translators: %s: a payment method name. */
-									__(
-										'%s cannot be enabled at checkout. Click to expand.',
-										'woocommerce-payments'
-									),
-									label
-								) }
-							</VisuallyHidden>
+					<HoverTooltip
+						content={ setupTooltip }
+						className="wcpay-tooltip__tooltip--dark"
+					>
+						<div>
+							<NoticeOutlineIcon
+								style={ {
+									color: '#F0B849',
+									fill: 'currentColor',
+									marginBottom: '-5px',
+								} }
+								size={ 20 }
+							/>
+							<div
+								className="loadable-checkbox__icon-warning"
+								data-testid="loadable-checkbox-icon-warning"
+							>
+								<VisuallyHidden>
+									{ sprintf(
+										/* translators: %s: a payment method name. */
+										__(
+											'%s cannot be enabled at checkout. Click to expand.',
+											'woocommerce-payments'
+										),
+										label
+									) }
+								</VisuallyHidden>
+							</div>
 						</div>
-					</div>
-				</HoverTooltip>
+					</HoverTooltip>
+				</div>
 			) : (
 				<CheckboxControl
 					label={ label }

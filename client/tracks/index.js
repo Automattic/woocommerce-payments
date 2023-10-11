@@ -20,7 +20,10 @@ function isEnabled() {
  * @param {string}  eventName        Name of the event.
  * @param {Object} [eventProperties] Event properties (optional).
  */
-function recordEvent( eventName, eventProperties ) {
+function recordEvent( eventName, eventProperties = {} ) {
+	// Add `is_test_mode` property to every event.
+	eventProperties.is_test_mode = window.wcpaySettings?.testMode;
+
 	// Wc-admin track script is enqueued after ours, wrap in domReady
 	// to make sure we're not too early.
 	domReady( () => {
@@ -35,8 +38,9 @@ function recordEvent( eventName, eventProperties ) {
  *
  * @param {string}  eventName         Name of the event.
  * @param {Object}  [eventProperties] Event properties (optional).
+ * @param {boolean} isLegacy Event properties (optional).
  */
-function recordUserEvent( eventName, eventProperties ) {
+function recordUserEvent( eventName, eventProperties, isLegacy = false ) {
 	const nonce =
 		getConfig( 'platformTrackerNonce' ) ??
 		getPaymentRequestData( 'nonce' )?.platform_tracker;
@@ -48,6 +52,7 @@ function recordUserEvent( eventName, eventProperties ) {
 	body.append( 'action', 'platform_tracks' );
 	body.append( 'tracksEventName', eventName );
 	body.append( 'tracksEventProp', JSON.stringify( eventProperties ) );
+	body.append( 'isLegacy', isLegacy );
 	fetch( ajaxUrl, {
 		method: 'post',
 		body,
@@ -55,6 +60,7 @@ function recordUserEvent( eventName, eventProperties ) {
 }
 
 const events = {
+	APPLEPAY_BUTTON_CLICK: 'applepay_button_click',
 	CONNECT_ACCOUNT_CLICKED: 'wcpay_connect_account_clicked',
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
@@ -63,6 +69,15 @@ const events = {
 	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
 	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download',
 	DISPUTES_ROW_ACTION_CLICK: 'wcpay_disputes_row_action_click',
+	DISPUTE_CHALLENGE_CLICKED: 'wcpay_dispute_challenge_clicked',
+	DISPUTE_ACCEPT_CLICK: 'wcpay_dispute_accept_click',
+	DISPUTE_ACCEPT_MODAL_VIEW: 'wcpay_dispute_accept_modal_view',
+	DISPUTE_INQUIRY_REFUND_CLICK: 'wcpay_dispute_inquiry_refund_click',
+	DISPUTE_INQUIRY_REFUND_MODAL_VIEW:
+		'wcpay_dispute_inquiry_refund_modal_view',
+	GOOGLEPAY_BUTTON_CLICK: 'gpay_button_click',
+	ORDER_DISPUTE_NOTICE_BUTTON_CLICK:
+		'wcpay_order_dispute_notice_action_click',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
 		'wcpay_overview_balances_currency_tab_click',
 	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
@@ -70,6 +85,8 @@ const events = {
 	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:
 		'wcpay_overview_deposits_change_schedule_click',
 	OVERVIEW_TASK_CLICK: 'wcpay_overview_task_click',
+	PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED:
+		'wcpay_view_submitted_evidence_clicked',
 	SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK:
 		'wcpay_settings_deposits_manage_in_stripe_click',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
@@ -89,14 +106,22 @@ const events = {
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
 	TRANSACTIONS_DOWNLOAD_CSV_CLICK: 'wcpay_transactions_download_csv_click',
+	WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
 	WOOPAY_OFFERED: 'woopay_offered',
 	WOOPAY_OTP_START: 'woopay_otp_prompt_start',
 	WOOPAY_OTP_COMPLETE: 'woopay_otp_prompt_complete',
 	WOOPAY_OTP_FAILED: 'woopay_otp_prompt_failed',
-	WOOPAY_AUTO_REDIRECT: 'woopay_auto_redirect',
+	WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
 	WOOPAY_SKIPPED: 'woopay_skipped',
-	WOOPAY_EXPRESS_BUTTON_OFFERED: 'woopay_express_button_offered',
-	WOOPAY_EXPRESS_BUTTON_CLICKED: 'woopay_express_button_clicked',
+	WOOPAY_BUTTON_LOAD: 'woopay_button_load',
+	WOOPAY_BUTTON_CLICK: 'woopay_button_click',
+	WOOPAY_SAVE_MY_INFO_CLICK: 'checkout_save_my_info_click',
+	WOOPAY_SAVE_MY_INFO_TOS_CLICK: 'checkout_save_my_info_tos_click',
+	WOOPAY_SAVE_MY_INFO_PRIVACY_CLICK:
+		'checkout_save_my_info_privacy_policy_click',
+	WOOPAY_SAVE_MY_INFO_TOOLTIP_HOVER: 'checkout_save_my_info_tooltip_hover',
+	WOOPAY_SAVE_MY_INFO_TOOLTIP_LEARN_MORE_CLICK:
+		'checkout_save_my_info_tooltip_learn_more_click',
 	// Onboarding flow.
 	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
 	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',

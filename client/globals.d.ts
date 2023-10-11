@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { MccsDisplayTreeItem, Country } from 'onboarding/types';
+import {
+	MccsDisplayTreeItem,
+	Country,
+	OnboardingFields,
+} from 'onboarding/types';
 
 declare global {
 	const wcpaySettings: {
@@ -11,8 +15,11 @@ declare global {
 			customSearch: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
+			isDisputeIssuerEvidenceEnabled: boolean;
 		};
 		fraudServices: unknown[];
+		testMode: boolean;
+		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
 		accountStatus: {
@@ -33,6 +40,7 @@ declare global {
 			};
 			depositsStatus?: string;
 			currentDeadline?: bigint;
+			detailsSubmitted?: boolean;
 			pastDue?: boolean;
 			accountLink: string;
 			hasSubmittedVatData?: boolean;
@@ -72,6 +80,12 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
+		progressiveOnboarding?: {
+			isNewFlowEnabled: boolean;
+			isEnabled: boolean;
+			isComplete: boolean;
+		};
+		enabledPaymentMethods: string[];
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
@@ -79,6 +93,10 @@ declare global {
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
+		};
+		onboardingFlowState?: {
+			current_step: string;
+			data: OnboardingFields;
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
@@ -89,7 +107,14 @@ declare global {
 			id: string;
 			description: string;
 			tc_url: string;
+			task_header_content?: string;
+			task_badge?: string;
 		};
+		isWooPayStoreCountryAvailable: boolean;
+		isSubscriptionsPluginActive: boolean;
+		isStripeBillingEligible: boolean;
+		capabilityRequestNotices: Record< string, boolean >;
+		storeName: string;
 	};
 
 	const wcTracks: any;

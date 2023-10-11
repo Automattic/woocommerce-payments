@@ -14,6 +14,7 @@ import { useState } from '@wordpress/element';
 import './style.scss';
 import InstantDepositModal from './modal';
 import { useInstantDeposit } from 'wcpay/data';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 
 const isButtonDisabled = ( instantBalance: AccountOverview.InstantBalance ) => {
 	let buttonDisabled = false;

@@ -7,8 +7,7 @@
 
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Constants\Intent_Status;
 use WCPay\Fraud_Prevention\Models\Rule;
 
 /**
@@ -168,7 +167,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'mark_complete_no_fraud_outcome_pmtype_card' => [
 				'order_status'            => false,
 				'intent_args'             => [
-					'payment_method_types' => [ 'card' ],
+					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_note_1'         => 'Pending payment to Processing',
 				'expected_fraud_outcome'  => false,
@@ -177,10 +176,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'mark_complete_fraud_outcome_allow'          => [
 				'order_status'            => false,
 				'intent_args'             => [
-					'metadata'             => [
+					'metadata'               => [
 						'fraud_outcome' => Rule::FRAUD_OUTCOME_ALLOW,
 					],
-					'payment_method_types' => [ 'card' ],
+					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_note_1'         => 'Pending payment to Processing',
 				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_ALLOW,
@@ -189,10 +188,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'mark_complete_fraud_outcome_review'         => [
 				'order_status'            => Order_Status::ON_HOLD,
 				'intent_args'             => [
-					'metadata'             => [
+					'metadata'               => [
 						'fraud_outcome' => Rule::FRAUD_OUTCOME_ALLOW,
 					],
-					'payment_method_types' => [ 'card' ],
+					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_note_1'         => 'On hold to Processing',
 				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_ALLOW,
@@ -210,7 +209,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_capture_completed( $intent_args, $order_fraud_outcome_meta, $expected_fraud_outcome, $expected_fraud_meta_box ) {
 		// Arrange: Create intention with proper outcome status, update order status to On Hold.
 		$intent = WC_Helper_Intention::create_intention( $intent_args );
-		$this->order_service->set_intention_status_for_order( $this->order, Payment_Intent_Status::REQUIRES_CAPTURE );
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
 		$this->order->set_status( Order_Status::ON_HOLD );
 		$this->order->save();
 		if ( $order_fraud_outcome_meta ) {
@@ -319,21 +318,21 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		return [
 			'mark_authorized_no_fraud_outcome_intent_status_requires_capture' => [
 				'intent_args'             => [
-					'status' => Payment_Intent_Status::REQUIRES_CAPTURE,
+					'status' => Intent_Status::REQUIRES_CAPTURE,
 				],
 				'expected_fraud_outcome'  => false,
 				'expected_fraud_meta_box' => false,
 			],
 			'mark_authorized_no_fraud_outcome_intent_status_processing' => [
 				'intent_args'             => [
-					'status' => Payment_Intent_Status::PROCESSING,
+					'status' => Intent_Status::PROCESSING,
 				],
 				'expected_fraud_outcome'  => false,
 				'expected_fraud_meta_box' => false,
 			],
 			'mark_authorized_fraud_outcome_allow' => [
 				'intent_args'             => [
-					'status'   => Payment_Intent_Status::REQUIRES_CAPTURE,
+					'status'   => Intent_Status::REQUIRES_CAPTURE,
 					'metadata' => [
 						'fraud_outcome' => Rule::FRAUD_OUTCOME_ALLOW,
 					],
@@ -349,7 +348,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_authorized_exits_on_existing_order_status_on_hold() {
 		// Arrange: Create intention, set order status, and get the expected notes.
-		$intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_CAPTURE ] );
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_CAPTURE ] );
 		$this->order->set_status( Order_Status::ON_HOLD );
 		$this->order->save();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -407,7 +406,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		return [
 			'mark_held_for_review_no_fraud_outcome_intent_status_requires_capture' => [
 				'intent_args' => [
-					'status'   => Payment_Intent_Status::REQUIRES_CAPTURE,
+					'status'   => Intent_Status::REQUIRES_CAPTURE,
 					'metadata' => [
 						'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW,
 					],
@@ -415,7 +414,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			],
 			'mark_held_for_review_no_fraud_outcome_intent_status_processing' => [
 				'intent_args' => [
-					'status'   => Payment_Intent_Status::PROCESSING,
+					'status'   => Intent_Status::PROCESSING,
 					'metadata' => [
 						'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW,
 					],
@@ -465,21 +464,21 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		return [
 			'mark_payment_started_intent_status_requires_action' => [
 				'intent_args'             => [
-					'status'               => Payment_Intent_Status::REQUIRES_ACTION,
-					'payment_method_types' => [ 'card' ],
+					'status'                 => Intent_Status::REQUIRES_ACTION,
+					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::PAYMENT_STARTED,
 			],
 			'mark_payment_started_intent_status_requires_payment_method' => [
 				'intent_args'             => [
-					'status'               => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
-					'payment_method_types' => [ 'card' ],
+					'status'                 => Intent_Status::REQUIRES_PAYMENT_METHOD,
+					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::PAYMENT_STARTED,
 			],
 			'mark_payment_started_intent_status_requires_action_not_card' => [
 				'intent_args'             => [
-					'status'               => Payment_Intent_Status::REQUIRES_ACTION,
+					'status'               => Intent_Status::REQUIRES_ACTION,
 					'payment_method_types' => [ 'bancontact' ],
 				],
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::NOT_CARD,
@@ -493,7 +492,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_started_exits_on_existing_order_status_not_pending() {
 		// Arrange: Create intention with provided args, update order status.
-		$intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_ACTION ] );
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
 		$this->order->set_status( Order_Status::ON_HOLD );
 		$this->order->save();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -525,14 +524,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_started_does_not_add_fraud_meta_box_type_if_fraud_settings_disabled() {
 		// Arrange: Create intention with provided args, turn off fraud settings.
-		$intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_ACTION ] );
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
 		update_option( 'wcpay_fraud_protection_settings_active', 0 );
 
 		// Act: Attempt to mark the payment started.
 		$this->order_service->update_order_status_from_intent( $this->order, $intent );
 
 		// Assert: Check to make sure the intent_status meta was not set.
-		$this->assertEquals( Payment_Intent_Status::REQUIRES_ACTION, $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertEquals( Intent_Status::REQUIRES_ACTION, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Confirm that the fraud outcome status was set and the fraud meta box type was not set.
 		$this->assertEquals( false, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
@@ -563,7 +562,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_failed() {
 		// Arrange: Create the intent, get the charge, and set additional failed message.
-		$intent  = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_ACTION ] );
+		$intent  = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
 		$charge  = $intent->get_charge();
 		$message = 'This is the test failed message.';
 
@@ -571,7 +570,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), $charge->get_id(), $message );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( Payment_Intent_Status::REQUIRES_ACTION, $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertEquals( Intent_Status::REQUIRES_ACTION, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the order status was updated to failed status.
 		$this->assertTrue( $this->order->has_status( Order_Status::FAILED ) );
@@ -597,7 +596,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_failed_exits_on_existing_order_status_failed() {
 		// Arrange: Create the intent, get the charge, set additional failed message, and get expected notes.
-		$intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_ACTION ] );
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
 		$this->order->set_status( Order_Status::FAILED );
 		$this->order->save();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -620,7 +619,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_failed_with_provider( $fraud_outcome, $expected_fraud_outcome, $expected_fraud_meta_box ) {
 		// Arrange: Create the intent and get the charge. Set the fraud outcome status.
-		$intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_ACTION ] );
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
 		$charge = $intent->get_charge();
 		if ( $fraud_outcome ) {
 			$this->order_service->set_fraud_outcome_status_for_order( $this->order, $fraud_outcome );
@@ -630,7 +629,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_capture_failed( $this->order, $intent->get_id(), $intent->get_status(), $charge->get_id() );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( Payment_Intent_Status::REQUIRES_ACTION, $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertEquals( Intent_Status::REQUIRES_ACTION, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Confirm that the fraud outcome status has not been changed, and that the fraud meta box type meta was set correctly.
 		$this->assertEquals( $expected_fraud_outcome, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
@@ -696,19 +695,19 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_expired_with_provider( $fraud_outcome, $expected_fraud_outcome, $expected_fraud_meta_box ) {
 		// Arrange: Create the intent, get the proper order status variations, and get the charge. Set the fraud outcome status.
-		$intent            = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ); // Stripe uses single 'l'.
-		$order_status      = Order_Status::CANCELLED; // WCPay uses double 'l'.
-		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
+		$intent            = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] );
+		$order_status      = Order_Status::FAILED;
+		$wc_order_statuses = wc_get_order_statuses();
 		$charge            = $intent->get_charge();
 		if ( $fraud_outcome ) {
 			$this->order_service->set_fraud_outcome_status_for_order( $this->order, $fraud_outcome );
 		}
 
-		// Act: Attempt to mark the payment/order expired/cancelled.
+		// Act: Attempt to mark the payment/order expired/failed.
 		$this->order_service->mark_payment_capture_expired( $this->order, $intent->get_id(), $intent->get_status(), $charge->get_id() );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( Payment_Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertEquals( Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Confirm that the fraud outcome status has not been changed, and that the fraud meta box type meta was set correctly.
 		$this->assertEquals( $expected_fraud_outcome, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
@@ -719,7 +718,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[1]->content );
+		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-failed'], $notes[1]->content );
 		$this->assertStringContainsString( 'Payment authorization has <strong>expired</strong>', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
@@ -766,7 +765,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->update_order_status_from_intent( $this->order, $intent );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( Payment_Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertEquals( Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Confirm that the fraud outcome status has not been changed, and that the fraud meta box type meta was set correctly.
 		$this->assertEquals( $expected_fraud_outcome, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
@@ -793,7 +792,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		return [
 			'mark_payment_cancelled_no_fraud_outcome' => [
 				'intent_args'             => [
-					'status' => Payment_Intent_Status::CANCELED,
+					'status' => Intent_Status::CANCELED,
 				],
 				'order_fraud_outcome'     => false,
 				'expected_fraud_outcome'  => '',
@@ -801,7 +800,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			],
 			'mark_payment_cancelled_outcome_review_meta_box_blocked' => [
 				'intent_args'             => [
-					'status'   => Payment_Intent_Status::CANCELED,
+					'status'   => Intent_Status::CANCELED,
 					'metadata' => [
 						'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW,
 					],
@@ -818,10 +817,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_order_blocked_for_fraud() {
 		// Act: Attempt to mark the payment/order expired/cancelled.
-		$this->order_service->mark_order_blocked_for_fraud( $this->order, 'pi_mock', Payment_Intent_Status::CANCELED );
+		$this->order_service->mark_order_blocked_for_fraud( $this->order, 'pi_mock', Intent_Status::CANCELED );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( Payment_Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertEquals( Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Confirm that the fraud outcome status and fraud meta box type meta were not set.
 		$this->assertEquals( Rule::FRAUD_OUTCOME_BLOCK, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
@@ -839,7 +838,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_order_blocked_for_fraud( $this->order, 'pi_mock', Payment_Intent_Status::CANCELED );
+		$this->order_service->mark_order_blocked_for_fraud( $this->order, 'pi_mock', Intent_Status::CANCELED );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 1, $notes_2 );
 	}
@@ -848,15 +847,15 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests if the payment was updated to show dispute created.
 	 */
 	public function test_mark_payment_dispute_created() {
-		// Arrange: Set the dispute_id and reason, and the order status.
-		$dispute_id   = 'dp_123';
+		// Arrange: Set the charge_id and reason, and the order status.
+		$charge_id    = 'ch_123';
 		$amount       = '$123.45';
 		$reason       = 'product_not_received';
 		$deadline     = 'June 7, 2023';
 		$order_status = Order_Status::ON_HOLD;
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $amount, $reason, $deadline );
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline );
 
 		// Assert: Check that the order status was updated to on-hold status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -868,13 +867,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $amount, $notes[0]->content );
 		$this->assertStringContainsString( 'Product not received', $notes[0]->content );
 		$this->assertStringContainsString( $deadline, $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">Response due by', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">Response due by', $notes[0]->content );
 
 		// Assert: Check that order status change note was added.
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $amount, $reason, $deadline );
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
 	}
@@ -883,17 +882,17 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests to make sure mark_payment_dispute_created exits if the order is invalid.
 	 */
 	public function test_mark_payment_dispute_created_exits_if_order_invalid() {
-		// Arrange: Set the dispute_id and reason, and the order status.
-		$dispute_id = 'dp_123';
-		$amount     = '$123.45';
-		$reason     = 'product_not_received';
-		$deadline   = 'June 7, 2023';
+		// Arrange: Set the charge_id and reason, and the order status.
+		$charge_id = 'ch_123';
+		$amount    = '$123.45';
+		$reason    = 'product_not_received';
+		$deadline  = 'June 7, 2023';
 
 		$order_status   = $this->order->get_status();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_created( 'fake_order', $dispute_id, $amount, $reason, $deadline );
+		$this->order_service->mark_payment_dispute_created( 'fake_order', $charge_id, $amount, $reason, $deadline );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -907,13 +906,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests if the payment was updated to show dispute closed with a win.
 	 */
 	public function test_mark_payment_dispute_closed_with_status_won() {
-		// Arrange: Set the dispute_id and status, and the order status.
-		$dispute_id   = 'dp_123';
+		// Arrange: Set the charge_id and status, and the order status.
+		$charge_id    = 'ch_123';
 		$status       = 'won';
 		$order_status = Order_Status::COMPLETED;
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
 
 		// Assert: Check that the order status was updated to completed status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -922,10 +921,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to Completed', $notes[1]->content );
 		$this->assertStringContainsString( 'Payment dispute has been closed with status won', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
 	}
@@ -934,14 +933,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests if the payment was updated to show dispute closed with a loss and a refund.
 	 */
 	public function test_mark_payment_dispute_closed_with_status_lost() {
-		// Arrange: Set the dispute_id, dispute status, the order status, and update the order status.
-		$dispute_id   = 'dp_123';
+		// Arrange: Set the charge_id, dispute status, the order status, and update the order status.
+		$charge_id    = 'ch_123';
 		$status       = 'lost';
 		$order_status = Order_Status::ON_HOLD;
 		$this->order->update_status( $order_status ); // When a dispute is created, the order status is changed to On Hold.
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
 
 		// Assert: Check that the order status was left in on-hold status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -950,7 +949,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'On hold to Refunded', $notes[1]->content );
 		$this->assertStringContainsString( 'Payment dispute has been closed with status lost', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Check for created refund, and the amount is correct.
 		$refunds = $this->order->get_refunds();
@@ -958,7 +957,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( '-' . $this->order->get_total(), $refunds[0]->get_total() );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 3, $notes_2 );
 	}
@@ -967,14 +966,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests to make sure mark_payment_dispute_closed exits if the order is invalid.
 	 */
 	public function test_mark_payment_dispute_closed_exits_if_order_invalid() {
-		// Arrange: Set the dispute_id and reason, and the order status.
-		$dispute_id     = 'dp_123';
+		// Arrange: Set the charge_id and reason, and the order status.
+		$charge_id      = 'ch_123';
 		$status         = 'won';
 		$order_status   = $this->order->get_status();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_closed( 'fake_order', $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( 'fake_order', $charge_id, $status );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -989,7 +988,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_terminal_payment_completed() {
 		// Arrange: Create the intent and set the order status.
-		$intent       = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::SUCCEEDED ] );
+		$intent       = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] );
 		$order_status = Order_Status::COMPLETED;
 
 		// Act: Attempt to mark the payment/order complete.
@@ -1194,7 +1193,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * then an exception is thrown. This test attempt to confirm that exception gets thrown.
 	 */
 	public function test_get_order_throws_exception() {
-		$this->expectException( Order_Not_Found_Exception::class );
+		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'The requested order was not found.' );
 		$this->order_service->set_intent_id_for_order( 'fake_order', '' );
 	}

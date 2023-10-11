@@ -30,7 +30,7 @@ env:
 jobs:
   generate-matrix:
     name: "Generate the matrix for subscriptions-tests dynamically"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -42,7 +42,7 @@ jobs:
 
   # Run WCPay & subscriptions tests against specific WC versions
   wcpay-subscriptions-tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: generate-matrix
     strategy:
       fail-fast:     false
@@ -70,7 +70,7 @@ jobs:
   # Run tests against WC Checkout blocks & WC latest
   # [TODO] Unskip blocks tests after investigating constant failures.
   # blocks-tests:
-  #   runs-on: ubuntu-20.04
+  #   runs-on: ubuntu-latest
   #   name: WC - latest | blocks - shopper
 
   #   env:
@@ -93,7 +93,7 @@ jobs:
 
   # Run tests against WP Nightly & WC latest
   wp-nightly-tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast:     false

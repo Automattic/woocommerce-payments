@@ -6,14 +6,23 @@
  */
 
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
+use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Internal\Service\OrderService;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
 class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
+	/**
+	 * Original WCPay gateway.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $wcpay_gateway;
+
 	/**
 	 * System under test.
 	 *
@@ -34,6 +43,13 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	 * @var WC_Payments_Token_Service|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_token_service;
+
+	/**
+	 * Mock WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_order_service;
 
 	/**
 	 * Mock WC_Payments_API_Client.
@@ -131,6 +147,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$mock_dpps,
+					$this->createMock( WC_Payments_Localization_Service::class ),
 				]
 			)
 			->setMethods(
@@ -138,15 +155,38 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 					'get_return_url',
 					'mark_payment_complete_for_order',
 					'get_level3_data_from_order', // To avoid needing to mock the order items.
+					'get_payment_method_ids_enabled_at_checkout',
+					'get_metadata_from_order',
 				]
 			)
 			->getMock();
 
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ Payment_Method::CARD ] );
+
+		$this->wcpay_gateway = WC_Payments::get_gateway();
+		WC_Payments::set_gateway( $this->mock_wcpay_gateway );
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 		];
+
+		// Intent metadata is generated elsewhere, use empty arrays here.
+		$this->mock_wcpay_gateway->expects( $this->any() )
+			->method( 'get_metadata_from_order' )
+			->willReturn( [] );
+	}
+
+	/**
+	 * Cleanup after each test.
+	 */
+	public function tear_down() {
+		parent::tear_down();
+		WC_Payments::set_gateway( $this->wcpay_gateway );
 	}
 
 	/**
@@ -155,7 +195,6 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	public static function tear_down_after_class() {
 		WC_Subscriptions::set_wcs_order_contains_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
-
 		parent::tear_down_after_class();
 	}
 
@@ -193,15 +232,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) use ( $order ) {
-						$this->assertEquals( $metadata['payment_type'], 'single' );
-						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
-						return is_array( $metadata );
-					}
-				)
-			);
+			->with( [] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -229,15 +260,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) use ( $order ) {
-						$this->assertEquals( $metadata['payment_type'], 'recurring' );
-						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
-						return is_array( $metadata );
-					}
-				)
-			);
+			->with( [] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -262,15 +285,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) use ( $order ) {
-						$this->assertEquals( $metadata['payment_type'], 'recurring' );
-						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
-						return is_array( $metadata );
-					}
-				)
-			);
+			->with( [] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )

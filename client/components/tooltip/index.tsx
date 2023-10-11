@@ -2,7 +2,9 @@
  * External dependencies
  */
 import React, { useState, useRef } from 'react';
+import classNames from 'classnames';
 import { noop } from 'lodash';
+import { Icon } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -12,6 +14,20 @@ import TooltipBase, { TooltipBaseProps } from './tooltip-base';
 type TooltipProps = TooltipBaseProps & {
 	isVisible?: boolean;
 	onHide?: () => void;
+	/**
+	 * An icon that will be used as the tooltip button. Replaces the component children.
+	 */
+	buttonIcon?: Icon.IconType< unknown >;
+	/**
+	 * A label for the tooltip button, visible to screen readers.
+	 */
+	buttonLabel?: string;
+	/**
+	 * The size of the tooltip button.
+	 *
+	 * @default 16
+	 */
+	buttonSize?: number;
 };
 
 /**
@@ -24,6 +40,10 @@ type TooltipProps = TooltipBaseProps & {
 export const HoverTooltip: React.FC< TooltipProps > = ( {
 	isVisible,
 	onHide = noop,
+	children,
+	buttonIcon,
+	buttonLabel,
+	buttonSize = 16,
 	...props
 } ) => {
 	const [ isHovered, setIsHovered ] = useState( false );
@@ -64,7 +84,17 @@ export const HoverTooltip: React.FC< TooltipProps > = ( {
 				{ ...props }
 				onHide={ handleHide }
 				isVisible={ isVisible || isHovered || isClicked }
-			/>
+			>
+				{ buttonIcon ? (
+					<Icon
+						icon={ buttonIcon }
+						size={ buttonSize }
+						aria-label={ buttonLabel }
+					/>
+				) : (
+					children
+				) }
+			</TooltipBase>
 		</button>
 	);
 };
@@ -79,6 +109,11 @@ export const HoverTooltip: React.FC< TooltipProps > = ( {
 export const ClickTooltip: React.FC< TooltipProps > = ( {
 	isVisible,
 	onHide = noop,
+	buttonIcon,
+	buttonLabel,
+	buttonSize = 16,
+	children,
+	className,
 	...props
 } ) => {
 	const [ isClicked, setIsClicked ] = useState( false );
@@ -111,7 +146,23 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 				parentElement={ tooltipParentRef.current || undefined }
 				onHide={ handleHide }
 				isVisible={ isVisible || isClicked }
-			/>
+				className={ classNames(
+					'wcpay-tooltip--click__tooltip',
+					className
+				) }
+			>
+				{ buttonIcon ? (
+					<div
+						tabIndex={ 0 }
+						role="button"
+						aria-label={ buttonLabel }
+					>
+						<Icon icon={ buttonIcon } size={ buttonSize } />
+					</div>
+				) : (
+					children
+				) }
+			</TooltipBase>
 		</button>
 	);
 };

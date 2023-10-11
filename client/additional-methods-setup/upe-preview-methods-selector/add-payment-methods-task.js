@@ -15,6 +15,7 @@ import {
 	CardBody,
 	ExternalLink,
 	CardDivider,
+	Notice,
 } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -38,6 +39,7 @@ import CurrencyInformationForMethods from '../../components/currency-information
 import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
 import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
+import './add-payment-methods-task.scss';
 
 const usePaymentMethodsCheckboxState = () => {
 	// For UPE, the card payment method is required and always active.
@@ -123,7 +125,7 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 	return (
 		<Button
 			isBusy={ isSaving }
-			disabled={ isSaving || 1 > checkedPaymentMethods.length }
+			disabled={ isSaving || checkedPaymentMethods.length < 1 }
 			onClick={ handleContinueClick }
 			isPrimary
 		>
@@ -136,6 +138,9 @@ const AddPaymentMethodsTask = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 	const { isActive } = useContext( WizardTaskContext );
+	const isPoEnabled = wcpaySettings?.progressiveOnboarding?.isEnabled;
+	const isPoComplete = wcpaySettings?.progressiveOnboarding?.isComplete;
+	const isPoInProgress = isPoEnabled && ! isPoComplete;
 
 	// I am using internal state in this component
 	// and committing the changes on `initialEnabledPaymentMethodIds` only when the "continue" button is clicked.
@@ -190,8 +195,8 @@ const AddPaymentMethodsTask = () => {
 		if ( status ) {
 			const statusAndRequirements = getStatusAndRequirements( method );
 			if (
-				'unrequested' === statusAndRequirements.status &&
-				0 < statusAndRequirements.requirements.length
+				statusAndRequirements.status === 'unrequested' &&
+				statusAndRequirements.requirements.length > 0
 			) {
 				handleActivationModalOpen( {
 					id: method,
@@ -217,6 +222,7 @@ const AddPaymentMethodsTask = () => {
 								getStatusAndRequirements( key ).status
 						}
 						status={ getStatusAndRequirements( key ).status }
+						locked={ isPoInProgress }
 						onChange={ ( name, status ) => {
 							handleCheckClick( name, status );
 						} }
@@ -252,11 +258,38 @@ const AddPaymentMethodsTask = () => {
 						components: {
 							learnMoreLink: (
 								// eslint-disable-next-line max-len
-								<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
+								<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/" />
 							),
 						},
 					} ) }
 				</p>
+
+				{ isPoInProgress && (
+					<Notice
+						status="warning"
+						isDismissible={ false }
+						className="po__notice"
+					>
+						<span>
+							{ __(
+								'Some payment methods cannot be enabled because more information is needed about your account. ',
+								'woocommerce-payments'
+							) }
+						</span>
+						<a
+							// eslint-disable-next-line max-len
+							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled"
+							target="_blank"
+							rel="external noreferrer noopener"
+						>
+							{ __(
+								'Learn more about enabling additional payment methods.',
+								'woocommerce-payments'
+							) }
+						</a>
+					</Notice>
+				) }
+
 				<Card
 					className="add-payment-methods-task__payment-selector-wrapper"
 					size="small"
@@ -296,7 +329,7 @@ const AddPaymentMethodsTask = () => {
 						</LoadableBlock>
 					</CardBody>
 					{ wcpaySettings.isBnplAffirmAfterpayEnabled &&
-						0 < availableBuyNowPayLaterUpeMethods.length && (
+						availableBuyNowPayLaterUpeMethods.length > 0 && (
 							<>
 								<CardDivider />
 								<CardBody>

@@ -33,7 +33,7 @@ const SetupCompleteMessaging = () => {
 	// we need to check that the type of `enableUpePreviewPayload` is an object - it can also just be `true` or `undefined`
 	let addedPaymentMethodsCount = 0;
 	if (
-		'object' === typeof enableUpePreviewPayload &&
+		typeof enableUpePreviewPayload === 'object' &&
 		enableUpePreviewPayload.initialMethods
 	) {
 		const { initialMethods } = enableUpePreviewPayload;
@@ -41,7 +41,7 @@ const SetupCompleteMessaging = () => {
 	}
 
 	// can't just check for "0", some methods could have been disabled
-	if ( 0 >= addedPaymentMethodsCount ) {
+	if ( addedPaymentMethodsCount <= 0 ) {
 		return __( 'Setup complete!', 'woocommerce-payments' );
 	}
 

@@ -25,5 +25,6 @@ export const displayType = {
 
 // Mapping of transaction device type string.
 export const sourceDevice = {
+	android: __( 'Android', 'woocommerce-payments' ),
 	ios: __( 'iPhone', 'woocommerce-payments' ),
 };

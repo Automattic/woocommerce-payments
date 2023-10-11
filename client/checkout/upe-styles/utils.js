@@ -29,7 +29,7 @@ export const generateHoverColors = ( backgroundColor, color ) => {
 
 	// Darken if brightness > 50 (Storefront Button 51 ), else lighten
 	const newBackgroundColor =
-		50 < tinyBackgroundColor.getBrightness()
+		tinyBackgroundColor.getBrightness() > 50
 			? tinycolor( tinyBackgroundColor ).darken( 7 )
 			: tinycolor( tinyBackgroundColor ).lighten( 7 );
 

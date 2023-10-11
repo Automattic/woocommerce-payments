@@ -3,12 +3,14 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
+import React from 'react';
 
 export default {
 	steps: {
 		mode: {
 			heading: __(
-				'Let’s get your store ready to accept payments.',
+				'Let’s get your store ready to accept payments',
 				'woocommerce-payments'
 			),
 			subheading: __(
@@ -33,12 +35,31 @@ export default {
 				note: sprintf(
 					/* translators: %s: WooPayments */
 					__(
-						'This option will set up %s in development mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+						'This option will set up %s in development mode. You can use test data to set up, no personal information is required. When you’re ready to launch your store, switching to live payments is easy.',
 						'woocommerce-payments'
 					),
 					'WooPayments'
 				),
 			},
+			devModeNotice: interpolateComponents( {
+				mixedString: __(
+					'Dev mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+					'woocommerce-payments'
+				),
+				components: {
+					learnMoreLink: (
+						// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							href={
+								'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/dev-mode/'
+							}
+							target="_blank"
+							rel="noreferrer"
+						/>
+					),
+				},
+			} ),
 		},
 		personal: {
 			heading: __(
@@ -46,7 +67,7 @@ export default {
 				'woocommerce-payments'
 			),
 			subheading: __(
-				'The information below should reflect that of the business owner or a significant shareholder.',
+				'The information below should reflect that of the business owner or an authorized team member.',
 				'woocommerce-payments'
 			),
 			notice: __(
@@ -122,12 +143,33 @@ export default {
 	},
 	errors: {
 		generic: __( 'Please provide a response', 'woocommerce-payments' ),
+		'individual.first_name': __(
+			'Please provide a first name',
+			'woocommerce-payments'
+		),
+		'individual.last_name': __(
+			'Please provide a last name',
+			'woocommerce-payments'
+		),
 		email: __( 'Please provide a valid email', 'woocommerce-payments' ),
 		phone: __(
 			'Please provide a valid phone number',
 			'woocommerce-payments'
 		),
 		url: __( 'Please provide a valid website', 'woocommerce-payments' ),
+		business_name: __(
+			'Please provide a business name',
+			'woocommerce-payments'
+		),
+		country: __( 'Please provide a country', 'woocommerce-payments' ),
+		business_type: __(
+			'Please provide a business type',
+			'woocommerce-payments'
+		),
+		mcc: __(
+			'Please provide a type of goods or services',
+			'woocommerce-payments'
+		),
 	},
 	placeholders: {
 		country: __(
@@ -166,6 +208,10 @@ export default {
 		from_3_to_6months: __( '3 – 6 months', 'woocommerce-payments' ),
 		more_than_6months: __( '6+ months', 'woocommerce-payments' ),
 	},
+	restoredState: __(
+		'We have restored your previous session. You can pick up where you left off, or go back to a previous step to make changes. ',
+		'woocommerce-payments'
+	),
 	continue: __( 'Continue', 'woocommerce-payments' ),
 	back: __( 'Back', 'woocommerce-payments' ),
 };

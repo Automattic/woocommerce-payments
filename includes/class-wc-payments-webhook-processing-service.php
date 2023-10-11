@@ -354,7 +354,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$intent_id = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
 
 		$request = Get_Intention::create( $intent_id );
-		$intent  = $request->send( 'wcpay_get_intent_request', $order );
+		$request->set_hook_args( $order );
+		$intent = $request->send();
 
 		$intent_status = $intent->get_status();
 
@@ -487,16 +488,13 @@ class WC_Payments_Webhook_Processing_Service {
 		// Save the order after updating the meta data values.
 		$order->save();
 
-		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
-		$intent_data    = [
-			'id'                  => $intent_id,
-			'status'              => $intent_status,
-			'charge_id'           => $charge_id,
-			'fraud_outcome'       => $metadata['fraud_outcome'] ?? '',
-			'payment_method_type' => $payment_method,
-		];
-		$this->order_service->update_order_status_from_intent( $order, $intent_data );
+		// This is an incoming request from WCPay server rather than an outgoing request to WCPay server.
+		// However, the shape of the payment intent object are the same.
+		// Using this extraction method will reduce the code duplication.
+		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
+		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 
+		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		// Send the customer a card reader receipt if it's an in person payment type.
 		if ( Payment_Method::CARD_PRESENT === $payment_method || Payment_Method::INTERAC_PRESENT === $payment_method ) {
 			$merchant_settings = [
@@ -523,10 +521,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	private function process_webhook_dispute_created( $event_body ) {
-		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$reason       = $this->read_webhook_property( $event_object, 'reason' );
 		$amount_raw   = $this->read_webhook_property( $event_object, 'amount' );
@@ -554,7 +550,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by );
+		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
@@ -569,10 +565,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	private function process_webhook_dispute_closed( $event_body ) {
-		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$status       = $this->read_webhook_property( $event_object, 'status' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -587,7 +581,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_closed( $order, $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
@@ -605,7 +599,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
 
@@ -635,8 +628,8 @@ class WC_Payments_Webhook_Processing_Service {
 			__( '%1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
 			$message,
 			add_query_arg(
-				[ 'id' => $dispute_id ],
-				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
+				[ 'id' => $charge_id ],
+				admin_url( 'admin.php?page=wc-admin&path=/payments/transactions/details' )
 			)
 		);
 

@@ -246,5 +246,20 @@ describe( 'Transactions filters', () => {
 
 			expect( getQuery().source_device_is ).toEqual( 'ios' );
 		} );
+
+		test( 'should filter by is_not', () => {
+			user.selectOptions( ruleSelector, 'is_not' );
+
+			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /transaction device type$/i,
+				} ),
+				'android'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().source_device_is_not ).toEqual( 'android' );
+		} );
 	} );
 } );

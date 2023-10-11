@@ -9,8 +9,11 @@ import { isEmpty, mapValues } from 'lodash';
  * Internal dependencies
  */
 import { useStepperContext } from 'components/stepper';
-import { Item } from 'components/custom-select-control';
+import { Item as SelectItem } from 'components/custom-select-control';
+import { ListItem as GroupedSelectItem } from 'components/grouped-select-control';
 import {
+	GroupedSelectField,
+	GroupedSelectFieldProps,
 	PhoneNumberField,
 	PhoneNumberFieldProps,
 	SelectField,
@@ -23,9 +26,6 @@ import { OnboardingFields } from './types';
 import { useValidation } from './validation';
 import { trackStepCompleted } from './tracking';
 import strings from './strings';
-import GroupedSelectControl, {
-	ListItem,
-} from 'components/grouped-select-control';
 
 export const OnboardingForm: React.FC = ( { children } ) => {
 	const { errors, touched, setTouched } = useOnboardingContext();
@@ -58,27 +58,34 @@ interface OnboardingTextFieldProps extends Partial< TextFieldProps > {
 	name: keyof OnboardingFields;
 }
 
-export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
-	name,
-	...rest
-} ) => {
+export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = (
+	props
+) => {
+	const { name } = props;
 	const { data, setData, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
+	const inputRef = React.useRef< HTMLInputElement >( null );
 
 	return (
 		<TextField
+			ref={ inputRef as any }
 			label={ strings.fields[ name ] }
 			value={ data[ name ] || '' }
 			onChange={ ( value: string ) => {
 				setData( { [ name ]: value } );
-				if ( touched[ name ] ) validate( value );
+				if (
+					touched[ name ] ||
+					inputRef.current !==
+						inputRef.current?.ownerDocument.activeElement
+				)
+					validate( value );
 			} }
 			onBlur={ () => validate() }
 			onKeyDown={ ( event: React.KeyboardEvent< HTMLInputElement > ) => {
 				if ( event.key === 'Enter' ) validate();
 			} }
 			error={ error() }
-			{ ...rest }
+			{ ...props }
 		/>
 	);
 };
@@ -88,10 +95,10 @@ interface OnboardingPhoneNumberFieldProps
 	name: keyof OnboardingFields;
 }
 
-export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldProps > = ( {
-	name,
-	...rest
-} ) => {
+export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldProps > = (
+	props
+) => {
+	const { name } = props;
 	const { data, setData, temp, setTemp, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
@@ -110,7 +117,7 @@ export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldPro
 			onKeyDown={ ( event: React.KeyboardEvent< HTMLInputElement > ) => {
 				if ( event.key === 'Enter' ) validate();
 			} }
-			{ ...rest }
+			{ ...props }
 		/>
 	);
 };
@@ -121,11 +128,11 @@ interface OnboardingSelectFieldProps< ItemType >
 	onChange?: ( name: keyof OnboardingFields, item?: ItemType | null ) => void;
 }
 
-export const OnboardingSelectField = < ItemType extends Item >( {
-	name,
+export const OnboardingSelectField = < ItemType extends SelectItem >( {
 	onChange,
 	...rest
 }: OnboardingSelectFieldProps< ItemType > ): JSX.Element => {
+	const { name } = rest;
 	const { data, setData } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
@@ -154,20 +161,23 @@ export const OnboardingSelectField = < ItemType extends Item >( {
 };
 
 interface OnboardingGroupedSelectFieldProps< ItemType >
-	extends OnboardingSelectFieldProps< ItemType > {
-	searchable?: boolean;
+	extends Partial< Omit< GroupedSelectFieldProps< ItemType >, 'onChange' > > {
+	name: keyof OnboardingFields;
+	onChange?: ( name: keyof OnboardingFields, item?: ItemType | null ) => void;
 }
 
-export const OnboardingGroupedSelectField = < ListItemType extends ListItem >( {
-	name,
+export const OnboardingGroupedSelectField = <
+	ListItemType extends GroupedSelectItem
+>( {
 	onChange,
 	...rest
 }: OnboardingGroupedSelectFieldProps< ListItemType > ): JSX.Element => {
+	const { name } = rest;
 	const { data, setData } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
 	return (
-		<GroupedSelectControl
+		<GroupedSelectField
 			label={ strings.fields[ name ] }
 			value={ rest.options?.find(
 				( item ) => item.key === data[ name ]

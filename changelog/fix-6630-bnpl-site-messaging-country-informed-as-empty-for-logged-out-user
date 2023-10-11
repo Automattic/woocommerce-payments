@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Country informed as empty for logged-out user in the BNPL site messaging configuration.

@@ -17,9 +17,6 @@ Expected response is an account link object with create, expires_at, and url fie
 
 
 ## Filter
-
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_get_account_capital_link`
 - Arguments: None.
 
@@ -30,5 +27,5 @@ $request = Get_Account_Capital_Link::create();
 $request->set_type( 'capital_financing_offer' );
 $request->set_return_url( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
 $request->set_refresh_url( 'http://example.org/wp-admin/admin.php?wcpay-loan-offer' );
-$request->send( 'wcpay_get_account_capital_link' );
+$request->send();
 ```

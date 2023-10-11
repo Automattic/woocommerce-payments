@@ -40,9 +40,9 @@ export const normalizeOrderData = ( paymentData ) => {
 	);
 
 	let paymentRequestType = 'payment_request_api';
-	if ( 'applePay' === paymentData?.walletName ) {
+	if ( paymentData?.walletName === 'applePay' ) {
 		paymentRequestType = 'apple_pay';
-	} else if ( 'googlePay' === paymentData?.walletName ) {
+	} else if ( paymentData?.walletName === 'googlePay' ) {
 		paymentRequestType = 'google_pay';
 	}
 
@@ -112,9 +112,9 @@ export const normalizeShippingAddress = ( shippingAddress ) => {
 
 export const normalizePayForOrderData = ( paymentData ) => {
 	let paymentRequestType = 'payment_request_api';
-	if ( 'applePay' === paymentData?.walletName ) {
+	if ( paymentData?.walletName === 'applePay' ) {
 		paymentRequestType = 'apple_pay';
-	} else if ( 'googlePay' === paymentData?.walletName ) {
+	} else if ( paymentData?.walletName === 'googlePay' ) {
 		paymentRequestType = 'google_pay';
 	}
 

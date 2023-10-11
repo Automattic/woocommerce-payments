@@ -19,6 +19,7 @@ import {
 import classNames from 'classnames';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
  * Internal dependencies.
@@ -34,12 +35,12 @@ import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
-import { disputeAwaitingResponseStatuses } from './filters/config';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
-import { DisputesTableHeader } from 'wcpay/types/disputes';
+import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 import './style.scss';
 
@@ -143,6 +144,54 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	},
 ];
 
+/**
+ * Returns a smart date if dispute's due date is within 72 hours.
+ * Otherwise, returns a date string.
+ *
+ * @param {CachedDispute} dispute The dispute to check.
+ *
+ * @return {JSX.Element | string} If dispute is due within 72 hours, return the element that display smart date. Otherwise, a date string.
+ */
+const smartDueDate = ( dispute: CachedDispute ) => {
+	// if dispute is not awaiting response, return an empty string.
+	if ( dispute.due_by === '' || ! isAwaitingResponse( dispute.status ) ) {
+		return '';
+	}
+	// Get current time in UTC.
+	const now = moment().utc();
+	const dueBy = moment.utc( dispute.due_by );
+	const diffHours = dueBy.diff( now, 'hours', false );
+	const diffDays = dueBy.diff( now, 'days', false );
+
+	// if the dispute is past due, return an empty string.
+	if ( diffHours <= 0 ) {
+		return '';
+	}
+	if ( diffHours <= 72 ) {
+		return (
+			<span className="due-soon">
+				{ diffHours <= 24
+					? __( 'Last day today', 'woocommerce-payments' )
+					: sprintf(
+							// Translators: %s is the number of days left to respond to the dispute.
+							_n(
+								'%s day left',
+								'%s days left',
+								diffDays,
+								'woocommerce-payments'
+							),
+							diffDays
+					  ) }
+				<NoticeOutlineIcon className="due-soon-icon" />
+			</span>
+		);
+	}
+	return dateI18n(
+		'M j, Y / g:iA',
+		moment.utc( dispute.due_by ).local().toISOString()
+	);
+};
+
 export const DisputesList = (): JSX.Element => {
 	const [ isDownloading, setIsDownloading ] = useState( false );
 	const { createNotice } = useDispatch( 'core/notices' );
@@ -158,23 +207,24 @@ export const DisputesList = (): JSX.Element => {
 	const rows = disputes.map( ( dispute ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
-				href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+				href={ getDetailsURL( dispute.charge_id, 'transactions' ) }
 			>
 				{ children }
 			</ClickableCell>
 		);
 
 		const detailsLink = (
-			<DetailsLink id={ dispute.dispute_id } parentSegment="disputes" />
+			<DetailsLink
+				id={ dispute.charge_id }
+				parentSegment="transactions"
+			/>
 		);
 
 		const reasonMapping = reasons[ dispute.reason ];
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
-		const needsResponse = disputeAwaitingResponseStatuses.includes(
-			dispute.status
-		);
+		const needsResponse = isAwaitingResponse( dispute.status );
 		const data: {
 			[ key: string ]: {
 				value: number | string;
@@ -194,7 +244,10 @@ export const DisputesList = (): JSX.Element => {
 			status: {
 				value: dispute.status,
 				display: clickable(
-					<DisputeStatusChip status={ dispute.status } />
+					<DisputeStatusChip
+						status={ dispute.status }
+						dueBy={ dispute.due_by }
+					/>
 				),
 			},
 			reason: {
@@ -222,12 +275,7 @@ export const DisputesList = (): JSX.Element => {
 			},
 			dueBy: {
 				value: dispute.due_by,
-				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( dispute.due_by ).local().toISOString()
-					)
-				),
+				display: clickable( smartDueDate( dispute ) ),
 			},
 			order: {
 				value: dispute.order_number ?? '',
@@ -258,7 +306,10 @@ export const DisputesList = (): JSX.Element => {
 				display: (
 					<Button
 						variant={ needsResponse ? 'secondary' : 'tertiary' }
-						href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+						href={ getDetailsURL(
+							dispute.charge_id,
+							'transactions'
+						) }
 						onClick={ (
 							e: React.MouseEvent< HTMLAnchorElement >
 						) => {
@@ -269,7 +320,10 @@ export const DisputesList = (): JSX.Element => {
 							);
 							const history = getHistory();
 							history.push(
-								getDetailsURL( dispute.dispute_id, 'disputes' )
+								getDetailsURL(
+									dispute.charge_id,
+									'transactions'
+								)
 							);
 						} }
 					>
@@ -402,7 +456,7 @@ export const DisputesList = (): JSX.Element => {
 						),
 					},
 					{
-						// Respond By.
+						// Respond by.
 						...row[ 11 ],
 						value: dateI18n(
 							'Y-m-d / g:iA',

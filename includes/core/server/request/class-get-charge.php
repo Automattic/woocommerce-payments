@@ -16,6 +16,13 @@ use WC_Payments_API_Client;
  * Request class for getting intents.
  */
 class Get_Charge extends Request {
+
+	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_get_charge_request';
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
@@ -59,6 +66,6 @@ class Get_Charge extends Request {
 			return $response;
 		}
 
-		return WC_Payments::get_payments_api_client()->add_additional_info_to_charge( $response );
+		return $this->api_client->add_additional_info_to_charge( $response );
 	}
 }

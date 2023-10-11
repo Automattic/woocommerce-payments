@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { Button, Modal } from '@wordpress/components';
 import { Icon, store, widget, tool } from '@wordpress/icons';
@@ -75,9 +75,13 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 							'woocommerce-payments'
 						) }
 					</h3>
-					{ __(
-						'Woo Payments enables you to start processing payments right away.',
-						'woocommerce-payments'
+					{ sprintf(
+						/* translators: %s: WooPayments */
+						__(
+							'%s enables you to start processing payments right away.',
+							'woocommerce-payments'
+						),
+						'WooPayments'
 					) }
 				</div>
 				<div>

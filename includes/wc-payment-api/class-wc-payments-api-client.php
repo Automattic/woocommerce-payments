@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Connection_Exception;
@@ -59,6 +59,7 @@ class WC_Payments_API_Client {
 	const TRACKING_API                 = 'tracking';
 	const PRODUCTS_API                 = 'products';
 	const PRICES_API                   = 'products/prices';
+	const PAYMENT_PROCESS_CONFIG_API   = 'payment_process_config';
 	const INVOICES_API                 = 'invoices';
 	const SUBSCRIPTIONS_API            = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API       = 'subscriptions/items';
@@ -216,44 +217,12 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $intent_id intent id.
 	 *
-	 * @return WC_Payments_API_Intention intention object.
+	 * @return WC_Payments_API_Payment_Intention intention object.
 	 */
 	public function get_intent( $intent_id ) {
 		$intent = $this->request( [], self::INTENTIONS_API . '/' . $intent_id, self::GET );
 
-		return $this->deserialize_intention_object_from_array( $intent );
-	}
-
-	/**
-	 * Fetch a setup intent details.
-	 *
-	 * @param string $setup_intent_id ID of the setup intent.
-	 *
-	 * @return array
-	 * @throws API_Exception - When fetch of setup intent fails.
-	 */
-	public function get_setup_intent( $setup_intent_id ) {
-		return $this->request( [], self::SETUP_INTENTS_API . '/' . $setup_intent_id, self::GET );
-	}
-
-	/**
-	 * Get overview of deposits.
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function get_deposits_overview() {
-		return $this->request( [], self::DEPOSITS_API . '/overview', self::GET );
-	}
-
-	/**
-	 * Get an overview of all deposits (for all currencies).
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function get_all_deposits_overviews() {
-		return $this->request( [], self::DEPOSITS_API . '/overview-all', self::GET );
+		return $this->deserialize_payment_intention_object_from_array( $intent );
 	}
 
 	/**
@@ -266,16 +235,6 @@ class WC_Payments_API_Client {
 	 */
 	public function get_deposits_summary( array $filters = [] ) {
 		return $this->request( $filters, self::DEPOSITS_API . '/summary', self::GET );
-	}
-
-	/**
-	 * Fetch a single deposit with provided id.
-	 *
-	 * @param string $deposit_id id of requested deposit.
-	 * @return array deposit object.
-	 */
-	public function get_deposit( $deposit_id ) {
-		return $this->request( [], self::DEPOSITS_API . '/' . $deposit_id, self::GET );
 	}
 
 	/**
@@ -330,7 +289,9 @@ class WC_Payments_API_Client {
 	 * @return array
 	 */
 	public function list_fraud_outcome_transactions( $request ) {
-		$fraud_outcomes = $request->send( 'wcpay_list_fraud_outcome_transactions_request' );
+		// TODO: Refactor this.
+		$request->assign_hook( 'wcpay_list_fraud_outcome_transactions_request' );
+		$fraud_outcomes = $request->send();
 
 		$page      = $request->get_param( 'page' );
 		$page_size = $request->get_param( 'pagesize' );
@@ -351,7 +312,9 @@ class WC_Payments_API_Client {
 	 * @return array
 	 */
 	public function list_fraud_outcome_transactions_summary( $request ) {
-		$fraud_outcomes = $request->send( 'wcpay_list_fraud_outcome_transactions_summary_request' );
+		// TODO: Refactor this.
+		$request->assign_hook( 'wcpay_list_fraud_outcome_transactions_summary_request' );
+		$fraud_outcomes = $request->send();
 
 		$total      = 0;
 		$currencies = [];
@@ -376,7 +339,9 @@ class WC_Payments_API_Client {
 	 * @return array|WP_Error Search results.
 	 */
 	public function get_fraud_outcome_transactions_search_autocomplete( $request ) {
-		$fraud_outcomes = $request->send( 'wcpay_get_fraud_outcome_transactions_search_autocomplete_request' );
+		// TODO: Refactor this.
+		$request->assign_hook( 'wcpay_get_fraud_outcome_transactions_search_autocomplete_request' );
+		$fraud_outcomes = $request->send();
 
 		$search_term = $request->get_param( 'search_term' );
 
@@ -426,7 +391,9 @@ class WC_Payments_API_Client {
 	 * @return array
 	 */
 	public function get_fraud_outcome_transactions_export( $request ) {
-		$fraud_outcomes = $request->send( 'wcpay_get_fraud_outcome_transactions_export_request' );
+		// TODO: Refactor this.
+		$request->assign_hook( 'wcpay_get_fraud_outcome_transactions_export_request' );
+		$fraud_outcomes = $request->send();
 
 		return [
 			'data' => $fraud_outcomes,
@@ -516,16 +483,6 @@ class WC_Payments_API_Client {
 	 */
 	public function get_disputes_summary( array $filters = [] ):array {
 		return $this->request( [ $filters ], self::DISPUTES_API . '/summary', self::GET );
-	}
-
-	/**
-	 * Gets a list of dispute statuses and a total count for each.
-	 *
-	 * @return array Dispute status counts in the format: [ '{status}' => count ].
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function get_dispute_status_counts() {
-		return $this->request( [], self::DISPUTES_API . '/status_counts', self::GET );
 	}
 
 	/**
@@ -888,28 +845,29 @@ class WC_Payments_API_Client {
 	/**
 	 * Get data needed to initialize the onboarding flow
 	 *
-	 * @param string $return_url     - URL to redirect to at the end of the flow.
-	 * @param array  $site_data      - Data to track ToS agreement.
-	 * @param array  $actioned_notes - Actioned WCPay note names to be sent to the on-boarding flow.
-	 * @param array  $account_data   - Data to prefill the onboarding.
-	 * @param bool   $progressive    - Whether we need to enable progressive onboarding prefill.
+	 * @param string $return_url                  - URL to redirect to at the end of the flow.
+	 * @param array  $site_data                   - Data to track ToS agreement.
+	 * @param array  $user_data                   - Data about the user doing the onboarding (location and device).
+	 * @param array  $account_data                - Data to prefill the onboarding.
+	 * @param array  $actioned_notes              - Actioned WCPay note names to be sent to the onboarding flow.
+	 * @param bool   $progressive                 - Whether we need to enable progressive onboarding prefill.
 	 * @param bool   $collect_payout_requirements - Whether we need to redirect user to Stripe KYC to complete their payouts data.
 	 *
-	 * @return array An array containing the url and state fields.
-	 *
 	 * @throws API_Exception Exception thrown on request failure.
+	 * @return array An array containing the url and state fields.
 	 */
-	public function get_onboarding_data( $return_url, array $site_data = [], array $actioned_notes = [], $account_data = [], bool $progressive = false, $collect_payout_requirements = false ) {
+	public function get_onboarding_data( string $return_url, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
 				'return_url'                  => $return_url,
 				'site_data'                   => $site_data,
-				'create_live_account'         => ! WC_Payments::mode()->is_dev(),
+				'user_data'                   => $user_data,
+				'account_data'                => $account_data,
 				'actioned_notes'              => $actioned_notes,
+				'create_live_account'         => ! WC_Payments::mode()->is_dev(),
 				'progressive'                 => $progressive,
 				'collect_payout_requirements' => $collect_payout_requirements,
-				'account_data'                => $account_data,
 			]
 		);
 
@@ -938,7 +896,11 @@ class WC_Payments_API_Client {
 		);
 
 		if ( ! is_array( $fields_data ) ) {
-			return [];
+			throw new API_Exception(
+				__( 'Onboarding field data could not be retrieved', 'woocommerce-payments' ),
+				'wcpay_onboarding_fields_data_error',
+				400
+			);
 		}
 
 		return $fields_data;
@@ -1004,9 +966,16 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array The link object with an url field.
 	 *
-	 * @throws API_Exception When something goes wrong with the request, or the link is not valid.
+	 * @throws API_Exception When something goes wrong with the request, when type is not defined or valid, or the link is not valid.
 	 */
 	public function get_link( array $args ) {
+		if ( ! isset( $args['type'] ) && ! in_array( $args['type'], [ 'login_link', 'complete_kyc_link' ], true ) ) {
+			throw new API_Exception(
+				__( 'Link type is required', 'woocommerce-payments' ),
+				'wcpay_unknown_link_type',
+				400
+			);
+		}
 		return $this->request(
 			$args,
 			self::LINKS_API,
@@ -1158,6 +1127,23 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$data,
 			self::INVOICES_API . '/' . $invoice_id . '/pay',
+			self::POST
+		);
+	}
+
+	/**
+	 * Updates an invoice.
+	 *
+	 * @param string $invoice_id ID of the invoice to update.
+	 * @param array  $data       Parameters to send to the invoice endpoint. Optional. Default is an empty array.
+	 * @return array
+	 *
+	 * @throws API_Exception Error updating the invoice.
+	 */
+	public function update_invoice( string $invoice_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::INVOICES_API . '/' . $invoice_id,
 			self::POST
 		);
 	}
@@ -1387,30 +1373,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Retrieves a store's terminal locations.
-	 *
-	 * @return array[] Stripe terminal location objects.
-	 * @see https://stripe.com/docs/api/terminal/locations/object
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function get_terminal_locations() {
-		return $this->request( [], self::TERMINAL_LOCATIONS_API, self::GET );
-	}
-
-	/**
-	 * Retrieves a store's terminal readers.
-	 *
-	 * @return array[] Stripe terminal readers objects.
-	 * @see https://stripe.com/docs/api/terminal/readers/object
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function get_terminal_readers() {
-		return $this->request( [], self::TERMINAL_READERS_API, self::GET );
-	}
-
-	/**
 	 * Registers a card reader to a terminal.
 	 *
 	 * @param string  $location           The location to assign the reader to.
@@ -1520,20 +1482,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Retrieves the specified terminal location.
-	 *
-	 * @param string $location_id The id of the terminal location.
-	 *
-	 * @return array A Stripe terminal location object.
-	 * @see https://stripe.com/docs/api/terminal/locations/object
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function get_terminal_location( $location_id ) {
-		return $this->request( [], self::TERMINAL_LOCATIONS_API . '/' . $location_id, self::GET );
-	}
-
-	/**
 	 * Deletes the specified location object.
 	 *
 	 * @param string $location_id The id of the terminal location.
@@ -1581,19 +1529,6 @@ class WC_Payments_API_Client {
 	 */
 	public function get_document( $document_id ) {
 		return $this->request( [], self::DOCUMENTS_API . '/' . $document_id, self::GET, true, false, true );
-	}
-
-	/**
-	 * Validates a VAT number on the server and returns the full response.
-	 *
-	 * @param string $vat_number The VAT number.
-	 *
-	 * @return array HTTP response on success.
-	 *
-	 * @throws API_Exception - If not connected or request failed.
-	 */
-	public function validate_vat( $vat_number ) {
-		return $this->request( [], self::VAT_API . '/' . $vat_number, self::GET );
 	}
 
 	/**
@@ -2121,7 +2056,7 @@ class WC_Payments_API_Client {
 	private function add_order_info_to_object( $order, $object ) {
 		// Add order information to the `$transaction`.
 		// If the order couldn't be retrieved, return an empty order.
-		$object['order'] = null;
+		$object['order'] = [];
 
 		if ( $order ) {
 			$object['order'] = $this->build_order_info( $order );
@@ -2229,31 +2164,37 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * De-serialize an intention array into a intention object
+	 * De-serialize an intention array into a payment intention object
 	 *
 	 * @param array $intention_array - The intention array to de-serialize.
 	 *
-	 * @return WC_Payments_API_Intention
+	 * @return WC_Payments_API_Payment_Intention
 	 * @throws API_Exception - Unable to deserialize intention array.
 	 */
-	public function deserialize_intention_object_from_array( array $intention_array ) {
+	public function deserialize_payment_intention_object_from_array( array $intention_array ) {
 		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
-		$charge_array         = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
-		$next_action          = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
-		$last_payment_error   = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
-		$metadata             = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
-		$customer             = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
-		$payment_method       = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
-		$processing           = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
-		$payment_method_types = $intention_array['payment_method_types'] ?? [];
+		// Metadata can be an empty stdClass object, so we need to check array type too.
+		// See https://github.com/Automattic/woocommerce-payments/pull/419/commits/c2c8438c3ed7be6d604435e059209fb87fb6d0c4.
+		$raw_metadata           = $intention_array['metadata'];
+		$metadata               = is_array( $raw_metadata ) && ! empty( $raw_metadata )
+			? $raw_metadata
+			: [];
+		$charge_array           = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
+		$next_action            = $intention_array['next_action'] ?? [];
+		$last_payment_error     = $intention_array['last_payment_error'] ?? [];
+		$customer               = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
+		$payment_method         = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+		$processing             = $intention_array[ Intent_Status::PROCESSING ] ?? [];
+		$payment_method_types   = $intention_array['payment_method_types'] ?? [];
+		$payment_method_options = $intention_array['payment_method_options'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 		$order  = $this->get_order_info_from_intention_object( $intention_array['id'] );
 
-		$intent = new WC_Payments_API_Intention(
+		$intent = new WC_Payments_API_Payment_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
 			$intention_array['currency'],
@@ -2268,6 +2209,52 @@ class WC_Payments_API_Client {
 			$metadata,
 			$processing,
 			$payment_method_types,
+			$payment_method_options,
+			$order
+		);
+
+		return $intent;
+	}
+
+	/**
+	 * De-serialize an intention array into a setup intention object
+	 *
+	 * @param array $intention_array - The intention array to de-serialize.
+	 *
+	 * @return WC_Payments_API_Setup_Intention
+	 * @throws API_Exception - Unable to deserialize intention array.
+	 */
+	public function deserialize_setup_intention_object_from_array( array $intention_array ): WC_Payments_API_Setup_Intention {
+		$created = new DateTime();
+		$created->setTimestamp( $intention_array['created'] );
+
+		// Metadata can be an empty stdClass object, so we need to check array type too.
+		// See https://github.com/Automattic/woocommerce-payments/pull/419/commits/c2c8438c3ed7be6d604435e059209fb87fb6d0c4.
+		$raw_metadata           = $intention_array['metadata'];
+		$metadata               = is_array( $raw_metadata ) && ! empty( $raw_metadata )
+			? $raw_metadata
+			: [];
+		$next_action            = $intention_array['next_action'] ?? [];
+		$last_setup_error       = $intention_array['last_setup_error'] ?? [];
+		$customer               = $intention_array['customer'] ?? null;
+		$payment_method         = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+		$payment_method_types   = $intention_array['payment_method_types'] ?? [];
+		$payment_method_options = $intention_array['payment_method_options'] ?? [];
+
+		$order = $this->get_order_info_from_intention_object( $intention_array['id'] );
+
+		$intent = new WC_Payments_API_Setup_Intention(
+			$intention_array['id'],
+			$customer,
+			$payment_method,
+			$created,
+			$intention_array['status'],
+			$intention_array['client_secret'],
+			$next_action,
+			$last_setup_error,
+			$metadata,
+			$payment_method_types,
+			$payment_method_options,
 			$order
 		);
 
@@ -2335,28 +2322,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Fetch the summary of the currently active Capital loan.
-	 *
-	 * @return array summary object.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function get_active_loan_summary() : array {
-		return $this->request( [], self::CAPITAL_API . '/active_loan_summary', self::GET );
-	}
-
-	/**
-	 * Fetch the past and present Capital loans.
-	 *
-	 * @return array List of capital loans.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function get_loans() : array {
-		return $this->request( [], self::CAPITAL_API . '/loans', self::GET );
-	}
-
-	/**
 	 * Returns a list of fingerprinting metadata to attach to order.
 	 *
 	 * @param string $fingerprint User fingerprint.
@@ -2393,17 +2358,35 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Gets the list of extensions that are incompatible with WooPay.
+	 * Gets the WooPay compatibility list.
 	 *
-	 * @return array of extensions.
+	 * @return array of incompatible extensions, adapted extensions and available countries.
 	 * @throws API_Exception When request fails.
 	 */
-	public function get_woopay_incompatible_extensions() {
+	public function get_woopay_compatibility() {
 		return $this->request(
 			[],
 			self::WOOPAY_COMPATIBILITY_API,
 			self::GET,
 			false
+		);
+	}
+
+	/**
+	 * Delete account.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function delete_account() {
+		return $this->request(
+			[
+				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
+			],
+			self::ACCOUNTS_API . '/delete',
+			self::POST,
+			true,
+			true
 		);
 	}
 }

@@ -24,12 +24,13 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id           = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->title               = __( 'Afterpay', 'woocommerce-payments' );
-		$this->is_reusable         = false;
-		$this->icon_url            = plugins_url( 'assets/images/payment-methods/afterpay.svg', WCPAY_PLUGIN_FILE );
-		$this->currencies          = [ 'USD', 'CAD', 'AUD', 'NZD', 'GBP', 'EUR' ];
-		$this->limits_per_currency = [
+		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
+		$this->title                        = __( 'Afterpay', 'woocommerce-payments' );
+		$this->is_reusable                  = false;
+		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/afterpay.svg', WCPAY_PLUGIN_FILE );
+		$this->currencies                   = [ 'USD', 'CAD', 'AUD', 'NZD', 'GBP', 'EUR' ];
+		$this->accept_only_domestic_payment = true;
+		$this->limits_per_currency          = [
 			'AUD' => [
 				'min' => 100,
 				'max' => 200000,
@@ -44,8 +45,8 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 			], // Represents NZD 1 - 2,000 NZD.
 			'GBP' => [
 				'min' => 100,
-				'max' => 100000,
-			], // Represents GBP 1 - 1,000 GBP.
+				'max' => 120000,
+			], // Represents GBP 1 - 1,200 GBP.
 			'USD' => [
 				'min' => 100,
 				'max' => 400000,

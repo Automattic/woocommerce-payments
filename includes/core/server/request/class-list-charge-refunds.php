@@ -25,6 +25,13 @@ class List_Charge_Refunds extends Request {
 	const REQUIRED_PARAMS = [ 'charge' ];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_list_charge_refunds_request';
+
+	/**
 	 * Sets the charge ID, which will be used in the request URL.
 	 *
 	 * @param string $charge_id Sets the charge ID, which will be used in the request URL.
@@ -47,7 +54,7 @@ class List_Charge_Refunds extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_limit( int $limit ) {
-		$this->validate_is_larger_then( $limit, 0 );
+		$this->validate_is_larger_than( $limit, 0 );
 		$this->set_param( 'limit', $limit );
 	}
 

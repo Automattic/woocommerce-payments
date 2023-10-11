@@ -123,6 +123,22 @@ export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	} );
 }
 
+export function updateAccountStatementDescriptorKanji(
+	accountStatementDescriptorKanji
+) {
+	return updateSettingsValues( {
+		account_statement_descriptor_kanji: accountStatementDescriptorKanji,
+	} );
+}
+
+export function updateAccountStatementDescriptorKana(
+	accountStatementDescriptorKana
+) {
+	return updateSettingsValues( {
+		account_statement_descriptor_kana: accountStatementDescriptorKana,
+	} );
+}
+
 export function updateAccountBusinessName( accountBusinessName ) {
 	return updateSettingsValues( {
 		account_business_name: accountBusinessName,
@@ -182,7 +198,7 @@ export function updateDepositScheduleMonthlyAnchor(
 ) {
 	return updateSettingsValues( {
 		deposit_schedule_monthly_anchor:
-			'' === depositScheduleMonthlyAnchor
+			depositScheduleMonthlyAnchor === ''
 				? null
 				: parseInt( depositScheduleMonthlyAnchor, 10 ),
 	} );
@@ -209,11 +225,17 @@ export function* saveSettings() {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error saving settings.', 'woocommerce-payments' )
 		);
+
+		if ( error.server_error ) {
+			yield dispatch( 'core/notices' ).createErrorNotice(
+				error.server_error
+			);
+		}
 	} finally {
 		yield updateIsSavingSettings( false, error );
 	}
 
-	return null === error;
+	return error === null;
 }
 
 export function updatePaymentRequestLocations( locations ) {
@@ -252,4 +274,32 @@ export function updateAdvancedFraudProtectionSettings( settings ) {
 	return updateSettingsValues( {
 		advanced_fraud_protection_settings: settings,
 	} );
+}
+
+export function updateIsStripeBillingEnabled( isEnabled ) {
+	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
+}
+
+export function* submitStripeBillingSubscriptionMigration() {
+	try {
+		yield dispatch( STORE_NAME ).startResolution(
+			'scheduleStripeBillingMigration'
+		);
+
+		yield apiFetch( {
+			path: `${ NAMESPACE }/settings/schedule-stripe-billing-migration`,
+			method: 'post',
+		} );
+	} catch ( e ) {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__(
+				'Error starting the Stripe Billing migration.',
+				'woocommerce-payments'
+			)
+		);
+	}
+
+	yield dispatch( STORE_NAME ).finishResolution(
+		'scheduleStripeBillingMigration'
+	);
 }

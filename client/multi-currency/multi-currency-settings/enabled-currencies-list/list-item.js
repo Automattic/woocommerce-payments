@@ -43,7 +43,7 @@ const EnabledCurrenciesListItem = ( {
 		<li className={ classNames( 'enabled-currency', id ) }>
 			<div className="enabled-currency__container">
 				<div className="enabled-currency__flag">
-					{ '' !== flag ? (
+					{ flag !== '' ? (
 						flag
 					) : (
 						<div className="enabled-currency__flag-text">

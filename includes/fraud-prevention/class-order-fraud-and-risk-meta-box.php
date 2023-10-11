@@ -30,9 +30,16 @@ class Order_Fraud_And_Risk_Meta_Box {
 	 * @param WC_Payments_Order_Service $order_service The order service.
 	 */
 	public function __construct( WC_Payments_Order_Service $order_service ) {
-		add_action( 'add_meta_boxes', [ $this, 'maybe_add_meta_box' ] );
-
 		$this->order_service = $order_service;
+	}
+
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		add_action( 'add_meta_boxes', [ $this, 'maybe_add_meta_box' ] );
 	}
 
 	/**
@@ -130,7 +137,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 				}
 
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
-				$callout_url = 'https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/';
+				$callout_url = 'https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/';
 				$callout_url = add_query_arg( 'status_is', 'fraud-meta-box-not-wcpay-learn-more', $callout_url );
 				echo '<p>' . esc_html( $description ) . '</p><a href="' . esc_url( $callout_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;

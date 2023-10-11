@@ -24,6 +24,13 @@ class Cancel_Intention extends Request {
 	const DEFAULT_PARAMS   = [];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_cancel_intent_request';
+
+	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
 	 * @param string $id Sets the intent ID, which will be used in the request URL.
@@ -59,6 +66,6 @@ class Cancel_Intention extends Request {
 	 * @return mixed           Either the same response, or the correct object.
 	 */
 	public function format_response( $response ) {
-		return WC_Payments::get_payments_api_client()->deserialize_intention_object_from_array( $response );
+		return $this->api_client->deserialize_payment_intention_object_from_array( $response );
 	}
 }

@@ -20,7 +20,7 @@ import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
 import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
-import DisputeDetailsPage from 'disputes/details';
+import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
 import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
 import MultiCurrencySetupPage from 'wcpay/multi-currency-setup';
@@ -103,6 +103,10 @@ addFilter(
 				],
 				__( 'Deposit details', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-deposit-details',
+				parentPath: '/payments/deposits',
+			},
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
@@ -130,6 +134,10 @@ addFilter(
 				],
 				__( 'Payment details', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-transaction-details',
+				parentPath: '/payments/transactions',
+			},
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
@@ -142,8 +150,9 @@ addFilter(
 			},
 			capability: 'manage_woocommerce',
 		} );
+
 		pages.push( {
-			container: DisputeDetailsPage,
+			container: RedirectToTransactionDetails,
 			path: '/payments/disputes/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -154,8 +163,13 @@ addFilter(
 				],
 				__( 'Dispute details', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-disputes-details-legacy-redirect',
+				parentPath: '/payments/disputes',
+			},
 			capability: 'manage_woocommerce',
 		} );
+
 		pages.push( {
 			container: DisputeEvidencePage,
 			path: '/payments/disputes/challenge',
@@ -168,6 +182,10 @@ addFilter(
 				],
 				__( 'Challenge dispute', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-disputes-challenge',
+				parentPath: '/payments/disputes',
+			},
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
@@ -277,18 +295,11 @@ addFilter(
 	'woocommerce_admin_onboarding_task_list',
 	'woocommerce-payments',
 	( tasks ) => {
-		const {
-			accountStatus,
-			showUpdateDetailsTask,
-			wpcomReconnectUrl,
-			featureFlags: { accountOverviewTaskList },
-		} = wcpaySettings;
+		const { showUpdateDetailsTask, wpcomReconnectUrl } = wcpaySettings;
 
 		const wcPayTasks = getTasks( {
-			accountStatus,
-			showUpdateDetailsTask,
-			wpcomReconnectUrl,
-			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
+			showUpdateDetailsTask: showUpdateDetailsTask,
+			wpcomReconnectUrl: wpcomReconnectUrl,
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];

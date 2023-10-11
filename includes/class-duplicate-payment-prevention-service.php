@@ -11,7 +11,7 @@ use Exception;
 use WC_Order;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -91,8 +91,9 @@ class Duplicate_Payment_Prevention_Service {
 		}
 
 		try {
-			$request       = Get_Intention::create( $intent_id );
-			$intent        = $request->send( 'wcpay_get_intention_request' );
+			$request = Get_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+			$intent        = $request->send();
 			$intent_status = $intent->get_status();
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch attached payment intent: ' . $e );
@@ -109,7 +110,7 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		}
 
-		if ( Payment_Intent_Status::SUCCEEDED === $intent_status ) {
+		if ( Intent_Status::SUCCEEDED === $intent_status ) {
 			$this->remove_session_processing_order( $order->get_id() );
 		}
 		$this->order_service->update_order_status_from_intent( $order, $intent );

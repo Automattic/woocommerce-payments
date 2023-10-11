@@ -6,12 +6,14 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
+import { select } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import PaymentMethods from '..';
 import {
+	useAccountDomesticCurrency,
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
@@ -41,12 +43,14 @@ jest.mock( '../../data', () => ( {
 	useManualCapture: jest.fn(),
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
+	useAccountDomesticCurrency: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest
 		.fn()
 		.mockReturnValue( { updateAvailablePaymentMethodIds: jest.fn() } ),
+	select: jest.fn(),
 } ) );
 
 describe( 'PaymentMethods', () => {
@@ -79,7 +83,14 @@ describe( 'PaymentMethods', () => {
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		global.wcpaySettings = {
 			accountEmail: 'admin@example.com',
+			capabilityRequestNotices: {},
 		};
+		useAccountDomesticCurrency.mockReturnValue( 'usd' );
+		select.mockImplementation( () => ( {
+			getSettings: jest.fn().mockReturnValue( {
+				account_country: 'US',
+			} ),
+		} ) );
 	} );
 
 	test( 'payment methods are rendered correctly', () => {
@@ -94,7 +105,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const cc = screen.getByRole( 'checkbox', {
-			name: 'Credit card / debit card',
+			name: 'Credit / Debit card',
 		} );
 		const becs = screen.getByRole( 'checkbox', {
 			name: 'BECS Direct Debit',
@@ -145,7 +156,7 @@ describe( 'PaymentMethods', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useSelectedPaymentMethod.mockReturnValue( [
 			[
-				'Credit card / debit card',
+				'Credit / Debit card',
 				'BECS Direct Debit',
 				'Bancontact',
 				'EPS',
@@ -202,11 +213,7 @@ describe( 'PaymentMethods', () => {
 			</WcPayUpeContextProvider>
 		);
 
-		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 2 );
-
-		expect(
-			screen.queryAllByText( /Contact WooCommerce Support/i ).length
-		).toEqual( 4 );
+		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
 	} );
 
 	test( 'upe setup banner is rendered when UPE preview feature flag is enabled', () => {
@@ -228,7 +235,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Boost your sales by accepting additional payment methods'
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 		);
 
 		expect( enableWooCommercePaymentText ).toBeInTheDocument();
@@ -343,7 +350,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Boost your sales by accepting additional payment methods'
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 		);
 
 		expect( enableWooCommercePaymentText.parentElement ).not.toHaveClass(
@@ -372,7 +379,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Boost your sales by accepting additional payment methods'
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 		);
 
 		expect( enableWooCommercePaymentText.parentElement ).toHaveClass(
@@ -405,7 +412,7 @@ describe( 'PaymentMethods', () => {
 			);
 
 			const enableWooCommercePaymentText = screen.queryByText(
-				'Boost your sales by accepting additional payment methods'
+				'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 			);
 
 			expect( enableWooCommercePaymentText ).toBeNull();
@@ -425,7 +432,7 @@ describe( 'PaymentMethods', () => {
 		expect( disableUPEButton ).toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Payment methods' ).parentElement
-		).toHaveTextContent( 'Payment methods Early access' );
+		).toHaveTextContent( 'Payment methods' );
 	} );
 
 	test( 'Does not render the feedback elements when UPE is disabled', () => {
@@ -445,7 +452,7 @@ describe( 'PaymentMethods', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	test( 'clicking "Enable in your store" in express payments enable UPE and redirects', async () => {
+	test( 'clicking "Enable payment methods" in express payments enable UPE and redirects', async () => {
 		Object.defineProperty( window, 'location', {
 			value: {
 				href: 'example.com/',
@@ -472,7 +479,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableInYourStoreButton = screen.queryByRole( 'button', {
-			name: 'Enable in your store',
+			name: 'Enable payment methods',
 		} );
 
 		expect( enableInYourStoreButton ).toBeInTheDocument();
@@ -483,6 +490,69 @@ describe( 'PaymentMethods', () => {
 		expect( window.location.href ).toEqual(
 			'admin.php?page=wc-admin&path=%2Fpayments%2Fadditional-payment-methods'
 		);
+	} );
+
+	it( 'should only be able to leave feedback when deferred upe after migration is enabled', () => {
+		render(
+			<WcPayUpeContextProvider
+				defaultIsUpeEnabled={ true }
+				defaultUpeType={ 'deferred_intent_upe_without_fallback' }
+			>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+		const kebabMenuWithFeedbackOnly = screen.queryByRole( 'button', {
+			name: 'Add feedback',
+		} );
+
+		const kebabMenuWithFeedbackAndDisable = screen.queryByRole( 'button', {
+			name: 'Add feedback or disable',
+		} );
+
+		expect( kebabMenuWithFeedbackOnly ).toBeInTheDocument();
+		expect( kebabMenuWithFeedbackAndDisable ).not.toBeInTheDocument();
+	} );
+
+	it( 'should only be able to leave feedback and disable when deferred upe was enabled manually for legacy card stores', () => {
+		render(
+			<WcPayUpeContextProvider
+				defaultIsUpeEnabled={ true }
+				defaultUpeType={ 'deferred_intent_upe_with_fallback' }
+			>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+		const kebabMenuWithFeedbackOnly = screen.queryByRole( 'button', {
+			name: 'Add feedback',
+		} );
+
+		const kebabMenuWithFeedbackAndDisable = screen.queryByRole( 'button', {
+			name: 'Add feedback or disable',
+		} );
+
+		expect( kebabMenuWithFeedbackAndDisable ).toBeInTheDocument();
+		expect( kebabMenuWithFeedbackOnly ).not.toBeInTheDocument();
+	} );
+
+	it( 'should be able to leave feedback and disable for non-deferred-upe', () => {
+		render(
+			<WcPayUpeContextProvider
+				defaultIsUpeEnabled={ true }
+				defaultUpeType={ 'legacy' }
+			>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+		const kebabMenuWithFeedbackOnly = screen.queryByRole( 'button', {
+			name: 'Add feedback',
+		} );
+
+		const kebabMenuWithFeedbackAndDisable = screen.queryByRole( 'button', {
+			name: 'Add feedback or disable',
+		} );
+
+		expect( kebabMenuWithFeedbackAndDisable ).toBeInTheDocument();
+		expect( kebabMenuWithFeedbackOnly ).not.toBeInTheDocument();
 	} );
 
 	it( 'should render the activation modal when requirements exist for the payment method', () => {

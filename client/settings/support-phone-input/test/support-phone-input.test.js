@@ -21,6 +21,11 @@ describe( 'SupportPhoneInput', () => {
 			jest.fn(),
 		] );
 		useGetSavingError.mockReturnValue( null );
+		window.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
+		};
 	} );
 
 	it( 'updates phone input', async () => {

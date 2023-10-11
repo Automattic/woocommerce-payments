@@ -132,6 +132,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 
 		$this->onboarding_service = new WC_Payments_Onboarding_Service( $this->mock_api_client, $this->mock_database_cache );
+		$this->onboarding_service->init_hooks();
 	}
 
 	public function test_filters_registered_properly() {
@@ -216,5 +217,25 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments::mode()->is_dev() );
 
 		delete_option( 'wcpay_onboarding_test_mode' );
+	}
+
+	public function test_get_onboarding_flow_state() {
+		$this->assertNull( $this->onboarding_service->get_onboarding_flow_state() );
+
+		update_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION, [] );
+
+		$this->assertEquals( [], $this->onboarding_service->get_onboarding_flow_state() );
+
+		delete_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION );
+	}
+
+	public function test_set_onboarding_flow_state() {
+		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION ) );
+
+		$this->onboarding_service->set_onboarding_flow_state( [] );
+
+		$this->assertEquals( [], get_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION );
 	}
 }

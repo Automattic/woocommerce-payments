@@ -50,10 +50,9 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		: availableCurrencyCodes.filter( ( code ) => {
 				const { symbol, name } = availableCurrencies[ code ];
 				return (
-					-1 <
 					`${ symbol } ${ code } ${ name }`
 						.toLocaleLowerCase()
-						.indexOf( searchText.toLocaleLowerCase() )
+						.indexOf( searchText.toLocaleLowerCase() ) > -1
 				);
 		  } );
 
@@ -122,7 +121,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		if (
 			isEnabledCurrenciesModalOpen &&
 			enabledCurrenciesList &&
-			false === enabledCurrenciesListWidth
+			enabledCurrenciesListWidth === false
 		) {
 			setCurrenciesListWidth( enabledCurrenciesList.current.offsetWidth );
 		}

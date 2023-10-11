@@ -12,11 +12,17 @@ use WCPay\Constants\Payment_Method;
  */
 class Base_Constant_Test extends WCPAY_UnitTestCase {
 
+	public function test_base_constant_retun_single_object_for_multiple_same_static_calls() {
+		$instance_1 = Payment_Method::BASC();
+		$instance_2 = Payment_Method::BASC();
+		$this->assertTrue( $instance_1 === $instance_2 );
+	}
 	public function test_base_constant_will_create_constant() {
 		$class = Payment_Method::BASC();
 		$this->assertInstanceOf( Payment_Method::class, $class );
 		$this->assertSame( $class->get_value(), 'BASC' );
 		$this->assertSame( (string) $class, 'bacs_debit' );
+		$this->assertSame( wp_json_encode( $class ), '"bacs_debit"' );
 	}
 	public function test_base_constant_equals_function_will_return_true_if_classes_are_same_type_and_value() {
 		$class_a = Payment_Method::BASC();
@@ -51,4 +57,5 @@ class Base_Constant_Test extends WCPAY_UnitTestCase {
 		$this->expectException( \InvalidArgumentException::class );
 		Payment_Method::search( 'foo' );
 	}
+
 }

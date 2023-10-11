@@ -23,7 +23,7 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import '../style.scss';
 import { Dispute } from 'wcpay/types/disputes';
 
-const DisputeDetails = ( {
+const LegacyDisputeDetails = ( {
 	query: { id: disputeId },
 }: {
 	query: { id: string };
@@ -73,6 +73,7 @@ const DisputeDetails = ( {
 							{ __( 'Dispute overview', 'woocommerce-payments' ) }
 							<DisputeStatusChip
 								status={ disputeObject.status }
+								dueBy={ disputeObject.evidence_details?.due_by }
 							/>
 						</LoadableBlock>
 					</CardHeader>
@@ -155,4 +156,4 @@ const DisputeDetails = ( {
 	);
 };
 
-export default DisputeDetails;
+export default LegacyDisputeDetails;

@@ -52,7 +52,7 @@ const ExpressCheckoutDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/settings-guide/#express-checkouts">
+		<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#express-checkouts">
 			{ __( 'Learn more', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
@@ -83,8 +83,8 @@ const TransactionsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/payments/faq/">
-			{ __( 'View frequently asked questions', 'woocommerce-payments' ) }
+		<ExternalLink href="https://woocommerce.com/document/woopayments/">
+			{ __( 'View our documentation', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
 );
@@ -104,7 +104,7 @@ const DepositsDescription = () => {
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'
@@ -120,15 +120,32 @@ const FraudProtectionDescription = () => {
 			<h2>{ __( 'Fraud protection', 'woocommerce-payments' ) }</h2>
 			<p>
 				{ __(
-					'Help avoid chargebacks by setting your security and fraud protection risk level.',
+					'Help avoid unauthorized transactions and disputes by setting your fraud protection level.',
 					'woocommerce-payments'
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/">
 				{ __(
 					'Learn more about risk filtering',
 					'woocommerce-payments'
 				) }
+			</ExternalLink>
+		</>
+	);
+};
+
+const AdvancedDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Advanced settings', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ __(
+					'More options for specific payment needs.',
+					'woocommerce-payments'
+				) }
+			</p>
+			<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#advanced-settings">
+				{ __( 'View our documentation', 'woocommerce-payments' ) }
 			</ExternalLink>
 		</>
 	);
@@ -252,7 +269,16 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<AdvancedSettings />
+			<SettingsSection
+				description={ AdvancedDescription }
+				id="advanced-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<AdvancedSettings />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>
 	);

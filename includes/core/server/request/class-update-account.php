@@ -15,6 +15,13 @@ use WC_Payments_API_Client;
  * Request class for updating account.
  */
 class Update_Account extends Request {
+
+	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_update_account_settings';
 	/**
 	 * Returns the request's API.
 	 *
@@ -78,6 +85,28 @@ class Update_Account extends Request {
 	 */
 	public function set_statement_descriptor( string $statement_descriptor ) {
 		$this->set_param( 'statement_descriptor', $statement_descriptor );
+	}
+
+	/**
+	 * Sets the account statement descriptor kanji.
+	 *
+	 * @param  string $statement_descriptor_kanji Statement descriptor kanji.
+	 *
+	 * @return void
+	 */
+	public function set_statement_descriptor_kanji( string $statement_descriptor_kanji ) {
+		$this->set_param( 'statement_descriptor_kanji', $statement_descriptor_kanji );
+	}
+
+	/**
+	 * Sets the account statement descriptor kana.
+	 *
+	 * @param  string $statement_descriptor_kana Statement descriptor kana.
+	 *
+	 * @return void
+	 */
+	public function set_statement_descriptor_kana( string $statement_descriptor_kana ) {
+		$this->set_param( 'statement_descriptor_kana', $statement_descriptor_kana );
 	}
 
 	/**

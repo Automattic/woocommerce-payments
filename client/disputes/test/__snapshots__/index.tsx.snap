@@ -338,7 +338,7 @@ exports[`Disputes list renders correctly 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                     >
                       <svg
                         class="gridicon gridicons-info-outline needs-offset"
@@ -361,7 +361,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       $10.00
@@ -373,11 +373,11 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       <span
-                        class="chip chip-primary is-compact"
+                        class="chip chip-alert"
                       >
                         Needs response
                       </span>
@@ -389,7 +389,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       Transaction unauthorized
@@ -401,7 +401,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       <span
@@ -435,10 +435,27 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
-                      Nov 7, 2019 / 9:46PM
+                      <span
+                        class="due-soon"
+                      >
+                        2 days left
+                        <svg
+                          class="gridicon gridicons-notice-outline due-soon-icon"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </span>
                     </a>
                   </td>
                   <td
@@ -446,7 +463,7 @@ exports[`Disputes list renders correctly 1`] = `
                   >
                     <a
                       class="components-button is-secondary"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                     >
                       Respond
                     </a>
@@ -459,7 +476,7 @@ exports[`Disputes list renders correctly 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                     >
                       <svg
                         class="gridicon gridicons-info-outline needs-offset"
@@ -482,7 +499,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       $10.50
@@ -494,11 +511,11 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       <span
-                        class="chip chip-light is-compact"
+                        class="chip chip-primary"
                       >
                         Under review
                       </span>
@@ -510,7 +527,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       General
@@ -522,7 +539,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       <span
@@ -543,7 +560,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     />
                   </td>
@@ -553,18 +570,16 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
-                    >
-                      Nov 6, 2019 / 6:00PM
-                    </a>
+                    />
                   </td>
                   <td
                     class="woocommerce-table__item is-numeric"
                   >
                     <a
                       class="components-button is-tertiary"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                     >
                       See details
                     </a>
@@ -577,7 +592,7 @@ exports[`Disputes list renders correctly 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                     >
                       <svg
                         class="gridicon gridicons-info-outline needs-offset"
@@ -600,7 +615,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       $20.00
@@ -612,11 +627,11 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       <span
-                        class="chip chip-primary is-compact"
+                        class="chip chip-alert"
                       >
                         Needs response
                       </span>
@@ -628,7 +643,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       General
@@ -640,7 +655,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       <span
@@ -664,7 +679,7 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
                       Mock customer
@@ -676,10 +691,27 @@ exports[`Disputes list renders correctly 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
                     >
-                      Nov 7, 2019 / 9:46PM
+                      <span
+                        class="due-soon"
+                      >
+                        Last day today
+                        <svg
+                          class="gridicon gridicons-notice-outline due-soon-icon"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </span>
                     </a>
                   </td>
                   <td
@@ -687,7 +719,7 @@ exports[`Disputes list renders correctly 1`] = `
                   >
                     <a
                       class="components-button is-secondary"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                     >
                       Respond
                     </a>

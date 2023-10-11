@@ -13,11 +13,21 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * A class for caching data as an option in the database.
  */
 class Database_Cache {
-	const ACCOUNT_KEY                = 'wcpay_account_data';
-	const ONBOARDING_FIELDS_DATA_KEY = 'wcpay_onboarding_fields_data';
-	const BUSINESS_TYPES_KEY         = 'wcpay_business_types_data';
-	const CURRENCIES_KEY             = 'wcpay_multi_currency_cached_currencies';
-	const CUSTOMER_CURRENCIES_KEY    = 'wcpay_multi_currency_customer_currencies';
+	const ACCOUNT_KEY                 = 'wcpay_account_data';
+	const ONBOARDING_FIELDS_DATA_KEY  = 'wcpay_onboarding_fields_data';
+	const BUSINESS_TYPES_KEY          = 'wcpay_business_types_data';
+	const CURRENCIES_KEY              = 'wcpay_multi_currency_cached_currencies';
+	const PAYMENT_PROCESS_FACTORS_KEY = 'wcpay_payment_process_factors';
+
+	/**
+	 * Refresh during AJAX calls is avoided, but white-listing
+	 * a key here will allow the refresh to happen.
+	 *
+	 * @var string[]
+	 */
+	const AJAX_ALLOWED_KEYS = [
+		self::PAYMENT_PROCESS_FACTORS_KEY,
+	];
 
 	/**
 	 * Payment methods cache key prefix. Used in conjunction with the customer_id to cache a customer's payment methods.
@@ -69,7 +79,14 @@ class Database_Cache {
 	 */
 	public function __construct() {
 		$this->refresh_disabled = false;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'action_scheduler_before_execute', [ $this, 'disable_refresh' ] );
 	}
 
@@ -216,7 +233,10 @@ class Database_Cache {
 		}
 
 		// Do not refresh if doing ajax or the refresh has been disabled (running an AS job).
-		if ( defined( 'DOING_CRON' ) || wp_doing_ajax() || $this->refresh_disabled ) {
+		if (
+			defined( 'DOING_CRON' )
+			|| ( wp_doing_ajax() && ! in_array( $key, self::AJAX_ALLOWED_KEYS, true ) )
+			|| $this->refresh_disabled ) {
 			return false;
 		}
 
@@ -329,6 +349,9 @@ class Database_Cache {
 				break;
 			case self::CONNECT_INCENTIVE_KEY:
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
+				break;
+			case self::PAYMENT_PROCESS_FACTORS_KEY:
+				$ttl = 2 * HOUR_IN_SECONDS;
 				break;
 			default:
 				// Default to 24h.

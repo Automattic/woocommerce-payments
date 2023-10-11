@@ -12,12 +12,21 @@ import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_UPE,
-} from '../constants.js';
+	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
+	SHORTCODE_BILLING_ADDRESS_FIELDS,
+} from '../constants';
 import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import {
+	getTerms,
+	getCookieValue,
+	isWCPayChosen,
+	isLinkEnabled,
+	getBillingDetails,
+	getShippingDetails,
+} from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
@@ -38,9 +47,7 @@ jQuery( function ( $ ) {
 	const enabledBillingFields = getConfig( 'enabledBillingFields' );
 	const upePaymentIntentData = getConfig( 'upePaymentIntentData' );
 	const upeSetupIntentData = getConfig( 'upeSetupIntentData' );
-	const isStripeLinkEnabled =
-		paymentMethodsConfig.link !== undefined &&
-		paymentMethodsConfig.card !== undefined;
+	const isStripeLinkEnabled = isLinkEnabled( paymentMethodsConfig );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -157,56 +164,6 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Converts form fields object into Stripe `shipping` object.
-	 *
-	 * @param {Object} fields Object mapping checkout shippinh fields to values.
-	 * @return {Object} Stripe formatted `shpping` object.
-	 */
-	const getShippingDetails = ( fields ) => {
-		return {
-			name:
-				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
-				'-',
-			phone: fields.billing_phone || '-',
-			address: {
-				country: fields.billing_country || '-',
-				line1: fields.billing_address_1 || '-',
-				line2: fields.billing_address_2 || '-',
-				city: fields.billing_city || '-',
-				state: fields.billing_state || '-',
-				postal_code: fields.billing_postcode || '-',
-			},
-		};
-	};
-
-	/**
-	 * Converts form fields object into Stripe `billing_details` object.
-	 *
-	 * @param {Object} fields Object mapping checkout billing fields to values.
-	 * @return {Object} Stripe formatted `billing_details` object.
-	 */
-	const getBillingDetails = ( fields ) => {
-		return {
-			name:
-				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
-				'-',
-			email:
-				'string' === typeof fields.billing_email
-					? fields.billing_email.trim()
-					: '-',
-			phone: fields.billing_phone || '-',
-			address: {
-				country: fields.billing_country || '-',
-				line1: fields.billing_address_1 || '-',
-				line2: fields.billing_address_2 || '-',
-				city: fields.billing_city || '-',
-				state: fields.billing_state || '-',
-				postal_code: fields.billing_postcode || '-',
-			},
-		};
-	};
-
-	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
 	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
@@ -316,26 +273,8 @@ jQuery( function ( $ ) {
 						).checked
 					);
 				},
-				shipping_fields: {
-					line1: 'shipping_address_1',
-					line2: 'shipping_address_2',
-					city: 'shipping_city',
-					state: 'shipping_state',
-					postal_code: 'shipping_postcode',
-					country: 'shipping_country',
-					first_name: 'shipping_first_name',
-					last_name: 'shipping_last_name',
-				},
-				billing_fields: {
-					line1: 'billing_address_1',
-					line2: 'billing_address_2',
-					city: 'billing_city',
-					state: 'billing_state',
-					postal_code: 'billing_postcode',
-					country: 'billing_country',
-					first_name: 'billing_first_name',
-					last_name: 'billing_last_name',
-				},
+				shipping_fields: SHORTCODE_SHIPPING_ADDRESS_FIELDS,
+				billing_fields: SHORTCODE_BILLING_ADDRESS_FIELDS,
 			} );
 		}
 
@@ -636,7 +575,7 @@ jQuery( function ( $ ) {
 		);
 
 		// Boolean `true` means that there is nothing to confirm.
-		if ( true === confirmation ) {
+		if ( confirmation === true ) {
 			return;
 		}
 
@@ -747,10 +686,9 @@ jQuery( function ( $ ) {
 	// Handle the add payment method form for WooPayments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if (
-			'woocommerce_payments' !==
 			$(
 				"#add_payment_method input:checked[name='payment_method']"
-			).val()
+			).val() !== 'woocommerce_payments'
 		) {
 			return;
 		}
@@ -812,10 +750,9 @@ jQuery( function ( $ ) {
  */
 export function isUsingSavedPaymentMethod() {
 	return (
-		null !==
-			document.querySelector(
-				'#wc-woocommerce_payments-payment-token-new'
-			) &&
+		document.querySelector(
+			'#wc-woocommerce_payments-payment-token-new'
+		) !== null &&
 		! document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
 			.checked
 	);

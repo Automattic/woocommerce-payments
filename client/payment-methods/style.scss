@@ -5,6 +5,11 @@
 		padding: 0;
 	}
 
+	.components-popover__content {
+		position: relative;
+		right: 120px;
+	}
+
 	&__header {
 		justify-content: space-between;
 
@@ -105,5 +110,18 @@
 	// To be removed when we upgrade this package.
 	.components-popover {
 		position: fixed;
+	}
+}
+
+// RTL - hide flags dropdown for phone input
+// @TODO find a way to make the dropdown working for LTR
+.rtl {
+	.iti {
+		&__country-list {
+			display: none;
+		}
+		&__arrow {
+			display: none;
+		}
 	}
 }

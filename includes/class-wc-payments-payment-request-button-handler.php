@@ -679,6 +679,31 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Gets the context for where the button is being displayed.
+	 *
+	 * @return string
+	 */
+	public function get_button_context() {
+		if ( $this->is_product() ) {
+			return 'product';
+		}
+
+		if ( $this->is_cart() ) {
+			return 'cart';
+		}
+
+		if ( $this->is_checkout() ) {
+			return 'checkout';
+		}
+
+		if ( $this->is_pay_for_order_page() ) {
+			return 'pay_for_order';
+		}
+
+		return '';
+	}
+
+	/**
 	 * Get product from product page or product_page shortcode.
 	 *
 	 * @return WC_Product|false|null Product object.
@@ -753,6 +778,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'button'             => $this->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
 			'is_product_page'    => $this->is_product(),
+			'button_context'     => $this->get_button_context(),
 			'is_pay_for_order'   => $this->is_pay_for_order_page(),
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->get_product_data(),
@@ -760,6 +786,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 		];
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/payment-request', [ 'jquery', 'stripe' ] );
+
+		WC_Payments_Utils::enqueue_style(
+			'WCPAY_PAYMENT_REQUEST',
+			plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/payment-request.css' )
+		);
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );
 
@@ -783,10 +816,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
 			<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
 		<?php endif; ?>
-		<div class="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
-			<div id="wcpay-payment-request-button">
-				<!-- A Stripe Element will be inserted here. -->
-			</div>
+		<div id="wcpay-payment-request-button">
+			<!-- A Stripe Element will be inserted here. -->
 		</div>
 		<?php
 	}
@@ -1372,6 +1403,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
 			define( 'WOOCOMMERCE_CHECKOUT', true );
+		}
+
+		if ( ! defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) ) {
+			define( 'WCPAY_PAYMENT_REQUEST_CHECKOUT', true );
 		}
 
 		// In case the state is required, but is missing, add a more descriptive error notice.

@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -250,6 +250,30 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws API_Exception
 	 */
 	public function test_get_onboarding_data() {
+		$site_data = [
+			'site_username' => 'admin',
+			'site_locale'   => 'en_US',
+		];
+
+		$user_data = [
+			'user_id'    => 1,
+			'ip_address' => '0.0.0.0',
+			'browser'    => [
+				'user_agent'       => 'Unit Test Agent/0.1.0',
+				'accept_language'  => 'en-US,en;q=0.5',
+				'content_language' => 'en-US,en;q=0.5',
+			],
+			'referer'    => 'https://example.com',
+		];
+
+		$account_data = [];
+
+		$actioned_notes = [
+			'd' => 4,
+			'e' => 5,
+			'f' => 6,
+		];
+
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )
@@ -265,19 +289,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 					[
 						'test_mode'                   => false,
 						'return_url'                  => 'http://localhost',
-						'site_data'                   => [
-							'site_username' => 'admin',
-							'site_locale'   => 'en_US',
-						],
+						'site_data'                   => $site_data,
+						'user_data'                   => $user_data,
+						'account_data'                => $account_data,
+						'actioned_notes'              => $actioned_notes,
 						'create_live_account'         => true,
-						'actioned_notes'              => [
-							'd' => 4,
-							'e' => 5,
-							'f' => 6,
-						],
 						'progressive'                 => false,
 						'collect_payout_requirements' => false,
-						'account_data'                => [],
 					]
 				),
 				true,
@@ -296,15 +314,10 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		// Call the method under test.
 		$result = $this->payments_api_client->get_onboarding_data(
 			'http://localhost',
-			[
-				'site_username' => 'admin',
-				'site_locale'   => 'en_US',
-			],
-			[
-				'd' => 4,
-				'e' => 5,
-				'f' => 6,
-			]
+			$site_data,
+			$user_data,
+			$account_data,
+			$actioned_notes
 		);
 
 		// Assert the response is correct.
@@ -1005,68 +1018,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->expectExceptionMessage( 'Error: Document not found' );
 
 		$this->payments_api_client->get_document( 'someDocument' );
-	}
-
-	/**
-	 * Test a successful fetch of a single authorization.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_get_authorization_success() {
-		$payment_intent_id = 'pi_123smtm';
-
-		$this->set_http_mock_response(
-			200,
-			[
-				'payment_intent_id' => $payment_intent_id,
-			]
-		);
-
-		$authorization = $this->payments_api_client->get_authorization( $payment_intent_id );
-		$this->assertSame( $payment_intent_id, $authorization['payment_intent_id'] );
-	}
-
-	/**
-	 * Test fetching of non existing authorization.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_get_authorization_not_found() {
-		$payment_intent_id = 'pi_123smtm';
-		$error_message     = 'The authorization you asked for does not exist';
-
-		$this->set_http_mock_response(
-			404,
-			[
-				'error' => [
-					'code'    => 'authorization_missing',
-					'message' => $error_message,
-				],
-			]
-		);
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( "Error: $error_message" );
-
-		$this->payments_api_client->get_authorization( $payment_intent_id );
-	}
-	/**
-	 * Test a successful fetch of authorizations summary.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_authorizations_summary_success() {
-		$this->set_http_mock_response(
-			200,
-			[
-				'count' => 123,
-				'total' => 1200,
-			]
-		);
-
-		$summary = $this->payments_api_client->get_authorizations_summary();
-
-		$this->assertSame( 123, $summary['count'] );
-		$this->assertSame( 1200, $summary['total'] );
 	}
 
 	/**
