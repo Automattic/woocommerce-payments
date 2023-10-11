@@ -64,8 +64,10 @@ describe( 'Disputes > Submit winning dispute', () => {
 			text: 'The cardholder claims this is an unauthorized transaction',
 		} );
 
-		// Challenge the dispute
-		await merchantWCP.openChallengeDispute();
+		// Click the challenge dispute button.
+		await evalAndClick( '[data-testid="challenge-dispute-button"]' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await uiLoaded();
 
 		// Select product type
 		await expect( page ).toSelect(

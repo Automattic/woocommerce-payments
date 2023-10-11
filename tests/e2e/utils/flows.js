@@ -588,13 +588,6 @@ export const merchantWCP = {
 		} );
 	},
 
-	openChallengeDispute: async () => {
-		// Click the challenge dispute button.
-		await evalAndClick( '[data-testid="challenge-dispute-button"]' );
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-		await uiLoaded();
-	},
-
 	openAcceptDispute: async () => {
 		await page.removeAllListeners( 'dialog' );
 		// Open the accept dispute modal.

@@ -3,14 +3,13 @@
  * External dependencies
  */
 import config from 'config';
+const { merchant, shopper, evalAndClick } = require( '@woocommerce/e2e-utils' );
+
 /**
  * Internal dependencies
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
-
-import { merchantWCP, uiLoaded } from '../../../utils';
-
-const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
+import { uiLoaded } from '../../../utils';
 
 let orderId;
 
@@ -57,8 +56,10 @@ describe( 'Disputes > Save dispute for editing', () => {
 	} );
 
 	it( 'should be able to save dispute for editing', async () => {
-		// Click to challenge the dispute
-		await merchantWCP.openChallengeDispute();
+		// Click the challenge dispute button.
+		await evalAndClick( '[data-testid="challenge-dispute-button"]' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await uiLoaded();
 
 		await page.waitForSelector(
 			'div.wcpay-dispute-evidence .components-flex.components-card__header',
