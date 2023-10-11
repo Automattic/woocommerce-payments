@@ -27,6 +27,7 @@ const LoadableCheckboxControl = ( {
 	setupTooltip = '',
 	delayMsOnCheck = 0,
 	delayMsOnUncheck = 0,
+	needsAttention = false,
 } ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const [ checkedState, setCheckedState ] = useState( checked );
@@ -87,24 +88,15 @@ const LoadableCheckboxControl = ( {
 				</div>
 			) }
 			{ ( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
-			isSetupRequired ? (
+			isSetupRequired ||
+			needsAttention ? (
 				<div
 					className="loadable-checkbox__icon"
 					style={ { marginRight: '16px' } }
 				>
 					<HoverTooltip
-						content={
-							isSetupRequired
-								? setupTooltip
-								: sprintf(
-										/* translators: %s: a payment method name. */
-										__(
-											'%s is not available to your customers when the "manual capture" setting is enabled.',
-											'woocommerce-payments'
-										),
-										label
-								  )
-						}
+						content={ setupTooltip }
+						className="wcpay-tooltip__tooltip--dark"
 					>
 						<div>
 							<NoticeOutlineIcon

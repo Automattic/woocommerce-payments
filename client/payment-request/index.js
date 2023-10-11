@@ -15,6 +15,7 @@ import {
 	payForOrderHandler,
 } from './event-handlers.js';
 import '../checkout/express-checkout-buttons.scss';
+import wcpayTracks from 'tracks';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
@@ -46,6 +47,19 @@ jQuery( ( $ ) => {
 	);
 
 	let paymentRequestType;
+
+	// Track the payment request button click event.
+	const trackPaymentRequestButtonClick = ( source ) => {
+		const paymentRequestTypeEvents = {
+			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
+			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+		};
+
+		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
+			const event = paymentRequestTypeEvents[ paymentRequestType ];
+			wcpayTracks.recordUserEvent( event, { source } );
+		}
+	};
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -341,6 +355,8 @@ jQuery( ( $ ) => {
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
+				trackPaymentRequestButtonClick( 'product' );
+
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( wcpayPaymentRequestParams.login_confirmation ) {
 					evt.preventDefault();
@@ -459,6 +475,9 @@ jQuery( ( $ ) => {
 					evt.preventDefault();
 					displayLoginConfirmation( paymentRequestType );
 				}
+				trackPaymentRequestButtonClick(
+					wcpayPaymentRequestParams.button_context
+				);
 			} );
 		},
 

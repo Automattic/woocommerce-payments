@@ -148,6 +148,29 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
+	 * Manages customer details held on WCPay server for WordPress user associated with an order.
+	 *
+	 * @param int      $user_id ID of the WP user to associate with the customer.
+	 * @param WC_Order $order   Woo Order.
+	 * @return string           WooPayments customer ID.
+	 */
+	public function get_or_create_customer_id_from_order( int $user_id, WC_Order $order ): string {
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id = $this->get_customer_id_by_user_id( $user_id );
+
+		if ( null !== $customer_id ) {
+			// @todo: We need to update the customer here.
+			return $customer_id;
+		}
+
+		$customer_data = self::map_customer_data( $order, new WC_Customer( $user_id ) );
+		$user          = get_user_by( 'id', $user_id );
+		$customer_id   = $this->create_customer_for_user( $user, $customer_data );
+
+		return $customer_id;
+	}
+
+	/**
 	 * Update the customer details held on the WCPay server associated with the given WordPress user.
 	 *
 	 * @param string  $customer_id WCPay customer ID.
