@@ -40,15 +40,15 @@ describe( 'Disputes > Submit losing dispute', () => {
 	} );
 
 	it( 'should process and confirm a losing dispute', async () => {
-		// Pull out and follow the link to avoid working in multiple tabs
-		const paymentDetailsLink = await page.$eval(
-			'p.order_number > a',
-			( anchor ) => anchor.getAttribute( 'href' )
-		);
+		// Click the order dispute notice.
+		await expect( page ).toClick( '[type="button"]', {
+			text: 'Respond now',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
 
-		await merchantWCP.openPaymentDetails( paymentDetailsLink );
-
-		// Verify we have a dispute for this purchase
+		// Verify we see the dispute details on the transaction details page.
 		await expect( page ).toMatchElement( '.dispute-notice', {
 			text: 'The cardholder claims the product was not received',
 		} );

@@ -50,9 +50,16 @@ describe( 'Disputes > Submit winning dispute', () => {
 			'p.order_number > a',
 			( anchor ) => anchor.getAttribute( 'href' )
 		);
-		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
-		// Verify we have a dispute for this purchase
+		// Click the order dispute notice.
+		await expect( page ).toClick( '[type="button"]', {
+			text: 'Respond now',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+
+		// Verify we see the dispute details on the transaction details page.
 		await expect( page ).toMatchElement( '.dispute-notice', {
 			text: 'The cardholder claims this is an unauthorized transaction',
 		} );
