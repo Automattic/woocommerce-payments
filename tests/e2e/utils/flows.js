@@ -589,35 +589,25 @@ export const merchantWCP = {
 	},
 
 	openChallengeDispute: async () => {
-		await Promise.all( [
-			evalAndClick(
-				// eslint-disable-next-line max-len
-				'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-primary'
-			),
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			uiLoaded(),
-		] );
+		// Click the challenge dispute button
+		await evalAndClick( '[data-testid="challenge-dispute-button"]' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await uiLoaded();
 	},
 
 	openAcceptDispute: async () => {
-		await Promise.all( [
-			page.removeAllListeners( 'dialog' ),
-			evalAndClick(
-				// eslint-disable-next-line max-len
-				'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-tertiary'
-			),
-			evalAndClick(
-				// eslint-disable-next-line max-len
-				'.transaction-details-dispute-accept-modal__actions button.components-button.is-primary'
-			),
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			uiLoaded(),
-		] );
+		await page.removeAllListeners( 'dialog' );
+		// Open the accept dispute modal
+		await evalAndClick( '[data-testid="open-accept-dispute-modal-button"' );
+		// Click the accept dispute button
+		await evalAndClick( '[data-testid="accept-dispute-button"]' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await uiLoaded();
 	},
 
 	openPaymentDetails: async ( paymentDetailsLink ) => {
 		await Promise.all( [
-			page.goto( paymentDetailsLink, {
+			await page.goto( paymentDetailsLink, {
 				waitUntil: 'networkidle0',
 			} ),
 			uiLoaded(),
