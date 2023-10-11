@@ -599,6 +599,7 @@ export const merchantWCP = {
 		await page.removeAllListeners( 'dialog' );
 		// Open the accept dispute modal
 		await evalAndClick( '[data-testid="open-accept-dispute-modal-button"' );
+		await uiLoaded();
 		// Click the accept dispute button
 		await evalAndClick( '[data-testid="accept-dispute-button"]' );
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
