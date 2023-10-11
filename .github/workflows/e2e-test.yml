@@ -37,7 +37,7 @@ jobs:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          WC_VERSIONS=$( echo "[\"$WC_MIN_SUPPORTED_VERSION\", \"latest\", \"beta\"]" )
+          WC_VERSIONS=$( echo "[\"7.7.0\", \"latest\", \"beta\"]" )
           echo "matrix={\"woocommerce\":$WC_VERSIONS,\"test_groups\":[\"wcpay\", \"subscriptions\"],\"test_branches\":[\"merchant\", \"shopper\"]}" >> $GITHUB_OUTPUT
 
   # Run WCPay & subscriptions tests against specific WC versions
