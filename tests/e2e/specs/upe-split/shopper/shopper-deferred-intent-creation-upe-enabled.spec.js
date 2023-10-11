@@ -46,7 +46,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 	} );
 
 	describe( 'Enabled UPE with deferred intent creation', () => {
-		it.skip( 'should successfully place order with the default card', async () => {
+		it( 'should successfully place order with the default card', async () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
@@ -55,7 +55,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).toMatch( 'Order received' );
 		} );
 
-		it.skip( 'should process a payment with authentication for the 3DS card', async () => {
+		it( 'should process a payment with authentication for the 3DS card', async () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
@@ -68,7 +68,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).toMatch( 'Order received' );
 		} );
 
-		it.skip( 'should successfully save the card', async () => {
+		it( 'should successfully save the card', async () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
@@ -85,7 +85,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			);
 		} );
 
-		it.skip( 'should process a payment with the saved card', async () => {
+		it( 'should process a payment with the saved card', async () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
@@ -98,7 +98,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).toMatch( 'Order received' );
 		} );
 
-		it.skip( 'should delete the card', async () => {
+		it( 'should delete the card', async () => {
 			await shopperWCP.goToPaymentMethods();
 			await shopperWCP.deleteSavedPaymentMethod( card.label );
 			await expect( page ).toMatch( 'Payment method deleted' );
@@ -130,7 +130,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 
 	describe( 'My Account', () => {
 		let timeAdded;
-		it.skip( 'should add the card as a new payment method', async () => {
+		it( 'should add the card as a new payment method', async () => {
 			await shopperWCP.goToPaymentMethods();
 			await shopperWCP.addNewPaymentMethod( 'basic', card );
 
@@ -147,7 +147,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			);
 		} );
 
-		it.skip( 'should be able to delete the card', async () => {
+		it( 'should be able to delete the card', async () => {
 			await shopperWCP.deleteSavedPaymentMethod( card.label );
 			await expect( page ).toMatch( 'Payment method deleted.' );
 		} );
