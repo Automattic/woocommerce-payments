@@ -9,7 +9,6 @@
 const {
 	merchant,
 	shopper,
-	evalAndClick,
 	uiUnblocked,
 	clearAndFillInput,
 	setCheckbox,
@@ -585,20 +584,6 @@ export const merchantWCP = {
 
 		await expect( page ).toClick( 'button', {
 			text: 'Save changes',
-		} );
-	},
-
-	openAcceptDispute: async () => {
-		await page.removeAllListeners( 'dialog' );
-		// Open the accept dispute modal.
-		await evalAndClick( '[data-testid="open-accept-dispute-modal-button"' );
-		await uiLoaded();
-		// Click the accept dispute button.
-		await evalAndClick( '[data-testid="accept-dispute-button"]' );
-		// Wait for the accept POST request to resolve and the status chip to update with the new status.
-		await expect( page ).toMatchElement( '.chip', {
-			text: 'Disputed: Lost',
-			timeout: 10000,
 		} );
 	},
 

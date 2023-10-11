@@ -2,13 +2,13 @@
  * External dependencies
  */
 import config from 'config';
+const { merchant, shopper, evalAndClick } = require( '@woocommerce/e2e-utils' );
+
 /**
  * Internal dependencies
  */
-import { merchantWCP } from '../../../utils';
+import { uiLoaded } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
-
-const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 let orderId;
 
@@ -53,8 +53,16 @@ describe( 'Disputes > Submit losing dispute', () => {
 			text: 'The cardholder claims the product was not received',
 		} );
 
-		// Accept the dispute
-		await merchantWCP.openAcceptDispute();
+		// Open the accept dispute modal.
+		await evalAndClick( '[data-testid="open-accept-dispute-modal-button"' );
+		await uiLoaded();
+		// Click the accept dispute button.
+		await evalAndClick( '[data-testid="accept-dispute-button"]' );
+		// Wait for the accept POST request to resolve and the status chip to update with the new status.
+		await expect( page ).toMatchElement( '.chip', {
+			text: 'Disputed: Lost',
+			timeout: 10000,
+		} );
 
 		// Check the dispute details footer
 		await expect( page ).toMatchElement(
