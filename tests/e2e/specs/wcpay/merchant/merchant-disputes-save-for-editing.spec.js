@@ -8,13 +8,13 @@ import config from 'config';
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
-import { merchantWCP } from '../../../utils';
+import { merchantWCP, uiLoaded } from '../../../utils';
 
 const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 let orderId;
 
-describe.skip( 'Disputes > Save dispute for editing', () => {
+describe( 'Disputes > Save dispute for editing', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -104,6 +104,8 @@ describe.skip( 'Disputes > Save dispute for editing', () => {
 
 		// Reload the page
 		await page.reload();
+
+		await uiLoaded();
 
 		// Verify the previously selected Product type was saved
 		await expect( page ).toMatchElement(
