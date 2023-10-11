@@ -41,7 +41,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -144,7 +144,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -265,7 +265,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
              this charge within the next
              
             <abbr
-              title="Jan 8, 2023 / 1:00AM"
+              title="Sep 15, 2023 / 12:33PM"
             >
               <b>
                 7 days
@@ -342,7 +342,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -461,7 +461,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -582,7 +582,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
              this charge within the next
              
             <abbr
-              title="Jan 8, 2023 / 1:00AM"
+              title="Sep 15, 2023 / 12:33PM"
             >
               <b>
                 7 days
@@ -650,7 +650,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -753,7 +753,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -910,7 +910,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -1013,7 +1013,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -1200,7 +1200,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
                 $-20.00
               </p>
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -1303,7 +1303,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -1458,7 +1458,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $0.00
               </p>
               
@@ -1696,7 +1696,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
                 $-12.00
               </p>
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -1799,7 +1799,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -1956,7 +1956,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -2059,7 +2059,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -2175,7 +2175,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
 </div>
 `;
 
-exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] = `
+exports[`PaymentDetailsSummary renders the information of a dispute-reversal charge 1`] = `
 <div>
   <div
     class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
@@ -2206,26 +2206,23 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
                 usd
               </span>
               <span
-                class="chip chip-primary"
+                class="chip chip-success"
               >
-                Disputed: Under review
+                Disputed: Won
               </span>
             </p>
             <div
               class="payment-details-summary__breakdown"
             >
+              
               <p>
-                Refunded: 
-                $-15.00
-              </p>
-              <p>
-                Fee: 
-                $-15.70
+                Fees: 
+                $-0.70
               </p>
               
               <p>
                 Net: 
-                $-10.70
+                $19.30
               </p>
             </div>
           </div>
@@ -2322,7 +2319,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -2420,6 +2417,50 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             </div>
           </li>
         </ul>
+      </div>
+      <div
+        class="components-flex components-card__footer components-card-footer transaction-details-dispute-footer css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardFooter"
+      >
+        <div
+          class="components-flex css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Good news! You won this dispute on -. The disputed amount and the dispute fee have been credited back to your account. 
+            <a
+              href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Learn more about preventing disputes
+            </a>
+            .
+          </div>
+          <div
+            class="components-flex-item transaction-details-dispute-footer__actions css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <a
+              data-link-type="wc-admin"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_1"
+            >
+              <button
+                class="components-button is-secondary"
+                type="button"
+              >
+                View dispute details
+              </button>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
     <div

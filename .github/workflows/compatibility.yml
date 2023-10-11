@@ -64,7 +64,7 @@ jobs:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"8.0\", \"8.1\"]" )
+          PHP_VERSIONS=$( echo "[\"7.4\", \"8.0\", \"8.1\"]" )
           echo "matrix={\"woocommerce\":[\"beta\"],\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":$PHP_VERSIONS}" >> $GITHUB_OUTPUT
 
   # a dedicated job, as allowed to fail

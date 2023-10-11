@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Response;
 
@@ -17,6 +18,22 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	protected function is_wpcom() {
 		return defined( 'IS_WPCOM' ) && IS_WPCOM;
 	}
+
+	/**
+	 * Creates a mock object.
+	 *
+	 * This method does not work differently from `createMock`,
+	 * but the DocBlock comment indicates a proper return type,
+	 * combining `MockObject` and the provided class name.
+	 *
+	 * @template ID
+	 * @param class-string<ID> $original_class_name Name of the class to mock.
+	 * @return ID|MockObject
+	 */
+	public function createMock( string $original_class_name ): MockObject { // phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found
+		return parent::createMock( $original_class_name );
+	}
+
 
 	/**
 	 * Mocks an outgoing WCPay request (Those from WCPay\Core\Server\Request).
@@ -36,7 +53,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 * @param  WC_Payments_API_Client $api_client_mock              Specific API client mock if necessary.
 	 * @param  WC_Payments_Http       $http_mock                    Specific HTTP mock if necessary.
 	 *
-	 * @return Request                                                      The mocked request.
+	 * @return Request|MockObject                                   The mocked request.
 	 */
 	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $request_class_constructor_id = null, $response = null, $api_client_mock = null, $http_mock = null ) {
 		$http_mock       = $http_mock ? $http_mock : $this->createMock( WC_Payments_Http::class );
@@ -48,9 +65,12 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 			// No expectation for calls, return here.
 			return;
 		}
+		// Since setMethodsExcept is deprecated, this is the only alternative I came upon.
+		$methods_to_mock = array_diff( get_class_methods( $request_class ), [ 'set_hook_args', 'assign_hook' ] );
 
 		$request = $this->getMockBuilder( $request_class )
 			->setConstructorArgs( [ $api_client_mock, $http_mock, $request_class_constructor_id ] )
+			->onlyMethods( $methods_to_mock )  // Mock all methods except set_hook_args and assign_hook to accommodate filter args when apply_filters is called.
 			->getMock();
 
 		$api_client_mock->expects( $this->exactly( $total_api_calls ) )

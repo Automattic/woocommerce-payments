@@ -15,22 +15,31 @@ import type {
 	CachedDisputes,
 	DisputesSummary,
 } from 'wcpay/types/disputes';
+import type { ApiError } from 'wcpay/types/errors';
 import { STORE_NAME } from '../constants';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
+/**
+ * Returns the dispute object, loading state, and accept function.
+ * Fetches the dispute object if it is not already cached.
+ */
 export const useDispute = (
 	id: string
 ): {
-	dispute: Dispute;
+	dispute?: Dispute;
+	error?: ApiError;
 	isLoading: boolean;
 	doAccept: () => void;
 } => {
-	const { dispute, isLoading } = useSelect(
+	const { dispute, error, isLoading } = useSelect(
 		( select ) => {
-			const { getDispute, isResolving } = select( STORE_NAME );
+			const { getDispute, getDisputeError, isResolving } = select(
+				STORE_NAME
+			);
 
 			return {
-				dispute: <Dispute>getDispute( id ),
+				dispute: <Dispute | undefined>getDispute( id ),
+				error: <ApiError | undefined>getDisputeError( id ),
 				isLoading: <boolean>isResolving( 'getDispute', [ id ] ),
 			};
 		},
@@ -40,7 +49,32 @@ export const useDispute = (
 	const { acceptDispute } = useDispatch( STORE_NAME );
 	const doAccept = () => acceptDispute( id );
 
-	return { dispute, isLoading, doAccept };
+	return { dispute, isLoading, error, doAccept };
+};
+
+/**
+ * Returns the dispute accept function and loading state.
+ * Does not return or fetch the dispute object.
+ */
+export const useDisputeAccept = (
+	dispute: Dispute
+): {
+	doAccept: () => void;
+	isLoading: boolean;
+} => {
+	const { isLoading } = useSelect(
+		( select ) => {
+			const { isResolving } = select( STORE_NAME );
+
+			return {
+				isLoading: isResolving( 'getDispute', [ dispute.id ] ),
+			};
+		},
+		[ dispute.id ]
+	);
+	const { acceptTransactionDetailsDispute } = useDispatch( STORE_NAME );
+	const doAccept = () => acceptTransactionDetailsDispute( dispute );
+	return { doAccept, isLoading };
 };
 
 export const useDisputeEvidence = (): {
