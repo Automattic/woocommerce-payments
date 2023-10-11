@@ -117,6 +117,12 @@ class WooPay_Scheduler {
 	public function update_enabled_adapted_extensions( $active_plugins, $adapted_extensions ) {
 		$enabled_adapted_extensions = $this->get_extensions_in_list( $active_plugins, $adapted_extensions );
 
+		if ( count( $enabled_adapted_extensions ) > 0 ) {
+			update_option( \WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, 0 );
+		} else {
+			update_option( \WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, 1 );
+		}
+
 		update_option( self::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, $enabled_adapted_extensions );
 	}
 
