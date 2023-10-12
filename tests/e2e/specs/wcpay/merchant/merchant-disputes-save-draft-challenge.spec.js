@@ -13,7 +13,7 @@ import { uiLoaded } from '../../../utils';
 
 let orderId;
 
-describe( 'Disputes > Save dispute for editing', () => {
+describe( 'Disputes > Merchant can save and resume draft dispute challenge', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -55,7 +55,7 @@ describe( 'Disputes > Save dispute for editing', () => {
 		} );
 	} );
 
-	it( 'should be able to save dispute for editing', async () => {
+	it( 'should be able to save a draft dispute challenge and resume', async () => {
 		// Click the challenge dispute button.
 		await evalAndClick( '[data-testid="challenge-dispute-button"]' );
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
