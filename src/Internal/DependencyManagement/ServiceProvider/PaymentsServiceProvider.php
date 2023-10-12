@@ -41,7 +41,6 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		PaymentProcessingService::class,
 		Router::class,
 		StateFactory::class,
-		Logger::class,
 		InitialState::class,
 		CompletedState::class,
 		SystemErrorState::class,
@@ -56,11 +55,6 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register(): void {
 		$container = $this->getContainer();
-
-		$container->add( 'wc_get_logger', 'wc_get_logger' );
-		
-		$container->addShared( Logger::class )
-			->addArgument( 'wc_get_logger' );
 
 		$container->addShared( StateFactory::class )
 			->addArgument( Container::class );

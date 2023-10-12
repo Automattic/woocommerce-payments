@@ -26,6 +26,7 @@ class GenericServiceProvider extends AbstractServiceProvider {
 	 * @var string[]
 	 */
 	protected $provides = [
+		Logger::class,
 		OrderService::class,
 		Level3Service::class,
 	];
@@ -35,6 +36,10 @@ class GenericServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register(): void {
 		$container = $this->getContainer();
+
+		$container->add( 'wc_get_logger', 'wc_get_logger' );
+		$container->addShared( Logger::class )
+			->addArgument( 'wc_get_logger' );
 
 		$container->addShared( OrderService::class )
 			->addArgument( WC_Payments_Order_Service::class )
