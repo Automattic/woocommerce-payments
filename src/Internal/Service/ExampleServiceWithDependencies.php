@@ -10,6 +10,7 @@ namespace WCPay\Internal\Service;
 use Automattic\WooCommerce\Utilities\PluginUtil;
 use Exception;
 use WCPay\Core\Mode;
+use WCPay\Internal\Logger;
 
 /**
  * This is a service, which will be used for developing
@@ -39,20 +40,30 @@ class ExampleServiceWithDependencies {
 	private $plugin_util;
 
 	/**
+	 * Logger
+	 *
+	 * @var Logger
+	 */
+	private $logger;
+
+	/**
 	 * Instantiates the class.
 	 *
 	 * @param ExampleService $example_service A class from `src`.
 	 * @param Mode           $mode            Legacy class from `includes`.
 	 * @param PluginUtil     $plugin_util     WooCommerce Core class.
+	 * @param Logger     $logger     Internal Logger class.
 	 */
 	public function __construct(
 		ExampleService $example_service,
 		Mode $mode,
-		PluginUtil $plugin_util
+		PluginUtil $plugin_util,
+		Logger $logger
 	) {
 		$this->example_service = $example_service;
 		$this->mode            = $mode;
 		$this->plugin_util     = $plugin_util;
+		$this->logger          = $logger;
 	}
 
 	/**

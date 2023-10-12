@@ -14,6 +14,7 @@ use WC_Order_Item_Fee;
 use WC_Payments_Account;
 use WC_Payments_Utils;
 use WCPay\Internal\Service\OrderService;
+use WCPay\Internal\Logger;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Proxy\LegacyProxy;
 
@@ -52,11 +53,13 @@ class Level3Service {
 	public function __construct(
 		OrderService $order_service,
 		WC_Payments_Account $account,
-		LegacyProxy $legacy_proxy
+		LegacyProxy $legacy_proxy,
+		Logger $logger
 	) {
 		$this->order_service = $order_service;
 		$this->account       = $account;
 		$this->legacy_proxy  = $legacy_proxy;
+		$this->logger = $logger;
 	}
 
 	/**

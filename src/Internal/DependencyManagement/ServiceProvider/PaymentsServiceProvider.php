@@ -12,6 +12,7 @@ use WC_Payments_Customer_Service;
 use WCPay\Container;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
+use WCPay\Internal\Logger;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\CompletedState;
@@ -40,6 +41,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		PaymentProcessingService::class,
 		Router::class,
 		StateFactory::class,
+		Logger::class,
 		InitialState::class,
 		CompletedState::class,
 		SystemErrorState::class,
@@ -54,6 +56,11 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register(): void {
 		$container = $this->getContainer();
+
+		$container->add( 'wc_get_logger', 'wc_get_logger' );
+		
+		$container->addShared( Logger::class )
+			->addArgument( 'wc_get_logger' );
 
 		$container->addShared( StateFactory::class )
 			->addArgument( Container::class );
@@ -87,6 +94,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( ExampleServiceWithDependencies::class )
 			->addArgument( ExampleService::class )
 			->addArgument( Mode::class )
-			->addArgument( PluginUtil::class );
+			->addArgument( PluginUtil::class )
+			->addArgument( Logger::class );
 	}
 }
