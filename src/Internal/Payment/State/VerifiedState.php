@@ -57,6 +57,7 @@ class VerifiedState extends AbstractPaymentState {
 	 *
 	 * @return AbstractPaymentState
 	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
+	 * @throws \WCPay\Vendor\League\Container\Exception\ContainerException
 	 */
 	public function process() {
 		$context = $this->get_context();
@@ -75,6 +76,7 @@ class VerifiedState extends AbstractPaymentState {
 		}
 
 		// All good. Proceed to processed state.
-		return $this->create_state( ProcessedState::class );
+		$next_state = $this->create_state( ProcessedState::class );
+		return $next_state->complete();
 	}
 }
