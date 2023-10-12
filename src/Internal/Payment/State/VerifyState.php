@@ -7,7 +7,7 @@
 
 namespace WCPay\Internal\Payment\State;
 
-use WC_Payments_API_Payment_Intention;
+use WC_Payments_API_Abstract_Intention;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
@@ -66,7 +66,7 @@ class VerifyState extends AbstractPaymentState {
 			$intent = $this->payment_request_service->create_intent( $context );
 
 			// Something went wrong since the intent is not an instance of payment intent class. Transition to error state.
-			if ( ! $intent instanceof WC_Payments_API_Payment_Intention ) {
+			if ( ! $intent instanceof WC_Payments_API_Abstract_Intention ) {
 				return $this->create_state( SystemErrorState::class );
 			}
 			$context->set_intent( $intent );

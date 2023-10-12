@@ -80,7 +80,8 @@ class InitialState extends AbstractPaymentState {
 		// Populate further details from the order.
 		$this->populate_context_from_order();
 
-		return $this->create_state( VerifyState::class );
+		$next_state = $this->create_state( VerifyState::class );
+		return $next_state->process();
 	}
 
 	/**
