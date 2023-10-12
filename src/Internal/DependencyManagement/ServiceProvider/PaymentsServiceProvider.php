@@ -14,12 +14,16 @@ use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Payment\Router;
+use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\PaymentErrorState;
+use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\State\SystemErrorState;
+use WCPay\Internal\Payment\State\VerifyState;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Internal\Service\CheckoutEncryptionService;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
@@ -41,12 +45,15 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		Router::class,
 		StateFactory::class,
 		InitialState::class,
+		VerifyState::class,
+		ProcessedState::class,
 		CompletedState::class,
 		SystemErrorState::class,
 		PaymentErrorState::class,
 		ExampleService::class,
 		ExampleServiceWithDependencies::class,
 		PaymentRequestService::class,
+		CheckoutEncryptionService::class,
 	];
 
 	/**
@@ -63,13 +70,26 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( LegacyProxy::class );
 
 		$container->addShared( PaymentRequestService::class );
+		$container->addShared( CheckoutEncryptionService::class );
 
 		$container->add( InitialState::class )
 			->addArgument( StateFactory::class )
 			->addArgument( OrderService::class )
 			->addArgument( WC_Payments_Customer_Service::class )
-			->addArgument( Level3Service::class )
+			->addArgument( Level3Service::class );
+
+		$container->add( VerifyState::class )
+			->addArgument( StateFactory::class )
+			->addArgument( OrderService::class )
 			->addArgument( PaymentRequestService::class );
+
+		$container->add( ProcessedState::class )
+			->addArgument( StateFactory::class )
+			->addArgument( OrderService::class );
+
+		$container->add( AuthenticationRequiredState::class )
+			->addArgument( StateFactory::class )
+			->addArgument( OrderService::class );
 
 		$container->add( CompletedState::class )
 			->addArgument( StateFactory::class );
