@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Subscription turns into manual renewal after deleting payment method
