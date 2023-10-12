@@ -52,7 +52,7 @@ class ExampleServiceWithDependencies {
 	 * @param ExampleService $example_service A class from `src`.
 	 * @param Mode           $mode            Legacy class from `includes`.
 	 * @param PluginUtil     $plugin_util     WooCommerce Core class.
-	 * @param Logger     $logger     Internal Logger class.
+	 * @param Logger         $logger     Internal Logger class.
 	 */
 	public function __construct(
 		ExampleService $example_service,
