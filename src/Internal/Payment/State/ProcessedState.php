@@ -15,7 +15,7 @@ use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\PaymentRequestService;
 
 /**
- * This state is used when payment is completed on the server and we need to update date on the plugin side.
+ * This state is used when payment is completed on the server, and we need to update date on the plugin side.
  */
 class ProcessedState extends AbstractPaymentState {
 
@@ -30,8 +30,8 @@ class ProcessedState extends AbstractPaymentState {
 	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory $state_factory           Factory for payment states.
-	 * @param OrderService $order_service           Service for order-related actions.
+	 * @param StateFactory $state_factory Factory for payment states.
+	 * @param OrderService $order_service Service for order-related actions.
 	 */
 	public function __construct(
 		StateFactory $state_factory,

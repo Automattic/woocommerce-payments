@@ -24,7 +24,7 @@ class AuthenticationRequiredState extends AbstractPaymentState {
 	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory              $state_factory                            Factory for payment states.
+	 * @param StateFactory              $state_factory Factory for payment states.
 	 * @param CheckoutEncryptionService $checkout_encryption_service Service for encrypting checkout data.
 	 */
 	public function __construct(
@@ -35,6 +35,7 @@ class AuthenticationRequiredState extends AbstractPaymentState {
 
 		$this->checkout_encryption_service = $checkout_encryption_service;
 	}
+
 	/**
 	 * Get response that will be sent to the client.
 	 */

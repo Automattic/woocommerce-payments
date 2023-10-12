@@ -37,8 +37,8 @@ class VerifyState extends AbstractPaymentState {
 	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory          $state_factory           Factory for payment states.
-	 * @param OrderService          $order_service           Service for order-related actions.
+	 * @param StateFactory          $state_factory Factory for payment states.
+	 * @param OrderService          $order_service Service for order-related actions.
 	 * @param PaymentRequestService $payment_request_service Connection with the server.
 	 */
 	public function __construct(

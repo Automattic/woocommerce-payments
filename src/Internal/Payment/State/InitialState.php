@@ -45,10 +45,10 @@ class InitialState extends AbstractPaymentState {
 	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory                 $state_factory           Factory for payment states.
-	 * @param OrderService                 $order_service           Service for order-related actions.
-	 * @param WC_Payments_Customer_Service $customer_service        Service for managing remote customers.
-	 * @param Level3Service                $level3_service          Service for Level3 Data.
+	 * @param StateFactory                 $state_factory Factory for payment states.
+	 * @param OrderService                 $order_service Service for order-related actions.
+	 * @param WC_Payments_Customer_Service $customer_service Service for managing remote customers.
+	 * @param Level3Service                $level3_service Service for Level3 Data.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -66,7 +66,8 @@ class InitialState extends AbstractPaymentState {
 	/**
 	 * Initialtes the payment process.
 	 *
-	 * @param PaymentRequest $request    The incoming payment processing request.
+	 * @param PaymentRequest $request The incoming payment processing request.
+	 *
 	 * @return AbstractPaymentState      The next state.
 	 * @throws StateTransitionException  In case the completed state could not be initialized.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
@@ -81,6 +82,7 @@ class InitialState extends AbstractPaymentState {
 		$this->populate_context_from_order();
 
 		$next_state = $this->create_state( VerifyState::class );
+
 		return $next_state->process();
 	}
 
@@ -93,6 +95,7 @@ class InitialState extends AbstractPaymentState {
 	 * on all needed parameters being in place.
 	 *
 	 * @param PaymentRequest $request The request to use.
+	 *
 	 * @throws PaymentRequestException When data is not available or invalid.
 	 */
 	protected function populate_context_from_request( PaymentRequest $request ) {
