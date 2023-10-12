@@ -146,17 +146,40 @@ class PaymentRequest {
 	}
 
 	/**
-	 * Populates a payment context before processing a payment.
+	 * Extract the payment CVC confirmation from the request.
 	 *
-	 * This method is the link between the payment request, and the payment process.
-	 * Use it to make sure that all necessary parameters are provided in advance,
-	 * or throw an exception otherwise. Once done, the payment process would rely
-	 * on all needed parameters being in place.
-	 *
-	 * @param PaymentContext $context Context to populate.
-	 * @throws PaymentRequestException When data is not available or invalid.
+	 * @return string|null
 	 */
-	public function populate_context( PaymentContext $context ) {
-		$context->set_payment_method( $this->get_payment_method() );
+	public function get_cvc_confirmation(): ?string {
+		$payment_method = $this->request['payment_method'] ?? null;
+		if ( null === $payment_method ) {
+			return null;
+		}
+
+		$cvc_request_key = 'wc-' . $payment_method . '-payment-cvc-confirmation';
+		if (
+			! isset( $this->request[ $cvc_request_key ] ) ||
+			'new' === $this->request[ $cvc_request_key ]
+		) {
+			return null;
+		}
+
+		return $this->request[ $cvc_request_key ];
+	}
+
+	/**
+	 * Extracts the fingerprint data from the request.
+	 *
+	 * @return string
+	 */
+	public function get_fingerprint(): ?string {
+		if ( ! empty( $this->request['wcpay-fingerprint'] ) ) {
+			$normalized = wc_clean( $this->request['wcpay-fingerprint'] );
+			if ( is_string( $normalized ) ) {
+				return $normalized;
+			}
+		}
+
+		return null;
 	}
 }
