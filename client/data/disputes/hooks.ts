@@ -20,7 +20,7 @@ import { STORE_NAME } from '../constants';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
 /**
- * Returns the dispute object, loading state, and accept function.
+ * Returns the dispute object, error object, and loading state.
  * Fetches the dispute object if it is not already cached.
  */
 export const useDispute = (
@@ -29,7 +29,6 @@ export const useDispute = (
 	dispute?: Dispute;
 	error?: ApiError;
 	isLoading: boolean;
-	doAccept: () => void;
 } => {
 	const { dispute, error, isLoading } = useSelect(
 		( select ) => {
@@ -46,10 +45,7 @@ export const useDispute = (
 		[ id ]
 	);
 
-	const { acceptDispute } = useDispatch( STORE_NAME );
-	const doAccept = () => acceptDispute( dispute );
-
-	return { dispute, isLoading, error, doAccept };
+	return { dispute, isLoading, error };
 };
 
 /**
