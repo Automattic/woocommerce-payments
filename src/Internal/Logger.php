@@ -18,6 +18,9 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * A wrapper class for interacting with WC_Logger.
  */
 class Logger {
+
+	const LOG_FILENAME = 'woocommerce-payments';
+
 	/**
 	 * The holding property for our WC_Logger instance.
 	 *
@@ -38,8 +41,6 @@ class Logger {
 	 * @var Mode
 	 */
 	private $mode;
-
-	const LOG_FILENAME = 'woocommerce-payments';
 
 	/**
 	 * Logger constructor.
