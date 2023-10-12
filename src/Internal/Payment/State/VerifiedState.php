@@ -1,6 +1,6 @@
 <?php
 /**
- * Class VerifyState
+ * Class VerifiedState
  *
  * @package WooCommerce\Payments
  */
@@ -18,7 +18,7 @@ use WCPay\Internal\Service\PaymentRequestService;
 /**
  * This state is used to create payment intent and verify next actions based on the intent state.
  */
-class VerifyState extends AbstractPaymentState {
+class VerifiedState extends AbstractPaymentState {
 
 	/**
 	 * Order service.

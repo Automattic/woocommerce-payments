@@ -21,7 +21,7 @@ use WCPay\Internal\Payment\State\PaymentErrorState;
 use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\State\SystemErrorState;
-use WCPay\Internal\Payment\State\VerifyState;
+use WCPay\Internal\Payment\State\VerifiedState;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\CheckoutEncryptionService;
 use WCPay\Internal\Service\PaymentProcessingService;
@@ -45,7 +45,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		Router::class,
 		StateFactory::class,
 		InitialState::class,
-		VerifyState::class,
+		VerifiedState::class,
 		ProcessedState::class,
 		CompletedState::class,
 		SystemErrorState::class,
@@ -80,7 +80,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( WC_Payments_Customer_Service::class )
 			->addArgument( Level3Service::class );
 
-		$container->add( VerifyState::class )
+		$container->add( VerifiedState::class )
 			->addArgument( StateFactory::class )
 			->addArgument( OrderService::class )
 			->addArgument( PaymentRequestService::class );
