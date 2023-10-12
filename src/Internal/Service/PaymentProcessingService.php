@@ -7,7 +7,9 @@
 
 namespace WCPay\Internal\Service;
 
-use Exception; // Temporary exception! This service would have its own exception when more business logics are added.
+use Exception;
+
+// Temporary exception! This service would have its own exception when more business logics are added.
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
@@ -39,7 +41,7 @@ class PaymentProcessingService {
 	 * Service constructor.
 	 *
 	 * @param StateFactory $state_factory Factory for payment states.
-	 * @param LegacyProxy  $legacy_proxy  Legacy proxy.
+	 * @param LegacyProxy  $legacy_proxy Legacy proxy.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -52,7 +54,7 @@ class PaymentProcessingService {
 	/**
 	 * Process payment.
 	 *
-	 * @param int  $order_id       Order ID provided by WooCommerce core.
+	 * @param int  $order_id Order ID provided by WooCommerce core.
 	 * @param bool $manual_capture Whether to only create an authorization instead of a charge (optional).
 	 *
 	 * @throws Exception
@@ -66,19 +68,22 @@ class PaymentProcessingService {
 
 		$request       = new PaymentRequest( $this->legacy_proxy );
 		$initial_state = $this->state_factory->create_state( InitialState::class, $context );
+
 		return $initial_state->start_processing( $request );
 	}
 
 	/**
 	 * Instantiates a new empty payment context.
 	 *
-	 * @param int  $order_id       ID of the order that the context belongs to.
+	 * @param int  $order_id ID of the order that the context belongs to.
 	 * @param bool $manual_capture Whether manual capture is enabled.
+	 *
 	 * @return PaymentContext
 	 */
 	protected function create_payment_context( int $order_id, bool $manual_capture = false ): PaymentContext {
 		$context = new PaymentContext( $order_id );
 		$context->toggle_manual_capture( $manual_capture );
+
 		return $context;
 	}
 }

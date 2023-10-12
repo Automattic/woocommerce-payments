@@ -70,7 +70,9 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( LegacyProxy::class );
 
 		$container->addShared( PaymentRequestService::class );
-		$container->addShared( CheckoutEncryptionService::class );
+
+		$container->addShared( CheckoutEncryptionService::class )
+			->addArgument( LegacyProxy::class );
 
 		$container->add( InitialState::class )
 			->addArgument( StateFactory::class )
