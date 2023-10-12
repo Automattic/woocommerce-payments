@@ -17,7 +17,6 @@ use WC_Payments_Account;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Proxy\LegacyProxy;
-use WCPay\Internal\Logger;
 
 /**
  * Level3 data service unit tests.
@@ -46,11 +45,6 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 	private $legacy_proxy;
 
 	/**
-	 * @var Logger|MockObject
-	 */
-	private $logger;
-
-	/**
 	 * Order ID used for mocks.
 	 *
 	 * @var int
@@ -66,14 +60,12 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 		$this->mock_order_service = $this->createMock( OrderService::class );
 		$this->mock_account       = $this->createMock( WC_Payments_Account::class );
 		$this->legacy_proxy       = $this->createMock( LegacyProxy::class );
-		$this->logger             = $this->createMock( Logger::class );
 
 		// Main service under test: Level3Service.
 		$this->sut = new Level3Service(
 			$this->mock_order_service,
 			$this->mock_account,
-			$this->legacy_proxy,
-			$this->logger
+			$this->legacy_proxy
 		);
 	}
 
