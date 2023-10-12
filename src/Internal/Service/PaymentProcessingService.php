@@ -66,7 +66,7 @@ class PaymentProcessingService {
 
 		$request         = new PaymentRequest( $this->legacy_proxy );
 		$initial_state   = $this->state_factory->create_state( InitialState::class, $context );
-		$completed_state = $initial_state->process( $request );
+		$completed_state = $initial_state->start_processing( $request );
 
 		return $completed_state;
 	}

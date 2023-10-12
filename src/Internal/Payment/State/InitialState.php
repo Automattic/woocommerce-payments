@@ -13,11 +13,7 @@ use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\PaymentRequestService;
-use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
-use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
-use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
-use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\PaymentRequestException;
 
@@ -47,68 +43,44 @@ class InitialState extends AbstractPaymentState {
 	private $level3_service;
 
 	/**
-	 * Payment request service.
-	 *
-	 * @var PaymentRequestService
-	 */
-	private $payment_request_service;
-
-	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
 	 * @param StateFactory                 $state_factory           Factory for payment states.
 	 * @param OrderService                 $order_service           Service for order-related actions.
 	 * @param WC_Payments_Customer_Service $customer_service        Service for managing remote customers.
 	 * @param Level3Service                $level3_service          Service for Level3 Data.
-	 * @param PaymentRequestService        $payment_request_service Connection with the server.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
 		OrderService $order_service,
 		WC_Payments_Customer_Service $customer_service,
-		Level3Service $level3_service,
-		PaymentRequestService $payment_request_service
+		Level3Service $level3_service
 	) {
 		parent::__construct( $state_factory );
 
-		$this->order_service           = $order_service;
-		$this->customer_service        = $customer_service;
-		$this->level3_service          = $level3_service;
-		$this->payment_request_service = $payment_request_service;
+		$this->order_service    = $order_service;
+		$this->customer_service = $customer_service;
+		$this->level3_service   = $level3_service;
 	}
 
 	/**
 	 * Initialtes the payment process.
 	 *
 	 * @param PaymentRequest $request    The incoming payment processing request.
-	 * @return CompletedState            The next state.
+	 * @return AbstractPaymentState      The next state.
 	 * @throws StateTransitionException  In case the completed state could not be initialized.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception Order could not be found.
 	 * @throws PaymentRequestException   When data is not available or invalid.
 	 */
-	public function process( PaymentRequest $request ) {
-		$context  = $this->get_context();
-		$order_id = $context->get_order_id();
-
+	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
 		$this->populate_context_from_request( $request );
 
 		// Populate further details from the order.
 		$this->populate_context_from_order();
 
-		// Payments are currently based on intents, request one from the API.
-		try {
-			$intent = $this->payment_request_service->create_intent( $context );
-		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
-			return $this->create_state( SystemErrorState::class );
-		}
-
-		// Intent available, complete processing.
-		$this->order_service->update_order_from_successful_intent( $order_id, $intent, $context );
-
-		// If everything went well, transition to the completed state.
-		return $this->create_state( CompletedState::class );
+		return $this->create_state( VerifyState::class );
 	}
 
 	/**
