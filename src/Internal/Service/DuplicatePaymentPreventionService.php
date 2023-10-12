@@ -8,9 +8,10 @@
 namespace WCPay\Internal\Service;
 
 use Exception;
-use WC_Order;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Logger;
 
 /**
  * Used for methods, which detect existing payments or payment intents,
@@ -59,13 +60,14 @@ class DuplicatePaymentPreventionService {
 	/**
 	 * Checks if the attached payment intent was successful for the current order.
 	 *
-	 * @param WC_Order $order Current order to check.
+	 * @param  int $order_id Order ID.
 	 *
 	 * @return array|void A successful response in case the attached intent was successful, null if none.
+	 * @throws Order_Not_Found_Exception
 	 */
-	public function check_payment_intent_attached_to_order_succeeded( WC_Order $order ) {
-		$intent_id = (string) $order->get_meta( '_intent_id', true );
-		if ( empty( $intent_id ) ) {
+	public function check_payment_intent_attached_to_order_succeeded( int $order_id ) {
+		$intent_id = $this->order_service->get_intent_id( $order_id );
+		if ( is_null( $intent_id ) ) {
 			return;
 		}
 
@@ -75,6 +77,7 @@ class DuplicatePaymentPreventionService {
 			return;
 		}
 
+		$order = $this->order_service->_deprecated_get_order( $order_id );
 		try {
 			$request = Get_Intention::create( $intent_id );
 			$request->set_hook_args( $order );
@@ -91,14 +94,12 @@ class DuplicatePaymentPreventionService {
 
 		$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
 		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
-		if ( $intent_meta_order_id !== $order->get_id() ) {
+		if ( $intent_meta_order_id !== $order_id ) {
 			return;
 		}
 
-		if ( Intent_Status::SUCCEEDED === $intent_status ) {
-			$this->remove_session_processing_order( $order->get_id() );
-		}
-		$this->order_service->update_order_status_from_intent( $order, $intent );
+		$this->remove_session_processing_order( $order_id );
+		$this->order_service->update_order_status_from_intent( $order_id, $intent );
 
 		$return_url = add_query_arg(
 			self::FLAG_PREVIOUS_SUCCESSFUL_INTENT,
@@ -106,53 +107,50 @@ class DuplicatePaymentPreventionService {
 			$order->get_checkout_order_received_url()
 		);
 		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
-			'result'                               => 'success',
-			'redirect'                             => $return_url,
-			'wcpay_upe_previous_successful_intent' => 'yes', // This flag is needed for UPE flow.
+			'result'   => 'success',
+			'redirect' => $return_url,
 		];
 	}
 
 	/**
 	 * Checks if the current order has the same content with the session processing order, which was already paid (ex. by a webhook).
 	 *
-	 * @param WC_Order $current_order Current order in process_payment.
+	 * @param  int $current_order_id  ID of the current processing order.
 	 *
 	 * @return array|void A successful response in case the session processing order was paid, null if none.
+	 * @throws Order_Not_Found_Exception
 	 */
-	public function check_against_session_processing_order( WC_Order $current_order ) {
+	public function check_against_session_processing_order( int $current_order_id ) {
 		$session_order_id = $this->get_session_processing_order();
 		if ( null === $session_order_id ) {
 			return;
 		}
 
-		$session_order = wc_get_order( $session_order_id );
-		if ( ! is_a( $session_order, 'WC_Order' ) ) {
+		if ( $this->order_service->get_cart_hash( $current_order_id ) !== $this->order_service->get_cart_hash( $session_order_id ) ) {
 			return;
 		}
 
-		if ( $current_order->get_cart_hash() !== $session_order->get_cart_hash() ) {
+		if ( ! $this->order_service->is_paid( $session_order_id ) ) {
 			return;
 		}
 
-		if ( ! $session_order->has_status( wc_get_is_paid_statuses() ) ) {
-			return;
-		}
-
-		$session_order->add_order_note(
+		$this->order_service->add_note(
+			$session_order_id,
 			sprintf(
 				/* translators: order ID integer number */
 				__( 'WooCommerce Payments: detected and deleted order ID %d, which has duplicate cart content with this order.', 'woocommerce-payments' ),
-				$current_order->get_id()
+				$current_order_id
 			)
 		);
-		$current_order->delete();
+
+		$this->order_service->delete( $current_order_id );
 
 		$this->remove_session_processing_order( $session_order_id );
 
 		$return_url = add_query_arg(
 			self::FLAG_PREVIOUS_ORDER_PAID,
 			'yes',
-			$session_order->get_checkout_order_received_url()
+			$this->order_service->_deprecated_get_order( $session_order_id )->get_checkout_order_received_url()
 		);
 
 		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
