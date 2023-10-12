@@ -328,6 +328,9 @@ class WC_Payments_Admin {
 	 * Add payments menu items.
 	 */
 	public function add_payments_menu() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 		global $submenu;
 
 		try {
@@ -540,7 +543,9 @@ class WC_Payments_Admin {
 	 * Register the CSS and JS scripts
 	 */
 	public function register_payments_scripts() {
-		// TODO: Add check to see if user can manage_woocommerce and exit early if they cannot.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index' );
 
@@ -1025,6 +1030,9 @@ class WC_Payments_Admin {
 	 * if it is not and the user is attempting to view a WCPay admin page.
 	 */
 	public function maybe_redirect_to_onboarding() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 		if ( wp_doing_ajax() ) {
 			return;
 		}
@@ -1071,6 +1079,9 @@ class WC_Payments_Admin {
 	 * @see self::add_payments_menu()
 	 */
 	public function maybe_redirect_overview_to_connect() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 		if ( wp_doing_ajax() ) {
 			return;
 		}
@@ -1105,6 +1116,9 @@ class WC_Payments_Admin {
 	 * Redirect back to the connect page with an error message.
 	 */
 	public function maybe_redirect_onboarding_flow_to_connect(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
 		if ( isset( $url_params['page'] ) && 'wc-admin' === $url_params['page']
 			&& isset( $url_params['path'] ) && '/payments/onboarding' === $url_params['path'] && ! $this->payments_api_client->is_server_connected() ) {
