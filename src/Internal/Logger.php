@@ -72,6 +72,7 @@ class Logger {
 	 *     'notice': Normal but significant condition.
 	 *     'info': Informational messages.
 	 *     'debug': Debug-level messages.
+	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
 	public function log( $message, $level = 'info' ) {
 		if ( ! $this->can_log() ) {
