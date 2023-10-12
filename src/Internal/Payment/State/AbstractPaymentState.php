@@ -106,6 +106,17 @@ abstract class AbstractPaymentState {
 	}
 
 	/**
+	 * Process all needed verifications.
+	 *
+	 * @return AbstractPaymentState
+	 * @throws \WCPay\Exceptions\Order_Not_Found_Exception
+	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
+	 */
+	public function complete() {
+		$this->throw_unavailable_method_exception( __METHOD__ );
+	}
+
+	/**
 	 * Throws an exception, indicating that a given method is not available.
 	 *
 	 * @param string $method_name The name of the called method.
