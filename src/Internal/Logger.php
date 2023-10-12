@@ -102,6 +102,7 @@ class Logger {
 	 * Creates a log entry of type emergency
 	 *
 	 * @param string $message To send to the log file.
+	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
 	public function emergency( $message ) {
 		$this->log( $message, 'emergency' );
@@ -111,6 +112,7 @@ class Logger {
 	 * Creates a log entry of type alert
 	 *
 	 * @param string $message To send to the log file.
+	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
 	public function alert( $message ) {
 		$this->log( $message, 'alert' );
@@ -120,6 +122,7 @@ class Logger {
 	 * Creates a log entry of type critical
 	 *
 	 * @param string $message To send to the log file.
+	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
 	public function critical( $message ) {
 		$this->log( $message, 'critical' );
@@ -129,6 +132,7 @@ class Logger {
 	 * Creates a log entry of type error
 	 *
 	 * @param string $message To send to the log file.
+	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
 	public function error( $message ) {
 		$this->log( $message, 'error' );
@@ -138,6 +142,7 @@ class Logger {
 	 * Creates a log entry of type warning
 	 *
 	 * @param string $message To send to the log file.
+	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
 	public function warning( $message ) {
 		$this->log( $message, 'warning' );
@@ -147,6 +152,7 @@ class Logger {
 	 * Creates a log entry of type notice
 	 *
 	 * @param string $message To send to the log file.
+	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
 	public function notice( $message ) {
 		$this->log( $message, 'notice' );
@@ -156,6 +162,7 @@ class Logger {
 	 * Creates a log entry of type info
 	 *
 	 * @param string $message To send to the log file.
+	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
 	public function info( $message ) {
 		$this->log( $message, 'info' );
@@ -165,6 +172,7 @@ class Logger {
 	 * Creates a log entry of type debug
 	 *
 	 * @param string $message To send to the log file.
+	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
 	public function debug( $message ) {
 		$this->log( $message, 'debug' );
