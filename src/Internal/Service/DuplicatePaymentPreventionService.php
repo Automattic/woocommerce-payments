@@ -11,6 +11,7 @@ use Exception;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Logger;
 
 /**
@@ -35,6 +36,8 @@ class DuplicatePaymentPreventionService {
 
 	/**
 	 * Flag to indicate that a previous intention attached to the order was successful.
+	 *
+	 * @type string
 	 */
 	const FLAG_PREVIOUS_SUCCESSFUL_INTENT = 'wcpay_previous_successful_intent';
 
@@ -46,15 +49,31 @@ class DuplicatePaymentPreventionService {
 	private $order_service;
 
 	/**
-	 * Initializes all dependencies and hooks, related to the service.
+	 * HooksProxy instance.
+	 *
+	 * @var HooksProxy
+	 */
+	private $hooks_proxy;
+
+	/**
+	 * Initializes all dependencies.
 	 *
 	 * @param OrderService $order_service The order service instance.
+	 * @param HooksProxy   $hooks_proxy   The hooks proxy instance.
 	 */
-	public function init( OrderService $order_service ) {
+	public function __construct( OrderService $order_service, HooksProxy $hooks_proxy ) {
 		$this->order_service = $order_service;
+		$this->hooks_proxy   = $hooks_proxy;
+	}
 
+	/**
+	 * Initializes this class's hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks(): void {
 		// Priority 21 to run right after wc_clear_cart_after_payment.
-		add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
+		$this->hooks_proxy->add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
 	}
 
 	/**
