@@ -7,12 +7,21 @@
 
 namespace WCPay\Internal\Payment\State;
 
+use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\CheckoutEncryptionService;
 
 /**
  * The state, which indicates that the payment processing has been completed.
  */
 class AuthenticationRequiredState extends AbstractPaymentState {
+
+	/**
+	 * Legacy Proxy.
+	 *
+	 * @var LegacyProxy
+	 */
+	private $legacy_proxy;
+
 	/**
 	 * Checkout Encryption service
 	 *
@@ -25,14 +34,17 @@ class AuthenticationRequiredState extends AbstractPaymentState {
 	 * Class constructor, only meant for storing dependencies.
 	 *
 	 * @param StateFactory              $state_factory Factory for payment states.
+	 * @param LegacyProxy               $legacy_proxy Legacy proxy.
 	 * @param CheckoutEncryptionService $checkout_encryption_service Service for encrypting checkout data.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
+		LegacyProxy $legacy_proxy,
 		CheckoutEncryptionService $checkout_encryption_service
 	) {
 		parent::__construct( $state_factory );
 
+		$this->legacy_proxy                = $legacy_proxy;
 		$this->checkout_encryption_service = $checkout_encryption_service;
 	}
 
@@ -55,7 +67,7 @@ class AuthenticationRequiredState extends AbstractPaymentState {
 			$context->get_amount() > 0 ? 'pi' : 'si',
 			$context->get_order_id(),
 			$this->checkout_encryption_service->encrypt_client_secret( $intent->get_customer_id(), $intent->get_client_secret() ),
-			wp_create_nonce( 'wcpay_update_order_status_nonce' )
+			$this->legacy_proxy->call_function( 'wp_create_nonce', 'wcpay_update_order_status_nonce' )
 		);
 	}
 }

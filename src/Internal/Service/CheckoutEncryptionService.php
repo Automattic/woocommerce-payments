@@ -7,7 +7,6 @@
 
 namespace WCPay\Internal\Service;
 
-use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Proxy\LegacyProxy;
 
 /**

@@ -117,6 +117,16 @@ abstract class AbstractPaymentState {
 	}
 
 	/**
+	 * Get redirect url.
+	 *
+	 * @return string
+	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
+	 */
+	public function get_redirect_url() {
+		$this->throw_unavailable_method_exception( __METHOD__ );
+	}
+
+	/**
 	 * Throws an exception, indicating that a given method is not available.
 	 *
 	 * @param string $method_name The name of the called method.
