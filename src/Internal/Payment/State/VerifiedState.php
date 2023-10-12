@@ -64,11 +64,6 @@ class VerifiedState extends AbstractPaymentState {
 		// Payments are currently based on intents, request one from the API.
 		try {
 			$intent = $this->payment_request_service->create_intent( $context );
-
-			// Something went wrong since the intent is not an instance of payment intent class. Transition to error state.
-			if ( ! $intent instanceof WC_Payments_API_Abstract_Intention ) {
-				return $this->create_state( SystemErrorState::class );
-			}
 			$context->set_intent( $intent );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
