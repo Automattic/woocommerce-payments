@@ -206,6 +206,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider data_maybe_redirect_to_onboarding
 	 */
 	public function test_maybe_redirect_to_onboarding( $expected_times_redirect_called, $is_stripe_connected, $get_params ) {
+		$this->mock_current_user_is_admin();
 		$_GET = $get_params;
 
 		$this->mock_account
@@ -283,6 +284,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_maybe_redirect_overview_to_connect( $expected_times_redirect_called, $is_wc_registered_page, $get_params ) {
 		global $wp_actions;
+		$this->mock_current_user_is_admin();
 		// Avoid WP doing_it_wrong warnings.
 		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		$wp_actions['current_screen'] = true;
@@ -384,6 +386,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider data_maybe_redirect_onboarding_flow_to_connect
 	 */
 	public function test_maybe_redirect_onboarding_flow_to_connect( $expected_times_redirect_called, $is_server_connected, $get_params ) {
+		$this->mock_current_user_is_admin();
 		$_GET = $get_params;
 
 		$this->mock_api_client
