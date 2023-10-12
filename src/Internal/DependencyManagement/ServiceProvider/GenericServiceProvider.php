@@ -9,6 +9,7 @@ namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
 use WC_Payments_Account;
 use WC_Payments_Order_Service;
+use WCPay\Core\Mode;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Logger;
 use WCPay\Internal\Proxy\HooksProxy;
@@ -37,9 +38,10 @@ class GenericServiceProvider extends AbstractServiceProvider {
 	public function register(): void {
 		$container = $this->getContainer();
 
-		$container->add( 'wc_get_logger', 'wc_get_logger' );
 		$container->addShared( Logger::class )
-			->addArgument( 'wc_get_logger' );
+			->addArgument( LegacyProxy::class )
+			->addArgument( 'wc_get_logger' )
+			->addArgument( Mode::class );
 
 		$container->addShared( OrderService::class )
 			->addArgument( WC_Payments_Order_Service::class )
@@ -50,7 +52,6 @@ class GenericServiceProvider extends AbstractServiceProvider {
 		$container->addShared( Level3Service::class )
 			->addArgument( OrderService::class )
 			->addArgument( WC_Payments_Account::class )
-			->addArgument( LegacyProxy::class )
-			->addArgument( Logger::class );
+			->addArgument( LegacyProxy::class );
 	}
 }

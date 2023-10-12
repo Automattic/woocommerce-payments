@@ -9,6 +9,8 @@ namespace WCPay\Internal;
 
 use WC_Logger;
 use WC_Payments;
+use WCPay\Core\Mode;
+use WCPay\Internal\Proxy\LegacyProxy;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -23,7 +25,34 @@ class Logger {
 	 */
 	private $logger;
 
+	/**
+	 * Legacy proxy.
+	 *
+	 * @var LegacyProxy
+	 */
+	private $legacy_proxy;
+
+	/**
+	 * Mode
+	 *
+	 * @var Mode
+	 */
+	private $mode;
+
 	const LOG_FILENAME = 'woocommerce-payments';
+
+	/**
+	 * Logger constructor.
+	 *
+	 * @param LegacyProxy $legacy_proxy    Legacy proxy.
+	 * @param string      $logger_function Logger function.
+	 * @param Mode        $mode            Mode.
+	 */
+	public function __construct( LegacyProxy $legacy_proxy, string $logger_function, Mode $mode ) {
+		$this->legacy_proxy = $legacy_proxy;
+		$this->logger       = $legacy_proxy->call_function( $logger_function );
+		$this->mode         = $mode;
+	}
 
 	/**
 	 * Add a log entry.
@@ -48,41 +77,19 @@ class Logger {
 			return;
 		}
 
-		$this->init_logger();
 		$this->logger->log( $level, $message, [ 'source' => self::LOG_FILENAME ] );
 	}
 
-	/**
-	 * Initiate logger property with the WooCommerce core logger only if it's not set already
-	 */
-	public function init_logger() {
-		if ( ! isset( $this->logger ) && ! is_object( $this->logger ) ) {
-			$this->logger = wc_get_logger();
-		}
-	}
-
-	/**
-	 * Class constructor.
-	 */
-	public function __construct() {
-		$this->init_logger();
-	}
 
 	/**
 	 * Checks if the gateway setting logging toggle is enabled.
 	 *
 	 * @return bool Depending on the enable_logging setting.
+	 * @throws \Exception Throws Exception for any issue in accessing mode.
 	 */
 	public function can_log() {
-		if ( ! function_exists( 'wc_get_logger' ) ) {
-			return false;
-		}
 
-		if ( is_null( WC_Payments::get_gateway() ) ) {
-			return false;
-		}
-
-		if ( WC_Payments::mode()->is_dev() ) {
+		if ( $this->mode->is_dev() ) {
 			return true;
 		}
 
