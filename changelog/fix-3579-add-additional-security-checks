@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add additional security checks in the plugin

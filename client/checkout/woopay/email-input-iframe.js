@@ -340,6 +340,8 @@ export const handleWooPayEmailInput = async (
 			parentDiv.removeChild( errorMessage );
 		}
 
+		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_EMAIL_CHECK );
+
 		request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_signature' ),
 			{
