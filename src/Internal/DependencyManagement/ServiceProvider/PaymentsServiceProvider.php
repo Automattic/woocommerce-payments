@@ -9,6 +9,7 @@ namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
 use Automattic\WooCommerce\Utilities\PluginUtil;
 use WC_Payments_Customer_Service;
+use WC_Session;
 use WCPay\Container;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
@@ -66,9 +67,18 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( LegacyProxy::class );
 
 		$container->addShared( PaymentRequestService::class );
+
+		$container->addShared(
+			WC_Session::class,
+			function(): ?WC_Session {
+				return WC()->session;
+			}
+		);
+
 		$container->addShared( DuplicatePaymentPreventionService::class )
 			->addArgument( OrderService::class )
-			->addArgument( HooksProxy::class );
+			->addArgument( HooksProxy::class )
+			->addArgument( WC_Session::class );
 
 		$container->add( InitialState::class )
 			->addArgument( StateFactory::class )
