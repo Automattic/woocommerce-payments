@@ -10,13 +10,15 @@ namespace WCPay\Internal\Service;
 use Automattic\WooCommerce\Utilities\PluginUtil;
 use Exception;
 use WCPay\Core\Mode;
+use WCPay\Internal\Hooks\HasHooksInterface;
+use WCPay\Internal\Proxy\HooksProxy;
 
 /**
  * This is a service, which will be used for developing
  * DI-related functionality until there are better services
  * to test with.
  */
-class ExampleServiceWithDependencies {
+class ExampleServiceWithDependencies implements HasHooksInterface {
 	/**
 	 * Example service.
 	 *
@@ -77,5 +79,21 @@ class ExampleServiceWithDependencies {
 			// Do nothing, this is fine. We're just testing Psalm.
 			return false;
 		}
+	}
+
+	/**
+	 * Initializes the class's hooks.
+	 *
+	 * @param HooksProxy $hooks_proxy Proxy for managing WP hooks.
+	 */
+	public function init_hooks( HooksProxy $hooks_proxy ) {
+		$hooks_proxy->add_action( 'template_redirect', [ $this, 'noop' ] );
+	}
+
+	/**
+	 * Does nothing but prove that it is reached.
+	 */
+	public function noop() {
+		return null;
 	}
 }

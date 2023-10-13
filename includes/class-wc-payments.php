@@ -40,6 +40,8 @@ use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Internal\Hooks\Registry;
+use WCPay\Internal\Service\ExampleServiceWithDependencies;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\WooPay\WooPay_Scheduler;
@@ -666,6 +668,13 @@ class WC_Payments {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
+
+		// Initialize all `src` hooks right after the legacy init.
+		wcpay_get_container()->get( Registry::class )->register(
+			[
+				ExampleServiceWithDependencies::class,
+			]
+		);
 	}
 
 	/**
