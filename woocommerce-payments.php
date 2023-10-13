@@ -17,6 +17,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Internal\Service\GatewaySettingsService;
+
 defined( 'ABSPATH' ) || exit;
 
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
@@ -399,3 +401,34 @@ add_action(
 		}
 	}
 );
+
+add_action( 'template_redirect', function() {
+	// Just a test.
+
+	if ( ! isset( $_GET['show-settings'] ) ) {
+		return;
+	}
+
+	$service  = wcpay_get_container()->get( GatewaySettingsService::class );
+	$settings = [
+		'is_enabled'                           => $service->is_enabled(),
+		'get_account_statement_descriptor'     => $service->get_account_statement_descriptor(),
+		'is_manual_capture_enabled'            => $service->is_manual_capture_enabled(),
+		'is_saved_cards_enabled'               => $service->is_saved_cards_enabled(),
+		'is_test_mode_enabled'                 => $service->is_test_mode_enabled(),
+		'is_logging_enabled'                   => $service->is_logging_enabled(),
+		'is_payment_request_enabled'           => $service->is_payment_request_enabled(),
+		'get_payment_request_button_type'      => $service->get_payment_request_button_type(),
+		'get_payment_request_button_theme'     => $service->get_payment_request_button_theme(),
+		'get_payment_request_button_height'    => $service->get_payment_request_button_height(),
+		'get_payment_request_button_label'     => $service->get_payment_request_button_label(),
+		'get_payment_request_button_locations' => $service->get_payment_request_button_locations(),
+		'get_payment_request_button_size'      => $service->get_payment_request_button_size(),
+		'get_platform_checkout_custom_message' => $service->get_platform_checkout_custom_message(),
+		'get_upe_enabled_payment_method_ids'   => $service->get_upe_enabled_payment_method_ids(),
+	];
+
+	echo '<pre>';
+	var_dump( $settings );
+	exit;
+} );
