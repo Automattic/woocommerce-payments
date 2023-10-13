@@ -8,7 +8,6 @@
 namespace WCPay\Internal\Service;
 
 use Exception;
-use WC_Session;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Order_Not_Found_Exception;
@@ -67,23 +66,23 @@ class DuplicatePaymentPreventionService {
 	/**
 	 * Woo core session instance.
 	 *
-	 * @var WC_Session|null
+	 * @var SessionService
 	 */
-	private $wc_session;
+	private $session_service;
 
 	/**
 	 * Initializes all dependencies.
 	 *
-	 * @param  OrderService    $order_service  The order service instance.
-	 * @param  HooksProxy      $hooks_proxy  The hooks proxy instance.
-	 * @param  LegacyProxy     $legacy_proxy  The legacy proxy instance.
-	 * @param  WC_Session|null $wc_session Woo core Session instance.
+	 * @param  OrderService   $order_service  The order service instance.
+	 * @param  SessionService $session_service Woo core Session instance.
+	 * @param  HooksProxy     $hooks_proxy  The hooks proxy instance.
+	 * @param  LegacyProxy    $legacy_proxy  The legacy proxy instance.
 	 */
-	public function __construct( OrderService $order_service, HooksProxy $hooks_proxy, LegacyProxy $legacy_proxy, ?WC_Session $wc_session ) {
-		$this->order_service = $order_service;
-		$this->hooks_proxy   = $hooks_proxy;
-		$this->legacy_proxy  = $legacy_proxy;
-		$this->wc_session    = $wc_session;
+	public function __construct( OrderService $order_service, SessionService $session_service, HooksProxy $hooks_proxy, LegacyProxy $legacy_proxy ) {
+		$this->order_service   = $order_service;
+		$this->session_service = $session_service;
+		$this->hooks_proxy     = $hooks_proxy;
+		$this->legacy_proxy    = $legacy_proxy;
 	}
 
 	/**
@@ -207,9 +206,7 @@ class DuplicatePaymentPreventionService {
 	 * @return void
 	 */
 	public function maybe_update_session_processing_order( int $order_id ) {
-		if ( $this->wc_session ) {
-			$this->wc_session->set( self::SESSION_KEY_PROCESSING_ORDER, $order_id );
-		}
+		$this->session_service->set( self::SESSION_KEY_PROCESSING_ORDER, $order_id );
 	}
 
 	/**
@@ -220,12 +217,8 @@ class DuplicatePaymentPreventionService {
 	 * @return void
 	 */
 	public function remove_session_processing_order( int $order_id ) {
-		if ( is_null( $this->wc_session ) ) {
-			return;
-		}
-
 		if ( $order_id === $this->get_session_processing_order() ) {
-			$this->wc_session->set( self::SESSION_KEY_PROCESSING_ORDER, null );
+			$this->session_service->set( self::SESSION_KEY_PROCESSING_ORDER, null );
 		}
 	}
 
@@ -235,11 +228,7 @@ class DuplicatePaymentPreventionService {
 	 * @return integer|null Order ID. Null if the value is not set.
 	 */
 	public function get_session_processing_order(): ?int {
-		if ( null === $this->wc_session ) {
-			return null;
-		}
-
-		$val = $this->wc_session->get( self::SESSION_KEY_PROCESSING_ORDER );
+		$val = $this->session_service->get( self::SESSION_KEY_PROCESSING_ORDER );
 		return null === $val ? null : absint( $val );
 	}
 

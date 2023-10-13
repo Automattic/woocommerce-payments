@@ -14,6 +14,7 @@ use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
+use WCPay\Internal\Service\SessionService;
 
 /**
  * WCPay payments generic service provider.
@@ -44,6 +45,9 @@ class GenericServiceProvider extends AbstractServiceProvider {
 		$container->addShared( Level3Service::class )
 			->addArgument( OrderService::class )
 			->addArgument( WC_Payments_Account::class )
+			->addArgument( LegacyProxy::class );
+
+		$container->addShared( SessionService::class )
 			->addArgument( LegacyProxy::class );
 	}
 }
