@@ -49,11 +49,11 @@ class AuthenticationRequiredState extends AbstractPaymentState {
 	}
 
 	/**
-	 * Get redirect url.
+	 * Get authentication redirect url.
 	 *
 	 * @return string
 	 */
-	public function get_redirect_url() {
+	public function get_authentication_url() {
 		$context     = $this->get_context();
 		$intent      = $context->get_intent();
 		$next_action = $intent->get_next_action();
