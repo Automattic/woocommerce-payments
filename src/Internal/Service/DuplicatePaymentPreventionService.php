@@ -13,6 +13,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Proxy\HooksProxy;
+use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Logger;
 
 /**
@@ -57,6 +58,13 @@ class DuplicatePaymentPreventionService {
 	private $hooks_proxy;
 
 	/**
+	 * LegacyProxy instance.
+	 *
+	 * @var LegacyProxy
+	 */
+	private $legacy_proxy;
+
+	/**
 	 * Woo core session instance.
 	 *
 	 * @var WC_Session|null
@@ -68,11 +76,13 @@ class DuplicatePaymentPreventionService {
 	 *
 	 * @param  OrderService    $order_service  The order service instance.
 	 * @param  HooksProxy      $hooks_proxy  The hooks proxy instance.
+	 * @param  LegacyProxy     $legacy_proxy  The legacy proxy instance.
 	 * @param  WC_Session|null $wc_session Woo core Session instance.
 	 */
-	public function __construct( OrderService $order_service, HooksProxy $hooks_proxy, ?WC_Session $wc_session ) {
+	public function __construct( OrderService $order_service, HooksProxy $hooks_proxy, LegacyProxy $legacy_proxy, ?WC_Session $wc_session ) {
 		$this->order_service = $order_service;
 		$this->hooks_proxy   = $hooks_proxy;
+		$this->legacy_proxy  = $legacy_proxy;
 		$this->wc_session    = $wc_session;
 	}
 
@@ -239,10 +249,10 @@ class DuplicatePaymentPreventionService {
 	 * @return void
 	 */
 	public function clear_session_processing_order_after_landing_order_received_page() {
-		global $wp;
+		$global_wp = $this->legacy_proxy->get_global( 'wp' );
 
-		if ( is_order_received_page() && isset( $wp->query_vars['order-received'] ) ) {
-			$order_id = absint( $wp->query_vars['order-received'] );
+		if ( $this->legacy_proxy->call_function( 'is_order_received_page' ) && isset( $global_wp->query_vars['order-received'] ) ) {
+			$order_id = absint( $global_wp->query_vars['order-received'] );
 			$this->remove_session_processing_order( $order_id );
 		}
 	}

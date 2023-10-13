@@ -78,6 +78,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( DuplicatePaymentPreventionService::class )
 			->addArgument( OrderService::class )
 			->addArgument( HooksProxy::class )
+			->addArgument( LegacyProxy::class )
 			->addArgument( WC_Session::class );
 
 		$container->add( InitialState::class )
