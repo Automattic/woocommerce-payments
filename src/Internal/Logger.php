@@ -70,7 +70,7 @@ class Logger {
 			return;
 		}
 
-		$this->logger->log( $level, $message, [ 'source' => self::LOG_FILENAME ] );
+		$this->wc_logger->log( $level, $message, [ 'source' => self::LOG_FILENAME ] );
 	}
 
 
