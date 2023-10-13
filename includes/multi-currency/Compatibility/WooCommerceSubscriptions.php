@@ -341,7 +341,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @return string The unmodified subscription formatted total.
 	 */
 	public function maybe_clear_current_my_account_subscription( $formatted, $subscription ): string {
-		if ( ! $this->is_current_my_account_subscription_set() ) {
+		if ( $this->is_current_my_account_subscription_set() ) {
 			$this->current_my_account_subscription = null;
 			$this->frontend_currencies->selected_currency_changed();
 		}
