@@ -6,7 +6,16 @@
 	display: flex;
 	flex-direction: column;
 	gap: $gap;
-	margin-top: $gap-large;
+
+	&:not( :empty ) {
+		#payment .wc_payment_methods.payment_methods.methods + & {
+			margin-top: $gap-large;
+
+			+ .place-order {
+				margin-top: $gap-large;
+			}
+		}
+	}
 
 	h3 {
 		margin-bottom: 0;
@@ -105,10 +114,6 @@
 #payment {
 	.save-details-form.place-order {
 		margin-top: $gap-smaller;
-	}
-
-	.woopay-save-new-user-container + .place-order {
-		margin-top: $gap-large !important;
 	}
 }
 

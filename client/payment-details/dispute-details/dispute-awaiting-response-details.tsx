@@ -251,6 +251,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							>
 								<Button
 									variant="primary"
+									data-testid="challenge-dispute-button"
 									disabled={ isLoading }
 									onClick={ () => {
 										wcpayTracks.recordEvent(
@@ -275,6 +276,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							<Button
 								variant="tertiary"
 								disabled={ isLoading }
+								data-testid="open-accept-dispute-modal-button"
 								onClick={ () => {
 									wcpayTracks.recordEvent(
 										disputeAcceptAction.acceptButtonTracksEvent,
@@ -333,6 +335,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										</Button>
 										<Button
 											variant="primary"
+											data-testid="accept-dispute-button"
 											onClick={ () => {
 												wcpayTracks.recordEvent(
 													disputeAcceptAction.modalButtonTracksEvent,
