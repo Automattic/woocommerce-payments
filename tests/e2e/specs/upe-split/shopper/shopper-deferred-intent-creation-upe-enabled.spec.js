@@ -45,7 +45,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		await merchant.logout();
 	} );
 
-	describe.skip( 'Enabled UPE with deferred intent creation', () => {
+	describe( 'Enabled UPE with deferred intent creation', () => {
 		it( 'should successfully place order with the default card', async () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
@@ -105,7 +105,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		} );
 	} );
 
-	describe.skip( 'My Account', () => {
+	describe( 'My Account', () => {
 		let timeAdded;
 		it( 'should add the card as a new payment method', async () => {
 			await shopperWCP.goToPaymentMethods();
