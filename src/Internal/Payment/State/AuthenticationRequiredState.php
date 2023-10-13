@@ -8,8 +8,6 @@
 namespace WCPay\Internal\Payment\State;
 
 use WCPay\Internal\Proxy\LegacyProxy;
-use WCPay\Internal\Service\CheckoutEncryptionService;
-
 /**
  * The state, which indicates that the payment processing has been completed.
  */
@@ -23,29 +21,18 @@ class AuthenticationRequiredState extends AbstractPaymentState {
 	private $legacy_proxy;
 
 	/**
-	 * Checkout Encryption service
-	 *
-	 * @var CheckoutEncryptionService
-	 */
-	private $checkout_encryption_service;
-
-
-	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory              $state_factory Factory for payment states.
-	 * @param LegacyProxy               $legacy_proxy Legacy proxy.
-	 * @param CheckoutEncryptionService $checkout_encryption_service Service for encrypting checkout data.
+	 * @param StateFactory $state_factory Factory for payment states.
+	 * @param LegacyProxy  $legacy_proxy Legacy proxy.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
-		LegacyProxy $legacy_proxy,
-		CheckoutEncryptionService $checkout_encryption_service
+		LegacyProxy $legacy_proxy
 	) {
 		parent::__construct( $state_factory );
 
-		$this->legacy_proxy                = $legacy_proxy;
-		$this->checkout_encryption_service = $checkout_encryption_service;
+		$this->legacy_proxy = $legacy_proxy;
 	}
 
 	/**
@@ -66,8 +53,31 @@ class AuthenticationRequiredState extends AbstractPaymentState {
 			'#wcpay-confirm-%s:%s:%s:%s',
 			$context->get_amount() > 0 ? 'pi' : 'si',
 			$context->get_order_id(),
-			$this->checkout_encryption_service->encrypt_client_secret( $intent->get_customer_id(), $intent->get_client_secret() ),
+			$this->encrypt_client_secret( $intent->get_customer_id(), $intent->get_client_secret() ),
 			$this->legacy_proxy->call_function( 'wp_create_nonce', 'wcpay_update_order_status_nonce' )
 		);
+	}
+
+	/**
+	 * Encrypt client secret for the client.
+	 *
+	 * @param string $customer_id Customer id.
+	 * @param string $client_secret Client secret.
+	 *
+	 * @return string
+	 */
+	private function encrypt_client_secret( string $customer_id, string $client_secret ): string {
+		if ( $this->legacy_proxy->call_static( \WC_Payments_Features::class, 'is_client_secret_encryption_enabled' ) ) {
+			return $this->legacy_proxy->call_function(
+				'openssl_encrypt',
+				$client_secret,
+				'aes-128-cbc',
+				substr( $customer_id, 5 ),
+				0,
+				str_repeat( 'WC', 8 )
+			);
+		}
+
+		return $client_secret;
 	}
 }
