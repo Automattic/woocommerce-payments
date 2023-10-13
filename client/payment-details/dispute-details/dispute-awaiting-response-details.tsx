@@ -329,6 +329,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 									>
 										<Button
 											variant="tertiary"
+											disabled={ isLoading }
 											onClick={ onModalClose }
 										>
 											{ __(
@@ -338,6 +339,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										</Button>
 										<Button
 											variant="primary"
+											disabled={ isLoading }
 											data-testid="accept-dispute-button"
 											onClick={ () => {
 												wcpayTracks.recordEvent(
