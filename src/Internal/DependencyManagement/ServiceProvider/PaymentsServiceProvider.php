@@ -85,8 +85,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( OrderService::class );
 
 		$container->add( AuthenticationRequiredState::class )
-			->addArgument( StateFactory::class )
-			->addArgument( LegacyProxy::class );
+			->addArgument( StateFactory::class );
 
 		$container->add( CompletedState::class )
 			->addArgument( StateFactory::class );

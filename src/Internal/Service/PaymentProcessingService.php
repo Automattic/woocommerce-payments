@@ -10,6 +10,7 @@ namespace WCPay\Internal\Service;
 use Exception;
 
 // Temporary exception! This service would have its own exception when more business logics are added.
+use WC_Payments_API_Abstract_Intention;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
@@ -86,4 +87,42 @@ class PaymentProcessingService {
 
 		return $context;
 	}
+
+	/**
+	 * Get redirect URL when authentication is required (3DS).
+	 *
+	 * @param WC_Payments_API_Abstract_Intention $intent Intent object.
+	 * @param int                                $order_id Order id.
+	 *
+	 * @return string
+	 */
+	public function get_authentication_redirect_url( $intent, int $order_id ) {
+		$next_action = $intent->get_next_action();
+
+		if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
+			return $next_action['redirect_to_url']['url'];
+		}
+
+		$client_secret = $intent->get_client_secret();
+
+		if ( $this->legacy_proxy->call_static( \WC_Payments_Features::class, 'is_client_secret_encryption_enabled' ) ) {
+			$client_secret = $this->legacy_proxy->call_function(
+				'openssl_encrypt',
+				$client_secret,
+				'aes-128-cbc',
+				substr( $intent->get_customer_id(), 5 ),
+				0,
+				str_repeat( 'WC', 8 )
+			);
+		}
+
+		return sprintf(
+			'#wcpay-confirm-%s:%s:%s:%s',
+			substr( $intent->get_id(), 0, 2 ), // intents starts with pi_ or si_ so we need only to first two letters.
+			$order_id,
+			$client_secret,
+			$this->legacy_proxy->call_function( 'wp_create_nonce', 'wcpay_update_order_status_nonce' )
+		);
+	}
+
 }

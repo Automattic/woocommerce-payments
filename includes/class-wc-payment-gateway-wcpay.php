@@ -833,7 +833,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Maybe we can move this inside the response class and call function like generate_response() that will something like this where we have more control of status code, ...
 			return [
 				'result'   => 'success',
-				'redirect' => ( new AuthenticationRequiredResponse( $context->get_intent(), $context->get_order_id() ) )->get_url(),
+				'redirect' => $service->get_authentication_redirect_url( $context->get_intent(), $context->get_order_id() ),
 			];
 		}
 
