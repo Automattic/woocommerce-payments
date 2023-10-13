@@ -32,14 +32,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ isInfoFlyoutVisible, setIsInfoFlyoutVisible ] = useState( false );
 	const [ hasShownInfoFlyout, setHasShownInfoFlyout ] = useState( false );
 
-	const setInfoFlyoutVisible = useCallback(
-		() => setIsInfoFlyoutVisible( true ),
-		[]
-	);
-	const setInfoFlyoutNotVisible = useCallback(
-		() => setIsInfoFlyoutVisible( false ),
-		[]
-	);
 	const toggleTooltip = () => {
 		setIsInfoFlyoutVisible( ! isInfoFlyoutVisible );
 	};
