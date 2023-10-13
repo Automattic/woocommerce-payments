@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Store customer currencies as an option to avoid expensive calculation.

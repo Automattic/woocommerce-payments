@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Virtual variable products no longer require shipping details when checking out with Apple Pay and Google Pay
