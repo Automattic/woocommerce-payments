@@ -26,14 +26,7 @@ class Logger {
 	 *
 	 * @var WC_Logger $logger
 	 */
-	private $logger;
-
-	/**
-	 * Legacy proxy.
-	 *
-	 * @var LegacyProxy
-	 */
-	private $legacy_proxy;
+	private $wc_logger;
 
 	/**
 	 * Mode
@@ -45,14 +38,12 @@ class Logger {
 	/**
 	 * Logger constructor.
 	 *
-	 * @param LegacyProxy $legacy_proxy    Legacy proxy.
-	 * @param string      $logger_function Logger function.
-	 * @param Mode        $mode            Mode.
+	 * @param WC_Logger $wc_logger    Legacy proxy.
+	 * @param Mode      $mode            Mode.
 	 */
-	public function __construct( LegacyProxy $legacy_proxy, string $logger_function, Mode $mode ) {
-		$this->legacy_proxy = $legacy_proxy;
-		$this->logger       = $legacy_proxy->call_function( $logger_function );
-		$this->mode         = $mode;
+	public function __construct( WC_Logger $wc_logger, Mode $mode ) {
+		$this->wc_logger = $wc_logger;
+		$this->mode      = $mode;
 	}
 
 	/**

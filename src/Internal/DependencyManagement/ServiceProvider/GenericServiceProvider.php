@@ -38,8 +38,9 @@ class GenericServiceProvider extends AbstractServiceProvider {
 	public function register(): void {
 		$container = $this->getContainer();
 
+		$container->add( 'wc_get_logger', 'wc_get_logger' );
+
 		$container->addShared( Logger::class )
-			->addArgument( LegacyProxy::class )
 			->addArgument( 'wc_get_logger' )
 			->addArgument( Mode::class );
 
