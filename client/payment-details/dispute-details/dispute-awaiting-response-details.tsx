@@ -171,6 +171,9 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	} = useContext( WCPaySettingsContext );
 
 	const onModalClose = () => {
+		if ( isLoading ) {
+			return;
+		}
 		setModalOpen( false );
 	};
 
