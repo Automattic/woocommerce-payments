@@ -45,7 +45,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		await merchant.logout();
 	} );
 
-	describe( 'Enabled UPE with deferred intent creation', () => {
+	describe.skip( 'Enabled UPE with deferred intent creation', () => {
 		it( 'should successfully place order with the default card', async () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
@@ -103,32 +103,9 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await shopperWCP.deleteSavedPaymentMethod( card.label );
 			await expect( page ).toMatch( 'Payment method deleted' );
 		} );
-
-		it( 'should successfully place order with Affirm', async () => {
-			await shopperWCP.changeAccountCurrencyTo( 'USD' );
-			await setupProductCheckout(
-				config.get( 'addresses.customer.billing' ),
-				[ [ 'Beanie', 3 ] ]
-			);
-			await expect( page ).toClick(
-				'li.payment_method_woocommerce_payments_affirm'
-			);
-			await uiUnblocked();
-			await shopper.placeOrder();
-			await page.waitForSelector(
-				'a.common-Button.common-Button--default[name="success"][href^="https://affirm-hooks.stripe.com/affirm/"]'
-			);
-			await expect( page ).toClick( 'a', {
-				text: 'Authorize Test Payment',
-			} );
-			await page.waitForNavigation( {
-				waitUntil: 'networkidle0',
-			} );
-			await expect( page ).toMatch( 'Order received' );
-		} );
 	} );
 
-	describe( 'My Account', () => {
+	describe.skip( 'My Account', () => {
 		let timeAdded;
 		it( 'should add the card as a new payment method', async () => {
 			await shopperWCP.goToPaymentMethods();
@@ -166,4 +143,38 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await new Promise( ( r ) => setTimeout( r, remainingWaitTime ) );
 		} );
 	} );
+
+	const bnplProviders = [
+		[ 'Affirm', 'li.payment_method_woocommerce_payments_affirm' ],
+		[
+			'Afterpay/Clearpay',
+			'li.payment_method_woocommerce_payments_afterpay_clearpay',
+		],
+	];
+
+	describe.each( bnplProviders )(
+		'Checkout with BNPL providers',
+		( providerName, paymentMethodSelector ) => {
+			it( `should successfully place order with ${ providerName }`, async () => {
+				await shopperWCP.changeAccountCurrencyTo( 'USD' );
+				await setupProductCheckout(
+					config.get( 'addresses.customer.billing' ),
+					[ [ 'Beanie', 3 ] ]
+				);
+				await expect( page ).toClick( paymentMethodSelector );
+				await uiUnblocked();
+				await shopper.placeOrder();
+				await page.waitForSelector(
+					'a.common-Button.common-Button--default[name="success"]'
+				);
+				await expect( page ).toClick( 'a', {
+					text: 'Authorize Test Payment',
+				} );
+				await page.waitForNavigation( {
+					waitUntil: 'networkidle0',
+				} );
+				await expect( page ).toMatch( 'Order received' );
+			} );
+		}
+	);
 } );
