@@ -339,6 +339,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										</Button>
 										<Button
 											variant="primary"
+											isBusy={ isLoading }
 											disabled={ isLoading }
 											data-testid="accept-dispute-button"
 											onClick={ () => {
