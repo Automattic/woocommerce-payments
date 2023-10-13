@@ -8,6 +8,7 @@
 namespace WCPay\Internal\Payment\State;
 
 use WC_Payments_Customer_Service;
+use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Service\OrderService;
@@ -54,20 +55,29 @@ class InitialState extends AbstractPaymentState {
 	private $payment_request_service;
 
 	/**
+	 * Duplicate Payment Prevention service.
+	 *
+	 * @var DuplicatePaymentPreventionService
+	 */
+	private $dpps;
+
+	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory                 $state_factory           Factory for payment states.
-	 * @param OrderService                 $order_service           Service for order-related actions.
-	 * @param WC_Payments_Customer_Service $customer_service        Service for managing remote customers.
-	 * @param Level3Service                $level3_service          Service for Level3 Data.
-	 * @param PaymentRequestService        $payment_request_service Connection with the server.
+	 * @param StateFactory                      $state_factory           Factory for payment states.
+	 * @param OrderService                      $order_service           Service for order-related actions.
+	 * @param WC_Payments_Customer_Service      $customer_service        Service for managing remote customers.
+	 * @param Level3Service                     $level3_service          Service for Level3 Data.
+	 * @param PaymentRequestService             $payment_request_service Connection with the server.
+	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
 		OrderService $order_service,
 		WC_Payments_Customer_Service $customer_service,
 		Level3Service $level3_service,
-		PaymentRequestService $payment_request_service
+		PaymentRequestService $payment_request_service,
+		DuplicatePaymentPreventionService $dpps
 	) {
 		parent::__construct( $state_factory );
 
@@ -75,21 +85,28 @@ class InitialState extends AbstractPaymentState {
 		$this->customer_service        = $customer_service;
 		$this->level3_service          = $level3_service;
 		$this->payment_request_service = $payment_request_service;
+		$this->dpps                    = $dpps;
 	}
 
 	/**
-	 * Initialtes the payment process.
+	 * Initiates the payment process.
 	 *
 	 * @param PaymentRequest $request    The incoming payment processing request.
-	 * @return CompletedState            The next state.
+	 * @return AbstractPaymentState       The next state.
 	 * @throws StateTransitionException  In case the completed state could not be initialized.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception Order could not be found.
 	 * @throws PaymentRequestException   When data is not available or invalid.
 	 */
 	public function process( PaymentRequest $request ) {
-		$context  = $this->get_context();
-		$order_id = $context->get_order_id();
+		$context               = $this->get_context();
+		$order_id              = $context->get_order_id();
+		$paid_session_order_id = $this->dpps->get_paid_session_processing_order( $order_id );
+		if ( ! is_null( $paid_session_order_id ) ) {
+			// TODO: move the add note, and order deletion from get_paid_session_processing_order to here.
+			$context->set_previous_order_id( $paid_session_order_id );
+			return $this->create_state( PreviousPaidOrderDetectedState::class );
+		}
 
 		// Populate basic details from the request.
 		$this->populate_context_from_request( $request );

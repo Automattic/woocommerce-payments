@@ -64,11 +64,11 @@ class PaymentProcessingService {
 		// Start with a basis context.
 		$context = $this->create_payment_context( $order_id, $manual_capture );
 
-		$request         = new PaymentRequest( $this->legacy_proxy );
-		$initial_state   = $this->state_factory->create_state( InitialState::class, $context );
-		$completed_state = $initial_state->process( $request );
+		$request       = new PaymentRequest( $this->legacy_proxy );
+		$initial_state = $this->state_factory->create_state( InitialState::class, $context );
+		$new_state     = $initial_state->process( $request );
 
-		return $completed_state;
+		return $new_state;
 	}
 
 	/**

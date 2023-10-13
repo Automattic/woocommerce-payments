@@ -17,6 +17,7 @@ use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\PaymentErrorState;
+use WCPay\Internal\Payment\State\PreviousPaidOrderDetectedState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\State\SystemErrorState;
 use WCPay\Internal\Proxy\HooksProxy;
@@ -81,7 +82,8 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( OrderService::class )
 			->addArgument( WC_Payments_Customer_Service::class )
 			->addArgument( Level3Service::class )
-			->addArgument( PaymentRequestService::class );
+			->addArgument( PaymentRequestService::class )
+			->addArgument( DuplicatePaymentPreventionService::class );
 
 		$container->add( CompletedState::class )
 			->addArgument( StateFactory::class );
@@ -90,6 +92,9 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( StateFactory::class );
 
 		$container->add( PaymentErrorState::class )
+			->addArgument( StateFactory::class );
+
+		$container->add( PreviousPaidOrderDetectedState::class )
 			->addArgument( StateFactory::class );
 
 		$container->addShared( Router::class )

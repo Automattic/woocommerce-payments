@@ -155,21 +155,21 @@ class DuplicatePaymentPreventionService {
 	 *
 	 * @param  int $current_order_id  ID of the current processing order.
 	 *
-	 * @return array|void A successful response in case the session processing order was paid, null if none.
+	 * @return int|null Return the session processing order ID if it's already paid, null otherwise.
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function check_against_session_processing_order( int $current_order_id ) {
+	public function get_paid_session_processing_order( int $current_order_id ): ?int {
 		$session_order_id = $this->get_session_processing_order();
 		if ( null === $session_order_id ) {
-			return;
+			return null;
 		}
 
 		if ( $this->order_service->get_cart_hash( $current_order_id ) !== $this->order_service->get_cart_hash( $session_order_id ) ) {
-			return;
+			return null;
 		}
 
 		if ( ! $this->order_service->is_paid( $session_order_id ) ) {
-			return;
+			return null;
 		}
 
 		$this->order_service->add_note(
@@ -184,18 +184,7 @@ class DuplicatePaymentPreventionService {
 		$this->order_service->delete( $current_order_id );
 
 		$this->remove_session_processing_order( $session_order_id );
-
-		$return_url = add_query_arg(
-			self::FLAG_PREVIOUS_ORDER_PAID,
-			'yes',
-			$this->order_service->_deprecated_get_order( $session_order_id )->get_checkout_order_received_url()
-		);
-
-		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
-			'result'                            => 'success',
-			'redirect'                          => $return_url,
-			'wcpay_upe_paid_for_previous_order' => 'yes', // This flag is needed for UPE flow.
-		];
+		return $session_order_id;
 	}
 
 	/**

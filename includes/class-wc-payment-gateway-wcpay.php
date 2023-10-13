@@ -32,6 +32,8 @@ use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Internal\Payment\State\PreviousPaidOrderDetectedState;
+use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -807,6 +809,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Important: No factors are provided here, they were meant just for `Feature`.
 		$service = wcpay_get_container()->get( PaymentProcessingService::class );
 		$state   = $service->process_payment( $order->get_id(), $manual_capture );
+
+		if ( $state instanceof PreviousPaidOrderDetectedState ) {
+			return [
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ), // TODO: This should be PaymentContext::get_previous_order_id(). But how to get it as we do expose PaymentContext here at the moment.
+				DuplicatePaymentPreventionService::FLAG_PREVIOUS_ORDER_PAID => 'yes',
+			];
+		}
 
 		if ( $state instanceof CompletedState ) {
 			return [

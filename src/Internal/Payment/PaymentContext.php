@@ -245,4 +245,24 @@ class PaymentContext {
 	public function get_customer_id(): ?string {
 		return $this->get( 'customer_id' );
 	}
+
+	/**
+	 * Set the previous paid order ID.
+	 *
+	 * @param  int $paid_session_order_id Paid session order ID.
+	 *
+	 * @return void
+	 */
+	public function set_previous_order_id( int $paid_session_order_id ) {
+		$this->set( 'previous_paid_order_id', $paid_session_order_id );
+	}
+
+	/**
+	 * Gets the previous paid order ID.
+	 *
+	 * @return int|null
+	 */
+	public function get_previous_order_id(): ?int {
+		return $this->get( 'previous_paid_order_id' );
+	}
 }
