@@ -91,7 +91,7 @@ abstract class AbstractPaymentState {
 	 */
 
 	/**
-	 * Initialtes the payment process.
+	 * Initiates the payment process.
 	 *
 	 * @param PaymentRequest $request    The incoming payment processing request.
 	 * @return AbstractPaymentState      The next state.
@@ -108,6 +108,8 @@ abstract class AbstractPaymentState {
 	/**
 	 * Process all needed verifications.
 	 *
+	 * @psalm-suppress InvalidReturnType
+	 *
 	 * @return AbstractPaymentState
 	 * @throws \WCPay\Exceptions\Order_Not_Found_Exception
 	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
@@ -119,10 +121,12 @@ abstract class AbstractPaymentState {
 	/**
 	 * Get redirect url.
 	 *
+	 * @psalm-suppress InvalidReturnType
+	 *
 	 * @return string
 	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
 	 */
-	public function get_redirect_url() {
+	public function get_authentication_url() {
 		$this->throw_unavailable_method_exception( __METHOD__ );
 	}
 

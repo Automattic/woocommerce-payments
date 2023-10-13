@@ -56,6 +56,8 @@ class VerifiedState extends AbstractPaymentState {
 	 * Process all needed verifications.
 	 *
 	 * @return AbstractPaymentState
+	 *
+	 * @throws \WCPay\Exceptions\Order_Not_Found_Exception
 	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
 	 * @throws \WCPay\Vendor\League\Container\Exception\ContainerException
 	 */
