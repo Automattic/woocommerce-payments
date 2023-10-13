@@ -352,7 +352,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 															'transaction_details',
 													}
 												);
-												setModalOpen( false );
+
 												/**
 												 * Handle the primary modal action.
 												 * If it's an inquiry, redirect to the order page; otherwise, continue with the default dispute acceptance.
