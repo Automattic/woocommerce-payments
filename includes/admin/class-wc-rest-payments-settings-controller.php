@@ -434,8 +434,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
-		$wcpay_form_fields             = $this->wcpay_gateway->get_form_fields();
+		$wcpay_form_fields = $this->wcpay_gateway->get_form_fields();
+
 		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
+
 		/**
 		 * It might be possible that enabled payment methods settings have an invalid state. As an example,
 		 * if an account is switched to a new country and earlier country had PM's that are no longer valid; or if the PM is not available anymore.
@@ -447,6 +449,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				$available_upe_payment_methods
 			)
 		);
+
+		$filtered_payment_methods = $this->possibly_filter_available_payment_methods( $available_upe_payment_methods, $enabled_payment_methods );
 
 		// Gather the status of the Stripe Billing migration for use on the settings page.
 		if ( class_exists( 'WC_Subscriptions' ) ) {
@@ -465,7 +469,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		return new WP_REST_Response(
 			[
 				'enabled_payment_method_ids'          => $enabled_payment_methods,
-				'available_payment_method_ids'        => $available_upe_payment_methods,
+				'available_payment_method_ids'        => $filtered_payment_methods,
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
@@ -1047,5 +1051,32 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return $avs_check_enabled;
+	}
+
+	/**
+	 * Because we still need to support payments made using Sofort until it is sunsetted at the end of the year,
+	 * this is the most sensible place to prevent it getting shown on the frontend settings for new merchants.
+	 * We will filter it from the array, but only if the user has not enabled it. If it is enabled, we show it with a warning (handled in the JS).
+	 *
+	 * @TODO: Remove this logic and tidy up once Sofort is officially deprecated for all users.
+	 *
+	 * @param array $available_payment_methods The available payment methods.
+	 * @param array $enabled_payment_methods   The enabled payment methods.
+	 *
+	 * @return array The filtered available payment methods.
+	 */
+	private function possibly_filter_available_payment_methods( array $available_payment_methods, array $enabled_payment_methods ): array {
+		if ( ! in_array( 'sofort', array_values( $enabled_payment_methods ), true ) ) {
+			return array_values(
+				array_filter(
+					$available_payment_methods,
+					function ( $payment_method ) {
+						return 'sofort' !== $payment_method;
+					}
+				)
+			);
+		}
+
+		return $available_payment_methods;
 	}
 }
