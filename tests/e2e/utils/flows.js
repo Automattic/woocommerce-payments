@@ -9,7 +9,6 @@
 const {
 	merchant,
 	shopper,
-	evalAndClick,
 	uiUnblocked,
 	clearAndFillInput,
 	setCheckbox,
@@ -26,7 +25,6 @@ import { uiLoaded } from './helpers';
 
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
-const WC_ADMIN_BASE_URL = baseUrl + 'wp-admin/';
 const MY_ACCOUNT_SUBSCRIPTIONS = baseUrl + 'my-account/subscriptions';
 const MY_ACCOUNT_EDIT = baseUrl + 'my-account/edit-account';
 const MY_ACCOUNT_ORDERS = SHOP_MY_ACCOUNT_PAGE + 'orders/';
@@ -587,43 +585,6 @@ export const merchantWCP = {
 		await expect( page ).toClick( 'button', {
 			text: 'Save changes',
 		} );
-	},
-
-	openDisputeDetails: async ( disputeDetailsLink ) => {
-		await Promise.all( [
-			page.goto( WC_ADMIN_BASE_URL + disputeDetailsLink, {
-				waitUntil: 'networkidle0',
-			} ),
-			uiLoaded(),
-		] );
-		await uiLoaded();
-	},
-
-	openChallengeDispute: async () => {
-		await Promise.all( [
-			evalAndClick(
-				// eslint-disable-next-line max-len
-				'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-primary'
-			),
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			uiLoaded(),
-		] );
-	},
-
-	openAcceptDispute: async () => {
-		await Promise.all( [
-			page.removeAllListeners( 'dialog' ),
-			evalAndClick(
-				// eslint-disable-next-line max-len
-				'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-tertiary'
-			),
-			evalAndClick(
-				// eslint-disable-next-line max-len
-				'.transaction-details-dispute-accept-modal__actions button.components-button.is-primary'
-			),
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			uiLoaded(),
-		] );
 	},
 
 	openPaymentDetails: async ( paymentDetailsLink ) => {

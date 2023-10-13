@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Only request WooPay session data once on blocks pages.
