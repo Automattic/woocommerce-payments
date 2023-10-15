@@ -110,18 +110,18 @@ export async function clearCardDetails() {
 export async function fillCardDetailsPayForOrder( page, card ) {
 	await page.waitForSelector( '.__PrivateStripeElement' );
 	const frameHandle = await page.waitForSelector(
-		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+		'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
 
 	const cardNumberInput = await stripeFrame.waitForSelector(
-		'[name="cardnumber"]',
+		'[name="number"]',
 		{ timeout: 30000 }
 	);
 	await cardNumberInput.type( card.number, { delay: 20 } );
 
 	const cardDateInput = await stripeFrame.waitForSelector(
-		'[name="exp-date"]'
+		'[name="expiry"]'
 	);
 
 	await cardDateInput.type( card.expires.month + card.expires.year, {
@@ -130,6 +130,12 @@ export async function fillCardDetailsPayForOrder( page, card ) {
 
 	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
 	await cardCvcInput.type( card.cvc, { delay: 20 } );
+	await page.waitFor( 1000 );
+
+	const zip = await stripeFrame.$( '[name="postalCode"]' );
+	if ( zip !== null ) {
+		await zip.type( '90210', { delay: 20 } );
+	}
 }
 
 // WooCommerce Blocks Checkout
