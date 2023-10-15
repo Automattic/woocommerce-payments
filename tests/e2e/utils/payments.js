@@ -80,7 +80,6 @@ export async function fillCardDetails( page, card ) {
 // Clear WC Checkout Card Details
 export async function clearCardDetails() {
 	if ( await page.$( '#payment #wcpay-card-element' ) ) {
-		console.log( 'am in' );
 		const frameHandle = await page.waitForSelector(
 			'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
 		);
