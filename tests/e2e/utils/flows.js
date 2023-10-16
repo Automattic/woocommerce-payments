@@ -797,4 +797,16 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 	},
+
+	deactivateMulticurrency: async () => {
+		await merchantWCP.openWCPSettings();
+		await merchantWCP.unsetCheckboxByTestId( 'multi-currency-toggle' );
+		await merchantWCP.wcpSettingsSaveChanges();
+	},
+
+	activateMulticurrency: async () => {
+		await merchantWCP.openWCPSettings();
+		await merchantWCP.setCheckboxByTestId( 'multi-currency-toggle' );
+		await merchantWCP.wcpSettingsSaveChanges();
+	},
 };
