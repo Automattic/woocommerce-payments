@@ -7,15 +7,16 @@
 
 namespace WCPay\Internal;
 
+use Exception;
 use WC_Logger;
-use WC_Payments;
+use WC_Payment_Gateway_WCPay;
 use WCPay\Core\Mode;
-use WCPay\Internal\Proxy\LegacyProxy;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
  * A wrapper class for interacting with WC_Logger.
+ * Intended as an internal logger for classes within src.
  */
 class Logger {
 
@@ -29,6 +30,13 @@ class Logger {
 	private $wc_logger;
 
 	/**
+	 * WC_Payment_Gateway_WCPay
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * Mode
 	 *
 	 * @var Mode
@@ -38,12 +46,14 @@ class Logger {
 	/**
 	 * Logger constructor.
 	 *
-	 * @param WC_Logger $wc_logger    Legacy proxy.
-	 * @param Mode      $mode            Mode.
+	 * @param WC_Logger                $wc_logger    WC_Logger.
+	 * @param Mode                     $mode         Mode.
+	 * @param WC_Payment_Gateway_WCPay $gateway      WC_Payment_Gateway_WCPay.
 	 */
-	public function __construct( WC_Logger $wc_logger, Mode $mode ) {
+	public function __construct( WC_Logger $wc_logger, Mode $mode, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->wc_logger = $wc_logger;
 		$this->mode      = $mode;
+		$this->gateway   = $gateway;
 	}
 
 	/**
@@ -63,39 +73,36 @@ class Logger {
 	 *     'notice': Normal but significant condition.
 	 *     'info': Informational messages.
 	 *     'debug': Debug-level messages.
-	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
-	public function log( $message, $level = 'info' ) {
+	public function log( $message, $level = 'info' ) : void {
 		if ( ! $this->can_log() ) {
 			return;
 		}
-
 		$this->wc_logger->log( $level, $message, [ 'source' => self::LOG_FILENAME ] );
 	}
-
 
 	/**
 	 * Checks if the gateway setting logging toggle is enabled.
 	 *
 	 * @return bool Depending on the enable_logging setting.
-	 * @throws \Exception Throws Exception for any issue in accessing mode.
 	 */
 	public function can_log() {
-
-		if ( $this->mode->is_dev() ) {
-			return true;
+		try {
+			if ( $this->mode->is_dev() ) {
+				return true;
+			}
+		} catch ( Exception $e ) {
+			return false;
 		}
-
-		return 'yes' === WC_Payments::get_gateway()->get_option( 'enable_logging' );
+		return 'yes' === $this->gateway->get_option( 'enable_logging' );
 	}
 
 	/**
 	 * Creates a log entry of type emergency
 	 *
 	 * @param string $message To send to the log file.
-	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
-	public function emergency( $message ) {
+	public function emergency( $message ) : void {
 		$this->log( $message, 'emergency' );
 	}
 
@@ -103,9 +110,8 @@ class Logger {
 	 * Creates a log entry of type alert
 	 *
 	 * @param string $message To send to the log file.
-	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
-	public function alert( $message ) {
+	public function alert( $message ) : void {
 		$this->log( $message, 'alert' );
 	}
 
@@ -113,9 +119,8 @@ class Logger {
 	 * Creates a log entry of type critical
 	 *
 	 * @param string $message To send to the log file.
-	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
-	public function critical( $message ) {
+	public function critical( $message ) : void {
 		$this->log( $message, 'critical' );
 	}
 
@@ -123,9 +128,8 @@ class Logger {
 	 * Creates a log entry of type error
 	 *
 	 * @param string $message To send to the log file.
-	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
-	public function error( $message ) {
+	public function error( $message ) : void {
 		$this->log( $message, 'error' );
 	}
 
@@ -133,9 +137,8 @@ class Logger {
 	 * Creates a log entry of type warning
 	 *
 	 * @param string $message To send to the log file.
-	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
-	public function warning( $message ) {
+	public function warning( $message ) : void {
 		$this->log( $message, 'warning' );
 	}
 
@@ -143,9 +146,8 @@ class Logger {
 	 * Creates a log entry of type notice
 	 *
 	 * @param string $message To send to the log file.
-	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
-	public function notice( $message ) {
+	public function notice( $message ) : void {
 		$this->log( $message, 'notice' );
 	}
 
@@ -153,9 +155,8 @@ class Logger {
 	 * Creates a log entry of type info
 	 *
 	 * @param string $message To send to the log file.
-	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
-	public function info( $message ) {
+	public function info( $message ) : void {
 		$this->log( $message, 'info' );
 	}
 
@@ -163,9 +164,8 @@ class Logger {
 	 * Creates a log entry of type debug
 	 *
 	 * @param string $message To send to the log file.
-	 * @throws \Exception Throws Exception if log cannot be written.
 	 */
-	public function debug( $message ) {
+	public function debug( $message ) : void {
 		$this->log( $message, 'debug' );
 	}
 }
