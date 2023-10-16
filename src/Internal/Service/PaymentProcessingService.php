@@ -7,10 +7,9 @@
 
 namespace WCPay\Internal\Service;
 
-use Exception;
-
 // Temporary exception! This service would have its own exception when more business logics are added.
 use WC_Payments_API_Abstract_Intention;
+use WC_Payments_API_Setup_Intention;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
@@ -58,7 +57,6 @@ class PaymentProcessingService {
 	 * @param int  $order_id Order ID provided by WooCommerce core.
 	 * @param bool $manual_capture Whether to only create an authorization instead of a charge (optional).
 	 *
-	 * @throws Exception
 	 * @throws StateTransitionException In case a state cannot be initialized.
 	 * @throws PaymentRequestException  When the request is malformed. This should be converted to a failure state.
 	 * @throws ContainerException       When the dependency container cannot instantiate the state.
@@ -118,7 +116,7 @@ class PaymentProcessingService {
 
 		return sprintf(
 			'#wcpay-confirm-%s:%s:%s:%s',
-			substr( $intent->get_id(), 0, 2 ), // intents starts with pi_ or si_ so we need only to first two letters.
+			$intent instanceof WC_Payments_API_Setup_Intention ? 'si' : 'pi',
 			$order_id,
 			$client_secret,
 			$this->legacy_proxy->call_function( 'wp_create_nonce', 'wcpay_update_order_status_nonce' )
