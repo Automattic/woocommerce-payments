@@ -251,13 +251,15 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							>
 								<Button
 									variant="primary"
+									data-testid="challenge-dispute-button"
 									disabled={ isLoading }
 									onClick={ () => {
 										wcpayTracks.recordEvent(
 											wcpayTracks.events
-												.DISPUTE_CHALLENGE_CLICK,
+												.DISPUTE_CHALLENGE_CLICKED,
 											{
 												dispute_status: dispute.status,
+												on_page: 'transaction_details',
 											}
 										);
 									} }
@@ -274,11 +276,13 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							<Button
 								variant="tertiary"
 								disabled={ isLoading }
+								data-testid="open-accept-dispute-modal-button"
 								onClick={ () => {
 									wcpayTracks.recordEvent(
 										disputeAcceptAction.acceptButtonTracksEvent,
 										{
 											dispute_status: dispute.status,
+											on_page: 'transaction_details',
 										}
 									);
 									setModalOpen( true );
@@ -331,12 +335,15 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										</Button>
 										<Button
 											variant="primary"
+											data-testid="accept-dispute-button"
 											onClick={ () => {
 												wcpayTracks.recordEvent(
 													disputeAcceptAction.modalButtonTracksEvent,
 													{
 														dispute_status:
 															dispute.status,
+														on_page:
+															'transaction_details',
 													}
 												);
 												setModalOpen( false );

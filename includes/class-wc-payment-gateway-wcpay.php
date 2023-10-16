@@ -532,6 +532,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
+	 * Also used by WC Core to complete the task "Set up WooPayments".
+	 *
+	 * @return bool
+	 */
+	public function is_account_partially_onboarded(): bool {
+		return $this->account->is_account_partially_onboarded();
+	}
+
+	/**
 	 * Returns true if the gateway needs additional configuration, false if it's ready to use.
 	 *
 	 * @see WC_Payment_Gateway::needs_setup
@@ -2054,6 +2064,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 
 			$this->update_option( 'platform_checkout', $is_woopay_enabled ? 'yes' : 'no' );
+
+			if ( ! $is_woopay_enabled ) {
+				$this->update_option( 'platform_checkout_last_disable_date', gmdate( 'Y-m-d' ) );
+			}
 
 			if ( ! $is_woopay_enabled ) {
 				WooPay_Order_Status_Sync::remove_webhook();

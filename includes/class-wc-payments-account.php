@@ -96,6 +96,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_wcpay_connect' ], 12 ); // Run this after the redirect to onboarding logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect' ] );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 
 		// Add handlers for inbox notes and reminders.
@@ -779,7 +780,7 @@ class WC_Payments_Account {
 	 *
 	 * @return bool True if the redirection happened, false otherwise.
 	 */
-	public function maybe_redirect_to_wcpay_connect() {
+	public function maybe_redirect_to_wcpay_connect(): bool {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
@@ -831,6 +832,51 @@ class WC_Payments_Account {
 		);
 
 		$this->redirect_to( $connect_url );
+		return true;
+	}
+
+	/**
+	 * Redirects WooPayments settings to the connect page for partially
+	 * onboarded accounts.
+	 *
+	 * Every WooPayments page except connect are already hidden, but merchants can still access
+	 * it through WooCommerce settings.
+	 *
+	 * @return bool True if the redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_settings_to_connect(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page'    => 'wc-settings',
+			'tab'     => 'checkout',
+			'section' => 'woocommerce_payments',
+		];
+
+		// We're not in the WooPayments settings page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
+
+		// Account not partially onboarded, don't redirect.
+		if ( ! $this->is_account_partially_onboarded() ) {
+			return false;
+		}
+
+		$this->redirect_to(
+			admin_url(
+				add_query_arg(
+					[
+						'page' => 'wc-admin',
+						'path' => '/payments/connect',
+					],
+					'admin.php'
+				)
+			)
+		);
+
 		return true;
 	}
 
