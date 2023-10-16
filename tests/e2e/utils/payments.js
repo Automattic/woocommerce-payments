@@ -113,33 +113,28 @@ export async function clearCardDetails() {
 		const frameHandle = await page.waitForSelector(
 			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe[name^="__privateStripeFrame"]'
 		);
+		const stripeFrame = await frameHandle.contentFrame();
+		const cardNumberInput = await stripeFrame.waitForSelector(
+			'[name="number"]',
+			{ timeout: 30000 }
+		);
+		await cardNumberInput.click( { clickCount: 3 } );
+		await page.keyboard.press( 'Backspace' );
 
-		try {
-			const stripeFrame = await frameHandle.contentFrame();
-			const cardNumberInput = await stripeFrame.waitForSelector(
-				'[name="number"]',
-				{ timeout: 30000 }
-			);
-			await cardNumberInput.click( { clickCount: 3 } );
-			await page.keyboard.press( 'Backspace' );
+		const cardDateInput = await stripeFrame.waitForSelector(
+			'[name="expiry"]',
+			{ timeout: 30000 }
+		);
+		await cardDateInput.click( { clickCount: 3 } );
+		await page.keyboard.press( 'Backspace' );
 
-			const cardDateInput = await stripeFrame.waitForSelector(
-				'[name="expiry"]',
-				{ timeout: 30000 }
-			);
-			await cardDateInput.click( { clickCount: 3 } );
-			await page.keyboard.press( 'Backspace' );
-
-			const cardCvcInput = await stripeFrame.waitForSelector(
-				'[name="cvc"]',
-				{ timeout: 30000 }
-			);
-			await cardCvcInput.click( { clickCount: 3 } );
-			await page.keyboard.press( 'Backspace' );
-			await page.waitFor( 1000 );
-		} catch ( e ) {
-			// do nothing because the card details clearing is an optional step which should not block the process
-		}
+		const cardCvcInput = await stripeFrame.waitForSelector(
+			'[name="cvc"]',
+			{ timeout: 30000 }
+		);
+		await cardCvcInput.click( { clickCount: 3 } );
+		await page.keyboard.press( 'Backspace' );
+		await page.waitFor( 1000 );
 	}
 }
 export async function fillCardDetailsPayForOrder( page, card ) {
