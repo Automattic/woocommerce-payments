@@ -7,7 +7,7 @@
 
 namespace WCPay\Internal\Payment\State;
 
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
@@ -64,7 +64,7 @@ class VerifiedState extends AbstractPaymentState {
 		}
 
 		// Intent requires authorization (3DS check).
-		if ( Payment_Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
+		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
 			return $this->create_state( AuthenticationRequiredState::class );
 		}
 
