@@ -52,6 +52,7 @@ class ProcessedState extends AbstractPaymentState {
 	 */
 	public function complete() {
 		$context = $this->get_context();
+
 		// Complete processing.
 		$this->order_service->update_order_from_successful_intent( $context->get_order_id(), $context->get_intent(), $context );
 
