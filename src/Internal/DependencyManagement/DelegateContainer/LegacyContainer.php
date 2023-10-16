@@ -46,7 +46,7 @@ class LegacyContainer implements ContainerInterface {
 	 * @param string $id Identifier of the entry to look for.
 	 * @return bool
 	 */
-	public function has( $id ) {
+	public function has( string $id ): bool {
 		$method = $this->transform_class_to_method( $id );
 		return method_exists( $this, $method );
 	}

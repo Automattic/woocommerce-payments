@@ -93,7 +93,7 @@ class Container implements ContainerInterface {
 	 * @param string $id The ID of the class to check.
 	 * @return bool
 	 */
-	public function has( $id ) {
+	public function has( string $id ): bool {
 		return $this->container->has( $id );
 	}
 
