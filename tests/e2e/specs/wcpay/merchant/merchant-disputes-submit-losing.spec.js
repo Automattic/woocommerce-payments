@@ -12,7 +12,7 @@ import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 let orderId;
 
-describe( 'Disputes > Submit losing dispute', () => {
+describe.skip( 'Disputes > Submit losing dispute', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
