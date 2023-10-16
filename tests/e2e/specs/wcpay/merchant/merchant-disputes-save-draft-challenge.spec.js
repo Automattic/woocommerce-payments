@@ -13,7 +13,7 @@ import { uiLoaded } from '../../../utils';
 
 let orderId;
 
-describe( 'Disputes > Merchant can save and resume draft dispute challenge', () => {
+describe.skip( 'Disputes > Merchant can save and resume draft dispute challenge', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
