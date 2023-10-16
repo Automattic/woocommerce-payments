@@ -69,7 +69,6 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 		$this->mock_order_service->expects( $this->once() )
 			->method( 'update_order_from_successful_intent' )
 			->with( 1, $intent );
-		$processed_state = new ProcessedState( $this->mock_state_factory, $this->mock_order_service );
 
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
