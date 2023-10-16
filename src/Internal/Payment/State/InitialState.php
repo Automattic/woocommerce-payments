@@ -12,7 +12,6 @@ use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\Level3Service;
-use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\PaymentRequestException;
@@ -64,7 +63,7 @@ class InitialState extends AbstractPaymentState {
 	}
 
 	/**
-	 * Initialtes the payment process.
+	 * Initiates the payment process.
 	 *
 	 * @param PaymentRequest $request The incoming payment processing request.
 	 *
