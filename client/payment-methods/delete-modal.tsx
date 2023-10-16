@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Button, Notice } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -20,6 +20,8 @@ const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 	onConfirm: () => void;
 	onCancel: () => void;
 } > = ( { id, label, icon: Icon, onConfirm, onCancel } ): JSX.Element => {
+	const shouldDisplayNotice = id === 'sofort';
+
 	return (
 		<ConfirmationModal
 			title={ sprintf(
@@ -65,7 +67,7 @@ const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 			<p>
 				{ interpolateComponents( {
 					mixedString: __(
-						'You can add it again at any time in {{wooCommercePaymentsLink /}}',
+						'You can add it again at any time in {{wooCommercePaymentsLink /}}.',
 						'woocommerce-payments'
 					),
 					components: {
@@ -77,6 +79,28 @@ const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 					},
 				} ) }
 			</p>
+			{ shouldDisplayNotice && (
+				<Notice
+					status="warning"
+					isDismissible={ false }
+					className="sofort__notice"
+				>
+					<span>
+						{ __(
+							'As of October 20th 2023, Sofort is no longer supported for merchants who are not already using it. This means that if you disable Sofort, you will not be able to re-enable it later. ',
+							'woocommerce-payments'
+						) }
+						<a
+							// eslint-disable-next-line max-len
+							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-deprecation"
+							target="_blank"
+							rel="external noreferrer noopener"
+						>
+							{ __( 'Learn more', 'woocommerce-payments' ) }
+						</a>
+					</span>
+				</Notice>
+			) }
 		</ConfirmationModal>
 	);
 };
