@@ -2,13 +2,13 @@
  * External dependencies
  */
 import config from 'config';
+const { merchant, shopper, evalAndClick } = require( '@woocommerce/e2e-utils' );
+
 /**
  * Internal dependencies
  */
-import { merchantWCP } from '../../../utils';
+import { uiLoaded } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
-
-const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 let orderId;
 
@@ -40,46 +40,44 @@ describe.skip( 'Disputes > Submit losing dispute', () => {
 	} );
 
 	it( 'should process and confirm a losing dispute', async () => {
-		// Pull out and follow the link to avoid working in multiple tabs
-		const paymentDetailsLink = await page.$eval(
-			'p.order_number > a',
-			( anchor ) => anchor.getAttribute( 'href' )
-		);
-
-		await merchantWCP.openPaymentDetails( paymentDetailsLink );
-
-		// Verify we have a dispute for this purchase
-		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Payment disputed as Product not received.',
+		// Click the order dispute notice.
+		await expect( page ).toClick( '[type="button"]', {
+			text: 'Respond now',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
 		} );
 
-		// Accept the dispute
-		await merchantWCP.openAcceptDispute();
+		// Verify we see the dispute details on the transaction details page.
+		await expect( page ).toMatchElement( '.dispute-notice', {
+			text: 'The cardholder claims the product was not received',
+		} );
 
-		// If webhooks are not received, the dispute status won't be updated in the dispute list page resulting in test failure.
-		// Workaround - Open payment details page again and check dispute's status.
-		await merchantWCP.openPaymentDetails( paymentDetailsLink );
+		// Open the accept dispute modal.
+		await evalAndClick( '[data-testid="open-accept-dispute-modal-button"' );
+		await uiLoaded();
+		// Click the accept dispute button.
+		await evalAndClick( '[data-testid="accept-dispute-button"]' );
+		// Wait for the accept POST request to resolve and the status chip to update with the new status.
+		await expect( page ).toMatchElement( '.chip', {
+			text: 'Disputed: Lost',
+			timeout: 10000,
+		} );
+
+		// Check the dispute details footer
+		await expect( page ).toMatchElement(
+			'.transaction-details-dispute-footer *',
+			{
+				text: 'This dispute was accepted and lost',
+			}
+		);
 
 		// Confirm buttons are not present anymore since a dispute has been accepted.
 		await expect( page ).not.toMatchElement(
-			// eslint-disable-next-line max-len
-			'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-primary',
-			{
-				text: 'Challenge dispute',
-			}
+			'[data-testid="challenge-dispute-button"]'
 		);
 		await expect( page ).not.toMatchElement(
-			// eslint-disable-next-line max-len
-			'div.transaction-details-dispute-details-body div.transaction-details-dispute-details-body__actions button.components-button.is-tertiary',
-			{
-				text: 'Accept dispute',
-			}
+			'[data-testid="open-accept-dispute-modal-button"]'
 		);
-
-		// Confirm dispute status is Lost.
-		await page.waitForSelector( 'li.woocommerce-timeline-item' );
-		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Dispute lost. The bank ruled in favor of your customer.',
-		} );
 	} );
 } );

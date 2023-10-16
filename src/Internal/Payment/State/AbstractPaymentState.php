@@ -65,6 +65,27 @@ abstract class AbstractPaymentState {
 	}
 
 	/**
+	 * State-specific methods might declare a return type, but
+	 * their hollow definitions here would only throw an exception.
+	  * phpcs:disable Squiz.Commenting.FunctionComment.InvalidNoReturn
+	 */
+
+	/**
+	 * Initialtes the payment process.
+	 *
+	 * @param PaymentRequest $request    The incoming payment processing request.
+	 * @return CompletedState            The next state.
+	 * @throws StateTransitionException  In case the completed state could not be initialized.
+	 * @throws ContainerException        When the dependency container cannot instantiate the state.
+	 * @throws Order_Not_Found_Exception Order could not be found.
+	 * @throws PaymentRequestException   When data is not available or invalid.
+	 * @psalm-suppress InvalidReturnType If this method does not throw, it will return a new state.
+	 */
+	public function process( PaymentRequest $request ) {
+		$this->throw_unavailable_method_exception( __METHOD__ );
+	}
+
+	/**
 	 * Creates a new instance of a given payment state class.
 	 *
 	 * States control the payment flow, and allow transitions to the next state.
@@ -82,27 +103,6 @@ abstract class AbstractPaymentState {
 		// This is where logging will be added.
 
 		return $state;
-	}
-
-	/**
-	 * State-specific methods might declare a return type, but
-	 * their hollow definitions here would only throw an exception.
-	 * phpcs:disable Squiz.Commenting.FunctionComment.InvalidNoReturn
-	 */
-
-	/**
-	 * Initialtes the payment process.
-	 *
-	 * @param PaymentRequest $request    The incoming payment processing request.
-	 * @return CompletedState            The next state.
-	 * @throws StateTransitionException  In case the completed state could not be initialized.
-	 * @throws ContainerException        When the dependency container cannot instantiate the state.
-	 * @throws Order_Not_Found_Exception Order could not be found.
-	 * @throws PaymentRequestException   When data is not available or invalid.
-	 * @psalm-suppress InvalidReturnType If this method does not throw, it will return a new state.
-	 */
-	public function process( PaymentRequest $request ) {
-		$this->throw_unavailable_method_exception( __METHOD__ );
 	}
 
 	/**
