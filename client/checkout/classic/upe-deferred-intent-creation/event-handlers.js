@@ -77,6 +77,13 @@ jQuery( function ( $ ) {
 	}
 
 	$( 'form#add_payment_method' ).on( 'submit', function () {
+		if (
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val() !== 'woocommerce_payments'
+		) {
+			return;
+		}
 		// WC core calls block() when add_payment_method form is submitted, so we need to enable the ignore flag here to avoid
 		// the overlay blink when the form is blocked twice.
 		$.blockUI.defaults.ignoreIfBlocked = true;
