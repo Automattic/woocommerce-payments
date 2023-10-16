@@ -141,7 +141,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 						->method( 'get_intent' )
 						->willReturn( $intent );
 
-					$verified_state = new VerifiedState( $this->mock_state_factory, $this->mock_order_service, $mock_payment_request_service );
+					$verified_state = new VerifiedState( $this->mock_state_factory, $mock_payment_request_service );
 					$verified_state->set_context( $this->mock_context );
 
 					return $verified_state;

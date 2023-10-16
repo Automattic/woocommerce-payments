@@ -7,25 +7,16 @@
 
 namespace WCPay\Internal\Payment\State;
 
-use WC_Payments_API_Abstract_Intention;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
-use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\PaymentRequestService;
 
 /**
  * This state is used to create payment intent and verify next actions based on the intent state.
  */
 class VerifiedState extends AbstractPaymentState {
-
-	/**
-	 * Order service.
-	 *
-	 * @var OrderService
-	 */
-	private $order_service;
 
 	/**
 	 * Payment request service.
@@ -38,17 +29,14 @@ class VerifiedState extends AbstractPaymentState {
 	 * Class constructor, only meant for storing dependencies.
 	 *
 	 * @param StateFactory          $state_factory Factory for payment states.
-	 * @param OrderService          $order_service Service for order-related actions.
 	 * @param PaymentRequestService $payment_request_service Connection with the server.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
-		OrderService $order_service,
 		PaymentRequestService $payment_request_service
 	) {
 		parent::__construct( $state_factory );
 
-		$this->order_service           = $order_service;
 		$this->payment_request_service = $payment_request_service;
 	}
 

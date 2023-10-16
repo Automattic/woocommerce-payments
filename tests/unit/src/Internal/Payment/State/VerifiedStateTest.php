@@ -18,7 +18,6 @@ use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\State\SystemErrorState;
 use WCPay\Internal\Payment\State\VerifiedState;
-use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPAY_UnitTestCase;
 
@@ -39,11 +38,6 @@ class VerifiedStateTest extends WCPAY_UnitTestCase {
 	private $mock_state_factory;
 
 	/**
-	 * @var OrderService|MockObject
-	 */
-	private $mock_order_service;
-
-	/**
 	 * @var PaymentRequestService|MockObject
 	 */
 	private $mock_payment_request_service;
@@ -56,13 +50,11 @@ class VerifiedStateTest extends WCPAY_UnitTestCase {
 		parent::setUp();
 
 		$this->mock_state_factory           = $this->createMock( StateFactory::class );
-		$this->mock_order_service           = $this->createMock( OrderService::class );
 		$this->mock_context                 = $this->createMock( PaymentContext::class );
 		$this->mock_payment_request_service = $this->createMock( PaymentRequestService::class );
 
 		$this->sut = new VerifiedState(
 			$this->mock_state_factory,
-			$this->mock_order_service,
 			$this->mock_payment_request_service
 		);
 		$this->sut->set_context( $this->mock_context );
