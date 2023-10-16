@@ -47,8 +47,9 @@ class Logger {
 	/**
 	 * Logger constructor.
 	 *
-	 * @param WC_Logger $wc_logger    WC_Logger.
-	 * @param Mode      $mode         Mode.
+	 * @param WC_Logger                $wc_logger    WC_Logger.
+	 * @param Mode                     $mode         Mode.
+	 * @param WC_Payment_Gateway_WCPay $gateway      WC_Payment_Gateway_WCPay.
 	 */
 	public function __construct( WC_Logger $wc_logger, Mode $mode, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->wc_logger = $wc_logger;
