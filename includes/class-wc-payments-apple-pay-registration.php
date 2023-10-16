@@ -423,16 +423,16 @@ class WC_Payments_Apple_Pay_Registration {
 					<?php echo esc_html( $verification_failed_without_error ); ?>
 					<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
 				</p>
-			<?php else : ?>
+<?php else : ?>
 				<p>
 					<strong><?php echo esc_html( $payment_request_button_text ); ?></strong>
 					<?php echo esc_html( $verification_failed_with_error ); ?>
 					<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
 				</p>
 				<p><i><?php echo wp_kses( make_clickable( esc_html( $this->apple_pay_verify_notice ) ), $allowed_html ); ?></i></p>
-			<?php endif; ?>
+<?php endif; ?>
 			<p><?php echo $check_log_text; /* @codingStandardsIgnoreLine */ ?></p>
 		</div>
-		<?php
+<?php
 	}
 }
