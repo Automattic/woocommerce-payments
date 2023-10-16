@@ -119,7 +119,7 @@ const events = {
 	WOOPAY_SAVE_MY_INFO_TOS_CLICK: 'checkout_save_my_info_tos_click',
 	WOOPAY_SAVE_MY_INFO_PRIVACY_CLICK:
 		'checkout_save_my_info_privacy_policy_click',
-	WOOPAY_SAVE_MY_INFO_TOOLTIP_HOVER: 'checkout_save_my_info_tooltip_hover',
+	WOOPAY_SAVE_MY_INFO_TOOLTIP_CLICK: 'checkout_save_my_info_tooltip_click',
 	WOOPAY_SAVE_MY_INFO_TOOLTIP_LEARN_MORE_CLICK:
 		'checkout_save_my_info_tooltip_learn_more_click',
 	// Onboarding flow.
