@@ -106,7 +106,20 @@ abstract class AbstractPaymentState {
 	}
 
 	/**
-	 * Process all needed verifications.
+	 * Process verified state.
+	 *
+	 * @psalm-suppress InvalidReturnType
+	 *
+	 * @return AbstractPaymentState
+	 * @throws \WCPay\Exceptions\Order_Not_Found_Exception
+	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
+	 */
+	public function process() {
+		$this->throw_unavailable_method_exception( __METHOD__ );
+	}
+
+	/**
+	 * Process completed state.
 	 *
 	 * @psalm-suppress InvalidReturnType
 	 *
@@ -115,18 +128,6 @@ abstract class AbstractPaymentState {
 	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
 	 */
 	public function complete() {
-		$this->throw_unavailable_method_exception( __METHOD__ );
-	}
-
-	/**
-	 * Get redirect url.
-	 *
-	 * @psalm-suppress InvalidReturnType
-	 *
-	 * @return string
-	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
-	 */
-	public function get_authentication_url() {
 		$this->throw_unavailable_method_exception( __METHOD__ );
 	}
 

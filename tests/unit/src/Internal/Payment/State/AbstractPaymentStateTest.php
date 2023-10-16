@@ -80,9 +80,22 @@ class AbstractPaymentStateTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $mock_completed_state, $result );
 	}
 
-	public function test_process_throws_exception() {
+	/**
+	 * @dataProvider state_defined_methods_provider
+	 */
+	public function test_state_methods_will_throw_exceptions( $method ) {
 		$this->expectException( StateTransitionException::class );
-		$this->expectExceptionMessage( 'The WCPay\Internal\Payment\State\AbstractPaymentState::process method is not available in the current payment state (' . PureState::class . ').' );
-		$this->sut->process( $this->createMock( PaymentRequest::class ) );
+		$this->expectExceptionMessage( 'The WCPay\Internal\Payment\State\AbstractPaymentState::' . $method . ' method is not available in the current payment state (' . PureState::class . ').' );
+
+		// Dynamically call the method based on $method.
+		$this->sut->{$method}( $this->createMock( PaymentRequest::class ) );
+	}
+
+	public function state_defined_methods_provider() {
+		return [
+			[ 'start_processing' ],
+			[ 'process' ],
+			[ 'complete' ],
+		];
 	}
 }

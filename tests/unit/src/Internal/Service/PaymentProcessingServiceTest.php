@@ -80,7 +80,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->willReturn( $mock_initial_state );
 
 		$mock_initial_state->expects( $this->once() )
-			->method( 'process' )
+			->method( 'start_processing' )
 			->with( $this->isInstanceOf( PaymentRequest::class ) )
 			->willReturn( $mock_completed_state );
 
@@ -107,7 +107,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->willReturn( $mock_initial_state );
 
 		$mock_initial_state->expects( $this->once() )
-			->method( 'process' )
+			->method( 'start_processing' )
 			->with( $this->isInstanceOf( PaymentRequest::class ) )
 			->willReturn( $mock_completed_state );
 
