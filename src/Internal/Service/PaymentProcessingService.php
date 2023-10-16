@@ -7,7 +7,6 @@
 
 namespace WCPay\Internal\Service;
 
-// Temporary exception! This service would have its own exception when more business logics are added.
 use WC_Payments_API_Abstract_Intention;
 use WC_Payments_API_Setup_Intention;
 use WCPay\Exceptions\Order_Not_Found_Exception;
