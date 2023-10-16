@@ -158,6 +158,9 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		}
 
+		if ( $session_order->get_customer_id() !== $current_order->get_customer_id() ) {
+			return;
+		}
 		$session_order->add_order_note(
 			sprintf(
 				/* translators: order ID integer number */
