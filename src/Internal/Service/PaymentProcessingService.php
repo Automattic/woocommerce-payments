@@ -10,6 +10,7 @@ namespace WCPay\Internal\Service;
 // Temporary exception! This service would have its own exception when more business logics are added.
 use WC_Payments_API_Abstract_Intention;
 use WC_Payments_API_Setup_Intention;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
@@ -57,9 +58,10 @@ class PaymentProcessingService {
 	 * @param int  $order_id Order ID provided by WooCommerce core.
 	 * @param bool $manual_capture Whether to only create an authorization instead of a charge (optional).
 	 *
-	 * @throws StateTransitionException In case a state cannot be initialized.
-	 * @throws PaymentRequestException  When the request is malformed. This should be converted to a failure state.
-	 * @throws ContainerException       When the dependency container cannot instantiate the state.
+	 * @throws StateTransitionException  In case a state cannot be initialized.
+	 * @throws PaymentRequestException   When the request is malformed. This should be converted to a failure state.
+	 * @throws Order_Not_Found_Exception When order is not found.
+	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 */
 	public function process_payment( int $order_id, bool $manual_capture = false ) {
 		// Start with a basis context.
