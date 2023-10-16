@@ -813,7 +813,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $state instanceof PreviousPaidOrderDetectedState ) {
 			return [
 				'result'   => 'success',
-				'redirect' => $this->get_return_url( $order ), // TODO: This should be PaymentContext::get_previous_order_id(). But how to get it as we do expose PaymentContext here at the moment.
+				'redirect' => $this->get_return_url( wc_get_order( $state->get_context()->get_previous_paid_order_id() ) ),
 				DuplicatePaymentPreventionService::FLAG_PREVIOUS_ORDER_PAID => 'yes',
 			];
 		}

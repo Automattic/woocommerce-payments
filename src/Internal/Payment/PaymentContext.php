@@ -253,7 +253,7 @@ class PaymentContext {
 	 *
 	 * @return void
 	 */
-	public function set_previous_order_id( int $paid_session_order_id ) {
+	public function set_previous_paid_order_id( int $paid_session_order_id ) {
 		$this->set( 'previous_paid_order_id', $paid_session_order_id );
 	}
 
@@ -262,7 +262,7 @@ class PaymentContext {
 	 *
 	 * @return int|null
 	 */
-	public function get_previous_order_id(): ?int {
+	public function get_previous_paid_order_id(): ?int {
 		return $this->get( 'previous_paid_order_id' );
 	}
 }
