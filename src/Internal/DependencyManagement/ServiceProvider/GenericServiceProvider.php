@@ -37,17 +37,16 @@ class GenericServiceProvider extends AbstractServiceProvider {
 	 * Registers all provided classes.
 	 */
 	public function register(): void {
+
 		$container = $this->getContainer();
 
 		$container->add( 'wc_get_logger', 'wc_get_logger' );
-		$container->add( 'get_wc_payment_gateway_wcpay_instance', 'get_wc_payment_gateway_wcpay_instance' );
-
-		$container->addShared( WC_Payment_Gateway_WCPay::class );
+		$gateway = $container->get( 'wc_payment_gateway_wcpay' );
 
 		$container->addShared( Logger::class )
 			->addArgument( 'wc_get_logger' )
 			->addArgument( Mode::class )
-			->addArgument( 'get_wc_payment_gateway_wcpay_instance' );
+			->addArgument( $gateway );
 
 		$container->addShared( OrderService::class )
 			->addArgument( WC_Payments_Order_Service::class )

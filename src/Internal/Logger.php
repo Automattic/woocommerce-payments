@@ -11,6 +11,7 @@ use Exception;
 use WC_Logger;
 use WC_Payment_Gateway_WCPay;
 use WCPay\Core\Mode;
+use WC_Payment_Gateway;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -30,13 +31,6 @@ class Logger {
 	private $wc_logger;
 
 	/**
-	 * WC_Payment_Gateway_WCPay
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $gateway;
-
-	/**
 	 * Mode
 	 *
 	 * @var Mode
@@ -44,11 +38,17 @@ class Logger {
 	private $mode;
 
 	/**
+	 * WC_Payment_Gateway_WCPay
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * Logger constructor.
 	 *
-	 * @param WC_Logger                $wc_logger    WC_Logger.
-	 * @param Mode                     $mode         Mode.
-	 * @param WC_Payment_Gateway_WCPay $gateway      WC_Payment_Gateway_WCPay.
+	 * @param WC_Logger $wc_logger    WC_Logger.
+	 * @param Mode      $mode         Mode.
 	 */
 	public function __construct( WC_Logger $wc_logger, Mode $mode, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->wc_logger = $wc_logger;
