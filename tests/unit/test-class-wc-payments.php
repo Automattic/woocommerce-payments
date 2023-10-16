@@ -79,7 +79,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_it_skips_stripe_link_gateway_registration() {
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 
 		$card_gateway_mock = $this->createMock( UPE_Split_Payment_Gateway::class );
 		$card_gateway_mock
