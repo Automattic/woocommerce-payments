@@ -7,9 +7,8 @@
 
 namespace WCPay\Internal\Payment\State;
 
-use WCPay\Internal\Proxy\LegacyProxy;
 /**
- * The state, which indicates that the payment processing has been completed.
+ * The state, which indicates that the payment requires authentication (3DS).
  */
 class AuthenticationRequiredState extends AbstractPaymentState {
 }
