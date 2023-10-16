@@ -11,7 +11,10 @@ use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Service\PaymentRequestService;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 
 /**
  * This state is used to create payment intent and verify next actions based on the intent state.
@@ -45,9 +48,9 @@ class VerifiedState extends AbstractPaymentState {
 	 *
 	 * @return AbstractPaymentState
 	 *
-	 * @throws \WCPay\Exceptions\Order_Not_Found_Exception
-	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
-	 * @throws \WCPay\Vendor\League\Container\Exception\ContainerException
+	 * @throws Order_Not_Found_Exception
+	 * @throws StateTransitionException
+	 * @throws ContainerException
 	 */
 	public function process() {
 		$context = $this->get_context();
