@@ -7,7 +7,6 @@
 
 namespace WCPay\Tests\Internal\Payment\State;
 
-use Exception;
 use WC_Helper_Intention;
 use WCPay\Constants\Intent_Status;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
@@ -16,11 +15,8 @@ use WCPay\Internal\Payment\State\VerifiedState;
 use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit_Utils;
-use ReflectionClass;
 use WC_Order;
-use WC_Payments_API_Payment_Intention;
 use WC_Payments_Customer_Service;
-use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\StateFactory;
@@ -107,11 +103,12 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		 * @var MockObject|InitialState
 		 */
 		$this->mock_initial_state();
+		$mock_processed_state = $this->createMock( ProcessedState::class );
+		$mock_completed_state = $this->createMock( CompletedState::class );
 
-		// Mock get order id calls.
-		$this->mock_context->expects( $this->exactly( 2 ) )
-			->method( 'get_order_id' )
-			->willReturn( 1 );
+		$mock_processed_state->expects( $this->once() )
+			->method( 'complete' )
+			->willReturn( $mock_completed_state );
 
 		// Verify that the context is populated.
 		$this->sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
@@ -125,39 +122,16 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->with( $this->mock_context )
 			->willReturn( $intent );
 
-		$this->mock_context->expects( $this->exactly( 2 ) )
-			->method( 'get_intent' )
-			->willReturn( $intent );
-
 		// Since the original create_state method is mocked, we have to manually set context.
-		$this->mock_state_factory->expects( $this->exactly( 2 ) )
+		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
-			->withConsecutive(
-				[ ProcessedState::class, $this->mock_context ],
-				[ CompletedState::class, $this->mock_context ]
-			)
-			->willReturnOnConsecutiveCalls(
-				( function () {
-					$this->mock_order_service->expects( $this->once() )
-						->method( 'update_order_from_successful_intent' )
-						->with( $this->mock_context->get_order_id(), $this->mock_context->get_intent(), $this->mock_context );
-					$processed_state = new ProcessedState( $this->mock_state_factory, $this->mock_order_service );
-					$processed_state->set_context( $this->mock_context );
-
-					return $processed_state;
-				} )(),
-				( function () {
-					$completed_state = new CompletedState( $this->mock_state_factory );
-					$completed_state->set_context( $this->mock_context );
-
-					return $completed_state;
-				} )()
-			);
+			->with( ProcessedState::class, $this->mock_context )
+			->willReturn( $mock_processed_state );
 
 		// Act: start processing.
 		$result = $this->sut->start_processing( $mock_request );
 		// Assert: Successful transition.
-		$this->assertInstanceOf( CompletedState::class, $result );
+		$this->assertSame( $mock_completed_state, $result );
 	}
 
 	public function test_start_processing_will_transition_to_error_state_when_api_exception_occurs() {
