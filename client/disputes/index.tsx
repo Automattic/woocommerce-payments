@@ -38,9 +38,8 @@ import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
-import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
-import { isAwaitingResponse } from 'wcpay/disputes/utils';
+import { isAwaitingResponse, getDisputesCSVURL } from 'wcpay/disputes/utils';
 
 import './style.scss';
 
@@ -382,7 +381,7 @@ export const DisputesList = (): JSX.Element => {
 					const {
 						exported_disputes: exportedDisputes,
 					} = await apiFetch( {
-						path: getDisputesCSV( {
+						path: getDisputesCSVURL( {
 							userEmail,
 							dateAfter,
 							dateBefore,

@@ -3,6 +3,7 @@
  */
 
 import moment from 'moment';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -19,6 +20,8 @@ import {
 	disputeUnderReviewStatuses,
 } from 'wcpay/disputes/filters/config';
 import { formatCurrency, formatExplicitCurrency } from 'wcpay/utils/currency';
+import { formatDateValue } from 'wcpay/utils';
+import { NAMESPACE } from 'wcpay/data/constants';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
@@ -118,3 +121,27 @@ export const getDisputeFeeFormatted = (
 
 	return formatCurrency( disputeFee.fee, disputeFee.currency );
 };
+
+const formatQueryFilters = ( query: Record< string, unknown > ) => ( {
+	user_email: query.userEmail,
+	match: query.match,
+	store_currency_is: query.storeCurrencyIs,
+	date_before: formatDateValue( query.dateBefore as string, true ),
+	date_after: formatDateValue( query.dateAfter as string ),
+	date_between: query.dateBetween && [
+		formatDateValue( ( query.dateBetween as string[] )[ 0 ] ),
+		formatDateValue( ( query.dateBetween as string[] )[ 1 ], true ),
+	],
+	search: query.search,
+	status_is: query.statusIs,
+	status_is_not: query.statusIsNot,
+} );
+
+export function getDisputesCSVURL( query: Record< string, unknown > ): string {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/disputes/download`,
+		formatQueryFilters( query )
+	);
+
+	return path;
+}

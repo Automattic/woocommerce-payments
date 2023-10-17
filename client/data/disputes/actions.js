@@ -11,41 +11,8 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE, STORE_NAME } from '../constants';
-import TYPES from './action-types';
 import wcpayTracks from 'tracks';
 import { getPaymentIntent } from '../payment-intents/resolvers';
-
-export function updateDispute( data ) {
-	return {
-		type: TYPES.SET_DISPUTE,
-		data,
-	};
-}
-
-export function updateErrorForDispute( id, data, error ) {
-	return {
-		type: TYPES.SET_ERROR_FOR_DISPUTE,
-		id,
-		data,
-		error,
-	};
-}
-
-export function updateDisputes( query, data ) {
-	return {
-		type: TYPES.SET_DISPUTES,
-		query,
-		data,
-	};
-}
-
-export function updateDisputesSummary( query, data ) {
-	return {
-		type: TYPES.SET_DISPUTES_SUMMARY,
-		query,
-		data,
-	};
-}
 
 export function* acceptDispute( dispute ) {
 	const { id, payment_intent: paymentIntent } = dispute;
@@ -60,7 +27,7 @@ export function* acceptDispute( dispute ) {
 			method: 'post',
 		} );
 
-		yield updateDispute( updatedDispute );
+		// yield updateDispute( updatedDispute );
 
 		// Fetch and update the payment intent associated with the dispute
 		// to reflect changes to the dispute on the Transaction Details screen.
