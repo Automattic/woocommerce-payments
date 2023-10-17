@@ -821,10 +821,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$state   = $service->process_payment( $order->get_id(), $manual_capture );
 
 		if ( $state instanceof DuplicateOrderDetectedState ) {
-			return [
+			$duplicate_order_return_url = add_query_arg(
+				DuplicatePaymentPreventionService::FLAG_PREVIOUS_ORDER_PAID,
+				'yes',
+				$this->get_return_url( wc_get_order( $state->get_context()->get_duplicate_order_id() ) )
+			);
+
+			return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
 				'result'   => 'success',
-				'redirect' => $this->get_return_url( wc_get_order( $state->get_context()->get_duplicate_order_id() ) ),
-				DuplicatePaymentPreventionService::FLAG_PREVIOUS_ORDER_PAID => 'yes',
+				'redirect' => $duplicate_order_return_url,
 			];
 		}
 
