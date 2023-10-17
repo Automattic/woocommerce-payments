@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_REST_Payments_Payment_Intents_Controller_Test
+ * Class WC_REST_Payments_Payment_Intents_Create_Controller_Test
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -13,14 +13,14 @@ use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 
 /**
- * WC_REST_Payments_Payment_Intents_Controller unit tests.
+ * WC_REST_Payments_Payment_Intents_Create_Controller unit tests.
  */
-class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCase {
+class WC_REST_Payments_Payment_Intents_Create_Controller_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Controller under test.
 	 *
-	 * @var WC_REST_Payments_Payment_Intents_Controller
+	 * @var WC_REST_Payments_Payment_Intents_Create_Controller
 	 */
 	private $controller;
 
@@ -52,7 +52,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 		$this->mock_order_service  = $this->createMock( OrderService::class );
 		$this->mock_level3_service = $this->createMock( Level3Service::class );
 
-		$this->controller = new WC_REST_Payments_Payment_Intents_Controller(
+		$this->controller = new WC_REST_Payments_Payment_Intents_Create_Controller(
 			$this->mock_api_client,
 			$this->mock_gateway,
 			$this->mock_order_service,

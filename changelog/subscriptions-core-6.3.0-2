@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-When HPOS is enabled, make the orders_by_type_query filter box work in the WooCommerce orders screen.
