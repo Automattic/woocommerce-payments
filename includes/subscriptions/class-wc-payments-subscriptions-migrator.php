@@ -758,9 +758,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 			]
 		);
 
-		return is_countable( $result ) ? count(
-			$result
-		) : 0;
+		return is_countable( $result ) ? count( $result ) : 0;
 	}
 
 	/**
