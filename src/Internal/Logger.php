@@ -11,7 +11,6 @@ use Exception;
 use WC_Logger;
 use WC_Payment_Gateway_WCPay;
 use WCPay\Core\Mode;
-use WC_Payment_Gateway;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
