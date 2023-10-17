@@ -95,11 +95,10 @@ class InitialState extends AbstractPaymentState {
 		// Populate further details from the order.
 		$this->populate_context_from_order();
 
-		$context = $this->get_context();
-
 		// Payments are currently based on intents, request one from the API.
 		try {
-			$intent = $this->payment_request_service->create_intent( $context );
+			$context = $this->get_context();
+			$intent  = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
@@ -113,7 +112,7 @@ class InitialState extends AbstractPaymentState {
 		// All good. Proceed to processed state.
 		$next_state = $this->create_state( ProcessedState::class );
 
-		return $next_state->complete();
+		return $next_state->complete_processing();
 	}
 
 	/**

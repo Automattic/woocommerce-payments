@@ -95,7 +95,7 @@ class AbstractPaymentStateTest extends WCPAY_UnitTestCase {
 		return [
 			[ 'start_processing' ],
 			[ 'process' ],
-			[ 'complete' ],
+			[ 'complete_processing' ],
 		];
 	}
 }

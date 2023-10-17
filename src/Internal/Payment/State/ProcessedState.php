@@ -39,14 +39,14 @@ class ProcessedState extends AbstractPaymentState {
 	}
 
 	/**
-	 * Process all needed verifications.
+	 * Complete processing.
 	 *
 	 * @return AbstractPaymentState
 	 * @throws Order_Not_Found_Exception
 	 * @throws StateTransitionException
 	 * @throws ContainerException
 	 */
-	public function complete() {
+	public function complete_processing() {
 		$context = $this->get_context();
 
 		// Complete processing.

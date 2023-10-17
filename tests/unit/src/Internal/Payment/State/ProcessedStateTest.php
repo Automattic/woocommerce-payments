@@ -54,7 +54,7 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 		$this->sut->set_context( $this->mock_context );
 	}
 
-	public function test_complete_will_transition_to_completed_state() {
+	public function test_complete_processing_will_transition_to_completed_state() {
 
 		$intent = WC_Helper_Intention::create_intention();
 
@@ -77,7 +77,7 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 			->with( CompletedState::class, $this->mock_context )
 			->willReturn( $mock_completed_state );
 
-		$result = $this->sut->complete();
+		$result = $this->sut->complete_processing();
 
 		$this->assertSame( $mock_completed_state, $result );
 	}

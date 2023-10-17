@@ -107,7 +107,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
 		$mock_processed_state->expects( $this->once() )
-			->method( 'complete' )
+			->method( 'complete_processing' )
 			->willReturn( $mock_completed_state );
 
 		// Verify that the context is populated.

@@ -119,7 +119,7 @@ abstract class AbstractPaymentState {
 	}
 
 	/**
-	 * Process completed state.
+	 * Complete processing.
 	 *
 	 * @psalm-suppress InvalidReturnType
 	 *
@@ -127,7 +127,7 @@ abstract class AbstractPaymentState {
 	 * @throws \WCPay\Exceptions\Order_Not_Found_Exception
 	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
 	 */
-	public function complete() {
+	public function complete_processing() {
 		$this->throw_unavailable_method_exception( __METHOD__ );
 	}
 
