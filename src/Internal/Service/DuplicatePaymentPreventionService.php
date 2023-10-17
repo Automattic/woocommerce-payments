@@ -118,14 +118,14 @@ class DuplicatePaymentPreventionService {
 		try {
 			$request = Get_Intention::create( $intent_id );
 			$request->set_hook_args( $this->order_service->_deprecated_get_order( $order_id ) );
-			$intent        = $request->send();
-			$intent_status = $intent->get_status();
+			/** @var \WC_Payments_API_Abstract_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$intent = $request->send();
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch attached payment intent: ' . $e ); // TODO - use internal Logger https://github.com/Automattic/woocommerce-payments/pull/7462.
 			return null;
 		};
 
-		if ( ! in_array( $intent_status, Intent_Status::SUCCESSFUL_STATUSES, true ) ) {
+		if ( ! $intent->is_authorized() ) {
 			return null;
 		}
 

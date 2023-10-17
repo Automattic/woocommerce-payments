@@ -28,11 +28,11 @@ class Intent_Status extends Base_Constant {
 	const SUCCEEDED               = 'succeeded';
 
 	/**
-	 * Stripe intents that are treated as successfully created.
+	 * Stripe intents that are treated as successfully created, i.e. authorized.
 	 *
 	 * @type array
 	 */
-	const SUCCESSFUL_STATUSES = [
+	const AUTHORIZED_STATUSES = [
 		self::SUCCEEDED,
 		self::REQUIRES_CAPTURE,
 		self::PROCESSING,

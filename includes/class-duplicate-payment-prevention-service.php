@@ -93,6 +93,7 @@ class Duplicate_Payment_Prevention_Service {
 		try {
 			$request = Get_Intention::create( $intent_id );
 			$request->set_hook_args( $order );
+			/** @var \WC_Payments_API_Abstract_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$intent        = $request->send();
 			$intent_status = $intent->get_status();
 		} catch ( Exception $e ) {
@@ -100,7 +101,7 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		};
 
-		if ( ! in_array( $intent_status, Intent_Status::SUCCESSFUL_STATUSES, true ) ) {
+		if ( ! $intent->is_authorized() ) {
 			return;
 		}
 

@@ -274,7 +274,7 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 
 	public function provider_check_payment_intent_attached_to_order_succeeded_return_redirection(): array {
 		$ret = [];
-		foreach ( Intent_Status::SUCCESSFUL_STATUSES as $status ) {
+		foreach ( Intent_Status::AUTHORIZED_STATUSES as $status ) {
 			$ret[ 'Intent status ' . $status ] = [ $status ];
 		}
 

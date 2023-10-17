@@ -1406,7 +1406,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( ! empty( $intent ) ) {
-			if ( ! in_array( $status, Intent_Status::SUCCESSFUL_STATUSES, true ) ) {
+			if ( ! $intent->is_authorized() ) {
 				$intent_failed = true;
 			}
 
@@ -2995,7 +2995,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 
-			if ( in_array( $status, Intent_Status::SUCCESSFUL_STATUSES, true ) ) {
+			if ( $intent->is_authorized() ) {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
