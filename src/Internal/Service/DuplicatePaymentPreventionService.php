@@ -96,58 +96,46 @@ class DuplicatePaymentPreventionService {
 	}
 
 	/**
-	 * Checks if the attached payment intent was successful for the current order.
+	 * Checks if the currently attached payment intent was authorized for the current processing order.
 	 *
-	 * @param  int $order_id Order ID.
+	 * @param  int $order_id ID of the current processing order.
 	 *
-	 * @return array|void A successful response in case the attached intent was successful, null if none.
+	 * @return string|null The authorized attached payment intent, null otherwise.
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function check_payment_intent_attached_to_order_succeeded( int $order_id ) {
+	public function get_authorized_payment_intent_attached_to_order( int $order_id ): ?string {
 		$intent_id = $this->order_service->get_intent_id( $order_id );
 		if ( is_null( $intent_id ) ) {
-			return;
+			return null;
 		}
 
 		// We only care about payment intent.
 		$is_payment_intent = 'pi_' === substr( $intent_id, 0, 3 );
 		if ( ! $is_payment_intent ) {
-			return;
+			return null;
 		}
 
-		$order = $this->order_service->_deprecated_get_order( $order_id );
 		try {
 			$request = Get_Intention::create( $intent_id );
-			$request->set_hook_args( $order );
+			$request->set_hook_args( $this->order_service->_deprecated_get_order( $order_id ) );
 			$intent        = $request->send();
 			$intent_status = $intent->get_status();
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to fetch attached payment intent: ' . $e );
-			return;
+			Logger::error( 'Failed to fetch attached payment intent: ' . $e ); // TODO - use internal Logger https://github.com/Automattic/woocommerce-payments/pull/7462.
+			return null;
 		};
 
 		if ( ! in_array( $intent_status, Intent_Status::SUCCESSFUL_STATUSES, true ) ) {
-			return;
+			return null;
 		}
 
 		$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
 		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 		if ( $intent_meta_order_id !== $order_id ) {
-			return;
+			return null;
 		}
 
-		$this->remove_session_processing_order( $order_id );
-		$this->order_service->update_order_status_from_intent( $order_id, $intent );
-
-		$return_url = add_query_arg(
-			self::FLAG_PREVIOUS_SUCCESSFUL_INTENT,
-			'yes',
-			$order->get_checkout_order_received_url()
-		);
-		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
-			'result'   => 'success',
-			'redirect' => $return_url,
-		];
+		return $intent_id;
 	}
 
 	/**

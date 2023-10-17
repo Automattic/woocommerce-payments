@@ -246,6 +246,33 @@ class PaymentContext {
 	}
 
 	/**
+	 * Sets the detected authorized intent ID.
+	 *
+	 * @param string $authorized_intent_id Payment intent ID.
+	 */
+	public function set_authorized_intent_id( string $authorized_intent_id ) {
+		$this->set( 'authorized_intent_id', $authorized_intent_id );
+	}
+
+	/**
+	 * Gets the detected authorized intent ID.
+	 *
+	 * @return string|null Payment intent ID.
+	 */
+	public function get_authorized_intent_id(): ?string {
+		return $this->get( 'authorized_intent_id' );
+	}
+
+	/**
+	 * Checks whether the currently attached intent, that is authorized, gets detected.
+	 *
+	 * @return bool
+	 */
+	public function is_detected_authorized_intent(): bool {
+		return null !== $this->get_authorized_intent_id();
+	}
+
+	/**
 	 * Stores an internal value.
 	 * Use this method for changes to allow logging in the future.
 	 *
