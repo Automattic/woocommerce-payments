@@ -44,7 +44,6 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		Router::class,
 		StateFactory::class,
 		InitialState::class,
-		VerifiedState::class,
 		ProcessedState::class,
 		CompletedState::class,
 		SystemErrorState::class,
@@ -73,10 +72,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( StateFactory::class )
 			->addArgument( OrderService::class )
 			->addArgument( WC_Payments_Customer_Service::class )
-			->addArgument( Level3Service::class );
-
-		$container->add( VerifiedState::class )
-			->addArgument( StateFactory::class )
+			->addArgument( Level3Service::class )
 			->addArgument( PaymentRequestService::class );
 
 		$container->add( ProcessedState::class )
