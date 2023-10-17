@@ -13,8 +13,10 @@ export const getConfig = ( name ) => {
 		config = wcpayConfig;
 	} else if ( typeof wcpay_upe_config !== 'undefined' ) {
 		config = wcpay_upe_config;
-	} else {
+	} else if ( typeof wc !== 'undefined' ) {
 		config = wc.wcSettings.getSetting( 'woocommerce_payments_data' );
+	} else {
+		return null;
 	}
 
 	return config[ name ] || null;
