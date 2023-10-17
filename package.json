@@ -77,7 +77,8 @@
     "crypto-js": "4.1.1",
     "debug": "4.1.1",
     "intl-tel-input": "17.0.15",
-    "lodash": "4.17.21"
+    "lodash": "4.17.21",
+    "react-query": "3.39.3"
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",
