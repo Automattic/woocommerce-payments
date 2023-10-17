@@ -226,23 +226,23 @@ class PaymentContext {
 	}
 
 	/**
-	 * Set the previous paid order ID.
+	 * Sets the previous paid duplicate order ID.
 	 *
-	 * @param  int $paid_session_order_id Paid session order ID.
+	 * @param  int $duplicate_order_id Duplicate order ID.
 	 *
 	 * @return void
 	 */
-	public function set_previous_paid_order_id( int $paid_session_order_id ) {
-		$this->set( 'previous_paid_order_id', $paid_session_order_id );
+	public function set_duplicate_order_id( int $duplicate_order_id ) {
+		$this->set( 'duplicate_order_id(', $duplicate_order_id );
 	}
 
 	/**
-	 * Gets the previous paid order ID.
+	 * Gets the previous paid duplicate order ID.
 	 *
 	 * @return int|null
 	 */
-	public function get_previous_paid_order_id(): ?int {
-		return $this->get( 'previous_paid_order_id' );
+	public function get_duplicate_order_id(): ?int {
+		return $this->get( 'duplicate_order_id' );
 	}
 
 	/**

@@ -102,11 +102,11 @@ class InitialState extends AbstractPaymentState {
 		$context  = $this->get_context();
 		$order_id = $context->get_order_id();
 
-		$paid_session_order_id = $this->dpps->get_paid_session_processing_order( $order_id );
-		if ( ! is_null( $paid_session_order_id ) ) {
-			$this->dpps->clean_up_when_detecting_duplicate_order( $paid_session_order_id, $order_id );
-			$context->set_previous_paid_order_id( $paid_session_order_id );
-			return $this->create_state( PreviousPaidOrderDetectedState::class );
+		$duplicate_order_id = $this->dpps->get_previous_paid_duplicate_order_id( $order_id );
+		if ( ! is_null( $duplicate_order_id ) ) {
+			$this->dpps->clean_up_when_detecting_duplicate_order( $duplicate_order_id, $order_id );
+			$context->set_duplicate_order_id( $duplicate_order_id );
+			return $this->create_state( DuplicateOrderDetectedState::class );
 		}
 
 		// Populate basic details from the request.

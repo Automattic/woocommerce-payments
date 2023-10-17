@@ -158,7 +158,7 @@ class DuplicatePaymentPreventionService {
 	 * @return int|null Return the session processing order ID if it's already paid, null otherwise.
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_paid_session_processing_order( int $current_order_id ): ?int {
+	public function get_previous_paid_duplicate_order_id( int $current_order_id ): ?int {
 		$session_order_id = $this->get_session_processing_order();
 		if ( null === $session_order_id ) {
 			return null;
