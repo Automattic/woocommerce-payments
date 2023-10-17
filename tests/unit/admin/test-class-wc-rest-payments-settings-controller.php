@@ -259,6 +259,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$response           = $this->upe_controller->get_settings();
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
+		// Because Sofort is being deprecated, it should not be returned as an available payment method to the settings controller.
 		$this->assertEquals(
 			[
 				Payment_Method::CARD,
@@ -267,7 +268,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				Payment_Method::EPS,
 				Payment_Method::GIROPAY,
 				Payment_Method::IDEAL,
-				Payment_Method::SOFORT,
 				Payment_Method::SEPA,
 				Payment_Method::P24,
 				Payment_Method::LINK,
@@ -285,6 +285,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$response           = $this->upe_split_controller->get_settings();
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
+		// Because Sofort is being deprecated, it should not be returned as an available payment method to the settings controller.
 		$this->assertEquals(
 			[
 				Payment_Method::CARD,
@@ -293,7 +294,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				Payment_Method::EPS,
 				Payment_Method::GIROPAY,
 				Payment_Method::IDEAL,
-				Payment_Method::SOFORT,
 				Payment_Method::SEPA,
 				Payment_Method::P24,
 				Payment_Method::LINK,
