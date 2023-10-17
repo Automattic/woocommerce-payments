@@ -104,7 +104,7 @@ class InitialState extends AbstractPaymentState {
 		$paid_session_order_id = $this->dpps->get_paid_session_processing_order( $order_id );
 		if ( ! is_null( $paid_session_order_id ) ) {
 			// TODO: move the add note, and order deletion from get_paid_session_processing_order to here.
-			$context->set_previous_order_id( $paid_session_order_id );
+			$context->set_previous_paid_order_id( $paid_session_order_id );
 			return $this->create_state( PreviousPaidOrderDetectedState::class );
 		}
 
