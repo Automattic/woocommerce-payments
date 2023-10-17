@@ -9,6 +9,7 @@ namespace WCPay\Internal;
 
 use Exception;
 use WC_Logger;
+use WC_Log_Levels;
 use WC_Payment_Gateway_WCPay;
 use WCPay\Core\Mode;
 
@@ -103,7 +104,7 @@ class Logger {
 	 * @param string $message To send to the log file.
 	 */
 	public function emergency( $message ) : void {
-		$this->log( $message, 'emergency' );
+		$this->log( $message, WC_Log_Levels::EMERGENCY );
 	}
 
 	/**
@@ -112,7 +113,7 @@ class Logger {
 	 * @param string $message To send to the log file.
 	 */
 	public function alert( $message ) : void {
-		$this->log( $message, 'alert' );
+		$this->log( $message, WC_Log_Levels::ALERT );
 	}
 
 	/**
@@ -121,7 +122,7 @@ class Logger {
 	 * @param string $message To send to the log file.
 	 */
 	public function critical( $message ) : void {
-		$this->log( $message, 'critical' );
+		$this->log( $message, WC_Log_Levels::CRITICAL );
 	}
 
 	/**
@@ -130,7 +131,7 @@ class Logger {
 	 * @param string $message To send to the log file.
 	 */
 	public function error( $message ) : void {
-		$this->log( $message, 'error' );
+		$this->log( $message, WC_Log_Levels::ERROR );
 	}
 
 	/**
@@ -139,7 +140,7 @@ class Logger {
 	 * @param string $message To send to the log file.
 	 */
 	public function warning( $message ) : void {
-		$this->log( $message, 'warning' );
+		$this->log( $message, WC_Log_Levels::WARNING );
 	}
 
 	/**
@@ -148,7 +149,7 @@ class Logger {
 	 * @param string $message To send to the log file.
 	 */
 	public function notice( $message ) : void {
-		$this->log( $message, 'notice' );
+		$this->log( $message, WC_Log_Levels::NOTICE );
 	}
 
 	/**
@@ -157,7 +158,7 @@ class Logger {
 	 * @param string $message To send to the log file.
 	 */
 	public function info( $message ) : void {
-		$this->log( $message, 'info' );
+		$this->log( $message, WC_Log_Levels::INFO );
 	}
 
 	/**
@@ -166,6 +167,6 @@ class Logger {
 	 * @param string $message To send to the log file.
 	 */
 	public function debug( $message ) : void {
-		$this->log( $message, 'debug' );
+		$this->log( $message, WC_Log_Levels::DEBUG );
 	}
 }
