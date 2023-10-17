@@ -47,27 +47,6 @@ class PaymentContext {
 	}
 
 	/**
-	 * Stores an internal value.
-	 * Use this method for changes to allow logging in the future.
-	 *
-	 * @param string $key   Property name.
-	 * @param mixed  $value Value to store.
-	 */
-	private function set( string $key, $value ) {
-		$this->data[ $key ] = $value;
-	}
-
-	/**
-	 * Retrieves an internal value, if any.
-	 *
-	 * @param string $key Key of the property.
-	 * @return mixed|null Either the stored value, or null if not set.
-	 */
-	private function get( string $key ) {
-		return $this->data[ $key ] ?? null;
-	}
-
-	/**
 	 * Stores the payment amount.
 	 *
 	 * @param int $amount Payment amount in cents.
@@ -263,5 +242,26 @@ class PaymentContext {
 	 */
 	public function get_intent(): ?WC_Payments_API_Abstract_Intention {
 		return $this->get( 'intent' );
+	}
+
+	/**
+	 * Stores an internal value.
+	 * Use this method for changes to allow logging in the future.
+	 *
+	 * @param string $key   Property name.
+	 * @param mixed  $value Value to store.
+	 */
+	private function set( string $key, $value ) {
+		$this->data[ $key ] = $value;
+	}
+
+	/**
+	 * Retrieves an internal value, if any.
+	 *
+	 * @param string $key Key of the property.
+	 * @return mixed|null Either the stored value, or null if not set.
+	 */
+	private function get( string $key ) {
+		return $this->data[ $key ] ?? null;
 	}
 }
