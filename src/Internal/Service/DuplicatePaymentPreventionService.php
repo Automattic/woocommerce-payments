@@ -172,8 +172,21 @@ class DuplicatePaymentPreventionService {
 			return null;
 		}
 
+		return $session_order_id;
+	}
+
+	/**
+	 * Does cleanup actions after detecting a duplicate order.
+	 *
+	 * @param  int $duplicate_order_id Detected duplicate order ID with the same cart content.
+	 * @param  int $current_order_id   Current order ID in the processing.
+	 *
+	 * @return void
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function clean_up_when_detecting_duplicate_order( int $duplicate_order_id, int $current_order_id ) {
 		$this->order_service->add_note(
-			$session_order_id,
+			$duplicate_order_id,
 			sprintf(
 				/* translators: order ID integer number */
 				__( 'WooCommerce Payments: detected and deleted order ID %d, which has duplicate cart content with this order.', 'woocommerce-payments' ),
@@ -183,8 +196,7 @@ class DuplicatePaymentPreventionService {
 
 		$this->order_service->delete( $current_order_id );
 
-		$this->remove_session_processing_order( $session_order_id );
-		return $session_order_id;
+		$this->remove_session_processing_order( $duplicate_order_id );
 	}
 
 	/**
