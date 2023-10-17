@@ -102,18 +102,18 @@ class InitialState extends AbstractPaymentState {
 		$context  = $this->get_context();
 		$order_id = $context->get_order_id();
 
+		// Populate basic details from the request.
+		$this->populate_context_from_request( $request );
+
+		// Populate further details from the order.
+		$this->populate_context_from_order();
+
 		$duplicate_order_id = $this->dpps->get_previous_paid_duplicate_order_id( $order_id );
 		if ( ! is_null( $duplicate_order_id ) ) {
 			$this->dpps->clean_up_when_detecting_duplicate_order( $duplicate_order_id, $order_id );
 			$context->set_duplicate_order_id( $duplicate_order_id );
 			return $this->create_state( DuplicateOrderDetectedState::class );
 		}
-
-		// Populate basic details from the request.
-		$this->populate_context_from_request( $request );
-
-		// Populate further details from the order.
-		$this->populate_context_from_order();
 
 		// Payments are currently based on intents, request one from the API.
 		try {
