@@ -15,6 +15,7 @@ import { merchantWCP } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 const chkboxCaptureLaterOption = 'capture-later-checkbox';
+const confirmationModalClass = '.wcpay-confirmation-modal';
 const customerBankStatement = 'store-name-bank-statement';
 let orderId;
 
@@ -24,6 +25,12 @@ describe( 'Order > Manual Capture', () => {
 		await merchant.login();
 		await merchantWCP.openWCPSettings();
 		await merchantWCP.setCheckboxByTestId( chkboxCaptureLaterOption );
+		const confirmationModal = await expect( page ).toMatchElement(
+			confirmationModalClass
+		);
+		await expect( confirmationModal ).toClick( 'button', {
+			text: 'Enable',
+		} );
 		await expect( page ).toFill(
 			`[data-testid="${ customerBankStatement }"]`,
 			'E2E Store'
