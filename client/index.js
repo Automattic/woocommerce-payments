@@ -9,6 +9,7 @@ import { addFilter } from '@wordpress/hooks';
 // See discussion in WCPay PR #1263 in GitHub.
 // eslint-disable-next-line import/no-unresolved
 import 'wp-mediaelement';
+import { ReactQueryDevtools } from 'react-query/devtools';
 
 /**
  * Internal dependencies
@@ -32,6 +33,20 @@ import DocumentsPage from 'documents';
 import OnboardingPage from 'onboarding';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+const queryClient = new QueryClient();
+
+const renderComponent = ( Component ) => {
+	return ( props ) => (
+		<QueryClientProvider client={ queryClient }>
+			<>
+				<Component { ...props } />
+				<ReactQueryDevtools initialIsOpen={ true } />
+			</>
+		</QueryClientProvider>
+	);
+};
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -71,7 +86,7 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OverviewPage,
+			container: renderComponent( OverviewPage ),
 			path: '/payments/overview',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Overview', 'woocommerce-payments' ) ],
@@ -141,7 +156,7 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: DisputesPage,
+			container: renderComponent( DisputesPage ),
 			path: '/payments/disputes',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Disputes', 'woocommerce-payments' ) ],
@@ -152,7 +167,7 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: RedirectToTransactionDetails,
+			container: renderComponent( RedirectToTransactionDetails ),
 			path: '/payments/disputes/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
