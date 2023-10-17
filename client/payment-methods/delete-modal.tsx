@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, Notice } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -12,6 +12,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import PaymentDeleteIllustration from '../components/payment-delete-illustration';
 import ConfirmationModal from '../components/confirmation-modal';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 	id: string;
@@ -80,8 +81,9 @@ const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 				} ) }
 			</p>
 			{ shouldDisplayNotice && (
-				<Notice
+				<InlineNotice
 					status="warning"
+					icon={ true }
 					isDismissible={ false }
 					className="sofort__notice"
 				>
@@ -99,7 +101,7 @@ const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 							{ __( 'Learn more', 'woocommerce-payments' ) }
 						</a>
 					</span>
-				</Notice>
+				</InlineNotice>
 			) }
 		</ConfirmationModal>
 	);

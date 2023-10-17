@@ -23,8 +23,8 @@ import Chip from '../chip';
 import LoadableCheckboxControl from '../loadable-checkbox';
 import { getDocumentationUrlForDisabledPaymentMethod } from '../payment-method-disabled-tooltip';
 import Pill from '../pill';
+import InlineNotice from '../inline-notice';
 import './payment-method.scss';
-import { Notice } from '@wordpress/components';
 
 interface PaymentMethodProps {
 	id: string;
@@ -292,8 +292,9 @@ const PaymentMethod = ( {
 				</div>
 			</div>
 			{ shouldDisplayNotice && (
-				<Notice
+				<InlineNotice
 					status="warning"
+					icon={ true }
 					isDismissible={ false }
 					className="sofort__notice"
 				>
@@ -311,7 +312,7 @@ const PaymentMethod = ( {
 							{ __( 'Learn more', 'woocommerce-payments' ) }
 						</a>
 					</span>
-				</Notice>
+				</InlineNotice>
 			) }
 		</li>
 	);
