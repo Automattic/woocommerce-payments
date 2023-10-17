@@ -176,6 +176,23 @@ export const useDisputes = ( {
 	};
 };
 
+const fetchDisputesSummary = async ( { queryKey }: QueryFunctionContext ) => {
+	const [ , query ] = queryKey;
+	const path = addQueryArgs(
+		`/wc/v3/payments/disputes/summary`,
+		query as Record< string, unknown >
+	);
+
+	const response = await apiFetch< {
+		count?: number;
+		currencies?: string[];
+	} >( {
+		path,
+	} );
+
+	return response;
+};
+
 export const useDisputesSummary = ( {
 	paged,
 	per_page: perPage,
@@ -187,48 +204,38 @@ export const useDisputesSummary = ( {
 	filter,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
-}: Query ): DisputesSummary =>
-	useSelect(
-		( select ) => {
-			const { getDisputesSummary, isResolving } = select( STORE_NAME );
+}: Query ): DisputesSummary => {
+	const search =
+		filter === 'awaiting_response'
+			? disputeAwaitingResponseStatuses
+			: undefined;
 
-			const search =
-				filter === 'awaiting_response'
-					? disputeAwaitingResponseStatuses
-					: undefined;
+	let query = {
+		paged: Number.isNaN( parseInt( paged ?? '', 10 ) ) ? '1' : paged,
+		perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) ) ? '25' : perPage,
+		match,
+		storeCurrencyIs,
+		dateBefore,
+		dateAfter,
+		dateBetween,
+		search,
+		statusIs,
+		statusIsNot,
+	} as any;
 
-			const query = {
-				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
-					? '1'
-					: paged,
-				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
-					? '25'
-					: perPage,
-				match,
-				storeCurrencyIs,
-				dateBefore,
-				dateAfter,
-				dateBetween,
-				search,
-				statusIs,
-				statusIsNot,
-			};
+	query = {
+		...query,
+		page: query.paged,
+		pagesize: query.perPage,
+		...formatQueryFilters( query ),
+	};
 
-			return {
-				disputesSummary: getDisputesSummary( query ),
-				isLoading: isResolving( 'getDisputesSummary', [ query ] ),
-			};
-		},
-		[
-			paged,
-			perPage,
-			storeCurrencyIs,
-			match,
-			dateBefore,
-			dateAfter,
-			JSON.stringify( dateBetween ),
-			filter,
-			statusIs,
-			statusIsNot,
-		]
+	const { isLoading, data } = useQuery(
+		[ 'disputesSummary', query ],
+		fetchDisputesSummary
 	);
+	return {
+		disputesSummary: data || {},
+		isLoading,
+	};
+};
