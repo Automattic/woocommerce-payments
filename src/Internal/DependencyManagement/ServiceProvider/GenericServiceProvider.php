@@ -35,7 +35,6 @@ class GenericServiceProvider extends AbstractServiceProvider {
 
 	/**
 	 * Registers all provided classes.
-	 *
 	 */
 	public function register(): void {
 

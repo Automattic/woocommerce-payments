@@ -50,7 +50,7 @@ class LoggerTest extends WCPAY_UnitTestCase {
 
 
 	/**
-	 * Sets up the container.
+	 * Sets up the logger.
 	 */
 	protected function setUp(): void {
 		parent::setUp();

@@ -7,6 +7,7 @@
 
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Internal\Logger;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
@@ -799,6 +800,10 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$logger_ref->setAccessible( true );
 		$logger_ref->setValue( null, $mock_logger );
 
+		$mock_gateway          = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode(), $mock_gateway );
+		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
+
 		WC_Payments::mode()->dev();
 
 		$mock_logger
@@ -835,6 +840,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$logger_ref->setAccessible( true );
 		$logger_ref->setValue( null, null );
 		WC_Payments::mode()->live();
+		wcpay_get_test_container()->reset_all_replacements();
 	}
 
 	/**
