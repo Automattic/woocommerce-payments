@@ -206,7 +206,7 @@ class DuplicatePaymentPreventionService {
 	 *
 	 * @return void
 	 */
-	public function maybe_update_session_processing_order( int $order_id ) {
+	public function update_session_processing_order( int $order_id ) {
 		$this->session_service->set( self::SESSION_KEY_PROCESSING_ORDER, $order_id );
 	}
 

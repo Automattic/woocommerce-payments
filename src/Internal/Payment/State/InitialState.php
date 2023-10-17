@@ -114,6 +114,7 @@ class InitialState extends AbstractPaymentState {
 			$context->set_duplicate_order_id( $duplicate_order_id );
 			return $this->create_state( DuplicateOrderDetectedState::class );
 		}
+		$this->dpps->update_session_processing_order( $order_id );
 
 		// Payments are currently based on intents, request one from the API.
 		try {
