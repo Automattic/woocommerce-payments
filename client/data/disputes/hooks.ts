@@ -6,18 +6,30 @@
 import { useSelect, useDispatch } from '@wordpress/data';
 import type { Query } from '@woocommerce/navigation';
 import moment from 'moment';
+import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
+import { QueryFunctionContext, useQuery } from 'react-query';
 
 /**
  * Internal dependencies
  */
 import type {
 	Dispute,
-	CachedDisputes,
 	DisputesSummary,
+	CachedDisputes,
 } from 'wcpay/types/disputes';
 import type { ApiError } from 'wcpay/types/errors';
 import { STORE_NAME } from '../constants';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
+import { formatDateValue } from 'wcpay/utils';
+import { snakeCase } from 'lodash';
+
+const fetchDispute = async ( { queryKey }: QueryFunctionContext ) => {
+	const [ , id ] = queryKey;
+	const path = addQueryArgs( `/wc/v3/payments/disputes/${ id }` );
+	const response = await apiFetch< Dispute >( { path } );
+	return response;
+};
 
 /**
  * Returns the dispute object, error object, and loading state.
@@ -30,22 +42,18 @@ export const useDispute = (
 	error?: ApiError;
 	isLoading: boolean;
 } => {
-	const { dispute, error, isLoading } = useSelect(
-		( select ) => {
-			const { getDispute, getDisputeError, isResolving } = select(
-				STORE_NAME
-			);
+	const { data, isLoading, isError } = useQuery<
+		Dispute | undefined,
+		ApiError | undefined
+	>( [ 'disputes', id ], fetchDispute, {
+		refetchOnMount: false,
+	} );
 
-			return {
-				dispute: <Dispute | undefined>getDispute( id ),
-				error: <ApiError | undefined>getDisputeError( id ),
-				isLoading: <boolean>isResolving( 'getDispute', [ id ] ),
-			};
-		},
-		[ id ]
-	);
-
-	return { dispute, isLoading, error };
+	return {
+		dispute: data,
+		error: isError ? { code: '414' } : undefined,
+		isLoading,
+	};
 };
 
 /**
@@ -80,6 +88,33 @@ export const useDisputeEvidence = (): {
 	return { updateDispute };
 };
 
+const formatQueryFilters = ( query: any ) => ( {
+	user_email: query.userEmail,
+	match: query.match,
+	store_currency_is: query.storeCurrencyIs,
+	date_before: formatDateValue( query.dateBefore, true ),
+	date_after: formatDateValue( query.dateAfter ),
+	date_between: query.dateBetween && [
+		formatDateValue( query.dateBetween[ 0 ] ),
+		formatDateValue( query.dateBetween[ 1 ], true ),
+	],
+	search: query.search,
+	status_is: query.statusIs,
+	status_is_not: query.statusIsNot,
+} );
+
+const fetchDisputes = async ( { queryKey }: QueryFunctionContext ) => {
+	const [ , query ] = queryKey;
+	const path = addQueryArgs(
+		`/wc/v3/payments/disputes`,
+		query as Record< string, unknown >
+	);
+	const response = await apiFetch< {
+		data: CachedDisputes[ 'disputes' ];
+	} >( { path } );
+	return response;
+};
+
 export const useDisputes = ( {
 	paged,
 	per_page: perPage,
@@ -93,59 +128,53 @@ export const useDisputes = ( {
 	status_is_not: statusIsNot,
 	orderby: orderBy,
 	order,
-}: Query ): CachedDisputes =>
-	useSelect(
-		( select ) => {
-			const { getDisputes, isResolving } = select( STORE_NAME );
+}: Query ): CachedDisputes => {
+	const search =
+		filter === 'awaiting_response'
+			? disputeAwaitingResponseStatuses
+			: undefined;
 
-			const search =
-				filter === 'awaiting_response'
-					? disputeAwaitingResponseStatuses
-					: undefined;
+	let query: Record< string, unknown > = {
+		paged: Number.isNaN( parseInt( paged ?? '', 10 ) ) ? '1' : paged,
+		perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) ) ? '25' : perPage,
+		storeCurrencyIs,
+		match,
+		dateBefore,
+		dateAfter,
+		dateBetween:
+			dateBetween &&
+			dateBetween.sort( ( a, b ) => moment( a ).diff( moment( b ) ) ),
+		search,
+		statusIs,
+		statusIsNot,
+		orderBy: orderBy || 'created',
+		order: order || 'desc',
+	};
 
-			const query = {
-				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
-					? '1'
-					: paged,
-				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
-					? '25'
-					: perPage,
-				storeCurrencyIs,
-				match,
-				dateBefore,
-				dateAfter,
-				dateBetween:
-					dateBetween &&
-					dateBetween.sort( ( a, b ) =>
-						moment( a ).diff( moment( b ) )
-					),
-				search,
-				statusIs,
-				statusIsNot,
-				orderBy: orderBy || 'created',
-				order: order || 'desc',
-			};
+	query = {
+		page: query.paged,
+		pagesize: query.perPage,
+		sort: snakeCase( query.orderBy as string ),
+		direction: query.order,
+		...formatQueryFilters( query ),
+	};
 
-			return {
-				disputes: getDisputes( query ),
-				isLoading: isResolving( 'getDisputes', [ query ] ),
-			};
-		},
-		[
-			paged,
-			perPage,
-			storeCurrencyIs,
-			match,
-			dateBefore,
-			dateAfter,
-			JSON.stringify( dateBetween ),
-			filter,
-			statusIs,
-			statusIsNot,
-			orderBy,
-			order,
-		]
+	const { isLoading, data } = useQuery(
+		[ 'disputes', query ],
+		fetchDisputes,
+		{
+			refetchOnMount: true,
+			refetchOnWindowFocus: true,
+			refetchInterval: 10000,
+			refetchOnReconnect: true,
+		}
 	);
+
+	return {
+		disputes: data?.data || [],
+		isLoading,
+	};
+};
 
 export const useDisputesSummary = ( {
 	paged,
