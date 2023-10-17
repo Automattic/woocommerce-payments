@@ -165,7 +165,7 @@ export const useDisputes = ( {
 		{
 			refetchOnMount: true,
 			refetchOnWindowFocus: true,
-			refetchInterval: 10000,
+			refetchInterval: false,
 			refetchOnReconnect: true,
 		}
 	);
