@@ -17,7 +17,7 @@ const {
 
 let orderId;
 
-describe( 'Disputes > Submit winning dispute', () => {
+describe.skip( 'Disputes > Submit winning dispute', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 

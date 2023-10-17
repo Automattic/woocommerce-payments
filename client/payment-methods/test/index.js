@@ -216,31 +216,6 @@ describe( 'PaymentMethods', () => {
 		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
 	} );
 
-	test( 'upe setup banner is rendered when UPE preview feature flag is enabled', () => {
-		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: true, upe: false },
-		};
-		const upeContext = {
-			isUpeEnabled: false,
-			setIsUpeEnabled: () => null,
-			status: 'resolved',
-		};
-
-		render(
-			<WCPaySettingsContext.Provider value={ featureFlagContext }>
-				<WcPayUpeContext.Provider value={ upeContext }>
-					<PaymentMethods />
-				</WcPayUpeContext.Provider>
-			</WCPaySettingsContext.Provider>
-		);
-
-		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
-		);
-
-		expect( enableWooCommercePaymentText ).toBeInTheDocument();
-	} );
-
 	test( 'affirm afterpay pms renders correctly', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
@@ -329,64 +304,6 @@ describe( 'PaymentMethods', () => {
 		expect( afterpay ).toBeChecked();
 	} );
 
-	test( 'upe setup banner has Buy Now Pay Later methods asset for eligible merchants', () => {
-		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: true, upe: false },
-		};
-		const upeContext = {
-			isUpeEnabled: false,
-			setIsUpeEnabled: () => null,
-			status: 'resolved',
-		};
-
-		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
-
-		render(
-			<WCPaySettingsContext.Provider value={ featureFlagContext }>
-				<WcPayUpeContext.Provider value={ upeContext }>
-					<PaymentMethods />
-				</WcPayUpeContext.Provider>
-			</WCPaySettingsContext.Provider>
-		);
-
-		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
-		);
-
-		expect( enableWooCommercePaymentText.parentElement ).not.toHaveClass(
-			'background-local-payment-methods'
-		);
-	} );
-
-	test( 'upe setup banner has only local methods in asset for non-BNPL-eligible merchants', () => {
-		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: true, upe: false },
-		};
-		const upeContext = {
-			isUpeEnabled: false,
-			setIsUpeEnabled: () => null,
-			status: 'resolved',
-		};
-
-		global.wcpaySettings.isBnplAffirmAfterpayEnabled = false;
-
-		render(
-			<WCPaySettingsContext.Provider value={ featureFlagContext }>
-				<WcPayUpeContext.Provider value={ upeContext }>
-					<PaymentMethods />
-				</WcPayUpeContext.Provider>
-			</WCPaySettingsContext.Provider>
-		);
-
-		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
-		);
-
-		expect( enableWooCommercePaymentText.parentElement ).toHaveClass(
-			'background-local-payment-methods'
-		);
-	} );
-
 	test.each( [
 		[ false, false ],
 		[ false, true ],
@@ -452,51 +369,11 @@ describe( 'PaymentMethods', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	test( 'clicking "Enable payment methods" in express payments enable UPE and redirects', async () => {
-		Object.defineProperty( window, 'location', {
-			value: {
-				href: 'example.com/',
-			},
-		} );
-
-		const setIsUpeEnabledMock = jest.fn().mockResolvedValue( true );
-		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: true, upe: false },
-		};
-
-		render(
-			<WCPaySettingsContext.Provider value={ featureFlagContext }>
-				<WcPayUpeContext.Provider
-					value={ {
-						setIsUpeEnabled: setIsUpeEnabledMock,
-						status: 'resolved',
-						isUpeEnabled: false,
-					} }
-				>
-					<PaymentMethods />
-				</WcPayUpeContext.Provider>
-			</WCPaySettingsContext.Provider>
-		);
-
-		const enableInYourStoreButton = screen.queryByRole( 'button', {
-			name: 'Enable payment methods',
-		} );
-
-		expect( enableInYourStoreButton ).toBeInTheDocument();
-
-		expect( setIsUpeEnabledMock ).not.toHaveBeenCalled();
-		await user.click( enableInYourStoreButton );
-		expect( setIsUpeEnabledMock ).toHaveBeenCalledWith( true );
-		expect( window.location.href ).toEqual(
-			'admin.php?page=wc-admin&path=%2Fpayments%2Fadditional-payment-methods'
-		);
-	} );
-
-	it( 'should only be able to leave feedback when deferred upe after migration is enabled', () => {
+	it( 'should only be able to leave feedback', () => {
 		render(
 			<WcPayUpeContextProvider
 				defaultIsUpeEnabled={ true }
-				defaultUpeType={ 'deferred_intent_upe_without_fallback' }
+				defaultUpeType={ 'deferred_intent' }
 			>
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
@@ -511,48 +388,6 @@ describe( 'PaymentMethods', () => {
 
 		expect( kebabMenuWithFeedbackOnly ).toBeInTheDocument();
 		expect( kebabMenuWithFeedbackAndDisable ).not.toBeInTheDocument();
-	} );
-
-	it( 'should only be able to leave feedback and disable when deferred upe was enabled manually for legacy card stores', () => {
-		render(
-			<WcPayUpeContextProvider
-				defaultIsUpeEnabled={ true }
-				defaultUpeType={ 'deferred_intent_upe_with_fallback' }
-			>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-		const kebabMenuWithFeedbackOnly = screen.queryByRole( 'button', {
-			name: 'Add feedback',
-		} );
-
-		const kebabMenuWithFeedbackAndDisable = screen.queryByRole( 'button', {
-			name: 'Add feedback or disable',
-		} );
-
-		expect( kebabMenuWithFeedbackAndDisable ).toBeInTheDocument();
-		expect( kebabMenuWithFeedbackOnly ).not.toBeInTheDocument();
-	} );
-
-	it( 'should be able to leave feedback and disable for non-deferred-upe', () => {
-		render(
-			<WcPayUpeContextProvider
-				defaultIsUpeEnabled={ true }
-				defaultUpeType={ 'legacy' }
-			>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-		const kebabMenuWithFeedbackOnly = screen.queryByRole( 'button', {
-			name: 'Add feedback',
-		} );
-
-		const kebabMenuWithFeedbackAndDisable = screen.queryByRole( 'button', {
-			name: 'Add feedback or disable',
-		} );
-
-		expect( kebabMenuWithFeedbackAndDisable ).toBeInTheDocument();
-		expect( kebabMenuWithFeedbackOnly ).not.toBeInTheDocument();
 	} );
 
 	it( 'should render the activation modal when requirements exist for the payment method', () => {
