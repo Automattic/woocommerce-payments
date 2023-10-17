@@ -800,7 +800,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$logger_ref->setAccessible( true );
 		$logger_ref->setValue( null, $mock_logger );
 
-		$mock_gateway          = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway         = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode(), $mock_gateway );
 		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
 
