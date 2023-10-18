@@ -460,6 +460,116 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$this->sut->attach_exchange_info_to_order( $this->order_id, $mock_charge );
 	}
 
+	public function provider_get_intent_id() {
+		return [
+			'No attached intent'    => [ null, null ],
+			'Empty string attached' => [ '', null ],
+			'Intent ID attached'    => [ 'pi_123', 'pi_123' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_get_intent_id
+	 */
+	public function test_get_intent_id( $meta_value, $expected ) {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_intent_id' )
+			->willReturn( $meta_value );
+
+		$result = $this->sut->get_intent_id( $this->order_id );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_get_cart_hash() {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_cart_hash' )
+			->willReturn( 'abc123' );
+
+		$result = $this->sut->get_cart_hash( $this->order_id );
+		$this->assertSame( 'abc123', $result );
+	}
+
+	public function test_get_customer_id() {
+		$customer_id = 123456;
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_customer_id' )
+			->willReturn( $customer_id );
+
+		$result = $this->sut->get_customer_id( $this->order_id );
+		$this->assertSame( $customer_id, $result );
+	}
+
+	public function test_is_paid() {
+		$paid_statuses = [ 'processing', 'completed' ];
+		$expected      = true;
+
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'wc_get_is_paid_statuses' )
+			->willReturn( $paid_statuses );
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( $paid_statuses )
+			->willReturn( $expected );
+
+		$result = $this->sut->is_paid( $this->order_id );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_is_pending() {
+		$pending_statuses = [ 'pending' ];
+		$expected         = false;
+
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'wc_get_is_pending_statuses' )
+			->willReturn( $pending_statuses );
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( $pending_statuses )
+			->willReturn( $expected );
+
+		$result = $this->sut->is_pending( $this->order_id );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_add_note() {
+		$note_id      = 321;
+		$note_content = 'Note content';
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with( $note_content )
+			->willReturn( $note_id );
+
+		$result = $this->sut->add_note( $this->order_id, $note_content );
+		$this->assertSame( $note_id, $result );
+	}
+
+	public function test_delete_order() {
+		$force_delete = false;
+		$expected     = true;
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'delete' )
+			->with( $force_delete )
+			->willReturn( $expected );
+
+		$result = $this->sut->delete( $this->order_id, $force_delete );
+		$this->assertSame( $expected, $result );
+	}
+
 	/**
 	 * Mocks order retrieval.
 	 *
