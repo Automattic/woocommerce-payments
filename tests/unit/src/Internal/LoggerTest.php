@@ -14,6 +14,7 @@ use WC_Payment_Gateway_WCPay;
 use Exception;
 use WCPay\Core\Mode;
 use WCPay\Internal\Logger;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Internal Logger tests.
@@ -97,115 +98,34 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test emergency method of the Logger class.
+	 * Test logging at different log levels using the Logger.
+	 * @dataProvider provider_log_levels
 	 */
-	public function test_log_level_emergency() {
+	public function test_log_levels( $method_name, $log_level ) {
 		$this->sut->expects( $this->once() )
 			->method( 'can_log' )
 			->willReturn( true );
 		$this->mock_wc_logger
 			->expects( $this->once() )
 			->method( 'log' )
-			->with( WC_Log_Levels::EMERGENCY, 'Test Log Emergency' );
-		$this->sut->emergency( 'Test Log Emergency' );
+			->with( $log_level, 'Test Log 1' );
+		$this->sut->{$method_name}( 'Test Log 1' );
 	}
 
 	/**
-	 * Test alert method of the Logger class.
+	 * Data provider for test_log_levels.
 	 */
-	public function test_log_level_alert() {
-		$this->sut->expects( $this->once() )
-			->method( 'can_log' )
-			->willReturn( true );
-		$this->mock_wc_logger
-			->expects( $this->once() )
-			->method( 'log' )
-			->with( WC_Log_Levels::ALERT, 'Test Log Alert' );
-		$this->sut->alert( 'Test Log Alert' );
-	}
-
-	/**
-	 * Test critical method of the Logger class.
-	 */
-	public function test_log_level_critical() {
-		$this->sut->expects( $this->once() )
-			->method( 'can_log' )
-			->willReturn( true );
-		$this->mock_wc_logger
-			->expects( $this->once() )
-			->method( 'log' )
-			->with( WC_Log_Levels::CRITICAL, 'Test Log Critical' );
-		$this->sut->critical( 'Test Log Critical' );
-	}
-
-	/**
-	 * Test error method of the Logger class.
-	 */
-	public function test_log_level_error() {
-		$this->sut->expects( $this->once() )
-			->method( 'can_log' )
-			->willReturn( true );
-		$this->mock_wc_logger
-			->expects( $this->once() )
-			->method( 'log' )
-			->with( WC_Log_Levels::ERROR, 'Test Log Error' );
-		$this->sut->error( 'Test Log Error' );
-	}
-
-	/**
-	 * Test warning method of the Logger class.
-	 */
-	public function test_log_level_warning() {
-		$this->sut->expects( $this->once() )
-			->method( 'can_log' )
-			->willReturn( true );
-		$this->mock_wc_logger
-			->expects( $this->once() )
-			->method( 'log' )
-			->with( WC_Log_Levels::WARNING, 'Test Log Warning' );
-		$this->sut->warning( 'Test Log Warning' );
-	}
-
-	/**
-	 * Test notice method of the Logger class.
-	 */
-	public function test_log_level_notice() {
-		$this->sut->expects( $this->once() )
-			->method( 'can_log' )
-			->willReturn( true );
-		$this->mock_wc_logger
-			->expects( $this->once() )
-			->method( 'log' )
-			->with( WC_Log_Levels::NOTICE, 'Test Log Notice' );
-		$this->sut->notice( 'Test Log Notice' );
-	}
-
-	/**
-	 * Test info method of the Logger class.
-	 */
-	public function test_log_level_info() {
-		$this->sut->expects( $this->once() )
-			->method( 'can_log' )
-			->willReturn( true );
-		$this->mock_wc_logger
-			->expects( $this->once() )
-			->method( 'log' )
-			->with( WC_Log_Levels::INFO, 'Test Log Warning' );
-		$this->sut->info( 'Test Log Warning' );
-	}
-
-	/**
-	 * Test debug method of the Logger class.
-	 */
-	public function test_log_level_debug() {
-		$this->sut->expects( $this->once() )
-			->method( 'can_log' )
-			->willReturn( true );
-		$this->mock_wc_logger
-			->expects( $this->once() )
-			->method( 'log' )
-			->with( WC_Log_Levels::DEBUG, 'Test Log Debug' );
-		$this->sut->debug( 'Test Log Debug' );
+	public function provider_log_levels() {
+		return [
+			[ 'emergency', WC_Log_Levels::EMERGENCY ],
+			[ 'alert', WC_Log_Levels::ALERT ],
+			[ 'critical', WC_Log_Levels::CRITICAL ],
+			[ 'error', WC_Log_Levels::ERROR ],
+			[ 'warning', WC_Log_Levels::WARNING ],
+			[ 'notice', WC_Log_Levels::NOTICE ],
+			[ 'info', WC_Log_Levels::INFO ],
+			[ 'debug', WC_Log_Levels::DEBUG ],
+		];
 	}
 
 	/**
@@ -294,5 +214,4 @@ class LoggerTest extends WCPAY_UnitTestCase {
 			->willReturn( 'yes' );
 		$this->assertTrue( $this->sut->can_log() );
 	}
-
 }
