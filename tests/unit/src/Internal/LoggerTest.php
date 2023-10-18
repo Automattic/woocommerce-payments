@@ -14,6 +14,7 @@ use WC_Payment_Gateway_WCPay;
 use Exception;
 use WCPay\Core\Mode;
 use WCPay\Internal\Logger;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Internal Logger tests.
