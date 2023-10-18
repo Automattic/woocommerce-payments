@@ -72,6 +72,7 @@ class WC_Payments_API_Client {
 	const VAT_API                      = 'vat';
 	const LINKS_API                    = 'links';
 	const AUTHORIZATIONS_API           = 'authorizations';
+	const FRAUD_SERVICES_API           = 'accounts/fraud_services';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 
@@ -1641,6 +1642,23 @@ class WC_Payments_API_Client {
 			self::POST,
 			true,
 			true
+		);
+	}
+
+	/**
+	 * Get the remote fraud service config.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected to server or request failed.
+	 */
+	public function get_fraud_services_config(): array {
+		return $this->request(
+			[],
+			self::FRAUD_SERVICES_API,
+			self::GET,
+			false,
+			false
 		);
 	}
 
