@@ -23,7 +23,7 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	/**
 	 * Holds the logger, which will be tested.
 	 *
-	 * @var Logger
+	 * @var Logger|MockObject
 	 */
 	private $logger;
 
@@ -47,7 +47,6 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	 * @var WC_Payment_Gateway_WCPay|MockObject
 	 */
 	private $mock_gateway;
-
 
 	/**
 	 * Sets up the logger.
@@ -97,9 +96,9 @@ class LoggerTest extends WCPAY_UnitTestCase {
 		$this->logger->log( 'Test Log 1' );
 	}
 
-		/**
-		 * Test emergency method of the Logger class.
-		 */
+	/**
+	 * Test emergency method of the Logger class.
+	 */
 	public function test_log_level_emergency() {
 		$this->logger->expects( $this->once() )
 			->method( 'can_log' )
@@ -194,7 +193,6 @@ class LoggerTest extends WCPAY_UnitTestCase {
 			->with( WC_Log_Levels::INFO, 'Test Log Warning' );
 		$this->logger->info( 'Test Log Warning' );
 	}
-
 
 	/**
 	 * Test debug method of the Logger class.

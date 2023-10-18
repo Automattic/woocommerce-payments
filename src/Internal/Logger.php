@@ -13,11 +13,8 @@ use WC_Log_Levels;
 use WC_Payment_Gateway_WCPay;
 use WCPay\Core\Mode;
 
-defined( 'ABSPATH' ) || exit; // block direct access.
-
 /**
  * A wrapper class for interacting with WC_Logger.
- * Intended as an internal logger for classes within src.
  */
 class Logger {
 

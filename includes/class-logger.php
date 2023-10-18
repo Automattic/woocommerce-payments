@@ -8,7 +8,6 @@
 namespace WCPay;
 
 use WC_Logger;
-use WC_Payments;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -22,8 +21,6 @@ class Logger {
 	 * @var WC_Logger $logger
 	 */
 	private static $logger;
-
-	const LOG_FILENAME = 'woocommerce-payments';
 
 	/**
 	 * Add a log entry.
