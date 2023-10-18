@@ -272,19 +272,6 @@ class OrderService {
 	}
 
 	/**
-	 * Updates the order status from the given intent object.
-	 *
-	 * @param  int                                $order_id Order ID.
-	 * @param  WC_Payments_API_Abstract_Intention $intent Intent object.
-	 *
-	 * @return void
-	 * @throws Order_Not_Found_Exception
-	 */
-	public function update_order_status_from_intent( int $order_id, WC_Payments_API_Abstract_Intention $intent ): void {
-		$this->legacy_service->update_order_status_from_intent( $this->get_order( $order_id ), $intent );
-	}
-
-	/**
 	 * Gets cart hash for the given order ID.
 	 *
 	 * @param  int $order_id  ID of the order.
