@@ -32,7 +32,6 @@ use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
-use WCPay\Internal\Payment\Response\AuthenticationRequiredResponse;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Logger;
 use WCPay\Payment_Information;

@@ -81,26 +81,13 @@ abstract class AbstractPaymentState {
 	}
 
 	/**
-	 * Process verified state.
-	 *
-	 * @psalm-suppress InvalidReturnType
-	 *
-	 * @return AbstractPaymentState
-	 * @throws \WCPay\Exceptions\Order_Not_Found_Exception
-	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
-	 */
-	public function process() {
-		$this->throw_unavailable_method_exception( __METHOD__ );
-	}
-
-	/**
 	 * Complete processing.
 	 *
 	 * @psalm-suppress
 	 *
 	 * @return AbstractPaymentState
-	 * @throws \WCPay\Exceptions\Order_Not_Found_Exception
-	 * @throws \WCPay\Internal\Payment\Exception\StateTransitionException
+	 * @throws Order_Not_Found_Exception
+	 * @throws StateTransitionException
 	 */
 	public function complete_processing() {
 		$this->throw_unavailable_method_exception( __METHOD__ );

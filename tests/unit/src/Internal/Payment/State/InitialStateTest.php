@@ -11,7 +11,6 @@ use WC_Helper_Intention;
 use WCPay\Constants\Intent_Status;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\ProcessedState;
-use WCPay\Internal\Payment\State\VerifiedState;
 use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit_Utils;
@@ -39,6 +38,12 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	 * @var InitialState
 	 */
 	private $sut;
+	/**
+	 * Service under test.
+	 *
+	 * @var StateFactory|InitialState
+	 */
+	private $mocked_sut;
 
 	/**
 	 * @var StateFactory|MockObject
@@ -91,18 +96,24 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			$this->mock_payment_request_service
 		);
 		$this->sut->set_context( $this->mock_context );
+
+		$this->mocked_sut = $this->getMockBuilder( InitialState::class )
+			->onlyMethods( [ 'populate_context_from_request', 'populate_context_from_order' ] )
+			->setConstructorArgs(
+				[
+					$this->mock_state_factory,
+					$this->mock_order_service,
+					$this->mock_customer_service,
+					$this->mock_level3_service,
+					$this->mock_payment_request_service,
+				]
+			)
+			->getMock();
+		$this->mocked_sut->set_context( $this->mock_context );
 	}
 
 	public function test_start_processing() {
-		$mock_request = $this->createMock( PaymentRequest::class );
-
-		/**
-		 * This test works with the root `process` method, which calls a few
-		 * internal methods. We want to mock them for the purpose of this test.
-		 *
-		 * @var MockObject|InitialState
-		 */
-		$this->mock_initial_state();
+		$mock_request         = $this->createMock( PaymentRequest::class );
 		$mock_processed_state = $this->createMock( ProcessedState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
@@ -111,8 +122,8 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->willReturn( $mock_completed_state );
 
 		// Verify that the context is populated.
-		$this->sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
-		$this->sut->expects( $this->once() )->method( 'populate_context_from_order' );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
 
 		$intent = WC_Helper_Intention::create_intention();
 
@@ -129,7 +140,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->willReturn( $mock_processed_state );
 
 		// Act: start processing.
-		$result = $this->sut->start_processing( $mock_request );
+		$result = $this->mocked_sut->start_processing( $mock_request );
 		// Assert: Successful transition.
 		$this->assertSame( $mock_completed_state, $result );
 	}
@@ -137,7 +148,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	public function test_start_processing_will_transition_to_error_state_when_api_exception_occurs() {
 		$mock_request     = $this->createMock( PaymentRequest::class );
 		$mock_error_state = $this->createMock( SystemErrorState::class );
-		$this->mock_initial_state();
 
 		$this->mock_payment_request_service
 			->expects( $this->once() )
@@ -146,21 +156,20 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->willThrowException( new Invalid_Request_Parameter_Exception( 'Invalid param', 'invalid_param' ) );
 
 		// Let's mock these services in order to prevent real execution of them.
-		$this->sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
-		$this->sut->expects( $this->once() )->method( 'populate_context_from_order' );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
 
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
 			->with( SystemErrorState::class, $this->mock_context )
 			->willReturn( $mock_error_state );
-		$result = $this->sut->start_processing( $mock_request );
+		$result = $this->mocked_sut->start_processing( $mock_request );
 		$this->assertSame( $mock_error_state, $result );
 	}
 
 	public function test_processing_will_transition_to_auth_required_state() {
 		$mock_request    = $this->createMock( PaymentRequest::class );
 		$mock_auth_state = $this->createMock( AuthenticationRequiredState::class );
-		$this->mock_initial_state();
 
 		$this->mock_payment_request_service->expects( $this->once() )
 			->method( 'create_intent' )
@@ -168,14 +177,14 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] ) );
 
 		// Let's mock these services in order to prevent real execution of them.
-		$this->sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
-		$this->sut->expects( $this->once() )->method( 'populate_context_from_order' );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
 
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
 			->with( AuthenticationRequiredState::class, $this->mock_context )
 			->willReturn( $mock_auth_state );
-		$result = $this->sut->start_processing( $mock_request );
+		$result = $this->mocked_sut->start_processing( $mock_request );
 		$this->assertSame( $mock_auth_state, $result );
 	}
 
@@ -252,21 +261,5 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->with( $customer_id );
 
 		PHPUnit_Utils::call_method( $this->sut, 'populate_context_from_order', [] );
-	}
-
-	private function mock_initial_state() {
-		$this->sut = $this->getMockBuilder( InitialState::class )
-			->onlyMethods( [ 'populate_context_from_request', 'populate_context_from_order' ] )
-			->setConstructorArgs(
-				[
-					$this->mock_state_factory,
-					$this->mock_order_service,
-					$this->mock_customer_service,
-					$this->mock_level3_service,
-					$this->mock_payment_request_service,
-				]
-			)
-			->getMock();
-		$this->sut->set_context( $this->mock_context );
 	}
 }

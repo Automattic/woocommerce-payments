@@ -94,7 +94,6 @@ class AbstractPaymentStateTest extends WCPAY_UnitTestCase {
 	public function state_defined_methods_provider() {
 		return [
 			[ 'start_processing' ],
-			[ 'process' ],
 			[ 'complete_processing' ],
 		];
 	}

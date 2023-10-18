@@ -227,7 +227,7 @@ class PaymentContext {
 	}
 
 	/**
-	 * Stores the payment intent.
+	 * Stores the payment intent object.
 	 *
 	 * @param WC_Payments_API_Abstract_Intention $intent Instance of intent.
 	 */

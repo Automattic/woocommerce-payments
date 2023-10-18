@@ -1,6 +1,6 @@
 <?php
 /**
- * Class ProcessedStateTestTest
+ * Class ProcessedStateTest
  *
  * @package WooCommerce\Payments
  */
@@ -17,7 +17,7 @@ use WCPay\Internal\Service\OrderService;
 use WCPAY_UnitTestCase;
 
 /**
- * Tests for the initial payment state.
+ * Tests for the processed payment state.
  */
 class ProcessedStateTest extends WCPAY_UnitTestCase {
 	/**
@@ -55,7 +55,6 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_complete_processing_will_transition_to_completed_state() {
-
 		$intent = WC_Helper_Intention::create_intention();
 
 		$this->mock_context->expects( $this->once() )

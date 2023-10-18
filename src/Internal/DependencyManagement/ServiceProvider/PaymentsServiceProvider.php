@@ -21,7 +21,6 @@ use WCPay\Internal\Payment\State\PaymentErrorState;
 use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\State\SystemErrorState;
-use WCPay\Internal\Payment\State\VerifiedState;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Service\ExampleService;
@@ -44,6 +43,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		Router::class,
 		StateFactory::class,
 		InitialState::class,
+		AuthenticationRequiredState::class,
 		ProcessedState::class,
 		CompletedState::class,
 		SystemErrorState::class,
