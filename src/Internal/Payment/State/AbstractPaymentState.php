@@ -68,6 +68,8 @@ abstract class AbstractPaymentState {
 	/**
 	 * Initiates the payment process.
 	 *
+	 * @psalm-suppress InvalidReturnType
+	 *
 	 * @param PaymentRequest $request    The incoming payment processing request.
 	 * @return AbstractPaymentState      The next state.
 	 *
@@ -83,7 +85,7 @@ abstract class AbstractPaymentState {
 	/**
 	 * Complete processing.
 	 *
-	 * @psalm-suppress
+	 * @psalm-suppress InvalidReturnType
 	 *
 	 * @return AbstractPaymentState
 	 * @throws Order_Not_Found_Exception
