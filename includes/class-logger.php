@@ -7,6 +7,8 @@
 
 namespace WCPay;
 
+use WCPay\Internal\Logger as InternalLogger;
+
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
@@ -34,7 +36,7 @@ class Logger {
 	 *     'debug': Debug-level messages.
 	 */
 	public static function log( $message, $level = 'info' ) {
-		wcpay_get_container()->get( \WCPay\Internal\Logger::class )->log( $message );
+		wcpay_get_container()->get( InternalLogger::class )->log( $message );
 	}
 
 	/**
