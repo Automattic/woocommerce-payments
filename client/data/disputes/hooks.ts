@@ -43,7 +43,7 @@ export const useDispute = (
 	const { data, isLoading, error } = useQuery< Dispute, ApiError >( {
 		queryKey: [ 'disputes', id ],
 		queryFn: async () => {
-			const path = addQueryArgs( `/wc/v3/payments/disputes/${ id }` );
+			const path = addQueryArgs( `${ NAMESPACE }/disputes/${ id }` );
 			return apiFetch< Dispute >( { path } );
 		},
 		refetchOnMount: false,
@@ -202,7 +202,7 @@ export const useDisputes = ( {
 	const { isLoading, data } = useQuery( {
 		queryKey: [ 'disputes', query ],
 		queryFn: async () => {
-			const path = addQueryArgs( `/wc/v3/payments/disputes`, query );
+			const path = addQueryArgs( `${ NAMESPACE }/disputes`, query );
 			return apiFetch< DisputesResponse >( { path } );
 		},
 		refetchOnMount: true,
@@ -262,7 +262,7 @@ export const useDisputesSummary = ( {
 		queryKey: [ 'disputesSummary', query ],
 		queryFn: async () => {
 			const path = addQueryArgs(
-				`/wc/v3/payments/disputes/summary`,
+				`${ NAMESPACE }/disputes/summary`,
 				query
 			);
 			return apiFetch< DisputesSummaryResponse >( {
