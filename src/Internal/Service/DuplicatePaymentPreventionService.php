@@ -13,6 +13,7 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Internal\Proxy\ProxyException;
 use WCPay\Logger;
 
 /**
@@ -237,6 +238,7 @@ class DuplicatePaymentPreventionService {
 	 * Action to remove the order ID when customers reach its order-received page.
 	 *
 	 * @return void
+	 * @throws ProxyException
 	 */
 	public function clear_session_processing_order_after_landing_order_received_page() {
 		$global_wp = $this->legacy_proxy->get_global( 'wp' );

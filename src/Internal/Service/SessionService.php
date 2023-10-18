@@ -15,6 +15,13 @@ use WCPay\Internal\Proxy\LegacyProxy;
  */
 class SessionService {
 	/**
+	 * Legacy Proxy.
+	 *
+	 * @var LegacyProxy
+	 */
+	private $legacy_proxy;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param  LegacyProxy $legacy_proxy Legacy proxy instance.

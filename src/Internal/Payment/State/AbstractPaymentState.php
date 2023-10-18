@@ -74,7 +74,7 @@ abstract class AbstractPaymentState {
 	 * Initialtes the payment process.
 	 *
 	 * @param PaymentRequest $request    The incoming payment processing request.
-	 * @return CompletedState            The next state.
+	 * @return AbstractPaymentState      The next state.
 	 * @throws StateTransitionException  In case the completed state could not be initialized.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception Order could not be found.
