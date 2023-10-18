@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent deleting wrong order in the duplicate payment prevention service
