@@ -38,15 +38,6 @@ class Logger {
 	}
 
 	/**
-	 * Checks if the gateway setting logging toggle is enabled.
-	 *
-	 * @return bool Depending on the enable_logging setting.
-	 */
-	public static function can_log() {
-		return wcpay_get_container()->get( \WCPay\Internal\Logger::class )->can_log();
-	}
-
-	/**
 	 * Creates a log entry of type emergency
 	 *
 	 * @param string $message To send to the log file.
