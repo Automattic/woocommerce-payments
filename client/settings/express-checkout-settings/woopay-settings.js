@@ -187,10 +187,7 @@ const WooPaySettings = ( { section } ) => {
 					</div>
 					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
-							{ __(
-								'Store logo on checkout',
-								'woocommerce-payments'
-							) }
+							{ __( 'Checkout logo', 'woocommerce-payments' ) }
 						</h4>
 						<WooPayFileUpload
 							fieldKey="woopay-store-logo"
