@@ -116,10 +116,11 @@ class InitialState extends AbstractPaymentState {
 		}
 		$this->dpps->update_session_processing_order( $order_id );
 
-		$authorized_intent_id = $this->dpps->get_authorized_payment_intent_attached_to_order( $order_id );
-		if ( null !== $authorized_intent_id ) {
+		$authorized_intent = $this->dpps->get_authorized_payment_intent_attached_to_order( $order_id );
+		if ( null !== $authorized_intent ) {
 			$this->dpps->remove_session_processing_order( $order_id );
-			$context->set_authorized_intent_id( $authorized_intent_id );
+			$context->set_intent( $authorized_intent );
+			$context->set_detected_authorized_intent();
 			return $this->create_state( CompletedState::class ); // TODO. This will be updated to a new post-processing state.
 		}
 

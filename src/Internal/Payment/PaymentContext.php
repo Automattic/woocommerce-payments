@@ -7,6 +7,7 @@
 
 namespace WCPay\Internal\Payment;
 
+use WC_Payments_API_Abstract_Intention;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 
 /**
@@ -244,23 +245,13 @@ class PaymentContext {
 	public function get_duplicate_order_id(): ?int {
 		return $this->get( 'duplicate_order_id' );
 	}
-
 	/**
-	 * Sets the detected authorized intent ID.
+	 * Sets the detected authorized intent flag to true.
 	 *
-	 * @param string $authorized_intent_id Payment intent ID.
+	 * @return void
 	 */
-	public function set_authorized_intent_id( string $authorized_intent_id ) {
-		$this->set( 'authorized_intent_id', $authorized_intent_id );
-	}
-
-	/**
-	 * Gets the detected authorized intent ID.
-	 *
-	 * @return string|null Payment intent ID.
-	 */
-	public function get_authorized_intent_id(): ?string {
-		return $this->get( 'authorized_intent_id' );
+	public function set_detected_authorized_intent(): void {
+		$this->set( 'detected_authorized_intent', true );
 	}
 
 	/**
@@ -269,7 +260,25 @@ class PaymentContext {
 	 * @return bool
 	 */
 	public function is_detected_authorized_intent(): bool {
-		return null !== $this->get_authorized_intent_id();
+		return $this->get( 'detected_authorized_intent' ) ?? false;
+	}
+
+	/**
+	 * Stores the payment intent.
+	 *
+	 * @param WC_Payments_API_Abstract_Intention $intent Instance of intent.
+	 */
+	public function set_intent( WC_Payments_API_Abstract_Intention $intent ) {
+		$this->set( 'intent', $intent );
+	}
+
+	/**
+	 * Returns the payment intent object.
+	 *
+	 * @return WC_Payments_API_Abstract_Intention|null
+	 */
+	public function get_intent(): ?WC_Payments_API_Abstract_Intention {
+		return $this->get( 'intent' );
 	}
 
 	/**

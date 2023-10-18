@@ -8,6 +8,7 @@
 namespace WCPay\Internal\Service;
 
 use Exception;
+use WC_Payments_API_Payment_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Proxy\HooksProxy;
@@ -99,16 +100,16 @@ class DuplicatePaymentPreventionService {
 	 *
 	 * @param  int $order_id ID of the current processing order.
 	 *
-	 * @return string|null The authorized attached payment intent, null otherwise.
+	 * @return WC_Payments_API_Payment_Intention|null The authorized attached payment intent, null otherwise.
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_authorized_payment_intent_attached_to_order( int $order_id ): ?string {
+	public function get_authorized_payment_intent_attached_to_order( int $order_id ): ?WC_Payments_API_Payment_Intention {
 		$intent_id = $this->order_service->get_intent_id( $order_id );
 		if ( is_null( $intent_id ) ) {
 			return null;
 		}
 
-		// We only care about payment intent.
+		// We only care about payment payment_intent.
 		$is_payment_intent = 'pi_' === substr( $intent_id, 0, 3 );
 		if ( ! $is_payment_intent ) {
 			return null;
@@ -117,24 +118,24 @@ class DuplicatePaymentPreventionService {
 		try {
 			$request = Get_Intention::create( $intent_id );
 			$request->set_hook_args( $this->order_service->_deprecated_get_order( $order_id ) );
-			/** @var \WC_Payments_API_Abstract_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-			$intent = $request->send();
+			/** @var WC_Payments_API_Payment_Intention $payment_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$payment_intent = $request->send();
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch attached payment intent: ' . $e ); // TODO - use internal Logger https://github.com/Automattic/woocommerce-payments/pull/7462.
 			return null;
 		};
 
-		if ( ! $intent->is_authorized() ) {
+		if ( ! $payment_intent->is_authorized() ) {
 			return null;
 		}
 
-		$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
+		$intent_meta_order_id_raw = $payment_intent->get_metadata()['order_id'] ?? '';
 		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 		if ( $intent_meta_order_id !== $order_id ) {
 			return null;
 		}
 
-		return $intent_id;
+		return $payment_intent;
 	}
 
 	/**
