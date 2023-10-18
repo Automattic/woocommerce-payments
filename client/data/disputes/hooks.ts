@@ -22,8 +22,8 @@ import {
  */
 import type {
 	Dispute,
-	DisputesSummary,
 	CachedDisputes,
+	DisputesSummary,
 } from 'wcpay/types/disputes';
 import type { ApiError } from 'wcpay/types/errors';
 import { NAMESPACE, STORE_NAME } from '../constants';
