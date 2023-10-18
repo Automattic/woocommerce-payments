@@ -73,21 +73,6 @@ class PaymentProcessingService {
 	}
 
 	/**
-	 * Instantiates a new empty payment context.
-	 *
-	 * @param int  $order_id ID of the order that the context belongs to.
-	 * @param bool $manual_capture Whether manual capture is enabled.
-	 *
-	 * @return PaymentContext
-	 */
-	protected function create_payment_context( int $order_id, bool $manual_capture = false ): PaymentContext {
-		$context = new PaymentContext( $order_id );
-		$context->toggle_manual_capture( $manual_capture );
-
-		return $context;
-	}
-
-	/**
 	 * Get redirect URL when authentication is required (3DS).
 	 *
 	 * @param WC_Payments_API_Abstract_Intention $intent Intent object.
@@ -122,6 +107,21 @@ class PaymentProcessingService {
 			$client_secret,
 			$this->legacy_proxy->call_function( 'wp_create_nonce', 'wcpay_update_order_status_nonce' )
 		);
+	}
+
+	/**
+	 * Instantiates a new empty payment context.
+	 *
+	 * @param int  $order_id ID of the order that the context belongs to.
+	 * @param bool $manual_capture Whether manual capture is enabled.
+	 *
+	 * @return PaymentContext
+	 */
+	protected function create_payment_context( int $order_id, bool $manual_capture = false ): PaymentContext {
+		$context = new PaymentContext( $order_id );
+		$context->toggle_manual_capture( $manual_capture );
+
+		return $context;
 	}
 
 }

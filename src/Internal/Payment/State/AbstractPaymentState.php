@@ -64,42 +64,17 @@ abstract class AbstractPaymentState {
 		return $this->context;
 	}
 
-	/**
-	 * Creates a new instance of a given payment state class.
-	 *
-	 * States control the payment flow, and allow transitions to the next state.
-	 * This method should only be called whenever the process is ready to transition
-	 * to the next state, as each new state will be considered the payment's latest one.
-	 *
-	 * @param string $state_class The class of the state to crate.
-	 * @return AbstractPaymentState
-	 * @throws StateTransitionException In case the new state could not be created.
-	 * @throws ContainerException       When the dependency container cannot instantiate the state.
-	 */
-	protected function create_state( string $state_class ) {
-		$state = $this->state_factory->create_state( $state_class, $this->context );
-
-		// This is where logging will be added.
-
-		return $state;
-	}
-
-	/**
-	 * State-specific methods might declare a return type, but
-	 * their hollow definitions here would only throw an exception.
-	 * phpcs:disable Squiz.Commenting.FunctionComment.InvalidNoReturn
-	 */
-
+	// phpcs:disable Squiz.Commenting.FunctionComment.InvalidNoReturn
 	/**
 	 * Initiates the payment process.
 	 *
 	 * @param PaymentRequest $request    The incoming payment processing request.
 	 * @return AbstractPaymentState      The next state.
+	 *
 	 * @throws StateTransitionException  In case the completed state could not be initialized.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception Order could not be found.
 	 * @throws PaymentRequestException   When data is not available or invalid.
-	 * @psalm-suppress InvalidReturnType If this method does not throw, it will return a new state.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		$this->throw_unavailable_method_exception( __METHOD__ );
@@ -121,7 +96,7 @@ abstract class AbstractPaymentState {
 	/**
 	 * Complete processing.
 	 *
-	 * @psalm-suppress InvalidReturnType
+	 * @psalm-suppress
 	 *
 	 * @return AbstractPaymentState
 	 * @throws \WCPay\Exceptions\Order_Not_Found_Exception
@@ -129,6 +104,27 @@ abstract class AbstractPaymentState {
 	 */
 	public function complete_processing() {
 		$this->throw_unavailable_method_exception( __METHOD__ );
+	}
+	// phpcs:enable Squiz.Commenting.FunctionComment.InvalidNoReturn
+
+	/**
+	 * Creates a new instance of a given payment state class.
+	 *
+	 * States control the payment flow, and allow transitions to the next state.
+	 * This method should only be called whenever the process is ready to transition
+	 * to the next state, as each new state will be considered the payment's latest one.
+	 *
+	 * @param string $state_class The class of the state to crate.
+	 * @return AbstractPaymentState
+	 * @throws StateTransitionException In case the new state could not be created.
+	 * @throws ContainerException       When the dependency container cannot instantiate the state.
+	 */
+	protected function create_state( string $state_class ) {
+		$state = $this->state_factory->create_state( $state_class, $this->context );
+
+		// This is where logging will be added.
+
+		return $state;
 	}
 
 	/**
