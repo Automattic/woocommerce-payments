@@ -266,9 +266,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'array',
 						'items'             => [
 							'type' => 'string',
-							'enum' => array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ),
+							'enum' => array_keys( $wcpay_form_fields['platform_checkout_button_locations']['options'] ),
 						],
-						'default'           => array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ),
+						'default'           => array_keys( $wcpay_form_fields['platform_checkout_button_locations']['options'] ),
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_stripe_billing_enabled'         => [
@@ -300,6 +300,15 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'schedule_stripe_billing_migration' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/request-capability',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'request_capability' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -494,7 +503,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'show_woopay_incompatibility_notice'  => get_option( 'woopay_invalid_extension_found', false ),
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
-				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ) ),
+				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', array_keys( $wcpay_form_fields['platform_checkout_button_locations']['options'] ) ),
 				'deposit_schedule_interval'           => $this->wcpay_gateway->get_option( 'deposit_schedule_interval' ),
 				'deposit_schedule_monthly_anchor'     => $this->wcpay_gateway->get_option( 'deposit_schedule_monthly_anchor' ),
 				'deposit_schedule_weekly_anchor'      => $this->wcpay_gateway->get_option( 'deposit_schedule_weekly_anchor' ),
@@ -529,7 +538,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_payment_request_enabled_locations( $request );
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
-		$this->update_account( $request );
 		$this->update_is_woopay_enabled( $request );
 		$this->update_woopay_store_logo( $request );
 		$this->update_woopay_custom_message( $request );
@@ -538,6 +546,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		// are handled in the below method.
 		$this->update_fraud_protection_settings( $request );
 		$this->update_is_stripe_billing_enabled( $request );
+
+		$update_account_result = $this->update_account( $request );
+
+		if ( is_wp_error( $update_account_result ) ) {
+			return new WP_REST_Response( [ 'server_error' => $update_account_result->get_error_message() ], 400 );
+		}
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -757,7 +771,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			$updated_fields['deposit_schedule_interval'] = $this->wcpay_gateway->get_option( 'deposit_schedule_interval' );
 		}
 
-		$this->wcpay_gateway->update_account_settings( $updated_fields );
+		return $this->wcpay_gateway->update_account_settings( $updated_fields );
 	}
 
 	/**
@@ -881,9 +895,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
+		$is_woopay_enabled = WC_Payments_Features::is_woopay_enabled();
+		if ( ! $is_woopay_enabled ) {
+			return;
+		}
+
 		$woopay_enabled_locations = $request->get_param( 'woopay_enabled_locations' );
 
-		$all_locations = $this->wcpay_gateway->form_fields['payment_request_button_locations']['options'];
+		$all_locations = $this->wcpay_gateway->form_fields['platform_checkout_button_locations']['options'];
 		WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $woopay_enabled_locations );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $woopay_enabled_locations );
@@ -986,6 +1005,28 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		if ( $request ) {
 			return new WP_REST_Response( [], 200 );
 		}
+	}
+
+	/**
+	 * Request a specific capability.
+	 *
+	 * @param WP_REST_Request $request The request object. Optional. If passed, the function will return a REST response.
+	 *
+	 * @return WP_REST_Response|WP_Error The response object, if this is a REST request.
+	 */
+	public function request_capability( WP_REST_Request $request = null ) {
+		$id                      = $request->get_param( 'id' );
+		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
+		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
+		$stripe_key              = $capability_key_map[ $id ] ?? null;
+
+		if ( array_key_exists( $stripe_key, $payment_method_statuses )
+			&& 'unrequested' === $payment_method_statuses[ $stripe_key ]['status'] ) {
+			$request_result = $this->api_client->request_capability( $stripe_key, true );
+			$this->wcpay_gateway->refresh_cached_account_data();
+		}
+
+		return rest_ensure_response( $request_result );
 	}
 
 	/**

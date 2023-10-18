@@ -36,6 +36,7 @@ import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
 import { ClickTooltip } from 'components/tooltip';
+import DisputeStatusChip from 'components/dispute-status-chip';
 import {
 	getDisputeFeeFormatted,
 	isAwaitingResponse,
@@ -53,6 +54,7 @@ import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-noti
 import _ from 'lodash';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
+import ErrorBoundary from 'components/error-boundary';
 
 declare const window: any;
 
@@ -171,7 +173,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const {
 		featureFlags: {
 			isAuthAndCaptureEnabled,
-			isDisputeOnTransactionPageEnabled,
 			isRefundControlsEnabled,
 		},
 	} = useContext( WCPaySettingsContext );
@@ -241,12 +242,23 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<span className="payment-details-summary__amount-currency">
 									{ charge.currency || 'USD' }
 								</span>
-								<PaymentStatusChip
-									status={ getChargeStatus(
-										charge,
-										paymentIntent
-									) }
-								/>
+								{ charge.dispute ? (
+									<DisputeStatusChip
+										status={ charge.dispute.status }
+										dueBy={
+											charge.dispute.evidence_details
+												?.due_by
+										}
+										prefixDisputeType={ true }
+									/>
+								) : (
+									<PaymentStatusChip
+										status={ getChargeStatus(
+											charge,
+											paymentIntent
+										) }
+									/>
+								) }
 							</Loadable>
 						</p>
 						<div className="payment-details-summary__breakdown">
@@ -468,18 +480,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				</LoadableBlock>
 			</CardBody>
 
-			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
-				<>
+			{ charge.dispute && (
+				<ErrorBoundary>
 					{ isAwaitingResponse( charge.dispute.status ) ? (
 						<DisputeAwaitingResponseDetails
 							dispute={ charge.dispute }
 							customer={ charge.billing_details }
 							chargeCreated={ charge.created }
+							orderUrl={ charge.order?.url }
 						/>
 					) : (
 						<DisputeResolutionFooter dispute={ charge.dispute } />
 					) }
-				</>
+				</ErrorBoundary>
 			) }
 			{ isRefundControlsEnabled &&
 				! _.isEmpty( charge ) &&

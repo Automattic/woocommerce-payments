@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Set WooPay first party feature flag to off when incompatible extensions are active.

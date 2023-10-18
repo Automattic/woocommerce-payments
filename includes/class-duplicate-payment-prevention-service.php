@@ -91,8 +91,9 @@ class Duplicate_Payment_Prevention_Service {
 		}
 
 		try {
-			$request       = Get_Intention::create( $intent_id );
-			$intent        = $request->send( 'wcpay_get_intention_request' );
+			$request = Get_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+			$intent        = $request->send();
 			$intent_status = $intent->get_status();
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch attached payment intent: ' . $e );
@@ -149,6 +150,17 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		}
 
+		if ( ! $current_order->has_status( wc_get_is_pending_statuses() ) ) {
+			return;
+		}
+
+		if ( $session_order->get_id() === $current_order->get_id() ) {
+			return;
+		}
+
+		if ( $session_order->get_customer_id() !== $current_order->get_customer_id() ) {
+			return;
+		}
 		$session_order->add_order_note(
 			sprintf(
 				/* translators: order ID integer number */

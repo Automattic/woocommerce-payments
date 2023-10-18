@@ -1437,10 +1437,9 @@ exports[`Multi-Currency enabled currencies list should hide recommended currenci
         </div>
         <button
           class="components-button is-primary"
-          disabled=""
           type="button"
         >
-          Add currencies
+          Continue
         </button>
       </div>
     </div>

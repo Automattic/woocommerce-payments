@@ -111,6 +111,16 @@ class WC_Payments_WooPay_Button_Handler {
 			return;
 		}
 
+		// Create WooPay button location option if it doesn't exist and enable all locations by default.
+		if ( ! array_key_exists( 'platform_checkout_button_locations', get_option( 'woocommerce_woocommerce_payments_settings' ) ) ) {
+
+			$all_locations = $this->gateway->form_fields['platform_checkout_button_locations']['options'];
+
+			$this->gateway->update_option( 'platform_checkout_button_locations', array_keys( $all_locations ) );
+
+			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $all_locations );
+		}
+
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_woopay_config' ] );
@@ -217,14 +227,14 @@ class WC_Payments_WooPay_Button_Handler {
 		WC()->shipping->reset_shipping();
 
 		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
-		$qty          = ! isset( $_POST['qty'] ) ? 1 : absint( $_POST['qty'] );
+		$quantity     = ! isset( $_POST['quantity'] ) ? 1 : absint( $_POST['quantity'] );
 		$product      = wc_get_product( $product_id );
 		$product_type = $product->get_type();
 
 		// First empty the cart to prevent wrong calculation.
 		WC()->cart->empty_cart();
 
-		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $qty );
+		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity );
 
 		if ( ! $is_add_to_cart_valid ) {
 			// Some extensions error messages needs to be
@@ -245,11 +255,11 @@ class WC_Payments_WooPay_Button_Handler {
 			$data_store   = WC_Data_Store::load( 'product' );
 			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
 
-			WC()->cart->add_to_cart( $product->get_id(), $qty, $variation_id, $attributes );
+			WC()->cart->add_to_cart( $product->get_id(), $quantity, $variation_id, $attributes );
 		}
 
-		if ( 'simple' === $product_type || 'subscription' === $product_type || 'bundle' === $product_type ) {
-			WC()->cart->add_to_cart( $product->get_id(), $qty );
+		if ( in_array( $product_type, [ 'simple', 'subscription', 'bundle', 'mix-and-match' ], true ) ) {
+			WC()->cart->add_to_cart( $product->get_id(), $quantity );
 		}
 
 		WC()->cart->calculate_totals();
@@ -583,10 +593,21 @@ class WC_Payments_WooPay_Button_Handler {
 			return;
 		}
 
+		$settings = $this->get_button_settings();
+
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->is_product() ); ?>>
-				<?php // The WooPay express checkout button React component will go here. ?>
-			</div>
+			<?php // The WooPay express checkout button React component will go here. This is rendered as disabled for now, until the page is initialized. ?>
+			<button
+				class="woopay-express-button"
+				aria-label="<?php esc_attr_e( 'WooPay', 'woocommerce-payments' ); ?>"
+				data-type="<?php echo esc_attr( $settings['type'] ); ?>"
+				data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"
+				data-size="<?php echo esc_attr( $settings['size'] ); ?>"
+				style="height: <?php echo esc_attr( $settings['height'] ); ?>px"
+				disabled
+			></button>
+		</div>
 		<?php
 	}
 

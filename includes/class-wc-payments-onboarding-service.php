@@ -43,7 +43,14 @@ class WC_Payments_Onboarding_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->database_cache      = $database_cache;
+	}
 
+	/**
+	 * Initialise class hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_filter( 'wcpay_dev_mode', [ $this, 'maybe_enable_dev_mode' ], 100 );
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
 	}

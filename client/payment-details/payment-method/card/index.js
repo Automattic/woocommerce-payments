@@ -52,7 +52,9 @@ const formatPaymentMethodDetails = ( charge ) => {
 		? sprintf(
 				// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
 				__( '%1$s %2$s card', 'woocommerce-payments' ),
-				network.charAt( 0 ).toUpperCase() + network.slice( 1 ), // Brand
+				network === 'jcb'
+					? network.toUpperCase()
+					: network.charAt( 0 ).toUpperCase() + network.slice( 1 ), // Brand
 				fundingTypes[ funding ]
 		  )
 		: undefined;

@@ -76,7 +76,7 @@ export type DisputeStatus =
 export interface Dispute {
 	status: DisputeStatus;
 	id: string;
-	evidence_details?: EvidenceDetails;
+	evidence_details: EvidenceDetails;
 	metadata: {
 		/* eslint-disable @typescript-eslint/naming-convention -- required to allow underscores in keys */
 		/**
@@ -95,7 +95,7 @@ export interface Dispute {
 	};
 	order: null | OrderDetails;
 	evidence: Evidence;
-	issuer_evidence: IssuerEvidence | null;
+	issuer_evidence: IssuerEvidence[] | null;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
 	charge: Charge | string;

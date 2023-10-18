@@ -145,6 +145,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_register_customer_currencies_for_empty_customer_currencies() {
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_all_customer_currencies' )
 			->willReturn( [] );

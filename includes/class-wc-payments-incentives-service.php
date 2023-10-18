@@ -30,7 +30,14 @@ class WC_Payments_Incentives_Service {
 	 */
 	public function __construct( Database_Cache $database_cache ) {
 		$this->database_cache = $database_cache;
+	}
 
+	/**
+	 * Initialise class hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'admin_menu', [ $this, 'add_payments_menu_badge' ] );
 		add_filter( 'woocommerce_admin_allowed_promo_notes', [ $this, 'allowed_promo_notes' ] );
 		add_filter( 'woocommerce_admin_woopayments_onboarding_task_badge', [ $this, 'onboarding_task_badge' ] );
