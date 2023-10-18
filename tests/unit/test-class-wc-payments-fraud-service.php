@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Database_Cache;
 
 /**
  * WC_Payments_Fraud_Service unit tests.
@@ -47,6 +48,13 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_session_service;
 
 	/**
+	 * Mock database cache.
+	 *
+	 * @var Database_Cache|MockObject;
+	 */
+	private $mock_database_cache;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -56,13 +64,13 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 		$this->mock_account          = $this->createMock( WC_Payments_Account::class );
 		$this->mock_session_service  = $this->createMock( WC_Payments_Session_Service::class );
+		$this->mock_database_cache   = $this->createMock( Database_Cache::class );
 
-		$this->fraud_service = new WC_Payments_Fraud_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_account, $this->mock_session_service );
+		$this->fraud_service = new WC_Payments_Fraud_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_account, $this->mock_session_service, $this->mock_database_cache );
 		$this->fraud_service->init_hooks();
 	}
 
 	public function test_registers_filters_and_actions_properly() {
-		$this->assertNotFalse( has_filter( 'wcpay_prepare_fraud_config', [ $this->fraud_service, 'prepare_fraud_config' ] ) );
 		$this->assertNotFalse( has_action( 'init', [ $this->fraud_service, 'link_session_if_user_just_logged_in' ] ) );
 	}
 
