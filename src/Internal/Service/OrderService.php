@@ -285,6 +285,18 @@ class OrderService {
 	}
 
 	/**
+	 * Gets customer ID for the given order ID.
+	 *
+	 * @param  int $order_id  ID of the order.
+	 *
+	 * @return int Customer ID for the order.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_customer_id( int $order_id ): int {
+		return $this->get_order( $order_id )->get_customer_id();
+	}
+
+	/**
 	 * Checks if the order has one of paid statuses.
 	 *
 	 * @param  int $order_id  ID of the order.
@@ -296,6 +308,21 @@ class OrderService {
 		return $this->get_order( $order_id )
 			->has_status(
 				$this->legacy_proxy->call_function( 'wc_get_is_paid_statuses' )
+			);
+	}
+
+	/**
+	 * Checks if the order has one of pending statuses.
+	 *
+	 * @param  int $order_id  ID of the order.
+	 *
+	 * @return bool True if the order has one of pending statuses, false otherwise.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function is_pending( int $order_id ) {
+		return $this->get_order( $order_id )
+			->has_status(
+				$this->legacy_proxy->call_function( 'wc_get_is_pending_statuses' )
 			);
 	}
 

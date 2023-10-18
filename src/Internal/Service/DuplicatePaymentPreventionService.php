@@ -152,7 +152,19 @@ class DuplicatePaymentPreventionService {
 			return null;
 		}
 
+		if ( $current_order_id !== $session_order_id ) {
+			return null;
+		}
+
 		if ( $this->order_service->get_cart_hash( $current_order_id ) !== $this->order_service->get_cart_hash( $session_order_id ) ) {
+			return null;
+		}
+
+		if ( $this->order_service->get_customer_id( $current_order_id ) !== $this->order_service->get_customer_id( $session_order_id ) ) {
+			return null;
+		}
+
+		if ( ! $this->order_service->is_pending( $current_order_id ) ) {
 			return null;
 		}
 
