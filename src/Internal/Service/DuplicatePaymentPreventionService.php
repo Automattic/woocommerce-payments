@@ -8,7 +8,6 @@
 namespace WCPay\Internal\Service;
 
 use Exception;
-use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Proxy\HooksProxy;
@@ -64,7 +63,7 @@ class DuplicatePaymentPreventionService {
 	private $legacy_proxy;
 
 	/**
-	 * Woo core session instance.
+	 * Session service instance.
 	 *
 	 * @var SessionService
 	 */
@@ -73,10 +72,10 @@ class DuplicatePaymentPreventionService {
 	/**
 	 * Initializes all dependencies.
 	 *
-	 * @param  OrderService   $order_service  The order service instance.
-	 * @param  SessionService $session_service Woo core Session instance.
-	 * @param  HooksProxy     $hooks_proxy  The hooks proxy instance.
-	 * @param  LegacyProxy    $legacy_proxy  The legacy proxy instance.
+	 * @param  OrderService   $order_service   Order service instance.
+	 * @param  SessionService $session_service Session service instance.
+	 * @param  HooksProxy     $hooks_proxy     Hooks proxy instance.
+	 * @param  LegacyProxy    $legacy_proxy    Legacy proxy instance.
 	 */
 	public function __construct( OrderService $order_service, SessionService $session_service, HooksProxy $hooks_proxy, LegacyProxy $legacy_proxy ) {
 		$this->order_service   = $order_service;

@@ -45,6 +45,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		Router::class,
 		StateFactory::class,
 		InitialState::class,
+		DuplicateOrderDetectedState::class,
 		CompletedState::class,
 		SystemErrorState::class,
 		PaymentErrorState::class,
@@ -66,8 +67,6 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( PaymentProcessingService::class )
 			->addArgument( StateFactory::class )
 			->addArgument( LegacyProxy::class );
-
-		$container->addShared( PaymentRequestService::class );
 
 		$container->addShared( PaymentRequestService::class );
 
