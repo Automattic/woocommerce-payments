@@ -185,6 +185,12 @@ const WooPaySettings = ( { section } ) => {
 						></WooPayPreview>
 						<div className="woopay-settings__preview-fade"></div>
 					</div>
+					<hr
+						style={ {
+							margin: '0 -1.5rem 1.0rem -1.5rem',
+							width: 'calc(100% + 3rem)',
+						} }
+					/>
 					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
 							{ __( 'Checkout logo', 'woocommerce-payments' ) }
