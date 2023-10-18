@@ -7,20 +7,12 @@
 
 namespace WCPay;
 
-use WC_Logger;
-
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
  * A wrapper class for interacting with WC_Logger.
  */
 class Logger {
-	/**
-	 * The holding property for our WC_Logger instance.
-	 *
-	 * @var WC_Logger $logger
-	 */
-	private static $logger;
 
 	/**
 	 * Add a log entry.

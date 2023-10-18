@@ -795,11 +795,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
 			->setMethods( [ 'log' ] )
 			->getMock();
-
-		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
-		$logger_ref->setAccessible( true );
-		$logger_ref->setValue( null, $mock_logger );
-
 		$mock_gateway         = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode(), $mock_gateway );
 		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
@@ -837,8 +832,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$request_method->setAccessible( false );
 
 		// clean up.
-		$logger_ref->setAccessible( true );
-		$logger_ref->setValue( null, null );
 		WC_Payments::mode()->live();
 		wcpay_get_test_container()->reset_all_replacements();
 	}

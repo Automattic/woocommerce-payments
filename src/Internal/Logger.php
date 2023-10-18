@@ -41,6 +41,7 @@ class Logger {
 	 */
 	private $gateway;
 
+
 	/**
 	 * Logger constructor.
 	 *
