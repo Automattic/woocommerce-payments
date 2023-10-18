@@ -56,10 +56,10 @@ class InitialState extends AbstractPaymentState {
 	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory                 $state_factory Factory for payment states.
-	 * @param OrderService                 $order_service Service for order-related actions.
-	 * @param WC_Payments_Customer_Service $customer_service Service for managing remote customers.
-	 * @param Level3Service                $level3_service Service for Level3 Data.
+	 * @param StateFactory                 $state_factory           Factory for payment states.
+	 * @param OrderService                 $order_service           Service for order-related actions.
+	 * @param WC_Payments_Customer_Service $customer_service        Service for managing remote customers.
+	 * @param Level3Service                $level3_service          Service for Level3 Data.
 	 * @param PaymentRequestService        $payment_request_service Connection with the server.
 	 */
 	public function __construct(
