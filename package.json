@@ -72,13 +72,14 @@
     "@fingerprintjs/fingerprintjs": "3.4.1",
     "@stripe/react-stripe-js": "1.4.1",
     "@stripe/stripe-js": "1.15.1",
+    "@tanstack/react-query": "5.0.0",
+    "@tanstack/react-query-devtools": "5.0.0",
     "@woocommerce/explat": "2.3.0",
     "@woocommerce/number": "2.4.0",
     "crypto-js": "4.1.1",
     "debug": "4.1.1",
     "intl-tel-input": "17.0.15",
-    "lodash": "4.17.21",
-    "react-query": "3.39.3"
+    "lodash": "4.17.21"
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",

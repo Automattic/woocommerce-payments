@@ -15,7 +15,7 @@ import {
 	useMutation,
 	useQuery,
 	useQueryClient,
-} from 'react-query';
+} from '@tanstack/react-query';
 
 /**
  * Internal dependencies
@@ -30,6 +30,7 @@ import { NAMESPACE, STORE_NAME } from '../constants';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 import { formatDateValue } from 'wcpay/utils';
 import wcpayTracks from 'tracks';
+import { useEffect } from 'react';
 
 const fetchDispute = async ( { queryKey }: QueryFunctionContext ) => {
 	const [ , id ] = queryKey;
@@ -51,22 +52,27 @@ export const useDispute = (
 } => {
 	const { createErrorNotice } = useDispatch( 'core/notices' );
 
-	const { data, isLoading, isError, error } = useQuery<
+	const { data, isLoading, error } = useQuery<
 		Dispute | undefined,
 		ApiError | undefined
-	>( [ 'disputes', id ], fetchDispute, {
+	>( {
+		queryKey: [ 'disputes', id ],
+		queryFn: fetchDispute,
 		refetchOnMount: false,
 		retry: false,
-		onError: () => {
+	} );
+
+	useEffect( () => {
+		if ( error ) {
 			createErrorNotice(
 				__( 'Error retrieving dispute.', 'woocommerce-payments' )
 			);
-		},
-	} );
+		}
+	}, [ error, createErrorNotice ] );
 
 	return {
 		dispute: data,
-		error: isError ? error : undefined,
+		error,
 		isLoading,
 	};
 };
@@ -94,10 +100,11 @@ export const useDisputeAccept = (
 		'core/notices'
 	);
 
-	const { isLoading, mutate } = useMutation( acceptDispute, {
+	const { isPending: isLoading, mutate } = useMutation( {
+		mutationFn: acceptDispute,
 		onSuccess: ( updatedDispute: Dispute ) => {
 			// Invalidate all disputes queries.
-			queryClient.invalidateQueries( 'disputes' );
+			queryClient.invalidateQueries( { queryKey: [ 'disputes' ] } );
 
 			// TODO: Invalidate payment intent query.
 
@@ -213,16 +220,14 @@ export const useDisputes = ( {
 		...formatQueryFilters( query ),
 	};
 
-	const { isLoading, data } = useQuery(
-		[ 'disputes', query ],
-		fetchDisputes,
-		{
-			refetchOnMount: true,
-			refetchOnWindowFocus: true,
-			refetchInterval: false,
-			refetchOnReconnect: true,
-		}
-	);
+	const { isLoading, data } = useQuery( {
+		queryKey: [ 'disputes', query ],
+		queryFn: fetchDisputes,
+		refetchOnMount: true,
+		refetchOnWindowFocus: true,
+		refetchInterval: false,
+		refetchOnReconnect: true,
+	} );
 
 	return {
 		disputes: data?.data || [],
@@ -284,10 +289,10 @@ export const useDisputesSummary = ( {
 		...formatQueryFilters( query ),
 	};
 
-	const { isLoading, data } = useQuery(
-		[ 'disputesSummary', query ],
-		fetchDisputesSummary
-	);
+	const { isLoading, data } = useQuery( {
+		queryKey: [ 'disputesSummary', query ],
+		queryFn: fetchDisputesSummary,
+	} );
 	return {
 		disputesSummary: data || {},
 		isLoading,

@@ -9,7 +9,8 @@ import { addFilter } from '@wordpress/hooks';
 // See discussion in WCPay PR #1263 in GitHub.
 // eslint-disable-next-line import/no-unresolved
 import 'wp-mediaelement';
-import { ReactQueryDevtools } from 'react-query/devtools';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 /**
  * Internal dependencies
@@ -33,7 +34,6 @@ import DocumentsPage from 'documents';
 import OnboardingPage from 'onboarding';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
-import { QueryClient, QueryClientProvider } from 'react-query';
 
 const queryClient = new QueryClient();
 
