@@ -28,6 +28,13 @@ class PaymentContext {
 	private $data = [];
 
 	/**
+	 * Contains the changes to the PaymentContext
+	 *
+	 * @var array
+	 */
+	private $changes = [];
+
+	/**
 	 * Constructs the class, receiving an order ID.
 	 *
 	 * @param int $order_id ID of the order, receiving a payment.
@@ -226,6 +233,30 @@ class PaymentContext {
 	}
 
 	/**
+	 * Returns the changes.
+	 *
+	 * @return array
+	 */
+	public function get_changes(): array {
+		return $this->changes;
+	}
+
+	/**
+	 * Returns the changes as a string that can be logged.
+	 *
+	 * @return string
+	 */
+	public function get_changes_log(): string {
+		$change_strings = array_map(
+			function( $change ) {
+				return (string) $change;
+			},
+			$this->changes
+		);
+		return implode( PHP_EOL, $change_strings );
+	}
+
+	/**
 	 * Stores an internal value.
 	 * Use this method for changes to allow logging in the future.
 	 *
@@ -233,6 +264,7 @@ class PaymentContext {
 	 * @param mixed  $value Value to store.
 	 */
 	private function set( string $key, $value ) {
+		$this->changes[]    = new Change( $key, $this->get( $key ) ?? '', $value );
 		$this->data[ $key ] = $value;
 	}
 
