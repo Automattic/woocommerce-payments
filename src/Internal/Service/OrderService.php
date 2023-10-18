@@ -293,7 +293,10 @@ class OrderService {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function is_paid( int $order_id ): bool {
-		return $this->get_order( $order_id )->has_status( wc_get_is_paid_statuses() );
+		return $this->get_order( $order_id )
+			->has_status(
+				$this->legacy_proxy->call_function( 'wc_get_is_paid_statuses' )
+			);
 	}
 
 	/**
