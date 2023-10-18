@@ -3,12 +3,19 @@
 /**
  * External dependencies
  */
-import { useSelect, useDispatch } from '@wordpress/data';
 import type { Query } from '@woocommerce/navigation';
+import { useDispatch } from '@wordpress/data';
 import moment from 'moment';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
-import { QueryFunctionContext, useQuery } from 'react-query';
+import { __, sprintf } from '@wordpress/i18n';
+import { snakeCase } from 'lodash';
+import {
+	QueryFunctionContext,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from 'react-query';
 
 /**
  * Internal dependencies
@@ -19,10 +26,10 @@ import type {
 	CachedDisputes,
 } from 'wcpay/types/disputes';
 import type { ApiError } from 'wcpay/types/errors';
-import { STORE_NAME } from '../constants';
+import { NAMESPACE, STORE_NAME } from '../constants';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 import { formatDateValue } from 'wcpay/utils';
-import { snakeCase } from 'lodash';
+import wcpayTracks from 'tracks';
 
 const fetchDispute = async ( { queryKey }: QueryFunctionContext ) => {
 	const [ , id ] = queryKey;
@@ -39,21 +46,37 @@ export const useDispute = (
 	id: string
 ): {
 	dispute?: Dispute;
-	error?: ApiError;
+	error?: ApiError | null;
 	isLoading: boolean;
 } => {
-	const { data, isLoading, isError } = useQuery<
+	const { createErrorNotice } = useDispatch( 'core/notices' );
+
+	const { data, isLoading, isError, error } = useQuery<
 		Dispute | undefined,
 		ApiError | undefined
 	>( [ 'disputes', id ], fetchDispute, {
 		refetchOnMount: false,
+		retry: false,
+		onError: () => {
+			createErrorNotice(
+				__( 'Error retrieving dispute.', 'woocommerce-payments' )
+			);
+		},
 	} );
 
 	return {
 		dispute: data,
-		error: isError ? { code: '414' } : undefined,
+		error: isError ? error : undefined,
 		isLoading,
 	};
+};
+
+const acceptDispute = async ( disputeId: string ) => {
+	const response = apiFetch< Dispute >( {
+		path: `${ NAMESPACE }/disputes/${ disputeId }/close`,
+		method: 'post',
+	} );
+	return response;
 };
 
 /**
@@ -66,18 +89,49 @@ export const useDisputeAccept = (
 	doAccept: () => void;
 	isLoading: boolean;
 } => {
-	const { isLoading } = useSelect(
-		( select ) => {
-			const { isResolving } = select( STORE_NAME );
-
-			return {
-				isLoading: isResolving( 'getDispute', [ dispute.id ] ),
-			};
-		},
-		[ dispute.id ]
+	const queryClient = useQueryClient();
+	const { createErrorNotice, createSuccessNotice } = useDispatch(
+		'core/notices'
 	);
-	const { acceptDispute } = useDispatch( STORE_NAME );
-	const doAccept = () => acceptDispute( dispute );
+
+	const { isLoading, mutate } = useMutation( acceptDispute, {
+		onSuccess: ( updatedDispute: Dispute ) => {
+			// Invalidate all disputes queries.
+			queryClient.invalidateQueries( 'disputes' );
+
+			// TODO: Invalidate payment intent query.
+
+			wcpayTracks.recordEvent( 'wcpay_dispute_accept_success' );
+
+			createSuccessNotice(
+				updatedDispute.order
+					? sprintf(
+							/* translators: #%s is an order number, e.g. 15 */
+							__(
+								'You have accepted the dispute for order #%s.',
+								'woocommerce-payments'
+							),
+							updatedDispute.order.number
+					  )
+					: __(
+							'You have accepted the dispute.',
+							'woocommerce-payments'
+					  )
+			);
+		},
+		onError: () => {
+			wcpayTracks.recordEvent( 'wcpay_dispute_accept_failed' );
+			createErrorNotice(
+				__(
+					'There has been an error accepting the dispute. Please try again later.',
+					'woocommerce-payments'
+				)
+			);
+		},
+	} );
+
+	const doAccept = () => mutate( dispute.id );
+
 	return { doAccept, isLoading };
 };
 

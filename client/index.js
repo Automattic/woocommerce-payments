@@ -138,7 +138,7 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: PaymentDetailsPage,
+			container: renderComponent( PaymentDetailsPage ),
 			path: '/payments/transactions/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
