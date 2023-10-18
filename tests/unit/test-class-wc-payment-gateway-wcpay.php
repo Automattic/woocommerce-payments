@@ -1651,6 +1651,25 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_woopay_form_field_defaults() {
+		// need to delete the existing options to ensure nothing is in the DB from the `setUp` phase, where the method is instantiated.
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+
+		$this->assertEquals(
+			[
+				'product',
+				'cart',
+				'checkout',
+			],
+			$this->wcpay_gateway->get_option( 'platform_checkout_button_locations' )
+		);
+
+		$this->assertEquals(
+			'By placing this order, you agree to our [terms_of_service_link] and understand our [privacy_policy_link].',
+			$this->wcpay_gateway->get_option( 'platform_checkout_custom_message' )
+		);
+	}
+
 	public function test_is_woopay_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
