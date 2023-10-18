@@ -10,12 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { __, sprintf } from '@wordpress/i18n';
 import { snakeCase } from 'lodash';
-import {
-	QueryFunctionContext,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 /**
  * Internal dependencies
@@ -32,13 +27,6 @@ import { formatDateValue } from 'wcpay/utils';
 import wcpayTracks from 'tracks';
 import { useEffect } from 'react';
 
-const fetchDispute = async ( { queryKey }: QueryFunctionContext ) => {
-	const [ , id ] = queryKey;
-	const path = addQueryArgs( `/wc/v3/payments/disputes/${ id }` );
-	const response = await apiFetch< Dispute >( { path } );
-	return response;
-};
-
 /**
  * Returns the dispute object, error object, and loading state.
  * Fetches the dispute object if it is not already cached.
@@ -52,12 +40,12 @@ export const useDispute = (
 } => {
 	const { createErrorNotice } = useDispatch( 'core/notices' );
 
-	const { data, isLoading, error } = useQuery<
-		Dispute | undefined,
-		ApiError | undefined
-	>( {
+	const { data, isLoading, error } = useQuery< Dispute, ApiError >( {
 		queryKey: [ 'disputes', id ],
-		queryFn: fetchDispute,
+		queryFn: async () => {
+			const path = addQueryArgs( `/wc/v3/payments/disputes/${ id }` );
+			return apiFetch< Dispute >( { path } );
+		},
 		refetchOnMount: false,
 		retry: false,
 	} );
@@ -164,18 +152,9 @@ const formatQueryFilters = ( query: any ) => ( {
 	status_is_not: query.statusIsNot,
 } );
 
-const fetchDisputes = async ( { queryKey }: QueryFunctionContext ) => {
-	const [ , query ] = queryKey;
-	const path = addQueryArgs(
-		`/wc/v3/payments/disputes`,
-		query as Record< string, unknown >
-	);
-	const response = await apiFetch< {
-		data: CachedDisputes[ 'disputes' ];
-	} >( { path } );
-	return response;
-};
-
+interface DisputesResponse {
+	data: CachedDisputes[ 'disputes' ];
+}
 export const useDisputes = ( {
 	paged,
 	per_page: perPage,
@@ -222,7 +201,10 @@ export const useDisputes = ( {
 
 	const { isLoading, data } = useQuery( {
 		queryKey: [ 'disputes', query ],
-		queryFn: fetchDisputes,
+		queryFn: async () => {
+			const path = addQueryArgs( `/wc/v3/payments/disputes`, query );
+			return apiFetch< DisputesResponse >( { path } );
+		},
 		refetchOnMount: true,
 		refetchOnWindowFocus: true,
 		refetchInterval: false,
@@ -235,23 +217,10 @@ export const useDisputes = ( {
 	};
 };
 
-const fetchDisputesSummary = async ( { queryKey }: QueryFunctionContext ) => {
-	const [ , query ] = queryKey;
-	const path = addQueryArgs(
-		`/wc/v3/payments/disputes/summary`,
-		query as Record< string, unknown >
-	);
-
-	const response = await apiFetch< {
-		count?: number;
-		currencies?: string[];
-	} >( {
-		path,
-	} );
-
-	return response;
-};
-
+interface DisputesSummaryResponse {
+	count?: number;
+	currencies?: string[];
+}
 export const useDisputesSummary = ( {
 	paged,
 	per_page: perPage,
@@ -291,7 +260,15 @@ export const useDisputesSummary = ( {
 
 	const { isLoading, data } = useQuery( {
 		queryKey: [ 'disputesSummary', query ],
-		queryFn: fetchDisputesSummary,
+		queryFn: async () => {
+			const path = addQueryArgs(
+				`/wc/v3/payments/disputes/summary`,
+				query
+			);
+			return apiFetch< DisputesSummaryResponse >( {
+				path,
+			} );
+		},
 	} );
 	return {
 		disputesSummary: data || {},
