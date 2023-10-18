@@ -94,7 +94,8 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.6.1 - 2023-10-18 =
+= 6.6.1 - 2023-10-19 =
+* Fix - Stripe Link eligibility at checkout
 
 
 = 6.6.0 - 2023-10-11 =
