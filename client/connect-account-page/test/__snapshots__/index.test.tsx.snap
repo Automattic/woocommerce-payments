@@ -44,7 +44,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
                 fill-rule="evenodd"
               />
             </svg>
-            Offer card payments, Apple Pay, Sofort, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.
+            Offer card payments, Apple Pay, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.
             <svg
               class="gridicon gridicons-globe"
               height="24"
@@ -147,10 +147,6 @@ exports[`ConnectAccountPage should render correctly 1`] = `
             <img
               alt="JCB"
               src="assets/images/cards/jcb.svg"
-            />
-            <img
-              alt="Sofort"
-              src="assets/images/payment-methods/sofort.svg"
             />
             <img
               alt="Affirm"
@@ -361,7 +357,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
                 fill-rule="evenodd"
               />
             </svg>
-            Offer card payments, Apple Pay, Sofort, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.
+            Offer card payments, Apple Pay, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.
             <svg
               class="gridicon gridicons-globe"
               height="24"
@@ -476,10 +472,6 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
             <img
               alt="JCB"
               src="assets/images/cards/jcb.svg"
-            />
-            <img
-              alt="Sofort"
-              src="assets/images/payment-methods/sofort.svg"
             />
             <img
               alt="Affirm"
@@ -652,7 +644,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
                 fill-rule="evenodd"
               />
             </svg>
-            Offer card payments, Apple Pay, Sofort, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.
+            Offer card payments, Apple Pay, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.
             <svg
               class="gridicon gridicons-globe"
               height="24"
@@ -755,10 +747,6 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
             <img
               alt="JCB"
               src="assets/images/cards/jcb.svg"
-            />
-            <img
-              alt="Sofort"
-              src="assets/images/payment-methods/sofort.svg"
             />
             <img
               alt="Affirm"

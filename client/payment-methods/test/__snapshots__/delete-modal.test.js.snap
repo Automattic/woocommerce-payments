@@ -117,6 +117,7 @@ exports[`Activation Modal matches the snapshot 1`] = `
           >
             WooPayments
           </a>
+          .
         </p>
         <hr
           class="wcpay-confirmation-modal__separator"
