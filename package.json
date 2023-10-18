@@ -39,6 +39,7 @@
     "test:update-snapshots": "npm run test:js -- --updateSnapshot",
     "test:php": "./bin/run-tests.sh",
     "test:php-coverage": "./bin/check-test-coverage.sh",
+    "test:php-coverage-src": "./bin/check-src-test-coverage.sh",
     "test:php-watch": "npm run test:php -- -w",
     "test:qit": "npm run build:release && ./tests/qit/security.sh",
     "watch": "webpack --watch",
