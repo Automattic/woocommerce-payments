@@ -182,6 +182,7 @@ const WooPaySettings = ( { section } ) => {
 						<WooPayPreview
 							storeName={ wcSettings.siteTitle }
 							storeLogo={ woopayStoreLogo }
+							customMessage={ woopayCustomMessage }
 						></WooPayPreview>
 					</div>
 					<hr
