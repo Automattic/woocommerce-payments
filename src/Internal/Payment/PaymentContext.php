@@ -234,7 +234,7 @@ class PaymentContext {
 	 * @return void
 	 */
 	public function set_duplicate_order_id( int $duplicate_order_id ) {
-		$this->set( 'duplicate_order_id(', $duplicate_order_id );
+		$this->set( 'duplicate_order_id', $duplicate_order_id );
 	}
 
 	/**
