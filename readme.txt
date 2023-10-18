@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay, woocommerce 
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.3
-Stable tag: 6.6.0
+Stable tag: 6.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,23 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 6.6.1 - 2023-10-18 =
+* Add - Added Authorizations reporting endpoint.
+* Add - Added WooPay button locations setting
+* Fix - Add additional security checks in the plugin
+* Fix - Fix Multi-Currency formatting on My Account > Orders page.
+* Fix - Fix WooPay Same My Info adding unnecessary spacing to checkout
+* Fix - Prevent deleting wrong order in the duplicate payment prevention service
+* Fix - Prevent settings access to partially onboarded accounts
+* Fix - Removed link to setup intent
+* Fix - Set WooPay first party feature flag to off when incompatible extensions are active.
+* Fix - show/hide WooPay checkout page tooltip on click
+* Update - Enables deferred intent UPE for existing legacy card stores
+* Update - feat: add WooPay button SSR
+* Dev - Add Shopper Tracks events
+* Dev - Fixed version check regex
+* Dev - Restore skipped e2e merchant tests
 
 = 6.6.0 - 2023-10-11 =
 * Add - Add a notice on the Settings page to request JCB capability for Japanese customers.
