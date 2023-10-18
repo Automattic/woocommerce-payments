@@ -450,8 +450,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			)
 		);
 
-		$filtered_payment_methods = $this->possibly_filter_available_payment_methods( $available_upe_payment_methods, $enabled_payment_methods );
-
 		// Gather the status of the Stripe Billing migration for use on the settings page.
 		if ( class_exists( 'WC_Subscriptions' ) ) {
 			$stripe_billing_migrated_count = $this->wcpay_gateway->get_subscription_migrated_count();
@@ -469,7 +467,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		return new WP_REST_Response(
 			[
 				'enabled_payment_method_ids'          => $enabled_payment_methods,
-				'available_payment_method_ids'        => $filtered_payment_methods,
+				'available_payment_method_ids'        => $available_upe_payment_methods,
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
@@ -1051,32 +1049,5 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return $avs_check_enabled;
-	}
-
-	/**
-	 * Because we still need to support payments made using Sofort until it is sunsetted at the end of the year,
-	 * this is the most sensible place to prevent it getting shown on the frontend settings for new merchants.
-	 * We will filter it from the array, but only if the user has not enabled it. If it is enabled, we show it with a warning (handled in the JS).
-	 *
-	 * @TODO: Remove this logic and tidy up once Sofort is officially deprecated for all users.
-	 *
-	 * @param array $available_payment_methods The available payment methods.
-	 * @param array $enabled_payment_methods   The enabled payment methods.
-	 *
-	 * @return array The filtered available payment methods.
-	 */
-	private function possibly_filter_available_payment_methods( array $available_payment_methods, array $enabled_payment_methods ): array {
-		if ( ! in_array( 'sofort', array_values( $enabled_payment_methods ), true ) ) {
-			return array_values(
-				array_filter(
-					$available_payment_methods,
-					function ( $payment_method ) {
-						return 'sofort' !== $payment_method;
-					}
-				)
-			);
-		}
-
-		return $available_payment_methods;
 	}
 }
