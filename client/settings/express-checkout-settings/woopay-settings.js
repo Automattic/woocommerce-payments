@@ -183,7 +183,6 @@ const WooPaySettings = ( { section } ) => {
 							storeName={ wcSettings.siteTitle }
 							storeLogo={ woopayStoreLogo }
 						></WooPayPreview>
-						<div className="woopay-settings__preview-fade"></div>
 					</div>
 					<hr
 						style={ {
