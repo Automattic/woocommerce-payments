@@ -115,6 +115,8 @@ class FrontendCurrencies {
 			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
 			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
+			add_action( 'woocommerce_order_get_total', [ $this, 'maybe_init_order_currency_from_order_total_prop' ], 900, 2 );
+			add_action( 'woocommerce_get_formatted_order_total', [ $this, 'maybe_clear_order_currency_after_formatted_order_total' ], 900, 4 );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
@@ -306,6 +308,55 @@ class FrontendCurrencies {
 	}
 
 	/**
+	 * Returns the current value of order_currency.
+	 *
+	 * @return ?string The currency code or null.
+	 */
+	public function get_order_currency() {
+		return $this->order_currency;
+	}
+
+	/**
+	 * Maybe init the order_currency when the order total is queried if we should_use_order_currency.
+	 *
+	 * This works off of filtering during WC_Abstract_Order->get_total, which states it returns a float, however, in the instances of orders with negative
+	 * amounts, such as refund orders, it will return a string.
+	 *
+	 * @param mixed    $total The order total.
+	 * @param WC_Order $order The order being worked on.
+	 *
+	 * @return mixed The unmodified total.
+	 */
+	public function maybe_init_order_currency_from_order_total_prop( $total, $order ) {
+		if ( $this->should_use_order_currency() ) {
+			$this->init_order_currency( $order );
+		}
+
+		return $total;
+	}
+
+	/**
+	 * If the order_currency is set and we should be using the order currency, clear it.
+	 *
+	 * This should only be happening on the instances tested for in should_use_order_currency. We would need to clear the order currency once the total
+	 * filter is run so that if another total comes up, like in the order list, we use the next order's currency.
+	 *
+	 * @param string   $formatted_total  Total to display.
+	 * @param WC_Order $order            Order data.
+	 * @param string   $tax_display      Type of tax display.
+	 * @param bool     $display_refunded If should include refunded value.
+	 *
+	 * @return string The unmodified formatted total.
+	 */
+	public function maybe_clear_order_currency_after_formatted_order_total( $formatted_total, $order, $tax_display, $display_refunded ): string {
+		if ( null !== $this->order_currency && $this->should_use_order_currency() ) {
+			$this->order_currency = null;
+		}
+
+		return $formatted_total;
+	}
+
+	/**
 	 * Gets the currency code for us to use.
 	 *
 	 * @return string|null Three letter currency code.
@@ -339,7 +390,7 @@ class FrontendCurrencies {
 	 */
 	private function should_use_order_currency(): bool {
 		$pages = [ 'my-account', 'checkout' ];
-		$vars  = [ 'order-received', 'order-pay', 'order-received', 'orders' ];
+		$vars  = [ 'order-received', 'order-pay', 'order-received', 'orders', 'view-order' ];
 
 		if ( $this->utils->is_page_with_vars( $pages, $vars ) ) {
 			return $this->utils->is_call_in_backtrace(

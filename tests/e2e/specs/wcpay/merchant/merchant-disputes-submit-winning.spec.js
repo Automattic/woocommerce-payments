@@ -50,15 +50,24 @@ describe.skip( 'Disputes > Submit winning dispute', () => {
 			'p.order_number > a',
 			( anchor ) => anchor.getAttribute( 'href' )
 		);
-		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
-		// Verify we have a dispute for this purchase
-		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Payment disputed as Transaction unauthorized.',
+		// Click the order dispute notice.
+		await expect( page ).toClick( '[type="button"]', {
+			text: 'Respond now',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
 		} );
 
-		// Challenge the dispute
-		await merchantWCP.openChallengeDispute();
+		// Verify we see the dispute details on the transaction details page.
+		await expect( page ).toMatchElement( '.dispute-notice', {
+			text: 'The cardholder claims this is an unauthorized transaction',
+		} );
+
+		// Click the challenge dispute button.
+		await evalAndClick( '[data-testid="challenge-dispute-button"]' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await uiLoaded();
 
 		// Select product type
 		await expect( page ).toSelect(

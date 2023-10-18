@@ -32,14 +32,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ isInfoFlyoutVisible, setIsInfoFlyoutVisible ] = useState( false );
 	const [ hasShownInfoFlyout, setHasShownInfoFlyout ] = useState( false );
 
-	const setInfoFlyoutVisible = useCallback(
-		() => setIsInfoFlyoutVisible( true ),
-		[]
-	);
-	const setInfoFlyoutNotVisible = useCallback(
-		() => setIsInfoFlyoutVisible( false ),
-		[]
-	);
+	const toggleTooltip = () => {
+		setIsInfoFlyoutVisible( ! isInfoFlyoutVisible );
+	};
 	const isRegisteredUser = useWooPayUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
@@ -117,11 +112,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	};
 
 	useEffect( () => {
-		// Record Tracks event when user hovers over the info icon for the first time.
+		// Record Tracks event when user clicks on the info icon for the first time.
 		if ( isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
 			setHasShownInfoFlyout( true );
 			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.WOOPAY_SAVE_MY_INFO_TOOLTIP_HOVER
+				wcpayTracks.events.WOOPAY_SAVE_MY_INFO_TOOLTIP_CLICK
 			);
 		} else if ( ! isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
 			setHasShownInfoFlyout( false );
@@ -242,22 +237,17 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						className="woopay-logo"
 						alt="WooPay"
 					/>
-					<Icon
-						icon={ info }
-						size={ 20 }
-						className={ `info-icon ${
-							isInfoFlyoutVisible ? 'focused' : ''
+					<button
+						className={ `info-button ${
+							isInfoFlyoutVisible ? 'flyout-visible' : ''
 						}` }
-						onMouseOver={ setInfoFlyoutVisible }
-						onMouseOut={ setInfoFlyoutNotVisible }
-					/>
-					<div
-						className="save-details-flyout"
-						onMouseOver={ setInfoFlyoutVisible }
-						onFocus={ setInfoFlyoutVisible }
-						onMouseOut={ setInfoFlyoutNotVisible }
-						onBlur={ setInfoFlyoutNotVisible }
+						type="button"
+						onClick={ toggleTooltip }
+						onBlur={ toggleTooltip }
 					>
+						<Icon icon={ info } size={ 20 } className="info-icon" />
+					</button>
+					<div className="save-details-flyout">
 						<div>
 							<LockIconG size={ 16 } />
 						</div>
