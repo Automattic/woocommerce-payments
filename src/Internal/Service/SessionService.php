@@ -54,7 +54,7 @@ class SessionService {
 	 *
 	 * @return void
 	 */
-	public function set( string $key, $value ):void {
+	public function set( string $key, $value ): void {
 		if ( $this->has_wc_session() ) {
 			$this->get_wc_session()->set( $key, $value );
 		}
@@ -65,7 +65,7 @@ class SessionService {
 	 *
 	 * @return bool Whether the WC_Session has been initialized.
 	 */
-	private function has_wc_session():bool {
+	private function has_wc_session(): bool {
 		return $this->legacy_proxy->call_function( 'WC' )->session instanceof WC_Session;
 	}
 
