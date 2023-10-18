@@ -111,6 +111,16 @@ class WC_Payments_WooPay_Button_Handler {
 			return;
 		}
 
+		// Create WooPay button location option if it doesn't exist and enable all locations by default.
+		if ( ! array_key_exists( 'platform_checkout_button_locations', get_option( 'woocommerce_woocommerce_payments_settings' ) ) ) {
+
+			$all_locations = $this->gateway->form_fields['platform_checkout_button_locations']['options'];
+
+			$this->gateway->update_option( 'platform_checkout_button_locations', array_keys( $all_locations ) );
+
+			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $all_locations );
+		}
+
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_woopay_config' ] );
