@@ -213,5 +213,4 @@ class LoggerTest extends WCPAY_UnitTestCase {
 			->willReturn( 'yes' );
 		$this->assertTrue( $this->sut->can_log() );
 	}
-
 }
