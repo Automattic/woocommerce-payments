@@ -57,7 +57,7 @@ class LoggerTest extends WCPAY_UnitTestCase {
 		$this->mock_wc_logger = $this->createMock( WC_Logger::class );
 		$this->mode           = $this->createMock( Mode::class );
 		$this->mock_gateway   = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$this->sut         = $this->getMockBuilder( Logger::class )
+		$this->sut            = $this->getMockBuilder( Logger::class )
 			->setConstructorArgs(
 				[
 					$this->mock_wc_logger,

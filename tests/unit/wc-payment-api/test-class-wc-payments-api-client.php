@@ -792,7 +792,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
-		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
+		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
 			->setMethods( [ 'log' ] )
 			->getMock();
 		$mock_gateway         = $this->createMock( WC_Payment_Gateway_WCPay::class );
