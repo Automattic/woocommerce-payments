@@ -160,6 +160,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 					'get_return_url',
 					'mark_payment_complete_for_order',
 					'get_level3_data_from_order', // To avoid needing to mock the order items.
+					'get_metadata_from_order',
 				]
 			)
 			->getMock();
@@ -181,6 +182,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 			'wcpay-payment-method' => self::PAYMENT_METHOD_ID,
 			'payment_method'       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 		];
+
+		// Intent metadata is generated elsewhere, use empty arrays here.
+		$this->mock_wcpay_gateway->expects( $this->any() )
+			->method( 'get_metadata_from_order' )
+			->willReturn( [] );
 	}
 
 	public function test_new_card_subscription() {
@@ -239,19 +245,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						$required_keys = [ 'customer_name', 'customer_email', 'site_url', 'order_id', 'order_number', 'order_key', 'payment_type' ];
-						foreach ( $required_keys as $key ) {
-							if ( ! array_key_exists( $key, $metadata ) ) {
-								return false;
-							}
-						}
-						return true;
-					}
-				)
-			);
+			->with( [] );
+
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $this->payment_intent );
@@ -406,19 +401,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						$required_keys = [ 'customer_name', 'customer_email', 'site_url', 'order_id', 'order_number', 'order_key', 'payment_type' ];
-						foreach ( $required_keys as $key ) {
-							if ( ! array_key_exists( $key, $metadata ) ) {
-								return false;
-							}
-						}
-						return true;
-					}
-				)
-			);
+			->with( [] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )

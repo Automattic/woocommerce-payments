@@ -2,13 +2,12 @@
  * External dependencies
  */
 import config from 'config';
-
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
-
 /**
  * Internal dependencies
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
+
+const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 const orderIdSelector = '.woocommerce-order-overview__order.order > strong';
 const orderStatusDropdownSelector = 'select[name="order_status"]';
@@ -47,7 +46,8 @@ describe( 'Order > Status Change', () => {
 			await merchant.logout();
 		} );
 
-		it( 'Show Cancel Confirmation modal, do not change status if Do Nothing selected', async () => {
+		// TODO: unskip when https://github.com/Automattic/woocommerce-payments/issues/7466 is closed
+		it.skip( 'Show Cancel Confirmation modal, do not change status if Do Nothing selected', async () => {
 			// Select cancel from the order status dropdown.
 			await expect( page ).toSelect(
 				orderStatusDropdownSelector,
@@ -148,7 +148,8 @@ describe( 'Order > Status Change', () => {
 			await merchant.logout();
 		} );
 
-		it( 'Show Refund Confirmation modal, do not change status if Cancel clicked', async () => {
+		// TODO: unskip when https://github.com/Automattic/woocommerce-payments/issues/7466 is closed
+		it.skip( 'Show Refund Confirmation modal, do not change status if Cancel clicked', async () => {
 			// Select refunded from the order status dropdown.
 			await expect( page ).toSelect(
 				orderStatusDropdownSelector,

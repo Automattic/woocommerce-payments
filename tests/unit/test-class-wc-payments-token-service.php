@@ -40,6 +40,11 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	private $user_id = 0;
 
 	/**
+	 * @var Database_Cache|MockObject
+	 */
+	protected $mock_cache;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -50,6 +55,10 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
 
 		$this->token_service = new WC_Payments_Token_Service( $this->mock_api_client, $this->mock_customer_service );
 	}
@@ -59,6 +68,8 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function tear_down() {
 		wp_set_current_user( $this->user_id );
+		// Restore the cache service in the main class.
+		WC_Payments::set_database_cache( $this->_cache );
 		parent::tear_down();
 	}
 
@@ -114,8 +125,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 * Test add SEPA token to user with deferred intent creation UPE.
 	 */
 	public function test_add_token_to_user_for_sepa_deferred_intent_creation_upe() {
-		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 		$mock_payment_method = [
 			'id'         => 'pm_mock',
 			'sepa_debit' => [
@@ -139,7 +149,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 * Test add SEPA token to user with deferred intent UPE.
 	 */
 	public function test_add_token_to_user_for_sepa_deferred_upe() {
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 		$mock_payment_method = [
 			'id'         => 'pm_mock',
 			'sepa_debit' => [
@@ -543,7 +553,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens_not_added_from_different_gateway() {
-		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 		$gateway_id      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$tokens          = [];
 		$payment_methods = [ Payment_Method::CARD, Payment_Method::SEPA ];

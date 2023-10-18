@@ -8,7 +8,9 @@ import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
 	isLinkEnabled,
+	isPaymentMethodRestrictedToLocation,
 	isUsingSavedPaymentMethod,
+	togglePaymentMethodForCountry,
 } from '../../utils/upe';
 import {
 	processPayment,
@@ -75,6 +77,13 @@ jQuery( function ( $ ) {
 	}
 
 	$( 'form#add_payment_method' ).on( 'submit', function () {
+		if (
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val() !== 'woocommerce_payments'
+		) {
+			return;
+		}
 		// WC core calls block() when add_payment_method form is submitted, so we need to enable the ignore flag here to avoid
 		// the overlay blink when the form is blocked twice.
 		$.blockUI.defaults.ignoreIfBlocked = true;
@@ -109,8 +118,18 @@ jQuery( function ( $ ) {
 		) {
 			for ( const upeElement of $( '.wcpay-upe-element' ).toArray() ) {
 				await mountStripePaymentElement( api, upeElement );
+				restrictPaymentMethodToLocation( upeElement );
 			}
 			maybeEnableStripeLink( api );
+		}
+	}
+
+	function restrictPaymentMethodToLocation( upeElement ) {
+		if ( isPaymentMethodRestrictedToLocation( upeElement ) ) {
+			togglePaymentMethodForCountry( upeElement );
+			$( '#billing_country' ).on( 'change', function () {
+				togglePaymentMethodForCountry( upeElement );
+			} );
 		}
 	}
 } );

@@ -33,8 +33,12 @@ use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
 use WC_Payments_Token_Service;
 use Exception;
+use WC_Payments;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WC_Payments_Localization_Service;
+use WCPay\Database_Cache;
+use WCPay\Internal\Service\Level3Service;
+use WCPay\Internal\Service\OrderService;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
@@ -182,6 +186,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 		$this->mock_wcpay_account->method( 'get_account_default_currency' )->willReturn( 'USD' );
 
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
+
 		$payment_methods = [
 			'link' => [
 				'base' => 0.1,
@@ -304,6 +313,20 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'wcpay-payment-method' => 'pm_mock',
 			'payment_method'       => UPE_Payment_Gateway::GATEWAY_ID,
 		];
+
+		// Mock the level3 service to always return an empty array.
+		$mock_level3_service = $this->createMock( Level3Service::class );
+		$mock_level3_service->expects( $this->any() )
+			->method( 'get_data_from_order' )
+			->willReturn( [] );
+		wcpay_get_test_container()->replace( Level3Service::class, $mock_level3_service );
+
+		// Mock the order service to always return an empty array for meta.
+		$mock_order_service = $this->createMock( OrderService::class );
+		$mock_order_service->expects( $this->any() )
+			->method( 'get_payment_metadata' )
+			->willReturn( [] );
+		wcpay_get_test_container()->replace( OrderService::class, $mock_order_service );
 	}
 
 	/**
@@ -313,8 +336,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 */
 	public function tear_down() {
 		parent::tear_down();
+		WC_Payments::set_database_cache( $this->_cache );
 		update_option( '_wcpay_feature_upe', '0' );
 		update_option( '_wcpay_feature_upe_split', '0' );
+		wcpay_get_test_container()->reset_all_replacements();
 	}
 
 	public function test_payment_fields_outputs_fields() {
@@ -383,47 +408,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				[
-					'customer_name'        => 'Jeroen Sormani',
-					'customer_email'       => 'admin@example.org',
-					'site_url'             => 'http://example.org',
-					'order_id'             => $order_id,
-					'order_number'         => $order_number,
-					'order_key'            => $order->get_order_key(),
-					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'legacy_upe',
-					'checkout_type'        => '',
-					'client_version'       => WCPAY_VERSION_NUMBER,
-					'subscription_payment' => 'no',
-				]
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_level3' )
-			->with(
-				[
-					'merchant_reference' => (string) $order_id,
-					'customer_reference' => (string) $order_id,
-					'shipping_amount'    => 1000.0,
-					'line_items'         => [
-						(object) [
-							'product_code'        => 30,
-							'product_description' => 'Beanie with Logo',
-							'unit_cost'           => 1800,
-							'quantity'            => 1,
-							'tax_amount'          => 270,
-							'discount_amount'     => 0,
-							'product_code'        => $product_item->get_product_id(),
-							'product_description' => 'Dummy Product',
-							'unit_cost'           => 1000.0,
-							'quantity'            => 4,
-							'tax_amount'          => 0.0,
-							'discount_amount'     => 0.0,
-						],
-					],
-				]
-			);
+			->with( [ 'gateway_type' => 'legacy_upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -485,47 +470,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				[
-					'customer_name'        => 'Jeroen Sormani',
-					'customer_email'       => 'admin@example.org',
-					'site_url'             => 'http://example.org',
-					'order_id'             => $order_id,
-					'order_number'         => $order_number,
-					'order_key'            => $order->get_order_key(),
-					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'legacy_upe',
-					'checkout_type'        => '',
-					'client_version'       => WCPAY_VERSION_NUMBER,
-					'subscription_payment' => 'no',
-				]
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_level3' )
-			->with(
-				[
-					'merchant_reference' => (string) $order_id,
-					'shipping_amount'    => 1000.0,
-					'line_items'         => [
-						(object) [
-							'product_code'        => 30,
-							'product_description' => 'Beanie with Logo',
-							'unit_cost'           => 1800,
-							'quantity'            => 1,
-							'tax_amount'          => 270,
-							'discount_amount'     => 0,
-							'product_code'        => $product_item->get_product_id(),
-							'product_description' => 'Dummy Product',
-							'unit_cost'           => 1000.0,
-							'quantity'            => 4,
-							'tax_amount'          => 0.0,
-							'discount_amount'     => 0.0,
-						],
-					],
-					'customer_reference' => (string) $order_id,
-				]
-			);
+			->with( [ 'gateway_type' => 'legacy_upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -583,47 +528,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				[
-					'customer_name'        => 'Jeroen Sormani',
-					'customer_email'       => 'admin@example.org',
-					'site_url'             => 'http://example.org',
-					'order_id'             => $order_id,
-					'order_number'         => $order_number,
-					'order_key'            => $order->get_order_key(),
-					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'legacy_upe',
-					'checkout_type'        => '',
-					'client_version'       => WCPAY_VERSION_NUMBER,
-					'subscription_payment' => 'no',
-				]
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_level3' )
-			->with(
-				[
-					'merchant_reference' => (string) $order_id,
-					'shipping_amount'    => 1000.0,
-					'line_items'         => [
-						(object) [
-							'product_code'        => 30,
-							'product_description' => 'Beanie with Logo',
-							'unit_cost'           => 1800,
-							'quantity'            => 1,
-							'tax_amount'          => 270,
-							'discount_amount'     => 0,
-							'product_code'        => $product_item->get_product_id(),
-							'product_description' => 'Dummy Product',
-							'unit_cost'           => 1000.0,
-							'quantity'            => 4,
-							'tax_amount'          => 0.0,
-							'discount_amount'     => 0.0,
-						],
-					],
-					'customer_reference' => (string) $order_id,
-				]
-			);
+			->with( [ 'gateway_type' => 'legacy_upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -651,13 +556,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return isset( $metadata['order_number'] );
-					}
-				)
-			);
+			->with( [ 'order_number' => $order->get_order_number() ] );
 
 		$request->expects( $this->once() )
 			->method( 'set_payment_method_types' );
@@ -764,10 +663,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'set_payment_method_types' )
 			->with( [ 'card' ] );
-		$request
-			->expects( $this->once() )
+
+		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'order_number' => $order_id ] );
+			->with( [ 'order_number' => $order->get_order_number() ] );
 		$request
 			->expects( $this->once() )
 			->method( 'set_fingerprint' )
@@ -1949,13 +1848,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return is_array( $metadata );
-					}
-				)
-			);
+			->with( [ 'gateway_type' => 'legacy_upe' ] );
 
 		$request->expects( $this->once() )
 			->method( 'set_level3' )
@@ -1998,7 +1891,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_split_upe() {
-		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 
 		$data = [
 			'methods'  => [
@@ -2029,8 +1922,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_upe_with_deferred_intent_creation() {
-		update_option( '_wcpay_feature_upe_split', '0' );
-		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
+
 		$data = [
 			'methods'  => [
 				'card',

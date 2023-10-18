@@ -82,24 +82,33 @@ class WC_Payments_Account {
 		$this->database_cache           = $database_cache;
 		$this->action_scheduler_service = $action_scheduler_service;
 		$this->session_service          = $session_service;
+	}
 
+	/**
+	 * Initialise class hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		// Add admin init hooks.
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_wcpay_connect' ], 12 ); // Run this after the redirect to onboarding logic.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect' ] );
+		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
+
+		// Add handlers for inbox notes and reminders.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_loan_approved_inbox_note' ] );
 		add_action( self::INSTANT_DEPOSITS_REMINDER_ACTION, [ $this, 'handle_instant_deposits_inbox_reminder' ] );
+
+		// Add all other hooks.
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
-
-		// Add capital offer redirection.
-		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
-
-		// Add server links handler.
-		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
-		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 	}
 
 	/**
@@ -771,7 +780,7 @@ class WC_Payments_Account {
 	 *
 	 * @return bool True if the redirection happened, false otherwise.
 	 */
-	public function maybe_redirect_to_wcpay_connect() {
+	public function maybe_redirect_to_wcpay_connect(): bool {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
@@ -823,6 +832,51 @@ class WC_Payments_Account {
 		);
 
 		$this->redirect_to( $connect_url );
+		return true;
+	}
+
+	/**
+	 * Redirects WooPayments settings to the connect page for partially
+	 * onboarded accounts.
+	 *
+	 * Every WooPayments page except connect are already hidden, but merchants can still access
+	 * it through WooCommerce settings.
+	 *
+	 * @return bool True if the redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_settings_to_connect(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page'    => 'wc-settings',
+			'tab'     => 'checkout',
+			'section' => 'woocommerce_payments',
+		];
+
+		// We're not in the WooPayments settings page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
+
+		// Account not partially onboarded, don't redirect.
+		if ( ! $this->is_account_partially_onboarded() ) {
+			return false;
+		}
+
+		$this->redirect_to(
+			admin_url(
+				add_query_arg(
+					[
+						'page' => 'wc-admin',
+						'path' => '/payments/connect',
+					],
+					'admin.php'
+				)
+			)
+		);
+
 		return true;
 	}
 
@@ -1199,7 +1253,7 @@ class WC_Payments_Account {
 		// Clear persisted onboarding flow state.
 		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
 
-		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
+		$return_url = $this->get_onboarding_return_url( $wcpay_connect_from );
 		if ( ! empty( $additional_args ) ) {
 			$return_url = add_query_arg( $additional_args, $return_url );
 		}
@@ -1839,7 +1893,7 @@ class WC_Payments_Account {
 				'accept_language'  => isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '',
 				'content_language' => empty( get_user_locale() ) ? 'en-US' : str_replace( '_', '-', get_user_locale() ),
 			],
-			'referer'         => isset( $_SERVER['HTTP_REFERER'] ) ? sanitize_url( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
+			'referer'         => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
 		];
 	}
 }

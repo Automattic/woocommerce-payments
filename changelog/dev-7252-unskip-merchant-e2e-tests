@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Restore skipped e2e merchant tests
