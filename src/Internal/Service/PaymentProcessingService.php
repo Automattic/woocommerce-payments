@@ -9,6 +9,7 @@ namespace WCPay\Internal\Service;
 
 use Exception; // Temporary exception! This service would have its own exception when more business logics are added.
 use WCPay\Vendor\League\Container\Exception\ContainerException;
+use WCPay\Internal\Logger;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\StateFactory;
@@ -36,6 +37,13 @@ class PaymentProcessingService {
 	private $legacy_proxy;
 
 	/**
+	 * Logger.
+	 *
+	 * @var Logger
+	 */
+	private $logger;
+
+	/**
 	 * Service constructor.
 	 *
 	 * @param StateFactory $state_factory Factory for payment states.
@@ -43,10 +51,12 @@ class PaymentProcessingService {
 	 */
 	public function __construct(
 		StateFactory $state_factory,
-		LegacyProxy $legacy_proxy
+		LegacyProxy $legacy_proxy,
+		Logger $logger
 	) {
 		$this->state_factory = $state_factory;
 		$this->legacy_proxy  = $legacy_proxy;
+		$this->logger        = $logger;
 	}
 
 	/**
@@ -67,6 +77,8 @@ class PaymentProcessingService {
 		$request         = new PaymentRequest( $this->legacy_proxy );
 		$initial_state   = $this->state_factory->create_state( InitialState::class, $context );
 		$completed_state = $initial_state->process( $request );
+
+		$this->logger->log( $context->log_changes() );
 
 		return $completed_state;
 	}

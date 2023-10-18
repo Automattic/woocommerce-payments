@@ -8,6 +8,7 @@
 namespace WCPay\Internal\Payment;
 
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
+use WCPay\Internal\Payment\Change;
 
 /**
  * A context object, which is shared between payment states.
@@ -26,6 +27,13 @@ class PaymentContext {
 	 * @var array
 	 */
 	private $data = [];
+
+	/**
+	 * Contains the changes to the PaymentContext
+	 *
+	 * @var array
+	 */
+	private $changes = [];
 
 	/**
 	 * Constructs the class, receiving an order ID.
@@ -226,13 +234,29 @@ class PaymentContext {
 	}
 
 	/**
+	 * Returns the changes as a string that can be logged.
+	 *
+	 * @return string
+	 */
+	public function log_changes(): string {
+		$changes_string = array_map(
+			function( $change ) {
+				return (string) $change;
+			},
+			$this->changes
+		);
+		return implode( PHP_EOL, $changes_string );
+	}
+
+	/**
 	 * Stores an internal value.
 	 * Use this method for changes to allow logging in the future.
 	 *
 	 * @param string $key   Property name.
 	 * @param mixed  $value Value to store.
 	 */
-	private function set( string $key, $value ) {
+	private function set( string $key, $value ) : void {
+		$this->changes[]    = new Change( $key, $this->get( $key ), $value );
 		$this->data[ $key ] = $value;
 	}
 

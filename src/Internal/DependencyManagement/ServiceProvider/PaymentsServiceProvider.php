@@ -12,6 +12,7 @@ use WC_Payments_Customer_Service;
 use WCPay\Container;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
+use WCPay\Internal\Logger;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\CompletedState;
@@ -60,7 +61,8 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 
 		$container->addShared( PaymentProcessingService::class )
 			->addArgument( StateFactory::class )
-			->addArgument( LegacyProxy::class );
+			->addArgument( LegacyProxy::class )
+			->addArgument( Logger::class );
 
 		$container->addShared( PaymentRequestService::class );
 
