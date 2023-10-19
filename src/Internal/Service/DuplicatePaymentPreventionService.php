@@ -14,7 +14,7 @@ use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Proxy\ProxyException;
-use WCPay\Logger;
+use WCPay\Internal\Logger;
 
 /**
  * Used for methods, which detect existing payments or payment intents,
@@ -76,12 +76,14 @@ class DuplicatePaymentPreventionService {
 	 *
 	 * @param  OrderService   $order_service   Order service instance.
 	 * @param  SessionService $session_service Session service instance.
+	 * @param  Logger         $logger          Logger instance.
 	 * @param  HooksProxy     $hooks_proxy     Hooks proxy instance.
 	 * @param  LegacyProxy    $legacy_proxy    Legacy proxy instance.
 	 */
-	public function __construct( OrderService $order_service, SessionService $session_service, HooksProxy $hooks_proxy, LegacyProxy $legacy_proxy ) {
+	public function __construct( OrderService $order_service, SessionService $session_service, Logger $logger, HooksProxy $hooks_proxy, LegacyProxy $legacy_proxy ) {
 		$this->order_service   = $order_service;
 		$this->session_service = $session_service;
+		$this->logger          = $logger;
 		$this->hooks_proxy     = $hooks_proxy;
 		$this->legacy_proxy    = $legacy_proxy;
 	}
@@ -121,8 +123,8 @@ class DuplicatePaymentPreventionService {
 			$request->set_hook_args( $this->order_service->_deprecated_get_order( $order_id ) );
 			/** @var WC_Payments_API_Payment_Intention $payment_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$payment_intent = $request->send();
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to fetch attached payment intent: ' . $e ); // TODO - use internal Logger https://github.com/Automattic/woocommerce-payments/pull/7462.
+		} catch ( \Exception $e ) {
+			$this->logger->error( 'Failed to fetch attached payment intent: ' . $e );
 			return null;
 		};
 

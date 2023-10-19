@@ -13,6 +13,7 @@ use WCPay\Container;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
+use WCPay\Internal\Logger;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\InitialState;
@@ -73,6 +74,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( DuplicatePaymentPreventionService::class )
 			->addArgument( OrderService::class )
 			->addArgument( SessionService::class )
+			->addArgument( Logger::class )
 			->addArgument( HooksProxy::class )
 			->addArgument( LegacyProxy::class );
 
