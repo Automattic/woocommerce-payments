@@ -133,7 +133,7 @@ class WC_Payments_Session_Service {
 		$store_id = get_option( self::SESSION_STORE_ID_OPTION, false );
 		if ( ! $store_id ) {
 			$store_id = $this->generate_store_id();
-			add_option( self::SESSION_STORE_ID_OPTION, $store_id );
+			update_option( self::SESSION_STORE_ID_OPTION, $store_id );
 		}
 
 		return $store_id;
