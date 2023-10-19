@@ -74,7 +74,7 @@ class WC_Payments_Session_Service {
 		}
 
 		if ( is_a( WC()->session, 'WC_Session' ) ) {
-			return $this->generate_session_id( $this->get_store_id(), WC()->session->get_customer_id() );
+			return $this->generate_session_id( $this->get_store_id(), (string) WC()->session->get_customer_id() );
 		}
 
 		return null; // We do not have a valid session for the current process.
@@ -117,7 +117,7 @@ class WC_Payments_Session_Service {
 
 		$cookie_customer_id = $cookie[0];
 
-		return $this->generate_session_id( $this->get_store_id(), $cookie_customer_id );
+		return $this->generate_session_id( $this->get_store_id(), (string) $cookie_customer_id );
 	}
 
 	/**
