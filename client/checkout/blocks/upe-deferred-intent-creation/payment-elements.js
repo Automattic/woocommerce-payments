@@ -55,6 +55,7 @@ const PaymentElements = ( { api, ...props } ) => {
 					paymentMethodCreation: 'manual',
 					paymentMethodTypes: paymentMethodTypes,
 					appearance: appearance,
+					loader: 'never',
 				} }
 			>
 				<PaymentProcessor

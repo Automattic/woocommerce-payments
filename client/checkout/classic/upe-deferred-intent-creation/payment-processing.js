@@ -160,6 +160,7 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 		paymentMethodCreation: 'manual',
 		paymentMethodTypes: paymentMethodTypes,
 		appearance: initializeAppearance( api ),
+		loader: 'never',
 	};
 
 	const elements = api
