@@ -278,6 +278,28 @@ class WC_Payments_Session_Service_Test extends WCPAY_UnitTestCase {
 		WC()->session = $tmp_session;
 	}
 
+	public function test_get_store_id_returns_from_option() {
+		$this->assertEquals( self::SESSION_STORE_ID, $this->session_service->get_store_id() );
+	}
+
+	public function test_get_store_id_stores_to_option() {
+		remove_filter( 'pre_option_' . WC_Payments_Session_Service::SESSION_STORE_ID_OPTION, [ $this, 'mock_session_store_id' ] );
+		update_option( WC_Payments_Session_Service::SESSION_STORE_ID_OPTION, false );
+
+		$update_option_run_count = did_filter( 'pre_update_option' );
+
+		$store_id = $this->session_service->get_store_id();
+
+		$this->assertEquals( $update_option_run_count + 1, did_filter( 'pre_update_option' ) );
+
+		// Assert that the option stored value is the same as the returned one.
+		$this->assertEquals( $store_id, get_option( WC_Payments_Session_Service::SESSION_STORE_ID_OPTION ) );
+
+		// Assert that there is no additional call to update_option on further fetches.
+		$this->session_service->get_store_id();
+		$this->assertEquals( $update_option_run_count + 1, did_filter( 'pre_update_option' ) );
+	}
+
 	public function test_link_current_session_to_customer() {
 		$tmp_session  = WC()->session;
 		WC()->session = $this->mock_session_handler;
