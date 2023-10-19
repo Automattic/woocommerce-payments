@@ -46,6 +46,7 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 						width="424"
 						height="38"
 						fill="url(#pattern0)"
+						color="#00000000"
 					/>
 					{ ! storeLogo && (
 						<text
