@@ -1638,7 +1638,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Returns an array containing the names of all the WCPay related notes that have be actioned.
+	 * Returns an array containing the names of all the WCPay related notes that have been actioned.
 	 *
 	 * @return array
 	 */
