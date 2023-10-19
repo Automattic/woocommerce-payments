@@ -285,7 +285,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$response           = $this->upe_split_controller->get_settings();
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
-		// Because Sofort is being deprecated, it should not be returned as an available payment method to the settings controller.
 		$this->assertEquals(
 			[
 				Payment_Method::CARD,
