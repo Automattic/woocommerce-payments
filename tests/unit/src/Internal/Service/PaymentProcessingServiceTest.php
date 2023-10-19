@@ -96,8 +96,6 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 	 * Test the basic happy path of processing a payment.
 	 */
 	public function test_process_payment_happy_path_without_mock_builder() {
-		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy );
-
 		$mock_initial_state   = $this->createMock( InitialState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
@@ -115,7 +113,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->with( $this->isInstanceOf( PaymentRequest::class ) )
 			->willReturn( $mock_completed_state );
 
-		$result = $sut->process_payment( 1 );
+		$result = $this->sut->process_payment( 1 );
 		$this->assertSame( $mock_completed_state, $result );
 	}
 
@@ -154,8 +152,6 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_redirect_url_returns_url_with_encrypted_secret_key( $intent ) {
-		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy );
-
 		$secret = 'encrypted_secret'; // Dummy text to avoid calling crypt function.
 		$nonce  = 'nonce'; // Return of nonce function when called from legacy proxy.
 		$order  = 1; // Order id.
@@ -181,7 +177,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			)
 			->willReturnOnConsecutiveCalls( $secret, $nonce );
 
-		$result = $sut->get_authentication_redirect_url( $intent, $order );
+		$result = $this->sut->get_authentication_redirect_url( $intent, $order );
 		$this->assertSame( "#wcpay-confirm-$prefix:$order:$secret:$nonce", $result );
 	}
 
