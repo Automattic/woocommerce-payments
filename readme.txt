@@ -95,6 +95,8 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 6.6.1 - 2023-10-19 =
+* Fix - Fix Documents page loading on WooCommerce 8.2.0.
+* Fix - Fix PSR container conflicts
 * Fix - Stripe Link eligibility at checkout
 
 
