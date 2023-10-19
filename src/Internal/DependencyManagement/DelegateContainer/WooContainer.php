@@ -8,7 +8,6 @@
 namespace WCPay\Internal\DependencyManagement\DelegateContainer;
 
 use WCPay\Vendor\Psr\Container\ContainerInterface;
-use WCPay\Vendor\Psr\Container\NotFoundExceptionInterface;
 
 /**
  * WooCommerce container delegate.
