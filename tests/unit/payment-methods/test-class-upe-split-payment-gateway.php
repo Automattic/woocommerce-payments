@@ -2348,9 +2348,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_localization_service,
 				]
 			)
-			->setMethods(
+			->onlyMethods(
 				[
-					'get_upe_enabled_payment_method_ids',
 					'get_payment_method_ids_enabled_at_checkout',
 				]
 			)
@@ -2359,44 +2358,24 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$gateway = WC_Payments::get_gateway();
 		WC_Payments::set_gateway( $mock_upe_gateway );
 
-		$mock_upe_gateway->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids' )
-			->will(
-				$this->returnValue( [ Payment_Method::CARD, Payment_Method::LINK ] )
-			);
-		$mock_upe_gateway->expects( $this->any() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
-			->will(
-				$this->returnValue( [ Payment_Method::CARD, Payment_Method::LINK ] )
-			);
-
-		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
-
-		$this->assertSame( [ Payment_Method::CARD, Payment_Method::LINK ], $payment_methods );
-
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::BANCONTACT );
 
 		$this->assertSame( [ Payment_Method::BANCONTACT ], $payment_methods );
 
-		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
-
+		$mock_upe_gateway->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->will(
+				$this->onConsecutiveCalls(
+					[ Payment_Method::CARD, Payment_Method::LINK ],
+					[ Payment_Method::CARD, Payment_Method::BANCONTACT ],
+					[ Payment_Method::CARD ]
+				)
+			);
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
 
 		$this->assertSame( [ Payment_Method::CARD, Payment_Method::LINK ], $payment_methods );
 
 		update_option( '_wcpay_feature_upe_split', '0' );
 		update_option( '_wcpay_feature_upe_deferred_intent', '0' );
-
-		$mock_upe_gateway->expects( $this->any() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
-			->will(
-				$this->returnValueMap(
-					[
-						[ null, true, [ Payment_Method::CARD, Payment_Method::BANCONTACT ] ],
-						[ $order->get_id(), true, [ Payment_Method::CARD ] ],
-					]
-				)
-			);
 
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
 
