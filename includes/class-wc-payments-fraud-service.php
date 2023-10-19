@@ -129,63 +129,6 @@ class WC_Payments_Fraud_Service {
 	}
 
 	/**
-	 * Gets and caches the public fraud services config.
-	 *
-	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
-	 *
-	 * @return array|null Fraud services config or null if failed to retrieve fraud services config.
-	 */
-	public function get_cached_fraud_services( bool $force_refresh = false ): ?array {
-		return $this->database_cache->get_or_add(
-			Database_Cache::FRAUD_SERVICES_KEY,
-			function () {
-				$fraud_services = $this->fetch_public_fraud_services_config();
-
-				if ( ! $this->is_valid_cached_fraud_services( $fraud_services ) ) {
-					return false;
-				}
-
-				// Sanitize the config just ot be safe by applying a sweeping `sanitize_text_field` on all the data.
-				// This is OK to do since we are not accepting data entries with HTML.
-				return WC_Payments_Utils::array_map_recursive(
-					$fraud_services,
-					function( $value ) {
-						// Only apply `sanitize_text_field()` to string values since this function will cast to string.
-						if ( is_string( $value ) ) {
-							return sanitize_text_field( $value );
-						}
-
-						return $value;
-					}
-				);
-			},
-			[ $this, 'is_valid_cached_fraud_services' ],
-			$force_refresh
-		);
-	}
-
-	/**
-	 * Checks if the cached fraud services config can be used in the current plugin state.
-	 *
-	 * @param bool|string|array $fraud_services_config The cached config.
-	 *
-	 * @return bool True if the cached fraud services config is valid.
-	 */
-	public function is_valid_cached_fraud_services( $fraud_services_config ): bool {
-		// null/false means no config has been cached.
-		if ( null === $fraud_services_config || false === $fraud_services_config ) {
-			return false;
-		}
-
-		// Non-array values are not expected.
-		if ( ! is_array( $fraud_services_config ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
 	 * Check if the current user has just logged in,
 	 * and sends that information to the server to link the current browser session with the user.
 	 *
@@ -271,6 +214,60 @@ class WC_Payments_Fraud_Service {
 			}
 		</script>
 		<?php
+	}
+
+	/**
+	 * Checks if the cached fraud services config can be used.
+	 *
+	 * @param bool|string|array $fraud_services_config The cached config.
+	 *
+	 * @return bool True if the cached fraud services config is valid.
+	 */
+	public function is_valid_cached_fraud_services( $fraud_services_config ): bool {
+		// null/false means no config has been cached.
+		if ( null === $fraud_services_config || false === $fraud_services_config ) {
+			return false;
+		}
+
+		// Non-array values are not expected.
+		if ( ! is_array( $fraud_services_config ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Gets and caches the public fraud services config.
+	 *
+	 * @return array|null Fraud services config or null if failed to retrieve fraud services config.
+	 */
+	private function get_cached_fraud_services(): ?array {
+		return $this->database_cache->get_or_add(
+			Database_Cache::FRAUD_SERVICES_KEY,
+			function () {
+				$fraud_services = $this->fetch_public_fraud_services_config();
+
+				if ( ! $this->is_valid_cached_fraud_services( $fraud_services ) ) {
+					return false;
+				}
+
+				// Sanitize the config just ot be safe by applying a sweeping `sanitize_text_field` on all the data.
+				// This is OK to do since we are not accepting data entries with HTML.
+				return WC_Payments_Utils::array_map_recursive(
+					$fraud_services,
+					function( $value ) {
+						// Only apply `sanitize_text_field()` to string values since this function will cast to string.
+						if ( is_string( $value ) ) {
+							return sanitize_text_field( $value );
+						}
+
+						return $value;
+					}
+				);
+			},
+			[ $this, 'is_valid_cached_fraud_services' ]
+		);
 	}
 
 	/**
