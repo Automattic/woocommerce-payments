@@ -7,6 +7,9 @@
 
 namespace WCPay\Tests\Internal\Service;
 
+use WC_Helper_Intention;
+use WCPay\Constants\Intent_Status;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
@@ -49,9 +52,16 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 	/**
 	 * Dependencies for the service under test.
 	 *
-	 * @var array
+	 * @var MockObject[]
 	 */
 	private $deps;
+
+	/**
+	 * ID of the order being processed in the gateway.
+	 *
+	 * @var int
+	 */
+	private $processing_order_id = 123;
 
 	/**
 	 * Set up the test.
@@ -80,6 +90,125 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 			->with( 'template_redirect', [ $this->sut, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
 
 		$this->sut->init_hooks();
+	}
+
+	public function provider_get_authorized_payment_intent_attached_to_order_with_invalid_intent_id_returns_null(): array {
+		return [
+			'No intent_id is attached'   => [ null ],
+			'A setup intent is attached' => [ 'seti_possible_for_a_subscription_id' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_get_authorized_payment_intent_attached_to_order_with_invalid_intent_id_returns_null
+	 *
+	 * @param ?string $invalid_intent_id An invalid payment intent ID. If no intent id is set, this can be null.
+	 */
+	public function test_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_returns_null( ?string $invalid_intent_id ) {
+		// Arrange intent ID.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id' )
+			->with( $this->processing_order_id )
+			->willReturn( $invalid_intent_id );
+
+		// Assert: get_intent is not called.
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		// Act: process the order.
+		$result = $this->sut->get_authorized_payment_intent_attached_to_order( $this->processing_order_id );
+
+		// Assert.
+		$this->assertNull( $result );
+	}
+
+	public function provider_get_authorized_payment_intent_attached_to_order_with_invalid_data_returns_null(): array {
+		return [
+			'Attached PaymentIntent - non-success status - same order_id' => [ 'pi_attached_intent_id', Intent_Status::REQUIRES_ACTION, true ],
+			'Attached PaymentIntent - non-success status - different order_id' => [ 'pi_attached_intent_id', Intent_Status::REQUIRES_PAYMENT_METHOD, false ],
+			'Attached PaymentIntent - success status - different order_id' => [ 'pi_attached_intent_id', Intent_Status::SUCCEEDED, false ],
+		];
+	}
+
+	/**
+	 * The attached PaymentIntent has invalid info (status or order_id) with the order, so returns null.
+	 *
+	 * @dataProvider provider_get_authorized_payment_intent_attached_to_order_with_invalid_data_returns_null
+	 *
+	 * @param  string  $attached_intent_id Attached intent ID to the order.
+	 * @param  string  $attached_intent_status Attached intent status.
+	 * @param  bool  $same_order_id True when the intent meta order_id is exactly the current processing order_id. False otherwise.
+	 */
+	public function test_get_authorized_payment_intent_attached_to_order_with_invalid_data_returns_null(
+		string $attached_intent_id,
+		string $attached_intent_status,
+		bool $same_order_id
+	) {
+		// Arrange intent ID.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id' )
+			->with( $this->processing_order_id )
+			->willReturn( $attached_intent_id );
+
+		// Arrange mock get_intent.
+		$meta_order_id   = $same_order_id ? $this->processing_order_id : $this->processing_order_id - 1;
+		$attached_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => $attached_intent_id,
+				'status'   => $attached_intent_status,
+				'metadata' => [ 'order_id' => $meta_order_id ],
+			]
+		);
+		$this->mock_wcpay_request( Get_Intention::class, 1, $attached_intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $attached_intent );
+
+		// Act then assert.
+		$result = $this->sut->get_authorized_payment_intent_attached_to_order( $this->processing_order_id );
+		$this->assertNull( $result );
+	}
+
+	public function provider_get_authorized_payment_intent_attached_to_order_returns_intent_object(): array {
+		$ret = [];
+		foreach ( Intent_Status::AUTHORIZED_STATUSES as $status ) {
+			$ret[ 'Intent status ' . $status ] = [ $status ];
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * @dataProvider provider_get_authorized_payment_intent_attached_to_order_returns_intent_object
+	 */
+	public function test_get_authorized_payment_intent_attached_to_order_returns_intent_object( string $intent_authorized_status ) {
+		$attached_intent_id = 'pi_attached_intent_id';
+
+		// Arrange intent ID.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id' )
+			->with( $this->processing_order_id )
+			->willReturn( $attached_intent_id );
+
+		// Arrange mock get_intention.
+		$attached_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => $attached_intent_id,
+				'status'   => $intent_authorized_status,
+				'metadata' => [ 'order_id' => $this->processing_order_id ],
+			]
+		);
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $attached_intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $attached_intent );
+
+		// Act then assert.
+		$result = $this->sut->get_authorized_payment_intent_attached_to_order( $this->processing_order_id );
+		$this->assertSame( $attached_intent, $result );
 	}
 
 	public function test_clean_up_when_detecting_duplicate_order() {
