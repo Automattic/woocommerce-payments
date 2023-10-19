@@ -155,7 +155,7 @@ class DuplicatePaymentPreventionService {
 			return null;
 		}
 
-		if ( $current_order_id !== $session_order_id ) {
+		if ( $current_order_id === $session_order_id ) {
 			return null;
 		}
 
