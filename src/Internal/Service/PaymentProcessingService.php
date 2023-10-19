@@ -48,6 +48,7 @@ class PaymentProcessingService {
 	 *
 	 * @param StateFactory $state_factory Factory for payment states.
 	 * @param LegacyProxy  $legacy_proxy  Legacy proxy.
+	 * @param Logger       $logger  Logger.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
