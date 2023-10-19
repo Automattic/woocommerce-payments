@@ -7,7 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Core\Server\Request\Get_Fraud_Services;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
@@ -81,7 +80,7 @@ class WC_Payments_Fraud_Service {
 	 */
 	public function init_hooks() {
 		add_action( 'init', [ $this, 'link_session_if_user_just_logged_in' ] );
-		add_action( 'admin_print_footer_scripts', [ $this, 'add_sift_js_tracker' ] );
+		add_action( 'admin_print_footer_scripts', [ $this, 'add_sift_js_tracker_in_admin' ] );
 	}
 
 	/**
@@ -93,20 +92,20 @@ class WC_Payments_Fraud_Service {
 	public function get_fraud_services_config(): array {
 		$raw_config = null;
 
-		// First, try to get the config from the account data (preserve backwards-compatibility).
+		// First, try to get the config from the account data.
+		// This config takes precedence since it can be merchant-specific.
+		// We expect this entry to contain everything needed for the fraud services to work.
 		$account = $this->account->get_cached_account_data();
 		if ( ! empty( $account ) && isset( $account['fraud_services'] ) ) {
 			$raw_config = $account['fraud_services'];
 		}
 
 		// If the fraud services config is not available in the account data, try to get it from the server.
+		// This is a public, merchant-agnostic config.
+		// We expect the server to provide everything needed for the fraud services to work.
 		// If we've been given an empty array, we respect that; so no empty checks.
 		if ( is_null( $raw_config ) ) {
 			$raw_config = $this->get_cached_fraud_services();
-			// Set to null if we've failed to fetch.
-			if ( false === $raw_config ) {
-				$raw_config = null;
-			}
 		}
 
 		if ( is_null( $raw_config ) ) {
@@ -134,23 +133,13 @@ class WC_Payments_Fraud_Service {
 	 *
 	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
 	 *
-	 * @return array|bool Fraud services config or false if failed to retrieve fraud services config.
+	 * @return array|null Fraud services config or null if failed to retrieve fraud services config.
 	 */
-	public function get_cached_fraud_services( bool $force_refresh = false ) {
-		$refreshed = false;
-
-		$fraud_services = $this->database_cache->get_or_add(
+	public function get_cached_fraud_services( bool $force_refresh = false ): ?array {
+		return $this->database_cache->get_or_add(
 			Database_Cache::FRAUD_SERVICES_KEY,
 			function () {
-				try {
-					$request        = Get_Fraud_Services::create();
-					$response       = $request->send();
-					$fraud_services = $response->to_array();
-
-				} catch ( API_Exception $e ) {
-					// Return false to signal retrieval error.
-					return false;
-				}
+				$fraud_services = $this->fetch_public_fraud_services_config();
 
 				if ( ! $this->is_valid_cached_fraud_services( $fraud_services ) ) {
 					return false;
@@ -159,15 +148,8 @@ class WC_Payments_Fraud_Service {
 				return $fraud_services;
 			},
 			[ $this, 'is_valid_cached_fraud_services' ],
-			$force_refresh,
-			$refreshed
+			$force_refresh
 		);
-
-		if ( is_null( $fraud_services ) ) {
-			return false;
-		}
-
-		return $fraud_services;
 	}
 
 	/**
@@ -189,6 +171,94 @@ class WC_Payments_Fraud_Service {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if the current user has just logged in,
+	 * and sends that information to the server to link the current browser session with the user.
+	 *
+	 * Called after the WooCommerce session has been initialized.
+	 *
+	 * @return void
+	 *
+	 * @throws Exception In case the main gateway class has not been initialized yet.
+	 *                   This means that the method is called before the `init` hook.
+	 */
+	public function link_session_if_user_just_logged_in() {
+		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
+		if ( ! $wpcom_blog_id ) {
+			// Don't do anything if Jetpack hasn't been connected yet.
+			return;
+		}
+
+		if ( ! $this->session_service->user_just_logged_in() ) {
+			return;
+		}
+
+		$fraud_config = $this->get_fraud_services_config();
+		if ( ! isset( $fraud_config['sift'] ) ) {
+			// If Sift isn't enabled, we don't need to link the session.
+			return;
+		}
+
+		// The session changed during the current page load, for example if the user just logged in.
+		// In this case, send the old session's customer ID alongside the new user_id so SIFT can link them.
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
+		if ( ! isset( $customer_id ) ) {
+			return;
+		}
+
+		try {
+			$this->session_service->link_current_session_to_customer( $customer_id );
+		} catch ( API_Exception $e ) {
+			Logger::log( '[Tracking] Error when linking session with user: ' . $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Adds the Sift JS page tracker in the WP admin area, if needed.
+	 *
+	 * @return  void
+	 *
+	 * @throws Exception In case the main gateway class has not been initialized yet.
+	 *                    This means that the method is called before the `init` hook.
+	 */
+	public function add_sift_js_tracker_in_admin() {
+		// If the current page is a WooPayments dashboard page bail as there's separate logic
+		// that will include the Sift JS tracker on its own.
+		if ( isset( $_GET['path'] ) && strpos( $_GET['path'], '/payments/' ) === 0 ) { // phpcs:ignore WordPress.Security
+			return;
+		}
+
+		// Bail if this is not a WooCommerce admin page.
+		if ( is_callable( '\Automattic\WooCommerce\Admin\PageController::is_admin_or_embed_page' )
+			&& ! \Automattic\WooCommerce\Admin\PageController::is_admin_or_embed_page() ) {
+			return;
+		}
+
+		// Bail if Sift is not enabled (either globally or for the current account).
+		$fraud_services_config = $this->get_fraud_services_config();
+		if ( ! isset( $fraud_services_config['sift'] ) ) {
+			return;
+		}
+		?>
+		<script type="text/javascript">
+			var src = 'https://cdn.sift.com/s.js';
+
+			var _sift = ( window._sift = window._sift || [] );
+			_sift.push( [ '_setAccount', '<?php echo esc_attr( $fraud_services_config['sift']['beacon_key'] ); ?>' ] );
+			_sift.push( [ '_setUserId', '<?php echo esc_attr( $fraud_services_config['sift']['user_id'] ); ?>' ] );
+			_sift.push( [ '_setSessionId', '<?php echo esc_attr( $fraud_services_config['sift']['session_id'] ); ?>' ] );
+			_sift.push( [ '_trackPageview' ] );
+
+			if ( ! document.querySelector( '[src="' + src + '"]' ) ) {
+				var script = document.createElement( 'script' );
+				script.src = src;
+				script.async = true;
+				document.body.appendChild( script );
+			}
+		</script>
+		<?php
 	}
 
 	/**
@@ -261,89 +331,35 @@ class WC_Payments_Fraud_Service {
 	}
 
 	/**
-	 * Check if the current user has just logged in,
-	 * and sends that information to the server to link the current browser session with the user.
+	 * Fetches public fraud services config from the server.
 	 *
-	 * Called after the WooCommerce session has been initialized.
-	 *
-	 * @return void
-	 *
-	 * @throws Exception In case the main gateway class has not been initialized yet.
-	 *                   This means that the method is called before the `init` hook.
+	 * @return array|null Fraud services config or null.
 	 */
-	public function link_session_if_user_just_logged_in() {
-		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
-		if ( ! $wpcom_blog_id ) {
-			// Don't do anything if Jetpack hasn't been connected yet.
-			return;
+	private function fetch_public_fraud_services_config(): ?array {
+		// Build the endpoint URL.
+		$url = WC_Payments_API_Client::ENDPOINT_BASE . '/' . WC_Payments_API_Client::ENDPOINT_REST_BASE . '/' . WC_Payments_API_Client::FRAUD_SERVICES_API;
+
+		$response = wp_remote_get(
+			$url,
+			[
+				'user-agent' => 'WCPay/' . WCPAY_VERSION_NUMBER . '; ' . get_bloginfo( 'url' ),
+			]
+		);
+
+		// Return early if there is an error.
+		if ( is_wp_error( $response ) ) {
+			return null;
 		}
 
-		if ( ! $this->session_service->user_just_logged_in() ) {
-			return;
-		}
-
-		$fraud_config = $this->get_fraud_services_config();
-		if ( ! isset( $fraud_config['sift'] ) ) {
-			// If Sift isn't enabled, we don't need to link the session.
-			return;
-		}
-
-		// The session changed during the current page load, for example if the user just logged in.
-		// In this case, send the old session's customer ID alongside the new user_id so SIFT can link them.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
-		if ( ! isset( $customer_id ) ) {
-			return;
-		}
-
-		try {
-			$this->session_service->link_current_session_to_customer( $customer_id );
-		} catch ( API_Exception $e ) {
-			Logger::log( '[Tracking] Error when linking session with user: ' . $e->getMessage() );
-		}
-	}
-
-	/**
-	 * Adds the Sift JS page tracker if needed. See the comments for the detailed logic.
-	 *
-	 * @return  void
-	 *
-	 * @throws Exception In case the main gateway class has not been initialized yet.
-	 *                    This means that the method is called before the `init` hook.
-	 */
-	public function add_sift_js_tracker() {
-		if ( ! isset( $_GET['wcpay-connection-success'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			// Only enqueue the tracker if the merchant has just finished the Stripe KYC.
-			return;
-		}
-
-		$fraud_config = $this->get_fraud_services_config();
-		if ( ! isset( $fraud_config['sift'] ) ) {
-			// Abort if Sift is not enabled for this account.
-			return;
-		}
-
-		if ( isset( $_GET['path'] ) && strpos( $_GET['path'], '/payments/' ) === 0 ) { // phpcs:ignore WordPress.Security
-			// If the current page is a WCPay dashboard, there's separate logic that will include the Sift JS tracker on its own.
-			return;
-		}
-
-		?>
-		<script type="text/javascript">
-			var src = 'https://cdn.sift.com/s.js';
-
-			var _sift = ( window._sift = window._sift || [] );
-			_sift.push( [ '_setAccount', '<?php echo esc_attr( $fraud_config['sift']['beacon_key'] ); ?>' ] );
-			_sift.push( [ '_setUserId', '<?php echo esc_attr( $fraud_config['sift']['user_id'] ); ?>' ] );
-			_sift.push( [ '_setSessionId', '<?php echo esc_attr( $fraud_config['sift']['session_id'] ); ?>' ] );
-			_sift.push( [ '_trackPageview' ] );
-
-			if ( ! document.querySelector( '[src="' + src + '"]' ) ) {
-				var script = document.createElement( 'script' );
-				script.src = src;
-				script.async = true;
-				document.body.appendChild( script );
+		$config = null;
+		if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
+			// Decode the results, falling back to an empty array.
+			$config = json_decode( wp_remote_retrieve_body( $response ), true );
+			if ( empty( $config ) || ! is_array( $config ) ) {
+				$config = null;
 			}
-		</script>
-		<?php
+		}
+
+		return $config;
 	}
 }
