@@ -246,6 +246,107 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $attached_intent, $result );
 	}
 
+	public function provider_get_previous_paid_duplicate_order_id() {
+		// phpcs:disable
+		return [
+			'Expected null due to session ID not existed'   => [
+				null, 'Any session cart Hash', 888, true, // Session Order Data.
+				111, 'Any current cart Hash', 888, true,  // Current Order Data.
+				null,                                     // Expected value.
+			],
+			'Expected null due to same order_id'   => [
+				111, 'Any session cart Hash', 888, true,
+				111, 'Any current cart Hash', 888, true,
+				null,
+			],
+			'Expected null due to different cart hash'   => [
+				111, 'Any session cart Hash', 888, true,
+				222, 'Any current cart Hash', 888, true,
+				null,
+			],
+			'Expected null due to different customer ID'   => [
+				111, 'SAME_CART_HASH',  888, true,
+				222, 'SAME_CART_HASH',  999, true,
+				null,
+			],
+			'Expected null due to current order is NOT pending'   => [
+				111, 'SAME_CART_HASH', 999, true,
+				222, 'SAME_CART_HASH', 999, false,
+				null,
+			],
+			'Expected null due to session order is NOT paid'   => [
+				111, 'SAME_CART_HASH', 999, false,
+				222, 'SAME_CART_HASH', 999, true,
+				null,
+			],
+			'Expected session_order_id due to all conditions are matched'   => [
+				111, 'SAME_CART_HASH', 999, true,
+				222, 'SAME_CART_HASH', 999, true,
+				111
+			],
+		];
+		// phpcs:enable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+	}
+
+	/**
+	 * Note: Separate variable groups in the function signature to match with the provider data, for ease of understanding how they are grouped.
+	 *
+	 * @dataProvider provider_get_previous_paid_duplicate_order_id
+	 */
+	public function test_get_previous_paid_duplicate_order_id(
+		?int $session_order_id,
+		string $session_order_cart_hash,
+		int $session_order_customer_id,
+		bool $is_session_order_paid,
+
+		int $current_order_id,
+		string $current_order_cart_hash,
+		int $current_order_customer_id,
+		bool $is_current_order_pending,
+
+		?int $expected
+	) {
+		$this->sut = $this->getMockBuilder( DuplicatePaymentPreventionService::class )
+			->setConstructorArgs( $this->deps )
+			->onlyMethods( [ 'get_session_processing_order' ] )
+			->getMock();
+
+		// Arrange.
+		$this->sut->expects( $this->once() )
+			->method( 'get_session_processing_order' )
+			->willReturn( $session_order_id );
+
+		$this->mock_order_service
+			->expects( $this->any() )
+			->method( 'get_cart_hash' )
+			->withConsecutive( [ $current_order_id ], [ $session_order_id ] )
+			->willReturnOnConsecutiveCalls( $current_order_cart_hash, $session_order_cart_hash );
+
+		$this->mock_order_service
+			->expects( $this->any() )
+			->method( 'get_customer_id' )
+			->withConsecutive( [ $current_order_id ], [ $session_order_id ] )
+			->willReturnOnConsecutiveCalls( $current_order_customer_id, $session_order_customer_id );
+
+		$this->mock_order_service
+			->expects( $this->any() )
+			->method( 'is_pending' )
+			->with( $current_order_id )
+			->willReturn( $is_current_order_pending );
+
+		$this->mock_order_service
+			->expects( $this->any() )
+			->method( 'is_paid' )
+			->with( $session_order_id )
+			->willReturn( $is_session_order_paid );
+
+		// Act.
+		$result = $this->sut->get_previous_paid_duplicate_order_id( $current_order_id );
+
+		// Assert.
+		$this->assertSame( $expected, $result );
+	}
+
 	public function test_clean_up_when_detecting_duplicate_order() {
 		$duplicate_order_id = 111;
 		$current_order_id   = 222;
