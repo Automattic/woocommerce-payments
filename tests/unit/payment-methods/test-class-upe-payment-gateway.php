@@ -286,6 +286,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(
@@ -1977,6 +1978,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(
@@ -2027,6 +2029,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(

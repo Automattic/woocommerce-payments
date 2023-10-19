@@ -298,6 +298,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						$this->order_service,
 						$this->mock_dpps,
 						$this->mock_localization_service,
+						$this->mock_fraud_service,
 					]
 				)
 				->setMethods(
@@ -1758,6 +1759,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						$this->order_service,
 						$this->mock_dpps,
 						$this->mock_localization_service,
+						$this->mock_fraud_service,
 					]
 				)
 				->setMethods(
@@ -1811,6 +1813,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(
@@ -1877,6 +1880,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(
@@ -1943,6 +1947,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(
@@ -2009,6 +2014,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(
@@ -2066,6 +2072,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(
@@ -2178,6 +2185,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods( [ 'wc_payments_get_payment_method_map' ] )
@@ -2228,6 +2236,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods( [ 'get_payment_methods_from_gateway_id' ] )
@@ -2272,6 +2281,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods( [ 'get_payment_methods_from_gateway_id' ] )
@@ -2315,6 +2325,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(
@@ -2368,6 +2379,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(
@@ -2422,6 +2434,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods(
