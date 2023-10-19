@@ -7,7 +7,7 @@ namespace WCPay\Vendor\League\Container;
 use WCPay\Vendor\League\Container\Definition\DefinitionInterface;
 use WCPay\Vendor\League\Container\Inflector\InflectorInterface;
 use WCPay\Vendor\League\Container\ServiceProvider\ServiceProviderInterface;
-use WCPay\Vendor\Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 
 interface DefinitionContainerInterface extends ContainerInterface
 {

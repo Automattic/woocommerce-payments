@@ -4,8 +4,7 @@
     "minimum-stability": "dev",
     "require-dev": {
         "league/container": "4.2",
-        "coenjacobs/mozart": "0.7.1",
-        "psr/container": "^1.1"
+        "coenjacobs/mozart": "0.7.1"
     },
     "license": "GPL-3.0-or-later",
     "scripts": {
@@ -21,7 +20,9 @@
             "dep_namespace": "WCPay\\Vendor\\",
             "dep_directory": "/packages/",
             "packages": [
-                "league/container",
+                "league/container"
+            ],
+            "excluded_packages":[
                 "psr/container"
             ],
             "classmap_directory": "/classmaps/",
