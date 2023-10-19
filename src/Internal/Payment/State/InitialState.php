@@ -108,20 +108,14 @@ class InitialState extends AbstractPaymentState {
 		// Populate further details from the order.
 		$this->populate_context_from_order();
 
-		$duplicate_order_id = $this->dpps->get_previous_paid_duplicate_order_id( $order_id );
-		if ( ! is_null( $duplicate_order_id ) ) {
-			$this->dpps->clean_up_when_detecting_duplicate_order( $duplicate_order_id, $order_id );
-			$context->set_duplicate_order_id( $duplicate_order_id );
-			return $this->create_state( DuplicateOrderDetectedState::class );
+		$duplicate_order_result = $this->process_duplicate_order();
+		if ( null !== $duplicate_order_result ) {
+			return $duplicate_order_result;
 		}
-		$this->dpps->update_session_processing_order( $order_id );
 
-		$authorized_intent = $this->dpps->get_authorized_payment_intent_attached_to_order( $order_id );
-		if ( null !== $authorized_intent ) {
-			$this->dpps->remove_session_processing_order( $order_id );
-			$context->set_intent( $authorized_intent );
-			$context->set_detected_authorized_intent();
-			return $this->create_state( CompletedState::class ); // TODO. This will be updated to a new post-processing state.
+		$duplicate_payment_result = $this->process_duplicate_payment();
+		if ( null !== $duplicate_payment_result ) {
+			return $duplicate_payment_result;
 		}
 
 		// Payments are currently based on intents, request one from the API.
@@ -191,5 +185,54 @@ class InitialState extends AbstractPaymentState {
 			$this->order_service->_deprecated_get_order( $order_id )
 		);
 		$context->set_customer_id( $customer_id );
+	}
+
+	/**
+	 * Detects duplicate orders, and run the necessary actions if one is detected.
+	 *
+	 * @return AbstractPaymentState|null The next state, or null if no duplicate order is detected.
+	 * @throws Order_Not_Found_Exception
+	 * @throws StateTransitionException
+	 */
+	private function process_duplicate_order(): ?AbstractPaymentState {
+		$context          = $this->get_context();
+		$current_order_id = $context->get_order_id();
+
+		$this->dpps->update_session_processing_order( $current_order_id );
+
+		$duplicate_order_id = $this->dpps->get_previous_paid_duplicate_order_id( $current_order_id );
+		if ( null === $duplicate_order_id ) {
+			$this->dpps->update_session_processing_order( $current_order_id );
+			return null;
+		}
+
+		$this->dpps->clean_up_when_detecting_duplicate_order( $duplicate_order_id, $current_order_id );
+		$context->set_duplicate_order_id( $duplicate_order_id );
+		return $this->create_state( DuplicateOrderDetectedState::class );
+	}
+
+	/**
+	 * Detects duplicate payment, and run the necessary actions if one is detected.
+	 *
+	 * @return AbstractPaymentState|null The next state, or null if duplicate payment is detected.
+	 * @throws Order_Not_Found_Exception
+	 * @throws StateTransitionException
+	 */
+	private function process_duplicate_payment(): ?AbstractPaymentState {
+		$context  = $this->get_context();
+		$order_id = $context->get_order_id();
+
+		$authorized_intent = $this->dpps->get_authorized_payment_intent_attached_to_order( $order_id );
+		if ( null === $authorized_intent ) {
+			return null;
+		}
+
+		$this->dpps->remove_session_processing_order( $order_id );
+		$context->set_intent( $authorized_intent );
+		$context->set_detected_authorized_intent();
+
+		// @todo. This will be updated to a new post-processing state,
+		// AND then trigger the process-like method.
+		return $this->create_state( CompletedState::class );
 	}
 }
