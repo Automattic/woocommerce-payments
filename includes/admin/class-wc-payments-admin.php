@@ -542,7 +542,7 @@ class WC_Payments_Admin {
 	public function register_payments_scripts() {
 		// TODO: Add check to see if user can manage_woocommerce and exit early if they cannot.
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index', [ 'wp-api-request' ] );
 
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
 
