@@ -16,7 +16,7 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Session_Service {
 
-	const STORE_SESSION_ID_OPTION = 'woopayments_store_session_id';
+	const SESSION_STORE_ID_OPTION = 'woopayments_session_store_id';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -130,10 +130,10 @@ class WC_Payments_Session_Service {
 	 */
 	public function get_store_id(): string {
 		// We will use a stored random store ID.
-		$store_id = get_option( self::STORE_SESSION_ID_OPTION, false );
+		$store_id = get_option( self::SESSION_STORE_ID_OPTION, false );
 		if ( ! $store_id ) {
 			$store_id = $this->generate_store_id();
-			add_option( self::STORE_SESSION_ID_OPTION, $store_id );
+			add_option( self::SESSION_STORE_ID_OPTION, $store_id );
 		}
 
 		return $store_id;
@@ -142,17 +142,33 @@ class WC_Payments_Session_Service {
 	/**
 	 * Generate a random store ID.
 	 *
+	 * The generated ID is case-sensitive and contains 32 characters.
+	 *
 	 * @return string The generated store ID.
 	 */
 	private function generate_store_id(): string {
-		// Note that base64-encoding an 18 character string generates a 24-character store id.
-		$binary = '';
-		for ( $i = 0; $i < 18; ++$i ) {
-			$binary .= chr( wp_rand( 0, 255 ) );
+		// Prefix it with 'st_' (from store) to make it easier to identify.
+		$prefix = 'st_';
+
+		// We will generate 32 characters in total, including the prefix length.
+		$length = 32 - strlen( $prefix );
+
+		// We will use alphanumerical characters.
+		$include_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		// Add some special characters, not all. Play it safe.
+		// See the Sift restrictions for $user_id.
+		// @link https://sift.com/developers/docs/curl/events-api/fields.
+		$include_chars .= '-$:.^!';
+		// Finally, shuffle them for extra randomness.
+		$include_chars = str_shuffle( $include_chars );
+
+		$char_length   = strlen( $include_chars );
+		$random_string = '';
+		for ( $i = 0; $i < $length; $i ++ ) {
+			$random_string .= $include_chars [ wp_rand( 0, $char_length - 1 ) ];
 		}
 
-		// Prefix it with 'st_' (from store) to make it easier to identify.
-		return 'st_' . base64_encode( $binary ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		return $prefix . $random_string;
 	}
 
 	/**
