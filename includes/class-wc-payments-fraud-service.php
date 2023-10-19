@@ -145,7 +145,19 @@ class WC_Payments_Fraud_Service {
 					return false;
 				}
 
-				return $fraud_services;
+				// Sanitize the config just ot be safe by applying a sweeping `sanitize_text_field` on all the data.
+				// This is OK to do since we are not accepting data entries with HTML.
+				return WC_Payments_Utils::array_map_recursive(
+					$fraud_services,
+					function( $value ) {
+						// Only apply `sanitize_text_field()` to string values since this function will cast to string.
+						if ( is_string( $value ) ) {
+							return sanitize_text_field( $value );
+						}
+
+						return $value;
+					}
+				);
 			},
 			[ $this, 'is_valid_cached_fraud_services' ],
 			$force_refresh
