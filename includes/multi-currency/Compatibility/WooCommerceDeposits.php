@@ -91,7 +91,7 @@ class WooCommerceDeposits extends BaseCompatibility {
 		// We need to get the original order from the first item meta.
 		$order            = wc_get_order( $order_id );
 		$order_items      = $order->get_items();
-		$first_order_item = 0 < count( $order_items ) ? reset( $order_items ) : null;
+		$first_order_item = 0 < ( is_countable( $order_items ) ? count( $order_items ) : 0 ) ? reset( $order_items ) : null;
 
 		if ( ! $first_order_item ) {
 			return;
