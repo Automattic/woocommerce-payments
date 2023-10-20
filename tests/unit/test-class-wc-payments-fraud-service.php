@@ -9,6 +9,25 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Database_Cache;
 use WCPay\Internal\Logger as InternalLogger;
 
+if ( ! function_exists( 'did_filter' ) ) {
+	/**
+	 * Mock of did_filter for unit tests for WordPress 6.0 and below.
+	 *
+	 * @param string $hook_name Hook to check.
+	 *
+	 * @return int
+	 */
+	function did_filter( $hook_name ) {
+		global $wp_filter;
+
+		if ( ! isset( $wp_filters[ $hook_name ] ) ) {
+			return 0;
+		}
+
+		return $wp_filters[ $hook_name ];
+	}
+}
+
 /**
  * WC_Payments_Fraud_Service unit tests.
  */
