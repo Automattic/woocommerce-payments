@@ -224,7 +224,7 @@ class WC_Payments_Features {
 				]
 			);
 
-			if ( count( $wcpay_subscriptions ) > 0 ) {
+			if ( ( is_countable( $wcpay_subscriptions ) ? count( $wcpay_subscriptions ) : 0 ) > 0 ) {
 				return true;
 			}
 		}
@@ -257,7 +257,7 @@ class WC_Payments_Features {
 
 		remove_filter( 'woocommerce_product_data_store_cpt_get_products_query', $stripe_billing_meta_query_handler, 10, 2 );
 
-		if ( count( $subscription_products ) > 0 ) {
+		if ( ( is_countable( $subscription_products ) ? count( $subscription_products ) : 0 ) > 0 ) {
 			return true;
 		}
 
