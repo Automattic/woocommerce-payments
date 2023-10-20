@@ -720,14 +720,6 @@ class WC_Payments_Admin {
 					}
 				}
 
-				Tracker::track_admin(
-					'wcpay_single_order_view',
-					[
-						'is_disputed'    => $dispute ? true : false,
-						'dispute_status' => $dispute['status'] ?? null,
-					]
-				);
-
 				wp_localize_script(
 					'WCPAY_ADMIN_ORDER_ACTIONS',
 					'wcpay_order_config',
