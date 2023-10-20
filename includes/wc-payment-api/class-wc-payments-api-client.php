@@ -1646,23 +1646,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get the remote fraud service config.
-	 *
-	 * @return array HTTP response on success.
-	 *
-	 * @throws API_Exception - If not connected to server or request failed.
-	 */
-	public function get_fraud_services_config(): array {
-		return $this->request(
-			[],
-			self::FRAUD_SERVICES_API,
-			self::GET,
-			false,
-			false
-		);
-	}
-
-	/**
 	 * Sends a request object.
 	 *
 	 * @param  Request $request The request to send.
