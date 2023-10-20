@@ -95,6 +95,8 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 6.6.2 - 2023-10-20 =
+* Fix - Fix PSR container conflicts
+* Update - Deprecate Sofort for any merchants who have not enabled it. Warn existing merchants about future deprecation.
 
 
 = 6.6.1 - 2023-10-19 =
