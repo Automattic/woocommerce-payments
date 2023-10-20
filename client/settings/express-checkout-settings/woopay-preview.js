@@ -10,10 +10,8 @@ import { decodeEntities } from '@wordpress/html-entities';
  */
 import { NAMESPACE } from 'wcpay/data/constants';
 
-const svgParams = Object.freeze( {
-	CUSTOM_MSG_HEIGHT: 434,
-	DEFAULT_HEIGHT: 396,
-} );
+const SVG_CUSTOM_MSG_HEIGHT = 434;
+const SVG_DEFAULT_HEIGHT = 396;
 
 export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 	const storeLogoUrl =
@@ -21,8 +19,8 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 
 	const trimmedCustomMessage = ( customMessage || '' ).trim();
 	const svgHeight = trimmedCustomMessage
-		? svgParams.CUSTOM_MSG_HEIGHT
-		: svgParams.DEFAULT_HEIGHT;
+		? SVG_CUSTOM_MSG_HEIGHT
+		: SVG_DEFAULT_HEIGHT;
 
 	return (
 		<>
