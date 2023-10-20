@@ -300,7 +300,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						/>
 						<PhoneNumberInput
 							value={ phoneNumber }
-							onValueChange={ setPhoneNumber }
+							onChange={ setPhoneNumber }
 							onValidationChange={ onPhoneValidationChange }
 							inputProps={ {
 								name:

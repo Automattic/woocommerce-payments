@@ -58,7 +58,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 				id="account-business-support-phone-input"
 			>
 				<PhoneNumberInput
-					onValueChange={ setSupportPhone }
+					onChange={ setSupportPhone }
 					value={ supportPhone }
 					onValidationChange={ setPhoneValidity }
 					inputProps={ {
