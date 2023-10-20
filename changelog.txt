@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 6.6.2 - 2023-10-20 =
+
 = 6.6.1 - 2023-10-19 =
 * Fix - Fix Documents page loading on WooCommerce 8.2.0.
 * Fix - Stripe Link eligibility at checkout
