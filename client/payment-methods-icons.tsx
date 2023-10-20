@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React from 'react';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -22,13 +23,18 @@ import KlarnaAsset from 'assets/images/payment-methods/klarna.svg?asset';
 import VisaAsset from 'assets/images/cards/visa.svg?asset';
 import MasterCardAsset from 'assets/images/cards/mastercard.svg?asset';
 import AmexAsset from 'assets/images/cards/amex.svg?asset';
-import CartesBancairesAsset from 'assets/images/cards/diners.svg?asset';
+import WooAsset from 'assets/images/payment-methods/woo.svg?asset';
+import ApplePayAsset from 'assets/images/cards/apple-pay.svg?asset';
+import GooglePayAsset from 'assets/images/cards/google-pay.svg?asset';
+import DinersClubAsset from 'assets/images/cards/diners.svg?asset';
+import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
+
 import './style.scss';
 
 const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
 	props
 ) => (
-	<div className={ 'payment-method__icon_x' }>
+	<div className={ classNames( 'payment-method__icon_x', props.className ) }>
 		<img src={ src } alt={ alt } { ...props } />
 	</div>
 );
@@ -50,7 +56,7 @@ export const CreditCardIcon: React.FC = () => {
 			</div>
 			<div className="express-checkout__icon">
 				{ /* eslint-disable-next-line jsx-a11y/alt-text */ }
-				<img src={ CartesBancairesAsset } />
+				<img src={ DinersClubAsset } />
 			</div>
 		</div>
 	);
@@ -71,3 +77,15 @@ export const AffirmIcon = iconComponent( AffirmAsset, 'Affirm' );
 export const AfterpayIcon = iconComponent( AfterpayAsset, 'Afterpay' );
 export const JCBIcon = iconComponent( JCBAsset, 'JCB' );
 export const KlarnaIcon = iconComponent( KlarnaAsset, 'Klarna' );
+export const WooIcon = iconComponent( WooAsset, 'WooPay' );
+export const ApplePayIcon = iconComponent( ApplePayAsset, 'Apple Pay' );
+export const GooglePayIcon = iconComponent( GooglePayAsset, 'Google Pay' );
+
+export const VisaIcon = iconComponent( VisaAsset, 'Visa' );
+export const MastercardIcon = iconComponent( MasterCardAsset, 'Mastercard' );
+export const AmericanExpressIcon = iconComponent(
+	AmexAsset,
+	'American Express'
+);
+export const DinersClubIcon = iconComponent( DinersClubAsset, 'Diners Clud' );
+export const UnionPayIcon = iconComponent( UnionPayAsset, 'UnionPay' );

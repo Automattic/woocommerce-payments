@@ -176,7 +176,7 @@
 	height: 40px;
 	position: relative;
 
-	&:after {
+	&::after {
 		border-radius: 3px;
 		width: 64px;
 		height: 40px;
@@ -192,5 +192,35 @@
 		width: 64px;
 		height: 40px;
 		border-radius: 3px;
+	}
+}
+
+.payment-method__grid > div,
+.payment-method__grid > div::after,
+.payment-method__grid > div > img {
+	width: 30px;
+	height: 19px;
+}
+
+.payment-method__grid {
+	display: grid;
+	width: 64px;
+	height: 40px;
+	gap: 4px 5px;
+	grid-template-columns: repeat( auto-fill, 29px );
+
+	div {
+		width: 30px;
+		height: 19px;
+
+		&::after {
+			width: 30px;
+			height: 19px;
+		}
+
+		img {
+			width: 30px;
+			height: 19px;
+		}
 	}
 }
