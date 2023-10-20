@@ -9,25 +9,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Database_Cache;
 use WCPay\Internal\Logger as InternalLogger;
 
-if ( ! function_exists( 'did_filter' ) ) {
-	/**
-	 * Mock of did_filter for unit tests for WordPress 6.0 and below.
-	 *
-	 * @param string $hook_name Hook to check.
-	 *
-	 * @return int
-	 */
-	function did_filter( $hook_name ) {
-		global $wp_filters;
-
-		if ( ! isset( $wp_filters[ $hook_name ] ) ) {
-			return 0;
-		}
-
-		return $wp_filters[ $hook_name ];
-	}
-}
-
 /**
  * WC_Payments_Fraud_Service unit tests.
  */
@@ -124,7 +105,9 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_sift_session_id' )
 			->willReturn( 'sift_session_123' );
 
-		$wcpay_prepare_fraud_config_filter_run = did_filter( 'wcpay_prepare_fraud_config' );
+		if ( function_exists( 'did_filter' ) ) {
+			$wcpay_prepare_fraud_config_filter_run = did_filter( 'wcpay_prepare_fraud_config' );
+		}
 
 		$result = $this->fraud_service->get_fraud_services_config();
 
@@ -140,7 +123,9 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 			$result
 		);
 
-		$this->assertEquals( $wcpay_prepare_fraud_config_filter_run + 2, did_filter( 'wcpay_prepare_fraud_config' ) );
+		if ( function_exists( 'did_filter' ) ) {
+			$this->assertEquals( $wcpay_prepare_fraud_config_filter_run + 2, did_filter( 'wcpay_prepare_fraud_config' ) );
+		}
 	}
 
 	public function test_get_fraud_services_config_returns_from_fetched_config() {
@@ -171,7 +156,9 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_sift_session_id' )
 			->willReturn( 'sift_session_123' );
 
-		$wcpay_prepare_fraud_config_filter_run = did_filter( 'wcpay_prepare_fraud_config' );
+		if ( function_exists( 'did_filter' ) ) {
+			$wcpay_prepare_fraud_config_filter_run = did_filter( 'wcpay_prepare_fraud_config' );
+		}
 
 		$result = $this->fraud_service->get_fraud_services_config();
 
@@ -187,7 +174,9 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 			$result
 		);
 
-		$this->assertEquals( $wcpay_prepare_fraud_config_filter_run + 2, did_filter( 'wcpay_prepare_fraud_config' ) );
+		if ( function_exists( 'did_filter' ) ) {
+			$this->assertEquals( $wcpay_prepare_fraud_config_filter_run + 2, did_filter( 'wcpay_prepare_fraud_config' ) );
+		}
 	}
 
 	public function test_get_fraud_services_config_returns_default() {
@@ -211,7 +200,9 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_sift_session_id' )
 			->willReturn( 'sift_session_123' );
 
-		$wcpay_prepare_fraud_config_filter_run = did_filter( 'wcpay_prepare_fraud_config' );
+		if ( function_exists( 'did_filter' ) ) {
+			$wcpay_prepare_fraud_config_filter_run = did_filter( 'wcpay_prepare_fraud_config' );
+		}
 
 		$result = $this->fraud_service->get_fraud_services_config();
 
@@ -222,7 +213,9 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 			$result
 		);
 
-		$this->assertEquals( $wcpay_prepare_fraud_config_filter_run + 1, did_filter( 'wcpay_prepare_fraud_config' ) );
+		if ( function_exists( 'did_filter' ) ) {
+			$this->assertEquals( $wcpay_prepare_fraud_config_filter_run + 1, did_filter( 'wcpay_prepare_fraud_config' ) );
+		}
 	}
 
 	public function test_link_session_if_user_just_logged_in_bails_on_no_wpcom_connection() {
