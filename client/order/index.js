@@ -154,7 +154,7 @@ const DisputeNotice = ( { dispute } ) => {
 			refundButton.disabled = true;
 
 			const disputeDetailsLink = getDetailsURL(
-				chargeId,
+				dispute.charge,
 				'transactions'
 			);
 
@@ -313,7 +313,7 @@ const DisputeNotice = ( { dispute } ) => {
 							}
 						);
 						window.location = getDetailsURL(
-							chargeId,
+							dispute.charge,
 							'transactions'
 						);
 					},
