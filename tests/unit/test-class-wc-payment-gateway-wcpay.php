@@ -1719,7 +1719,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$mock_wcpay_gateway,
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->mock_fraud_service
 		);
 
 		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
@@ -1741,7 +1742,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$mock_wcpay_gateway,
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->mock_fraud_service
 		);
 
 		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
@@ -1762,7 +1764,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$mock_wcpay_gateway,
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->mock_fraud_service
 		);
 
 		$this->assertFalse( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );

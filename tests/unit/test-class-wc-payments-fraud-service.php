@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Database_Cache;
+use WCPay\Internal\Logger as InternalLogger;
 
 /**
  * WC_Payments_Fraud_Service unit tests.
@@ -369,9 +370,9 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
+		$logger_ref = new ReflectionProperty( 'WCPay\Internal\Logger', 'wc_logger' );
 		$logger_ref->setAccessible( true );
-		$logger_ref->setValue( null, $mock_logger );
+		$logger_ref->setValue( wcpay_get_container()->get( InternalLogger::class ), $mock_logger );
 
 		// Make sure the gateway is set because the logger will not log otherwise.
 		$gateway                = WC_Payments::get_gateway();
