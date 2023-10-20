@@ -523,6 +523,7 @@ class WC_Payments_Webhook_Processing_Service {
 	private function process_webhook_dispute_created( $event_body ) {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$reason       = $this->read_webhook_property( $event_object, 'reason' );
 		$amount_raw   = $this->read_webhook_property( $event_object, 'amount' );
@@ -550,7 +551,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by );
+		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $charge_id, $amount, $reason, $due_by );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );

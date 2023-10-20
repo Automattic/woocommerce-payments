@@ -285,13 +285,14 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order $order      Order object.
 	 * @param string   $dispute_id The ID of the dispute associated with this order.
+	 * @param string   $charge_id  The ID of the disputed charge associated with this order.
 	 * @param string   $amount     The disputed amount – formatted currency value.
 	 * @param string   $reason     The reason for the dispute – human-readable text.
 	 * @param string   $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by ) {
+	public function mark_payment_dispute_created( $order, $dispute_id, $charge_id, $amount, $reason, $due_by ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
@@ -313,11 +314,12 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order $order      Order object.
 	 * @param string   $dispute_id The ID of the dispute associated with this order.
+	 * @param string   $charge_id  The ID of the disputed charge associated with this order.
 	 * @param string   $status     The status of the dispute.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_closed( $order, $dispute_id, $status ) {
+	public function mark_payment_dispute_closed( $order, $dispute_id, $charge_id, $status ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
@@ -1283,15 +1285,15 @@ class WC_Payments_Order_Service {
 	/**
 	 * Get content for the dispute created order note.
 	 *
-	 * @param string $dispute_id The ID of the dispute associated with this order.
+	 * @param string $charge_id  The ID of the disputed charge associated with this order.
 	 * @param string $amount     The disputed amount – formatted currency value.
 	 * @param string $reason     The reason for the dispute – human-readable text.
 	 * @param string $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by ) {
-		$dispute_url = $this->compose_dispute_url( $dispute_id );
+	private function generate_dispute_created_note( $charge_id, $amount, $reason, $due_by ) {
+		$dispute_url = $this->compose_dispute_url( $charge_id );
 
 		// Get merchant-friendly dispute reason description.
 		$reason = WC_Payments_Utils::get_dispute_reason_description( $reason );
@@ -1313,13 +1315,13 @@ class WC_Payments_Order_Service {
 	/**
 	 * Get content for the dispute closed order note.
 	 *
-	 * @param string $dispute_id The ID of the dispute associated with this order.
-	 * @param string $status     The status of the dispute.
+	 * @param string $charge_id The ID of the disputed charge associated with this order.
+	 * @param string $status    The status of the dispute.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_closed_note( $dispute_id, $status ) {
-		$dispute_url = $this->compose_dispute_url( $dispute_id );
+	private function generate_dispute_closed_note( $charge_id, $status ) {
+		$dispute_url = $this->compose_dispute_url( $charge_id );
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the dispute status */
@@ -1335,16 +1337,16 @@ class WC_Payments_Order_Service {
 	/**
 	 * Composes url for dispute details page.
 	 *
-	 * @param string $dispute_id Dispute id.
+	 * @param string $charge_id The disputed charge ID.
 	 *
-	 * @return string Dispute details page url.
+	 * @return string Transaction details page url.
 	 */
-	private function compose_dispute_url( $dispute_id ) {
+	private function compose_dispute_url( $charge_id ) {
 		return add_query_arg(
 			[
 				'page' => 'wc-admin',
-				'path' => '/payments/disputes/details',
-				'id'   => $dispute_id,
+				'path' => '/payments/transactions/details',
+				'id'   => $charge_id,
 			],
 			admin_url( 'admin.php' )
 		);
