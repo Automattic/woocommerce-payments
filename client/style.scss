@@ -188,10 +188,23 @@
 		left: 0;
 	}
 
+	&.small {
+		width: 38px;
+		height: 24px;
+		&::after {
+			width: 38px;
+			height: 24px;
+		}
+	}
+
 	img {
 		width: 64px;
 		height: 40px;
 		border-radius: 3px;
+		&.small {
+			width: 38px;
+			height: 24px;
+		}
 	}
 }
 

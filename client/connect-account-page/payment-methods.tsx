@@ -28,17 +28,19 @@ const PaymentMethods: React.FC = () => {
 		<>
 			<p>{ strings.paymentMethods }</p>
 			<div className="connect-account-page__payment-methods__icons">
-				<VisaIcon />
-				<MastercardIcon />
-				<AmericanExpressIcon />
-				{ wcpaySettings.isWooPayStoreCountryAvailable && <WooIcon /> }
-				<ApplePayIcon />
-				<GooglePayIcon />
-				<DinersClubIcon />
-				<UnionPayIcon />
-				<JCBIcon />
-				<AffirmIcon />
-				<AfterpayIcon />
+				<VisaIcon className={ 'small' } />
+				<MastercardIcon className={ 'small' } />
+				<AmericanExpressIcon className={ 'small' } />
+				{ wcpaySettings.isWooPayStoreCountryAvailable && (
+					<WooIcon className={ 'small' } />
+				) }
+				<ApplePayIcon className={ 'small' } />
+				<GooglePayIcon className={ 'small' } />
+				<DinersClubIcon className={ 'small' } />
+				<UnionPayIcon className={ 'small' } />
+				<JCBIcon className={ 'small' } />
+				<AffirmIcon className={ 'small' } />
+				<AfterpayIcon className={ 'small' } />
 				<span>& more.</span>
 			</div>
 		</>
