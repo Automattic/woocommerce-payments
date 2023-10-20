@@ -1,153 +1,219 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState, useRef } from 'react';
-import { __ } from '@wordpress/i18n';
-import intlTelInput from 'intl-tel-input';
-import './style.scss';
+import React from 'react';
+import { useState, useRef, useLayoutEffect } from '@wordpress/element';
+import { useSelect } from 'downshift';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
  */
-import utils from 'iti/utils';
+import data from './data';
+import {
+	parseData,
+	Country,
+	sanitizeInput,
+	guessCountryKey,
+	numberToE164,
+} from './utils';
+import {
+	defaultSelectedRender,
+	defaultItemRender,
+	defaultArrowRender,
+} from './defaults';
 
-interface PhoneNumberInputProps {
+interface Props {
+	/**
+	 *	Phone number with spaces and hyphens.
+	 */
 	value: string;
-	onValidationChange: ( isValid: boolean ) => void;
-	onValueChange: ( value: string ) => void;
-	inputProps: {
-		label: string;
-		ariaLabel: string;
-		name: string;
-	};
-	isBlocksCheckout: boolean;
+	/**
+	 * Callback function when the value changes.
+	 *
+	 * @param value   Phone number with spaces and hyphens. e.g. `+1 234-567-8901`
+	 * @param e164    Phone number in E.164 format. e.g. `+12345678901`
+	 * @param country Country alpha2 code. e.g. `US`
+	 */
+	onChange: ( value: string, e164: string, country: string ) => void;
+	/**
+	 * ID for the input element, to bind a `<label>`.
+	 *
+	 * @default undefined
+	 */
+	id?: string;
+	/**
+	 * Additional class name applied to parent `<div>`.
+	 *
+	 * @default undefined
+	 */
+	className?: string;
+	/**
+	 * Render function for the selected country.
+	 * Displays the country flag and code by default.
+	 *
+	 * @default defaultSelectedRender
+	 */
+	selectedRender?: ( country: Country ) => React.ReactNode;
+	/**
+	 * Render function for each country in the dropdown.
+	 * Displays the country flag, name, and code by default.
+	 *
+	 * @default defaultItemRender
+	 */
+	itemRender?: ( country: Country ) => React.ReactNode;
+	/**
+	 * Render function for the dropdown arrow.
+	 * Displays a chevron down icon by default.
+	 *
+	 * @default defaultArrowRender
+	 */
+	arrowRender?: () => React.ReactNode;
 }
 
-const PhoneNumberInput = ( {
-	onValueChange,
+const { countries, countryCodes } = parseData( data );
+
+/**
+ * An international phone number input with a country code select and a phone textfield which supports numbers, spaces and hyphens. And returns the full number as it is, in E.164 format, and the selected country alpha2.
+ */
+const PhoneNumberInput: React.FC< Props > = ( {
 	value,
-	onValidationChange = ( validation ) => validation,
-	inputProps = {
-		label: '',
-		ariaLabel: '',
-		name: '',
-	},
-	isBlocksCheckout,
-	...props
-}: PhoneNumberInputProps ): JSX.Element => {
-	const [
-		inputInstance,
-		setInputInstance,
-	] = useState< intlTelInput.Plugin | null >( null );
+	onChange,
+	id,
+	className,
+	selectedRender = defaultSelectedRender,
+	itemRender = defaultItemRender,
+	arrowRender = defaultArrowRender,
+} ) => {
+	const menuRef = useRef< HTMLButtonElement >( null );
 	const inputRef = useRef< HTMLInputElement >( null );
 
-	const handlePhoneNumberInputChange = () => {
-		if ( inputInstance ) {
-			onValueChange( inputInstance.getNumber() );
-			onValidationChange( inputInstance.isValidNumber() );
+	const [ menuWidth, setMenuWidth ] = useState( 0 );
+	const [ countryKey, setCountryKey ] = useState(
+		guessCountryKey( value, countryCodes )
+	);
+
+	useLayoutEffect( () => {
+		if ( menuRef.current ) {
+			setMenuWidth( menuRef.current.offsetWidth );
+		}
+	}, [ menuRef, countryKey ] );
+
+	const phoneNumber = sanitizeInput( value )
+		.replace( countries[ countryKey ].code, '' )
+		.trimStart();
+
+	const handleChange = ( code: string, number: string ) => {
+		// Return value, phone number in E.164 format, and country alpha2 code.
+		number = `+${ countries[ code ].code } ${ number }`;
+		onChange( number, numberToE164( number ), code );
+	};
+
+	const handleSelect = ( code: string ) => {
+		setCountryKey( code );
+		handleChange( code, phoneNumber );
+	};
+
+	const handleInput = ( event: React.ChangeEvent< HTMLInputElement > ) => {
+		handleChange( countryKey, sanitizeInput( event.target.value ) );
+	};
+
+	const handleKeyDown = (
+		event: React.KeyboardEvent< HTMLInputElement >
+	) => {
+		const pos = inputRef.current?.selectionStart || 0;
+		const newValue =
+			phoneNumber.slice( 0, pos ) + event.key + phoneNumber.slice( pos );
+		if ( /[- ]{2,}/.test( newValue ) ) {
+			event.preventDefault();
 		}
 	};
 
-	const removeInternationalPrefix = ( phone: string ) => {
-		if ( inputInstance ) {
-			return phone.replace(
-				'+' + inputInstance.getSelectedCountryData().dialCode,
-				''
-			);
-		}
-
-		return phone;
-	};
-
-	useEffect( () => {
-		let iti: intlTelInput.Plugin | null = null;
-		const currentRef = inputRef.current;
-
-		const handleCountryChange = () => {
-			if ( iti ) {
-				onValueChange( iti.getNumber() );
-				onValidationChange( iti.isValidNumber() );
+	const {
+		isOpen,
+		getToggleButtonProps,
+		getMenuProps,
+		highlightedIndex,
+		getItemProps,
+	} = useSelect( {
+		id,
+		items: Object.keys( countries ),
+		initialSelectedItem: countryKey,
+		itemToString: ( item ) => countries[ item || '' ].name,
+		onSelectedItemChange: ( { selectedItem } ) => {
+			if ( selectedItem ) handleSelect( selectedItem );
+		},
+		stateReducer: ( state, { changes } ) => {
+			if ( state.isOpen === true && changes.isOpen === false ) {
+				inputRef.current?.focus();
 			}
-		};
 
-		let phoneCountries = {
-			initialCountry: 'US',
-			onlyCountries: [],
-		};
+			return changes;
+		},
+	} );
 
-		//if in admin panel
-		if ( 'undefined' !== typeof wcpaySettings ) {
-			const accountCountry = wcpaySettings?.accountStatus?.country ?? '';
-			// Special case for Japan: Only Japanese phone numbers are accepted by Stripe
-			if ( accountCountry === 'JP' ) {
-				phoneCountries = {
-					initialCountry: 'JP',
-					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-					// @ts-ignore
-					onlyCountries: [ 'JP' ],
-				};
-			}
-		}
-
-		if ( currentRef ) {
-			iti = intlTelInput( currentRef, {
-				customPlaceholder: () => '',
-				separateDialCode: true,
-				hiddenInput: 'full',
-				utilsScript: utils,
-				dropdownContainer: document.body,
-				...phoneCountries,
-			} );
-			setInputInstance( iti );
-
-			currentRef.addEventListener( 'countrychange', handleCountryChange );
-		}
-
-		return () => {
-			if ( iti ) {
-				iti.destroy();
-
-				if ( currentRef ) {
-					currentRef.removeEventListener(
-						'countrychange',
-						handleCountryChange
-					);
-				}
-			}
-		};
-	}, [ onValueChange, onValidationChange ] );
-
-	useEffect( () => {
-		if ( inputInstance && inputRef.current ) {
-			onValidationChange( inputInstance.isValidNumber() );
-		}
-	}, [ value, inputInstance, inputRef, onValidationChange ] );
-
-	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
-	// alters the DOM and we'll get warnings about "removing content without using React."
 	return (
 		<div
-			className={
-				isBlocksCheckout ? 'wc-block-components-text-input' : ''
-			}
+			className={ classNames(
+				className,
+				'wcpay-component-phone-number-input'
+			) }
 		>
+			<button
+				{ ...getToggleButtonProps( {
+					ref: menuRef,
+					type: 'button',
+					className: classNames(
+						'wcpay-component-phone-number-input__button'
+					),
+				} ) }
+			>
+				{ selectedRender( countries[ countryKey ] ) }
+				<span
+					className={ classNames(
+						'wcpay-component-phone-number-input__button-arrow',
+						{ invert: isOpen }
+					) }
+				>
+					{ arrowRender() }
+				</span>
+			</button>
 			<input
-				type="tel"
+				id={ id }
 				ref={ inputRef }
-				value={ removeInternationalPrefix( value ) }
-				onChange={ handlePhoneNumberInputChange }
-				aria-label={
-					inputProps.ariaLabel ||
-					__( 'Mobile phone number', 'woocommerce-payments' )
-				}
-				name={ inputProps.name }
-				className={
-					inputInstance && ! inputInstance.isValidNumber()
-						? 'phone-input input-text has-error'
-						: 'phone-input input-text'
-				}
-				{ ...props }
+				type="text"
+				value={ phoneNumber }
+				onKeyDown={ handleKeyDown }
+				onChange={ handleInput }
+				className="wcpay-component-phone-number-input__input"
+				style={ { paddingLeft: `${ menuWidth }px` } }
 			/>
+			<ul
+				{ ...getMenuProps( {
+					'aria-hidden': ! isOpen,
+					className: 'wcpay-component-phone-number-input__menu',
+				} ) }
+			>
+				{ isOpen &&
+					Object.keys( countries ).map( ( key, index ) => (
+						// eslint-disable-next-line react/jsx-key
+						<li
+							{ ...getItemProps( {
+								key,
+								index,
+								item: key,
+								className: classNames(
+									'wcpay-component-phone-number-input__menu-item',
+									{
+										highlighted: highlightedIndex === index,
+									}
+								),
+							} ) }
+						>
+							{ itemRender( countries[ key ] ) }
+						</li>
+					) ) }
+			</ul>
 		</div>
 	);
 };
