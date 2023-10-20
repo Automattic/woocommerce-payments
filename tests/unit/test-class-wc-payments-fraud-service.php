@@ -18,7 +18,7 @@ if ( ! function_exists( 'did_filter' ) ) {
 	 * @return int
 	 */
 	function did_filter( $hook_name ) {
-		global $wp_filter;
+		global $wp_filters;
 
 		if ( ! isset( $wp_filters[ $hook_name ] ) ) {
 			return 0;
