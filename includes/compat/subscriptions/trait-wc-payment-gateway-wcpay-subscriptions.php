@@ -256,7 +256,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
 
 		$request = Get_Intention::create( $order->get_transaction_id() );
-		$intent  = $request->send( 'wcpay_get_intent_request', $order );
+		$request->set_hook_args( $order );
+		$intent = $request->send();
 
 		if ( ! $intent || Intent_Status::REQUIRES_ACTION !== $intent->get_status() ) {
 			return false;

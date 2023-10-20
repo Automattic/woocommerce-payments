@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use Exception;
 use WC_Payments_API_Setup_Intention;
+use WC_Payments_Features;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
@@ -98,8 +99,10 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @return void
 	 */
 	public function init_hooks() {
-		add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
-		add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
+		if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
+			add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
+		}
 		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
 
 		parent::init_hooks();
@@ -362,7 +365,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		try {
 			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
 			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+			$setup_intent = $setup_intent_request->send();
 
 			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.

@@ -25,10 +25,11 @@ class WC_Payments_Dependency_Service {
 	const DEV_ASSETS_NOT_BUILT  = 'dev_assets_not_built';
 
 	/**
-	 * Constructor.
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
 	 */
-	public function __construct() {
-
+	public function init_hooks() {
 		add_filter( 'admin_notices', [ $this, 'display_admin_notices' ] );
 	}
 
@@ -83,7 +84,7 @@ class WC_Payments_Dependency_Service {
 		$invalid_dependencies = [];
 
 		// Either ignore the account connection check or check if there's a cached account connection.
-		$ignore_when_account_is_connected = $check_account_connection && $this->has_cached_account_connection();
+		$ignore_when_account_is_connected = $check_account_connection && self::has_cached_account_connection();
 
 		if ( ! $this->is_woo_core_active() ) {
 			$invalid_dependencies[] = self::WOOCORE_NOT_FOUND;

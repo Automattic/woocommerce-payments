@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Ensure the shipping phone number field is copied to subscriptions and their orders when copying address meta.

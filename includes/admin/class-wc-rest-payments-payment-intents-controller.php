@@ -1,11 +1,16 @@
 <?php
 /**
- * Class WC_REST_Payments_Charges_Controller
+ * Class WC_REST_Payments_Payment_Intents_Controller
  *
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Exceptions\API_Exception;
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
+use WCPay\Logger;
+use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Constants\Payment_Type;
+use WCPay\Internal\Service\Level3Service;
+use WCPay\Internal\Service\OrderService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -46,4 +51,5 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 
 		return $this->forward_request( 'get_intent', [ $payment_intent_id ] );
 	}
+
 }

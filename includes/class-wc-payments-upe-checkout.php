@@ -90,8 +90,10 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'switch_theme', [ $this->gateway, 'clear_upe_appearance_transient' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this->gateway, 'clear_upe_appearance_transient' ] );
-		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this->gateway, 'create_payment_intent_ajax' ] );
-		add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this->gateway, 'update_payment_intent_ajax' ] );
+		if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this->gateway, 'create_payment_intent_ajax' ] );
+			add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this->gateway, 'update_payment_intent_ajax' ] );
+		}
 		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this->gateway, 'init_setup_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 
@@ -207,7 +209,13 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				);
 			}
 		}
-		return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
+
+		/**
+		 * Allows filtering for the payment fields.
+		 *
+		 * @param array $payment_fields The payment fields.
+		 */
+		return apply_filters( 'wcpay_payment_fields_js_config', $payment_fields ); // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 	}
 
 	/**

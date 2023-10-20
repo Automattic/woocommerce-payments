@@ -52,6 +52,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 			$this->mock_multi_currency,
 			$this->mock_compatibility
 		);
+		$this->currency_switcher_block->init_hooks();
 	}
 
 	/**
@@ -195,6 +196,48 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 		$this->assertStringContainsString( '<input type="hidden" name="test_name" value="test_value" />', $result );
 		$this->assertStringContainsString( '<input type="hidden" name="test_array[0][0]" value="test_array_value" />', $result );
 		$this->assertStringContainsString( '<input type="hidden" name="named_key[key]" value="value" />', $result );
+	}
+
+	public function test_render_currency_option_will_escape_output() {
+		$currency_code = '"><script>alert("test")</script>';
+
+		// Arrange: Set the expected call and return values for should_disable_currency_switching and get_enabled_currencies.
+		$this->mock_compatibility
+			->expects( $this->once() )
+			->method( 'should_disable_currency_switching' )
+			->willReturn( false );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_enabled_currencies' )
+			->willReturn(
+				[
+					new Currency( 'USD' ),
+					new Currency( $currency_code, 1 ),
+				]
+			);
+
+		$output = $this->currency_switcher_block->render_block_widget( [] );
+
+		// Ensure output is properly escaped.
+		$this->assertStringContainsString( esc_attr( $currency_code ), $output );
+		$this->assertStringContainsString( esc_html( $currency_code ), $output );
+		$this->assertStringNotContainsString( '<script>', $output );
+	}
+
+	public function test_render_block_widget_will_escape_output() {
+		$font_line_height = '1.2"><script>alert("test")</script>';
+		$border_radius    = '3"><script>alert("test")</script>';
+		$block_attributes = [
+			'fontLineHeight' => $font_line_height,
+			'borderRadius'   => $border_radius,
+		];
+
+		$output = $this->currency_switcher_block->render_block_widget( $block_attributes );
+
+		// Ensure output is properly escaped.
+		$this->assertStringContainsString( esc_attr( $font_line_height ), $output );
+		$this->assertStringContainsString( esc_attr( $border_radius ), $output );
+		$this->assertStringNotContainsString( '<script>', $output );
 	}
 
 	/**

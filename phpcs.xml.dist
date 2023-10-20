@@ -7,6 +7,7 @@
 	<arg name="extensions" value="php"/>
 
     <!-- Exclude paths -->
+	<exclude-pattern>./dev/*</exclude-pattern>
 	<exclude-pattern>./dist/*</exclude-pattern>
 	<exclude-pattern>./release/*</exclude-pattern>
 	<exclude-pattern>./docker/*</exclude-pattern>
@@ -70,4 +71,28 @@
 	</rule>
 
 	<rule ref="PEAR.WhiteSpace.ObjectOperatorIndent" />
+
+	<!-- Custom WCPay rules -->
+	<rule ref="./dev/phpcs/ruleset.xml"/>
+
+	<!-- Check the class structure (ordering of methods, properties, etc.) -->
+	<rule ref="SlevomatCodingStandard.Classes.ClassStructure">
+		<properties>
+			<property name="groups" type="array">
+				<element value="uses"/>
+				<element value="constants"/>
+				<element value="properties"/>
+				<element value="enum cases"/>
+
+				<element value="constructor, static constructors"/>
+				<element value="abstract methods" />
+				<element value="all public methods, magic methods"/>
+				<element value="protected methods"/>
+				<element value="methods"/>
+			</property>
+		</properties>
+		<include-pattern>src/*</include-pattern>
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
 </ruleset>

@@ -40,11 +40,16 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		// Create the mock Order Service and the Fraud and Risk meta box objects.
 		$this->mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 		$this->order_fraud_and_risk_meta_box = new Order_Fraud_And_Risk_Meta_Box( $this->mock_order_service );
+		$this->order_fraud_and_risk_meta_box->init_hooks();
 
 		// Create the mock order and set the gateway.
 		$this->order = WC_Helper_Order::create_order();
 		$this->order->set_payment_method( 'woocommerce_payments' );
 		$this->order->save();
+	}
+
+	public function test_registers_action_properly() {
+		$this->assertNotFalse( has_action( 'add_meta_boxes', [ $this->order_fraud_and_risk_meta_box, 'maybe_add_meta_box' ] ) );
 	}
 
 	/**

@@ -30,14 +30,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
 	const [ isInfoFlyoutVisible, setIsInfoFlyoutVisible ] = useState( false );
-	const setInfoFlyoutVisible = useCallback(
-		() => setIsInfoFlyoutVisible( true ),
-		[]
-	);
-	const setInfoFlyoutNotVisible = useCallback(
-		() => setIsInfoFlyoutVisible( false ),
-		[]
-	);
+	const [ hasShownInfoFlyout, setHasShownInfoFlyout ] = useState( false );
+
+	const toggleTooltip = () => {
+		setIsInfoFlyoutVisible( ! isInfoFlyoutVisible );
+	};
 	const isRegisteredUser = useWooPayUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
@@ -51,6 +48,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			phoneFieldValue =
 				document.getElementById( 'phone' )?.value ||
 				document.getElementById( 'shipping-phone' )?.value ||
+				// in case of virtual products, the shipping phone is not available. So we also need to check the billing phone.
+				document.getElementById( 'billing-phone' )?.value ||
 				'';
 		} else {
 			// for classic checkout.
@@ -97,7 +96,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		if ( isChecked ) {
 			setPhoneNumber( getPhoneFieldValue() );
 		} else {
-			setPhoneNumber( null );
+			setPhoneNumber( '' );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
@@ -111,6 +110,18 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			}
 		);
 	};
+
+	useEffect( () => {
+		// Record Tracks event when user clicks on the info icon for the first time.
+		if ( isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
+			setHasShownInfoFlyout( true );
+			wcpayTracks.recordUserEvent(
+				wcpayTracks.events.WOOPAY_SAVE_MY_INFO_TOOLTIP_CLICK
+			);
+		} else if ( ! isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
+			setHasShownInfoFlyout( false );
+		}
+	}, [ isInfoFlyoutVisible, hasShownInfoFlyout ] );
 
 	useEffect( () => {
 		const formSubmitButton = isBlocksCheckout
@@ -226,22 +237,17 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						className="woopay-logo"
 						alt="WooPay"
 					/>
-					<Icon
-						icon={ info }
-						size={ 20 }
-						className={ `info-icon ${
-							isInfoFlyoutVisible ? 'focused' : ''
+					<button
+						className={ `info-button ${
+							isInfoFlyoutVisible ? 'flyout-visible' : ''
 						}` }
-						onMouseOver={ setInfoFlyoutVisible }
-						onMouseOut={ setInfoFlyoutNotVisible }
-					/>
-					<div
-						className="save-details-flyout"
-						onMouseOver={ setInfoFlyoutVisible }
-						onFocus={ setInfoFlyoutVisible }
-						onMouseOut={ setInfoFlyoutNotVisible }
-						onBlur={ setInfoFlyoutNotVisible }
+						type="button"
+						onClick={ toggleTooltip }
+						onBlur={ toggleTooltip }
 					>
+						<Icon icon={ info } size={ 20 } className="info-icon" />
+					</button>
+					<div className="save-details-flyout">
 						<div>
 							<LockIconG size={ 16 } />
 						</div>
@@ -259,6 +265,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 											target="_blank"
 											href="https://woocommerce.com/document/woopay-customer-documentation/"
 											rel="noopener noreferrer"
+											onClick={ () => {
+												wcpayTracks.recordUserEvent(
+													wcpayTracks.events
+														.WOOPAY_SAVE_MY_INFO_TOOLTIP_LEARN_MORE_CLICK
+												);
+											} }
 										>
 											{ __(
 												'Learn more',
@@ -287,11 +299,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							value={ `${ viewportWidth }x${ viewportHeight }` }
 						/>
 						<PhoneNumberInput
-							value={
-								phoneNumber === null
-									? getPhoneFieldValue()
-									: phoneNumber
-							}
+							value={ phoneNumber }
 							onValueChange={ setPhoneNumber }
 							onValidationChange={ onPhoneValidationChange }
 							inputProps={ {
