@@ -1,5 +1,9 @@
 *** WooPayments Changelog ***
 
+= 6.6.1 - 2023-10-19 =
+* Fix - Fix Documents page loading on WooCommerce 8.2.0.
+* Fix - Stripe Link eligibility at checkout
+
 = 6.6.0 - 2023-10-11 =
 * Add - Add a notice on the Settings page to request JCB capability for Japanese customers.
 * Add - Add current user data to the onboarding init request payload. This data is used for fraud prevention.
