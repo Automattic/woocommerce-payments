@@ -30,6 +30,7 @@ if (
 	! interface_exists( ContainerInterface::class )
 	&& isset( $_GET['action'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	&& 'upload-plugin' === $_GET['action'] // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	&& isset( $GLOBALS['pagenow'] )
 	&& 'update.php' === $GLOBALS['pagenow']
 ) {
 	wp_die( 'Updated successfully. Please reload the page.' );
