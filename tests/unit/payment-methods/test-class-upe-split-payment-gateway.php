@@ -2355,7 +2355,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_localization_service,
 				]
 			)
-			->setMethods(
+			->onlyMethods(
 				[
 					'get_upe_enabled_payment_method_ids',
 					'get_payment_method_ids_enabled_at_checkout',
@@ -2370,6 +2370,13 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'get_upe_enabled_payment_method_ids' )
 			->will(
 				$this->returnValue( [ Payment_Method::CARD, Payment_Method::LINK ] )
+			);
+		$mock_upe_gateway->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->will(
+				$this->returnValue(
+					[ Payment_Method::CARD, Payment_Method::LINK ]
+				)
 			);
 
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
@@ -2409,7 +2416,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_localization_service,
 				]
 			)
-			->setMethods(
+			->onlyMethods(
 				[
 					'get_upe_enabled_payment_method_ids',
 					'get_payment_method_ids_enabled_at_checkout',
