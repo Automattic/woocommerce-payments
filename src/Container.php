@@ -33,7 +33,7 @@ if (
 	&& isset( $GLOBALS['pagenow'] )
 	&& 'update.php' === $GLOBALS['pagenow']
 ) {
-	wp_die( 'Updated successfully. Please reload the page.' );
+	wp_die();
 }
 
 /**
