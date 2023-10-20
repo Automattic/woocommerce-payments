@@ -70,6 +70,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
+		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
 	}
 
 	/**
@@ -420,6 +421,15 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			[
 				'theme_type' => 'short_code',
 			]
+		);
+	}
+
+	/**
+	 * Record a Tracks event that the pay-for-order page has loaded.
+	 */
+	public function pay_for_order_page_view() {
+		$this->maybe_record_wcpay_shopper_event(
+			'pay_for_order_page_view'
 		);
 	}
 
