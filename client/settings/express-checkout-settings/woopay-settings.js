@@ -195,9 +195,9 @@ const WooPaySettings = ( { section } ) => {
 							accept="image/png, image/jpeg"
 							disabled={ false }
 							help={ __(
-								'Upload a custom logo. For best results, upload a horizontal' +
-									' image with white or transparent background. PNG or JPG.' +
-									' Recommended width: 512 pixels minimum.',
+								'Upload a custom logo. Upload a horizontal image with a white' +
+									' or transparent background for best results. Use a PNG or JPG' +
+									' image format. Recommended width: 512 pixels minimum.',
 								'woocommerce-payments'
 							) }
 							purpose="business_logo"
