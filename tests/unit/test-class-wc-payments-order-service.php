@@ -848,6 +848,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_dispute_created() {
 		// Arrange: Set the charge_id and reason, and the order status.
+		$dispute_id   = 'dp_123';
 		$charge_id    = 'ch_123';
 		$amount       = '$123.45';
 		$reason       = 'product_not_received';
@@ -855,7 +856,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$order_status = Order_Status::ON_HOLD;
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline );
+		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $charge_id, $amount, $reason, $deadline );
 
 		// Assert: Check that the order status was updated to on-hold status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -873,7 +874,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline );
+		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $charge_id, $amount, $reason, $deadline );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
 	}
@@ -883,16 +884,17 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_dispute_created_exits_if_order_invalid() {
 		// Arrange: Set the charge_id and reason, and the order status.
-		$charge_id = 'ch_123';
-		$amount    = '$123.45';
-		$reason    = 'product_not_received';
-		$deadline  = 'June 7, 2023';
+		$dispute_id = 'dp_123';
+		$charge_id  = 'ch_123';
+		$amount     = '$123.45';
+		$reason     = 'product_not_received';
+		$deadline   = 'June 7, 2023';
 
 		$order_status   = $this->order->get_status();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_created( 'fake_order', $charge_id, $amount, $reason, $deadline );
+		$this->order_service->mark_payment_dispute_created( 'fake_order', $dispute_id, $charge_id, $amount, $reason, $deadline );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -907,12 +909,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_dispute_closed_with_status_won() {
 		// Arrange: Set the charge_id and status, and the order status.
+		$dispute_id   = 'dp_123';
 		$charge_id    = 'ch_123';
 		$status       = 'won';
 		$order_status = Order_Status::COMPLETED;
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $charge_id, $status );
 
 		// Assert: Check that the order status was updated to completed status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -924,7 +927,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $charge_id, $status );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
 	}
@@ -934,13 +937,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_dispute_closed_with_status_lost() {
 		// Arrange: Set the charge_id, dispute status, the order status, and update the order status.
+		$dispute_id   = 'dp_123';
 		$charge_id    = 'ch_123';
 		$status       = 'lost';
 		$order_status = Order_Status::ON_HOLD;
 		$this->order->update_status( $order_status ); // When a dispute is created, the order status is changed to On Hold.
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $charge_id, $status );
 
 		// Assert: Check that the order status was left in on-hold status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -957,7 +961,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( '-' . $this->order->get_total(), $refunds[0]->get_total() );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $charge_id, $status );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 3, $notes_2 );
 	}
@@ -967,13 +971,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_dispute_closed_exits_if_order_invalid() {
 		// Arrange: Set the charge_id and reason, and the order status.
+		$dispute_id     = 'dp_123';
 		$charge_id      = 'ch_123';
 		$status         = 'won';
 		$order_status   = $this->order->get_status();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_closed( 'fake_order', $charge_id, $status );
+		$this->order_service->mark_payment_dispute_closed( 'fake_order', $dispute_id, $charge_id, $status );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
