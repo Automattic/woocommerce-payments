@@ -237,8 +237,7 @@ class InitialState extends AbstractPaymentState {
 		$context->set_intent( $authorized_intent );
 		$context->set_detected_authorized_intent();
 
-		// @todo. This will be updated to a new post-processing state,
-		// AND then trigger the process-like method.
-		return $this->create_state( CompletedState::class );
+		$new_state = $this->create_state( ProcessedState::class );
+		return $new_state->complete_processing();
 	}
 }

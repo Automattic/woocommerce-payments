@@ -209,7 +209,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $mock_auth_state, $result );
 	}
 
-	public function provider_process_then_detected_duplicates() {
+	public function provider_start_processing_then_detect_duplicates() {
 		return [
 			'Duplicate order is detected'   => [ true ],
 			'Duplicate payment is detected' => [ false ],
@@ -217,11 +217,11 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * @dataProvider provider_process_then_detected_duplicates
+	 * @dataProvider provider_start_processing_then_detect_duplicates
 	 *
 	 * @param  bool  $is_duplicate_order True if the duplicate order is detected. False for the duplicate payment.
 	 */
-	public function test_process_then_detected_duplicates( bool $is_duplicate_order ) {
+	public function test_start_processing_then_detect_duplicates( bool $is_duplicate_order ) {
 		$mock_request        = $this->createMock( PaymentRequest::class );
 		$return_state_class  = $is_duplicate_order ? DuplicateOrderDetectedState::class : CompletedState::class;
 		$mock_returned_state = $this->createMock( $return_state_class );
@@ -414,7 +414,8 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	public function test_process_duplicate_payment_returns_completed_state() {
 		$order_id             = 123;
 		$mock_intent          = \WC_Helper_Intention::create_intention();
-		$returned_state_class = CompletedState::class;
+		$mock_completed_state = $this->createMock( CompletedState::class );
+		$mock_processed_state = $this->createMock( ProcessedState::class );
 
 		// Arrange mocks.
 		$this->mock_context->expects( $this->once() )
@@ -439,11 +440,15 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
-			->with( $returned_state_class, $this->mock_context )
-			->willReturn( $this->createMock( $returned_state_class ) );
+			->with( ProcessedState::class, $this->mock_context )
+			->willReturn( $mock_processed_state );
+
+		$mock_processed_state->expects( $this->once() )
+			->method( 'complete_processing' )
+			->willReturn( $mock_completed_state );
 
 		// Act and assert.
 		$result = PHPUnit_Utils::call_method( $this->sut, 'process_duplicate_payment', [] );
-		$this->assertInstanceOf( $returned_state_class, $result );
+		$this->assertInstanceOf( CompletedState::class, $result );
 	}
 }
