@@ -10,6 +10,8 @@ namespace WCPay\Tests\Internal\Service;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Intention;
 use WC_Payment_Gateway_WCPay;
+use WC_Payments_API_Abstract_Intention;
+use WC_Payments_API_Setup_Intention;
 use WCPay\Constants\Intent_Status;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentRequest;
@@ -94,8 +96,6 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 	 * Test the basic happy path of processing a payment.
 	 */
 	public function test_process_payment_happy_path_without_mock_builder() {
-		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy );
-
 		$mock_initial_state   = $this->createMock( InitialState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
@@ -113,7 +113,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->with( $this->isInstanceOf( PaymentRequest::class ) )
 			->willReturn( $mock_completed_state );
 
-		$result = $sut->process_payment( 1 );
+		$result = $this->sut->process_payment( 1 );
 		$this->assertSame( $mock_completed_state, $result );
 	}
 
@@ -143,13 +143,19 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 
 	}
 
-	public function test_get_authentication_redirect_url_will_return_url_with_encrypted_secret_key() {
-		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy );
-
-		$intent = WC_Helper_Intention::create_intention();
+	/**
+	 * Test URL will be returned with encrypted secret key
+	 *
+	 * @param WC_Payments_API_Abstract_Intention $intent
+	 *
+	 * @dataProvider intent_provider_for_encrypted_key_urls
+	 * @return void
+	 */
+	public function test_redirect_url_returns_url_with_encrypted_secret_key( $intent ) {
 		$secret = 'encrypted_secret'; // Dummy text to avoid calling crypt function.
 		$nonce  = 'nonce'; // Return of nonce function when called from legacy proxy.
 		$order  = 1; // Order id.
+		$prefix = $intent instanceof WC_Payments_API_Setup_Intention ? 'si' : 'pi';
 
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'call_static' )
@@ -170,13 +176,12 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 				[ 'wp_create_nonce', 'wcpay_update_order_status_nonce' ]
 			)
 			->willReturnOnConsecutiveCalls( $secret, $nonce );
-		$result = $sut->get_authentication_redirect_url( $intent, $order );
-		$this->assertSame( "#wcpay-confirm-pi:$order:$secret:$nonce", $result );
+
+		$result = $this->sut->get_authentication_redirect_url( $intent, $order );
+		$this->assertSame( "#wcpay-confirm-$prefix:$order:$secret:$nonce", $result );
 	}
 
-	public function test_get_authentication_redirect_url_will_return_url_with_secret_and_si_prefix() {
-		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy );
-
+	public function test_redirect_url_returns_url_with_non_encrypted_client_secret_when_encryption_disabled() {
 		$intent = WC_Helper_Intention::create_setup_intention();
 		$nonce  = 'nonce'; // Return of nonce function when called from legacy proxy.
 		$order  = 1; // Order id.
@@ -190,9 +195,20 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->method( 'call_function' )
 			->with( 'wp_create_nonce', 'wcpay_update_order_status_nonce' )
 			->willReturn( $nonce );
-		$result = $sut->get_authentication_redirect_url( $intent, $order );
+
+		$result = $this->sut->get_authentication_redirect_url( $intent, $order );
 		$this->assertSame( "#wcpay-confirm-si:$order:" . $intent->get_client_secret() . ":$nonce", $result );
 	}
 
-
+	/**
+	 * Data provider for encrypted key url test.
+	 *
+	 * @return array[]
+	 */
+	public function intent_provider_for_encrypted_key_urls() {
+		return [
+			[ WC_Helper_Intention::create_intention() ],
+			[ WC_Helper_Intention::create_setup_intention() ],
+		];
+	}
 }

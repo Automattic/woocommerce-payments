@@ -124,7 +124,6 @@ class InitialState extends AbstractPaymentState {
 	 * on all needed parameters being in place.
 	 *
 	 * @param PaymentRequest $request The request to use.
-	 *
 	 * @throws PaymentRequestException When data is not available or invalid.
 	 */
 	protected function populate_context_from_request( PaymentRequest $request ) {

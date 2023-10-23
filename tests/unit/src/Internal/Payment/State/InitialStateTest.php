@@ -38,10 +38,11 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	 * @var InitialState
 	 */
 	private $sut;
+
 	/**
 	 * Service under test.
 	 *
-	 * @var StateFactory|InitialState
+	 * @var InitialState|MockObject
 	 */
 	private $mocked_sut;
 
@@ -61,12 +62,12 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	private $mock_customer_service;
 
 	/**
-	 * @var Level3Service|MockObject
+	 * @var PaymentRequestService|MockObject
 	 */
 	private $mock_payment_request_service;
 
 	/**
-	 * @var PaymentRequestService|MockObject
+	 * @var Level3Service|MockObject
 	 */
 	private $mock_level3_service;
 

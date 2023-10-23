@@ -38,6 +38,11 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 	private $mock_order_service;
 
 	/**
+	 * @var PaymentContext|MockObject
+	 */
+	private $mock_context;
+
+	/**
 	 * Set up the test.
 	 */
 	protected function setUp(): void {
