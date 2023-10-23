@@ -1,4 +1,4 @@
-name: Code coverage
+name: `src` coverage
 
 on:
   pull_request
