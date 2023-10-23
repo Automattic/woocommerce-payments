@@ -82,10 +82,14 @@ interface AcceptDisputeProps {
 /**
  * Disputes and Inquiries have different text for buttons and the modal.
  * They also have different icons and tracks events. This function returns the correct props.
- *
- * @param dispute
  */
-function getAcceptDisputeProps( dispute: Dispute ): AcceptDisputeProps {
+function getAcceptDisputeProps( {
+	dispute,
+	isLoading,
+}: {
+	dispute: Dispute;
+	isLoading: boolean;
+} ): AcceptDisputeProps {
 	if ( isInquiry( dispute ) ) {
 		return {
 			acceptButtonLabel: __( 'Issue refund', 'woocommerce-payments' ),
@@ -146,7 +150,9 @@ function getAcceptDisputeProps( dispute: Dispute ): AcceptDisputeProps {
 				),
 			},
 		],
-		modalButtonLabel: __( 'Accept dispute', 'woocommerce-payments' ),
+		modalButtonLabel: isLoading
+			? __( 'Accepting…', 'woocommerce-payments' )
+			: __( 'Accept dispute', 'woocommerce-payments' ),
 		modalButtonTracksEvent: wcpayTracks.events.DISPUTE_ACCEPT_CLICK,
 	};
 }
@@ -191,7 +197,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		);
 	};
 
-	const disputeAcceptAction = getAcceptDisputeProps( dispute );
+	const disputeAcceptAction = getAcceptDisputeProps( { dispute, isLoading } );
 
 	const challengeButtonDefaultText = isInquiry( dispute )
 		? __( 'Submit evidence', 'woocommerce-payments' )
