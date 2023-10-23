@@ -195,6 +195,7 @@ class InitialState extends AbstractPaymentState {
 	 * @return AbstractPaymentState|null The next state, or null if no duplicate order is detected.
 	 * @throws Order_Not_Found_Exception
 	 * @throws StateTransitionException
+	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 */
 	protected function process_duplicate_order(): ?AbstractPaymentState {
 		$context          = $this->get_context();
@@ -217,6 +218,7 @@ class InitialState extends AbstractPaymentState {
 	 * @return AbstractPaymentState|null The next state, or null if duplicate payment is detected.
 	 * @throws Order_Not_Found_Exception
 	 * @throws StateTransitionException
+	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 */
 	protected function process_duplicate_payment(): ?AbstractPaymentState {
 		$context  = $this->get_context();

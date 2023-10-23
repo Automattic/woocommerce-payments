@@ -72,6 +72,13 @@ class DuplicatePaymentPreventionService {
 	private $session_service;
 
 	/**
+	 * Logger instance.
+	 *
+	 * @var Logger
+	 */
+	private $logger;
+
+	/**
 	 * Initializes all dependencies.
 	 *
 	 * @param  OrderService   $order_service   Order service instance.
