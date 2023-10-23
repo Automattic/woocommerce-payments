@@ -322,4 +322,138 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		PHPUnit_Utils::call_method( $this->sut, 'populate_context_from_order', [] );
 	}
+
+	public function test_process_duplicate_order_returns_null() {
+		$current_order_id = 123;
+
+		// Arrange mocks.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $current_order_id );
+
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'get_previous_paid_duplicate_order_id' )
+			->with( $current_order_id )
+			->willReturn( null );
+
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'update_session_processing_order' )
+			->with( $current_order_id );
+
+		$this->mock_dpps->expects( $this->never() )
+			->method( 'clean_up_when_detecting_duplicate_order' );
+
+		$this->mock_context->expects( $this->never() )
+			->method( 'set_duplicate_order_id' );
+
+		$this->mock_state_factory->expects( $this->never() )
+			->method( 'create_state' );
+
+		// Act and assert.
+		$result = PHPUnit_Utils::call_method( $this->sut, 'process_duplicate_order', [] );
+		$this->assertNull( $result );
+	}
+
+	public function test_process_duplicate_order_returns_duplicated_order_state() {
+		$current_order_id     = 123;
+		$session_order_id     = 456;
+		$returned_class_state = DuplicateOrderDetectedState::class;
+
+		// Arrange mocks.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $current_order_id );
+
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'get_previous_paid_duplicate_order_id' )
+			->with( $current_order_id )
+			->willReturn( $session_order_id );
+
+		$this->mock_dpps->expects( $this->never() )
+			->method( 'update_session_processing_order' );
+
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'clean_up_when_detecting_duplicate_order' )
+			->with( $session_order_id, $current_order_id );
+
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_duplicate_order_id' )
+			->with( $session_order_id );
+
+		$this->mock_state_factory->expects( $this->once() )
+			->method( 'create_state' )
+			->with( $returned_class_state, $this->mock_context )
+			->willReturn( $this->createMock( $returned_class_state ) );
+
+		// Act and assert.
+		$result = PHPUnit_Utils::call_method( $this->sut, 'process_duplicate_order', [] );
+		$this->assertInstanceOf( $returned_class_state, $result );
+	}
+
+	public function test_process_duplicate_payment_returns_null() {
+		$order_id = 123;
+
+		// Arrange mocks.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $order_id );
+
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'get_authorized_payment_intent_attached_to_order' )
+			->with( $order_id )
+			->willReturn( null );
+
+		$this->mock_dpps->expects( $this->never() )
+			->method( 'remove_session_processing_order' )
+			->with( $order_id );
+
+		$this->mock_context->expects( $this->never() )
+			->method( 'set_intent' );
+
+		$this->mock_context->expects( $this->never() )
+			->method( 'set_detected_authorized_intent' );
+
+		$this->mock_state_factory->expects( $this->never() )
+			->method( 'create_state' );
+
+		// Act and assert.
+		$result = PHPUnit_Utils::call_method( $this->sut, 'process_duplicate_payment', [] );
+		$this->assertNull( $result );
+	}
+
+	public function test_process_duplicate_payment_returns_completed_state() {
+		$order_id             = 123;
+		$mock_intent          = \WC_Helper_Intention::create_intention();
+		$returned_state_class = CompletedState::class;
+
+		// Arrange mocks.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $order_id );
+
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'get_authorized_payment_intent_attached_to_order' )
+			->with( $order_id )
+			->willReturn( $mock_intent );
+
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'remove_session_processing_order' )
+			->with( $order_id );
+
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_intent' )
+			->with( $mock_intent );
+
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_detected_authorized_intent' );
+
+		$this->mock_state_factory->expects( $this->once() )
+			->method( 'create_state' )
+			->with( $returned_state_class, $this->mock_context )
+			->willReturn( $this->createMock( $returned_state_class ) );
+
+		// Act and assert.
+		$result = PHPUnit_Utils::call_method( $this->sut, 'process_duplicate_payment', [] );
+		$this->assertInstanceOf( $returned_state_class, $result );
+	}
 }

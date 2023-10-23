@@ -200,8 +200,6 @@ class InitialState extends AbstractPaymentState {
 		$context          = $this->get_context();
 		$current_order_id = $context->get_order_id();
 
-		$this->dpps->update_session_processing_order( $current_order_id );
-
 		$duplicate_order_id = $this->dpps->get_previous_paid_duplicate_order_id( $current_order_id );
 		if ( null === $duplicate_order_id ) {
 			$this->dpps->update_session_processing_order( $current_order_id );
