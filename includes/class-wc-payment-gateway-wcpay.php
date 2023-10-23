@@ -32,7 +32,7 @@ use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
-use WCPay\Internal\Payment\State\PendingAuthenticationState;
+use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -857,7 +857,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
-		if ( $state instanceof PendingAuthenticationState ) {
+		if ( $state instanceof AuthenticationRequiredState ) {
 			$context = $state->get_context();
 			return [
 				'result'   => 'success',

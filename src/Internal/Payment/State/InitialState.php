@@ -106,11 +106,11 @@ class InitialState extends AbstractPaymentState {
 
 		// Intent requires authorization (3DS check).
 		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
-			return $this->create_state( PendingAuthenticationState::class );
+			return $this->create_state( AuthenticationRequiredState::class );
 		}
 
 		// All good. Proceed to processed state.
-		$next_state = $this->create_state( CapturedState::class );
+		$next_state = $this->create_state( ProcessedState::class );
 
 		return $next_state->complete_processing();
 	}
