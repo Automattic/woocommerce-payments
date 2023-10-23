@@ -197,7 +197,7 @@ abstract class WC_Payments_API_Abstract_Intention implements \JsonSerializable {
 	 * @return string|null
 	 */
 	public function get_payment_method_type() {
-		$keys = count( $this->payment_method_options ) > 0 ? array_keys( $this->payment_method_options ) : null;
+		$keys = count( (array) $this->payment_method_options ) > 0 ? array_keys( $this->payment_method_options ) : null;
 		return $keys ? $keys[0] : null;
 	}
 

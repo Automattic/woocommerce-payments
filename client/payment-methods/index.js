@@ -5,13 +5,7 @@
  */
 import React, { useContext, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	Button,
-	Card,
-	CardHeader,
-	DropdownMenu,
-	ExternalLink,
-} from '@wordpress/components';
+import { Card, CardHeader, DropdownMenu } from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
 import classNames from 'classnames';
 
@@ -28,7 +22,6 @@ import {
 	useAccountDomesticCurrency,
 } from 'wcpay/data';
 
-import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
 import PAYMENT_METHOD_IDS from './constants';
 
@@ -38,21 +31,18 @@ import SurveyModal from '../settings/survey-modal';
 import DisableUPEModal from '../settings/disable-upe-modal';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
-import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import methodsConfiguration from '../payment-methods-map';
 import CardBody from '../settings/card-body';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
-import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import CapabilityRequestNotice from './capability-request';
 import InlineNotice from 'wcpay/components/inline-notice';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
-	const isDisablePossible =
-		isUpeEnabled && upeType !== 'deferred_intent_upe_without_fallback';
+	const isDisablePossible = isUpeEnabled && upeType !== 'deferred_intent';
 	const label = isDisablePossible
 		? __( 'Add feedback or disable', 'woocommerce-payments' )
 		: __( 'Add feedback', 'woocommerce-payments' );
@@ -77,57 +67,6 @@ const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 			label={ label }
 			controls={ buttons }
 		/>
-	);
-};
-
-const UpeSetupBanner = () => {
-	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
-
-	const handleEnableUpeClick = () => {
-		setIsUpeEnabled( true ).then( () => {
-			window.location.href = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/additional-payment-methods',
-			} );
-		} );
-	};
-
-	return (
-		<>
-			<CardBody
-				className={ classNames( 'payment-methods__express-checkouts', {
-					'background-local-payment-methods': ! wcpaySettings.isBnplAffirmAfterpayEnabled,
-				} ) }
-			>
-				<h3>
-					{ __(
-						'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023',
-						'woocommerce-payments'
-					) }
-				</h3>
-				<p>
-					{ __(
-						/* eslint-disable-next-line max-len */
-						'This will improve the checkout experience and boost sales with access to additional payment methods, which you’ll be able to manage from here in settings.',
-						'woocommerce-payments'
-					) }
-				</p>
-
-				<div className="payment-methods__express-checkouts-actions">
-					<span className="payment-methods__express-checkouts-get-started">
-						<Button isSecondary onClick={ handleEnableUpeClick }>
-							{ __(
-								'Enable payment methods',
-								'woocommerce-payments'
-							) }
-						</Button>
-					</span>
-					<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/">
-						{ __( 'Learn more', 'woocommerce-payments' ) }
-					</ExternalLink>
-				</div>
-			</CardBody>
-		</>
 	);
 };
 
@@ -230,16 +169,16 @@ const PaymentMethods = () => {
 		}
 	};
 
-	const {
-		featureFlags: { upeSettingsPreview: isUpeSettingsPreviewEnabled },
-	} = useContext( WCPaySettingsContext );
-
 	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
 	const rollbackNoticeForLegacyUPE = __(
 		// eslint-disable-next-line max-len
 		'You have been switched from the new checkout to your previous checkout experience. We will keep you posted on the new checkout availability.',
 		'woocommerce-payments'
+	);
+	const rollbackNoticeForLegacyCard = __(
+		// eslint-disable-next-line max-len
+		'You have been switched from the new checkout to your previous card experience. We will keep you posted on the new checkout availability.'
 	);
 
 	return (
@@ -291,6 +230,18 @@ const PaymentMethods = () => {
 							isDismissible={ false }
 						>
 							{ rollbackNoticeForLegacyUPE }
+						</InlineNotice>
+					</CardHeader>
+				) }
+
+				{ ! isUpeEnabled && (
+					<CardHeader className="payment-methods__header">
+						<InlineNotice
+							icon
+							status="warning"
+							isDismissible={ false }
+						>
+							{ rollbackNoticeForLegacyCard }
 						</InlineNotice>
 					</CardHeader>
 				) }
@@ -361,19 +312,6 @@ const PaymentMethods = () => {
 					</PaymentMethodsList>
 				</CardBody>
 			</Card>
-
-			{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
-				<>
-					<br />
-					<Card
-						className={ classNames( 'payment-methods', {
-							'is-loading': status === 'pending',
-						} ) }
-					>
-						<UpeSetupBanner />
-					</Card>
-				</>
-			) }
 
 			{ activationModalParams && (
 				<ConfirmPaymentMethodActivationModal
