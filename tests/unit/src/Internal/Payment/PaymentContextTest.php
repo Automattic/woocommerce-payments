@@ -7,6 +7,7 @@
 
 namespace WCPay\Tests\Internal\Payment;
 
+use WC_Helper_Intention;
 use WCPAY_UnitTestCase;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
@@ -130,5 +131,12 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 
 		$this->sut->set_detected_authorized_intent();
 		$this->assertSame( true, $this->sut->is_detected_authorized_intent() );
+	}
+
+	public function test_intent() {
+		$intent = WC_Helper_Intention::create_intention();
+
+		$this->sut->set_intent( $intent );
+		$this->assertSame( $intent, $this->sut->get_intent() );
 	}
 }
