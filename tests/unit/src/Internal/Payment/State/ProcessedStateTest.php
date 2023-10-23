@@ -1,6 +1,6 @@
 <?php
 /**
- * Class CapturedStateTest
+ * Class ProcessedStateTest
  *
  * @package WooCommerce\Payments
  */
@@ -11,19 +11,19 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Intention;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\CompletedState;
-use WCPay\Internal\Payment\State\CapturedState;
+use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Service\OrderService;
 use WCPAY_UnitTestCase;
 
 /**
- * Tests for the captured state.
+ * Tests for the processed payment state.
  */
-class CapturedStateTest extends WCPAY_UnitTestCase {
+class ProcessedStateTest extends WCPAY_UnitTestCase {
 	/**
 	 * State under test.
 	 *
-	 * @var CapturedState
+	 * @var ProcessedState
 	 */
 	private $sut;
 
@@ -52,7 +52,7 @@ class CapturedStateTest extends WCPAY_UnitTestCase {
 		$this->mock_order_service = $this->createMock( OrderService::class );
 		$this->mock_context       = $this->createMock( PaymentContext::class );
 
-		$this->sut = new CapturedState(
+		$this->sut = new ProcessedState(
 			$this->mock_state_factory,
 			$this->mock_order_service
 		);
