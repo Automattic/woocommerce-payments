@@ -380,6 +380,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 */
 	private function is_coupon_type( $coupon, string $type ) {
 
+		$types = null;
 		switch ( $type ) {
 			case 'subscription_percent':
 				$types = [ 'recurring_percent', 'sign_up_fee_percent', 'renewal_percent' ];

@@ -325,7 +325,7 @@ class WC_Payments_API_Client {
 		}
 
 		return [
-			'count'      => count( $fraud_outcomes ),
+			'count'      => is_countable( $fraud_outcomes ) ? count( $fraud_outcomes ) : 0,
 			'total'      => (int) $total,
 			'currencies' => array_unique( $currencies ),
 		];

@@ -547,7 +547,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index', [ 'wp-api-request' ] );
 
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
 
