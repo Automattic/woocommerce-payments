@@ -158,7 +158,7 @@ class WC_REST_Payments_Payment_Intents_Create_Controller extends WC_Payments_RES
 				],
 				'created'  => [
 					'description' => __( 'Timestamp for when the payment intent was created.', 'woocommerce-payments' ),
-					'type'        => 'string',
+					'type'        => 'timestamp',
 					'context'     => [ 'view' ],
 				],
 				'customer' => [
