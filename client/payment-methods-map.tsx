@@ -255,7 +255,7 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: iconComponent( KlarnaIcon, 'Klarna' ),
-		currencies: [ 'EUR', 'GBP', 'USD' ],
+		currencies: [ 'EUR', 'GBP', 'USD', 'DKK', 'NOK', 'SEK' ],
 		stripe_key: 'klarna_payments',
 		allows_manual_capture: false,
 		allows_pay_later: true,

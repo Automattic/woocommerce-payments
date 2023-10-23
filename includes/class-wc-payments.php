@@ -1773,23 +1773,27 @@ class WC_Payments {
 			return true;
 		}
 
+		if ( ! function_exists( 'wcs_get_orders_with_meta_query' ) ) {
+			return false;
+		}
+
 		// If there are any Stripe Billing Subscriptions, we should load the Stripe Billing integration classes. eg while a migration is in progress, or to support legacy subscriptions.
-		return function_exists( 'wcs_get_orders_with_meta_query' ) && (bool) count(
-			wcs_get_orders_with_meta_query(
-				[
-					'status'     => 'any',
-					'return'     => 'ids',
-					'type'       => 'shop_subscription',
-					'limit'      => 1, // We only need to know if there are any - at least 1.
-					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-						[
-							'key'     => '_wcpay_subscription_id',
-							'compare' => 'EXISTS',
-						],
+		$result = wcs_get_orders_with_meta_query(
+			[
+				'status'     => 'any',
+				'return'     => 'ids',
+				'type'       => 'shop_subscription',
+				'limit'      => 1, // We only need to know if there are any - at least 1.
+				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => '_wcpay_subscription_id',
+						'compare' => 'EXISTS',
 					],
-				]
-			)
+				],
+			]
 		);
+
+		return (bool) ( is_countable( $result ) ? count( $result ) : 0 );
 	}
 
 	/**
