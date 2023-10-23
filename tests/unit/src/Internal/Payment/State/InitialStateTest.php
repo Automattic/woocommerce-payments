@@ -98,6 +98,12 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		);
 		$this->sut->set_context( $this->mock_context );
 
+		/**
+		 * This test works with the root `process` method, which calls a few
+		 * internal methods. We want to mock them for the purpose of this test.
+		 *
+		 * @var MockObject|InitialState
+		 */
 		$this->mocked_sut = $this->getMockBuilder( InitialState::class )
 			->onlyMethods( [ 'populate_context_from_request', 'populate_context_from_order' ] )
 			->setConstructorArgs(
