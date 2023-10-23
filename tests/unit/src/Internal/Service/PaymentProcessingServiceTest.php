@@ -68,7 +68,6 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_process_payment_happy_path() {
 		// Prepare all required mocks.
-		$mock_context         = $this->createMock( PaymentContext::class );
 		$mock_initial_state   = $this->createMock( InitialState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
