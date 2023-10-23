@@ -1,6 +1,6 @@
 <?php
 /**
- * Class ProcessedState
+ * Class CapturedState
  *
  * @package WooCommerce\Payments
  */
@@ -15,7 +15,7 @@ use WCPay\Vendor\League\Container\Exception\ContainerException;
 /**
  * This state is used when payment is completed on the server, and we need to update date on the plugin side.
  */
-class ProcessedState extends AbstractPaymentState {
+class CapturedState extends AbstractPaymentState {
 	/**
 	 * Order service.
 	 *
