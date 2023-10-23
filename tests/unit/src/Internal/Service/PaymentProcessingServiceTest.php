@@ -72,11 +72,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 		$mock_initial_state   = $this->createMock( InitialState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
-		// Set up the mocks to be returned.
-		$this->sut->expects( $this->once() )
-			->method( 'create_payment_context' )
-			->with( 1 )
-			->willReturn( $mock_context );
+		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy );
 
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
@@ -88,7 +84,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->with( $this->isInstanceOf( PaymentRequest::class ) )
 			->willReturn( $mock_completed_state );
 
-		$result = $this->sut->process_payment( 1 );
+		$result = $sut->process_payment( 1 );
 		$this->assertSame( $mock_completed_state, $result );
 	}
 
@@ -96,6 +92,8 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 	 * Test the basic happy path of processing a payment.
 	 */
 	public function test_process_payment_happy_path_without_mock_builder() {
+		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy );
+
 		$mock_initial_state   = $this->createMock( InitialState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
@@ -113,7 +111,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->with( $this->isInstanceOf( PaymentRequest::class ) )
 			->willReturn( $mock_completed_state );
 
-		$result = $this->sut->process_payment( 1 );
+		$result = $sut->process_payment( 1 );
 		$this->assertSame( $mock_completed_state, $result );
 	}
 
