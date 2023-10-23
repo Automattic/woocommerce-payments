@@ -667,7 +667,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				id="wcpay-express-checkout-settings-container"
 				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>"
 			></div>
-		<?php else : ?>
+<?php else : ?>
 			<div id="wcpay-account-settings-container"></div>
 			<?php
 		endif;
@@ -1603,23 +1603,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_payment_methods_from_gateway_id( $gateway_id, $order_id = null ) {
 		$split_upe_gateway_prefix = self::GATEWAY_ID . '_';
 		// If $gateway_id begins with `woocommerce_payments_` payment method is a split UPE LPM.
-		// Otherwise $gateway_id must be `woocommerce_payments`.
+		// Otherwise, $gateway_id must be `woocommerce_payments`.
 		if ( substr( $gateway_id, 0, strlen( $split_upe_gateway_prefix ) ) === $split_upe_gateway_prefix ) {
-			$payment_methods = [ str_replace( $split_upe_gateway_prefix, '', $gateway_id ) ];
-		} elseif ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			return [ str_replace( $split_upe_gateway_prefix, '', $gateway_id ) ];
+		}
+
+		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
+
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			// If split or deferred intent UPE is enabled and $gateway_id is `woocommerce_payments`, this must be the CC gateway.
 			// We only need to return single `card` payment method, adding `link` since deferred intent UPE gateway is compatible with Link.
 			$payment_methods = [ Payment_Method::CARD ];
-			if ( in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
+			if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
 				$payment_methods[] = Payment_Method::LINK;
 			}
-		} else {
-			// $gateway_id must be `woocommerce_payments` and gateway is either legacy UPE or legacy card.
-			// Find the relevant gateway and return all available payment methods.
-			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
+
+			return $payment_methods;
 		}
 
-		return $payment_methods;
+		// $gateway_id must be `woocommerce_payments` and gateway is either legacy UPE or legacy card.
+		// Find the relevant gateway and return all available payment methods.
+		return $eligible_payment_methods;
 	}
 
 	/**
@@ -1910,6 +1914,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	private function get_payment_method_type_for_order( $order ): string {
+		$payment_method_details = [];
 		if ( $this->order_service->get_payment_method_id_for_order( $order ) ) {
 			$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
 			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
@@ -2734,6 +2739,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code
 	 */
 	public function capture_charge( $order, $include_level3 = true, $intent_metadata = [] ) {
+		$intent_id                = null;
 		$amount                   = $order->get_total();
 		$is_authorization_expired = false;
 		$intent                   = null;
@@ -2816,6 +2822,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order - Order to cancel authorization on.
 	 */
 	public function cancel_authorization( $order ) {
+		$intent        = null;
 		$status        = null;
 		$error_message = null;
 		$http_code     = null;
@@ -2938,6 +2945,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception - If nonce is invalid.
 	 */
 	public function update_order_status() {
+		$intent_id_received = null;
+		$order              = null;
 		try {
 			$is_nonce_valid = check_ajax_referer( 'wcpay_update_order_status_nonce', false, false );
 			if ( ! $is_nonce_valid ) {

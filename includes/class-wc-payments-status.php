@@ -149,7 +149,7 @@ class WC_Payments_Status {
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'What UPE payments methods are enabled for the store.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
 						<td><?php echo esc_html( implode( ',', $this->gateway->get_upe_enabled_payment_method_ids() ) ); ?></td>
 					</tr>
-					<?php endif; ?>
+<?php endif; ?>
 
 					<?php if ( ! WC_Payments_Features::is_woopay_express_checkout_enabled() ) : ?>
 					<tr>
@@ -162,7 +162,7 @@ class WC_Payments_Status {
 						</td>
 						<td><?php echo ! WC_Payments_Features::is_woopay_eligible() ? esc_html__( 'Not eligible', 'woocommerce-payments' ) : esc_html__( 'Not active', 'woocommerce-payments' ); ?></td>
 					</tr>
-					<?php else : ?>
+<?php else : ?>
 					<tr>
 						<td data-export-label="WooPay"><?php esc_html_e( 'WooPay Express Checkout', 'woocommerce-payments' ); ?>:</td>
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the new WooPay Express Checkout is enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
@@ -179,7 +179,7 @@ class WC_Payments_Status {
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether there are extensions active that are have known incompatibilities with the functioning of the new WooPay Express Checkout.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
 						<td><?php get_option( \WCPay\WooPay\WooPay_Scheduler::INVALID_EXTENSIONS_FOUND_OPTION_NAME, false ) ? esc_html_e( 'Yes', 'woocommerce-payments' ) : esc_html_e( 'No', 'woocommerce-payments' ); ?></td>
 					</tr>
-					<?php endif; ?>
+<?php endif; ?>
 
 					<tr>
 						<td data-export-label="Apple Pay / Google Pay"><?php esc_html_e( 'Apple Pay / Google Pay Express Checkout', 'woocommerce-payments' ); ?>:</td>
@@ -239,7 +239,7 @@ class WC_Payments_Status {
 							?>
 						</td>
 					</tr>
-					<?php endif; ?>
+<?php endif; ?>
 
 					<tr>
 						<td data-export-label="Multi-currency"><?php esc_html_e( 'Multi-currency', 'woocommerce-payments' ); ?>:</td>
@@ -261,8 +261,8 @@ class WC_Payments_Status {
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the tax documents section is enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
 						<td><?php WC_Payments_Features::is_documents_section_enabled() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
 					</tr>
-				<?php endif; // Gateway connected. ?>
-			<?php endif; // Connected to WPCOM. ?>
+<?php endif; // Gateway connected. ?>
+<?php endif; // Connected to WPCOM. ?>
 			<tr>
 				<td data-export-label="Logging"><?php esc_html_e( 'Logging', 'woocommerce-payments' ); ?>:</td>
 				<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether debug logging is enabled and working or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
