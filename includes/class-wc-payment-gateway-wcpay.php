@@ -32,6 +32,7 @@ use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Logger;
@@ -866,6 +867,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
 				'result'   => 'success',
 				'redirect' => $return_url,
+			];
+		}
+
+		if ( $state instanceof AuthenticationRequiredState ) {
+			$context = $state->get_context();
+			return [
+				'result'   => 'success',
+				'redirect' => $service->get_authentication_redirect_url( $context->get_intent(), $context->get_order_id() ),
 			];
 		}
 

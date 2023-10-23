@@ -15,9 +15,11 @@ use WCPay\Database_Cache;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Logger;
 use WCPay\Internal\Payment\Router;
+use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\PaymentErrorState;
+use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\State\SystemErrorState;
@@ -47,6 +49,8 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		StateFactory::class,
 		InitialState::class,
 		DuplicateOrderDetectedState::class,
+		AuthenticationRequiredState::class,
+		ProcessedState::class,
 		CompletedState::class,
 		SystemErrorState::class,
 		PaymentErrorState::class,
@@ -85,6 +89,13 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( Level3Service::class )
 			->addArgument( PaymentRequestService::class )
 			->addArgument( DuplicatePaymentPreventionService::class );
+
+		$container->add( ProcessedState::class )
+			->addArgument( StateFactory::class )
+			->addArgument( OrderService::class );
+
+		$container->add( AuthenticationRequiredState::class )
+			->addArgument( StateFactory::class );
 
 		$container->add( CompletedState::class )
 			->addArgument( StateFactory::class );
