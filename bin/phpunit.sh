@@ -6,7 +6,6 @@ fi
 
 CURRENT_PHP_MAJOR_VERSION=$(php -r 'echo PHP_MAJOR_VERSION;')
 CURRENT_PHP_MINOR_VERSION=$(php -r 'echo PHP_MINOR_VERSION;')
-CONFIG_FILE=${1-phpunit.xml.dist}
 
 # The PHPUnit version inside composer.json is not compatible with PHP versions bellow 7.3
 # Update this constant if you wish to bump supported PHP major version
@@ -14,13 +13,13 @@ SUPPORTED_PHP_MAJOR_VERSION_FOR_PHPUNIT_INSTALLED_VIA_COMPOSER_JSON=7
 SUPPORTED_PHP_MINOR_VERSION_FOR_PHPUNIT_INSTALLED_VIA_COMPOSER_JSON=3
 
 if [ $CURRENT_PHP_MAJOR_VERSION -gt $SUPPORTED_PHP_MAJOR_VERSION_FOR_PHPUNIT_INSTALLED_VIA_COMPOSER_JSON ]; then
-	./vendor/bin/phpunit -c $CONFIG_FILE "$@";
+	./vendor/bin/phpunit "$@";
 else
 	if [ $CURRENT_PHP_MINOR_VERSION -ge $SUPPORTED_PHP_MINOR_VERSION_FOR_PHPUNIT_INSTALLED_VIA_COMPOSER_JSON ]; then
-		./vendor/bin/phpunit -c $CONFIG_FILE "$@";
+		./vendor/bin/phpunit "$@";
 	else
     	chmod +x ./bin/phpunit6
-    	./bin/phpunit6 -c $CONFIG_FILE "$@";
+    	./bin/phpunit6 "$@";
     fi
 fi
 
