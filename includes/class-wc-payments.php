@@ -567,6 +567,10 @@ class WC_Payments {
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
 
+		// Only register hooks of the new `src` service with the same feature of Duplicate_Payment_Prevention_Service.
+		// To avoid register the same hooks twice.
+		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
+
 		self::maybe_register_woopay_hooks();
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
