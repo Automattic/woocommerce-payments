@@ -1,4 +1,4 @@
-name: src coverage
+name: Code coverage (src)
 
 on:
   pull_request
@@ -9,7 +9,7 @@ concurrency:
 
 jobs:
   woocommerce-coverage:
-    name:    Code coverage (src directory)
+    name:    Code coverage
     runs-on: ubuntu-latest
     strategy:
       fail-fast:    false
