@@ -108,6 +108,7 @@ class InitialState extends AbstractPaymentState {
 		// Populate further details from the order.
 		$this->populate_context_from_order();
 
+		// Start multiple verification checks.
 		$duplicate_order_result = $this->process_duplicate_order();
 		if ( null !== $duplicate_order_result ) {
 			return $duplicate_order_result;
@@ -117,6 +118,7 @@ class InitialState extends AbstractPaymentState {
 		if ( null !== $duplicate_payment_result ) {
 			return $duplicate_payment_result;
 		}
+		// End multiple verification checks.
 
 		// Payments are currently based on intents, request one from the API.
 		try {
@@ -194,7 +196,7 @@ class InitialState extends AbstractPaymentState {
 	 * @throws Order_Not_Found_Exception
 	 * @throws StateTransitionException
 	 */
-	private function process_duplicate_order(): ?AbstractPaymentState {
+	protected function process_duplicate_order(): ?AbstractPaymentState {
 		$context          = $this->get_context();
 		$current_order_id = $context->get_order_id();
 
@@ -218,7 +220,7 @@ class InitialState extends AbstractPaymentState {
 	 * @throws Order_Not_Found_Exception
 	 * @throws StateTransitionException
 	 */
-	private function process_duplicate_payment(): ?AbstractPaymentState {
+	protected function process_duplicate_payment(): ?AbstractPaymentState {
 		$context  = $this->get_context();
 		$order_id = $context->get_order_id();
 

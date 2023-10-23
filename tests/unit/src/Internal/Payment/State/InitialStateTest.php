@@ -128,7 +128,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		 * @var MockObject|InitialState
 		 */
 		$this->sut = $this->getMockBuilder( InitialState::class )
-			->onlyMethods( [ 'populate_context_from_request', 'populate_context_from_order' ] )
+			->onlyMethods( [ 'populate_context_from_request', 'populate_context_from_order', 'process_duplicate_order', 'process_duplicate_payment' ] )
 			->setConstructorArgs(
 				[
 					$this->mock_state_factory,
@@ -150,6 +150,8 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Verify that the context is populated.
 		$this->sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->sut->expects( $this->once() )->method( 'populate_context_from_order' );
+		$this->sut->expects( $this->once() )->method( 'process_duplicate_order' )->willReturn( null );
+		$this->sut->expects( $this->once() )->method( 'process_duplicate_payment' )->willReturn( null );
 
 		// Arrange intent creation.
 		if ( $exception ) {
