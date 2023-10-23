@@ -1,0 +1,39 @@
+name: Code coverage (`src` directory)
+
+on:
+  pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  woocommerce-coverage:
+    name:    Src Coverage
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast:    false
+      max-parallel: 10
+      matrix:
+        woocommerce: [ 'latest' ]
+        wordpress:   [ 'latest' ]
+        php:         [ '7.4' ]
+    env:
+      WP_VERSION: ${{ matrix.wordpress }}
+      WC_VERSION: ${{ matrix.woocommerce }}
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v3
+      # enable dependencies caching
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/composer/
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools:       composer
+          coverage:    xdebug2
+      # run CI checks
+      - run: bash bin/run-ci-tests-check-src-coverage.bash
