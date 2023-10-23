@@ -596,7 +596,7 @@ class WC_Payments_Product_Service {
 	 * @return bool Whether the product needs to be update in WC Pay.
 	 */
 	private function product_needs_update( WC_Product $product ) : bool {
-		return $this->get_product_hash( $product ) !== $this->get_wcpay_product_hash( $product );
+		return $this->get_product_hash( $product ) !== static::get_wcpay_product_hash($product);
 	}
 
 	/**
