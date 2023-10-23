@@ -9,8 +9,8 @@ namespace WCPay\Tests\Internal\Payment\State;
 
 use WC_Helper_Intention;
 use WCPay\Constants\Intent_Status;
-use WCPay\Internal\Payment\State\AuthenticationRequiredState;
-use WCPay\Internal\Payment\State\ProcessedState;
+use WCPay\Internal\Payment\State\PendingAuthenticationState;
+use WCPay\Internal\Payment\State\CapturedState;
 use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit_Utils;
@@ -121,7 +121,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 	public function test_start_processing() {
 		$mock_request         = $this->createMock( PaymentRequest::class );
-		$mock_processed_state = $this->createMock( ProcessedState::class );
+		$mock_processed_state = $this->createMock( CapturedState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
 		$mock_processed_state->expects( $this->once() )
@@ -143,7 +143,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Since the original create_state method is mocked, we have to manually set context.
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
-			->with( ProcessedState::class, $this->mock_context )
+			->with( CapturedState::class, $this->mock_context )
 			->willReturn( $mock_processed_state );
 
 		// Act: start processing.
@@ -176,7 +176,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 	public function test_processing_will_transition_to_auth_required_state() {
 		$mock_request    = $this->createMock( PaymentRequest::class );
-		$mock_auth_state = $this->createMock( AuthenticationRequiredState::class );
+		$mock_auth_state = $this->createMock( PendingAuthenticationState::class );
 
 		$this->mock_payment_request_service->expects( $this->once() )
 			->method( 'create_intent' )
@@ -189,7 +189,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
-			->with( AuthenticationRequiredState::class, $this->mock_context )
+			->with( PendingAuthenticationState::class, $this->mock_context )
 			->willReturn( $mock_auth_state );
 		$result = $this->mocked_sut->start_processing( $mock_request );
 		$this->assertSame( $mock_auth_state, $result );
