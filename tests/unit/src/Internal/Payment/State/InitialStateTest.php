@@ -222,46 +222,20 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	 * @param  bool  $is_duplicate_order True if the duplicate order is detected. False for the duplicate payment.
 	 */
 	public function test_process_then_detected_duplicates( bool $is_duplicate_order ) {
-		$order_id            = 123;
 		$mock_request        = $this->createMock( PaymentRequest::class );
 		$return_state_class  = $is_duplicate_order ? DuplicateOrderDetectedState::class : CompletedState::class;
 		$mock_returned_state = $this->createMock( $return_state_class );
 
-		/**
-		 * This test works with the root `process` method, which calls a few
-		 * internal methods. We want to mock them for the purpose of this test.
-		 *
-		 * @var MockObject|InitialState
-		 */
-		$this->sut = $this->getMockBuilder( InitialState::class )
-			->onlyMethods( [ 'populate_context_from_request', 'populate_context_from_order', 'process_duplicate_order', 'process_duplicate_payment' ] )
-			->setConstructorArgs(
-				[
-					$this->mock_state_factory,
-					$this->mock_order_service,
-					$this->mock_customer_service,
-					$this->mock_level3_service,
-					$this->mock_payment_request_service,
-					$this->mock_dpps,
-				]
-			)
-			->getMock();
-		$this->sut->set_context( $this->mock_context );
-
-		$this->mock_context->expects( $this->once() )
-			->method( 'get_order_id' )
-			->willReturn( $order_id );
-
-		$this->sut->expects( $this->once() )
+		$this->mocked_sut->expects( $this->once() )
 			->method( 'process_duplicate_order' )
 			->willReturn( $is_duplicate_order ? $mock_returned_state : null );
 
-		$this->sut->expects( $this->exactly( $is_duplicate_order ? 0 : 1 ) )
+		$this->mocked_sut->expects( $this->exactly( $is_duplicate_order ? 0 : 1 ) )
 			->method( 'process_duplicate_payment' )
 			->willReturn( $is_duplicate_order ? null : $mock_returned_state );
 
 		// Act.
-		$result = $this->sut->process( $mock_request );
+		$result = $this->mocked_sut->start_processing( $mock_request );
 		$this->assertInstanceOf( $return_state_class, $result );
 	}
 
