@@ -15,6 +15,7 @@ use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit_Utils;
 use WC_Order;
+use WC_Payments_API_Payment_Intention;
 use WC_Payments_Customer_Service;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Internal\Payment\State\InitialState;
@@ -179,11 +180,13 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$mock_request    = $this->createMock( PaymentRequest::class );
 		$mock_auth_state = $this->createMock( AuthenticationRequiredState::class );
 
-		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
+		// Create an intent, and make sure it will be returned by the service.
+		$mock_intent = $this->createMock( WC_Payments_API_Payment_Intention::class );
+		$mock_intent->expects( $this->once() )->method( 'get_status' )->willReturn( Intent_Status::REQUIRES_ACTION );
 		$this->mock_payment_request_service->expects( $this->once() )
 			->method( 'create_intent' )
 			->with( $this->mock_context )
-			->willReturn( $intent );
+			->willReturn( $mock_intent );
 
 		// Let's mock these services in order to prevent real execution of them.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
@@ -195,7 +198,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->willReturn( $order_id );
 		$this->mock_order_service->expects( $this->once() )
 			->method( 'update_order_from_intent_that_requires_action' )
-			->with( $order_id, $intent, $this->mock_context );
+			->with( $order_id, $mock_intent, $this->mock_context );
 
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
