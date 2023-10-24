@@ -85,10 +85,10 @@ interface AcceptDisputeProps {
  */
 function getAcceptDisputeProps( {
 	dispute,
-	isLoading,
+	isDisputeAcceptRequestPending,
 }: {
 	dispute: Dispute;
-	isLoading: boolean;
+	isDisputeAcceptRequestPending: boolean;
 } ): AcceptDisputeProps {
 	if ( isInquiry( dispute ) ) {
 		return {
@@ -150,7 +150,7 @@ function getAcceptDisputeProps( {
 				),
 			},
 		],
-		modalButtonLabel: isLoading
+		modalButtonLabel: isDisputeAcceptRequestPending
 			? __( 'Accepting…', 'woocommerce-payments' )
 			: __( 'Accept dispute', 'woocommerce-payments' ),
 		modalButtonTracksEvent: wcpayTracks.events.DISPUTE_ACCEPT_CLICK,
@@ -163,7 +163,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	chargeCreated,
 	orderUrl,
 } ) => {
-	const { doAccept, isLoading } = useDisputeAccept( dispute );
+	const {
+		doAccept,
+		isLoading: isDisputeAcceptRequestPending,
+	} = useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
 
 	const now = moment();
@@ -177,7 +180,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	} = useContext( WCPaySettingsContext );
 
 	const onModalClose = () => {
-		if ( isLoading ) {
+		if ( isDisputeAcceptRequestPending ) {
 			return;
 		}
 		setModalOpen( false );
@@ -197,7 +200,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		);
 	};
 
-	const disputeAcceptAction = getAcceptDisputeProps( { dispute, isLoading } );
+	const disputeAcceptAction = getAcceptDisputeProps( {
+		dispute,
+		isDisputeAcceptRequestPending,
+	} );
 
 	const challengeButtonDefaultText = isInquiry( dispute )
 		? __( 'Submit evidence', 'woocommerce-payments' )
@@ -248,7 +254,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							<Link
 								href={
 									// Prevent the user navigating to the challenge screen if the accept request is in progress.
-									isLoading
+									isDisputeAcceptRequestPending
 										? ''
 										: getAdminUrl( {
 												page: 'wc-admin',
@@ -261,7 +267,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 								<Button
 									variant="primary"
 									data-testid="challenge-dispute-button"
-									disabled={ isLoading }
+									disabled={ isDisputeAcceptRequestPending }
 									onClick={ () => {
 										wcpayTracks.recordEvent(
 											wcpayTracks.events
@@ -284,7 +290,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 
 							<Button
 								variant="tertiary"
-								disabled={ isLoading }
+								disabled={ isDisputeAcceptRequestPending }
 								data-testid="open-accept-dispute-modal-button"
 								onClick={ () => {
 									wcpayTracks.recordEvent(
@@ -335,7 +341,9 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 									>
 										<Button
 											variant="tertiary"
-											disabled={ isLoading }
+											disabled={
+												isDisputeAcceptRequestPending
+											}
 											onClick={ onModalClose }
 										>
 											{ __(
@@ -345,8 +353,12 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										</Button>
 										<Button
 											variant="primary"
-											isBusy={ isLoading }
-											disabled={ isLoading }
+											isBusy={
+												isDisputeAcceptRequestPending
+											}
+											disabled={
+												isDisputeAcceptRequestPending
+											}
 											data-testid="accept-dispute-button"
 											onClick={ () => {
 												wcpayTracks.recordEvent(
