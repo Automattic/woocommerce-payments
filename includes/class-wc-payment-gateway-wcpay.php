@@ -3764,7 +3764,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
 	 * @param Payment_Information          $payment_information   The payment information object.
-	 * @param WC_Order                     $order                 The order object or data.
+	 * @param WC_Order                     $order                 The order object.
 	 *
 	 * @return void
 	 */

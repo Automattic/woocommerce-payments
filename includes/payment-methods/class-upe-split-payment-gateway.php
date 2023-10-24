@@ -14,6 +14,7 @@ use WC_Payments_API_Setup_Intention;
 use WC_Payments_Features;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\Invalid_Address_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Logger;
 use WCPay\Session_Rate_Limiter;
@@ -560,7 +561,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @param WC_Order                     $order    The order object containing shipping and billing information.
 	 * @param Create_And_Confirm_Intention $request The Afterpay payment request object to set shipping data on.
 	 *
-	 * @throws RuntimeException If neither shipping nor billing address is valid for Afterpay payments.
+	 * @throws Invalid_Address_Exception If neither shipping nor billing address is valid for Afterpay payments.
 	 * @return void
 	 */
 	protected function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
@@ -574,7 +575,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			$request->set_shipping( $billing_data );
 			return;
 		}
-		throw new RuntimeException( __( 'Shipping address is required for Afterpay payments.', 'woocommerce-payments' ) ); // TODO find more suitable exception.
+		throw new Invalid_Address_Exception( __( 'A valid shipping address is required for Afterpay payments.', 'woocommerce-payments' ) );
 	}
 
 
