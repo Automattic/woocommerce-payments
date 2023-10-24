@@ -175,22 +175,33 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_processing_will_transition_to_auth_required_state() {
+		$order_id        = 123;
 		$mock_request    = $this->createMock( PaymentRequest::class );
 		$mock_auth_state = $this->createMock( AuthenticationRequiredState::class );
 
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
 		$this->mock_payment_request_service->expects( $this->once() )
 			->method( 'create_intent' )
 			->with( $this->mock_context )
-			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] ) );
+			->willReturn( $intent );
 
 		// Let's mock these services in order to prevent real execution of them.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
 
+		// Before the transition, the order service should update the order.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $order_id );
+		$this->mock_order_service->expects( $this->once() )
+			->method( 'update_order_from_intent_that_requires_action' )
+			->with( $order_id, $intent, $this->mock_context );
+
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
 			->with( AuthenticationRequiredState::class, $this->mock_context )
 			->willReturn( $mock_auth_state );
+
 		$result = $this->mocked_sut->start_processing( $mock_request );
 		$this->assertSame( $mock_auth_state, $result );
 	}
