@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix date type in create payment intent response schema.
+Format the display of created date for payment intent instead of timestamp.
