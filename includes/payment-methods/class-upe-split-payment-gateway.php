@@ -8,7 +8,6 @@
 namespace WCPay\Payment_Methods;
 
 use Exception;
-use RuntimeException;
 use WC_Order;
 use WC_Payments_API_Setup_Intention;
 use WC_Payments_Features;
