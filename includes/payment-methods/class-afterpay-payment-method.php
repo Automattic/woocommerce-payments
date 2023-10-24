@@ -15,7 +15,8 @@ use WC_Payments_Utils;
  */
 class Afterpay_Payment_Method extends UPE_Payment_Method {
 
-	const PAYMENT_METHOD_STRIPE_ID = 'afterpay_clearpay';
+	const PAYMENT_METHOD_STRIPE_ID         = 'afterpay_clearpay';
+	const SHIPPING_ADDRESS_REQUIRED_FIELDS = [ 'city', 'country', 'line1', 'postal_code', 'state' ];
 
 	/**
 	 * Constructor for link payment method

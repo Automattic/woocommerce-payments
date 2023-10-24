@@ -984,4 +984,27 @@ class WC_Payments_Utils {
 		}
 		wp_enqueue_style( $handle );
 	}
+
+	/**
+	 * Validates if the given data contains all the required keys and that their values are not empty.
+	 *
+	 * This function iterates through each required key and checks if that key exists in the data array
+	 * and that its value is not an empty string. If any required key is missing or has an empty string
+	 * value, the function returns false. Otherwise, it returns true.
+	 *
+	 * @param array $data The array containing the data to be validated.
+	 * @param array $required_keys An array of keys that are expected to exist and have non-empty values in the $data.
+	 *
+	 * @return bool Returns true if all required keys are present and their values are not empty strings, false otherwise.
+	 */
+	public static function is_data_valid_against_keys( array $data, array $required_keys ): bool {
+		// Check if all required keys are set and not empty.
+		foreach ( $required_keys as $key ) {
+			if ( ! isset( $data[ $key ] ) || '' === $data[ $key ] ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 }

@@ -544,4 +544,43 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 			'VND (decimal currency) - not skip symbol' => [ 123456, 'VND', false, [], '123.456 ₫ VND' ],
 		];
 	}
+
+	/**
+	 * @dataProvider data_provider_for_is_data_valid_against_keys
+	 */
+	public function test_is_data_valid_against_keys( array $data, array $required_keys, bool $expected_result ): void {
+		$this->assertSame( $expected_result, WC_Payments_Utils::is_data_valid_against_keys( $data, $required_keys ) );
+	}
+
+	public function data_provider_for_is_data_valid_against_keys(): array {
+		return [
+			'All required keys with valid values' => [
+				[
+					'key1' => 'Value A',
+					'key2' => 'Value B',
+					'key3' => 123,
+				],
+				[ 'key1', 'key2', 'key3' ],
+				true,
+			],
+			'Missing one required key'            => [
+				[
+					'key1' => 'Value A',
+					'key3' => 123,
+				],
+				[ 'key1', 'key2', 'key3' ],
+				false,
+			],
+			'One key with empty value'            => [
+				[
+					'key1' => 'Value A',
+					'key2' => '',
+					'key3' => 123,
+				],
+				[ 'key1', 'key2', 'key3' ],
+				false,
+			],
+		];
+	}
+
 }
