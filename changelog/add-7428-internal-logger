@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added an internal logger class, meant for use by classes within src.
