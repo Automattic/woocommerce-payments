@@ -147,13 +147,14 @@ const DisputeNotice = ( { chargeId } ) => {
 	}
 
 	const { dispute } = charge;
+	const isPreDisputeInquiry = isInquiry( dispute );
 
 	let urgency = 'warning';
 	let actions;
 
 	// Refunds are only allowed if the dispute is an inquiry or if it's won.
 	const isRefundable =
-		isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
+		isPreDisputeInquiry || [ 'won' ].includes( dispute.status );
 	const shouldDisableRefund = ! isRefundable;
 	let disableRefund = false;
 
@@ -228,6 +229,7 @@ const DisputeNotice = ( { chargeId } ) => {
 
 	let showWarning = false;
 	let warningText = '';
+	let countdownDays = -1;
 
 	if (
 		dispute.evidence_details?.due_by &&
@@ -236,7 +238,7 @@ const DisputeNotice = ( { chargeId } ) => {
 	) {
 		const now = moment();
 		const dueBy = moment.unix( dispute.evidence_details?.due_by );
-		const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
+		countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 
 		// If the dispute is due in the past, we don't want to show the notice.
 		if ( now.isBefore( dueBy ) ) {
@@ -274,13 +276,13 @@ const DisputeNotice = ( { chargeId } ) => {
 			let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
 			let suffix = '';
 
-			let titleText = isInquiry( dispute )
+			let titleText = isPreDisputeInquiry
 				? titleStrings.inquiry_default
 				: titleStrings.dispute_default;
 
 			// If the dispute is due within 7 days, use different wording.
 			if ( countdownDays < 7 ) {
-				titleText = isInquiry( dispute )
+				titleText = isPreDisputeInquiry
 					? titleStrings.inquiry_urgent
 					: titleStrings.dispute_urgent;
 
@@ -319,10 +321,9 @@ const DisputeNotice = ( { chargeId } ) => {
 					variant: 'secondary',
 					onClick: () => {
 						wcpayTracks.recordEvent(
-							wcpayTracks.events
-								.ORDER_DISPUTE_NOTICE_BUTTON_CLICK,
+							'wcpay_order_dispute_notice_action_click',
 							{
-								due_by_days: parseInt( countdownDays, 10 ),
+								due_by_days: countdownDays,
 							}
 						);
 						window.location = getDetailsURL(
@@ -340,6 +341,13 @@ const DisputeNotice = ( { chargeId } ) => {
 	if ( ! showWarning && ! disableRefund ) {
 		return null;
 	}
+
+	wcpayTracks.recordEvent( 'wcpay_order_dispute_notice_view', {
+		urgency,
+		is_inquiry: isPreDisputeInquiry,
+		dispute_reason: dispute.reason,
+		due_by_days: countdownDays,
+	} );
 
 	return (
 		<InlineNotice
