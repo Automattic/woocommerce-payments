@@ -7,6 +7,7 @@
 
 namespace WCPay\Internal\Payment;
 
+use WC_Payments_API_Abstract_Intention;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 
 /**
@@ -223,6 +224,24 @@ class PaymentContext {
 	 */
 	public function get_customer_id(): ?string {
 		return $this->get( 'customer_id' );
+	}
+
+	/**
+	 * Stores the payment intent object.
+	 *
+	 * @param WC_Payments_API_Abstract_Intention $intent Instance of intent.
+	 */
+	public function set_intent( WC_Payments_API_Abstract_Intention $intent ) {
+		$this->set( 'intent', $intent );
+	}
+
+	/**
+	 * Returns the payment intent object.
+	 *
+	 * @return WC_Payments_API_Abstract_Intention|null
+	 */
+	public function get_intent(): ?WC_Payments_API_Abstract_Intention {
+		return $this->get( 'intent' );
 	}
 
 	/**
