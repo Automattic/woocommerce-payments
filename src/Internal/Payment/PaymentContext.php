@@ -37,6 +37,13 @@ class PaymentContext {
 	private $changes = [];
 
 	/**
+	 * Stores the changes aganist each transiton.
+	 *
+	 * @var array
+	 */
+	private $transitions = [];
+
+	/**
 	 * Constructs the class, receiving an order ID.
 	 *
 	 * @param int $order_id ID of the order, receiving a payment.
@@ -253,18 +260,33 @@ class PaymentContext {
 	}
 
 	/**
+	 * Updates state transition and associated changes
+	 *
+	 * @param string $state The state.
+	 */
+	public function update_state_transition( string $state ): void {
+		$this->transitions[ $state ] = $this->changes;
+		$this->changes               = [];
+	}
+
+	/**
 	 * Returns the changes as a string that can be logged.
 	 *
 	 * @return string
 	 */
 	public function log_changes(): string {
-		$changes_string = array_map(
-			function( $change ) {
-				return (string) $change;
-			},
-			$this->changes
-		);
-		return implode( PHP_EOL, $changes_string );
+		$log = '';
+		foreach ( $this->transitions as $state => $changes ) {
+			$changes_string = array_map(
+				function( Change $change ) {
+					return (string) $change;
+				},
+				$changes
+			);
+			$log           .= PHP_EOL . $state . PHP_EOL;
+			$log           .= implode( PHP_EOL, $changes_string );
+		}
+		return $log;
 	}
 
 	/**

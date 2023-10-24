@@ -45,12 +45,13 @@ class PaymentProcessingService {
 	 */
 	private $logger;
 
+
 	/**
 	 * Service constructor.
 	 *
 	 * @param StateFactory $state_factory Factory for payment states.
 	 * @param LegacyProxy  $legacy_proxy Legacy proxy.
-	 * @param Logger       $logger  Logger.
+	 * @param Logger       $logger Logger.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -79,12 +80,10 @@ class PaymentProcessingService {
 
 		$request       = new PaymentRequest( $this->legacy_proxy );
 		$initial_state = $this->state_factory->create_state( InitialState::class, $context );
-
-		$completed_state = $initial_state->start_processing( $request );
+		$final_state   = $initial_state->start_processing( $request );
 
 		$this->logger->log( $context->log_changes() );
-
-		return $completed_state;
+		return $final_state;
 	}
 
 	/**
