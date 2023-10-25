@@ -551,14 +551,15 @@ class WC_Payments_Order_Service {
 	 * Get the payment metadata for dispute id if it exists.
 	 *
 	 * If the dispute id is not stored in order meta,
-	 * get the dispute id from the order notes for disputes
+	 * check for a dispute id via API request for disputes
 	 * created before the dispute id was stored in order meta.
 	 *
 	 * @param  mixed $order The order Id or order object.
 	 *
-	 * @return string
+	 * @return string|null
 	 *
 	 * @throws Order_Not_Found_Exception
+	 * @throws API_Exception
 	 */
 	public function get_dispute_id_for_order( $order ) : ?string {
 		$order = $this->get_order( $order );
@@ -568,23 +569,18 @@ class WC_Payments_Order_Service {
 			return $dispute_id;
 		}
 
-		// Otherwise, find the dispute id in the order notes.
-		$current_notes = wc_get_order_notes(
-			[ 'order_id' => $order->get_id() ]
+		// For disputes created before the dispute id was stored in order meta,
+		// get the dispute id via API.
+		$response = $this->api_client->get_disputes(
+			[
+				'pagesize'        => 1,
+				'order_number_is' => $order->get_id(),
+			]
 		);
 
-		foreach ( $current_notes as $current_note ) {
-			if ( $current_note->content ) {
-				$matches = [];
-				// Regex pattern to match dispute id e.g. "dp_1NpKDUC157aWbJ1tRUP8UorZ".
-				preg_match( '/dp_[a-zA-Z0-9]{24}/', $current_note->content, $matches );
-				if ( ! empty( $matches ) ) {
-					return $matches[0];
-				}
-			}
-		}
-
-		return null;
+		// If a dispute exists, return the dispute id, otherwise return null.
+		$dispute_id = $response['data'][0]['dispute_id'] ?? null;
+		return $dispute_id;
 	}
 
 	/**
