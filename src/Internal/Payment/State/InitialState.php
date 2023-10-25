@@ -8,16 +8,16 @@
 namespace WCPay\Internal\Payment\State;
 
 use WC_Payments_Customer_Service;
+use WCPay\Constants\Intent_Status;
+use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
+use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\Level3Service;
-use WCPay\Internal\Service\PaymentRequestService;
-use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
-use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
-use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
-use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\PaymentRequestException;
 
@@ -78,19 +78,17 @@ class InitialState extends AbstractPaymentState {
 	}
 
 	/**
-	 * Initialtes the payment process.
+	 * Initiates the payment process.
 	 *
-	 * @param PaymentRequest $request    The incoming payment processing request.
-	 * @return CompletedState            The next state.
+	 * @param PaymentRequest $request The incoming payment processing request.
+	 *
+	 * @return AbstractPaymentState      The next state.
 	 * @throws StateTransitionException  In case the completed state could not be initialized.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception Order could not be found.
 	 * @throws PaymentRequestException   When data is not available or invalid.
 	 */
-	public function process( PaymentRequest $request ) {
-		$context  = $this->get_context();
-		$order_id = $context->get_order_id();
-
+	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
 		$this->populate_context_from_request( $request );
 
@@ -99,16 +97,22 @@ class InitialState extends AbstractPaymentState {
 
 		// Payments are currently based on intents, request one from the API.
 		try {
-			$intent = $this->payment_request_service->create_intent( $context );
+			$context = $this->get_context();
+			$intent  = $this->payment_request_service->create_intent( $context );
+			$context->set_intent( $intent );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
 		}
 
-		// Intent available, complete processing.
-		$this->order_service->update_order_from_successful_intent( $order_id, $intent, $context );
+		// Intent requires authorization (3DS check).
+		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
+			return $this->create_state( AuthenticationRequiredState::class );
+		}
 
-		// If everything went well, transition to the completed state.
-		return $this->create_state( CompletedState::class );
+		// All good. Proceed to processed state.
+		$next_state = $this->create_state( ProcessedState::class );
+
+		return $next_state->complete_processing();
 	}
 
 	/**
