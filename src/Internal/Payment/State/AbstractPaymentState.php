@@ -103,8 +103,11 @@ abstract class AbstractPaymentState {
 	 * This method should only be called whenever the process is ready to transition
 	 * to the next state, as each new state will be considered the payment's latest one.
 	 *
-	 * @param string $state_class The class of the state to crate.
-	 * @return AbstractPaymentState
+	 * @template T
+	 * @param class-string<T>|string $state_class The class of the state to crate.
+	 *
+	 * @return T
+	 *
 	 * @throws StateTransitionException In case the new state could not be created.
 	 * @throws ContainerException       When the dependency container cannot instantiate the state.
 	 */
