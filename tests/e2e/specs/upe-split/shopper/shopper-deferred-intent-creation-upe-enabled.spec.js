@@ -16,12 +16,14 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 const UPE_METHOD_CHECKBOXES = [
-	// TODO add more checkboxes
-	'#inspector-checkbox-control-3', // bancontact
-	'#inspector-checkbox-control-4', // eps
-	'#inspector-checkbox-control-5', // giropay
-	'#inspector-checkbox-control-6', // ideal
-	'#inspector-checkbox-control-7', // sofort
+	'#inspector-checkbox-control-3', // affirm
+	'#inspector-checkbox-control-4', // afterpay
+	'#inspector-checkbox-control-5', // bancontact
+	'#inspector-checkbox-control-6', // eps
+	'#inspector-checkbox-control-7', // giropay
+	'#inspector-checkbox-control-8', // ideal
+	'#inspector-checkbox-control-9', // sofort
+	'#inspector-checkbox-control-10', // p24
 ];
 const card = config.get( 'cards.basic' );
 const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
@@ -71,7 +73,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).toMatch( 'Order received' );
 		} );
 
-		it.skip( 'should successfully save the card', async () => {
+		it( 'should successfully save the card', async () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
@@ -148,16 +150,17 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 	} );
 
 	const bnplProviders = [
-		[ 'Affirm', 'li.payment_method_woocommerce_payments_affirm' ],
+		[ 'Affirm', 'li.payment_method_woocommerce_payments_affirm', 'button' ],
 		[
 			'Afterpay/Clearpay',
 			'li.payment_method_woocommerce_payments_afterpay_clearpay',
+			'a',
 		],
 	];
 
 	describe.each( bnplProviders )(
 		'Checkout with BNPL providers',
-		( providerName, paymentMethodSelector ) => {
+		( providerName, paymentMethodSelector, stripeButtonHTMLElement ) => {
 			it( `should successfully place order with ${ providerName }`, async () => {
 				await shopperWCP.changeAccountCurrencyTo( 'USD' );
 				await setupProductCheckout(
@@ -171,7 +174,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 				await page.waitForSelector(
 					STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR
 				);
-				await expect( page ).toClick( 'button', {
+				await expect( page ).toClick( stripeButtonHTMLElement, {
 					text: 'Authorize Test Payment',
 				} );
 				await page.waitForNavigation( {
