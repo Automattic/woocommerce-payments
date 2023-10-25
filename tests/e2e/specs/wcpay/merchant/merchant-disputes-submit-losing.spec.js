@@ -12,7 +12,7 @@ import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 let orderId;
 
-describe.skip( 'Disputes > Submit losing dispute', () => {
+describe( 'Disputes > Submit losing dispute', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -33,6 +33,25 @@ describe.skip( 'Disputes > Submit losing dispute', () => {
 
 		await merchant.login();
 		await merchant.goToOrder( orderId );
+
+		// Get the payment details link from the order page.
+		const paymentDetailsLink = await page.$eval(
+			'p.order_number > a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+
+		// Open the payment details page and wait for it to load.
+		await Promise.all( [
+			page.goto( paymentDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+
+		// Verify we see the dispute details on the transaction details page.
+		await expect( page ).toMatchElement( '.dispute-notice', {
+			text: 'The cardholder claims the product was not received',
+		} );
 	} );
 
 	afterAll( async () => {
@@ -40,19 +59,6 @@ describe.skip( 'Disputes > Submit losing dispute', () => {
 	} );
 
 	it( 'should process and confirm a losing dispute', async () => {
-		// Click the order dispute notice.
-		await expect( page ).toClick( '[type="button"]', {
-			text: 'Respond now',
-		} );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-
-		// Verify we see the dispute details on the transaction details page.
-		await expect( page ).toMatchElement( '.dispute-notice', {
-			text: 'The cardholder claims the product was not received',
-		} );
-
 		// Open the accept dispute modal.
 		await evalAndClick( '[data-testid="open-accept-dispute-modal-button"' );
 		await uiLoaded();
