@@ -7,6 +7,7 @@
 
 namespace WCPay\Internal\Payment;
 
+use WC_Payments_API_Abstract_Intention;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 
 /**
@@ -43,27 +44,6 @@ class PaymentContext {
 	 */
 	public function get_order_id(): ?int {
 		return $this->order_id;
-	}
-
-	/**
-	 * Stores an internal value.
-	 * Use this method for changes to allow logging in the future.
-	 *
-	 * @param string $key   Property name.
-	 * @param mixed  $value Value to store.
-	 */
-	private function set( string $key, $value ) {
-		$this->data[ $key ] = $value;
-	}
-
-	/**
-	 * Retrieves an internal value, if any.
-	 *
-	 * @param string $key Key of the property.
-	 * @return mixed|null Either the stored value, or null if not set.
-	 */
-	private function get( string $key ) {
-		return $this->data[ $key ] ?? null;
 	}
 
 	/**
@@ -244,5 +224,44 @@ class PaymentContext {
 	 */
 	public function get_customer_id(): ?string {
 		return $this->get( 'customer_id' );
+	}
+
+	/**
+	 * Stores the payment intent object.
+	 *
+	 * @param WC_Payments_API_Abstract_Intention $intent Instance of intent.
+	 */
+	public function set_intent( WC_Payments_API_Abstract_Intention $intent ) {
+		$this->set( 'intent', $intent );
+	}
+
+	/**
+	 * Returns the payment intent object.
+	 *
+	 * @return WC_Payments_API_Abstract_Intention|null
+	 */
+	public function get_intent(): ?WC_Payments_API_Abstract_Intention {
+		return $this->get( 'intent' );
+	}
+
+	/**
+	 * Stores an internal value.
+	 * Use this method for changes to allow logging in the future.
+	 *
+	 * @param string $key   Property name.
+	 * @param mixed  $value Value to store.
+	 */
+	private function set( string $key, $value ) {
+		$this->data[ $key ] = $value;
+	}
+
+	/**
+	 * Retrieves an internal value, if any.
+	 *
+	 * @param string $key Key of the property.
+	 * @return mixed|null Either the stored value, or null if not set.
+	 */
+	private function get( string $key ) {
+		return $this->data[ $key ] ?? null;
 	}
 }

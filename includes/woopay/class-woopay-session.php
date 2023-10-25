@@ -144,7 +144,7 @@ class WooPay_Session {
 		// If the email is verified on WooPay, matches session email (set during the redirection),
 		// and the store has an adapted extension installed,
 		// return the user to get extension data without authentication.
-		if ( count( $enabled_adapted_extensions ) > 0 && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
+		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) > 0 && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
 			$user = get_user_by( 'email', $woopay_verified_email_address );
 
 			if ( $woopay_verified_email_address === $customer['email'] && $user ) {
@@ -183,7 +183,7 @@ class WooPay_Session {
 
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		if ( count( $enabled_adapted_extensions ) === 0 ) {
+		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) === 0 ) {
 			return;
 		}
 

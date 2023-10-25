@@ -96,6 +96,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_wcpay_connect' ], 12 ); // Run this after the redirect to onboarding logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect' ] );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 
 		// Add handlers for inbox notes and reminders.
@@ -618,7 +619,7 @@ class WC_Payments_Account {
 			return;
 		}
 
-		$return_url  = $this->get_overview_page_url();
+		$return_url  = static::get_overview_page_url();
 		$refresh_url = add_query_arg( [ 'wcpay-loan-offer' => '' ], admin_url( 'admin.php' ) );
 
 		try {
@@ -779,7 +780,7 @@ class WC_Payments_Account {
 	 *
 	 * @return bool True if the redirection happened, false otherwise.
 	 */
-	public function maybe_redirect_to_wcpay_connect() {
+	public function maybe_redirect_to_wcpay_connect(): bool {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
@@ -831,6 +832,51 @@ class WC_Payments_Account {
 		);
 
 		$this->redirect_to( $connect_url );
+		return true;
+	}
+
+	/**
+	 * Redirects WooPayments settings to the connect page for partially
+	 * onboarded accounts.
+	 *
+	 * Every WooPayments page except connect are already hidden, but merchants can still access
+	 * it through WooCommerce settings.
+	 *
+	 * @return bool True if the redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_settings_to_connect(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page'    => 'wc-settings',
+			'tab'     => 'checkout',
+			'section' => 'woocommerce_payments',
+		];
+
+		// We're not in the WooPayments settings page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
+
+		// Account not partially onboarded, don't redirect.
+		if ( ! $this->is_account_partially_onboarded() ) {
+			return false;
+		}
+
+		$this->redirect_to(
+			admin_url(
+				add_query_arg(
+					[
+						'page' => 'wc-admin',
+						'path' => '/payments/connect',
+					],
+					'admin.php'
+				)
+			)
+		);
+
 		return true;
 	}
 
@@ -1135,7 +1181,7 @@ class WC_Payments_Account {
 	private function redirect_to_login() {
 		// Clear account transient when generating Stripe dashboard's login link.
 		$this->clear_cache();
-		$redirect_url = $this->get_overview_page_url();
+		$redirect_url = static::get_overview_page_url();
 
 		$request = Get_Account_Login_Data::create();
 		$request->set_redirect_url( $redirect_url );
@@ -1170,11 +1216,11 @@ class WC_Payments_Account {
 		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		switch ( $wcpay_connect_from ) {
 			case 'WCADMIN_PAYMENT_TASK':
-				return $this->get_payments_task_page_url();
+				return static::get_payments_task_page_url();
 			case 'WC_SUBSCRIPTIONS_TABLE':
 				return admin_url( add_query_arg( [ 'post_type' => 'shop_subscription' ], 'edit.php' ) );
 			default:
-				return $this->get_overview_page_url();
+				return static::get_overview_page_url();
 		}
 	}
 
