@@ -18,6 +18,7 @@ use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPAY_UnitTestCase;
+use WCPay\Internal\Logger;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Service\PaymentProcessingService;
@@ -44,6 +45,11 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 	private $mock_legacy_proxy;
 
 	/**
+	 * @var Logger|MockObject
+	 */
+	private $mock_logger;
+
+	/**
 	 * Set up the test.
 	 */
 	protected function setUp(): void {
@@ -51,12 +57,14 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 
 		$this->mock_state_factory = $this->createMock( StateFactory::class );
 		$this->mock_legacy_proxy  = $this->createMock( LegacyProxy::class );
+		$this->mock_logger        = $this->createMock( Logger::class );
 
 		$this->sut = $this->getMockBuilder( PaymentProcessingService::class )
 			->setConstructorArgs(
 				[
 					$this->mock_state_factory,
 					$this->mock_legacy_proxy,
+					$this->mock_logger,
 				]
 			)
 			->onlyMethods( [ 'create_payment_context' ] )
@@ -71,7 +79,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 		$mock_initial_state   = $this->createMock( InitialState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
 
-		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy );
+		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy, $this->mock_logger );
 
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
@@ -91,7 +99,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 	 * Test the basic happy path of processing a payment.
 	 */
 	public function test_process_payment_happy_path_without_mock_builder() {
-		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy );
+		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy, $this->mock_logger );
 
 		$mock_initial_state   = $this->createMock( InitialState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
@@ -115,7 +123,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_authentication_redirect_url_will_return_url_from_payment_intent() {
-		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy );
+		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy, $this->mock_logger );
 
 		$url         = 'localhost';
 		$intent_data = [
