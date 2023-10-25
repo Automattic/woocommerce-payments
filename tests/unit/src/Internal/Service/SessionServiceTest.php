@@ -41,8 +41,6 @@ class SessionServiceTest extends WCPAY_UnitTestCase {
 		$this->sut               = new SessionService( $this->mock_legacy_proxy );
 	}
 
-
-
 	public function test_get_with_wc_session_returns_value() {
 		$mock_wc_session = $this->createMock( WC_Session::class );
 

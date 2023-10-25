@@ -257,7 +257,7 @@ class OrderService {
 	/**
 	 * Gets currently attached intent ID of the order.
 	 *
-	 * @param  int $order_id Order ID.
+	 * @param int $order_id Order ID.
 	 *
 	 * @return string|null Intent ID for the order. Null if no intent ID attached to order.
 	 * @throws Order_Not_Found_Exception
@@ -274,7 +274,7 @@ class OrderService {
 	/**
 	 * Gets cart hash for the given order ID.
 	 *
-	 * @param  int $order_id  ID of the order.
+	 * @param int $order_id ID of the order.
 	 *
 	 * @return string Cart hash for the order.
 	 * @throws Order_Not_Found_Exception
@@ -287,7 +287,7 @@ class OrderService {
 	/**
 	 * Gets customer ID for the given order ID.
 	 *
-	 * @param  int $order_id  ID of the order.
+	 * @param int $order_id ID of the order.
 	 *
 	 * @return int Customer ID for the order.
 	 * @throws Order_Not_Found_Exception
@@ -299,7 +299,7 @@ class OrderService {
 	/**
 	 * Checks if the order has one of paid statuses.
 	 *
-	 * @param  int $order_id  ID of the order.
+	 * @param int $order_id ID of the order.
 	 *
 	 * @return bool True if the order has one of paid statuses, false otherwise.
 	 * @throws Order_Not_Found_Exception
@@ -314,7 +314,7 @@ class OrderService {
 	/**
 	 * Checks if the order has one of pending statuses.
 	 *
-	 * @param  int $order_id  ID of the order.
+	 * @param int $order_id ID of the order.
 	 *
 	 * @return bool True if the order has one of pending statuses, false otherwise.
 	 * @throws Order_Not_Found_Exception
@@ -329,8 +329,8 @@ class OrderService {
 	/**
 	 * Adds note to order.
 	 *
-	 * @param  int    $order_id  ID of the order.
-	 * @param  string $note  Note content.
+	 * @param int    $order_id  ID of the order.
+	 * @param string $note      Note content.
 	 *
 	 * @return int Note ID.
 	 * @throws Order_Not_Found_Exception
@@ -342,8 +342,8 @@ class OrderService {
 	/**
 	 * Deletes order.
 	 *
-	 * @param  int  $order_id  ID of the order.
-	 * @param  bool $force_delete Should the order be deleted permanently.
+	 * @param int  $order_id     ID of the order.
+	 * @param bool $force_delete Should the order be deleted permanently.
 	 *
 	 * @return bool Result of the deletion.
 	 * @throws Order_Not_Found_Exception
