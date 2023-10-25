@@ -34,6 +34,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
+use WCPay\Internal\Payment\State\PaymentErrorState;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -876,6 +877,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'result'   => 'success',
 				'redirect' => $service->get_authentication_redirect_url( $context->get_intent(), $context->get_order_id() ),
 			];
+		}
+
+		if ( $state instanceof PaymentErrorState ) {
+			$error_message = $state->get_context()->get_error_message();
+			if ( null !== $error_message ) {
+				throw new Exception( $error_message );
+			}
 		}
 
 		throw new Exception( __( 'The payment process could not be completed.', 'woocommerce-payments' ) );

@@ -107,6 +107,11 @@ class InitialState extends AbstractPaymentState {
 		$this->populate_context_from_order();
 
 		// Start multiple verification checks.
+		$phone_check_result = $this->process_order_phone_number();
+		if ( null !== $phone_check_result ) {
+			return $phone_check_result;
+		}
+
 		$duplicate_order_result = $this->process_duplicate_order();
 		if ( null !== $duplicate_order_result ) {
 			return $duplicate_order_result;
@@ -191,6 +196,28 @@ class InitialState extends AbstractPaymentState {
 			$this->order_service->_deprecated_get_order( $order_id )
 		);
 		$context->set_customer_id( $customer_id );
+	}
+
+	/**
+	 * Validates the order phone number, and run necessary actions if invalid.
+	 *
+	 * @return PaymentErrorState|null    The error state if the phone number is valid. Null otherwise.
+	 * @throws Order_Not_Found_Exception
+	 * @throws StateTransitionException
+	 * @throws ContainerException
+	 */
+	protected function process_order_phone_number(): ?PaymentErrorState {
+		$context  = $this->get_context();
+		$order_id = $context->get_order_id();
+
+		if ( ! $this->order_service->is_valid_phone_number( $order_id ) ) {
+			$context->set_error_message(
+				__( 'Please enter a valid phone number, whose length is less than 20.', 'woocommerce-payments' )
+			);
+			return $this->create_state( PaymentErrorState::class );
+		}
+
+		return null;
 	}
 
 	/**

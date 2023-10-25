@@ -42,7 +42,7 @@ class PaymentContext {
 	 *
 	 * @return int
 	 */
-	public function get_order_id(): ?int {
+	public function get_order_id(): int {
 		return $this->order_id;
 	}
 
@@ -279,6 +279,27 @@ class PaymentContext {
 	 */
 	public function get_intent(): ?WC_Payments_API_Abstract_Intention {
 		return $this->get( 'intent' );
+	}
+
+	/**
+	 * Setter for the payment error message.
+	 *
+	 * @param  string $message Error message.
+	 *
+	 * @return void
+	 */
+	public function set_error_message( string $message ): void {
+		$this->set( 'error_message', $message );
+	}
+
+
+	/**
+	 * Getter for the payment error message.
+	 *
+	 * @return string|null Error message. Null if it has not been set.
+	 */
+	public function get_error_message(): ?string {
+		return $this->get( 'error_message' );
 	}
 
 	/**
