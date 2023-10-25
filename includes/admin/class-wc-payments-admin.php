@@ -10,7 +10,6 @@ use Automattic\WooCommerce\Admin\PageController;
 use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
-use WCPay\Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 
 defined( 'ABSPATH' ) || exit;
