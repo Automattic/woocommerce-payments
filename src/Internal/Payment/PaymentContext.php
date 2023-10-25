@@ -7,9 +7,12 @@
 
 namespace WCPay\Internal\Payment;
 
+use PHP_CodeSniffer\Tokenizers\PHP;
 use WC_Payments_API_Abstract_Intention;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 use WCPay\Internal\Payment\Change;
+
+use function PHPUnit\Framework\isEmpty;
 
 /**
  * A context object, which is shared between payment states.
@@ -270,23 +273,49 @@ class PaymentContext {
 	}
 
 	/**
-	 * Returns the changes as a string that can be logged.
+	 * Returns the transitions and changes as a string that can be logged.
 	 *
 	 * @return string
 	 */
 	public function log_changes(): string {
-		$log = '';
+		$log            = '';
+		$previous_state = null;
 		foreach ( $this->transitions as $state => $changes ) {
-			$changes_string = array_map(
-				function( Change $change ) {
-					return (string) $change;
-				},
-				$changes
-			);
-			$log           .= PHP_EOL . $state . PHP_EOL;
-			$log           .= implode( PHP_EOL, $changes_string );
+			$log           .= $previous_state ?
+								"Transition from '" . $previous_state . "' to '" . $state :
+								"Payment initialized in '" . $state;
+			$log           .= "' {" . PHP_EOL;
+			$log           .= implode( PHP_EOL, $this->changes_to_str( $changes ) ) . PHP_EOL;
+			$log           .= '}' . PHP_EOL;
+			$previous_state = $state;
+		}
+		if ( ! empty( $this->changes ) ) {
+			$log .= "Changes within '" . $previous_state . "' {" . PHP_EOL;
+			$log .= '}' . PHP_EOL;
 		}
 		return $log;
+	}
+
+	/**
+	 * Returns the changes array as a string that can be logged.
+	 *
+	 * @param array $changes Array of Change objects.
+	 *
+	 * @return array
+	 */
+	private function changes_to_str( $changes ) : array {
+		$changes_string = array_map(
+			function( Change $change ) {
+				if ( $change->get_old_value() ) {
+					$str = '  Changed ' . $change->get_key() . ' from ' . json_encode( $change->get_old_value() ) . ' to ' . json_encode( $change->get_new_value() );
+				} else {
+					$str = '  Set ' . $change->get_key() . ' to ' . json_encode( $change->get_new_value() );
+				}
+				return $str;
+			},
+			$changes
+		);
+		return $changes_string;
 	}
 
 	/**
