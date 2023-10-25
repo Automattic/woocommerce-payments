@@ -5,6 +5,10 @@
 import React, { useMemo } from 'react';
 import { decodeEntities } from '@wordpress/html-entities';
 import { chevronDown, Icon } from '@wordpress/icons';
+
+/**
+ * Internal dependencies.
+ */
 import { NAMESPACE } from 'wcpay/data/constants';
 import LockKeyhole from 'wcpay/settings/express-checkout-settings/assets/icons/lock-keyhole';
 
