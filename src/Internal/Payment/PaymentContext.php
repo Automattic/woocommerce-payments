@@ -33,13 +33,6 @@ class PaymentContext {
 	private $data = [];
 
 	/**
-	 * Contains the changes to the PaymentContext
-	 *
-	 * @var array
-	 */
-	private $changes = [];
-
-	/**
 	 * Stores the transitions of state.
 	 *
 	 * @var array
@@ -52,7 +45,8 @@ class PaymentContext {
 	 * @param int $order_id ID of the order, receiving a payment.
 	 */
 	public function __construct( int $order_id ) {
-		$this->order_id = $order_id;
+		$this->order_id      = $order_id;
+		$this->transitions[] = new Transition( $order_id, null, null, [], time() );
 	}
 
 	/**
@@ -268,8 +262,9 @@ class PaymentContext {
 	 * @param string $state The state.
 	 */
 	public function log_state_transition( string $state ): void {
-		$this->transitions[] = new Transition( $this->get_order_id(), $state, $this->changes, time() );
-		$this->changes       = [];
+		$last_transition = end( $this->transitions );
+		$last_transition->set_to_state( $state );
+		$this->transitions[] = new Transition( $this->get_order_id(), $state, null, [], time() );
 	}
 
 	/**
@@ -278,21 +273,20 @@ class PaymentContext {
 	 * @return string
 	 */
 	public function log_changes(): string {
-		$log            = '';
-		$previous_state = null;
+		$log = '';
 		foreach ( $this->transitions as $transition ) {
-			$state          = $transition->get_state();
-			$log           .= $previous_state ?
-								"Transition from '" . $previous_state . "' to '" . $state :
-								'Payment for order #' . $transition->get_order_id() . " initialized in '" . $state;
-			$log           .= "' [" . PHP_EOL;
-			$log           .= implode( PHP_EOL, $this->changes_to_str( $transition->get_changes() ) ) . PHP_EOL;
-			$log           .= ']' . PHP_EOL;
-			$previous_state = $state;
-		}
-		if ( ! empty( $this->changes ) ) {
-			$log .= "Changes within '" . $previous_state . "' {" . PHP_EOL;
-			$log .= '}' . PHP_EOL;
+			$to_state       = $transition->get_to_state();
+			$previous_state = $transition->get_from_state();
+			if ( $to_state && ! $previous_state ) {
+				$log .= 'Payment for order #' . $transition->get_order_id() . " initialized in '" . $to_state;
+			} elseif ( $previous_state && ! $to_state ) {
+				$log .= "Changes within '" . $previous_state;
+			} else {
+				$log .= "Transition from '" . $previous_state . "' to '" . $to_state;
+			}
+			$log .= "' [" . PHP_EOL;
+			$log .= implode( PHP_EOL, $this->changes_to_str( $transition->get_changes() ) ) . PHP_EOL;
+			$log .= ']' . PHP_EOL;
 		}
 		return $log;
 	}
@@ -321,14 +315,26 @@ class PaymentContext {
 
 	/**
 	 * Stores an internal value.
-	 * Use this method for changes to allow logging in the future.
 	 *
 	 * @param string $key   Property name.
 	 * @param mixed  $value Value to store.
 	 */
 	private function set( string $key, $value ) : void {
-		$this->changes[]    = new Change( $key, $this->get( $key ), $value );
+		$this->log_change( $key, $value );
 		$this->data[ $key ] = $value;
+	}
+
+	/**
+	 * Log the change to a transition
+	 *
+	 * @param string $key   Property name.
+	 * @param mixed  $value Value to store.
+	 */
+	private function log_change( string $key, $value ) {
+		$last_transition = end( $this->transitions );
+		$changes         = $last_transition->get_changes();
+		$changes[]       = new Change( $key, $this->get( $key ), $value );
+		$last_transition->set_changes( $changes );
 	}
 
 	/**

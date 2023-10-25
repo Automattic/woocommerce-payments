@@ -25,7 +25,14 @@ class Transition {
 	 *
 	 * @var string
 	 */
-	private $state;
+	private $from_state;
+
+	/**
+	 * State of the transition.
+	 *
+	 * @var string
+	 */
+	private $to_state;
 
 	/**
 	 * Changes made during the transition.
@@ -45,15 +52,17 @@ class Transition {
 	 * Constructs the class, with changes, order ID, timestamp and state.
 	 *
 	 * @param string $order_id Order ID.
-	 * @param string $state State of the transition.
+	 * @param string $from_state State of the transition.
+	 * @param string $to_state State of the transition.
 	 * @param array  $changes Changes made during the transition.
 	 * @param int    $timestamp Timestamp of the transition.
 	 */
-	public function __construct( string $order_id, string $state, array $changes, int $timestamp ) {
-		$this->order_id  = $order_id;
-		$this->state     = $state;
-		$this->changes   = $changes;
-		$this->timestamp = $timestamp;
+	public function __construct( string $order_id, ?string $from_state, ?string $to_state, array $changes, int $timestamp ) {
+		$this->order_id   = $order_id;
+		$this->from_state = $from_state;
+		$this->to_state   = $to_state;
+		$this->changes    = $changes;
+		$this->timestamp  = $timestamp;
 	}
 
 	/**
@@ -63,6 +72,15 @@ class Transition {
 	 */
 	public function get_changes() : array {
 		return $this->changes;
+	}
+
+	/**
+	 * Sets the changes made during the transition.
+	 *
+	 * @param array $changes Changes made during the transition.
+	 */
+	public function set_changes( array $changes ) {
+		$this->changes = $changes;
 	}
 
 	/**
@@ -84,12 +102,29 @@ class Transition {
 	}
 
 	/**
-	 * Returns the state of the transition.
+	 * Returns the from state of the transition.
 	 *
-	 * @return string State of the transition.
+	 * @return string|null From state of the transition.
 	 */
-	public function get_state() : string {
-		return $this->state;
+	public function get_from_state() : ?string {
+		return $this->from_state;
 	}
 
+	/**
+	 * Returns the to state of the transition.
+	 *
+	 * @return string|null To state of the transition.
+	 */
+	public function get_to_state() : ?string {
+		return $this->to_state;
+	}
+
+	/**
+	 * Sets the to state of the transition.
+	 *
+	 * @param string $to_state To state of the transition.
+	 */
+	public function set_to_state( string $to_state ) {
+		$this->to_state = $to_state;
+	}
 }
