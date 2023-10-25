@@ -120,8 +120,7 @@ class DuplicatePaymentPreventionService {
 		}
 
 		// We only care about payment payment_intent.
-		$is_payment_intent = 'pi_' === substr( $intent_id, 0, 3 );
-		if ( ! $is_payment_intent ) {
+		if ( 'pi_' !== substr( $intent_id, 0, 3 ) ) {
 			return null;
 		}
 
