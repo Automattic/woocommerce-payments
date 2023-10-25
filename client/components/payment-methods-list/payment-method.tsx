@@ -111,13 +111,15 @@ const PaymentMethod = ( {
 	isPoEnabled,
 	isPoComplete,
 }: PaymentMethodProps ): React.ReactElement => {
-	// We want to show a tooltip if PO is enabled and not yet complete.
-	const isPoInProgress = isPoEnabled && ! isPoComplete;
+	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
+	const isPoInProgress =
+		isPoEnabled &&
+		! isPoComplete &&
+		status !== upeCapabilityStatuses.ACTIVE;
 
 	// APMs are disabled if they are inactive or if Progressive Onboarding is enabled and not yet complete.
 	const disabled =
-		upeCapabilityStatuses.INACTIVE === status ||
-		( id !== 'card' && isPoInProgress );
+		upeCapabilityStatuses.INACTIVE === status || isPoInProgress;
 	const {
 		accountFees,
 	}: { accountFees: Record< string, FeeStructure > } = useContext(
@@ -194,9 +196,13 @@ const PaymentMethod = ( {
 								'woocommerce-payments'
 							) }
 							/* eslint-disable-next-line max-len */
-							href={ getDocumentationUrlForDisabledPaymentMethod(
-								paymentMethodId
-							) }
+							href={
+								isPoInProgress
+									? 'https://woocommerce.com/document/woopayments/startup-guide/gradual-signup/#additional-payment-methods'
+									: getDocumentationUrlForDisabledPaymentMethod(
+											paymentMethodId
+									  )
+							}
 						/>
 					),
 				},
