@@ -568,13 +568,13 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
 		};
 
-		$shipping_data = $this->get_shipping_data_from_order( $order );
+		$shipping_data = $this->order_service->get_shipping_data_from_order( $order );
 		if ( $check_if_usable( $shipping_data['address'] ) ) {
 			$request->set_shipping( $shipping_data );
 			return;
 		}
 
-		$billing_data = $this->get_billing_data_from_order( $order );
+		$billing_data = $this->order_service->get_billing_data_from_order( $order );
 		if ( $check_if_usable( $billing_data['address'] ) ) {
 			$request->set_shipping( $billing_data );
 			return;
