@@ -129,6 +129,7 @@ class InitialState extends AbstractPaymentState {
 
 		// Intent requires authorization (3DS check).
 		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
+			$this->order_service->update_order_from_intent_that_requires_action( $context->get_order_id(), $intent, $context );
 			return $this->create_state( AuthenticationRequiredState::class );
 		}
 
