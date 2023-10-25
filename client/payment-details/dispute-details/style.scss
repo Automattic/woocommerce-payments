@@ -104,7 +104,9 @@
 	}
 }
 .transaction-details-dispute-accept-modal {
-	max-width: 600px;
+	&.components-modal__frame {
+		max-width: 600px;
+	}
 
 	.components-modal__content {
 		padding-top: $grid-unit-30;

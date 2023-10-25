@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show loading state when accepting a dispute from the transaction details screen.
