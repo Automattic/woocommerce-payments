@@ -13,7 +13,7 @@ import { uiLoaded } from '../../../utils';
 
 let orderId;
 
-describe.skip( 'Disputes > Merchant can save and resume draft dispute challenge', () => {
+describe( 'Disputes > Merchant can save and resume draft dispute challenge', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -34,25 +34,29 @@ describe.skip( 'Disputes > Merchant can save and resume draft dispute challenge'
 
 		await merchant.login();
 		await merchant.goToOrder( orderId );
-	} );
 
-	afterAll( async () => {
-		await merchant.logout();
-	} );
+		// Get the payment details link from the order page.
+		const paymentDetailsLink = await page.$eval(
+			'p.order_number > a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
 
-	it( 'should show a dispute in payment details', async () => {
-		// Click the order dispute notice.
-		await expect( page ).toClick( '[type="button"]', {
-			text: 'Respond now',
-		} );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		// Open the payment details page and wait for it to load.
+		await Promise.all( [
+			page.goto( paymentDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
 
 		// Verify we see the dispute details on the transaction details page.
 		await expect( page ).toMatchElement( '.dispute-notice', {
 			text: 'The cardholder claims the product was not received',
 		} );
+	} );
+
+	afterAll( async () => {
+		await merchant.logout();
 	} );
 
 	it( 'should be able to save a draft dispute challenge and resume', async () => {
