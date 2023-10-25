@@ -10,6 +10,7 @@ namespace WCPay\Tests\Internal\Payment\State;
 use WC_Helper_Intention;
 use WCPay\Constants\Intent_Status;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
+use WCPay\Internal\Payment\State\PaymentErrorState;
 use WCPay\Internal\Payment\State\ProcessedState;
 use Exception;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
@@ -116,7 +117,15 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		 * @var MockObject|InitialState
 		 */
 		$this->mocked_sut = $this->getMockBuilder( InitialState::class )
-			->onlyMethods( [ 'populate_context_from_request', 'populate_context_from_order', 'process_duplicate_order', 'process_duplicate_payment' ] )
+			->onlyMethods(
+				[
+					'populate_context_from_request',
+					'populate_context_from_order',
+					'process_order_phone_number',
+					'process_duplicate_order',
+					'process_duplicate_payment',
+				]
+			)
 			->setConstructorArgs(
 				[
 					$this->mock_state_factory,
@@ -207,6 +216,20 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->willReturn( $mock_auth_state );
 		$result = $this->mocked_sut->start_processing( $mock_request );
 		$this->assertSame( $mock_auth_state, $result );
+	}
+
+	public function test_start_processing_transits_to_error_state_due_to_invalid_phone() {
+		$mock_request     = $this->createMock( PaymentRequest::class );
+		$mock_error_state = $this->createMock( PaymentErrorState::class );
+
+		// Arrange mocks.
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+		$this->mocked_sut->expects( $this->once() )->method( 'process_order_phone_number' )->willReturn( $mock_error_state );
+
+		// Act and assert.
+		$result = $this->mocked_sut->start_processing( $mock_request );
+		$this->assertSame( $mock_error_state, $result );
 	}
 
 	public function provider_start_processing_then_detect_duplicates() {
@@ -311,6 +334,59 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->with( $customer_id );
 
 		PHPUnit_Utils::call_method( $this->sut, 'populate_context_from_order', [] );
+	}
+
+	public function test_process_order_phone_number_returns_null() {
+		$order_id = 123;
+
+		// Arrange mocks.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $order_id );
+
+		$this->mock_order_service->expects( $this->once() )
+			->method( 'is_valid_phone_number' )
+			->with( $order_id )
+			->willReturn( true );
+
+		$this->mock_context->expects( $this->never() )
+			->method( 'set_error_message' );
+
+		$this->mock_state_factory->expects( $this->never() )
+			->method( 'create_state' );
+
+		// Act and assert.
+		$this->assertNull(
+			PHPUnit_Utils::call_method( $this->sut, 'process_order_phone_number', [] )
+		);
+	}
+
+
+	public function test_process_order_phone_number_returns_error_state() {
+		$order_id             = 123;
+		$returned_class_state = PaymentErrorState::class;
+
+		// Arrange mocks.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $order_id );
+
+		$this->mock_order_service->expects( $this->once() )
+			->method( 'is_valid_phone_number' )
+			->with( $order_id )
+			->willReturn( false );
+
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_error_message' );
+
+		$this->mock_state_factory->expects( $this->once() )
+			->method( 'create_state' )
+			->with( $returned_class_state, $this->mock_context )
+			->willReturn( $this->createMock( $returned_class_state ) );
+
+		// Act and assert.
+		$result = PHPUnit_Utils::call_method( $this->sut, 'process_order_phone_number', [] );
+		$this->assertInstanceOf( $returned_class_state, $result );
 	}
 
 	public function test_process_duplicate_order_returns_null() {
