@@ -57,6 +57,7 @@ class List_Disputes extends Paginated {
 			'search'          => $request->get_param( 'search' ),
 			'status_is'       => $request->get_param( 'status_is' ),
 			'status_is_not'   => $request->get_param( 'status_is_not' ),
+			'order_number_is' => $request->get_param( 'order_number_is' ),
 		];
 
 		$wcpay_request->set_filters( $filters );
@@ -122,6 +123,17 @@ class List_Disputes extends Paginated {
 		if ( $created_between ) {
 			$this->set_param( 'created_between', $created_between );
 		}
+	}
+
+	/**
+	 * Set order_number.
+	 *
+	 * @param int $order_number Order number.
+	 *
+	 * @return void
+	 */
+	public function set_order_number( int $order_number ) {
+		$this->set_param( 'order_number_is', $order_number );
 	}
 
 	/**
