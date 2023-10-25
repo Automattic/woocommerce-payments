@@ -40,7 +40,7 @@ class PaymentContext {
 	private $changes = [];
 
 	/**
-	 * Stores the changes aganist each transiton.
+	 * Stores the transitions of state.
 	 *
 	 * @var array
 	 */
@@ -267,9 +267,9 @@ class PaymentContext {
 	 *
 	 * @param string $state The state.
 	 */
-	public function update_state_transition( string $state ): void {
-		$this->transitions[ $state ] = $this->changes;
-		$this->changes               = [];
+	public function log_state_transition( string $state ): void {
+		$this->transitions[] = new Transition( $this->get_order_id(), $state, $this->changes, time() );
+		$this->changes       = [];
 	}
 
 	/**
@@ -280,13 +280,14 @@ class PaymentContext {
 	public function log_changes(): string {
 		$log            = '';
 		$previous_state = null;
-		foreach ( $this->transitions as $state => $changes ) {
+		foreach ( $this->transitions as $transition ) {
+			$state          = $transition->get_state();
 			$log           .= $previous_state ?
 								"Transition from '" . $previous_state . "' to '" . $state :
-								"Payment initialized in '" . $state;
-			$log           .= "' {" . PHP_EOL;
-			$log           .= implode( PHP_EOL, $this->changes_to_str( $changes ) ) . PHP_EOL;
-			$log           .= '}' . PHP_EOL;
+								'Payment for order #' . $transition->get_order_id() . " initialized in '" . $state;
+			$log           .= "' [" . PHP_EOL;
+			$log           .= implode( PHP_EOL, $this->changes_to_str( $transition->get_changes() ) ) . PHP_EOL;
+			$log           .= ']' . PHP_EOL;
 			$previous_state = $state;
 		}
 		if ( ! empty( $this->changes ) ) {
@@ -307,9 +308,9 @@ class PaymentContext {
 		$changes_string = array_map(
 			function( Change $change ) {
 				if ( $change->get_old_value() ) {
-					$str = '  Changed ' . $change->get_key() . ' from ' . wp_json_encode( $change->get_old_value() ) . ' to ' . wp_json_encode( $change->get_new_value() );
+					$str = 'Changed ' . $change->get_key() . ' from ' . wp_json_encode( $change->get_old_value(), JSON_PRETTY_PRINT ) . ' to ' . wp_json_encode( $change->get_new_value(), JSON_PRETTY_PRINT );
 				} else {
-					$str = '  Set ' . $change->get_key() . ' to ' . wp_json_encode( $change->get_new_value() );
+					$str = 'Set ' . $change->get_key() . ' to ' . wp_json_encode( $change->get_new_value(), JSON_PRETTY_PRINT );
 				}
 				return $str;
 			},
