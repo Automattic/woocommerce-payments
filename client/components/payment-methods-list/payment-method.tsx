@@ -111,10 +111,13 @@ const PaymentMethod = ( {
 	isPoEnabled,
 	isPoComplete,
 }: PaymentMethodProps ): React.ReactElement => {
+	// We want to show a tooltip if PO is enabled and not yet complete.
+	const isPoInProgress = isPoEnabled && ! isPoComplete;
+
 	// APMs are disabled if they are inactive or if Progressive Onboarding is enabled and not yet complete.
 	const disabled =
 		upeCapabilityStatuses.INACTIVE === status ||
-		( id !== 'card' && isPoEnabled && ! isPoComplete );
+		( id !== 'card' && isPoInProgress );
 	const {
 		accountFees,
 	}: { accountFees: Record< string, FeeStructure > } = useContext(
@@ -122,12 +125,13 @@ const PaymentMethod = ( {
 	);
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
-	const needsAttention = [
+	const needsMoreInformation = [
 		upeCapabilityStatuses.INACTIVE,
 		upeCapabilityStatuses.PENDING_APPROVAL,
 		upeCapabilityStatuses.PENDING_VERIFICATION,
 	].includes( status );
 
+	const needsAttention = needsMoreInformation || isPoInProgress;
 	const shouldDisplayNotice = id === 'sofort';
 
 	const needsOverlay =
