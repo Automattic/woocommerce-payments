@@ -179,7 +179,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		featureFlags: { isDisputeIssuerEvidenceEnabled },
 	} = useContext( WCPaySettingsContext );
 
-	const onModalClose = () => {
+	const handleModalClose = () => {
+		// Don't allow the user to close the modal if the accept request is in progress.
 		if ( isDisputeAcceptRequestPending ) {
 			return;
 		}
@@ -310,7 +311,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							{ isModalOpen && (
 								<Modal
 									title={ disputeAcceptAction.modalTitle }
-									onRequestClose={ onModalClose }
+									onRequestClose={ handleModalClose }
 									className="transaction-details-dispute-accept-modal"
 								>
 									<p>
@@ -344,7 +345,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											disabled={
 												isDisputeAcceptRequestPending
 											}
-											onClick={ onModalClose }
+											onClick={ handleModalClose }
 										>
 											{ __(
 												'Cancel',
