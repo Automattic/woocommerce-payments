@@ -307,9 +307,9 @@ class PaymentContext {
 		$changes_string = array_map(
 			function( Change $change ) {
 				if ( $change->get_old_value() ) {
-					$str = '  Changed ' . $change->get_key() . ' from ' . json_encode( $change->get_old_value() ) . ' to ' . json_encode( $change->get_new_value() );
+					$str = '  Changed ' . $change->get_key() . ' from ' . wp_json_encode( $change->get_old_value() ) . ' to ' . wp_json_encode( $change->get_new_value() );
 				} else {
-					$str = '  Set ' . $change->get_key() . ' to ' . json_encode( $change->get_new_value() );
+					$str = '  Set ' . $change->get_key() . ' to ' . wp_json_encode( $change->get_new_value() );
 				}
 				return $str;
 			},
