@@ -16,7 +16,7 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Session_Service {
 
-	const SESSION_STORE_ID_OPTION = 'woopayments_session_store_id';
+	const SESSION_STORE_ID_OPTION = 'wcpay_session_store_id';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API

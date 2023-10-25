@@ -252,7 +252,7 @@ class WC_Payments_Fraud_Service {
 					return false;
 				}
 
-				// Sanitize the config just ot be safe by applying a sweeping `sanitize_text_field` on all the data.
+				// Sanitize the config just to be safe by applying a sweeping `sanitize_text_field` on all the data.
 				// This is OK to do since we are not accepting data entries with HTML.
 				return WC_Payments_Utils::array_map_recursive(
 					$fraud_services,
