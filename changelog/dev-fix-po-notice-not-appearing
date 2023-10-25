@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Update to properly show tooltip on Payments > Settings page when account is in PO state.
