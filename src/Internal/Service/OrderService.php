@@ -234,7 +234,7 @@ class OrderService {
 			$intent->get_status(),
 			$context->get_payment_method()->get_id(),
 			$context->get_customer_id(),
-			null,
+			'',
 			$context->get_currency()
 		);
 
