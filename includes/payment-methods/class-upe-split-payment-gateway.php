@@ -563,17 +563,23 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @throws Invalid_Address_Exception If neither shipping nor billing address is valid for Afterpay payments.
 	 * @return void
 	 */
-	protected function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
+	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
+		$check_if_usable = function( array $address ): bool {
+			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
+		};
+
 		$shipping_data = $this->get_shipping_data_from_order( $order );
-		if ( WC_Payments_Utils::is_data_valid_against_keys( $shipping_data['address'], Afterpay_Payment_Method::SHIPPING_ADDRESS_REQUIRED_FIELDS ) ) {
+		if ( $check_if_usable( $shipping_data['address'] ) ) {
 			$request->set_shipping( $shipping_data );
 			return;
 		}
+
 		$billing_data = $this->get_billing_data_from_order( $order );
-		if ( WC_Payments_Utils::is_data_valid_against_keys( $billing_data['address'], Afterpay_Payment_Method::SHIPPING_ADDRESS_REQUIRED_FIELDS ) ) {
+		if ( $check_if_usable( $billing_data['address'] ) ) {
 			$request->set_shipping( $billing_data );
 			return;
 		}
+
 		throw new Invalid_Address_Exception( __( 'A valid shipping address is required for Afterpay payments.', 'woocommerce-payments' ) );
 	}
 
