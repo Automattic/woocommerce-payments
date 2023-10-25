@@ -770,7 +770,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Create the shipping data array to send to Stripe when making a purchase, based on order's billing data.
+	 * Create the billing data array to send to Stripe when making a purchase, based on order's billing data.
 	 *
 	 * @param WC_Order $order The order that is being paid for.
 	 * @return array          The shipping data to send to Stripe.
