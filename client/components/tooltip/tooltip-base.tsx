@@ -223,9 +223,18 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 				wrappedElement.offsetWidth / 2 + wrappedElementRect.left;
 			const tooltipWidth = tooltipElement.offsetWidth;
 			let tooltipLeft = elementMiddle - tooltipWidth / 2;
+			const tooltipRight =
+				window.innerWidth -
+				( wrappedElementRect.left + tooltipElement.offsetWidth );
+
 			if ( tooltipLeft < 0 ) {
-				tooltipLeft = 10;
+				// create a gap with the left edge if the element is out of view port
+				tooltipLeft = 45;
+			} else if ( tooltipRight < 0 ) {
+				// create a gap with the right edge if the element is out of view port
+				tooltipLeft = tooltipLeft - 85;
 			}
+
 			tooltipElement.style.left = `${ tooltipLeft }px`;
 
 			// make it visible only after all the calculations are done.
