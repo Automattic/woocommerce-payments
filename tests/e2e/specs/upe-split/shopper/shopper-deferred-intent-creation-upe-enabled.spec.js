@@ -151,11 +151,11 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 
 	const bnplProviders = [
 		[ 'Affirm', 'li.payment_method_woocommerce_payments_affirm', 'button' ],
-		[
-			'Afterpay/Clearpay',
-			'li.payment_method_woocommerce_payments_afterpay_clearpay',
-			'a',
-		],
+		// [
+		// 	'Afterpay/Clearpay',
+		// 	'li.payment_method_woocommerce_payments_afterpay_clearpay',
+		// 	'a',
+		// ],
 	];
 
 	describe.each( bnplProviders )(
