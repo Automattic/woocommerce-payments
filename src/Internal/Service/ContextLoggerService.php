@@ -44,13 +44,13 @@ class ContextLoggerService {
 			$to_state       = $transition->get_to_state();
 			$previous_state = $transition->get_from_state();
 			if ( $to_state && ! $previous_state ) {
-				$log .= 'Payment for order #' . $transition->get_order_id() . " initialized in '" . $to_state;
+				$log .= 'Payment for order #' . $transition->get_order_id() . ' initialized in "' . $to_state;
 			} elseif ( $previous_state && ! $to_state ) {
-				$log .= "Changes within '" . $previous_state;
+				$log .= 'Changes within "' . $previous_state;
 			} else {
-				$log .= "Transition from '" . $previous_state . "' to '" . $to_state;
+				$log .= 'Transition from "' . $previous_state . '" to "' . $to_state;
 			}
-			$log .= "' [" . PHP_EOL;
+			$log .= '" [' . PHP_EOL;
 			$log .= implode( PHP_EOL, $this->changes_to_str( $transition->get_changes() ) ) . PHP_EOL;
 			$log .= ']' . PHP_EOL;
 		}
