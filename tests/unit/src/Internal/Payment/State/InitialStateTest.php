@@ -406,10 +406,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->with( $order_id )
 			->willReturn( null );
 
-		$this->mock_dpps->expects( $this->never() )
-			->method( 'remove_session_processing_order' )
-			->with( $order_id );
-
 		$this->mock_context->expects( $this->never() )
 			->method( 'set_intent' );
 
@@ -439,10 +435,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->method( 'get_authorized_payment_intent_attached_to_order' )
 			->with( $order_id )
 			->willReturn( $mock_intent );
-
-		$this->mock_dpps->expects( $this->once() )
-			->method( 'remove_session_processing_order' )
-			->with( $order_id );
 
 		$this->mock_context->expects( $this->once() )
 			->method( 'set_intent' )

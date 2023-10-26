@@ -234,7 +234,6 @@ class InitialState extends AbstractPaymentState {
 			return null;
 		}
 
-		$this->dpps->remove_session_processing_order( $order_id );
 		$context->set_intent( $authorized_intent );
 		$context->set_detected_authorized_intent();
 
