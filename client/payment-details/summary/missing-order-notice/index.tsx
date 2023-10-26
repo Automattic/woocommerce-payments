@@ -70,7 +70,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 					title={ __( 'Refund Transaction', 'woocommerce-payments' ) }
 					actions={
 						<>
-							<Button onClick={ handleModalCancel } isSecondary>
+							<Button onClick={ handleModalCancel } variant="secondary">
 								{ __( 'Cancel', 'woocommerce-payments' ) }
 							</Button>
 							<Button
