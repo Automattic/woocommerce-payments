@@ -11,7 +11,6 @@ use WC_Payments_API_Abstract_Intention;
 use WC_Payments_API_Setup_Intention;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
-use WCPay\Internal\Logger;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\StateFactory;
@@ -19,6 +18,7 @@ use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentRequestException;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Internal\Service\ContextLoggerService;
 
 /**
  * Payment Processing Service.
@@ -39,28 +39,28 @@ class PaymentProcessingService {
 	private $legacy_proxy;
 
 	/**
-	 * Logger.
+	 * ContextLoggerService.
 	 *
-	 * @var Logger
+	 * @var ContextLoggerService
 	 */
-	private $logger;
+	private $context_logger_service;
 
 
 	/**
 	 * Service constructor.
 	 *
-	 * @param StateFactory $state_factory Factory for payment states.
-	 * @param LegacyProxy  $legacy_proxy Legacy proxy.
-	 * @param Logger       $logger Logger.
+	 * @param StateFactory         $state_factory Factory for payment states.
+	 * @param LegacyProxy          $legacy_proxy Legacy proxy.
+	 * @param ContextLoggerService $context_logger_service Context Logging Service.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
 		LegacyProxy $legacy_proxy,
-		Logger $logger
+		ContextLoggerService $context_logger_service
 	) {
-		$this->state_factory = $state_factory;
-		$this->legacy_proxy  = $legacy_proxy;
-		$this->logger        = $logger;
+		$this->state_factory          = $state_factory;
+		$this->legacy_proxy           = $legacy_proxy;
+		$this->context_logger_service = $context_logger_service;
 	}
 
 	/**
@@ -82,7 +82,7 @@ class PaymentProcessingService {
 		$initial_state = $this->state_factory->create_state( InitialState::class, $context );
 		$final_state   = $initial_state->start_processing( $request );
 
-		$this->logger->log( $context->log_changes() );
+		$this->context_logger_service->log_changes( $context );
 		return $final_state;
 	}
 
