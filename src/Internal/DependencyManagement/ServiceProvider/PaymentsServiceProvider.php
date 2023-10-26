@@ -14,7 +14,6 @@ use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\Logger;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
-use WCPay\Internal\Logger;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\CompletedState;
