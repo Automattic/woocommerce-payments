@@ -18,11 +18,10 @@ use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPAY_UnitTestCase;
-use WCPay\Internal\Logger;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Service\PaymentProcessingService;
-use WCPay\Internal\Service\ContextLoggerService;
+use WCPay\Internal\Service\PaymentContextLoggerService;
 
 /**
  * Payment processing service unit tests.
@@ -46,7 +45,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 	private $mock_legacy_proxy;
 
 	/**
-	 * @var ContextLoggerService|MockObject
+	 * @var PaymentContextLoggerService|MockObject
 	 */
 	private $mock_context_logger;
 
@@ -58,7 +57,7 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 
 		$this->mock_state_factory  = $this->createMock( StateFactory::class );
 		$this->mock_legacy_proxy   = $this->createMock( LegacyProxy::class );
-		$this->mock_context_logger = $this->createMock( ContextLoggerService::class );
+		$this->mock_context_logger = $this->createMock( PaymentContextLoggerService::class );
 
 		$this->sut = $this->getMockBuilder( PaymentProcessingService::class )
 			->setConstructorArgs(

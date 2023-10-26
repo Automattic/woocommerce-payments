@@ -7,12 +7,10 @@
 
 namespace WCPay\Internal\Payment;
 
-use PHP_CodeSniffer\Tokenizers\PHP;
 use WC_Payments_API_Abstract_Intention;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 use WCPay\Internal\Payment\Change;
-
-use function PHPUnit\Framework\isEmpty;
+use WCPay\Internal\Payment\Transition;
 
 /**
  * A context object, which is shared between payment states.
@@ -35,7 +33,7 @@ class PaymentContext {
 	/**
 	 * Stores the transitions of state.
 	 *
-	 * @var array
+	 * @var Transition[]
 	 */
 	private $transitions = [];
 

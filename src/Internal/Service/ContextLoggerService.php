@@ -1,6 +1,6 @@
 <?php
 /**
- * Class ContextLoggerService
+ * Class PaymentContextLoggerService
  *
  * @package WooCommerce\Payments
  */
@@ -14,7 +14,7 @@ use WCPay\Internal\Payment\Change;
 /**
  * Service for logging payment context.
  */
-class ContextLoggerService {
+class PaymentContextLoggerService {
 	/**
 	 * Logger instance.
 	 *

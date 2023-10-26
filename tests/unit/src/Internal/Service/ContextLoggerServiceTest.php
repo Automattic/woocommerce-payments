@@ -12,16 +12,16 @@ use WCPay\Internal\Logger;
 use WCPay\Internal\Payment\Change;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\Transition;
-use WCPay\Internal\Service\ContextLoggerService;
+use WCPay\Internal\Service\PaymentContextLoggerService;
 
 /**
  * Level3 data service unit tests.
  */
-class ContextLoggerServiceTest extends WCPAY_UnitTestCase {
+class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 	/**
 	 * Service under test.
 	 *
-	 * @var ContextLoggerService
+	 * @var PaymentContextLoggerService
 	 */
 	private $sut;
 
@@ -41,7 +41,7 @@ class ContextLoggerServiceTest extends WCPAY_UnitTestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$this->mock_logger = $this->createMock( Logger::class );
-		$this->sut         = new ContextLoggerService( $this->mock_logger );
+		$this->sut         = new PaymentContextLoggerService( $this->mock_logger );
 
 		$this->mock_payment_context = $this->getMockBuilder( PaymentContext::class )
 			->disableOriginalConstructor()
