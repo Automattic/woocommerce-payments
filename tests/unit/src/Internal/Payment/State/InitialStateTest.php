@@ -11,7 +11,6 @@ use WC_Helper_Intention;
 use WCPay\Constants\Intent_Status;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
-use WCPay\Internal\Payment\State\PaymentErrorState;
 use WCPay\Internal\Payment\State\ProcessedState;
 use Exception;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
