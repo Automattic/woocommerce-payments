@@ -232,8 +232,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_start_processing_throw_exceptions_due_to_invalid_phone() {
-		$mock_request     = $this->createMock( PaymentRequest::class );
-		$mock_error_state = $this->createMock( PaymentErrorState::class );
+		$mock_request = $this->createMock( PaymentRequest::class );
 
 		// Arrange mocks.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
@@ -373,8 +372,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_process_order_phone_number_throws_exception() {
-		$order_id             = 123;
-		$returned_class_state = PaymentErrorState::class;
+		$order_id = 123;
 
 		// Arrange mocks.
 		$this->mock_context->expects( $this->once() )
