@@ -385,6 +385,53 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$this->sut->update_order_from_successful_intent( $this->order_id, $intent, $mock_context );
 	}
 
+	/**
+	 * Test for the `update_order_from_intent_that_requires_action` method.
+	 */
+	public function test_update_order_from_intent_that_requires_action() {
+		$intent_id         = 'pi_XYZ';
+		$intent_status     = 'success';
+		$customer_id       = 'cus_XYZ';
+		$currency          = 'usd';
+		$payment_method_id = 'pm_XYZ';
+
+		// Prepare the context, and all needed getters.
+		$mock_context = $this->createMock( PaymentContext::class );
+		$mock_context->expects( $this->once() )->method( 'get_payment_method' )->willReturn( new NewPaymentMethod( $payment_method_id ) );
+		$mock_context->expects( $this->once() )->method( 'get_customer_id' )->willReturn( $customer_id );
+		$mock_context->expects( $this->once() )->method( 'get_currency' )->willReturn( $currency );
+
+		// Create a mock order that will be used, and return it.
+		$mock_order = $this->createMock( WC_Order::class );
+		$this->sut->expects( $this->once() )
+			->method( 'get_order' )
+			->with( $this->order_id )
+			->willReturn( $mock_order );
+
+		// Prepare the intent, and all expected getters.
+		$mock_intent = $this->createMock( WC_Payments_API_Payment_Intention::class );
+		$mock_intent->expects( $this->once() )->method( 'get_id' )->willReturn( $intent_id );
+		$mock_intent->expects( $this->once() )->method( 'get_status' )->willReturn( $intent_status );
+
+		$this->mock_legacy_service->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' )
+			->with(
+				$mock_order,
+				$intent_id,
+				$intent_status,
+				$payment_method_id,
+				$customer_id,
+				null,
+				$currency
+			);
+
+		$this->mock_legacy_service->expects( $this->once() )
+			->method( 'update_order_status_from_intent' )
+			->with( $mock_order, $mock_intent );
+
+		$this->sut->update_order_from_intent_that_requires_action( $this->order_id, $mock_intent, $mock_context );
+	}
+
 	public function provider_attach_exchange_info_to_order() {
 		return [
 			'Different store and account currencies' => [ 'USD', 'USD', 'EUR', null, null ],

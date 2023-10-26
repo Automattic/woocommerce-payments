@@ -11,7 +11,7 @@ use WC_Session;
 use WCPay\Internal\Proxy\LegacyProxy;
 
 /**
- * Session service. Use as a translation layer between `src` class and Woo core WC_Session class.
+ * Session service. Use as a translation layer between `src` classes and Woo core WC_Session class.
  */
 class SessionService {
 	/**
@@ -24,7 +24,7 @@ class SessionService {
 	/**
 	 * Constructor.
 	 *
-	 * @param  LegacyProxy $legacy_proxy Legacy proxy instance.
+	 * @param LegacyProxy $legacy_proxy Legacy proxy instance.
 	 */
 	public function __construct( LegacyProxy $legacy_proxy ) {
 		$this->legacy_proxy = $legacy_proxy;
@@ -33,7 +33,7 @@ class SessionService {
 	/**
 	 * Getter.
 	 *
-	 * @param  string     $key Session key.
+	 * @param string     $key     Session key.
 	 * @param mixed|null $default Default value to return if key is not set.
 	 *
 	 * @return mixed
@@ -49,8 +49,8 @@ class SessionService {
 	/**
 	 * Setter.
 	 *
-	 * @param  string $key Session key.
-	 * @param  mixed  $value Value to set.
+	 * @param string $key   Session key.
+	 * @param mixed  $value Value to set.
 	 *
 	 * @return void
 	 */

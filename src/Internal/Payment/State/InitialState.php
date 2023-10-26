@@ -134,6 +134,7 @@ class InitialState extends AbstractPaymentState {
 
 		// Intent requires authorization (3DS check).
 		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
+			$this->order_service->update_order_from_intent_that_requires_action( $context->get_order_id(), $intent, $context );
 			return $this->create_state( AuthenticationRequiredState::class );
 		}
 
@@ -223,12 +224,12 @@ class InitialState extends AbstractPaymentState {
 	/**
 	 * Detects duplicate orders, and run the necessary actions if one is detected.
 	 *
-	 * @return AbstractPaymentState|null The next state, or null if no duplicate order is detected.
+	 * @return DuplicateOrderDetectedState|null The next state, or null if no duplicate order is detected.
 	 * @throws Order_Not_Found_Exception
 	 * @throws StateTransitionException
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 */
-	protected function process_duplicate_order(): ?AbstractPaymentState {
+	protected function process_duplicate_order(): ?DuplicateOrderDetectedState {
 		$context          = $this->get_context();
 		$current_order_id = $context->get_order_id();
 
@@ -246,12 +247,12 @@ class InitialState extends AbstractPaymentState {
 	/**
 	 * Detects duplicate payment, and run the necessary actions if one is detected.
 	 *
-	 * @return AbstractPaymentState|null The next state, or null if duplicate payment is detected.
+	 * @return CompletedState|null The next state, or null if duplicate payment is detected.
 	 * @throws Order_Not_Found_Exception
 	 * @throws StateTransitionException
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 */
-	protected function process_duplicate_payment(): ?AbstractPaymentState {
+	protected function process_duplicate_payment(): ?CompletedState {
 		$context  = $this->get_context();
 		$order_id = $context->get_order_id();
 
