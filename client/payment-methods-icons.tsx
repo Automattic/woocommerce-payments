@@ -2,8 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import classNames from 'classnames';
-
+import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
@@ -34,32 +33,44 @@ const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
 	props
 ) => <img className={ 'payment-method__icon' } src={ src } alt={ alt } />;
 
-export const AffirmIcon = iconComponent( AffirmAsset, 'Affirm' );
-export const AfterpayIcon = iconComponent( AfterpayAsset, 'Afterpay' );
+export const AffirmIcon = iconComponent( AffirmAsset, __( 'Affirm' ) );
+export const AfterpayIcon = iconComponent( AfterpayAsset, __( 'Afterpay' ) );
 export const AmericanExpressIcon = iconComponent(
 	AmexAsset,
 	'American Express'
 );
-export const ApplePayIcon = iconComponent( ApplePayAsset, 'Apple Pay' );
-export const BancontactIcon = iconComponent( BancontactAsset, 'Bancontact' );
+export const ApplePayIcon = iconComponent( ApplePayAsset, __( 'Apple Pay' ) );
+export const BancontactIcon = iconComponent(
+	BancontactAsset,
+	__( 'Bancontact' )
+);
 export const BankDebitIcon = iconComponent(
 	BankDebitAsset,
-	'BECS Direct Debit'
+	__( 'BECS Direct Debit' )
 );
-export const DinersClubIcon = iconComponent( DinersClubAsset, 'Diners Club' );
-export const EpsIcon = iconComponent( EpsAsset, 'BECS Direct Debit' );
-export const GiropayIcon = iconComponent( GiropayAsset, 'Giropay' );
-export const GooglePayIcon = iconComponent( GooglePayAsset, 'Google Pay' );
-export const IdealIcon = iconComponent( IdealAsset, 'iDEAL' );
-export const JCBIcon = iconComponent( JCBAsset, 'JCB' );
-export const KlarnaIcon = iconComponent( KlarnaAsset, 'Klarna' );
-export const MastercardIcon = iconComponent( MasterCardAsset, 'Mastercard' );
-export const P24Icon = iconComponent( P24Asset, 'Przelewy24 (P24)' );
-export const SepaIcon = iconComponent( SepaAsset, 'SEPA Direct Debit' );
-export const SofortIcon = iconComponent( SofortAsset, 'Sofort' );
-export const UnionPayIcon = iconComponent( UnionPayAsset, 'UnionPay' );
-export const VisaIcon = iconComponent( VisaAsset, 'Visa' );
-export const WooIcon = iconComponent( WooAsset, 'WooPay' );
+export const DinersClubIcon = iconComponent(
+	DinersClubAsset,
+	__( 'Diners Club' )
+);
+export const EpsIcon = iconComponent( EpsAsset, __( 'BECS Direct Debit' ) );
+export const GiropayIcon = iconComponent( GiropayAsset, __( 'Giropay' ) );
+export const GooglePayIcon = iconComponent(
+	GooglePayAsset,
+	__( 'Google Pay' )
+);
+export const IdealIcon = iconComponent( IdealAsset, __( 'iDEAL' ) );
+export const JCBIcon = iconComponent( JCBAsset, __( 'JCB' ) );
+export const KlarnaIcon = iconComponent( KlarnaAsset, __( 'Klarna' ) );
+export const MastercardIcon = iconComponent(
+	MasterCardAsset,
+	__( 'Mastercard' )
+);
+export const P24Icon = iconComponent( P24Asset, __( 'Przelewy24 (P24)' ) );
+export const SepaIcon = iconComponent( SepaAsset, __( 'SEPA Direct Debit' ) );
+export const SofortIcon = iconComponent( SofortAsset, __( 'Sofort' ) );
+export const UnionPayIcon = iconComponent( UnionPayAsset, __( 'UnionPay' ) );
+export const VisaIcon = iconComponent( VisaAsset, __( 'Visa' ) );
+export const WooIcon = iconComponent( WooAsset, __( 'WooPay' ) );
 
 export const CreditCardIcon: React.FC = () => {
 	return (
