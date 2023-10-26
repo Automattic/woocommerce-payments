@@ -31,13 +31,6 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 	private $sut;
 
 	/**
-	 * Service under test with some mocked methods.
-	 *
-	 * @var DuplicatePaymentPreventionService|MockObject
-	 */
-	private $mocked_sut;
-
-	/**
 	 * @var OrderService|MockObject
 	 */
 	private $mock_order_service;
@@ -313,13 +306,14 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 
 		?int $expected
 	) {
-		$this->mocked_sut = $this->getMockBuilder( DuplicatePaymentPreventionService::class )
+		/** @var $mock_sut DuplicatePaymentPreventionService|MockObject  */
+		$mock_sut = $this->getMockBuilder( DuplicatePaymentPreventionService::class )
 			->setConstructorArgs( $this->deps )
 			->onlyMethods( [ 'get_session_processing_order' ] )
 			->getMock();
 
 		// Arrange.
-		$this->mocked_sut->expects( $this->once() )
+		$mock_sut->expects( $this->once() )
 			->method( 'get_session_processing_order' )
 			->willReturn( $session_order_id );
 
@@ -348,7 +342,7 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 			->willReturn( $is_session_order_paid );
 
 		// Act.
-		$result = $this->mocked_sut->get_previous_paid_duplicate_order_id( $current_order_id );
+		$result = $mock_sut->get_previous_paid_duplicate_order_id( $current_order_id );
 
 		// Assert.
 		$this->assertSame( $expected, $result );
@@ -357,7 +351,8 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 	public function test_clean_up_when_detecting_duplicate_order() {
 		$duplicate_order_id = 111;
 		$current_order_id   = 222;
-		$this->mocked_sut   = $this->getMockBuilder( DuplicatePaymentPreventionService::class )
+		/** @var $mock_sut DuplicatePaymentPreventionService|MockObject  */
+		$mock_sut   = $this->getMockBuilder( DuplicatePaymentPreventionService::class )
 			->setConstructorArgs( $this->deps )
 			->onlyMethods( [ 'remove_session_processing_order' ] )
 			->getMock();
@@ -372,12 +367,12 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 			->method( 'delete' )
 			->with( $current_order_id );
 
-		$this->mocked_sut->expects( $this->once() )
+		$mock_sut->expects( $this->once() )
 			->method( 'remove_session_processing_order' )
 			->with( $duplicate_order_id );
 
 		// Act.
-		$this->mocked_sut->clean_up_when_detecting_duplicate_order( $duplicate_order_id, $current_order_id );
+		$mock_sut->clean_up_when_detecting_duplicate_order( $duplicate_order_id, $current_order_id );
 	}
 
 	public function test_update_session_processing_order() {
@@ -401,12 +396,13 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 	 * @dataProvider provider_remove_session_processing_order
 	 */
 	public function test_remove_session_processing_order( ?int $session_order_id, int $to_be_removed_id, int $session_invoked_times ) {
-		$this->mocked_sut = $this->getMockBuilder( DuplicatePaymentPreventionService::class )
+		/** @var $mock_sut DuplicatePaymentPreventionService|MockObject  */
+		$mock_sut = $this->getMockBuilder( DuplicatePaymentPreventionService::class )
 			->setConstructorArgs( $this->deps )
 			->onlyMethods( [ 'get_session_processing_order' ] )
 			->getMock();
 
-		$this->mocked_sut->expects( $this->once() )
+		$mock_sut->expects( $this->once() )
 			->method( 'get_session_processing_order' )
 			->willReturn( $session_order_id );
 		$this->mock_session_service
@@ -415,7 +411,7 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 			->with( $this->sut::SESSION_KEY_PROCESSING_ORDER, null );
 
 		// Act.
-		$this->mocked_sut->remove_session_processing_order( $to_be_removed_id );
+		$mock_sut->remove_session_processing_order( $to_be_removed_id );
 	}
 
 	public function provider_get_session_processing_order() {
@@ -457,7 +453,8 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 		bool $is_order_received_page,
 		$order_received_var,
 		int $call_remove_session_processing_order ) {
-		$this->mocked_sut = $this->getMockBuilder( DuplicatePaymentPreventionService::class )
+		/** @var $mock_sut DuplicatePaymentPreventionService|MockObject  */
+		$mock_sut = $this->getMockBuilder( DuplicatePaymentPreventionService::class )
 			->setConstructorArgs( $this->deps )
 			->onlyMethods( [ 'remove_session_processing_order' ] )
 			->getMock();
@@ -478,10 +475,10 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 			->with( 'is_order_received_page' )
 			->willReturn( $is_order_received_page );
 
-		$this->mocked_sut->expects( $this->exactly( $call_remove_session_processing_order ) )
+		$mock_sut->expects( $this->exactly( $call_remove_session_processing_order ) )
 			->method( 'remove_session_processing_order' )
 			->with( $order_received_var );
 
-		$this->mocked_sut->clear_session_processing_order_after_landing_order_received_page();
+		$mock_sut->clear_session_processing_order_after_landing_order_received_page();
 	}
 }
