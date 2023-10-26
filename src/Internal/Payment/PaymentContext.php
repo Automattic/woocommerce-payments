@@ -44,7 +44,7 @@ class PaymentContext {
 	 */
 	public function __construct( int $order_id ) {
 		$this->order_id      = $order_id;
-		$this->transitions[] = new Transition( $order_id, null, null, [], time() );
+		$this->transitions[] = new Transition( $order_id, null );
 	}
 
 	/**
@@ -271,7 +271,7 @@ class PaymentContext {
 	public function log_state_transition( string $state ): void {
 		$last_transition = end( $this->transitions );
 		$last_transition->set_to_state( $state );
-		$this->transitions[] = new Transition( $this->get_order_id(), $state, null, [], time() );
+		$this->transitions[] = new Transition( $this->get_order_id(), $state );
 	}
 
 	/**

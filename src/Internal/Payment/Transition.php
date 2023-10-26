@@ -7,6 +7,8 @@
 
 namespace WCPay\Internal\Payment;
 
+use WCPay\Internal\Payment\Change;
+
 /**
  * A Transition object used for logging.
  * Contains the details of a state transition during the payment process.
@@ -23,21 +25,21 @@ class Transition {
 	/**
 	 * State of the transition.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	private $from_state;
 
 	/**
 	 * State of the transition.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	private $to_state;
 
 	/**
 	 * Changes made during the transition.
 	 *
-	 * @var array
+	 * @var Change[]
 	 */
 	private $changes;
 
@@ -51,18 +53,14 @@ class Transition {
 	/**
 	 * Constructs the class, with changes, order ID, timestamp and state.
 	 *
-	 * @param string $order_id Order ID.
-	 * @param string $from_state State of the transition.
-	 * @param string $to_state State of the transition.
-	 * @param array  $changes Changes made during the transition.
-	 * @param int    $timestamp Timestamp of the transition.
+	 * @param string      $order_id Order ID.
+	 * @param string|null $from_state State of the transition.
 	 */
-	public function __construct( string $order_id, ?string $from_state, ?string $to_state, array $changes, int $timestamp ) {
+	public function __construct( string $order_id, ?string $from_state ) {
 		$this->order_id   = $order_id;
 		$this->from_state = $from_state;
-		$this->to_state   = $to_state;
-		$this->changes    = $changes;
-		$this->timestamp  = $timestamp;
+		$this->changes    = [];
+		$this->timestamp  = time();
 	}
 
 	/**
@@ -117,5 +115,14 @@ class Transition {
 	 */
 	public function set_to_state( string $to_state ) {
 		$this->to_state = $to_state;
+	}
+
+	/**
+	 * Returns the timestamp.
+	 *
+	 * @return int Timestamp.
+	 */
+	public function get_timestamp() : int {
+		return $this->timestamp;
 	}
 }
