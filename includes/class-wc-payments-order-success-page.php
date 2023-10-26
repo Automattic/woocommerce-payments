@@ -82,10 +82,13 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function add_notice_previous_paid_order( $text ) {
 		if ( isset( $_GET[ Duplicate_Payment_Prevention_Service::FLAG_PREVIOUS_ORDER_PAID ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
-			$text .= sprintf(
-				'<div class="woocommerce-info">%s</div>',
-				esc_attr__( 'We detected and prevented an attempt to pay for a duplicate order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
-			);
+			echo "
+				<script type='text/javascript'>
+					document.querySelector('.woocommerce-notice').classList.add('woocommerce-info');
+				</script>
+			";
+
+			$text .= ' ' . __( 'We detected and prevented an attempt to pay for a duplicate order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' );
 		}
 
 		return $text;
@@ -100,10 +103,14 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function add_notice_previous_successful_intent( $text ) {
 		if ( isset( $_GET[ Duplicate_Payment_Prevention_Service::FLAG_PREVIOUS_SUCCESSFUL_INTENT ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
-			$text .= sprintf(
-				'<div class="woocommerce-info">%s</div>',
-				esc_attr__( 'We prevented multiple payments for the same order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
-			);
+			echo "
+				<script type='text/javascript'>
+					document.querySelector('.woocommerce-notice').classList.add('woocommerce-info');
+				</script>
+			";
+
+			$text .= ' ' .  __( 'We prevented multiple payments for the same order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' );
+
 		}
 
 		return $text;
