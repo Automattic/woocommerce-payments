@@ -115,6 +115,16 @@
 		}
 	}
 
+	&__appearance-card-settings,
+	&__appearance-card-preview {
+		background-color: $studio-white;
+		box-shadow: 0 0 0 1px #0000001a;
+	}
+
+	&__appearance-card-preview {
+		margin-top: 1rem;
+	}
+
 	&__preview {
 		position: relative;
 
@@ -131,6 +141,9 @@
 		}
 
 		.preview-layout {
+			border: 1px solid #ddd;
+			padding: 0 3.797%;
+
 			&__v-spacer {
 				background-color: #0000;
 				width: 100%;
@@ -257,6 +270,11 @@
 			}
 		}
 	}
+}
+
+.woopay-settings--appearance {
+	background-color: #0000 !important;
+	box-shadow: none !important;
 }
 
 .payment-request-settings {

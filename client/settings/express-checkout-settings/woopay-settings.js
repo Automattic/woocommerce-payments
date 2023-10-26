@@ -3,6 +3,7 @@
  * External dependencies
  */
 import React from 'react';
+import classNames from 'classnames';
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
@@ -57,7 +58,12 @@ const WooPaySettings = ( { section } ) => {
 	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();
 
 	return (
-		<Card className="woopay-settings">
+		<Card
+			className={ classNames( {
+				'woopay-settings': true,
+				'woopay-settings--appearance': section === 'appearance',
+			} ) }
+		>
 			{ section === 'enable' && (
 				<CardBody>
 					{ showIncompatibilityNotice && (
@@ -177,14 +183,7 @@ const WooPaySettings = ( { section } ) => {
 			) }
 
 			{ section === 'appearance' && (
-				<CardBody style={ { marginTop: 12 } }>
-					<div className="woopay-settings__preview">
-						<WooPayPreview
-							storeName={ wcSettings.siteTitle }
-							storeLogo={ woopayStoreLogo }
-							customMessage={ woopayCustomMessage }
-						></WooPayPreview>
-					</div>
+				<CardBody className="woopay-settings__appearance-card-settings">
 					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
 							{ __( 'Checkout logo', 'woocommerce-payments' ) }
@@ -238,6 +237,24 @@ const WooPaySettings = ( { section } ) => {
 							value={ woopayCustomMessage }
 							onChange={ setWooPayCustomMessage }
 						/>
+					</div>
+				</CardBody>
+			) }
+
+			{ section === 'appearance' && (
+				<CardBody className="woopay-settings__appearance-card-preview">
+					<div className="woopay-settings__preview">
+						<h4>
+							{ __(
+								'Preview of checkout',
+								'woocommerce-payments'
+							) }
+						</h4>
+						<WooPayPreview
+							storeName={ wcSettings.siteTitle }
+							storeLogo={ woopayStoreLogo }
+							customMessage={ woopayCustomMessage }
+						></WooPayPreview>
 					</div>
 				</CardBody>
 			) }
