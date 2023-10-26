@@ -232,10 +232,6 @@ const DisputeNoticeWrapper = ( { chargeId } ) => {
 		return null;
 	}
 
-	return <DisputeNotice chargeId={ chargeId } dispute={ dispute } />;
-};
-
-const DisputeNotice = ( { chargeId, dispute } ) => {
 	// Only show the notice if the dispute is awaiting a response.
 	if ( ! isAwaitingResponse( dispute.status ) ) {
 		return null;
@@ -248,12 +244,38 @@ const DisputeNotice = ( { chargeId, dispute } ) => {
 
 	const now = moment();
 	const dueBy = moment.unix( dispute.evidence_details?.due_by );
-	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 
 	// If the dispute is due in the past, don't show notice.
 	if ( ! now.isBefore( dueBy ) ) {
 		return null;
 	}
+
+	return (
+		<DisputeNotice
+			chargeId={ chargeId }
+			dispute={ dispute }
+			isPreDisputeInquiry={ isInquiry( dispute ) }
+			dueBy={ dueBy }
+			countdownDays={ Math.floor( dueBy.diff( now, 'days', true ) ) }
+			disputeDetailsUrl={ disputeDetailsUrl }
+		/>
+	);
+};
+
+const DisputeNotice = ( {
+	dispute,
+	isPreDisputeInquiry,
+	dueBy,
+	countdownDays,
+	disputeDetailsUrl,
+} ) => {
+	useEffect( () => {
+		wcpayTracks.recordEvent( 'wcpay_order_dispute_notice_view', {
+			is_inquiry: isPreDisputeInquiry,
+			dispute_reason: dispute.reason,
+			due_by_days: countdownDays,
+		} );
+	}, [ isPreDisputeInquiry, dispute.reason, countdownDays ] );
 
 	const titleStrings = {
 		// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
@@ -316,12 +338,6 @@ const DisputeNotice = ( { chargeId, dispute } ) => {
 		dateI18n( 'M j, Y', dueBy.local().toISOString() )
 	);
 
-	// If the dispute is due within 72 hours, we want to highlight it as urgent/red.
-	let urgency = 'warning';
-	if ( countdownDays < 3 ) {
-		urgency = 'error';
-	}
-
 	if ( countdownDays < 1 ) {
 		buttonLabel = __( 'Respond today', 'woocommerce-payments' );
 		suffix = __( '(Last day today)', 'woocommerce-payments' );
@@ -329,13 +345,14 @@ const DisputeNotice = ( { chargeId, dispute } ) => {
 
 	return (
 		<InlineNotice
-			status={ urgency }
+			status={ countdownDays < 3 ? 'error' : 'warning' }
 			isDismissible={ false }
 			actions={ [
 				{
 					label: buttonLabel,
 					variant: 'secondary',
 					onClick: () => {
+						// TODO - inline event name and remove unnnecessary parseInt.
 						wcpayTracks.recordEvent(
 							wcpayTracks.events
 								.ORDER_DISPUTE_NOTICE_BUTTON_CLICK,
@@ -343,10 +360,7 @@ const DisputeNotice = ( { chargeId, dispute } ) => {
 								due_by_days: parseInt( countdownDays, 10 ),
 							}
 						);
-						window.location = getDetailsURL(
-							chargeId,
-							'transactions'
-						);
+						window.location = disputeDetailsUrl;
 					},
 				},
 			] }
