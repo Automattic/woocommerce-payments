@@ -353,12 +353,10 @@ const DisputeNotice = ( {
 					label: buttonLabel,
 					variant: 'secondary',
 					onClick: () => {
-						// TODO - inline event name and remove unnnecessary parseInt.
 						wcpayTracks.recordEvent(
-							wcpayTracks.events
-								.ORDER_DISPUTE_NOTICE_BUTTON_CLICK,
+							'wcpay_order_dispute_notice_action_click',
 							{
-								due_by_days: parseInt( countdownDays, 10 ),
+								due_by_days: countdownDays,
 							}
 						);
 						window.location = disputeDetailsUrl;
