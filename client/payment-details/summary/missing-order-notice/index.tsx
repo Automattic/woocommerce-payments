@@ -50,7 +50,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 				<CardNotice
 					actions={
 						<Button
-							isPrimary={ true }
+							variant="primary"
 							isSmall={ false }
 							onClick={ handleOnButtonClick }
 						>
