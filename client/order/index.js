@@ -250,7 +250,7 @@ const DisputeNotice = ( { chargeId, dispute } ) => {
 	const dueBy = moment.unix( dispute.evidence_details?.due_by );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 
-	// If the dispute is due in the past, we don't want to show the notice.
+	// If the dispute is due in the past, don't show notice.
 	if ( ! now.isBefore( dueBy ) ) {
 		return null;
 	}
