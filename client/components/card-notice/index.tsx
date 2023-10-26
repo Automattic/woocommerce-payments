@@ -10,6 +10,7 @@ import './styles.scss';
 import { CardFooter } from '@wordpress/components';
 
 interface CardNoticeProps {
+	children: React.ReactNode;
 	actions?: JSX.Element;
 }
 
