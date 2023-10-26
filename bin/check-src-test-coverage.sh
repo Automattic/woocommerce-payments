@@ -10,6 +10,7 @@ docker-compose exec -u www-data wordpress \
 echo "Checking coverage..."
 
 docker-compose exec -u www-data wordpress \
+	php -d xdebug.remote_autostart=on \
 	/var/www/html/wp-content/plugins/woocommerce-payments/vendor/bin/phpunit \
 	--configuration /var/www/html/wp-content/plugins/woocommerce-payments/phpunit-src.xml.dist \
 	--coverage-html /var/www/html/php-test-coverage \
