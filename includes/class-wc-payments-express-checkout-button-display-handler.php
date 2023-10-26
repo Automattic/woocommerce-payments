@@ -117,8 +117,13 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 */
 	public function add_pay_for_order_params_to_js_config() {
 		global $wp;
-		$order_id = $wp->query_vars['order-pay'];
-		$order    = wc_get_order( $order_id );
+		$order_id = $wp->query_vars['order-pay'] ?? null;
+
+		if ( ! $order_id ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && current_user_can( 'pay_for_order', $order_id ) ) {
