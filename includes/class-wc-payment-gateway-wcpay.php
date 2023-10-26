@@ -31,6 +31,8 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
+use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
+use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -87,17 +89,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		'deposit_schedule_interval'          => 'deposit_schedule_interval',
 		'deposit_schedule_weekly_anchor'     => 'deposit_schedule_weekly_anchor',
 		'deposit_schedule_monthly_anchor'    => 'deposit_schedule_monthly_anchor',
-	];
-
-	/**
-	 * Stripe intents that are treated as successfully created.
-	 *
-	 * @type array
-	 */
-	const SUCCESSFUL_INTENT_STATUS = [
-		Intent_Status::SUCCEEDED,
-		Intent_Status::REQUIRES_CAPTURE,
-		Intent_Status::PROCESSING,
 	];
 
 	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';
@@ -858,10 +849,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$service = wcpay_get_container()->get( PaymentProcessingService::class );
 		$state   = $service->process_payment( $order->get_id(), $manual_capture );
 
-		if ( $state instanceof CompletedState ) {
-			return [
+		if ( $state instanceof DuplicateOrderDetectedState ) {
+			$duplicate_order_return_url = add_query_arg(
+				DuplicatePaymentPreventionService::FLAG_PREVIOUS_ORDER_PAID,
+				'yes',
+				$this->get_return_url( wc_get_order( $state->get_context()->get_duplicate_order_id() ) )
+			);
+
+			return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
 				'result'   => 'success',
-				'redirect' => $this->get_return_url( $order ),
+				'redirect' => $duplicate_order_return_url,
+			];
+		}
+
+		if ( $state instanceof CompletedState ) {
+			$return_url = $this->get_return_url( $order );
+			if ( $state->get_context()->is_detected_authorized_intent() ) {
+				$return_url = add_query_arg(
+					DuplicatePaymentPreventionService::FLAG_PREVIOUS_SUCCESSFUL_INTENT,
+					'yes',
+					$return_url
+				);
+			}
+
+			return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
+				'result'   => 'success',
+				'redirect' => $return_url,
 			];
 		}
 
@@ -1430,7 +1443,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( ! empty( $intent ) ) {
-			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
+			if ( ! $intent->is_authorized() ) {
 				$intent_failed = true;
 			}
 
@@ -2899,34 +2912,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Create the shipping data array to send to Stripe when making a purchase.
-	 *
-	 * @param WC_Order $order The order that is being paid for.
-	 * @return array          The shipping data to send to Stripe.
-	 */
-	public function get_shipping_data_from_order( WC_Order $order ): array {
-		return [
-			'name'    => implode(
-				' ',
-				array_filter(
-					[
-						$order->get_shipping_first_name(),
-						$order->get_shipping_last_name(),
-					]
-				)
-			),
-			'address' => [
-				'line1'       => $order->get_shipping_address_1(),
-				'line2'       => $order->get_shipping_address_2(),
-				'postal_code' => $order->get_shipping_postcode(),
-				'city'        => $order->get_shipping_city(),
-				'state'       => $order->get_shipping_state(),
-				'country'     => $order->get_shipping_country(),
-			],
-		];
-	}
-
-	/**
 	 * Create the level 3 data array to send to Stripe when making a purchase.
 	 *
 	 * @param WC_Order $order The order that is being paid for.
@@ -3028,7 +3013,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 
-			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
+			if ( $intent->is_authorized() ) {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
@@ -3744,11 +3729,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
 	 * @param Payment_Information          $payment_information   The payment information object.
-	 * @param mixed                        $order                 The order object or data.
+	 * @param WC_Order                     $order                 The order object.
 	 *
 	 * @return void
 	 */
-	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, $order ) {
+	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, WC_Order $order ) {
 		// Do nothing.
 	}
 }
