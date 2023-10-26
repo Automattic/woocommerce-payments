@@ -56,7 +56,15 @@ jQuery( function ( $ ) {
 	);
 
 	$( 'select#order_status' ).on( 'change', function () {
-		const originalStatus = $( 'input#original_post_status' ).val();
+		//get the original status of the order from post or order data.
+		let originalStatus =
+			$( 'input#original_post_status' ).val() ||
+			$( 'input#original_order_status' ).val();
+		//TODO: Remove this after https://github.com/woocommerce/woocommerce/issues/40871 is fixed.
+		if ( originalStatus && ! originalStatus.startsWith( 'wc-' ) ) {
+			originalStatus = 'wc-' + originalStatus;
+		}
+
 		const canRefund = getConfig( 'canRefund' );
 		const refundAmount = getConfig( 'refundAmount' );
 		if (
