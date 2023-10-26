@@ -214,6 +214,34 @@ class OrderService {
 	}
 
 	/**
+	 * Updates the order with the necessary details whenever an intent requires action.
+	 *
+	 * @param int                                $order_id ID of the order.
+	 * @param WC_Payments_API_Abstract_Intention $intent   Remote object. To be abstracted soon.
+	 * @param PaymentContext                     $context  Context for the payment.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function update_order_from_intent_that_requires_action(
+		int $order_id,
+		WC_Payments_API_Abstract_Intention $intent,
+		PaymentContext $context
+	) {
+		$order = $this->get_order( $order_id );
+
+		$this->legacy_service->attach_intent_info_to_order(
+			$order,
+			$intent->get_id(),
+			$intent->get_status(),
+			$context->get_payment_method()->get_id(),
+			$context->get_customer_id(),
+			'',
+			$context->get_currency()
+		);
+
+		$this->legacy_service->update_order_status_from_intent( $order, $intent );
+	}
+
+	/**
 	 * Given the charge data, checks if there was an exchange and adds it to the given order as metadata
 	 *
 	 * @param int                    $order_id The order to update.
