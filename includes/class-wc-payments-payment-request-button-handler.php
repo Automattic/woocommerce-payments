@@ -499,11 +499,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
-		if ( $this->is_pay_for_order_page() ) {
-			return true;
-		}
-
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
@@ -534,6 +529,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart have unsupported product type ( Payment Request button disabled )' );
 			return false;
+		}
+
+		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
+		if ( $this->is_pay_for_order_page() ) {
+			return true;
 		}
 
 		// Cart total is 0 or is on product page and product price is 0.
