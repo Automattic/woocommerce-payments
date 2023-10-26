@@ -110,6 +110,42 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		} );
 	} );
 
+	const bnplProviders = [
+		[ 'Affirm', 'li.payment_method_woocommerce_payments_affirm', 'button' ],
+		[
+			'Afterpay/Clearpay',
+			'li.payment_method_woocommerce_payments_afterpay_clearpay',
+			'a',
+		],
+	];
+
+	describe.each( bnplProviders )(
+		'Checkout with BNPL providers',
+		( providerName, paymentMethodSelector, stripeButtonHTMLElement ) => {
+			it( `should successfully place order with ${ providerName }`, async () => {
+				await shopperWCP.changeAccountCurrencyTo( 'USD' );
+				await setupProductCheckout(
+					config.get( 'addresses.customer.billing' ),
+					[ [ 'Beanie', 3 ] ]
+				);
+				await page.waitForSelector( paymentMethodSelector );
+				await expect( page ).toClick( paymentMethodSelector );
+				await uiUnblocked();
+				await shopper.placeOrder();
+				await page.waitForSelector(
+					STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR
+				);
+				await expect( page ).toClick( stripeButtonHTMLElement, {
+					text: 'Authorize Test Payment',
+				} );
+				await page.waitForNavigation( {
+					waitUntil: 'networkidle0',
+				} );
+				await expect( page ).toMatch( 'Order received' );
+			} );
+		}
+	);
+
 	describe( 'My Account', () => {
 		let timeAdded;
 		it( 'should add the card as a new payment method', async () => {
@@ -148,40 +184,4 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await new Promise( ( r ) => setTimeout( r, remainingWaitTime ) );
 		} );
 	} );
-
-	const bnplProviders = [
-		[ 'Affirm', 'li.payment_method_woocommerce_payments_affirm', 'button' ],
-		// [
-		// 	'Afterpay/Clearpay',
-		// 	'li.payment_method_woocommerce_payments_afterpay_clearpay',
-		// 	'a',
-		// ],
-	];
-
-	describe.each( bnplProviders )(
-		'Checkout with BNPL providers',
-		( providerName, paymentMethodSelector, stripeButtonHTMLElement ) => {
-			it( `should successfully place order with ${ providerName }`, async () => {
-				await shopperWCP.changeAccountCurrencyTo( 'USD' );
-				await setupProductCheckout(
-					config.get( 'addresses.customer.billing' ),
-					[ [ 'Beanie', 3 ] ]
-				);
-				await page.waitForSelector( paymentMethodSelector );
-				await expect( page ).toClick( paymentMethodSelector );
-				await uiUnblocked();
-				await shopper.placeOrder();
-				await page.waitForSelector(
-					STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR
-				);
-				await expect( page ).toClick( stripeButtonHTMLElement, {
-					text: 'Authorize Test Payment',
-				} );
-				await page.waitForNavigation( {
-					waitUntil: 'networkidle0',
-				} );
-				await expect( page ).toMatch( 'Order received' );
-			} );
-		}
-	);
 } );
