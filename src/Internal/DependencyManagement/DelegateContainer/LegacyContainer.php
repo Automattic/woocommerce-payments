@@ -7,9 +7,9 @@
 
 namespace WCPay\Internal\DependencyManagement\DelegateContainer;
 
-use Psr\Container\ContainerInterface;
 use WC_Payments;
-use WCPay\Internal\DependencyManagement\ContainerException;
+use WCPay\Vendor\Psr\Container\ContainerInterface;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 
 /**
  * WooPayments Legacy Container Delegate.
@@ -158,5 +158,14 @@ class LegacyContainer implements ContainerInterface {
 	 */
 	private function get_wc_payments_customer_service_instance() {
 		return WC_Payments::get_customer_service();
+	}
+
+	/**
+	 * Returns the WC_Payments_Order_Service instance.
+	 *
+	 * @return \WC_Payments_Order_Service
+	 */
+	private function get_wc_payments_order_service_instance() {
+		return WC_Payments::get_order_service();
 	}
 }

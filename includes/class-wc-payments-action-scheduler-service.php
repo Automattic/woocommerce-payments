@@ -168,6 +168,6 @@ class WC_Payments_Action_Scheduler_Service {
 			]
 		);
 
-		return count( $actions ) > 0;
+		return ( is_countable( $actions ) ? count( $actions ) : 0 ) > 0;
 	}
 }

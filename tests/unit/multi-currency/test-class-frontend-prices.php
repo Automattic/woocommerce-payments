@@ -40,6 +40,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
 
 		$this->frontend_prices = new WCPay\MultiCurrency\FrontendPrices( $this->mock_multi_currency, $this->mock_compatibility );
+		$this->frontend_prices->init_hooks();
 	}
 
 	public function tear_down() {

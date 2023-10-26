@@ -36,7 +36,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	public function get_adapted_extensions_data( $email ) {
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		if ( count( $enabled_adapted_extensions ) === 0 ) {
+		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) === 0 ) {
 			return [];
 		}
 

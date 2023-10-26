@@ -2,13 +2,12 @@
  * External dependencies
  */
 import config from 'config';
-
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
-
 /**
  * Internal dependencies
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
+
+const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 const orderIdSelector = '.woocommerce-order-overview__order.order > strong';
 const orderStatusDropdownSelector = 'select[name="order_status"]';

@@ -14,11 +14,11 @@ export type PaymentMethod =
 	| 'card'
 	| 'card_present'
 	| 'eps'
+	| 'klarna'
 	| 'giropay'
 	| 'ideal'
 	| 'p24'
 	| 'sepa_debit'
 	| 'sofort'
-	| 'jcb'
 	| 'affirm'
 	| 'afterpay_clearpay';

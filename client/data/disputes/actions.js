@@ -13,13 +13,21 @@ import { __, sprintf } from '@wordpress/i18n';
 import { NAMESPACE, STORE_NAME } from '../constants';
 import TYPES from './action-types';
 import wcpayTracks from 'tracks';
-import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentIntent } from '../payment-intents/resolvers';
 
 export function updateDispute( data ) {
 	return {
 		type: TYPES.SET_DISPUTE,
 		data,
+	};
+}
+
+export function updateErrorForDispute( id, data, error ) {
+	return {
+		type: TYPES.SET_ERROR_FOR_DISPUTE,
+		id,
+		data,
+		error,
 	};
 }
 
@@ -39,66 +47,7 @@ export function updateDisputesSummary( query, data ) {
 	};
 }
 
-export function* acceptDispute( id ) {
-	try {
-		yield controls.dispatch( STORE_NAME, 'startResolution', 'getDispute', [
-			id,
-		] );
-
-		const dispute = yield apiFetch( {
-			path: `${ NAMESPACE }/disputes/${ id }/close`,
-			method: 'post',
-		} );
-
-		yield updateDispute( dispute );
-		yield controls.dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
-			id,
-		] );
-
-		// Redirect to Disputes list.
-		window.location.replace(
-			getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/disputes',
-				filter: 'awaiting_response',
-			} )
-		);
-
-		wcpayTracks.recordEvent( 'wcpay_dispute_accept_success' );
-		const message = dispute.order
-			? sprintf(
-					/* translators: #%s is an order number, e.g. 15 */
-					__(
-						'You have accepted the dispute for order #%s.',
-						'woocommerce-payments'
-					),
-					dispute.order.number
-			  )
-			: __( 'You have accepted the dispute.', 'woocommerce-payments' );
-		yield controls.dispatch(
-			'core/notices',
-			'createSuccessNotice',
-			message
-		);
-	} catch ( e ) {
-		const message = __(
-			'There has been an error accepting the dispute. Please try again later.',
-			'woocommerce-payments'
-		);
-		wcpayTracks.recordEvent( 'wcpay_dispute_accept_failed' );
-		yield controls.dispatch( 'core/notices', 'createErrorNotice', message );
-	}
-}
-
-// This function handles the dispute acceptance flow from the Transaction Details screen.
-// It differs from the `acceptDispute` function above in that it also fetches and updates
-// the payment intent associated with the dispute to reflect changes to the dispute
-// on the Transaction Details screen.
-//
-// Once the '_wcpay_feature_dispute_on_transaction_page' is enabled by default,
-// the `acceptDispute` function above can be removed and this function can be renamed
-// to `acceptDispute`.
-export function* acceptTransactionDetailsDispute( dispute ) {
+export function* acceptDispute( dispute ) {
 	const { id, payment_intent: paymentIntent } = dispute;
 
 	try {

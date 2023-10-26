@@ -56,7 +56,15 @@ jQuery( function ( $ ) {
 	);
 
 	$( 'select#order_status' ).on( 'change', function () {
-		const originalStatus = $( 'input#original_post_status' ).val();
+		//get the original status of the order from post or order data.
+		let originalStatus =
+			$( 'input#original_post_status' ).val() ||
+			$( 'input#original_order_status' ).val();
+		//TODO: Remove this after https://github.com/woocommerce/woocommerce/issues/40871 is fixed.
+		if ( originalStatus && ! originalStatus.startsWith( 'wc-' ) ) {
+			originalStatus = 'wc-' + originalStatus;
+		}
+
 		const canRefund = getConfig( 'canRefund' );
 		const refundAmount = getConfig( 'refundAmount' );
 		if (
@@ -158,7 +166,10 @@ const DisputeNotice = ( { chargeId } ) => {
 			// Disable the refund button.
 			refundButton.disabled = true;
 
-			const disputeDetailsLink = getDetailsURL( dispute.id, 'disputes' );
+			const disputeDetailsLink = getDetailsURL(
+				chargeId,
+				'transactions'
+			);
 
 			let tooltipText = '';
 
@@ -315,8 +326,8 @@ const DisputeNotice = ( { chargeId } ) => {
 							}
 						);
 						window.location = getDetailsURL(
-							dispute.id,
-							'disputes'
+							chargeId,
+							'transactions'
 						);
 					},
 				},

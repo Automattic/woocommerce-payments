@@ -32,7 +32,14 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 */
 	public function __construct( $connection_manager ) {
 		$this->connection_manager = $connection_manager;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 	}
 

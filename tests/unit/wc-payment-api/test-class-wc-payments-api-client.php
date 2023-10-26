@@ -7,6 +7,7 @@
 
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Internal\Logger;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
@@ -250,6 +251,30 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws API_Exception
 	 */
 	public function test_get_onboarding_data() {
+		$site_data = [
+			'site_username' => 'admin',
+			'site_locale'   => 'en_US',
+		];
+
+		$user_data = [
+			'user_id'    => 1,
+			'ip_address' => '0.0.0.0',
+			'browser'    => [
+				'user_agent'       => 'Unit Test Agent/0.1.0',
+				'accept_language'  => 'en-US,en;q=0.5',
+				'content_language' => 'en-US,en;q=0.5',
+			],
+			'referer'    => 'https://example.com',
+		];
+
+		$account_data = [];
+
+		$actioned_notes = [
+			'd' => 4,
+			'e' => 5,
+			'f' => 6,
+		];
+
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )
@@ -265,19 +290,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 					[
 						'test_mode'                   => false,
 						'return_url'                  => 'http://localhost',
-						'site_data'                   => [
-							'site_username' => 'admin',
-							'site_locale'   => 'en_US',
-						],
+						'site_data'                   => $site_data,
+						'user_data'                   => $user_data,
+						'account_data'                => $account_data,
+						'actioned_notes'              => $actioned_notes,
 						'create_live_account'         => true,
-						'actioned_notes'              => [
-							'd' => 4,
-							'e' => 5,
-							'f' => 6,
-						],
 						'progressive'                 => false,
 						'collect_payout_requirements' => false,
-						'account_data'                => [],
 					]
 				),
 				true,
@@ -296,15 +315,10 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		// Call the method under test.
 		$result = $this->payments_api_client->get_onboarding_data(
 			'http://localhost',
-			[
-				'site_username' => 'admin',
-				'site_locale'   => 'en_US',
-			],
-			[
-				'd' => 4,
-				'e' => 5,
-				'f' => 6,
-			]
+			$site_data,
+			$user_data,
+			$account_data,
+			$actioned_notes
 		);
 
 		// Assert the response is correct.
@@ -778,13 +792,12 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
-		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
+		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
 			->setMethods( [ 'log' ] )
 			->getMock();
-
-		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
-		$logger_ref->setAccessible( true );
-		$logger_ref->setValue( null, $mock_logger );
+		$mock_gateway         = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode(), $mock_gateway );
+		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
 
 		WC_Payments::mode()->dev();
 
@@ -819,9 +832,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$request_method->setAccessible( false );
 
 		// clean up.
-		$logger_ref->setAccessible( true );
-		$logger_ref->setValue( null, null );
 		WC_Payments::mode()->live();
+		wcpay_get_test_container()->reset_all_replacements();
 	}
 
 	/**

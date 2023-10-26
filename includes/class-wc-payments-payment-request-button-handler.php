@@ -593,7 +593,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// We don't support multiple packages with Payment Request Buttons because we can't offer a good UX.
 		$packages = WC()->cart->get_shipping_packages();
-		if ( 1 < count( $packages ) ) {
+		if ( 1 < ( is_countable( $packages ) ? count( $packages ) : 0 ) ) {
 			return false;
 		}
 
@@ -679,6 +679,31 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Gets the context for where the button is being displayed.
+	 *
+	 * @return string
+	 */
+	public function get_button_context() {
+		if ( $this->is_product() ) {
+			return 'product';
+		}
+
+		if ( $this->is_cart() ) {
+			return 'cart';
+		}
+
+		if ( $this->is_checkout() ) {
+			return 'checkout';
+		}
+
+		if ( $this->is_pay_for_order_page() ) {
+			return 'pay_for_order';
+		}
+
+		return '';
+	}
+
+	/**
 	 * Get product from product page or product_page shortcode.
 	 *
 	 * @return WC_Product|false|null Product object.
@@ -753,6 +778,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'button'             => $this->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
 			'is_product_page'    => $this->is_product(),
+			'button_context'     => $this->get_button_context(),
 			'is_pay_for_order'   => $this->is_pay_for_order_page(),
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->get_product_data(),
