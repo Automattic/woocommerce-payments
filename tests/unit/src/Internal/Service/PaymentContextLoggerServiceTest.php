@@ -70,17 +70,18 @@ class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_log_changes() {
-		$expected_log = 'Payment for order #123 initialized in "Initial_State" [' . PHP_EOL .
-						'Set key_1 to "new_value_1"' . PHP_EOL .
-						']' . PHP_EOL .
-						'Transition from "Initial_State" to "Final_State" [' . PHP_EOL .
-						'Changed key_1 from "old_value_1" to "new_value_1"' . PHP_EOL .
-						'Set key_2 to "new_value_2"' . PHP_EOL .
-						'Changed key_3 from "old_value_3" to "new_value_3"' . PHP_EOL .
-						']' . PHP_EOL .
-						'Changes within "Final_State" [' . PHP_EOL .
-						'Changed key_1 from "old_value_4" to "new_value_4"' . PHP_EOL .
-						']' . PHP_EOL;
+		$expected_log = 'For order #123 the following changes were made to the payment context:' . PHP_EOL .
+			'Payment initialized in "Initial_State" [' . PHP_EOL .
+			'		Set key_1 to "new_value_1"' . PHP_EOL .
+			']' . PHP_EOL .
+			'Transition from "Initial_State" to "Final_State" [' . PHP_EOL .
+			'		Changed key_1 from "old_value_1" to "new_value_1"' . PHP_EOL .
+			'		Set key_2 to "new_value_2"' . PHP_EOL .
+			'		Changed key_3 from "old_value_3" to "new_value_3"' . PHP_EOL .
+			']' . PHP_EOL .
+			'Changes within "Final_State" [' . PHP_EOL .
+			'		Changed key_1 from "old_value_4" to "new_value_4"' . PHP_EOL .
+			']' . PHP_EOL;
 		$this->mock_logger->expects( $this->once() )
 			->method( 'debug' )
 			->with( $expected_log );

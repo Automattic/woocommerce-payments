@@ -39,12 +39,12 @@ class PaymentContextLoggerService {
 	 */
 	public function log_changes( PaymentContext $payment_context ): void {
 		$transitions = $payment_context->get_transitions();
-		$log         = '';
+		$log         = 'For order #' . $transitions[0]->get_order_id() . ' the following changes were made to the payment context:' . PHP_EOL;
 		foreach ( $transitions as $transition ) {
 			$to_state       = $transition->get_to_state();
 			$previous_state = $transition->get_from_state();
 			if ( $to_state && ! $previous_state ) {
-				$log .= 'Payment for order #' . $transition->get_order_id() . ' initialized in "' . $to_state;
+				$log .= 'Payment initialized in "' . $to_state;
 			} elseif ( $previous_state && ! $to_state ) {
 				$log .= 'Changes within "' . $previous_state;
 			} else {
@@ -68,14 +68,28 @@ class PaymentContextLoggerService {
 		$changes_string = array_map(
 			function( Change $change ) {
 				if ( $change->get_old_value() ) {
-					$str = 'Changed ' . $change->get_key() . ' from ' . wp_json_encode( $change->get_old_value(), JSON_PRETTY_PRINT ) . ' to ' . wp_json_encode( $change->get_new_value(), JSON_PRETTY_PRINT );
+					$str = "\t\tChanged " . $change->get_key() . ' from ' . $this->json_encode_with_indent( $change->get_old_value() ) .
+							' to ' . $this->json_encode_with_indent( $change->get_new_value() );
 				} else {
-					$str = 'Set ' . $change->get_key() . ' to ' . wp_json_encode( $change->get_new_value(), JSON_PRETTY_PRINT );
+					$str = "\t\tSet " . $change->get_key() . ' to ' . $this->json_encode_with_indent( $change->get_new_value() );
 				}
 				return $str;
 			},
 			$changes
 		);
 		return $changes_string;
+	}
+
+	/**
+	 * Pretty print the JSON and add tabs for indent.
+	 *
+	 * @param mixed $value The object to be json encoded and pretty printed.
+	 *
+	 * @return string
+	 */
+	private function json_encode_with_indent( $value ) : string {
+		$str = wp_json_encode( $value, JSON_PRETTY_PRINT );
+		$str = preg_replace( '/(?<=\n)/', "\t\t", $str );
+		return $str;
 	}
 }
