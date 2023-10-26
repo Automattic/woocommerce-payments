@@ -3,6 +3,7 @@
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import ReactDOM from 'react-dom';
+import React, { useEffect } from 'react';
 import { dispatch } from '@wordpress/data';
 import moment from 'moment';
 import { createInterpolateElement } from '@wordpress/element';
@@ -135,7 +136,10 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		ReactDOM.render( <DisputeNotice chargeId={ chargeId } />, container );
+		ReactDOM.render(
+			<DisputeNoticeWrapper chargeId={ chargeId } />,
+			container
+		);
 	}
 } );
 
@@ -205,30 +209,33 @@ function disableWooOrderRefundButton( disputeStatus, disputeDetailsUrl ) {
 		.tipTip();
 }
 
-const DisputeNotice = ( { chargeId } ) => {
+const DisputeNoticeWrapper = ( { chargeId } ) => {
 	const { data: charge } = useCharge( chargeId );
+	const disputeDetailsUrl = getDetailsURL( chargeId, 'transactions' );
 
+	// Disable the refund button if there's an active dispute.
+	useEffect( () => {
+		const { dispute } = charge;
+		if ( ! charge?.dispute ) {
+			return;
+		}
+		// Refunds are only allowed if the dispute is an inquiry or if it's won.
+		const isRefundable =
+			isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
+		if ( ! isRefundable ) {
+			disableWooOrderRefundButton( dispute.status, disputeDetailsUrl );
+		}
+	}, [ charge, disputeDetailsUrl ] );
+
+	const { dispute } = charge;
 	if ( ! charge?.dispute ) {
 		return null;
 	}
 
-	const { dispute } = charge;
+	return <DisputeNotice chargeId={ chargeId } dispute={ dispute } />;
+};
 
-	let urgency = 'warning';
-
-	// Refunds are only allowed if the dispute is an inquiry or if it's won.
-	const isRefundable =
-		isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
-	const shouldDisableRefund = ! isRefundable;
-
-	const disputeDetailsUrl = getDetailsURL( chargeId, 'transactions' );
-
-	// TODO wrap in appropriate useEffect.
-	// Is there a case where this button should be disabled when the dispute is not actionable?
-	if ( shouldDisableRefund ) {
-		disableWooOrderRefundButton( dispute.status, disputeDetailsUrl );
-	}
-
+const DisputeNotice = ( { chargeId, dispute } ) => {
 	// Only show the notice if the dispute is awaiting a response.
 	if ( ! isAwaitingResponse( dispute.status ) ) {
 		return null;
@@ -310,6 +317,7 @@ const DisputeNotice = ( { chargeId } ) => {
 	);
 
 	// If the dispute is due within 72 hours, we want to highlight it as urgent/red.
+	let urgency = 'warning';
 	if ( countdownDays < 3 ) {
 		urgency = 'error';
 	}
