@@ -27,52 +27,50 @@ const UPE_METHOD_CHECKBOXES = [
 const STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR =
 	'.common-Button.common-Button--default[name="success"]';
 
-describe.each( bnplProviders )(
-	'Checkout with BNPL providers',
-	( providerName, paymentMethodSelector, stripeButtonHTMLElement ) => {
-		beforeAll( async () => {
-			await merchant.login();
-			await merchantWCP.activateUPEWithDefferedIntentCreation();
-			await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
-			await merchant.logout();
-			await shopper.login();
-			await shopperWCP.changeAccountCurrencyTo( 'USD' );
-		} );
+describe( 'BNPL checkout', () => {
+	beforeAll( async () => {
+		await merchant.login();
+		await merchantWCP.activateUPEWithDefferedIntentCreation();
+		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
+		await merchant.logout();
+		await shopper.login();
+		await shopperWCP.changeAccountCurrencyTo( 'USD' );
+	} );
 
-		beforeEach( async () => {
-			await setupProductCheckout(
-				config.get( 'addresses.customer.billing' ),
-				[ [ 'Beanie', 3 ] ]
-			);
-		} );
+	afterAll( async () => {
+		await shopperWCP.logout();
+		await merchant.login();
+		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
+		await merchantWCP.deactivateUPEWithDefferedIntentCreation();
+		await merchant.logout();
+	} );
 
-		afterEach( async () => {
-			await shopperWCP.emptyCart();
-			await shopperWCP.logout();
-		} );
-
-		afterAll( async () => {
-			await merchant.login();
-			await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
-			await merchantWCP.deactivateUPEWithDefferedIntentCreation();
-			await merchant.logout();
-		} );
-
-		it( `should successfully place order with ${ providerName }`, async () => {
-			await page.waitForSelector( paymentMethodSelector );
-			await expect( page ).toClick( paymentMethodSelector );
-			await uiUnblocked();
-			await shopper.placeOrder();
-			await page.waitForSelector(
-				STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR
-			);
-			await expect( page ).toClick( stripeButtonHTMLElement, {
-				text: 'Authorize Test Payment',
+	describe.each( bnplProviders )(
+		'Checkout with %s',
+		( providerName, paymentMethodSelector, stripeButtonHTMLElement ) => {
+			beforeEach( async () => {
+				await setupProductCheckout(
+					config.get( 'addresses.customer.billing' ),
+					[ [ 'Beanie', 3 ] ]
+				);
 			} );
-			await page.waitForNavigation( {
-				waitUntil: 'networkidle0',
+
+			it( `should successfully place order with ${ providerName }`, async () => {
+				await page.waitForSelector( paymentMethodSelector );
+				await expect( page ).toClick( paymentMethodSelector );
+				await uiUnblocked();
+				await shopper.placeOrder();
+				await page.waitForSelector(
+					STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR
+				);
+				await expect( page ).toClick( stripeButtonHTMLElement, {
+					text: 'Authorize Test Payment',
+				} );
+				await page.waitForNavigation( {
+					waitUntil: 'networkidle0',
+				} );
+				await expect( page ).toMatch( 'Order received' );
 			} );
-			await expect( page ).toMatch( 'Order received' );
-		} );
-	}
-);
+		}
+	);
+} );
