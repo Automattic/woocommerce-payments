@@ -51,15 +51,19 @@ class Transition {
 	private $timestamp;
 
 	/**
-	 * Constructs the class, with changes, order ID, timestamp and state.
+	 * Constructs the class, with all the parameters.
+	 * Used in Tests.
 	 *
 	 * @param string      $order_id Order ID.
 	 * @param string|null $from_state State of the transition.
+	 * @param string|null $to_state State of the transition.
+	 * @param array       $changes Changes made during the transition.
 	 */
-	public function __construct( string $order_id, ?string $from_state ) {
+	public function __construct( string $order_id, ?string $from_state, ?string $to_state = null, array $changes = [] ) {
 		$this->order_id   = $order_id;
 		$this->from_state = $from_state;
-		$this->changes    = [];
+		$this->to_state   = $to_state;
+		$this->changes    = $changes;
 		$this->timestamp  = time();
 	}
 
@@ -77,9 +81,19 @@ class Transition {
 	 *
 	 * @param array $changes Changes made during the transition.
 	 */
-	public function set_changes( array $changes ) {
+	public function set_changes( array $changes ) : void {
 		$this->changes = $changes;
 	}
+
+	/**
+	 * Adds a change to the changes array.
+	 *
+	 * @param Change $change Change.
+	 */
+	public function add_change( Change $change ) : void {
+		$this->changes[] = $change;
+	}
+
 
 	/**
 	 * Returns the order ID.

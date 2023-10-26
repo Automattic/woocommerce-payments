@@ -54,7 +54,7 @@ class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 
 	protected function setup_transitions() {
 		return [
-			new Transition( 123, null, 'Initial_State', [ new Change( 'key_1', null, 'new_value_1' ) ], time() ),
+			new Transition( 123, null, 'Initial_State', [ new Change( 'key_1', null, 'new_value_1' ) ] ),
 			new Transition(
 				123,
 				'Initial_State',
@@ -63,10 +63,9 @@ class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 					new Change( 'key_1', 'old_value_1', 'new_value_1' ),
 					new Change( 'key_2', null, 'new_value_2' ),
 					new Change( 'key_3', 'old_value_3', 'new_value_3' ),
-				],
-				time()
+				]
 			),
-			new Transition( 123, 'Final_State', null, [ new Change( 'key_1', 'old_value_4', 'new_value_4' ) ], time() ),
+			new Transition( 123, 'Final_State', null, [ new Change( 'key_1', 'old_value_4', 'new_value_4' ) ] ),
 		];
 	}
 

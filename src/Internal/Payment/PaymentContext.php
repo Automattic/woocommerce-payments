@@ -271,7 +271,7 @@ class PaymentContext {
 	public function log_state_transition( string $state ): void {
 		$last_transition = end( $this->transitions );
 		$last_transition->set_to_state( $state );
-		$this->transitions[] = new Transition( $this->get_order_id(), $state );
+		$this->transitions[] = new Transition( (string) $this->get_order_id(), $state );
 	}
 
 	/**
@@ -293,9 +293,7 @@ class PaymentContext {
 	 */
 	private function log_change( string $key, $value ) : void {
 		$last_transition = end( $this->transitions );
-		$changes         = $last_transition->get_changes();
-		$changes[]       = new Change( $key, $this->get( $key ), $value );
-		$last_transition->set_changes( $changes );
+		$last_transition->add_change( new Change( $key, $this->get( $key ), $value ) );
 	}
 
 	/**
