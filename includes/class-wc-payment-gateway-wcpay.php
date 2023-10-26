@@ -2891,34 +2891,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Create the shipping data array to send to Stripe when making a purchase.
-	 *
-	 * @param WC_Order $order The order that is being paid for.
-	 * @return array          The shipping data to send to Stripe.
-	 */
-	public function get_shipping_data_from_order( WC_Order $order ): array {
-		return [
-			'name'    => implode(
-				' ',
-				array_filter(
-					[
-						$order->get_shipping_first_name(),
-						$order->get_shipping_last_name(),
-					]
-				)
-			),
-			'address' => [
-				'line1'       => $order->get_shipping_address_1(),
-				'line2'       => $order->get_shipping_address_2(),
-				'postal_code' => $order->get_shipping_postcode(),
-				'city'        => $order->get_shipping_city(),
-				'state'       => $order->get_shipping_state(),
-				'country'     => $order->get_shipping_country(),
-			],
-		];
-	}
-
-	/**
 	 * Create the level 3 data array to send to Stripe when making a purchase.
 	 *
 	 * @param WC_Order $order The order that is being paid for.
@@ -3736,11 +3708,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
 	 * @param Payment_Information          $payment_information   The payment information object.
-	 * @param mixed                        $order                 The order object or data.
+	 * @param WC_Order                     $order                 The order object.
 	 *
 	 * @return void
 	 */
-	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, $order ) {
+	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, WC_Order $order ) {
 		// Do nothing.
 	}
 }
