@@ -185,7 +185,6 @@ const WooPaySettings = ( { section } ) => {
 							customMessage={ woopayCustomMessage }
 						></WooPayPreview>
 					</div>
-					<hr className="woopay-settings__divider" />
 					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
 							{ __( 'Checkout logo', 'woocommerce-payments' ) }
