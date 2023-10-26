@@ -6,7 +6,7 @@ if [ "$1" == "src" ]; then
 	CONFIGURATION_FILE=phpunit-src.xml.dist
 	COVERAGE=100
 else
-	CONFIGURATION_FILE=phpunit.xml.dist
+	CONFIGURATION_FILE=phpunit-includes.xml.dist
 	COVERAGE=60
 fi
 
