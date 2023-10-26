@@ -534,7 +534,7 @@ class WooPay_Session {
 	 */
 	private static function is_store_api_request(): bool {
 		if ( isset( $_REQUEST['rest_route'] ) ) {
-			$rest_route = sanitize_url( $_REQUEST['rest_route'] );
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] );
 		} else {
 			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 			$request_path = rtrim( $url_parts['path'], '/' );
