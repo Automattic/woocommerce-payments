@@ -180,17 +180,32 @@ const PaymentProcessor = ( {
 					}
 
 					await validateElements( elements );
+					let paymentMethodObject;
 
-					const paymentMethodObject = await api
-						.getStripeForUPE( paymentMethodId )
-						.createPaymentMethod( {
-							elements,
-							params: {
-								billing_details: getBillingDetails(
-									billingData
-								),
-							},
-						} );
+					try {
+						paymentMethodObject = await api
+							.getStripeForUPE( paymentMethodId )
+							.createPaymentMethod( {
+								elements,
+								params: {
+									billing_details: getBillingDetails(
+										billingData
+									),
+								},
+							} )
+							.then( ( paymentMethod ) => {
+								if ( paymentMethod.error ) {
+									throw paymentMethod.error;
+								}
+
+								return paymentMethod;
+							} );
+					} catch ( error ) {
+						return {
+							type: 'error',
+							message: error.message,
+						};
+					}
 
 					return {
 						type: 'success',

@@ -138,7 +138,14 @@ function createStripePaymentMethod(
 
 	return api
 		.getStripeForUPE( paymentMethodType )
-		.createPaymentMethod( { elements, params: params } );
+		.createPaymentMethod( { elements, params: params } )
+		.then( ( paymentMethod ) => {
+			if ( paymentMethod.error ) {
+				throw paymentMethod.error;
+			}
+
+			return paymentMethod;
+		} );
 }
 
 /**
