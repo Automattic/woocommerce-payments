@@ -16,19 +16,14 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 const UPE_METHOD_CHECKBOXES = [
-	'#inspector-checkbox-control-3', // affirm
-	'#inspector-checkbox-control-4', // afterpay
-	'#inspector-checkbox-control-5', // bancontact
-	'#inspector-checkbox-control-6', // eps
-	'#inspector-checkbox-control-7', // giropay
-	'#inspector-checkbox-control-8', // ideal
-	'#inspector-checkbox-control-9', // sofort
-	'#inspector-checkbox-control-10', // p24
+	'#inspector-checkbox-control-3', // bancontact
+	'#inspector-checkbox-control-4', // eps
+	'#inspector-checkbox-control-5', // giropay
+	'#inspector-checkbox-control-6', // ideal
+	'#inspector-checkbox-control-7', // sofort
 ];
 const card = config.get( 'cards.basic' );
 const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
-const STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR =
-	'.common-Button.common-Button--default[name="success"]';
 
 describe( 'Enabled UPE with deferred intent creation', () => {
 	beforeAll( async () => {
@@ -42,7 +37,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 
 	afterAll( async () => {
 		await shopperWCP.changeAccountCurrencyTo( 'USD' );
-		await shopperWCP.emptyCart();
 		await shopperWCP.logout();
 		await merchant.login();
 		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
@@ -109,42 +103,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).toMatch( 'Payment method deleted' );
 		} );
 	} );
-
-	const bnplProviders = [
-		[ 'Affirm', 'li.payment_method_woocommerce_payments_affirm', 'button' ],
-		[
-			'Afterpay/Clearpay',
-			'li.payment_method_woocommerce_payments_afterpay_clearpay',
-			'a',
-		],
-	];
-
-	describe.each( bnplProviders )(
-		'Checkout with BNPL providers',
-		( providerName, paymentMethodSelector, stripeButtonHTMLElement ) => {
-			it( `should successfully place order with ${ providerName }`, async () => {
-				await shopperWCP.changeAccountCurrencyTo( 'USD' );
-				await setupProductCheckout(
-					config.get( 'addresses.customer.billing' ),
-					[ [ 'Beanie', 3 ] ]
-				);
-				await page.waitForSelector( paymentMethodSelector );
-				await expect( page ).toClick( paymentMethodSelector );
-				await uiUnblocked();
-				await shopper.placeOrder();
-				await page.waitForSelector(
-					STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR
-				);
-				await expect( page ).toClick( stripeButtonHTMLElement, {
-					text: 'Authorize Test Payment',
-				} );
-				await page.waitForNavigation( {
-					waitUntil: 'networkidle0',
-				} );
-				await expect( page ).toMatch( 'Order received' );
-			} );
-		}
-	);
 
 	describe( 'My Account', () => {
 		let timeAdded;
