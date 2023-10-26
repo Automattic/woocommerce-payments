@@ -137,5 +137,4 @@ class PaymentProcessingService {
 
 		return $context;
 	}
-
 }
