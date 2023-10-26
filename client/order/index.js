@@ -253,7 +253,11 @@ const DisputeNoticeWrapper = ( { chargeId } ) => {
 	return (
 		<DisputeNotice
 			chargeId={ chargeId }
-			dispute={ dispute }
+			disputeReason={ dispute.reason }
+			formattedAmount={ formatExplicitCurrency(
+				dispute.amount,
+				dispute.currency
+			) }
 			isPreDisputeInquiry={ isInquiry( dispute ) }
 			dueBy={ dueBy }
 			countdownDays={ Math.floor( dueBy.diff( now, 'days', true ) ) }
@@ -263,7 +267,8 @@ const DisputeNoticeWrapper = ( { chargeId } ) => {
 };
 
 const DisputeNotice = ( {
-	dispute,
+	disputeReason,
+	formattedAmount,
 	isPreDisputeInquiry,
 	dueBy,
 	countdownDays,
@@ -272,10 +277,10 @@ const DisputeNotice = ( {
 	useEffect( () => {
 		wcpayTracks.recordEvent( 'wcpay_order_dispute_notice_view', {
 			is_inquiry: isPreDisputeInquiry,
-			dispute_reason: dispute.reason,
+			dispute_reason: disputeReason,
 			due_by_days: countdownDays,
 		} );
-	}, [ isPreDisputeInquiry, dispute.reason, countdownDays ] );
+	}, [ isPreDisputeInquiry, disputeReason, countdownDays ] );
 
 	const titleStrings = {
 		// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
@@ -301,21 +306,17 @@ const DisputeNotice = ( {
 			'woocommerce-payments'
 		),
 	};
-	const amountFormatted = formatExplicitCurrency(
-		dispute.amount,
-		dispute.currency
-	);
 
 	let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
 	let suffix = '';
 
-	let titleText = isInquiry( dispute )
+	let titleText = isPreDisputeInquiry
 		? titleStrings.inquiry_default
 		: titleStrings.dispute_default;
 
 	// If the dispute is due within 7 days, use different wording.
 	if ( countdownDays < 7 ) {
-		titleText = isInquiry( dispute )
+		titleText = isPreDisputeInquiry
 			? titleStrings.inquiry_urgent
 			: titleStrings.dispute_urgent;
 
@@ -333,8 +334,8 @@ const DisputeNotice = ( {
 
 	const title = sprintf(
 		titleText,
-		amountFormatted,
-		reasons[ dispute.reason ].display,
+		formattedAmount,
+		reasons[ disputeReason ].display,
 		dateI18n( 'M j, Y', dueBy.local().toISOString() )
 	);
 
