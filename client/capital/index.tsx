@@ -23,6 +23,7 @@ import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
+import { getQuery } from '@woocommerce/navigation';
 
 const columns = [
 	{
@@ -218,6 +219,7 @@ const CapitalPage = (): JSX.Element => {
 				totalRows={ loans.length }
 				headers={ columns }
 				rows={ getRowsData( loans ) }
+				rowsPerPage={ loans.length }
 				summary={ getSummary( loans ) }
 				showMenu={ false }
 			/>
