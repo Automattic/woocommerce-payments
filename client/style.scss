@@ -170,70 +170,23 @@
 	display: none;
 }
 
-.payment-method__icon_x {
-	border-radius: 3px;
-	width: 64px;
-	height: 40px;
-	position: relative;
-
-	&::after {
+img {
+	&.payment-method__icon {
+		outline: 1px solid rgba( 0, 0, 0, 0.25 );
+		outline-offset: -1px;
 		border-radius: 3px;
-		width: 64px;
-		height: 40px;
-		content: '';
 		display: block;
-		box-shadow: inset 0 0 0 1px rgba( 0, 0, 0, 0.25 );
-		position: absolute;
-		top: 0;
-		left: 0;
 	}
-
-	&.small {
-		width: 38px;
-		height: 24px;
-		&::after {
-			width: 38px;
-			height: 24px;
-		}
-	}
-
-	img {
-		width: 64px;
-		height: 40px;
-		border-radius: 3px;
-		&.small {
-			width: 38px;
-			height: 24px;
-		}
-	}
-}
-
-.payment-method__grid > div,
-.payment-method__grid > div::after,
-.payment-method__grid > div > img {
-	width: 30px;
-	height: 19px;
 }
 
 .payment-method__grid {
 	display: grid;
-	width: 64px;
-	height: 40px;
-	gap: 4px 5px;
-	grid-template-columns: repeat( auto-fill, 29px );
+	max-width: 64px;
+	max-height: 40px;
+	gap: 2px;
+	grid-template-columns: repeat( auto-fill, 30px );
 
-	div {
-		width: 30px;
-		height: 19px;
-
-		&::after {
-			width: 30px;
-			height: 19px;
-		}
-
-		img {
-			width: 30px;
-			height: 19px;
-		}
+	img {
+		max-width: 30px;
 	}
 }

@@ -24,10 +24,6 @@ import {
 	SofortIcon,
 } from 'wcpay/payment-methods-icons';
 
-const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
-	props
-) => <img src={ src } alt={ alt } { ...props } />;
-
 export interface PaymentMethodMapEntry {
 	id: string;
 	label: string;

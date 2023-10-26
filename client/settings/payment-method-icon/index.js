@@ -3,6 +3,7 @@
  * External dependencies
  */
 import React from 'react';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -20,7 +21,11 @@ const PaymentMethodIcon = ( { name, showName } ) => {
 	const { label, icon: Icon } = paymentMethod;
 
 	return (
-		<span className={ 'payment-method__icon_x' }>
+		<span
+			className={ classNames(
+				'woocommerce-payments__payment-method-icon'
+			) }
+		>
 			<Icon />
 			{ showName && (
 				<span className="woocommerce-payments__payment-method-icon__label">

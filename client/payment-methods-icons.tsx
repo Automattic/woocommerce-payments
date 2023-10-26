@@ -33,34 +33,12 @@ import './style.scss';
 
 const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
 	props
-) => (
-	<div className={ classNames( 'payment-method__icon_x', props.className ) }>
-		<img src={ src } alt={ alt } { ...props } />
-	</div>
-);
+) => <img className={ 'payment-method__icon' } src={ src } alt={ alt } />;
 
-export const CreditCardIcon: React.FC = () => {
-	return (
-		<div className="payment-method__grid">
-			<div className="payment-method__icon">
-				{ /* eslint-disable-next-line jsx-a11y/alt-text */ }
-				<img src={ VisaAsset } />
-			</div>
-			<div className="express-checkout__icon">
-				{ /* eslint-disable-next-line jsx-a11y/alt-text */ }
-				<img src={ MasterCardAsset } />
-			</div>
-			<div className="express-checkout__icon">
-				{ /* eslint-disable-next-line jsx-a11y/alt-text */ }
-				<img src={ AmexAsset } />
-			</div>
-			<div className="express-checkout__icon">
-				{ /* eslint-disable-next-line jsx-a11y/alt-text */ }
-				<img src={ DinersClubAsset } />
-			</div>
-		</div>
-	);
-};
+// export const CreditCardIcon = iconComponent(
+// 	CreditCardAsset,
+// 	'Credit / Debit card'
+// );
 
 export const BancontactIcon = iconComponent( BancontactAsset, 'Bancontact' );
 export const EpsIcon = iconComponent( EpsAsset, 'BECS Direct Debit' );
@@ -87,5 +65,16 @@ export const AmericanExpressIcon = iconComponent(
 	AmexAsset,
 	'American Express'
 );
-export const DinersClubIcon = iconComponent( DinersClubAsset, 'Diners Clud' );
+export const DinersClubIcon = iconComponent( DinersClubAsset, 'Diners Club' );
 export const UnionPayIcon = iconComponent( UnionPayAsset, 'UnionPay' );
+
+export const CreditCardIcon: React.FC = () => {
+	return (
+		<div className="payment-method__grid">
+			<VisaIcon />
+			<MastercardIcon />
+			<AmericanExpressIcon />
+			<DinersClubIcon />
+		</div>
+	);
+};
