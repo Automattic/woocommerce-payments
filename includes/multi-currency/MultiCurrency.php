@@ -321,6 +321,16 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init_rest_api() {
+		/**
+		 * Blocks trigger `rest_api_init` in the footer to preload data.
+		 * WooPayments does not preload anything, so we can abort initialization.
+		 *
+		 * This also fixes conflicts with files, loaded after plugin update.
+		 */
+		if ( did_action( 'admin_enqueue_scripts' ) ) {
+			return;
+		}
+
 		$api_controller = new RestController( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
 	}

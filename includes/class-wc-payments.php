@@ -978,6 +978,16 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
+		/**
+		 * Blocks trigger `rest_api_init` in the footer to preload data.
+		 * WooPayments does not preload anything, so we can abort initialization.
+		 *
+		 * This also fixes conflicts with files, loaded after plugin update.
+		 */
+		if ( did_action( 'admin_enqueue_scripts' ) ) {
+			return;
+		}
+
 		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
 
