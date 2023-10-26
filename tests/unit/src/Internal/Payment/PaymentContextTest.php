@@ -139,12 +139,4 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 		$this->sut->set_intent( $intent );
 		$this->assertSame( $intent, $this->sut->get_intent() );
 	}
-
-	public function test_error_message() {
-		$this->assertSame( null, $this->sut->get_error_message() );
-		$error = 'Error message';
-
-		$this->sut->set_error_message( $error );
-		$this->assertSame( $error, $this->sut->get_error_message() );
-	}
 }

@@ -282,27 +282,6 @@ class PaymentContext {
 	}
 
 	/**
-	 * Setter for the payment error message.
-	 *
-	 * @param  string $message Error message.
-	 *
-	 * @return void
-	 */
-	public function set_error_message( string $message ): void {
-		$this->set( 'error_message', $message );
-	}
-
-
-	/**
-	 * Getter for the payment error message.
-	 *
-	 * @return string|null Error message. Null if it has not been set.
-	 */
-	public function get_error_message(): ?string {
-		return $this->get( 'error_message' );
-	}
-
-	/**
 	 * Stores an internal value.
 	 * Use this method for changes to allow logging in the future.
 	 *
