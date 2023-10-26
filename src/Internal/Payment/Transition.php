@@ -93,15 +93,6 @@ class Transition {
 	}
 
 	/**
-	 * Returns the timestamp of the transition.
-	 *
-	 * @return int Timestamp of the transition.
-	 */
-	public function get_timestamp() : int {
-		return $this->timestamp;
-	}
-
-	/**
 	 * Returns the from state of the transition.
 	 *
 	 * @return string|null From state of the transition.

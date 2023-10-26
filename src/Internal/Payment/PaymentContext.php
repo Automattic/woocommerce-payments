@@ -266,7 +266,7 @@ class PaymentContext {
 	}
 
 	/**
-	 * Updates state transition and associated changes
+	 * Updates previous transition with the next state and creates new transition.
 	 *
 	 * @param string $state The state.
 	 */
@@ -293,7 +293,7 @@ class PaymentContext {
 	 * @param string $key   Property name.
 	 * @param mixed  $value Value to store.
 	 */
-	private function log_change( string $key, $value ) {
+	private function log_change( string $key, $value ) : void {
 		$last_transition = end( $this->transitions );
 		$changes         = $last_transition->get_changes();
 		$changes[]       = new Change( $key, $this->get( $key ), $value );
