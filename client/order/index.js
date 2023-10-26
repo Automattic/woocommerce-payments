@@ -139,6 +139,72 @@ jQuery( function ( $ ) {
 	}
 } );
 
+function disableWooOrderRefundButton( disputeStatus, disputeDetailsUrl ) {
+	const refundButton = document.querySelector( 'button.refund-items' );
+	if ( ! refundButton ) {
+		return;
+	}
+
+	let tooltipText = '';
+	// Previously this content was appended to the "you have an active dispute" notice.
+	// I'm proposing we remove this, or possibly show in a separate notice.
+	// TODO.
+	let refundDisabledNotice = null;
+
+	if ( isAwaitingResponse( disputeStatus ) ) {
+		refundDisabledNotice = __(
+			'Refunds and order editing are disabled during disputes.',
+			'woocommerce-payments'
+		);
+		tooltipText = refundDisabledNotice;
+	} else if ( isUnderReview( disputeStatus ) ) {
+		refundDisabledNotice = createInterpolateElement(
+			__(
+				// eslint-disable-next-line max-len
+				'This order has an active payment dispute. Refunds and order editing are disabled during this time. <a>View details</a>',
+				'woocommerce-payments'
+			),
+			{
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				a: <a href={ disputeDetailsUrl } />,
+			}
+		);
+		tooltipText = __(
+			'Refunds and order editing are disabled during an active dispute.',
+			'woocommerce-payments'
+		);
+	} else if ( disputeStatus === 'lost' ) {
+		refundDisabledNotice = createInterpolateElement(
+			__(
+				'Refunds and order editing have been disabled as a result of a lost dispute. <a>View details</a>',
+				'woocommerce-payments'
+			),
+			{
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				a: <a href={ disputeDetailsUrl } />,
+			}
+		);
+		tooltipText = __(
+			'Refunds and order editing have been disabled as a result of a lost dispute.',
+			'woocommerce-payments'
+		);
+	}
+
+	refundButton.disabled = true;
+
+	// Change refund tooltip's text copy.
+	jQuery( refundButton )
+		.parent()
+		.find( '.woocommerce-help-tip' )
+		.attr( {
+			// jQuery.tipTip uses the title attribute to generate the tooltip.
+			title: tooltipText,
+			'aria-label': tooltipText,
+		} )
+		// Regenerate the tipTip tooltip.
+		.tipTip();
+}
+
 const DisputeNotice = ( { chargeId } ) => {
 	const { data: charge } = useCharge( chargeId );
 
@@ -155,75 +221,12 @@ const DisputeNotice = ( { chargeId } ) => {
 	const isRefundable =
 		isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
 	const shouldDisableRefund = ! isRefundable;
-	let disableRefund = false;
 
-	let refundDisabledNotice = '';
+	const disputeDetailsUrl = getDetailsURL( chargeId, 'transactions' );
+
+	// TODO wrap in appropriate useEffect.
 	if ( shouldDisableRefund ) {
-		const refundButton = document.querySelector( 'button.refund-items' );
-		if ( refundButton ) {
-			disableRefund = true;
-
-			// Disable the refund button.
-			refundButton.disabled = true;
-
-			const disputeDetailsLink = getDetailsURL(
-				chargeId,
-				'transactions'
-			);
-
-			let tooltipText = '';
-
-			if ( isAwaitingResponse( dispute.status ) ) {
-				refundDisabledNotice = __(
-					'Refunds and order editing are disabled during disputes.',
-					'woocommerce-payments'
-				);
-				tooltipText = refundDisabledNotice;
-			} else if ( isUnderReview( dispute.status ) ) {
-				refundDisabledNotice = createInterpolateElement(
-					__(
-						// eslint-disable-next-line max-len
-						'This order has an active payment dispute. Refunds and order editing are disabled during this time. <a>View details</a>',
-						'woocommerce-payments'
-					),
-					{
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						a: <a href={ disputeDetailsLink } />,
-					}
-				);
-				tooltipText = __(
-					'Refunds and order editing are disabled during an active dispute.',
-					'woocommerce-payments'
-				);
-			} else if ( dispute.status === 'lost' ) {
-				refundDisabledNotice = createInterpolateElement(
-					__(
-						'Refunds and order editing have been disabled as a result of a lost dispute. <a>View details</a>',
-						'woocommerce-payments'
-					),
-					{
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						a: <a href={ disputeDetailsLink } />,
-					}
-				);
-				tooltipText = __(
-					'Refunds and order editing have been disabled as a result of a lost dispute.',
-					'woocommerce-payments'
-				);
-			}
-
-			// Change refund tooltip's text copy.
-			jQuery( refundButton )
-				.parent()
-				.find( '.woocommerce-help-tip' )
-				.attr( {
-					// jQuery.tipTip uses the title attribute to generate the tooltip.
-					title: tooltipText,
-					'aria-label': tooltipText,
-				} )
-				// Regenerate the tipTip tooltip.
-				.tipTip();
-		}
+		disableWooOrderRefundButton( dispute.status, disputeDetailsUrl );
 	}
 
 	let showWarning = false;
@@ -337,7 +340,7 @@ const DisputeNotice = ( { chargeId } ) => {
 		}
 	}
 
-	if ( ! showWarning && ! disableRefund ) {
+	if ( ! showWarning ) {
 		return null;
 	}
 
@@ -348,8 +351,6 @@ const DisputeNotice = ( { chargeId } ) => {
 			actions={ actions }
 		>
 			{ showWarning && <strong>{ warningText }</strong> }
-
-			{ disableRefund && <div>{ refundDisabledNotice }</div> }
 		</InlineNotice>
 	);
 };
