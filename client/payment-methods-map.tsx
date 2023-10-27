@@ -197,7 +197,8 @@ const PaymentMethodInformationObject: Record<
 			affirm: __( 'Affirm', 'woocommerce-payments' ),
 		},
 		description: __(
-			'Expand your business with Affirm',
+			// translators: %s is the store currency.
+			'Allow customers to pay over time with Affirm. Available to all customers paying in %s.',
 			'woocommerce-payments'
 		),
 		icon: AffirmIcon,
@@ -213,7 +214,8 @@ const PaymentMethodInformationObject: Record<
 			afterpay_clearpay: __( 'Afterpay', 'woocommerce-payments' ),
 		},
 		description: __(
-			'Expand your business with Afterpay',
+			// translators: %s is the store currency.
+			'Allow customers to pay over time with Afterpay. Available to all customers paying in %s.',
 			'woocommerce-payments'
 		),
 		icon: AfterpayIcon,
