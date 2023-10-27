@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useMemo } from 'react';
+import React from 'react';
 import { decodeEntities } from '@wordpress/html-entities';
 import { chevronDown, Icon } from '@wordpress/icons';
 
@@ -108,7 +108,6 @@ const CheckoutButton = ( { height } ) => {
 export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 	const { style, ...restProps } = props;
 	const trimmedCustomMessage = ( customMessage || '' ).trim();
-	const hasMessage = trimmedCustomMessage.length > 0;
 
 	let storeHeader;
 	if ( storeLogo ) {
@@ -124,45 +123,20 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 		);
 	}
 
-	const calculatedMarginBottom = useMemo( () => {
-		if ( hasMessage ) {
-			return 0;
-		}
-
-		// If there is no message, we need to calculate the amount of space
-		// that the message would have taken up, and then subtract that from
-		// the total height of the preview container.
-		//
-		// 28.567rem is the height of the preview container.
-		// 89.498% is the height of the preview container minus sibling elements.
-		// 91.142% is the height of the preview body minus sibling elements.
-		// 88.218% is the height of the columns container minus sibling elements.
-		// 12.172% + 3.636% is the height of the custom message plus the spacer below it.
-		return 28.567 * 0.89498 * 0.91142 * 0.88218 * ( 0.12172 + 0.03636 );
-	}, [ hasMessage ] );
-
 	return (
-		<div
-			className="preview-layout"
-			style={ {
-				height: '28.567rem',
-				marginBottom: -1 * calculatedMarginBottom + 'rem',
-				...style,
-			} }
-			{ ...restProps }
-		>
-			<VerticalSpacer height="5.251%" />
-			<PreviewContainer height="89.498%">
+		<div className="preview-layout" style={ style } { ...restProps }>
+			<VerticalSpacer height="1.5rem" />
+			<PreviewContainer>
 				<StoreHeader
 					className="preview-layout__store-header"
 					variant={ storeLogo ? 'logo' : 'text' }
-					height={ storeLogo ? '7.335%' : '4.921%' }
+					height={ storeLogo ? '2rem' : '1.5rem' }
 				>
 					{ storeHeader }
 				</StoreHeader>
-				<VerticalSpacer height={ storeLogo ? '1.523%' : '3.937%' } />
-				<PreviewBody height="91.142%">
-					<CheckoutRow height="5.368%">
+				<VerticalSpacer height={ storeLogo ? '0.5rem' : '1rem' } />
+				<PreviewBody>
+					<CheckoutRow height="1.25rem">
 						<div className="checkout-text">Checkout</div>
 						<div className="secure-block">
 							<LockKeyhole
@@ -175,65 +149,65 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 							</span>
 						</div>
 					</CheckoutRow>
-					<VerticalSpacer height="3.207%" />
+					<VerticalSpacer height="0.747rem" />
 					<hr className="preview-layout__hr" />
-					<VerticalSpacer height="3.207%" />
-					<ColumnsContainer height="88.218%">
-						<LeftColumn height="86.232%">
-							<SectionHeader height="4.231%">
+					<VerticalSpacer height="0.747rem" />
+					<ColumnsContainer>
+						<LeftColumn>
+							<SectionHeader height="0.75rem">
 								Contact
 							</SectionHeader>
-							<VerticalSpacer height="2.807%" />
-							<LoadingBox height="8.463%" />
-							<VerticalSpacer height="6.319%" />
+							<VerticalSpacer height="0.498rem" />
+							<LoadingBox height="1.5rem" />
+							<VerticalSpacer height="1.12rem" />
 
-							<SectionHeader isDropdownIncluded height="4.231%">
+							<SectionHeader isDropdownIncluded height="0.75rem">
 								Ship to
 							</SectionHeader>
-							<VerticalSpacer height="2.807%" />
-							<LoadingBox height="21.509%" />
-							<VerticalSpacer height="7.020%" />
+							<VerticalSpacer height="0.498rem" />
+							<LoadingBox height="3.813rem" />
+							<VerticalSpacer height="1.244rem" />
 
-							<SectionHeader isDropdownIncluded height="4.231%">
+							<SectionHeader isDropdownIncluded height="0.75rem">
 								Shipping method
 							</SectionHeader>
-							<VerticalSpacer height="2.807%" />
-							<LoadingBox height="13.047%" />
-							<VerticalSpacer height="7.02%" />
+							<VerticalSpacer height="0.498rem" />
+							<LoadingBox height="2.313rem" />
+							<VerticalSpacer height="1.244rem" />
 
-							<SectionHeader isDropdownIncluded height="4.231%">
+							<SectionHeader isDropdownIncluded height="0.75rem">
 								Pay with
 							</SectionHeader>
-							<VerticalSpacer height="2.807%" />
-							<LoadingBox height="8.463%" />
+							<VerticalSpacer height="0.498rem" />
+							<LoadingBox height="1.5rem" />
 						</LeftColumn>
-						<RightColumn height="100%">
-							<SectionHeader height="3.65%">
+						<RightColumn>
+							<SectionHeader height="0.75rem">
 								Summary
 							</SectionHeader>
-							<VerticalSpacer height="2.422%" />
-							<LoadingBox height="7.302%" />
-							<VerticalSpacer height="1.816%" />
-							<LoadingBox height="45.940%" />
-							<VerticalSpacer height="2.422%" />
-							<LoadingBox height="9.736%" />
-							<VerticalSpacer height="3.636%" />
+							<VerticalSpacer height="0.498rem" />
+							<LoadingBox height="1.5rem" />
+							<VerticalSpacer height="0.373rem" />
+							<LoadingBox height="9.438rem" />
+							<VerticalSpacer height="0.498rem" />
+							<LoadingBox height="2rem" />
+							<VerticalSpacer height="0.747rem" />
 							{ trimmedCustomMessage && (
 								<>
-									<TextBox height="12.172%">
+									<TextBox height="2.5rem">
 										{ decodeEntities(
 											trimmedCustomMessage
 										) }
 									</TextBox>
-									<VerticalSpacer height="3.636%" />
+									<VerticalSpacer height="0.747rem" />
 								</>
 							) }
-							<CheckoutButton height="7.268%" />
+							<CheckoutButton height="1.493rem" />
 						</RightColumn>
 					</ColumnsContainer>
 				</PreviewBody>
 			</PreviewContainer>
-			<VerticalSpacer height="5.251%" />
+			<VerticalSpacer height="1.5rem" />
 		</div>
 	);
 };
