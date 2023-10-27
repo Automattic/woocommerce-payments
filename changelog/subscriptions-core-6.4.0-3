@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Resolve an issue that would cause 3rd party plugin edit product fields with the show_if_variable-subscription class to be incorrectly hidden.

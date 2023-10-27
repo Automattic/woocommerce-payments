@@ -7,7 +7,7 @@
 
 namespace WCPay;
 
-use Psr\Container\ContainerInterface;
+use WCPay\Vendor\Psr\Container\ContainerInterface;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\DependencyManagement\ExtendedContainer;
 use WCPay\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
@@ -15,6 +15,26 @@ use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
 use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
 use WCPay\Internal\DependencyManagement\ServiceProvider\GenericServiceProvider;
 use WCPay\Internal\DependencyManagement\ServiceProvider\ProxiesServiceProvider;
+
+/**
+ * Hides errors during update from 6.6.0 or 6.6.1 to 6.6.2.
+ *
+ * This class would be loaded without the right dependencies (and autoloader)
+ * being loaded before it after the update is complete. When that happens,
+ * the ContainerInterface would still be in a different namespace, and would not exist here.
+ *
+ * Preventing the class from being loaded here does nothing but hide the error.
+ * All later requests will work properly.
+ */
+if (
+	! interface_exists( ContainerInterface::class )
+	&& isset( $_GET['action'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	&& 'upload-plugin' === $_GET['action'] // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	&& isset( $GLOBALS['pagenow'] )
+	&& 'update.php' === $GLOBALS['pagenow']
+) {
+	wp_die();
+}
 
 /**
  * WCPay Dependency Injection Container.
