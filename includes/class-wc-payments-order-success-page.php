@@ -112,18 +112,18 @@ class WC_Payments_Order_Success_Page {
 	 * Formats the additional text to be displayed on the thank you page, with the side effect
 	 * as a workaround for an issue in Woo core 8.1.x and 8.2.x.
 	 *
-	 * @param string $additonal_text
+	 * @param string $additional_text
 	 *
 	 * @return string Formatted text.
 	 */
-	private function format_addtional_thankyou_order_received_text( string $additonal_text ): string {
+	private function format_addtional_thankyou_order_received_text( string $additional_text ): string {
 		/**
 		 * This condition is a workaround for Woo core 8.1.x and 8.2.x as it formatted the filtered text,
 		 * while it should format the original text only.
 		 *
-		 * Safely to remove this conditional when WooPayments requires Woo core 8.3.x or higher.
+		 * It's safe to remove this conditional when WooPayments requires Woo core 8.3.x or higher.
 		 *
-		 * @see https://github.com/woocommerce/woocommerce/pull/39758 Introducs the issue since 8.1.0.
+		 * @see https://github.com/woocommerce/woocommerce/pull/39758 Introduce the issue since 8.1.0.
 		 * @see https://github.com/woocommerce/woocommerce/pull/40353 Fix the issue since 8.3.0.
 		 */
 		if( version_compare( WC_VERSION, '8.0', '>' )
@@ -135,10 +135,10 @@ class WC_Payments_Order_Success_Page {
 				</script>
 			";
 
-			return $additonal_text;
+			return $additional_text;
 		}
 
-		return sprintf( ' <div class="woocommerce-info">%s</div>', $additonal_text );
+		return sprintf( ' <div class="woocommerce-info">%s</div>', $additional_text );
 	}
 
 	/**
