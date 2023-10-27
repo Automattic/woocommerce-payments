@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getAppearance } from '../../upe-styles';
+import { getAppearance, getFontRulesFromPage } from '../../upe-styles';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
 	appendFingerprintInputToForm,
@@ -160,6 +160,7 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 		paymentMethodCreation: 'manual',
 		paymentMethodTypes: paymentMethodTypes,
 		appearance: initializeAppearance( api ),
+		fonts: getFontRulesFromPage(),
 	};
 
 	const elements = api

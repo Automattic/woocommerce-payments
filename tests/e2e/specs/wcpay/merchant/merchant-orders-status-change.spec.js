@@ -46,8 +46,7 @@ describe( 'Order > Status Change', () => {
 			await merchant.logout();
 		} );
 
-		// TODO: unskip when https://github.com/Automattic/woocommerce-payments/issues/7466 is closed
-		it.skip( 'Show Cancel Confirmation modal, do not change status if Do Nothing selected', async () => {
+		it( 'Show Cancel Confirmation modal, do not change status if Do Nothing selected', async () => {
 			// Select cancel from the order status dropdown.
 			await expect( page ).toSelect(
 				orderStatusDropdownSelector,
@@ -148,8 +147,7 @@ describe( 'Order > Status Change', () => {
 			await merchant.logout();
 		} );
 
-		// TODO: unskip when https://github.com/Automattic/woocommerce-payments/issues/7466 is closed
-		it.skip( 'Show Refund Confirmation modal, do not change status if Cancel clicked', async () => {
+		it( 'Show Refund Confirmation modal, do not change status if Cancel clicked', async () => {
 			// Select refunded from the order status dropdown.
 			await expect( page ).toSelect(
 				orderStatusDropdownSelector,
