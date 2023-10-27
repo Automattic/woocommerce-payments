@@ -3,6 +3,8 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import classNames from 'classnames';
+
 /**
  * Internal dependencies
  */
@@ -27,12 +29,19 @@ import GooglePayAsset from 'assets/images/cards/google-pay.svg?asset';
 import DinersClubAsset from 'assets/images/cards/diners.svg?asset';
 import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
 import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
-
 import './style.scss';
 
-const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
-	props
-) => <img className={ 'payment-method__icon' } src={ src } alt={ alt } />;
+const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => ( {
+	className,
+	...props
+} ) => (
+	<img
+		className={ classNames( 'payment-method__icon', className ) }
+		src={ src }
+		alt={ alt }
+		{ ...props }
+	/>
+);
 
 export const AffirmIcon = iconComponent(
 	AffirmAsset,
