@@ -23,7 +23,6 @@ import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
-import { getQuery } from '@woocommerce/navigation';
 
 const columns = [
 	{
