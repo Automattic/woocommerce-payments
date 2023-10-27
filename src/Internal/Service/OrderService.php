@@ -355,6 +355,19 @@ class OrderService {
 	}
 
 	/**
+	 * Validate phone number provided in the order.
+	 *
+	 * @param  int $order_id ID of the order.
+	 *
+	 * @return bool
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function is_valid_phone_number( int $order_id ): bool {
+		$order = $this->get_order( $order_id );
+		return strlen( $order->get_billing_phone() ) < 20;
+	}
+
+	/**
 	 * Adds note to order.
 	 *
 	 * @param int    $order_id  ID of the order.
