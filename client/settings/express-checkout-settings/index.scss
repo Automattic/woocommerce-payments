@@ -41,12 +41,10 @@
 	}
 
 	&__icon {
-		border-radius: 2px;
 		display: flex;
 		width: 64px;
 		height: 40px;
 		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
-		box-shadow: 0 0 0 1px #ddd;
 		background: #fff;
 
 		svg {
