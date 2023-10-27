@@ -194,7 +194,7 @@ export const useAccountBusinessURL = () => {
 export const useAccountBusinessSupportAddress = () => {
 	const { updateAccountBusinessSupportAddress } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
+	const data = useSelect( ( select ) => {
 		const {
 			getAccountBusinessSupportAddress,
 			getAccountBusinessSupportAddressCountry,
@@ -213,9 +213,10 @@ export const useAccountBusinessSupportAddress = () => {
 			getAccountBusinessSupportAddressCity(),
 			getAccountBusinessSupportAddressState(),
 			getAccountBusinessSupportAddressPostalCode(),
-			updateAccountBusinessSupportAddress,
 		];
 	} );
+
+	return [ ...data, updateAccountBusinessSupportAddress ];
 };
 
 export const useAccountBusinessSupportEmail = () => {
@@ -406,9 +407,9 @@ export const useGetSavingError = () => {
 export const useWooPayEnabledSettings = () => {
 	const { updateIsWooPayEnabled } = useDispatch( STORE_NAME );
 
-	const isWooPayEnabled = useSelect( ( select ) => {
-		return select( STORE_NAME ).getIsWooPayEnabled();
-	} );
+	const isWooPayEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWooPayEnabled()
+	);
 
 	return [ isWooPayEnabled, updateIsWooPayEnabled ];
 };
@@ -416,9 +417,9 @@ export const useWooPayEnabledSettings = () => {
 export const useWooPayCustomMessage = () => {
 	const { updateWooPayCustomMessage } = useDispatch( STORE_NAME );
 
-	const wooPayCustomMessage = useSelect( ( select ) => {
-		return select( STORE_NAME ).getWooPayCustomMessage();
-	} );
+	const wooPayCustomMessage = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayCustomMessage()
+	);
 
 	return [ wooPayCustomMessage, updateWooPayCustomMessage ];
 };
@@ -426,9 +427,9 @@ export const useWooPayCustomMessage = () => {
 export const useWooPayStoreLogo = () => {
 	const { updateWooPayStoreLogo } = useDispatch( STORE_NAME );
 
-	const wooPayStoreLogo = useSelect( ( select ) => {
-		return select( STORE_NAME ).getWooPayStoreLogo();
-	} );
+	const wooPayStoreLogo = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayStoreLogo()
+	);
 
 	return [ wooPayStoreLogo, updateWooPayStoreLogo ];
 };
@@ -436,9 +437,9 @@ export const useWooPayStoreLogo = () => {
 export const useWooPayLocations = () => {
 	const { updateWooPayLocations } = useDispatch( STORE_NAME );
 
-	const wooPayLocations = useSelect( ( select ) => {
-		return select( STORE_NAME ).getWooPayLocations();
-	} );
+	const wooPayLocations = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayLocations()
+	);
 
 	return [ wooPayLocations, updateWooPayLocations ];
 };
@@ -446,9 +447,9 @@ export const useWooPayLocations = () => {
 export const useCurrentProtectionLevel = () => {
 	const { updateProtectionLevel } = useDispatch( STORE_NAME );
 
-	const currentProtectionLevel = useSelect( ( select ) => {
-		return select( STORE_NAME ).getCurrentProtectionLevel();
-	} );
+	const currentProtectionLevel = useSelect( ( select ) =>
+		select( STORE_NAME ).getCurrentProtectionLevel()
+	);
 
 	return [ currentProtectionLevel, updateProtectionLevel ];
 };
@@ -456,9 +457,9 @@ export const useCurrentProtectionLevel = () => {
 export const useAdvancedFraudProtectionSettings = () => {
 	const { updateAdvancedFraudProtectionSettings } = useDispatch( STORE_NAME );
 
-	const advancedFraudProtectionSettings = useSelect( ( select ) => {
-		return select( STORE_NAME ).getAdvancedFraudProtectionSettings();
-	} );
+	const advancedFraudProtectionSettings = useSelect( ( select ) =>
+		select( STORE_NAME ).getAdvancedFraudProtectionSettings()
+	);
 
 	return [
 		advancedFraudProtectionSettings,
