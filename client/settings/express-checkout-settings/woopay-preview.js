@@ -89,9 +89,9 @@ const LoadingBox = ( { height } ) => {
 	return <div className="preview-layout__loading-box" style={ { height } } />;
 };
 
-const TextBox = ( { children, height } ) => {
+const TextBox = ( { children, maxHeight } ) => {
 	return (
-		<div className="preview-layout__text-box" style={ { height } }>
+		<div className="preview-layout__text-box" style={ { maxHeight } }>
 			{ children }
 		</div>
 	);
@@ -194,7 +194,7 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 							<VerticalSpacer height="0.747rem" />
 							{ trimmedCustomMessage && (
 								<>
-									<TextBox height="2.5rem">
+									<TextBox maxHeight="2.5rem">
 										{ decodeEntities(
 											trimmedCustomMessage
 										) }
