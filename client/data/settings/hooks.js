@@ -46,26 +46,23 @@ export const useClientSecretEncryption = () => {
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-	const enabledPaymentMethodIds = useSelect(
-		( select ) => select( STORE_NAME ).getEnabledPaymentMethodIds(),
-		[]
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
 
 	return [ enabledPaymentMethodIds, updateEnabledPaymentMethodIds ];
 };
 
 export const useAccountDomesticCurrency = () =>
-	useSelect(
-		( select ) => select( STORE_NAME ).getAccountDomesticCurrency(),
-		[]
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountDomesticCurrency()
 	);
 
 export const useSelectedPaymentMethod = () => {
 	const { updateSelectedPaymentMethod } = useDispatch( STORE_NAME );
 
-	const enabledPaymentMethodIds = useSelect(
-		( select ) => select( STORE_NAME ).getEnabledPaymentMethodIds(),
-		[]
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
 
 	return [ enabledPaymentMethodIds, updateSelectedPaymentMethod ];
@@ -74,9 +71,8 @@ export const useSelectedPaymentMethod = () => {
 export const useUnselectedPaymentMethod = () => {
 	const { updateUnselectedPaymentMethod } = useDispatch( STORE_NAME );
 
-	const enabledPaymentMethodIds = useSelect(
-		( select ) => select( STORE_NAME ).getEnabledPaymentMethodIds(),
-		[]
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
 
 	return [ enabledPaymentMethodIds, updateUnselectedPaymentMethod ];
@@ -108,9 +104,8 @@ export const useDevMode = () =>
 export const useMultiCurrency = () => {
 	const { updateIsMultiCurrencyEnabled } = useDispatch( STORE_NAME );
 
-	const isMultiCurrencyEnabled = useSelect(
-		( select ) => select( STORE_NAME ).getIsMultiCurrencyEnabled(),
-		[]
+	const isMultiCurrencyEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsMultiCurrencyEnabled()
 	);
 
 	return [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ];
@@ -119,13 +114,11 @@ export const useMultiCurrency = () => {
 export const useWCPaySubscriptions = () => {
 	const { updateIsWCPaySubscriptionsEnabled } = useDispatch( STORE_NAME );
 
-	const isWCPaySubscriptionsEnabled = useSelect(
-		( select ) => select( STORE_NAME ).getIsWCPaySubscriptionsEnabled(),
-		[]
+	const isWCPaySubscriptionsEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPaySubscriptionsEnabled()
 	);
-	const isWCPaySubscriptionsEligible = useSelect(
-		( select ) => select( STORE_NAME ).getIsWCPaySubscriptionsEligible(),
-		[]
+	const isWCPaySubscriptionsEligible = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPaySubscriptionsEligible()
 	);
 
 	return [
@@ -283,19 +276,13 @@ export const useDepositDelayDays = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getDepositDelayDays(), [] );
 
 export const useCompletedWaitingPeriod = () =>
-	useSelect(
-		( select ) => select( STORE_NAME ).getCompletedWaitingPeriod(),
-		[]
-	);
+	useSelect( ( select ) => select( STORE_NAME ).getCompletedWaitingPeriod() );
 
 export const useDepositStatus = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getDepositStatus(), [] );
 
 export const useDepositRestrictions = () =>
-	useSelect(
-		( select ) => select( STORE_NAME ).getDepositRestrictions(),
-		[]
-	);
+	useSelect( ( select ) => select( STORE_NAME ).getDepositRestrictions() );
 
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
