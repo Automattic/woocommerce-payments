@@ -18,9 +18,11 @@ jobs:
         woocommerce: [ 'latest' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.4' ]
+        directory:   [ 'includes', 'src' ]
     env:
-      WP_VERSION: ${{ matrix.wordpress }}
-      WC_VERSION: ${{ matrix.woocommerce }}
+      WP_VERSION:   ${{ matrix.wordpress }}
+      WC_VERSION:   ${{ matrix.woocommerce }}
+      COVERAGE_DIR: ${{ matrix.directory }}
     steps:
       # clone the repository
       - uses: actions/checkout@v3
