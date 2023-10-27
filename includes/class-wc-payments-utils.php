@@ -202,7 +202,6 @@ class WC_Payments_Utils {
 			'mga', // Malagasy Ariary.
 			'pyg', // Paraguayan Guaraní.
 			'rwf', // Rwandan Franc.
-			'ugx', // Ugandan Shilling.
 			'vnd', // Vietnamese Đồng.
 			'vuv', // Vanuatu Vatu.
 			'xaf', // Central African Cfa Franc.
