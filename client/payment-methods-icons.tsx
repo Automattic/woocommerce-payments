@@ -29,6 +29,7 @@ import GooglePayAsset from 'assets/images/cards/google-pay.svg?asset';
 import DinersClubAsset from 'assets/images/cards/diners.svg?asset';
 import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
 import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
+import CreditCardAsset from 'assets/images/payment-methods/cc.svg?asset';
 import './style.scss';
 
 const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => ( {
@@ -66,6 +67,10 @@ export const BancontactIcon = iconComponent(
 export const BankDebitIcon = iconComponent(
 	BankDebitAsset,
 	__( 'BECS Direct Debit', 'woocommerce-payments' )
+);
+export const CreditCardIcon = iconComponent(
+	CreditCardAsset,
+	__( 'Credit card / Debit card', 'woocommerce-payments' )
 );
 export const DinersClubIcon = iconComponent(
 	DinersClubAsset,
@@ -127,14 +132,3 @@ export const WooIcon = iconComponent(
 	WooAsset,
 	__( 'WooPay', 'woocommerce-payments' )
 );
-
-export const CreditCardIcon: React.FC = () => {
-	return (
-		<div className="payment-method__grid">
-			<VisaIcon />
-			<MastercardIcon />
-			<AmericanExpressIcon />
-			<DinersClubIcon />
-		</div>
-	);
-};

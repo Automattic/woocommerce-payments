@@ -178,15 +178,3 @@ img {
 		display: block;
 	}
 }
-
-.payment-method__grid {
-	display: grid;
-	max-width: 64px;
-	max-height: 40px;
-	gap: 2px;
-	grid-template-columns: repeat( auto-fill, 30px );
-
-	img {
-		max-width: 30px;
-	}
-}
