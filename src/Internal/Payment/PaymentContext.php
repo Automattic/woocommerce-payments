@@ -42,7 +42,7 @@ class PaymentContext {
 	 *
 	 * @return int
 	 */
-	public function get_order_id(): ?int {
+	public function get_order_id(): int {
 		return $this->order_id;
 	}
 

@@ -589,6 +589,26 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, $result );
 	}
 
+	public function provider_is_valid_phone_number(): array {
+		return [
+			'valid phone number'                         => [ '1234567890', true ],
+			'invalid phone number - more than 20 digits' => [ '123456789012345678901', false ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_is_valid_phone_number
+	 */
+	public function test_is_valid_phone_number( $phone_number, $expected ) {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_billing_phone' )
+			->willReturn( $phone_number );
+
+		$result = $this->sut->is_valid_phone_number( $this->order_id );
+		$this->assertSame( $expected, $result );
+	}
+
 	public function test_add_note() {
 		$note_id      = 321;
 		$note_content = 'Note content';
