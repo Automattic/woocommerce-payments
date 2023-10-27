@@ -10,6 +10,7 @@ namespace WCPay\Internal\Service;
 use WCPay\Internal\Logger;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\Change;
+use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 
 /**
  * Service for logging payment context.
@@ -35,25 +36,36 @@ class PaymentContextLoggerService {
 	/**
 	 * Returns the transitions and changes as a string that can be logged.
 	 *
-	 * @param PaymentContext $payment_context Payment context.
+	 * @param PaymentContext $context Payment context.
 	 */
-	public function log_changes( PaymentContext $payment_context ): void {
-		$transitions = $payment_context->get_transitions();
-		$log         = 'For order #' . $transitions[0]->get_order_id() . ' the following changes were made to the payment context:' . PHP_EOL;
-		foreach ( $transitions as $transition ) {
+	public function log_changes( PaymentContext $context ): void {
+		$log = 'For order #' . $context->get_order_id() . ' the following changes were made to the payment context: {' . PHP_EOL;
+
+		foreach ( $context->get_transitions() as $transition ) {
 			$to_state       = $transition->get_to_state();
 			$previous_state = $transition->get_from_state();
-			if ( $to_state && ! $previous_state ) {
-				$log .= 'Payment initialized in "' . $to_state;
-			} elseif ( $previous_state && ! $to_state ) {
-				$log .= 'Changes within "' . $previous_state;
-			} else {
-				$log .= 'Transition from "' . $previous_state . '" to "' . $to_state;
+			$changes        = $transition->get_changes();
+			$time           = gmdate( 'c', $transition->get_timestamp() );
+
+			// Do not log changes within the last state if there were none.
+			if ( ! $to_state && empty( $changes ) ) {
+				continue;
 			}
-			$log .= '" [' . PHP_EOL;
-			$log .= implode( PHP_EOL, $this->changes_to_str( $transition->get_changes() ) ) . PHP_EOL;
-			$log .= ']' . PHP_EOL;
+
+			if ( $to_state && ! $previous_state ) {
+				$label = "Payment initialized in '$to_state'";
+			} elseif ( $previous_state && ! $to_state ) {
+				$label = "Changes within '$previous_state";
+			} else {
+				$label = "Transition from '$previous_state' to '$to_state'";
+			}
+
+			$log .= "\t$time $label {" . PHP_EOL;
+			$log .= implode( PHP_EOL, $this->changes_to_str( $changes ) ) . PHP_EOL;
+			$log .= "\t}" . PHP_EOL;
 		}
+
+		$log .= '}';
 		$this->logger->debug( $log );
 	}
 
@@ -68,16 +80,30 @@ class PaymentContextLoggerService {
 		$changes_string = array_map(
 			function( Change $change ) {
 				if ( $change->get_old_value() ) {
-					$str = "\t\tChanged " . $change->get_key() . ' from ' . $this->json_encode_with_indent( $change->get_old_value() ) .
-							' to ' . $this->json_encode_with_indent( $change->get_new_value() );
+					$str = "\t\tChanged " . $change->get_key() . ' from ' . $this->value_to_string( $change->get_old_value() ) .
+							' to ' . $this->value_to_string( $change->get_new_value() );
 				} else {
-					$str = "\t\tSet " . $change->get_key() . ' to ' . $this->json_encode_with_indent( $change->get_new_value() );
+					$str = "\t\tSet " . $change->get_key() . ' to ' . $this->value_to_string( $change->get_new_value() );
 				}
 				return $str;
 			},
 			$changes
 		);
 		return $changes_string;
+	}
+
+	/**
+	 * Converts a value into the right human-readable format.
+	 *
+	 * @param mixed $value Value to convert to string.
+	 * @return string
+	 */
+	private function value_to_string( $value ) {
+		if ( $value instanceof PaymentMethodInterface ) {
+			return get_class( $value ) . ' ' . $this->json_encode_with_indent( $value->get_data() );
+		}
+
+		return $this->json_encode_with_indent( $value );
 	}
 
 	/**
@@ -89,7 +115,7 @@ class PaymentContextLoggerService {
 	 */
 	private function json_encode_with_indent( $value ) : string {
 		$str = wp_json_encode( $value, JSON_PRETTY_PRINT );
-		$str = preg_replace( '/(?<=\n)/', "\t\t", $str );
+		$str = preg_replace( '/\n/', "\n\t\t", $str );
 		return $str;
 	}
 }

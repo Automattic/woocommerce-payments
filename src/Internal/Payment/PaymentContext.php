@@ -294,7 +294,7 @@ class PaymentContext {
 	/**
 	 * Returns the transitions array.
 	 *
-	 * @return array
+	 * @return Transition[]
 	 */
 	public function get_transitions(): array {
 		return $this->transitions;
