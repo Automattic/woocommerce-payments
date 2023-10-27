@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Deprecate Sofort for any merchants who have not enabled it. Warn existing merchants about future deprecation.
