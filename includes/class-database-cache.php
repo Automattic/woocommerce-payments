@@ -18,6 +18,7 @@ class Database_Cache {
 	const BUSINESS_TYPES_KEY          = 'wcpay_business_types_data';
 	const CURRENCIES_KEY              = 'wcpay_multi_currency_cached_currencies';
 	const PAYMENT_PROCESS_FACTORS_KEY = 'wcpay_payment_process_factors';
+	const FRAUD_SERVICES_KEY          = 'wcpay_fraud_services_data';
 
 	/**
 	 * Refresh during AJAX calls is avoided, but white-listing
