@@ -68,15 +68,6 @@ class Transition {
 	}
 
 	/**
-	 * Sets the changes made during the transition.
-	 *
-	 * @param array $changes Changes made during the transition.
-	 */
-	public function set_changes( array $changes ) : void {
-		$this->changes = $changes;
-	}
-
-	/**
 	 * Adds a change to the changes array.
 	 *
 	 * @param Change $change Change.
