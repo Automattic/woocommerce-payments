@@ -72,6 +72,7 @@ class WC_Payments_API_Client {
 	const VAT_API                      = 'vat';
 	const LINKS_API                    = 'links';
 	const AUTHORIZATIONS_API           = 'authorizations';
+	const FRAUD_SERVICES_API           = 'accounts/fraud_services';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 
