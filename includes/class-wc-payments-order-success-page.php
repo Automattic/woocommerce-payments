@@ -135,10 +135,10 @@ class WC_Payments_Order_Success_Page {
 				</script>
 			";
 
-			return $additional_text;
+			return ' ' . $additional_text;
 		}
 
-		return sprintf( ' <div class="woocommerce-info">%s</div>', $additional_text );
+		return sprintf( '<div class="woocommerce-info">%s</div>', $additional_text );
 	}
 
 	/**
