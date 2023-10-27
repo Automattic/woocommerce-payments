@@ -55,7 +55,7 @@ class PaymentContextLoggerService {
 			if ( $to_state && ! $previous_state ) {
 				$label = "Payment initialized in '$to_state'";
 			} elseif ( $previous_state && ! $to_state ) {
-				$label = "Changes within '$previous_state";
+				$label = "Changes within '$previous_state'";
 			} else {
 				$label = "Transition from '$previous_state' to '$to_state'";
 			}

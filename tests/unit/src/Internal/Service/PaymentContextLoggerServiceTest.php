@@ -45,18 +45,22 @@ class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 
 		$this->mock_payment_context = $this->getMockBuilder( PaymentContext::class )
 			->disableOriginalConstructor()
-			->onlyMethods( [ 'get_transitions' ] )
+			->onlyMethods( [ 'get_transitions', 'get_order_id' ] )
 			->getMock();
+		$this->mock_payment_context
+			->method( 'get_order_id' )
+			->will( $this->returnValue( 123 ) );
 		$this->mock_payment_context
 			->method( 'get_transitions' )
 			->will( $this->returnValue( $this->setup_transitions() ) );
 	}
 
 	protected function setup_transitions() {
+
 		return [
-			new Transition( 123, null, 'Initial_State', [ new Change( 'key_1', null, 'new_value_1' ) ] ),
+			new Transition( strtotime( '2023-10-26 00:00:00' ), null, 'Initial_State', [ new Change( 'key_1', null, 'new_value_1' ) ] ),
 			new Transition(
-				123,
+				strtotime( '2023-10-26 00:00:10' ),
 				'Initial_State',
 				'Final_State',
 				[
@@ -65,23 +69,24 @@ class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 					new Change( 'key_3', 'old_value_3', 'new_value_3' ),
 				]
 			),
-			new Transition( 123, 'Final_State', null, [ new Change( 'key_1', 'old_value_4', 'new_value_4' ) ] ),
+			new Transition( strtotime( '2023-10-26 00:00:40' ), 'Final_State', null, [ new Change( 'key_1', 'old_value_4', 'new_value_4' ) ] ),
 		];
 	}
 
 	public function test_log_changes() {
-		$expected_log = 'For order #123 the following changes were made to the payment context:' . PHP_EOL .
-			'Payment initialized in "Initial_State" [' . PHP_EOL .
+		$expected_log = 'For order #123 the following changes were made to the payment context: {' . PHP_EOL .
+			'	2023-10-26T00:00:00+00:00 Payment initialized in \'Initial_State\' {' . PHP_EOL .
 			'		Set key_1 to "new_value_1"' . PHP_EOL .
-			']' . PHP_EOL .
-			'Transition from "Initial_State" to "Final_State" [' . PHP_EOL .
+			'	}' . PHP_EOL .
+			'	2023-10-26T00:00:10+00:00 Transition from \'Initial_State\' to \'Final_State\' {' . PHP_EOL .
 			'		Changed key_1 from "old_value_1" to "new_value_1"' . PHP_EOL .
 			'		Set key_2 to "new_value_2"' . PHP_EOL .
 			'		Changed key_3 from "old_value_3" to "new_value_3"' . PHP_EOL .
-			']' . PHP_EOL .
-			'Changes within "Final_State" [' . PHP_EOL .
+			'	}' . PHP_EOL .
+			'	2023-10-26T00:00:40+00:00 Changes within \'Final_State\' {' . PHP_EOL .
 			'		Changed key_1 from "old_value_4" to "new_value_4"' . PHP_EOL .
-			']' . PHP_EOL;
+			'	}' . PHP_EOL .
+			'}';
 		$this->mock_logger->expects( $this->once() )
 			->method( 'debug' )
 			->with( $expected_log );

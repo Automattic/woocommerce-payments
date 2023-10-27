@@ -16,13 +16,6 @@ use WCPay\Internal\Payment\Change;
 class Transition {
 
 	/**
-	 * Order ID.
-	 *
-	 * @var string
-	 */
-	private $order_id;
-
-	/**
 	 * State of the transition.
 	 *
 	 * @var string|null
@@ -52,19 +45,17 @@ class Transition {
 
 	/**
 	 * Constructs the class, with all the parameters.
-	 * Used in Tests.
 	 *
-	 * @param string      $order_id Order ID.
+	 * @param int         $timestamp Timestamp of the transition.
 	 * @param string|null $from_state State of the transition.
 	 * @param string|null $to_state State of the transition.
 	 * @param array       $changes Changes made during the transition.
 	 */
-	public function __construct( string $order_id, ?string $from_state, ?string $to_state = null, array $changes = [] ) {
-		$this->order_id   = $order_id;
+	public function __construct( ?int $timestamp, ?string $from_state, ?string $to_state = null, array $changes = [] ) {
 		$this->from_state = $from_state;
 		$this->to_state   = $to_state;
 		$this->changes    = $changes;
-		$this->timestamp  = time();
+		$this->timestamp  = $timestamp ?? time();
 	}
 
 	/**
@@ -92,16 +83,6 @@ class Transition {
 	 */
 	public function add_change( Change $change ) : void {
 		$this->changes[] = $change;
-	}
-
-
-	/**
-	 * Returns the order ID.
-	 *
-	 * @return string Order ID.
-	 */
-	public function get_order_id() : string {
-		return $this->order_id;
 	}
 
 	/**
