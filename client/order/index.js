@@ -1,11 +1,11 @@
 /* global jQuery */
 
-import { __, _n, sprintf } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
 import ReactDOM from 'react-dom';
 import React, { useEffect } from 'react';
+import { __, _n, sprintf } from '@wordpress/i18n';
+import { dateI18n } from '@wordpress/date';
 import { dispatch } from '@wordpress/data';
-import moment from 'moment';
 
 /**
  * Internal dependencies
