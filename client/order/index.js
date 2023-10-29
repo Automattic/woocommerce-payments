@@ -6,6 +6,7 @@ import React, { useEffect } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { dispatch } from '@wordpress/data';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -208,7 +209,14 @@ const DisputeNoticeWrapper = ( { chargeId } ) => {
 	// Special case the "under review" notice which is much simpler.
 	// (And return early.)
 	if ( isUnderReview( dispute.status ) ) {
-		return <DisputeUnderReviewNotice />;
+		// TODO!
+		// tooltipText = __(
+		// 	'Refunds and order editing are disabled during an active dispute.',
+		// 	'woocommerce-payments'
+		// 	);
+		return (
+			<DisputeUnderReviewNotice disputeDetailsUrl={ disputeDetailsUrl } />
+		);
 	}
 
 	// Only show the notice if the dispute is awaiting a response.
@@ -348,10 +356,21 @@ const DisputeNeedsResponseNotice = ( {
 	);
 };
 
-const DisputeUnderReviewNotice = () => {
+const DisputeUnderReviewNotice = ( { disputeDetailsUrl } ) => {
 	return (
 		<InlineNotice status="warning" isDismissible={ false }>
-			{ 'Under review innit' }
+			{ createInterpolateElement(
+				__(
+					'This order has an active payment dispute. ' +
+						'Refunds and order editing are disabled. <a>View details</a>',
+					'woocommerce-payments'
+				),
+				{
+					// createInterpolateElement is incompatible with this eslint rule as the <a> is decoupled from content.
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					a: <a href={ disputeDetailsUrl } />,
+				}
+			) }
 		</InlineNotice>
 	);
 };
