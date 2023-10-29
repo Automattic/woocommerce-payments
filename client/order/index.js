@@ -209,11 +209,6 @@ const DisputeNoticeWrapper = ( { chargeId } ) => {
 	// Special case the "under review" notice which is much simpler.
 	// (And return early.)
 	if ( isUnderReview( dispute.status ) ) {
-		// TODO!
-		// tooltipText = __(
-		// 	'Refunds and order editing are disabled during an active dispute.',
-		// 	'woocommerce-payments'
-		// 	);
 		return (
 			<DisputeUnderReviewNotice disputeDetailsUrl={ disputeDetailsUrl } />
 		);
