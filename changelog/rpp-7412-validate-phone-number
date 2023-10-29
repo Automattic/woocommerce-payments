@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Validate order phone number in InitialState (RPP).
