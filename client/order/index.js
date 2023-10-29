@@ -205,6 +205,12 @@ const DisputeNoticeWrapper = ( { chargeId } ) => {
 		return null;
 	}
 
+	// Special case the "under review" notice which is much simpler.
+	// (And return early.)
+	if ( isUnderReview( dispute.status ) ) {
+		return <DisputeUnderReviewNotice />;
+	}
+
 	// Only show the notice if the dispute is awaiting a response.
 	if ( ! isAwaitingResponse( dispute.status ) ) {
 		return null;
@@ -224,7 +230,7 @@ const DisputeNoticeWrapper = ( { chargeId } ) => {
 	}
 
 	return (
-		<DisputeNotice
+		<DisputeNeedsResponseNotice
 			chargeId={ chargeId }
 			disputeReason={ dispute.reason }
 			formattedAmount={ formatExplicitCurrency(
@@ -239,7 +245,7 @@ const DisputeNoticeWrapper = ( { chargeId } ) => {
 	);
 };
 
-const DisputeNotice = ( {
+const DisputeNeedsResponseNotice = ( {
 	disputeReason,
 	formattedAmount,
 	isPreDisputeInquiry,
@@ -287,7 +293,7 @@ const DisputeNotice = ( {
 		? titleStrings.inquiry_default
 		: titleStrings.dispute_default;
 
-	// If the dispute is due within 7 days, use different wording.
+	// If the dispute is due within 7 days, adjust wording and highlight urgency.
 	if ( countdownDays < 7 ) {
 		titleText = isPreDisputeInquiry
 			? titleStrings.inquiry_urgent
@@ -338,6 +344,14 @@ const DisputeNotice = ( {
 			] }
 		>
 			{ <strong>{ `${ title } ${ suffix }` }</strong> }
+		</InlineNotice>
+	);
+};
+
+const DisputeUnderReviewNotice = () => {
+	return (
+		<InlineNotice status="warning" isDismissible={ false }>
+			{ 'Under review innit' }
 		</InlineNotice>
 	);
 };
