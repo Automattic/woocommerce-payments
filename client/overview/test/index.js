@@ -52,7 +52,7 @@ jest.mock( '@wordpress/data', () => ( {
 } ) );
 jest.mock( '@wordpress/data-controls' );
 jest.mock( 'wcpay/data', () => ( {
-	useSettings: jest.fn().mockReturnValue( {
+	useGetSettings: jest.fn().mockReturnValue( {
 		settings: { enabled_payment_method_ids: [ 'foo', 'bar' ] },
 	} ),
 	useDisputes: jest
