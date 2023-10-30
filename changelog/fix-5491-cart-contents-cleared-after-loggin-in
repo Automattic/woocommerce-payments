@@ -2,3 +2,4 @@ Significance: patch
 Type: update
 
 Updated jetpack related packages
+Fix: Cart contents get cleared after loggin in
