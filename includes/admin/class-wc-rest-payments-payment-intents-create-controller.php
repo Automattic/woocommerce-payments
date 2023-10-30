@@ -157,7 +157,7 @@ class WC_REST_Payments_Payment_Intents_Create_Controller extends WC_Payments_RES
 					'context'     => [ 'view' ],
 				],
 				'created'  => [
-					'description' => __( 'Timestamp for when the payment intent was created.', 'woocommerce-payments' ),
+					'description' => __( 'The date when the payment intent was created.', 'woocommerce-payments' ),
 					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
@@ -325,7 +325,7 @@ class WC_REST_Payments_Payment_Intents_Create_Controller extends WC_Payments_RES
 		$prepared_item['id']             = $item->get_id();
 		$prepared_item['amount']         = $item->get_amount();
 		$prepared_item['currency']       = $item->get_currency();
-		$prepared_item['created']        = $item->get_created()->getTimestamp();
+		$prepared_item['created']        = $item->get_created()->format( 'Y-m-d H:i:s' );
 		$prepared_item['customer']       = $item->get_customer_id();
 		$prepared_item['payment_method'] = $item->get_payment_method_id();
 		$prepared_item['status']         = $item->get_status();

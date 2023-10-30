@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
@@ -33,35 +34,35 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WC_Payments_Customer_Service.
 	 *
-	 * @var WC_Payments_Customer_Service|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Customer_Service|MockObject
 	 */
 	private $mock_customer_service;
 
 	/**
 	 * Mock WC_Payments_Token_Service.
 	 *
-	 * @var WC_Payments_Token_Service|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Token_Service|MockObject
 	 */
 	private $mock_token_service;
 
 	/**
 	 * Mock WC_Payments_API_Client.
 	 *
-	 * @var WC_Payments_API_Client|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_API_Client|MockObject
 	 */
 	private $mock_api_client;
 
 	/**
 	 * Mock WC_Payments_Action_Scheduler_Service.
 	 *
-	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Action_Scheduler_Service|MockObject
 	 */
 	private $mock_action_scheduler_service;
 
 	/**
 	 * Mock Session_Rate_Limiter.
 	 *
-	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
+	 * @var Session_Rate_Limiter|MockObject
 	 */
 	private $mock_session_rate_limiter;
 
@@ -75,23 +76,30 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Duplicate_Payment_Prevention_Service instance.
 	 *
-	 * @var Duplicate_Payment_Prevention_Service
+	 * @var Duplicate_Payment_Prevention_Service|MockObject
 	 */
 	private $mock_dpps;
 
 	/**
 	 * Mock WC_Payments_Account.
 	 *
-	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Account|MockObject
 	 */
 	private $mock_wcpay_account;
 
 	/**
 	 * WC_Payments_Localization_Service instance.
 	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var WC_Payments_Localization_Service|MockObject
 	 */
 	private $mock_localization_service;
+
+	/**
+	 * Mock Fraud Service.
+	 *
+	 * @var WC_Payments_Fraud_Service|MockObject;
+	 */
+	private $mock_fraud_service;
 
 	public function set_up() {
 		parent::set_up();
@@ -125,6 +133,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
 
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -135,7 +144,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_session_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
-			$this->mock_localization_service
+			$this->mock_localization_service,
+			$this->mock_fraud_service
 		);
 		$this->wcpay_gateway->init_hooks();
 
@@ -807,7 +817,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_session_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
-			$this->mock_localization_service
+			$this->mock_localization_service,
+			$this->mock_fraud_service
 		);
 
 		// Ensure the has_attached_integration_hooks property is set to false so callbacks can be attached in maybe_init_subscriptions().
@@ -833,7 +844,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_session_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
-			$this->mock_localization_service
+			$this->mock_localization_service,
+			$this->mock_fraud_service
 		);
 
 		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );

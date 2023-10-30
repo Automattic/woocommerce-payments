@@ -15,7 +15,6 @@ import {
 	validateEmail,
 	appendRedirectionParams,
 } from '../utils';
-import wcpayTracks from 'tracks';
 
 export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	const woopayEmailInput = await getTargetElement( emailSelector );
@@ -126,11 +125,6 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		window.addEventListener( 'resize', setPopoverPosition );
 
 		iframe.classList.add( 'open' );
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_OTP_START,
-			[],
-			true
-		);
 	} );
 
 	// Add the iframe to the wrapper.
@@ -212,11 +206,6 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				userEmail = e.data.userEmail;
 				break;
 			case 'redirect_to_woopay_skip_session_init':
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
-					[],
-					true
-				);
 				if ( e.data.redirectUrl ) {
 					window.location = appendRedirectionParams(
 						e.data.redirectUrl
@@ -225,11 +214,6 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
-					[],
-					true
-				);
 				api.initWooPay(
 					userEmail || e.data.userEmail,
 					e.data.platformCheckoutUserSession
@@ -254,11 +238,6 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				} );
 				break;
 			case 'otp_validation_failed':
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_FAILED,
-					[],
-					true
-				);
 				break;
 			case 'close_modal':
 				closeIframe();
