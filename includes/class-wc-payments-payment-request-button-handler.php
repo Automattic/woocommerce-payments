@@ -499,11 +499,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
-		if ( $this->is_pay_for_order_page() ) {
-			return true;
-		}
-
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
@@ -537,8 +532,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Cart total is 0 or is on product page and product price is 0.
+		// Exclude pay-for-order pages from this check.
 		if (
-			( ! $this->is_product() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
+			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
 			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 
 		) {
