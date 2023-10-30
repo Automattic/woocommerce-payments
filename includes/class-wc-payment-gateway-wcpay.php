@@ -24,14 +24,15 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
-use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Internal\Payment\State\AuthenticationRequiredState;
+use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
+use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -88,17 +89,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		'deposit_schedule_interval'          => 'deposit_schedule_interval',
 		'deposit_schedule_weekly_anchor'     => 'deposit_schedule_weekly_anchor',
 		'deposit_schedule_monthly_anchor'    => 'deposit_schedule_monthly_anchor',
-	];
-
-	/**
-	 * Stripe intents that are treated as successfully created.
-	 *
-	 * @type array
-	 */
-	const SUCCESSFUL_INTENT_STATUS = [
-		Intent_Status::SUCCEEDED,
-		Intent_Status::REQUIRES_CAPTURE,
-		Intent_Status::PROCESSING,
 	];
 
 	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';
@@ -189,6 +179,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $localization_service;
 
 	/**
+	 * WC_Payments_Fraud_Service instance to get information about fraud services.
+	 *
+	 * @var WC_Payments_Fraud_Service
+	 */
+	protected $fraud_service;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client                  - WooCommerce Payments API client.
@@ -196,10 +193,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payments_Customer_Service         $customer_service                     - Customer class instance.
 	 * @param WC_Payments_Token_Service            $token_service                        - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service             - Action Scheduler service instance.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter      - Rate Limiter for failed transactions.
+	 * @param Session_Rate_Limiter|null            $failed_transaction_rate_limiter      - Rate Limiter for failed transactions.
 	 * @param WC_Payments_Order_Service            $order_service                        - Order class instance.
 	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
 	 * @param WC_Payments_Localization_Service     $localization_service                 - Localization service instance.
+	 * @param WC_Payments_Fraud_Service            $fraud_service                        - Fraud service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -210,7 +208,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		Session_Rate_Limiter $failed_transaction_rate_limiter = null,
 		WC_Payments_Order_Service $order_service,
 		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service,
-		WC_Payments_Localization_Service $localization_service
+		WC_Payments_Localization_Service $localization_service,
+		WC_Payments_Fraud_Service $fraud_service
 	) {
 		$this->payments_api_client                  = $payments_api_client;
 		$this->account                              = $account;
@@ -221,6 +220,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->order_service                        = $order_service;
 		$this->duplicate_payment_prevention_service = $duplicate_payment_prevention_service;
 		$this->localization_service                 = $localization_service;
+		$this->fraud_service                        = $fraud_service;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
@@ -676,7 +676,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				id="wcpay-express-checkout-settings-container"
 				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>"
 			></div>
-		<?php else : ?>
+<?php else : ?>
 			<div id="wcpay-account-settings-container"></div>
 			<?php
 		endif;
@@ -849,10 +849,40 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$service = wcpay_get_container()->get( PaymentProcessingService::class );
 		$state   = $service->process_payment( $order->get_id(), $manual_capture );
 
+		if ( $state instanceof DuplicateOrderDetectedState ) {
+			$duplicate_order_return_url = add_query_arg(
+				DuplicatePaymentPreventionService::FLAG_PREVIOUS_ORDER_PAID,
+				'yes',
+				$this->get_return_url( wc_get_order( $state->get_context()->get_duplicate_order_id() ) )
+			);
+
+			return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
+				'result'   => 'success',
+				'redirect' => $duplicate_order_return_url,
+			];
+		}
+
 		if ( $state instanceof CompletedState ) {
+			$return_url = $this->get_return_url( $order );
+			if ( $state->get_context()->is_detected_authorized_intent() ) {
+				$return_url = add_query_arg(
+					DuplicatePaymentPreventionService::FLAG_PREVIOUS_SUCCESSFUL_INTENT,
+					'yes',
+					$return_url
+				);
+			}
+
+			return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
+				'result'   => 'success',
+				'redirect' => $return_url,
+			];
+		}
+
+		if ( $state instanceof AuthenticationRequiredState ) {
+			$context = $state->get_context();
 			return [
 				'result'   => 'success',
-				'redirect' => $this->get_return_url( $order ),
+				'redirect' => $service->get_authentication_redirect_url( $context->get_intent(), $context->get_order_id() ),
 			];
 		}
 
@@ -1413,7 +1443,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( ! empty( $intent ) ) {
-			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
+			if ( ! $intent->is_authorized() ) {
 				$intent_failed = true;
 			}
 
@@ -1590,23 +1620,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_payment_methods_from_gateway_id( $gateway_id, $order_id = null ) {
 		$split_upe_gateway_prefix = self::GATEWAY_ID . '_';
 		// If $gateway_id begins with `woocommerce_payments_` payment method is a split UPE LPM.
-		// Otherwise $gateway_id must be `woocommerce_payments`.
+		// Otherwise, $gateway_id must be `woocommerce_payments`.
 		if ( substr( $gateway_id, 0, strlen( $split_upe_gateway_prefix ) ) === $split_upe_gateway_prefix ) {
-			$payment_methods = [ str_replace( $split_upe_gateway_prefix, '', $gateway_id ) ];
-		} elseif ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			return [ str_replace( $split_upe_gateway_prefix, '', $gateway_id ) ];
+		}
+
+		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
+
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			// If split or deferred intent UPE is enabled and $gateway_id is `woocommerce_payments`, this must be the CC gateway.
 			// We only need to return single `card` payment method, adding `link` since deferred intent UPE gateway is compatible with Link.
 			$payment_methods = [ Payment_Method::CARD ];
-			if ( in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
+			if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
 				$payment_methods[] = Payment_Method::LINK;
 			}
-		} else {
-			// $gateway_id must be `woocommerce_payments` and gateway is either legacy UPE or legacy card.
-			// Find the relevant gateway and return all available payment methods.
-			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
+
+			return $payment_methods;
 		}
 
-		return $payment_methods;
+		// $gateway_id must be `woocommerce_payments` and gateway is either legacy UPE or legacy card.
+		// Find the relevant gateway and return all available payment methods.
+		return $eligible_payment_methods;
 	}
 
 	/**
@@ -1897,6 +1931,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	private function get_payment_method_type_for_order( $order ): string {
+		$payment_method_details = [];
 		if ( $this->order_service->get_payment_method_id_for_order( $order ) ) {
 			$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
 			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
@@ -2721,6 +2756,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code
 	 */
 	public function capture_charge( $order, $include_level3 = true, $intent_metadata = [] ) {
+		$intent_id                = null;
 		$amount                   = $order->get_total();
 		$is_authorization_expired = false;
 		$intent                   = null;
@@ -2803,6 +2839,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order - Order to cancel authorization on.
 	 */
 	public function cancel_authorization( $order ) {
+		$intent        = null;
 		$status        = null;
 		$error_message = null;
 		$http_code     = null;
@@ -2875,34 +2912,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Create the shipping data array to send to Stripe when making a purchase.
-	 *
-	 * @param WC_Order $order The order that is being paid for.
-	 * @return array          The shipping data to send to Stripe.
-	 */
-	public function get_shipping_data_from_order( WC_Order $order ): array {
-		return [
-			'name'    => implode(
-				' ',
-				array_filter(
-					[
-						$order->get_shipping_first_name(),
-						$order->get_shipping_last_name(),
-					]
-				)
-			),
-			'address' => [
-				'line1'       => $order->get_shipping_address_1(),
-				'line2'       => $order->get_shipping_address_2(),
-				'postal_code' => $order->get_shipping_postcode(),
-				'city'        => $order->get_shipping_city(),
-				'state'       => $order->get_shipping_state(),
-				'country'     => $order->get_shipping_country(),
-			],
-		];
-	}
-
-	/**
 	 * Create the level 3 data array to send to Stripe when making a purchase.
 	 *
 	 * @param WC_Order $order The order that is being paid for.
@@ -2925,6 +2934,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception - If nonce is invalid.
 	 */
 	public function update_order_status() {
+		$intent_id_received = null;
+		$order              = null;
 		try {
 			$is_nonce_valid = check_ajax_referer( 'wcpay_update_order_status_nonce', false, false );
 			if ( ! $is_nonce_valid ) {
@@ -3002,7 +3013,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 
-			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
+			if ( $intent->is_authorized() ) {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
@@ -3136,7 +3147,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->maybe_schedule_subscription_order_tracking( $order_id, $order );
 
 		// If Sift is not enabled, exit out and don't do the tracking here.
-		if ( ! isset( $this->account->get_fraud_services_config()['sift'] ) ) {
+		if ( ! isset( $this->fraud_service->get_fraud_services_config()['sift'] ) ) {
 			return;
 		}
 
@@ -3718,11 +3729,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
 	 * @param Payment_Information          $payment_information   The payment information object.
-	 * @param mixed                        $order                 The order object or data.
+	 * @param WC_Order                     $order                 The order object.
 	 *
 	 * @return void
 	 */
-	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, $order ) {
+	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, WC_Order $order ) {
 		// Do nothing.
 	}
 }

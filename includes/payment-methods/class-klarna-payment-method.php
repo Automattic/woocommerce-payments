@@ -29,22 +29,34 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		$this->title                        = __( 'Klarna', 'woocommerce-payments' );
 		$this->is_reusable                  = false;
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/klarna.svg', WCPAY_PLUGIN_FILE );
-		$this->currencies                   = [ 'USD', 'GBP', 'EUR' ];
+		$this->currencies                   = [ 'USD', 'GBP', 'EUR', 'DKK', 'NOK', 'SEK' ];
 		$this->accept_only_domestic_payment = true;
-		$this->countries                    = [ 'US', 'GB', 'AT', 'DE', 'NL', 'BE', 'ES', 'IT' ];
+		$this->countries                    = [ 'US', 'GB', 'AT', 'DE', 'NL', 'BE', 'ES', 'IT', 'IE', 'DK', 'FI', 'NO', 'SE' ];
 		$this->limits_per_currency          = [
 			'USD' => [
 				'min' => 1000,
 				'max' => 500000,
-			], // Represents USD 10 - 5,000 AUD.
+			], // Represents USD 10 - 5,000.
 			'GBP' => [
 				'min' => 1000,
 				'max' => 500000,
-			], // Represents GBP 10 - 5,000 AUD.
+			], // Represents GBP 10 - 5,000.
 			'EUR' => [
 				'min' => 1000,
 				'max' => 500000,
-			], // Represents EUR 10 - 5,000 AUD.
+			], // Represents EUR 10 - 5,000.
+			'DKK' => [
+				'min' => 1000,
+				'max' => 500000,
+			], // Represents DKK 10 - 5,000.
+			'NOK' => [
+				'min' => 1000,
+				'max' => 500000,
+			], // Represents NOK 10 - 5,000.
+			'SEK' => [
+				'min' => 1000,
+				'max' => 500000,
+			], // Represents SEK 10 - 5,000.
 		];
 	}
 

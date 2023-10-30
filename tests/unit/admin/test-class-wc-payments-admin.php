@@ -52,6 +52,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $mock_incentives_service;
 
 	/**
+	 * Mock Fraud Service.
+	 *
+	 * @var WC_Payments_Fraud_Service|MockObject;
+	 */
+	private $mock_fraud_service;
+
+	/**
 	 * Mock database cache.
 	 *
 	 * @var Database_Cache|MockObject;
@@ -93,6 +100,10 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_fraud_service = $this->getMockBuilder( WC_Payments_Fraud_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->mock_database_cache = $this->getMockBuilder( Database_Cache::class )
 			->disableOriginalConstructor()
 			->getMock();
@@ -112,6 +123,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			$this->mock_onboarding_service,
 			$this->mock_order_service,
 			$this->mock_incentives_service,
+			$this->mock_fraud_service,
 			$this->mock_database_cache
 		);
 	}

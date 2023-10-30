@@ -578,25 +578,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Gets the various anti-fraud services that must be included on every WCPay-related page.
-	 *
-	 * @return array Assoc array. Each key is the slug of a fraud service that must be incorporated to every page, the value is service-specific config for it.
-	 */
-	public function get_fraud_services_config() {
-		$account = $this->get_cached_account_data();
-		if ( empty( $account ) || ! isset( $account['fraud_services'] ) ) {
-			// This was the default before adding new anti-fraud providers, preserve backwards-compatibility.
-			return [ 'stripe' => [] ];
-		}
-		$services_config          = $account['fraud_services'];
-		$filtered_services_config = [];
-		foreach ( $services_config as $service_id => $config ) {
-			$filtered_services_config[ $service_id ] = apply_filters( 'wcpay_prepare_fraud_config', $config, $service_id );
-		}
-		return $filtered_services_config;
-	}
-
-	/**
 	 * Checks if the request is for the Capital view offer redirection page, and redirects to the offer if so.
 	 *
 	 * Only admins are be able to perform this action. The redirect doesn't happen if the request is an AJAX request.
@@ -619,7 +600,7 @@ class WC_Payments_Account {
 			return;
 		}
 
-		$return_url  = $this->get_overview_page_url();
+		$return_url  = static::get_overview_page_url();
 		$refresh_url = add_query_arg( [ 'wcpay-loan-offer' => '' ], admin_url( 'admin.php' ) );
 
 		try {
@@ -1181,7 +1162,7 @@ class WC_Payments_Account {
 	private function redirect_to_login() {
 		// Clear account transient when generating Stripe dashboard's login link.
 		$this->clear_cache();
-		$redirect_url = $this->get_overview_page_url();
+		$redirect_url = static::get_overview_page_url();
 
 		$request = Get_Account_Login_Data::create();
 		$request->set_redirect_url( $redirect_url );
@@ -1216,11 +1197,11 @@ class WC_Payments_Account {
 		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		switch ( $wcpay_connect_from ) {
 			case 'WCADMIN_PAYMENT_TASK':
-				return $this->get_payments_task_page_url();
+				return static::get_payments_task_page_url();
 			case 'WC_SUBSCRIPTIONS_TABLE':
 				return admin_url( add_query_arg( [ 'post_type' => 'shop_subscription' ], 'edit.php' ) );
 			default:
-				return $this->get_overview_page_url();
+				return static::get_overview_page_url();
 		}
 	}
 
@@ -1657,7 +1638,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Returns an array containing the names of all the WCPay related notes that have be actioned.
+	 * Returns an array containing the names of all the WCPay related notes that have been actioned.
 	 *
 	 * @return array
 	 */

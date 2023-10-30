@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Fixes an issue with payment request buttons that is currently not on production
+
+

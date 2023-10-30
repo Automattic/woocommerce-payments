@@ -743,22 +743,22 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 * @return int The total number of subscriptions to migrate.
 	 */
 	public function get_stripe_billing_subscription_count() {
-		return count(
-			wcs_get_orders_with_meta_query(
-				[
-					'status'     => 'any',
-					'return'     => 'ids',
-					'type'       => 'shop_subscription',
-					'limit'      => -1,
-					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-						[
-							'key'     => WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
-							'compare' => 'EXISTS',
-						],
+		$result = wcs_get_orders_with_meta_query(
+			[
+				'status'     => 'any',
+				'return'     => 'ids',
+				'type'       => 'shop_subscription',
+				'limit'      => - 1,
+				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
+						'compare' => 'EXISTS',
 					],
-				]
-			)
+				],
+			]
 		);
+
+		return is_countable( $result ) ? count( $result ) : 0;
 	}
 
 	/**
