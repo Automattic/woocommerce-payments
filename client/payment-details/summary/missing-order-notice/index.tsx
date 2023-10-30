@@ -7,9 +7,7 @@
 import React from 'react';
 import { Button, RadioControl } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import Loadable from 'wcpay/components/loadable';
 import { useState } from '@wordpress/element';
-import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -18,6 +16,8 @@ import interpolateComponents from '@automattic/interpolate-components';
 
 import './style.scss';
 import CardNotice from 'wcpay/components/card-notice';
+import ConfirmationModal from 'wcpay/components/confirmation-modal';
+import Loadable from 'wcpay/components/loadable';
 
 interface MissingOrderNoticeProps {
 	isLoading: boolean;
@@ -70,7 +70,10 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 					title={ __( 'Refund Transaction', 'woocommerce-payments' ) }
 					actions={
 						<>
-							<Button onClick={ handleModalCancel } variant="secondary">
+							<Button
+								onClick={ handleModalCancel }
+								variant="secondary"
+							>
 								{ __( 'Cancel', 'woocommerce-payments' ) }
 							</Button>
 							<Button
