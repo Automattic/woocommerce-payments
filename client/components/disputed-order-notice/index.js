@@ -46,8 +46,26 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	// Special case the "under review" notice which is much simpler.
 	// (And return early.)
 	if ( isUnderReview( dispute.status ) ) {
+		<DisputeOrderLockedNotice
+			message={ __(
+				'This order has an active payment dispute. Refunds and order editing are disabled.',
+				'woocommerce-payments'
+			) }
+			disputeDetailsUrl={ disputeDetailsUrl }
+		/>;
+	}
+
+	// Special case lost disputes.
+	// (And return early.)
+	if ( dispute.status === 'lost' ) {
 		return (
-			<DisputeUnderReviewNotice disputeDetailsUrl={ disputeDetailsUrl } />
+			<DisputeOrderLockedNotice
+				message={ __(
+					'Refunds and order editing have been disabled as a result of a lost dispute.',
+					'woocommerce-payments'
+				) }
+				disputeDetailsUrl={ disputeDetailsUrl }
+			/>
 		);
 	}
 
@@ -188,15 +206,12 @@ const DisputeNeedsResponseNotice = ( {
 	);
 };
 
-const DisputeUnderReviewNotice = ( { disputeDetailsUrl } ) => {
+const DisputeOrderLockedNotice = ( { message, disputeDetailsUrl } ) => {
 	return (
 		<InlineNotice status="warning" isDismissible={ false }>
+			{ message }
 			{ createInterpolateElement(
-				__(
-					'This order has an active payment dispute. ' +
-						'Refunds and order editing are disabled. <a>View details</a>',
-					'woocommerce-payments'
-				),
+				__( ' <a>View details</a>', 'woocommerce-payments' ),
 				{
 					// createInterpolateElement is incompatible with this eslint rule as the <a> is decoupled from content.
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
