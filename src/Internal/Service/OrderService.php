@@ -214,6 +214,34 @@ class OrderService {
 	}
 
 	/**
+	 * Updates the order with the necessary details whenever an intent requires action.
+	 *
+	 * @param int                                $order_id ID of the order.
+	 * @param WC_Payments_API_Abstract_Intention $intent   Remote object. To be abstracted soon.
+	 * @param PaymentContext                     $context  Context for the payment.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function update_order_from_intent_that_requires_action(
+		int $order_id,
+		WC_Payments_API_Abstract_Intention $intent,
+		PaymentContext $context
+	) {
+		$order = $this->get_order( $order_id );
+
+		$this->legacy_service->attach_intent_info_to_order(
+			$order,
+			$intent->get_id(),
+			$intent->get_status(),
+			$context->get_payment_method()->get_id(),
+			$context->get_customer_id(),
+			'',
+			$context->get_currency()
+		);
+
+		$this->legacy_service->update_order_status_from_intent( $order, $intent );
+	}
+
+	/**
 	 * Given the charge data, checks if there was an exchange and adds it to the given order as metadata
 	 *
 	 * @param int                    $order_id The order to update.
@@ -252,6 +280,117 @@ class OrderService {
 		$exchange_rate = WC_Payments_Utils::interpret_string_exchange_rate( $exchange_rate, $currency_order, $currency_account );
 		$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
 		$order->save_meta_data();
+	}
+
+	/**
+	 * Gets currently attached intent ID of the order.
+	 *
+	 * @param int $order_id Order ID.
+	 *
+	 * @return string|null Intent ID for the order. Null if no intent ID attached to order.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_intent_id( int $order_id ): ?string {
+		$order     = $this->get_order( $order_id );
+		$intent_id = (string) $order->get_meta( '_intent_id', true );
+		if ( empty( $intent_id ) ) {
+			return null;
+		}
+		return $intent_id;
+	}
+
+	/**
+	 * Gets cart hash for the given order ID.
+	 *
+	 * @param int $order_id ID of the order.
+	 *
+	 * @return string Cart hash for the order.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_cart_hash( int $order_id ): string {
+		$order = $this->get_order( $order_id );
+		return $order->get_cart_hash();
+	}
+
+	/**
+	 * Gets customer ID for the given order ID.
+	 *
+	 * @param int $order_id ID of the order.
+	 *
+	 * @return int Customer ID for the order.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_customer_id( int $order_id ): int {
+		return $this->get_order( $order_id )->get_customer_id();
+	}
+
+	/**
+	 * Checks if the order has one of paid statuses.
+	 *
+	 * @param int $order_id ID of the order.
+	 *
+	 * @return bool True if the order has one of paid statuses, false otherwise.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function is_paid( int $order_id ): bool {
+		return $this->get_order( $order_id )
+			->has_status(
+				$this->legacy_proxy->call_function( 'wc_get_is_paid_statuses' )
+			);
+	}
+
+	/**
+	 * Checks if the order has one of pending statuses.
+	 *
+	 * @param int $order_id ID of the order.
+	 *
+	 * @return bool True if the order has one of pending statuses, false otherwise.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function is_pending( int $order_id ) {
+		return $this->get_order( $order_id )
+			->has_status(
+				$this->legacy_proxy->call_function( 'wc_get_is_pending_statuses' )
+			);
+	}
+
+	/**
+	 * Validate phone number provided in the order.
+	 *
+	 * @param  int $order_id ID of the order.
+	 *
+	 * @return bool
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function is_valid_phone_number( int $order_id ): bool {
+		$order = $this->get_order( $order_id );
+		return strlen( $order->get_billing_phone() ) < 20;
+	}
+
+	/**
+	 * Adds note to order.
+	 *
+	 * @param int    $order_id  ID of the order.
+	 * @param string $note      Note content.
+	 *
+	 * @return int Note ID.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function add_note( int $order_id, string $note ): int {
+		return $this->get_order( $order_id )->add_order_note( $note );
+	}
+
+	/**
+	 * Deletes order.
+	 *
+	 * @param int  $order_id     ID of the order.
+	 * @param bool $force_delete Should the order be deleted permanently.
+	 *
+	 * @return bool Result of the deletion.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function delete( int $order_id, bool $force_delete = false ): bool {
+		return $this->get_order( $order_id )->delete( $force_delete );
 	}
 
 	/**

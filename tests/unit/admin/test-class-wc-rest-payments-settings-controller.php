@@ -7,6 +7,7 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
+use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
@@ -50,18 +51,18 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	private $gateway;
 
 	/**
-	 * @var WC_Payments_API_Client
+	 * @var WC_Payments_API_Client|MockObject
 	 */
 	private $mock_api_client;
 
 	/**
 	 * Mock WC_Payments_Account.
 	 *
-	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Account|MockObject
 	 */
 	private $mock_wcpay_account;
 	/**
-	 * @var \PHPUnit\Framework\MockObject\MockObject|Database_Cache
+	 * @var Database_Cache|MockObject
 	 */
 	private $mock_db_cache;
 
@@ -96,9 +97,23 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * WC_Payments_Localization_Service instance.
 	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var WC_Payments_Localization_Service|MockObject
 	 */
 	private $mock_localization_service;
+
+	/**
+	 * Mock Fraud Service.
+	 *
+	 * @var WC_Payments_Fraud_Service|MockObject
+	 */
+	private $mock_fraud_service;
+
+	/**
+	 * Mock WC_Payments_Session_Service.
+	 *
+	 * @var WC_Payments_Session_Service|MockObject
+	 */
+	private $mock_session_service;
 
 	/**
 	 * Pre-test setup
@@ -120,13 +135,15 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_account        = $this->createMock( WC_Payments_Account::class );
 		$this->mock_db_cache             = $this->createMock( Database_Cache::class );
-		$customer_service                = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache );
+		$this->mock_session_service      = $this->createMock( WC_Payments_Session_Service::class );
+		$customer_service                = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache, $this->mock_session_service );
 		$token_service                   = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$order_service                   = new WC_Payments_Order_Service( $this->mock_api_client );
 		$action_scheduler_service        = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
 		$mock_rate_limiter               = $this->createMock( Session_Rate_Limiter::class );
 		$mock_dpps                       = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -137,7 +154,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_rate_limiter,
 			$order_service,
 			$mock_dpps,
-			$this->mock_localization_service
+			$this->mock_localization_service,
+			$this->mock_fraud_service
 		);
 		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account );
 
@@ -177,7 +195,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_rate_limiter,
 			$order_service,
 			$mock_dpps,
-			$this->mock_localization_service
+			$this->mock_localization_service,
+			$this->mock_fraud_service
 		);
 
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway, $this->mock_wcpay_account );
@@ -193,7 +212,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_rate_limiter,
 			$order_service,
 			$mock_dpps,
-			$this->mock_localization_service
+			$this->mock_localization_service,
+			$this->mock_fraud_service
 		);
 
 		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway, $this->mock_wcpay_account );

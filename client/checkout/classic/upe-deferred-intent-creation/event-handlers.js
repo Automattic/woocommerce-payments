@@ -28,9 +28,16 @@ import { isPreviewing } from 'wcpay/checkout/preview';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
+	const publishableKey = getUPEConfig( 'publishableKey' );
+
+	if ( ! publishableKey ) {
+		// If no configuration is present, probably this is not the checkout page.
+		return;
+	}
+
 	const api = new WCPayAPI(
 		{
-			publishableKey: getUPEConfig( 'publishableKey' ),
+			publishableKey: publishableKey,
 			accountId: getUPEConfig( 'accountId' ),
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
