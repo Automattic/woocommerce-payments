@@ -40,13 +40,14 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
  * @param {Object} api The API object used to save the UPE configuration.
  * @return {Object} The appearance object for the UPE.
  */
-function initializeAppearance( api ) {
+async function initializeAppearance( api ) {
 	let appearance = getUPEConfig( 'upeAppearance' );
-	if ( ! appearance ) {
-		appearance = getAppearance();
-		api.saveUPEAppearance( appearance );
+	if ( appearance ) {
+		return appearance;
 	}
-	return appearance;
+
+	appearance = getAppearance();
+	return await api.saveUPEAppearance( appearance );
 }
 
 /**
@@ -159,7 +160,7 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 		amount: amount,
 		paymentMethodCreation: 'manual',
 		paymentMethodTypes: paymentMethodTypes,
-		appearance: initializeAppearance( api ),
+		appearance: await initializeAppearance( api ),
 		fonts: getFontRulesFromPage(),
 	};
 
