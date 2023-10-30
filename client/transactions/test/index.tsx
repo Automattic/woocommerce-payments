@@ -96,7 +96,6 @@ describe( 'TransactionsPage', () => {
 		mockUseSettings.mockReturnValue( {
 			isLoading: false,
 			isSaving: false,
-			settings: {},
 			saveSettings: ( a ) => a,
 		} );
 

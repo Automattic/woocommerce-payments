@@ -12,6 +12,7 @@ import ExpressCheckoutSettings from '..';
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
 
 jest.mock( '../../../data', () => ( {
+	useGetSettings: jest.fn().mockReturnValue( {} ),
 	useSettings: jest.fn().mockReturnValue( {} ),
 	usePaymentRequestEnabledSettings: jest
 		.fn()
