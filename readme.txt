@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.7.0 - 2023-11-01 =
+= 6.7.0-test-3 - unreleased =
 * Add - Added an internal logger class, meant for use by classes within src.
 * Add - Added Authorizations reporting endpoint.
 * Add - Added documentation for reports API
