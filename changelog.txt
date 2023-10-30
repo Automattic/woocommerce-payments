@@ -42,6 +42,7 @@
 * Dev - Added authentication required state
 * Dev - Add pay-for-order Tracks events
 * Dev - Add Shopper Tracks events
+* Dev - Bump WC and WP tested up to versions to 8.2.0 and 6.3
 * Dev - Fixed version check regex
 * Dev - PHP 8.1 compatibility
 * Dev - Remove redundant Tracks events in WooPay OTP flow
