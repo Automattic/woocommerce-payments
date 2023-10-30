@@ -218,6 +218,7 @@ const CapitalPage = (): JSX.Element => {
 				totalRows={ loans.length }
 				headers={ columns }
 				rows={ getRowsData( loans ) }
+				rowsPerPage={ loans.length }
 				summary={ getSummary( loans ) }
 				showMenu={ false }
 			/>

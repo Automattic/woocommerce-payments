@@ -16,6 +16,8 @@ use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
 use WCPay\Internal\DependencyManagement\ServiceProvider\GenericServiceProvider;
 use WCPay\Internal\DependencyManagement\ServiceProvider\ProxiesServiceProvider;
 
+// @codeCoverageIgnoreStart
+
 /**
  * Hides errors during update from 6.6.0 or 6.6.1 to 6.6.2.
  *
@@ -35,6 +37,8 @@ if (
 ) {
 	wp_die();
 }
+
+// @codeCoverageIgnoreEnd
 
 /**
  * WCPay Dependency Injection Container.
