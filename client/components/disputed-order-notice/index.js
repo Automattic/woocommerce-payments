@@ -46,13 +46,15 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	// Special case the "under review" notice which is much simpler.
 	// (And return early.)
 	if ( isUnderReview( dispute.status ) ) {
-		<DisputeOrderLockedNotice
-			message={ __(
-				'This order has an active payment dispute. Refunds and order editing are disabled.',
-				'woocommerce-payments'
-			) }
-			disputeDetailsUrl={ disputeDetailsUrl }
-		/>;
+		return (
+			<DisputeOrderLockedNotice
+				message={ __(
+					'This order has an active payment dispute. Refunds and order editing are disabled.',
+					'woocommerce-payments'
+				) }
+				disputeDetailsUrl={ disputeDetailsUrl }
+			/>
+		);
 	}
 
 	// Special case lost disputes.
