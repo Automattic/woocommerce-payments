@@ -910,7 +910,7 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -1013,7 +1013,7 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
@@ -1170,7 +1170,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -1273,7 +1273,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
                 >
                   <a
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
                   >
                     Customer name
                   </a>
