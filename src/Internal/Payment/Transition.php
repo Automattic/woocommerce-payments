@@ -46,10 +46,10 @@ class Transition {
 	/**
 	 * Constructs the class, with all the parameters.
 	 *
-	 * @param int         $timestamp Timestamp of the transition.
+	 * @param int|null    $timestamp Timestamp of the transition.
 	 * @param string|null $from_state State of the transition.
 	 * @param string|null $to_state State of the transition.
-	 * @param array       $changes Changes made during the transition.
+	 * @param Change[]    $changes Changes made during the transition.
 	 */
 	public function __construct( ?int $timestamp, ?string $from_state, ?string $to_state = null, array $changes = [] ) {
 		$this->from_state = $from_state;
@@ -61,7 +61,7 @@ class Transition {
 	/**
 	 * Returns the changes made during the transition.
 	 *
-	 * @return array Changes made during the transition.
+	 * @return Change[] Changes made during the transition.
 	 */
 	public function get_changes() : array {
 		return $this->changes;

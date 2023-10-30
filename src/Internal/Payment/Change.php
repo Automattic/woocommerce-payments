@@ -28,7 +28,7 @@ class Change {
 	private $old_value;
 
 	/**
-	 * Current value, updated aganist the key.
+	 * Current value, updated against the key.
 	 *
 	 * @var mixed
 	 */
@@ -39,7 +39,7 @@ class Change {
 	 *
 	 * @param string $key Identifier or key for the changed value.
 	 * @param mixed  $old_value Former value for the key.
-	 * @param mixed  $new_value Current value, updated aganist the key.
+	 * @param mixed  $new_value Current value, updated against the key.
 	 */
 	public function __construct( $key, $old_value, $new_value ) {
 		$this->key       = $key;
@@ -68,7 +68,7 @@ class Change {
 	/**
 	 * Returns the current value.
 	 *
-	 * @return mixed Current value, updated aganist the key.
+	 * @return mixed Current value, updated against the key.
 	 */
 	public function get_new_value() {
 		return $this->new_value;

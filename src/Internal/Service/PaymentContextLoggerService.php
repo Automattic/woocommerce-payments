@@ -72,9 +72,9 @@ class PaymentContextLoggerService {
 	/**
 	 * Returns the changes array as a string that can be logged.
 	 *
-	 * @param array $changes Array of Change objects.
+	 * @param Change[] $changes Array of Change objects.
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	private function changes_to_str( $changes ) : array {
 		$changes_string = array_map(

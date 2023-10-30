@@ -91,6 +91,10 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->with( $this->isInstanceOf( PaymentRequest::class ) )
 			->willReturn( $mock_completed_state );
 
+		$this->mock_context_logger->expects( $this->once() )
+			->method( 'log_changes' )
+			->with( $this->isInstanceOf( PaymentContext::class ) );
+
 		$result = $sut->process_payment( 1 );
 		$this->assertSame( $mock_completed_state, $result );
 	}

@@ -8,6 +8,7 @@
 namespace WCPay\Tests\Internal\Service;
 
 use WCPAY_UnitTestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Internal\Logger;
 use WCPay\Internal\Payment\Change;
 use WCPay\Internal\Payment\PaymentContext;
@@ -49,6 +50,7 @@ class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 			->onlyMethods( [ 'get_transitions', 'get_order_id' ] )
 			->getMock();
 		$this->mock_payment_context
+			->expects( $this->once() )
 			->method( 'get_order_id' )
 			->will( $this->returnValue( 123 ) );
 	}
@@ -75,6 +77,7 @@ class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_log_changes() {
 		$this->mock_payment_context
+			->expects( $this->once() )
 			->method( 'get_transitions' )
 			->will( $this->returnValue( $this->setup_transitions() ) );
 		$expected_log = 'For order #123 the following changes were made to the payment context: {' . PHP_EOL .
@@ -101,6 +104,7 @@ class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_log_payment_method() {
 		$this->mock_payment_context
+			->expects( $this->once() )
 			->method( 'get_transitions' )
 			->will(
 				$this->returnValue(
@@ -137,6 +141,7 @@ class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_do_not_log_empty_final_state() {
 		$this->mock_payment_context
+			->expects( $this->once() )
 			->method( 'get_transitions' )
 			->will(
 				$this->returnValue(
