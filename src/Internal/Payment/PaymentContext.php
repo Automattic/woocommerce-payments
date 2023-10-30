@@ -42,7 +42,7 @@ class PaymentContext {
 	 *
 	 * @return int
 	 */
-	public function get_order_id(): ?int {
+	public function get_order_id(): int {
 		return $this->order_id;
 	}
 
@@ -224,6 +224,43 @@ class PaymentContext {
 	 */
 	public function get_customer_id(): ?string {
 		return $this->get( 'customer_id' );
+	}
+
+	/**
+	 * Sets the previous paid duplicate order ID.
+	 *
+	 * @param  int $duplicate_order_id Duplicate order ID.
+	 *
+	 * @return void
+	 */
+	public function set_duplicate_order_id( int $duplicate_order_id ) {
+		$this->set( 'duplicate_order_id', $duplicate_order_id );
+	}
+
+	/**
+	 * Gets the previous paid duplicate order ID.
+	 *
+	 * @return int|null
+	 */
+	public function get_duplicate_order_id(): ?int {
+		return $this->get( 'duplicate_order_id' );
+	}
+	/**
+	 * Sets the detected authorized intent flag to true.
+	 *
+	 * @return void
+	 */
+	public function set_detected_authorized_intent(): void {
+		$this->set( 'detected_authorized_intent', true );
+	}
+
+	/**
+	 * Checks whether the currently attached intent, that is authorized, gets detected.
+	 *
+	 * @return bool
+	 */
+	public function is_detected_authorized_intent(): bool {
+		return $this->get( 'detected_authorized_intent' ) ?? false;
 	}
 
 	/**

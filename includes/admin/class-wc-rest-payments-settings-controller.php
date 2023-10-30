@@ -266,9 +266,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'array',
 						'items'             => [
 							'type' => 'string',
-							'enum' => array_keys( $wcpay_form_fields['platform_checkout_button_locations']['options'] ),
+							'enum' => array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ),
 						],
-						'default'           => array_keys( $wcpay_form_fields['platform_checkout_button_locations']['options'] ),
+						'default'           => array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ),
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_stripe_billing_enabled'         => [
@@ -505,7 +505,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'show_woopay_incompatibility_notice'  => get_option( 'woopay_invalid_extension_found', false ),
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
-				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', array_keys( $wcpay_form_fields['platform_checkout_button_locations']['options'] ) ),
+				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ) ),
 				'deposit_schedule_interval'           => $this->wcpay_gateway->get_option( 'deposit_schedule_interval' ),
 				'deposit_schedule_monthly_anchor'     => $this->wcpay_gateway->get_option( 'deposit_schedule_monthly_anchor' ),
 				'deposit_schedule_weekly_anchor'      => $this->wcpay_gateway->get_option( 'deposit_schedule_weekly_anchor' ),
@@ -904,7 +904,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$woopay_enabled_locations = $request->get_param( 'woopay_enabled_locations' );
 
-		$all_locations = $this->wcpay_gateway->form_fields['platform_checkout_button_locations']['options'];
+		$all_locations = $this->wcpay_gateway->form_fields['payment_request_button_locations']['options'];
 		WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $woopay_enabled_locations );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $woopay_enabled_locations );

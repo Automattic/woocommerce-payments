@@ -454,12 +454,12 @@ class WC_Payments_WooPay_Button_Handler {
 			return 'cart';
 		}
 
-		if ( $this->is_checkout() ) {
-			return 'checkout';
-		}
-
 		if ( $this->is_pay_for_order_page() ) {
 			return 'pay_for_order';
+		}
+
+		if ( $this->is_checkout() ) {
+			return 'checkout';
 		}
 
 		return '';

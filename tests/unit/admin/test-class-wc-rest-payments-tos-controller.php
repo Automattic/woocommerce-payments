@@ -55,8 +55,10 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$mock_wcpay_account       = $this->createMock( WC_Payments_Account::class );
+		$mock_fraud_service       = $this->createMock( WC_Payments_Fraud_Service::class );
 		$mock_db_cache            = $this->createMock( Database_Cache::class );
-		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account, $mock_db_cache );
+		$mock_session_service     = $this->createMock( WC_Payments_Session_Service::class );
+		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account, $mock_db_cache, $mock_session_service );
 		$token_service            = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
 		$order_service            = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client, $order_service );
@@ -71,7 +73,8 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_rate_limiter,
 			$order_service,
 			$mock_dpps,
-			$this->createMock( WC_Payments_Localization_Service::class )
+			$this->createMock( WC_Payments_Localization_Service::class ),
+			$mock_fraud_service
 		);
 		$this->controller = new WC_REST_Payments_Tos_Controller( $mock_api_client, $this->gateway, $mock_wcpay_account );
 
