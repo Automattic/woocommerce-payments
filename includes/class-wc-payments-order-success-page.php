@@ -82,9 +82,8 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function add_notice_previous_paid_order( $text ) {
 		if ( isset( $_GET[ Duplicate_Payment_Prevention_Service::FLAG_PREVIOUS_ORDER_PAID ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
-			$text .= sprintf(
-				'<div class="woocommerce-info">%s</div>',
-				esc_attr__( 'We detected and prevented an attempt to pay for a duplicate order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
+			$text .= $this->format_addtional_thankyou_order_received_text(
+				__( 'We detected and prevented an attempt to pay for a duplicate order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
 			);
 		}
 
@@ -100,13 +99,46 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function add_notice_previous_successful_intent( $text ) {
 		if ( isset( $_GET[ Duplicate_Payment_Prevention_Service::FLAG_PREVIOUS_SUCCESSFUL_INTENT ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
-			$text .= sprintf(
-				'<div class="woocommerce-info">%s</div>',
-				esc_attr__( 'We prevented multiple payments for the same order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
+			$text .= $this->format_addtional_thankyou_order_received_text(
+				__( 'We prevented multiple payments for the same order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
 			);
 		}
 
 		return $text;
+	}
+
+
+	/**
+	 * Formats the additional text to be displayed on the thank you page, with the side effect
+	 * as a workaround for an issue in Woo core 8.1.x and 8.2.x.
+	 *
+	 * @param string $additional_text
+	 *
+	 * @return string Formatted text.
+	 */
+	private function format_addtional_thankyou_order_received_text( string $additional_text ): string {
+		/**
+		 * This condition is a workaround for Woo core 8.1.x and 8.2.x as it formatted the filtered text,
+		 * while it should format the original text only.
+		 *
+		 * It's safe to remove this conditional when WooPayments requires Woo core 8.3.x or higher.
+		 *
+		 * @see https://github.com/woocommerce/woocommerce/pull/39758 Introduce the issue since 8.1.0.
+		 * @see https://github.com/woocommerce/woocommerce/pull/40353 Fix the issue since 8.3.0.
+		 */
+		if( version_compare( WC_VERSION, '8.0', '>' )
+			&& version_compare( WC_VERSION, '8.3', '<' )
+		) {
+			echo "
+				<script type='text/javascript'>
+					document.querySelector('.woocommerce-thankyou-order-received')?.classList?.add('woocommerce-info');
+				</script>
+			";
+
+			return ' ' . $additional_text;
+		}
+
+		return sprintf( '<div class="woocommerce-info">%s</div>', $additional_text );
 	}
 
 	/**

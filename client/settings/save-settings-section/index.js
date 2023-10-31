@@ -9,14 +9,15 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useSettings } from '../../data';
+import { useGetSettings, useSettings } from '../../data';
 import wcpayTracks from '../../tracks';
 import SettingsSection from '../settings-section';
 import './style.scss';
 import WooPayDisableFeedback from '../woopay-disable-feedback';
 
 const SaveSettingsSection = ( { disabled = false } ) => {
-	const { saveSettings, isSaving, isLoading, settings } = useSettings();
+	const { saveSettings, isSaving, isLoading } = useSettings();
+	const settings = useGetSettings();
 
 	// Keep the inital value of is_payment_request_enabled
 	// in state for recording its track on change.
