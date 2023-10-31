@@ -12,7 +12,7 @@ import { getConfig } from 'utils/order';
 import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
-import DisputedOrderNoticeHandler from 'components/disputed-order-notice';
+import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
 
 function disableWooOrderRefundButton( disputeStatus ) {
 	const refundButton = document.querySelector( 'button.refund-items' );
