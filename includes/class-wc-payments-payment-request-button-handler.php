@@ -381,8 +381,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		];
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestPayForOrderParams', $data );
-
-		$this->display_payment_request_button_html();
 	}
 
 	/**
