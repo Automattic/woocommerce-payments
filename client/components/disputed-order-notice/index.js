@@ -42,6 +42,8 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	if ( ! charge?.dispute ) {
 		return null;
 	}
+	const isRefundable =
+		isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
 
 	// Special case the dispute "under review" notice which is much simpler.
 	// (And return early.)
@@ -59,7 +61,12 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 
 	// Special case lost disputes.
 	// (And return early.)
-	if ( dispute.status === 'lost' ) {
+	// I suspect this is unnecessary, as any lost disputes will have already been
+	// refunded as part of `charge.dispute.closed` webhook handler.
+	// This may be dead code. Leaving in for now as this is consistent with
+	// the logic before this PR.
+	// https://github.com/Automattic/woocommerce-payments/pull/7557
+	if ( dispute.status === 'lost' && ! isRefundable ) {
 		return (
 			<DisputeOrderLockedNotice
 				message={ __(
