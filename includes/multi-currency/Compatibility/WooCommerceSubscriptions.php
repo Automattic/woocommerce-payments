@@ -393,7 +393,14 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $html_price;
 		}
 
-		return WC_Payments_Explicit_Price_Formatter::get_explicit_price( $html_price, $this->current_my_account_subscription );
+		/**
+		 * Get the currency code from the subscription, then return the explicit price.
+		 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
+		 *
+		 * @psalm-suppress UndefinedDocblockClass
+		 */
+		$currency_code = $this->current_my_account_subscription->get_currency() ?? get_woocommerce_currency();
+		return WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $html_price, $currency_code );
 	}
 
 	/**
