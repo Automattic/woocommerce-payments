@@ -587,7 +587,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 
 			// Trial subscriptions with shipping are not supported.
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
+			if ( $this->product_has_trial_and_needs_shipping( $_product ) ) {
 				return false;
 			}
 		}
@@ -835,7 +835,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( is_null( $product )
 			|| ! is_object( $product )
 			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) // Trial subscriptions with shipping are not supported.
+			|| $this->product_has_trial_and_needs_shipping( $product ) // Trial subscriptions with shipping are not supported.
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
@@ -1699,5 +1699,45 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
 		return WC_Tax::calc_tax( $price, $rates, false );
+	}
+
+	/**
+	 * Returns true if the given product is a subscription that has free trial and requires shipping.
+	 * This could be a subscription product with a trial period or a synchronised subscription with a delayed payment.
+	 *
+	 * If the product is a variable subscription, this function will return true if any of its variations have a trial and require shipping.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param WC_Product|null $product Product object.
+	 *
+	 * @return boolean
+	 */
+	public function product_has_trial_and_needs_shipping( $product ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Synchroniser' ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+			return false;
+		}
+
+		if ( $product->get_type() === 'variable-subscription' ) {
+			$products = $product->get_available_variations( 'object' );
+		} else {
+			$products = [ $product ];
+		}
+
+		foreach ( $products as $product ) {
+			// Skip any products that are virtual as we only care about products that require shipping.
+			if ( ! $product->needs_shipping() ) {
+				continue;
+			}
+
+			// If the product has a trial period or is synchronised and the first payment is not today.
+			if ( WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+				return true;
+			} elseif ( WC_Subscriptions_Synchroniser::is_product_synced( $product ) && ! WC_Subscriptions_Synchroniser::is_payment_upfront( $product ) && ! WC_Subscriptions_Synchroniser::is_today( WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp' ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
