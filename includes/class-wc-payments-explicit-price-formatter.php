@@ -103,12 +103,12 @@ class WC_Payments_Explicit_Price_Formatter {
 	/**
 	 * Returns the price suffixed with the appropriate currency code, if not already.
 	 *
-	 * @param string                 $price The price.
-	 * @param WC_Abstract_Order|null $order The order.
+	 * @param string                                 $price The price.
+	 * @param WC_Abstract_Order|WC_Subscription|null $order The order or subscription.
 	 *
 	 * @return string
 	 */
-	public static function get_explicit_price( string $price, WC_Abstract_Order $order = null ) {
+	public static function get_explicit_price( string $price, $order = null ) {
 		if ( null === $order ) {
 			$currency_code = get_woocommerce_currency();
 		} else {

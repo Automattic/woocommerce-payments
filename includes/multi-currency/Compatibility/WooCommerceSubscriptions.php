@@ -179,6 +179,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $return;
 		}
 
+		// If we have a subscription in $current_my_account_subscription, we want to use the currency from that subscription.
 		if ( $this->is_current_my_account_subscription_set() ) {
 			return $this->current_my_account_subscription->get_currency();
 		}
