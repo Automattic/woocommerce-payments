@@ -354,7 +354,7 @@ class WC_Payments_Order_Service {
 		 *
 		 * @since 6.7.0
 		 */
-		$order_status = apply_filters( 'wcpay_terminal_payment_completed_status', Order_Status::COMPLETED );
+		$order_status = apply_filters( 'wcpay_terminal_payment_completed_order_status', Order_Status::COMPLETED );
 
 		$this->update_order_status( $order, $order_status, $intent_id );
 		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
