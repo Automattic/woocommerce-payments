@@ -351,8 +351,12 @@ export const WoopayExpressCheckoutButton = ( {
 	}, [ context, onClickFallback, isPreview, isProductPage, newIframe ] );
 
 	useEffect( () => {
-		initWoopayRef.current = defaultOnClick;
-	}, [ defaultOnClick ] );
+		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
+			initWoopayRef.current = defaultOnClick;
+		} else {
+			initWoopayRef.current = onClickFallback;
+		}
+	}, [ defaultOnClick, onClickFallback ] );
 
 	useEffect( () => {
 		const handlePageShow = ( event ) => {
