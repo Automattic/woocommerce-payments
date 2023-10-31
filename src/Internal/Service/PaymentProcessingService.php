@@ -18,6 +18,7 @@ use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentRequestException;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Internal\Service\PaymentContextLoggerService;
 
 /**
  * Payment Processing Service.
@@ -38,17 +39,28 @@ class PaymentProcessingService {
 	private $legacy_proxy;
 
 	/**
+	 * PaymentContextLoggerService.
+	 *
+	 * @var PaymentContextLoggerService
+	 */
+	private $context_logger_service;
+
+
+	/**
 	 * Service constructor.
 	 *
-	 * @param StateFactory $state_factory Factory for payment states.
-	 * @param LegacyProxy  $legacy_proxy Legacy proxy.
+	 * @param StateFactory                $state_factory Factory for payment states.
+	 * @param LegacyProxy                 $legacy_proxy Legacy proxy.
+	 * @param PaymentContextLoggerService $context_logger_service Context Logging Service.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
-		LegacyProxy $legacy_proxy
+		LegacyProxy $legacy_proxy,
+		PaymentContextLoggerService $context_logger_service
 	) {
-		$this->state_factory = $state_factory;
-		$this->legacy_proxy  = $legacy_proxy;
+		$this->state_factory          = $state_factory;
+		$this->legacy_proxy           = $legacy_proxy;
+		$this->context_logger_service = $context_logger_service;
 	}
 
 	/**
@@ -68,8 +80,10 @@ class PaymentProcessingService {
 
 		$request       = new PaymentRequest( $this->legacy_proxy );
 		$initial_state = $this->state_factory->create_state( InitialState::class, $context );
+		$final_state   = $initial_state->start_processing( $request );
 
-		return $initial_state->start_processing( $request );
+		$this->context_logger_service->log_changes( $context );
+		return $final_state;
 	}
 
 	/**
