@@ -34,6 +34,10 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	/**
 	 * The current subscription being iterated through on the My Account > Subscriptions page.
 	 *
+	 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
+	 *
+	 * @psalm-suppress UndefinedDocblockClass
+	 *
 	 * @var WC_Subscription|null
 	 */
 	public $current_my_account_subscription = null;
@@ -181,6 +185,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 		// If we have a subscription in $current_my_account_subscription, we want to use the currency from that subscription.
 		if ( $this->is_current_my_account_subscription_set() ) {
+			/**
+			 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
+			 *
+			 * @psalm-suppress UndefinedDocblockClass
+			 */
 			return $this->current_my_account_subscription->get_currency();
 		}
 
@@ -195,12 +204,22 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				$subscription      = $this->get_subscription( $cart_item[ $subscription_type ]['subscription_id'] );
 
 				$this->running_override_selected_currency_filters = false;
+				/**
+				 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
+				 *
+				 * @psalm-suppress UndefinedDocblockClass
+				 */
 				return $subscription ? $subscription->get_currency() : $return;
 			}
 		}
 
 		// This instance is for when the customer lands on the product page to choose a new subscription tier.
 		$switch_subscription = $this->get_subscription_from_superglobal_switch_id();
+		/**
+		 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
+		 *
+		 * @psalm-suppress UndefinedDocblockClass
+		 */
 		return $switch_subscription ? $switch_subscription->get_currency() : $return;
 	}
 
@@ -310,6 +329,10 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * At that point in time, if we have certain calls in the backtrace, we need to add the subscription into $current_my_account_subscription so that we
 	 * are able to use it later on in the maybe_get_explicit_format_for_subscription_total filter.
 	 *
+	 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
+	 *
+	 * @psalm-suppress UndefinedDocblockClass
+	 *
 	 * @param array           $subscription_details The details related to the subscription.
 	 * @param WC_Subscription $subscription         The subscription being acted on.
 	 *
@@ -335,6 +358,10 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * During the $subscription->get_formatted_order_total() call we may set the current_my_account_subscription var, and we want to clear it as soon as
 	 * we no longer need it. The woocommerce_get_formatted_subscription_total filter is at the end of that call, so we check to see if the var is set,
 	 * and if it is, we clear it, and we also clear the FrontendCurrencies cache.
+	 *
+	 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
+	 *
+	 * @psalm-suppress UndefinedDocblockClass
 	 *
 	 * @param string          $formatted    The subscription formatted total.
 	 * @param WC_Subscription $subscription The subscription being acted on.
@@ -375,6 +402,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @return bool
 	 */
 	private function is_current_my_account_subscription_set(): bool {
+		/**
+		 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
+		 *
+		 * @psalm-suppress UndefinedClass
+		 */
 		return is_a( $this->current_my_account_subscription, 'WC_Subscription' );
 	}
 
@@ -423,9 +455,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * @param  mixed $the_subscription Post object or post ID of the order.
 	 *
-	 * @return mixed The subscription object, or false if it cannot be found.
-	 *               Note: This should be WC_Subscription|bool, but Psalm throws errors like:
-	 *                     Docblock-defined class, interface or enum named WC_Subscription does not exist (see https://psalm.dev/200)
+	 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
+	 *
+	 * @psalm-suppress UndefinedDocblockClass
+	 *
+	 * @return WC_Subscription|bool The subscription object, or false if it cannot be found.
 	 */
 	private function get_subscription( $the_subscription ) {
 		if ( ! function_exists( 'wcs_get_subscription' ) ) {
@@ -439,9 +473,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * This `switch-subscription` param is added to the URL when a customer
 	 * has initiated a switch from the My Account → Subscription page.
 	 *
-	 * @return mixed The subscription object, or false if it cannot be found.
-	 *               Note: This should be WC_Subscription|bool, but Psalm throws errors like:
-	 *                     Docblock-defined class, interface or enum named WC_Subscription does not exist (see https://psalm.dev/200)
+	 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
+	 *
+	 * @psalm-suppress UndefinedDocblockClass
+	 *
+	 * @return WC_Subscription|bool The subscription object, or false if it cannot be found.
 	 */
 	private function get_subscription_from_superglobal_switch_id() {
 		// Return false if there's no nonce, or if it fails.

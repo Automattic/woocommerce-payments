@@ -103,6 +103,10 @@ class WC_Payments_Explicit_Price_Formatter {
 	/**
 	 * Returns the price suffixed with the appropriate currency code, if not already.
 	 *
+	 * Suppress Psalm warning about WC_Subscription not being a valid class.
+	 *
+	 * @psalm-suppress UndefinedDocblockClass
+	 *
 	 * @param string                                 $price The price.
 	 * @param WC_Abstract_Order|WC_Subscription|null $order The order or subscription.
 	 *
