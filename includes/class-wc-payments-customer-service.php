@@ -65,16 +65,30 @@ class WC_Payments_Customer_Service {
 	private $database_cache;
 
 	/**
+	 * WC_Payments_Session_Service instance for working with session information
+	 *
+	 * @var WC_Payments_Session_Service
+	 */
+	private $session_service;
+
+	/**
 	 * Class constructor
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
-	 * @param WC_Payments_Account    $account             WC_Payments_Account instance.
-	 * @param Database_Cache         $database_cache       Database_Cache instance.
+	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
+	 * @param WC_Payments_Account         $account             WC_Payments_Account instance.
+	 * @param Database_Cache              $database_cache      Database_Cache instance.
+	 * @param WC_Payments_Session_Service $session_service     Session Service class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, Database_Cache $database_cache ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Account $account,
+		Database_Cache $database_cache,
+		WC_Payments_Session_Service $session_service
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
 		$this->database_cache      = $database_cache;
+		$this->session_service     = $session_service;
 
 		/*
 		 * Adds the WooCommerce Payments customer ID found in the user session
@@ -129,8 +143,7 @@ class WC_Payments_Customer_Service {
 	 */
 	public function create_customer_for_user( WP_User $user, array $customer_data ): string {
 		// Include the session ID for the user.
-		$fraud_config                = $this->account->get_fraud_services_config();
-		$customer_data['session_id'] = $fraud_config['sift']['session_id'] ?? null;
+		$customer_data['session_id'] = $this->session_service->get_sift_session_id() ?? null;
 
 		// Create a customer on the WCPay server.
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );

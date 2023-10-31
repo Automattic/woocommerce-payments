@@ -7,7 +7,10 @@
 
 namespace WCPay\Internal\Payment;
 
+use WC_Payments_API_Abstract_Intention;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
+use WCPay\Internal\Payment\Change;
+use WCPay\Internal\Payment\Transition;
 
 /**
  * A context object, which is shared between payment states.
@@ -28,12 +31,20 @@ class PaymentContext {
 	private $data = [];
 
 	/**
+	 * Stores the transitions of state.
+	 *
+	 * @var Transition[]
+	 */
+	private $transitions = [];
+
+	/**
 	 * Constructs the class, receiving an order ID.
 	 *
 	 * @param int $order_id ID of the order, receiving a payment.
 	 */
 	public function __construct( int $order_id ) {
-		$this->order_id = $order_id;
+		$this->order_id      = $order_id;
+		$this->transitions[] = new Transition( time(), null );
 	}
 
 	/**
@@ -41,7 +52,7 @@ class PaymentContext {
 	 *
 	 * @return int
 	 */
-	public function get_order_id(): ?int {
+	public function get_order_id(): int {
 		return $this->order_id;
 	}
 
@@ -226,14 +237,100 @@ class PaymentContext {
 	}
 
 	/**
+	 * Sets the previous paid duplicate order ID.
+	 *
+	 * @param  int $duplicate_order_id Duplicate order ID.
+	 *
+	 * @return void
+	 */
+	public function set_duplicate_order_id( int $duplicate_order_id ) {
+		$this->set( 'duplicate_order_id', $duplicate_order_id );
+	}
+
+	/**
+	 * Gets the previous paid duplicate order ID.
+	 *
+	 * @return int|null
+	 */
+	public function get_duplicate_order_id(): ?int {
+		return $this->get( 'duplicate_order_id' );
+	}
+	/**
+	 * Sets the detected authorized intent flag to true.
+	 *
+	 * @return void
+	 */
+	public function set_detected_authorized_intent(): void {
+		$this->set( 'detected_authorized_intent', true );
+	}
+
+	/**
+	 * Checks whether the currently attached intent, that is authorized, gets detected.
+	 *
+	 * @return bool
+	 */
+	public function is_detected_authorized_intent(): bool {
+		return $this->get( 'detected_authorized_intent' ) ?? false;
+	}
+
+	/**
+	 * Stores the payment intent object.
+	 *
+	 * @param WC_Payments_API_Abstract_Intention $intent Instance of intent.
+	 */
+	public function set_intent( WC_Payments_API_Abstract_Intention $intent ) {
+		$this->set( 'intent', $intent );
+	}
+
+	/**
+	 * Returns the payment intent object.
+	 *
+	 * @return WC_Payments_API_Abstract_Intention|null
+	 */
+	public function get_intent(): ?WC_Payments_API_Abstract_Intention {
+		return $this->get( 'intent' );
+	}
+
+	/**
+	 * Returns the transitions array.
+	 *
+	 * @return Transition[]
+	 */
+	public function get_transitions(): array {
+		return $this->transitions;
+	}
+
+	/**
+	 * Updates previous transition with the next state and creates new transition.
+	 *
+	 * @param string $state The state.
+	 */
+	public function log_state_transition( string $state ): void {
+		$last_transition = end( $this->transitions );
+		$last_transition->set_to_state( $state );
+		$this->transitions[] = new Transition( time(), $state );
+	}
+
+	/**
 	 * Stores an internal value.
-	 * Use this method for changes to allow logging in the future.
 	 *
 	 * @param string $key   Property name.
 	 * @param mixed  $value Value to store.
 	 */
-	private function set( string $key, $value ) {
+	private function set( string $key, $value ) : void {
+		$this->log_change( $key, $value );
 		$this->data[ $key ] = $value;
+	}
+
+	/**
+	 * Log the change to a transition
+	 *
+	 * @param string $key   Property name.
+	 * @param mixed  $value Value to store.
+	 */
+	private function log_change( string $key, $value ) : void {
+		$last_transition = end( $this->transitions );
+		$last_transition->add_change( new Change( $key, $this->get( $key ), $value ) );
 	}
 
 	/**
