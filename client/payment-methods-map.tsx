@@ -7,23 +7,22 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import CreditCardIcon from 'assets/images/payment-methods/cc.svg?asset';
-import BancontactIcon from 'assets/images/payment-methods/bancontact.svg?asset';
-import EpsIcon from 'assets/images/payment-methods/eps.svg?asset';
-import GiropayIcon from 'assets/images/payment-methods/giropay.svg?asset';
-import SofortIcon from 'assets/images/payment-methods/sofort.svg?asset';
-import SepaIcon from 'assets/images/payment-methods/sepa-debit.svg?asset';
-import P24Icon from 'assets/images/payment-methods/p24.svg?asset';
-import IdealIcon from 'assets/images/payment-methods/ideal.svg?asset';
-import BankDebitIcon from 'assets/images/payment-methods/bank-debit.svg?asset';
-import AffirmIcon from 'assets/images/payment-methods/affirm.svg?asset';
-import AfterpayIcon from 'assets/images/payment-methods/afterpay.svg?asset';
-import JCBIcon from 'assets/images/payment-methods/jcb.svg?asset';
-import KlarnaIcon from 'assets/images/payment-methods/klarna.svg?asset';
 
-const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
-	props
-) => <img src={ src } alt={ alt } { ...props } />;
+import {
+	AffirmIcon,
+	AfterpayIcon,
+	BancontactIcon,
+	BankDebitIcon,
+	CreditCardIcon,
+	EpsIcon,
+	GiropayIcon,
+	IdealIcon,
+	JCBIcon,
+	KlarnaIcon,
+	P24Icon,
+	SepaIcon,
+	SofortIcon,
+} from 'wcpay/payment-methods-icons';
 
 export interface PaymentMethodMapEntry {
 	id: string;
@@ -35,8 +34,6 @@ export interface PaymentMethodMapEntry {
 	stripe_key: string;
 	allows_manual_capture: boolean;
 	allows_pay_later: boolean;
-	setup_required?: boolean;
-	setup_tooltip?: string;
 }
 
 const PaymentMethodInformationObject: Record<
@@ -59,7 +56,7 @@ const PaymentMethodInformationObject: Record<
 			'Let your customers pay with major credit and debit cards without leaving your store.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( CreditCardIcon, 'Credit Card' ),
+		icon: CreditCardIcon,
 		currencies: [],
 		stripe_key: 'card_payments',
 		allows_manual_capture: true,
@@ -75,7 +72,7 @@ const PaymentMethodInformationObject: Record<
 			'Bulk Electronic Clearing System — Accept secure bank transfer from Australia.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( BankDebitIcon, 'BECS Direct Debit' ),
+		icon: BankDebitIcon,
 		currencies: [ 'AUD' ],
 		stripe_key: 'au_becs_debit_payments',
 		allows_manual_capture: false,
@@ -91,7 +88,7 @@ const PaymentMethodInformationObject: Record<
 			'Bancontact is a bank redirect payment method offered by more than 80% of online businesses in Belgium.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( BancontactIcon, 'Bancontact' ),
+		icon: BancontactIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'bancontact_payments',
 		allows_manual_capture: false,
@@ -107,7 +104,7 @@ const PaymentMethodInformationObject: Record<
 			'Accept your payment with EPS — a common payment method in Austria.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( EpsIcon, 'EPS' ),
+		icon: EpsIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'eps_payments',
 		allows_manual_capture: false,
@@ -123,7 +120,7 @@ const PaymentMethodInformationObject: Record<
 			'Expand your business with giropay — Germany’s second most popular payment system.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( GiropayIcon, 'giropay' ),
+		icon: GiropayIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'giropay_payments',
 		allows_manual_capture: false,
@@ -139,7 +136,7 @@ const PaymentMethodInformationObject: Record<
 			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( IdealIcon, 'iDEAL' ),
+		icon: IdealIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'ideal_payments',
 		allows_manual_capture: false,
@@ -155,7 +152,7 @@ const PaymentMethodInformationObject: Record<
 			'Accept payments with Przelewy24 (P24), the most popular payment method in Poland.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( P24Icon, 'Przelewy24 (P24)' ),
+		icon: P24Icon,
 		currencies: [ 'EUR', 'PLN' ],
 		stripe_key: 'p24_payments',
 		allows_manual_capture: false,
@@ -171,7 +168,7 @@ const PaymentMethodInformationObject: Record<
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( SepaIcon, 'SEPA Direct Debit' ),
+		icon: SepaIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'sepa_debit_payments',
 		allows_manual_capture: false,
@@ -187,7 +184,7 @@ const PaymentMethodInformationObject: Record<
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, Netherlands, and Spain.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( SofortIcon, 'Sofort' ),
+		icon: SofortIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'sofort_payments',
 		allows_manual_capture: false,
@@ -204,7 +201,7 @@ const PaymentMethodInformationObject: Record<
 			'Allow customers to pay over time with Affirm. Available to all customers paying in %s.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( AffirmIcon, 'Affirm' ),
+		icon: AffirmIcon,
 		currencies: [ 'USD', 'CAD' ],
 		stripe_key: 'affirm_payments',
 		allows_manual_capture: false,
@@ -221,7 +218,7 @@ const PaymentMethodInformationObject: Record<
 			'Allow customers to pay over time with Afterpay. Available to all customers paying in %s.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( AfterpayIcon, 'Afterpay' ),
+		icon: AfterpayIcon,
 		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP', 'EUR' ],
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,
@@ -237,7 +234,7 @@ const PaymentMethodInformationObject: Record<
 			'Let your customers pay with JCB, the only international payment brand based in Japan.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( JCBIcon, 'JCB' ),
+		icon: JCBIcon,
 		currencies: [ 'JPY' ],
 		stripe_key: 'jcb_payments',
 		allows_manual_capture: false,
@@ -254,7 +251,7 @@ const PaymentMethodInformationObject: Record<
 			'Allow customers to pay over time with Klarna. Available to all customers paying in %s.',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( KlarnaIcon, 'Klarna' ),
+		icon: KlarnaIcon,
 		currencies: [ 'EUR', 'GBP', 'USD', 'DKK', 'NOK', 'SEK' ],
 		stripe_key: 'klarna_payments',
 		allows_manual_capture: false,

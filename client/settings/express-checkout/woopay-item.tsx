@@ -5,7 +5,6 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button, CheckboxControl, VisuallyHidden } from '@wordpress/components';
-import WooIcon from 'assets/images/payment-methods/woo.svg?asset';
 import interpolateComponents from '@automattic/interpolate-components';
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import { useContext } from '@wordpress/element';
@@ -24,6 +23,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import WooPayIncompatibilityNotice from '../settings-warnings/incompatibility-notice';
 
 import { WooPayEnabledSettingsHook } from './interfaces';
+import { WooIcon } from 'wcpay/payment-methods-icons';
 
 const WooPayExpressCheckoutItem = (): React.ReactElement => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds() as Array<
@@ -86,7 +86,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement => {
 							<div>
 								<div className="express-checkout__subgroup">
 									<div className="express-checkout__icon">
-										<img src={ WooIcon } alt="WooPay" />
+										<WooIcon />
 									</div>
 									<div className="express-checkout__label express-checkout__label-mobile">
 										{ __(
