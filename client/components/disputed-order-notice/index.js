@@ -43,9 +43,9 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 		return null;
 	}
 
-	// Special case the "under review" notice which is much simpler.
+	// Special case the dispute "under review" notice which is much simpler.
 	// (And return early.)
-	if ( isUnderReview( dispute.status ) ) {
+	if ( isUnderReview( dispute.status ) && ! isInquiry( dispute ) ) {
 		return (
 			<DisputeOrderLockedNotice
 				message={ __(
