@@ -7,6 +7,7 @@
 
 namespace WCPay\Tests\Internal\Payment;
 
+use WC_Helper_Intention;
 use WCPAY_UnitTestCase;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
@@ -117,4 +118,36 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 		$this->sut->set_customer_id( $customer_id );
 		$this->assertSame( $customer_id, $this->sut->get_customer_id() );
 	}
+
+	public function test_duplicate_order_id() {
+		$duplicate_order_id = 123;
+
+		$this->sut->set_duplicate_order_id( $duplicate_order_id );
+		$this->assertSame( $duplicate_order_id, $this->sut->get_duplicate_order_id() );
+	}
+
+	public function test_is_detected_authorized_intent() {
+		$this->assertSame( false, $this->sut->is_detected_authorized_intent() );
+
+		$this->sut->set_detected_authorized_intent();
+		$this->assertSame( true, $this->sut->is_detected_authorized_intent() );
+	}
+
+	public function test_intent() {
+		$intent = WC_Helper_Intention::create_intention();
+
+		$this->sut->set_intent( $intent );
+		$this->assertSame( $intent, $this->sut->get_intent() );
+	}
+
+	public function test_log_state_transition() {
+		$this->sut->log_state_transition( 'First_State' );
+		// first transition has 'from_state' null and 'to_state' as 'First_State'.
+		$this->assertNull( $this->sut->get_transitions()[0]->get_from_state() );
+		$this->assertSame( 'First_State', $this->sut->get_transitions()[0]->get_to_state() );
+		// next transition has 'from_state' as `First_State` and 'to_state' null.
+		$this->assertSame( 'First_State', $this->sut->get_transitions()[1]->get_from_state() );
+		$this->assertNull( $this->sut->get_transitions()[1]->get_to_state() );
+	}
+
 }

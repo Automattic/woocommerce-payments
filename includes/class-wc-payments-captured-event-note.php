@@ -277,7 +277,7 @@ class WC_Payments_Captured_Event_Note {
 
 		$history = $this->captured_event['fee_rates']['history'];
 
-		return 1 === count( $history ) && 'base' === $history[0]['type'];
+		return 1 === ( is_countable( $history ) ? count( $history ) : 0 ) && 'base' === $history[0]['type'];
 	}
 
 	/**

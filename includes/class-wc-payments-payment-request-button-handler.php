@@ -532,8 +532,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Cart total is 0 or is on product page and product price is 0.
+		// Exclude pay-for-order pages from this check.
 		if (
-			( ! $this->is_product() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
+			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
 			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 
 		) {
@@ -593,7 +594,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// We don't support multiple packages with Payment Request Buttons because we can't offer a good UX.
 		$packages = WC()->cart->get_shipping_packages();
-		if ( 1 < count( $packages ) ) {
+		if ( 1 < ( is_countable( $packages ) ? count( $packages ) : 0 ) ) {
 			return false;
 		}
 

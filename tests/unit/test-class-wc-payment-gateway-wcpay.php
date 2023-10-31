@@ -114,7 +114,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Duplicate_Payment_Prevention_Service instance.
-	 * @var Duplicate_Payment_Prevention_Service
+	 * @var Duplicate_Payment_Prevention_Service|MockObject
 	 */
 	private $mock_dpps;
 
@@ -131,9 +131,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	/**
 	 * WC_Payments_Localization_Service instance.
 	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var WC_Payments_Localization_Service|MockObject
 	 */
 	private $mock_localization_service;
+
+	/**
+	 * Mock Fraud Service.
+	 *
+	 * @var WC_Payments_Fraud_Service|MockObject
+	 */
+	private $mock_fraud_service;
 
 	/**
 	 * Pre-test setup
@@ -180,6 +187,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -190,7 +198,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
-			$this->mock_localization_service
+			$this->mock_localization_service,
+			$this->mock_fraud_service
 		);
 
 		$this->woopay_utilities = new WooPay_Utilities();
@@ -199,7 +208,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->wcpay_gateway,
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->mock_fraud_service
 		);
 
 		// Mock the level3 service to always return an empty array.
@@ -1173,7 +1183,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'schedule_job' );
 
-		$this->mock_wcpay_account
+		$this->mock_fraud_service
 			->expects( $this->once() )
 			->method( 'get_fraud_services_config' )
 			->willReturn(
@@ -1194,7 +1204,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'schedule_job' );
 
-		$this->mock_wcpay_account
+		$this->mock_fraud_service
 			->expects( $this->once() )
 			->method( 'get_fraud_services_config' )
 			->willReturn(
@@ -1218,7 +1228,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'schedule_job' );
 
-		$this->mock_wcpay_account
+		$this->mock_fraud_service
 			->expects( $this->once() )
 			->method( 'get_fraud_services_config' )
 			->willReturn(
@@ -1242,7 +1252,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'schedule_job' );
 
-		$this->mock_wcpay_account
+		$this->mock_fraud_service
 			->expects( $this->once() )
 			->method( 'get_fraud_services_config' )
 			->willReturn(
@@ -1651,6 +1661,25 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_woopay_form_field_defaults() {
+		// need to delete the existing options to ensure nothing is in the DB from the `setUp` phase, where the method is instantiated.
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+
+		$this->assertEquals(
+			[
+				'product',
+				'cart',
+				'checkout',
+			],
+			$this->wcpay_gateway->get_option( 'platform_checkout_button_locations' )
+		);
+
+		$this->assertEquals(
+			'By placing this order, you agree to our [terms_of_service_link] and understand our [privacy_policy_link].',
+			$this->wcpay_gateway->get_option( 'platform_checkout_custom_message' )
+		);
+	}
+
 	public function test_is_woopay_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
@@ -1690,7 +1719,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$mock_wcpay_gateway,
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->mock_fraud_service
 		);
 
 		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
@@ -1712,7 +1742,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$mock_wcpay_gateway,
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->mock_fraud_service
 		);
 
 		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
@@ -1733,7 +1764,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$mock_wcpay_gateway,
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->mock_fraud_service
 		);
 
 		$this->assertFalse( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
@@ -1819,6 +1851,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
+					$this->mock_fraud_service,
 				]
 			)
 			->setMethods( $methods )
@@ -2167,7 +2200,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->wcpay_gateway,
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->mock_fraud_service
 		);
 
 		$this->payments_checkout->init_hooks();

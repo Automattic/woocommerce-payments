@@ -5,9 +5,9 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Session_Rate_Limiter;
-use WCPay\WooPay;
 use WCPay\WooPay\WooPay_Utilities;
 
 /**
@@ -17,7 +17,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	/**
 	 * Mock WC_Payments_API_Client.
 	 *
-	 * @var WC_Payments_API_Client
+	 * @var WC_Payments_API_Client|MockObject
 	 */
 	private $mock_api_client;
 
@@ -31,35 +31,35 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	/**
 	 * WooPay Button Handler mock instance.
 	 *
-	 * @var Mock_WC_Payments_WooPay_Button_Handler
+	 * @var WC_Payments_WooPay_Button_Handler|MockObject
 	 */
 	private $mock_woopay_button_handler;
 
 	/**
 	 * Payment Request Button Handler mock instance.
 	 *
-	 * @var Mock_WC_Payments_Payment_Request_Button_Handler
+	 * @var WC_Payments_Payment_Request_Button_Handler|MockObject
 	 */
 	private $mock_payment_request_button_handler;
 
 	/**
 	 * WC_Payments_Account instance.
 	 *
-	 * @var WC_Payments_Account
+	 * @var WC_Payments_Account|MockObject
 	 */
 	private $mock_wcpay_account;
 
 	/**
 	 * Used to get the settings.
 	 *
-	 * @var WC_Payment_Gateway_WCPay
+	 * @var WC_Payment_Gateway_WCPay|MockObject
 	 */
 	private $mock_wcpay_gateway;
 
 	/**
 	 * WooPay_Utilities instance.
 	 *
-	 * @var WooPay_Utilities
+	 * @var WooPay_Utilities|MockObject
 	 */
 	private $mock_woopay_utilities;
 
@@ -148,7 +148,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			$mock_rate_limiter,
 			$mock_order_service,
 			$mock_dpps,
-			$this->createMock( WC_Payments_Localization_Service::class )
+			$this->createMock( WC_Payments_Localization_Service::class ),
+			$this->createMock( WC_Payments_Fraud_Service::class )
 		);
 	}
 

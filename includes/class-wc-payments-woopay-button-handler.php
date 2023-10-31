@@ -111,6 +111,16 @@ class WC_Payments_WooPay_Button_Handler {
 			return;
 		}
 
+		// Create WooPay button location option if it doesn't exist and enable all locations by default.
+		if ( ! array_key_exists( 'platform_checkout_button_locations', get_option( 'woocommerce_woocommerce_payments_settings' ) ) ) {
+
+			$all_locations = $this->gateway->form_fields['platform_checkout_button_locations']['options'];
+
+			$this->gateway->update_option( 'platform_checkout_button_locations', array_keys( $all_locations ) );
+
+			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $all_locations );
+		}
+
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_woopay_config' ] );
@@ -444,12 +454,12 @@ class WC_Payments_WooPay_Button_Handler {
 			return 'cart';
 		}
 
-		if ( $this->is_checkout() ) {
-			return 'checkout';
-		}
-
 		if ( $this->is_pay_for_order_page() ) {
 			return 'pay_for_order';
+		}
+
+		if ( $this->is_checkout() ) {
+			return 'checkout';
 		}
 
 		return '';
@@ -583,10 +593,21 @@ class WC_Payments_WooPay_Button_Handler {
 			return;
 		}
 
+		$settings = $this->get_button_settings();
+
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->is_product() ); ?>>
-				<?php // The WooPay express checkout button React component will go here. ?>
-			</div>
+			<?php // The WooPay express checkout button React component will go here. This is rendered as disabled for now, until the page is initialized. ?>
+			<button
+				class="woopay-express-button"
+				aria-label="<?php esc_attr_e( 'WooPay', 'woocommerce-payments' ); ?>"
+				data-type="<?php echo esc_attr( $settings['type'] ); ?>"
+				data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"
+				data-size="<?php echo esc_attr( $settings['size'] ); ?>"
+				style="height: <?php echo esc_attr( $settings['height'] ); ?>px"
+				disabled
+			></button>
+		</div>
 		<?php
 	}
 

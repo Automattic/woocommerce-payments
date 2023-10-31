@@ -27,7 +27,7 @@ import SetupRealPayments from './setup-real-payments';
 import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
-import { useDisputes, useSettings } from 'wcpay/data';
+import { useDisputes, useGetSettings, useSettings } from 'wcpay/data';
 import './style.scss';
 
 const OverviewPageError = () => {
@@ -60,7 +60,8 @@ const OverviewPage = () => {
 		enabledPaymentMethods,
 	} = wcpaySettings;
 
-	const { isLoading: settingsIsLoading, settings } = useSettings();
+	const { isLoading: settingsIsLoading } = useSettings();
+	const settings = useGetSettings();
 
 	const { disputes: activeDisputes } = useDisputes( {
 		filter: 'awaiting_response',

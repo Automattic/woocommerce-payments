@@ -34,7 +34,7 @@ type PaymentMethodProps = {
 const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
 	name,
 } ) => {
-	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
+	const stripeAccountDomesticCurrency = useAccountDomesticCurrency();
 	const description = getPaymentMethodDescription(
 		name,
 		stripeAccountDomesticCurrency as string
