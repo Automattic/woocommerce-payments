@@ -192,16 +192,17 @@ class WC_Payments_Order_Service {
 	 * @param string      $intent_id     The ID of the intent associated with this order.
 	 * @param string|null $intent_status The status of the intent related to this order.
 	 * @param string      $charge_id     The charge ID related to the intent/order.
-	 * @param string      $message       Optional message to add to the note.
+	 * @param string|null $message       Optional message to add to the note.
+	 * @param string|null $error_code    Code of the error if any.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_capture_failed( $order, $intent_id, $intent_status, $charge_id, $message = '' ) {
+	public function mark_payment_capture_failed( WC_Order $order, string $intent_id, ?string $intent_status, string $charge_id, ?string $message = '', ?string $error_code = null ): void {
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
-		$note = $this->generate_capture_failed_note( $order, $intent_id, $charge_id, $message );
+		$note = $this->generate_capture_failed_note( $order, $intent_id, $charge_id, $message, $error_code );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			$this->complete_order_processing( $order );
 			return;
@@ -1132,14 +1133,15 @@ class WC_Payments_Order_Service {
 	/**
 	 * Generates the failure order note and additional message, if included.
 	 *
-	 * @param WC_Order $order     Order object.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 * @param string   $charge_id The charge ID related to the intent/order.
-	 * @param string   $message   Optional message to add to the note.
+	 * @param WC_Order    $order     Order object.
+	 * @param string      $intent_id The ID of the intent associated with this order.
+	 * @param string      $charge_id The charge ID related to the intent/order.
+	 * @param string|null $message   Optional message to add to the note.
+	 * @param string|null $error_code Code of the error if any.
 	 *
 	 * @return string
 	 */
-	private function generate_capture_failed_note( $order, $intent_id, $charge_id, $message ): string {
+	private function generate_capture_failed_note( WC_Order $order, string $intent_id, string $charge_id, ?string $message, ?string $error_code = null ): string {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -1156,6 +1158,9 @@ class WC_Payments_Order_Service {
 		);
 
 		if ( ! empty( $message ) ) {
+			if ( 'amount_too_large' === $error_code ) {
+				$message = __( 'Error: The payment could not be captured because the requested capture amount is greater than the amount you can capture for this charge.', 'woocommerce-payments' );
+			}
 			$note .= ' ' . $message;
 		}
 
