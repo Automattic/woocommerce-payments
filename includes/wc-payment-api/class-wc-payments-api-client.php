@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Amount_Too_Large_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
@@ -1919,6 +1920,13 @@ class WC_Payments_API_Client {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
+				if ( isset( $response_body['error']['code'] ) && 'amount_too_large' === $response_body['error']['code'] && 'requires_capture' === $response_body['error']['payment_intent']['status'] ) {
+					throw new Amount_Too_Large_Exception(
+						// translators: This is an error API response.
+						__( 'Error: The payment could not be captured because the requested capture amount is greater than the amount you can capture for this charge.', 'woocommerce-payments' ),
+						$response_code
+					);
+				}
 				$decline_code = $response_body['error']['decline_code'] ?? '';
 				$this->maybe_act_on_fraud_prevention( $decline_code );
 
