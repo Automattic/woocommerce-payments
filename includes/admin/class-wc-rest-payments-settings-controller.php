@@ -1017,6 +1017,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response|WP_Error The response object, if this is a REST request.
 	 */
 	public function request_capability( WP_REST_Request $request = null ) {
+		$request_result          = null;
 		$id                      = $request->get_param( 'id' );
 		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
 		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();

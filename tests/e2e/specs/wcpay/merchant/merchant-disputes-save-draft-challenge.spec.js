@@ -3,18 +3,17 @@
  * External dependencies
  */
 import config from 'config';
+const { merchant, shopper, evalAndClick } = require( '@woocommerce/e2e-utils' );
+
 /**
  * Internal dependencies
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
-
-import { merchantWCP } from '../../../utils';
-
-const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
+import { uiLoaded } from '../../../utils';
 
 let orderId;
 
-describe.skip( 'Disputes > Save dispute for editing', () => {
+describe( 'Disputes > Merchant can save and resume draft dispute challenge', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -35,30 +34,36 @@ describe.skip( 'Disputes > Save dispute for editing', () => {
 
 		await merchant.login();
 		await merchant.goToOrder( orderId );
+
+		// Get the payment details link from the order page.
+		const paymentDetailsLink = await page.$eval(
+			'p.order_number > a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+
+		// Open the payment details page and wait for it to load.
+		await Promise.all( [
+			page.goto( paymentDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+
+		// Verify we see the dispute details on the transaction details page.
+		await expect( page ).toMatchElement( '.dispute-notice', {
+			text: 'The cardholder claims the product was not received',
+		} );
 	} );
 
 	afterAll( async () => {
 		await merchant.logout();
 	} );
 
-	it( 'should show a dispute in payment details', async () => {
-		// Pull out and follow the link to avoid working in multiple tabs
-		const paymentDetailsLink = await page.$eval(
-			'p.order_number > a',
-			( anchor ) => anchor.getAttribute( 'href' )
-		);
-
-		await merchantWCP.openPaymentDetails( paymentDetailsLink );
-
-		// Verify we have a dispute for this purchase
-		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Payment disputed as Product not received.',
-		} );
-	} );
-
-	it( 'should be able to save dispute for editing', async () => {
-		// Click to challenge the dispute
-		await merchantWCP.openChallengeDispute();
+	it( 'should be able to save a draft dispute challenge and resume', async () => {
+		// Click the challenge dispute button.
+		await evalAndClick( '[data-testid="challenge-dispute-button"]' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await uiLoaded();
 
 		await page.waitForSelector(
 			'div.wcpay-dispute-evidence .components-flex.components-card__header',
@@ -104,6 +109,8 @@ describe.skip( 'Disputes > Save dispute for editing', () => {
 
 		// Reload the page
 		await page.reload();
+
+		await uiLoaded();
 
 		// Verify the previously selected Product type was saved
 		await expect( page ).toMatchElement(

@@ -84,6 +84,13 @@ class WC_Payments_Admin {
 	private $incentives_service;
 
 	/**
+	 * WC_Payments_Fraud_Service instance to get information about fraud services.
+	 *
+	 * @var WC_Payments_Fraud_Service
+	 */
+	private $fraud_service;
+
+	/**
 	 * WCPay admin child pages.
 	 *
 	 * @var array
@@ -117,6 +124,7 @@ class WC_Payments_Admin {
 	 * @param WC_Payments_Onboarding_Service $onboarding_service  Onboarding service instance.
 	 * @param WC_Payments_Order_Service      $order_service       Order service instance.
 	 * @param WC_Payments_Incentives_Service $incentives_service  Incentives service instance.
+	 * @param WC_Payments_Fraud_Service      $fraud_service       Fraud service instance.
 	 * @param Database_Cache                 $database_cache      Database Cache instance.
 	 */
 	public function __construct(
@@ -126,6 +134,7 @@ class WC_Payments_Admin {
 		WC_Payments_Onboarding_Service $onboarding_service,
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_Incentives_Service $incentives_service,
+		WC_Payments_Fraud_Service $fraud_service,
 		Database_Cache $database_cache
 	) {
 		$this->payments_api_client = $payments_api_client;
@@ -134,6 +143,7 @@ class WC_Payments_Admin {
 		$this->onboarding_service  = $onboarding_service;
 		$this->order_service       = $order_service;
 		$this->incentives_service  = $incentives_service;
+		$this->fraud_service       = $fraud_service;
 		$this->database_cache      = $database_cache;
 
 		$this->admin_child_pages = [
@@ -328,6 +338,9 @@ class WC_Payments_Admin {
 	 * Add payments menu items.
 	 */
 	public function add_payments_menu() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 		global $submenu;
 
 		try {
@@ -540,7 +553,9 @@ class WC_Payments_Admin {
 	 * Register the CSS and JS scripts
 	 */
 	public function register_payments_scripts() {
-		// TODO: Add check to see if user can manage_woocommerce and exit early if they cannot.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index', [ 'wp-api-request' ] );
 
@@ -779,14 +794,14 @@ class WC_Payments_Admin {
 		try {
 			$test_mode = WC_Payments::mode()->is_test();
 		} catch ( Exception $e ) {
-			Logger::log( sprintf( 'WCPay JS settings: Could not determine if WCPay should be in test mode! Message: %s', $e->getMessage() ), 'warning' );
+			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if WCPay should be in test mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
 		$dev_mode = false;
 		try {
 			$dev_mode = WC_Payments::mode()->is_dev();
 		} catch ( Exception $e ) {
-			Logger::log( sprintf( 'WCPay JS settings: Could not determine if WCPay should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
+			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if WCPay should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
 		$connect_url       = WC_Payments_Account::get_connect_url();
@@ -816,7 +831,7 @@ class WC_Payments_Admin {
 			'isSubscriptionsActive'         => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
 			// Used in the settings page by the AccountFees component.
 			'zeroDecimalCurrencies'         => WC_Payments_Utils::zero_decimal_currencies(),
-			'fraudServices'                 => $this->account->get_fraud_services_config(),
+			'fraudServices'                 => $this->fraud_service->get_fraud_services_config(),
 			'isJetpackConnected'            => $this->payments_api_client->is_server_connected(),
 			'isJetpackIdcActive'            => Jetpack_Identity_Crisis::has_identity_crisis(),
 			'accountStatus'                 => $account_status_data,
@@ -1025,6 +1040,9 @@ class WC_Payments_Admin {
 	 * if it is not and the user is attempting to view a WCPay admin page.
 	 */
 	public function maybe_redirect_to_onboarding() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 		if ( wp_doing_ajax() ) {
 			return;
 		}
@@ -1071,6 +1089,9 @@ class WC_Payments_Admin {
 	 * @see self::add_payments_menu()
 	 */
 	public function maybe_redirect_overview_to_connect() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 		if ( wp_doing_ajax() ) {
 			return;
 		}
@@ -1105,6 +1126,9 @@ class WC_Payments_Admin {
 	 * Redirect back to the connect page with an error message.
 	 */
 	public function maybe_redirect_onboarding_flow_to_connect(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
 		if ( isset( $url_params['page'] ) && 'wc-admin' === $url_params['page']
 			&& isset( $url_params['path'] ) && '/payments/onboarding' === $url_params['path'] && ! $this->payments_api_client->is_server_connected() ) {

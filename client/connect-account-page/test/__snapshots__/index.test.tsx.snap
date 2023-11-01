@@ -118,42 +118,52 @@ exports[`ConnectAccountPage should render correctly 1`] = `
           >
             <img
               alt="Visa"
+              class="payment-method__icon"
               src="assets/images/cards/visa.svg"
             />
             <img
-              alt="MasterCard"
+              alt="Mastercard"
+              class="payment-method__icon"
               src="assets/images/cards/mastercard.svg"
             />
             <img
               alt="American Express"
+              class="payment-method__icon"
               src="assets/images/cards/amex.svg"
             />
             <img
               alt="Apple Pay"
+              class="payment-method__icon"
               src="assets/images/cards/apple-pay.svg"
             />
             <img
               alt="Google Pay"
+              class="payment-method__icon"
               src="assets/images/cards/google-pay.svg"
             />
             <img
-              alt="DinersClub"
+              alt="Diners Club"
+              class="payment-method__icon"
               src="assets/images/cards/diners.svg"
             />
             <img
               alt="UnionPay"
+              class="payment-method__icon"
               src="assets/images/cards/unionpay.svg"
             />
             <img
               alt="JCB"
-              src="assets/images/cards/jcb.svg"
+              class="payment-method__icon"
+              src="assets/images/payment-methods/jcb.svg"
             />
             <img
               alt="Affirm"
+              class="payment-method__icon"
               src="assets/images/payment-methods/affirm.svg"
             />
             <img
-              alt="AfterPay"
+              alt="Afterpay"
+              class="payment-method__icon"
               src="assets/images/payment-methods/afterpay.svg"
             />
             <span>
@@ -439,46 +449,57 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
           >
             <img
               alt="Visa"
+              class="payment-method__icon"
               src="assets/images/cards/visa.svg"
             />
             <img
-              alt="MasterCard"
+              alt="Mastercard"
+              class="payment-method__icon"
               src="assets/images/cards/mastercard.svg"
             />
             <img
               alt="American Express"
+              class="payment-method__icon"
               src="assets/images/cards/amex.svg"
             />
             <img
               alt="WooPay"
-              src="assets/images/payment-methods/woopay.svg"
+              class="payment-method__icon"
+              src="assets/images/payment-methods/woo.svg"
             />
             <img
               alt="Apple Pay"
+              class="payment-method__icon"
               src="assets/images/cards/apple-pay.svg"
             />
             <img
               alt="Google Pay"
+              class="payment-method__icon"
               src="assets/images/cards/google-pay.svg"
             />
             <img
-              alt="DinersClub"
+              alt="Diners Club"
+              class="payment-method__icon"
               src="assets/images/cards/diners.svg"
             />
             <img
               alt="UnionPay"
+              class="payment-method__icon"
               src="assets/images/cards/unionpay.svg"
             />
             <img
               alt="JCB"
-              src="assets/images/cards/jcb.svg"
+              class="payment-method__icon"
+              src="assets/images/payment-methods/jcb.svg"
             />
             <img
               alt="Affirm"
+              class="payment-method__icon"
               src="assets/images/payment-methods/affirm.svg"
             />
             <img
-              alt="AfterPay"
+              alt="Afterpay"
+              class="payment-method__icon"
               src="assets/images/payment-methods/afterpay.svg"
             />
             <span>
@@ -718,42 +739,52 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
           >
             <img
               alt="Visa"
+              class="payment-method__icon"
               src="assets/images/cards/visa.svg"
             />
             <img
-              alt="MasterCard"
+              alt="Mastercard"
+              class="payment-method__icon"
               src="assets/images/cards/mastercard.svg"
             />
             <img
               alt="American Express"
+              class="payment-method__icon"
               src="assets/images/cards/amex.svg"
             />
             <img
               alt="Apple Pay"
+              class="payment-method__icon"
               src="assets/images/cards/apple-pay.svg"
             />
             <img
               alt="Google Pay"
+              class="payment-method__icon"
               src="assets/images/cards/google-pay.svg"
             />
             <img
-              alt="DinersClub"
+              alt="Diners Club"
+              class="payment-method__icon"
               src="assets/images/cards/diners.svg"
             />
             <img
               alt="UnionPay"
+              class="payment-method__icon"
               src="assets/images/cards/unionpay.svg"
             />
             <img
               alt="JCB"
-              src="assets/images/cards/jcb.svg"
+              class="payment-method__icon"
+              src="assets/images/payment-methods/jcb.svg"
             />
             <img
               alt="Affirm"
+              class="payment-method__icon"
               src="assets/images/payment-methods/affirm.svg"
             />
             <img
-              alt="AfterPay"
+              alt="Afterpay"
+              class="payment-method__icon"
               src="assets/images/payment-methods/afterpay.svg"
             />
             <span>

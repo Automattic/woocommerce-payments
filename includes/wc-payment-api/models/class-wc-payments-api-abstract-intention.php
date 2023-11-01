@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Intent_Status;
+
 /**
  * An abstract object representing payment and setup intents used by the WooCommerce Payments API.
  *
@@ -197,8 +199,17 @@ abstract class WC_Payments_API_Abstract_Intention implements \JsonSerializable {
 	 * @return string|null
 	 */
 	public function get_payment_method_type() {
-		$keys = count( $this->payment_method_options ) > 0 ? array_keys( $this->payment_method_options ) : null;
+		$keys = count( (array) $this->payment_method_options ) > 0 ? array_keys( $this->payment_method_options ) : null;
 		return $keys ? $keys[0] : null;
+	}
+
+	/**
+	 * Returns whether the intention is in one of the authorized statuses.
+	 *
+	 * @return bool
+	 */
+	public function is_authorized(): bool {
+		return in_array( $this->status, Intent_Status::AUTHORIZED_STATUSES, true );
 	}
 
 	/**
