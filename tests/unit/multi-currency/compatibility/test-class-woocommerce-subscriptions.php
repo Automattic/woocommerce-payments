@@ -806,26 +806,14 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		$this->assertFalse( $this->woocommerce_subscriptions->should_disable_currency_switching( false ) );
 	}
 
-	/**
-	 * This test is marked as skipped due to it does not currently work.
-	 *
-	 * It does not work due to WC_Payments_Explicit_Price_Formatter::should_output_explicit_price is called in the path
-	 * of maybe_get_explicit_format_for_subscription_total, and when it is called it loads the MultiCurrency instance
-	 * that is initialized before the test itself starts. The self::$multi_currency_instance->has_additional_currencies_enabled()
-	 * check returns false due to no other currencies are enabled because there's no Stripe connection.
-	 *
-	 * I could not find a way to properly mock this due to the static call to the MC instance.
-	 */
 	public function test_maybe_get_explicit_format_for_subscription_total() {
-		$this->markTestSkipped( 'The Multi-Currency instance is not able to be mocked for this test.' );
-
 		// Arrange: Create a subscription and set the currency.
 		$mock_subscription = $this->create_mock_subscription();
 		$mock_subscription->set_currency( 'EUR' );
 
 		// Arrange: Set the price string to be passed, and also what is expected.
-		$price    = '<span class="woocommerce-Price-amount amount">14,00&nbsp;<span class="woocommerce-Price-currencySymbol">&euro;</span></span> / day';
-		$expected = '<span class="woocommerce-Price-amount amount">14,00&nbsp;<span class="woocommerce-Price-currencySymbol">&euro;</span></span> EUR / day';
+		$price    = '<span class="woocommerce-Price-amount amount"><bdi>14,00&nbsp;<span class="woocommerce-Price-currencySymbol">&euro;</span></bdi></span>';
+		$expected = $price . ' EUR';
 
 		// Arrange: Set expectation and return for is_call_in_backtrace.
 		$this->mock_utils
@@ -839,11 +827,18 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			)
 			->willReturn( true );
 
-		// Arrange: Set expectation and return for has_additional_currencies_enabled. This does not work.
+		// Arrange: Set expectation and return for is_initialized and has_additional_currencies_enabled.
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'is_initialized' )
+			->willReturn( true );
 		$this->mock_multi_currency
 			->expects( $this->once() )
 			->method( 'has_additional_currencies_enabled' )
 			->willReturn( true );
+
+		// Arrange: Make sure to set our Multi-Currency instance as our mock instance.
+		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->mock_multi_currency );
 
 		// Arrange/Assert: Apply the woocommerce_subscription_price_string_details filter and confirm the filter does not change the passed array.
 		$this->assertSame( [ 1, 2, 3 ], apply_filters( 'woocommerce_subscription_price_string_details', [ 1, 2, 3 ], $mock_subscription ) );
