@@ -4,7 +4,6 @@
  */
 import React, { useMemo } from 'react';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
 import { decodeEntities } from '@wordpress/html-entities';
 import { chevronDown, Icon } from '@wordpress/icons';
 
@@ -128,10 +127,10 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 				// prettier-ignore
 				components: {
 					privacyLink: window.wcSettings?.storePages?.privacy?.permalink ?
-						<Link href={ window.wcSettings.storePages.privacy.permalink } type="external" /> :
+						<span className="preview-layout__shortcode-link"/> :
 						<span />,
 					termsLink: window.wcSettings?.storePages?.terms?.permalink ?
-						<Link href={ window.wcSettings.storePages.terms.permalink } type="external" /> :
+						<span className="preview-layout__shortcode-link"/> :
 						<span />,
 				}
 			} );
