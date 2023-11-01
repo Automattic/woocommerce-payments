@@ -2,7 +2,9 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useMemo } from 'react';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 import { decodeEntities } from '@wordpress/html-entities';
 import { chevronDown, Icon } from '@wordpress/icons';
 
@@ -107,7 +109,36 @@ const CheckoutButton = ( { height } ) => {
 
 export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 	const { style, ...restProps } = props;
-	const trimmedCustomMessage = ( customMessage || '' ).trim();
+
+	const preparedCustomMessage = useMemo( () => {
+		let rawCustomMessage = ( customMessage || '' ).trim();
+
+		if ( rawCustomMessage ) {
+			rawCustomMessage = decodeEntities( rawCustomMessage );
+			rawCustomMessage = rawCustomMessage.replace(
+				'[terms_of_service_link]',
+				'{{termsLink}}Terms of Service{{/termsLink}}'
+			);
+			rawCustomMessage = rawCustomMessage.replace(
+				'[privacy_policy_link]',
+				'{{privacyLink}}Privacy Policy{{/privacyLink}}'
+			);
+			rawCustomMessage = interpolateComponents( {
+				mixedString: rawCustomMessage,
+				// prettier-ignore
+				components: {
+					privacyLink: window.wcSettings?.storePages?.privacy?.permalink ?
+						<Link href={ window.wcSettings.storePages.privacy.permalink } type="external" /> :
+						<span />,
+					termsLink: window.wcSettings?.storePages?.terms?.permalink ?
+						<Link href={ window.wcSettings.storePages.terms.permalink } type="external" /> :
+						<span />,
+				}
+			} );
+		}
+
+		return rawCustomMessage;
+	}, [ customMessage ] );
 
 	let storeHeader;
 	if ( storeLogo ) {
@@ -192,12 +223,10 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 							<VerticalSpacer height="0.498rem" />
 							<LoadingBox height="2rem" />
 							<VerticalSpacer height="0.747rem" />
-							{ trimmedCustomMessage && (
+							{ preparedCustomMessage && (
 								<>
 									<TextBox maxHeight="2.5rem">
-										{ decodeEntities(
-											trimmedCustomMessage
-										) }
+										{ preparedCustomMessage }
 									</TextBox>
 									<VerticalSpacer height="0.747rem" />
 								</>
