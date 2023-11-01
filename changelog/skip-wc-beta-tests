@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Skip E2E tests against WC beta
+Comment: Skip E2E tests against WC beta
