@@ -384,13 +384,15 @@ class WooPay_Session {
 		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 		$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
 
+		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
+
 		$request = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
 			'session_nonce'        => self::create_woopay_nonce( $user->ID ),
 			'store_api_token'      => self::init_store_api_token(),
-			'email'                => '',
+			'email'                => $email,
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => $store_logo,
@@ -423,6 +425,26 @@ class WooPay_Session {
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity( $user->ID ),
 		];
 
+		$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
+		$request['extension_data']     = $woopay_adapted_extensions->get_extension_data();
+
+		if ( ! empty( $email ) ) {
+			// Save email in session to skip TYP verify email and check if
+			// WooPay verified email matches.
+			WC()->customer->set_billing_email( $email );
+			WC()->customer->save();
+
+			$request['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
+
+			if ( ! is_user_logged_in() && count( $request['adapted_extensions'] ) > 0 ) {
+				$store_user_email_registered = get_user_by( 'email', $email );
+
+				if ( $store_user_email_registered ) {
+					$request['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
+				}
+			}
+		}
+
 		return $request;
 	}
 
@@ -441,32 +463,12 @@ class WooPay_Session {
 			);
 		}
 
-		$email         = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 		$order_id      = ! empty( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : null;
 		$key           = ! empty( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : null;
 		$billing_email = ! empty( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : null;
 
 		$body                 = self::get_init_session_request( $order_id, $key, $billing_email );
-		$body['email']        = $email;
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
-
-		if ( ! empty( $email ) ) {
-			// Save email in session to skip TYP verify email and check if
-			// WooPay verified email matches.
-			WC()->customer->set_billing_email( $email );
-			WC()->customer->save();
-
-			$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
-			$body['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
-
-			if ( ! is_user_logged_in() && count( $body['adapted_extensions'] ) > 0 ) {
-				$store_user_email_registered = get_user_by( 'email', $email );
-
-				if ( $store_user_email_registered ) {
-					$body['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
-				}
-			}
-		}
 
 		$args = [
 			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
