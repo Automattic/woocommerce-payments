@@ -115,11 +115,11 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 		if ( rawCustomMessage ) {
 			rawCustomMessage = decodeEntities( rawCustomMessage );
 			rawCustomMessage = rawCustomMessage.replace(
-				'[terms_of_service_link]',
+				'[terms]',
 				'{{termsLink}}Terms of Service{{/termsLink}}'
 			);
 			rawCustomMessage = rawCustomMessage.replace(
-				'[privacy_policy_link]',
+				'[privacy_policy]',
 				'{{privacyLink}}Privacy Policy{{/privacyLink}}'
 			);
 			rawCustomMessage = interpolateComponents( {
