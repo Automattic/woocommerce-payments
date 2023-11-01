@@ -1,0 +1,5 @@
+Significance: patch
+Type: add
+Comment: Added notice when a LPM is selected that requires additional currencies when MC is disabled
+
+

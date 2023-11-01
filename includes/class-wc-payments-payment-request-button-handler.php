@@ -532,8 +532,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Cart total is 0 or is on product page and product price is 0.
+		// Exclude pay-for-order pages from this check.
 		if (
-			( ! $this->is_product() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
+			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
 			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 
 		) {
@@ -1102,7 +1103,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$data['displayItems'] = $items;
 			$data['total']        = [
 				'label'   => $this->get_total_label(),
-				'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
+				'amount'  => WC_Payments_Utils::prepare_amount( $total + $total_tax, $currency ),
 				'pending' => true,
 			];
 
