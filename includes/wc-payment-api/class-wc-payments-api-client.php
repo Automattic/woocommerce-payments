@@ -1923,7 +1923,6 @@ class WC_Payments_API_Client {
 				$response_body_error_code = $response_body['error']['code'] ?? null;
 				$payment_intent_status    = $response_body['error']['payment_intent']['status'] ?? null;
 
-				// Check for an 'amount_too_large' error code and a 'requires_capture' payment intent status.
 				// We redact the API error message to prevent prompting the merchant to contact Stripe support
 				// when attempting to manually capture an amount greater than what's authorized. Contacting support is unnecessary in this scenario.
 				if ( 'amount_too_large' === $response_body_error_code && 'requires_capture' === $payment_intent_status ) {
