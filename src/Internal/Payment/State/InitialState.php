@@ -12,6 +12,8 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Internal\Service\MinimumAmountService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
@@ -62,6 +64,13 @@ class InitialState extends AbstractPaymentState {
 	private $dpps;
 
 	/**
+	 * Service for handling minimum amount.
+	 *
+	 * @var MinimumAmountService
+	 */
+	private $minimum_amount_service;
+
+	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
 	 * @param StateFactory                      $state_factory           Factory for payment states.
@@ -70,6 +79,7 @@ class InitialState extends AbstractPaymentState {
 	 * @param Level3Service                     $level3_service          Service for Level3 Data.
 	 * @param PaymentRequestService             $payment_request_service Connection with the server.
 	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
+	 * @param MinimumAmountService              $minimum_amount_service  Service for handling minimum amount.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -77,7 +87,8 @@ class InitialState extends AbstractPaymentState {
 		WC_Payments_Customer_Service $customer_service,
 		Level3Service $level3_service,
 		PaymentRequestService $payment_request_service,
-		DuplicatePaymentPreventionService $dpps
+		DuplicatePaymentPreventionService $dpps,
+		MinimumAmountService $minimum_amount_service
 	) {
 		parent::__construct( $state_factory );
 
@@ -86,6 +97,7 @@ class InitialState extends AbstractPaymentState {
 		$this->level3_service          = $level3_service;
 		$this->payment_request_service = $payment_request_service;
 		$this->dpps                    = $dpps;
+		$this->minimum_amount_service  = $minimum_amount_service;
 	}
 
 	/**
@@ -118,6 +130,8 @@ class InitialState extends AbstractPaymentState {
 		if ( null !== $duplicate_payment_result ) {
 			return $duplicate_payment_result;
 		}
+
+		$this->verify_minimum_amount();
 		// End multiple verification checks.
 
 		// Payments are currently based on intents, request one from the API.
@@ -125,6 +139,8 @@ class InitialState extends AbstractPaymentState {
 			$context = $this->get_context();
 			$intent  = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
+		} catch ( Amount_Too_Small_Exception $e ) {
+			$this->process_minimum_amount_exception( $e );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
 		}
@@ -216,6 +232,42 @@ class InitialState extends AbstractPaymentState {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Verifies the minimum order amount, and catches the error without reaching the API.
+	 *
+	 * @throws StateTransitionException
+	 */
+	protected function verify_minimum_amount(): void {
+		$context        = $this->get_context();
+		$currency       = $context->get_currency();
+		$order_amount   = (int) $context->get_amount();
+		$minimum_amount = $this->minimum_amount_service->get_cache( $currency );
+
+		if ( $minimum_amount > $order_amount ) {
+			$error_message = $this->minimum_amount_service->get_error_message_for_shoppers( $currency, $minimum_amount );
+
+			throw new StateTransitionException( $error_message );
+		}
+	}
+
+	/**
+	 * Processes the legacy minimum amount exception from the server API.
+	 *
+	 * @param Amount_Too_Small_Exception $e Legacy Minimum Amount Exception.
+	 *
+	 * @return void
+	 * @throws StateTransitionException
+	 */
+	protected function process_minimum_amount_exception( Amount_Too_Small_Exception $e ): void {
+		$minimum_amount = $e->get_minimum_amount();
+		$currency       = $e->get_currency();
+
+		$this->minimum_amount_service->set_cache( $currency, $minimum_amount );
+		$error_message = $this->minimum_amount_service->get_error_message_for_shoppers( $currency, $minimum_amount );
+
+		throw new StateTransitionException( $error_message );
 	}
 
 	/**
