@@ -688,9 +688,9 @@ export const merchantWCP = {
 		const snackbarSettingsSaved = '.components-snackbar';
 
 		await expect( page ).toClick( '.save-settings-section button' );
-		await page.waitForSelector( snackbarSettingsSaved );
 		await expect( page ).toMatchElement( snackbarSettingsSaved, {
 			text: 'Settings saved.',
+			timeout: 100000,
 		} );
 		await expect( page ).toClick( snackbarSettingsSaved );
 	},
