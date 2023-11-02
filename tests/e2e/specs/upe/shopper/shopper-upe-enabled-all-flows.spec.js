@@ -21,6 +21,7 @@ describe( 'Enabled UPE', () => {
 		await merchantWCP.activateUpe();
 		// enable SEPA
 		await merchantWCP.enablePaymentMethod( [ sepaPaymentMethod ] );
+		await merchantWCP.activateMulticurrency();
 		await merchant.logout();
 		await shopper.login();
 		await shopperWCP.changeAccountCurrencyTo( 'EUR' );

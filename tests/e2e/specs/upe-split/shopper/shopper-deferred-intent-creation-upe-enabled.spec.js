@@ -30,6 +30,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		await merchant.login();
 		await merchantWCP.activateUPEWithDefferedIntentCreation();
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
+		await merchantWCP.activateMulticurrency();
 		await merchant.logout();
 		await shopper.login();
 		await shopperWCP.changeAccountCurrencyTo( 'EUR' );
