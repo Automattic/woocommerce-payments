@@ -39,7 +39,7 @@ class MinimumAmountService {
 	 * Saves the minimum amount required for transactions in a given currency.
 	 *
 	 * @param string $currency The currency.
-	 * @param int    $amount   The minimum amount.
+	 * @param int    $amount   The minimum amount in cents.
 	 */
 	public function set_cache( string $currency, int $amount ): void {
 		$key = self::TRANSIENT_KEY . strtolower( $currency );
@@ -51,7 +51,7 @@ class MinimumAmountService {
 	 *
 	 * @param string $currency The currency to check for.
 	 *
-	 * @return int The minimum amount. 0 if the cache has not been set, or it is an invalid value.
+	 * @return int The minimum amount in cents. 0 if the cache has not been set, or it is an invalid value.
 	 */
 	public function get_cache( string $currency ): int {
 		$key    = self::TRANSIENT_KEY . strtolower( $currency );
@@ -64,7 +64,7 @@ class MinimumAmountService {
 	 * Gets the error message for shoppers.
 	 *
 	 * @param string $currency       The currency.
-	 * @param int    $minimum_amount The minimum amount.
+	 * @param int    $minimum_amount The minimum amount in cents.
 	 *
 	 * @return string Error message relayed to shoppers.
 	 */
