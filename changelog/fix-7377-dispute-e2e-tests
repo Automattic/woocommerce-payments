@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Not user-facing: update e2e tests for dispute challenge/accept flows to match new Transaction Dispute Details UI
-
-
