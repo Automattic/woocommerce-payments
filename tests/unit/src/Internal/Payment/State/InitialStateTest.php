@@ -15,6 +15,7 @@ use WCPay\Internal\Payment\State\ProcessedState;
 use Exception;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
+use WCPay\Internal\Service\MinimumAmountService;
 use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit_Utils;
@@ -99,6 +100,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$this->mock_level3_service          = $this->createMock( Level3Service::class );
 		$this->mock_payment_request_service = $this->createMock( PaymentRequestService::class );
 		$this->mock_dpps                    = $this->createMock( DuplicatePaymentPreventionService::class );
+		$this->mock_minimum_amount_service  = $this->createMock( MinimumAmountService::class );
 
 		$this->sut = new InitialState(
 			$this->mock_state_factory,
@@ -106,7 +108,8 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			$this->mock_customer_service,
 			$this->mock_level3_service,
 			$this->mock_payment_request_service,
-			$this->mock_dpps
+			$this->mock_dpps,
+			$this->mock_minimum_amount_service
 		);
 		$this->sut->set_context( $this->mock_context );
 
@@ -124,6 +127,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 					'process_order_phone_number',
 					'process_duplicate_order',
 					'process_duplicate_payment',
+					'verify_minimum_amount',
 				]
 			)
 			->setConstructorArgs(
@@ -134,6 +138,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 					$this->mock_level3_service,
 					$this->mock_payment_request_service,
 					$this->mock_dpps,
+					$this->mock_minimum_amount_service,
 				]
 			)
 			->getMock();
