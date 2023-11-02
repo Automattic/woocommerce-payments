@@ -1926,7 +1926,7 @@ class WC_Payments_API_Client {
 				// Check for an 'amount_too_large' error code and a 'requires_capture' payment intent status.
 				// We redact the API error message to prevent prompting the merchant to contact Stripe support
 				// when attempting to manually capture an amount greater than what's authorized. Contacting support is unnecessary in this scenario.
-				if ( isset( $response_body_error_code ) && 'amount_too_large' === $response_body_error_code && 'requires_capture' === $payment_intent_status ) {
+				if ( 'amount_too_large' === $response_body_error_code && 'requires_capture' === $payment_intent_status ) {
 					throw new Amount_Too_Large_Exception(
 						// translators: This is an error API response.
 						__( 'Error: The payment could not be captured because the requested capture amount is greater than the amount you can capture for this charge.', 'woocommerce-payments' ),
