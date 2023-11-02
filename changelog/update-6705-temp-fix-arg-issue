@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Temp fix by reverting controller constructor and moving code to new file
-
-
