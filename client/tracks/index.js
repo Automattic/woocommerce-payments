@@ -76,8 +76,6 @@ const events = {
 	DISPUTE_INQUIRY_REFUND_MODAL_VIEW:
 		'wcpay_dispute_inquiry_refund_modal_view',
 	GOOGLEPAY_BUTTON_CLICK: 'gpay_button_click',
-	ORDER_DISPUTE_NOTICE_BUTTON_CLICK:
-		'wcpay_order_dispute_notice_action_click',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
 		'wcpay_overview_balances_currency_tab_click',
 	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
@@ -108,9 +106,6 @@ const events = {
 	TRANSACTIONS_DOWNLOAD_CSV_CLICK: 'wcpay_transactions_download_csv_click',
 	WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
 	WOOPAY_OFFERED: 'woopay_offered',
-	WOOPAY_OTP_START: 'woopay_otp_prompt_start',
-	WOOPAY_OTP_COMPLETE: 'woopay_otp_prompt_complete',
-	WOOPAY_OTP_FAILED: 'woopay_otp_prompt_failed',
 	WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
 	WOOPAY_SKIPPED: 'woopay_skipped',
 	WOOPAY_BUTTON_LOAD: 'woopay_button_load',

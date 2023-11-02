@@ -21,7 +21,10 @@ import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
-	if ( wcpayPaymentRequestParams.has_block ) {
+	if (
+		wcpayPaymentRequestParams.has_block &&
+		! wcpayPaymentRequestParams.is_pay_for_order
+	) {
 		return;
 	}
 

@@ -156,6 +156,25 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	}
 
 	/**
+	 * The custom data from plugins to be used on WooPay,
+	 * it's not an adapted extension because it doesn't
+	 * use the email verification integration.
+	 *
+	 * @return array The custom data.
+	 */
+	public function get_extension_data() {
+		$extension_data = [];
+
+		if ( defined( 'WOOCOMMERCE_MULTICURRENCY_VERSION' ) ) {
+			$extension_data[ 'woocommerce-multicurrency' ] = [
+				'currency' => get_woocommerce_currency(),
+			];
+		}
+
+		return $extension_data;
+	}
+
+	/**
 	 * Get WC Blocks registered integrations.
 	 *
 	 * @param IntegrationInterface $integration An instance of IntegrationInterface.
