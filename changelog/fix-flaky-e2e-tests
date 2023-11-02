@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Comment: Update flaky helper function to save WooPayments settings
