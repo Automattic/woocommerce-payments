@@ -624,11 +624,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 				return true;
 			}
 		} elseif ( $this->is_checkout() || $this->is_cart() ) {
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-				$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
-				if ( WC_Subscriptions_Product::is_subscription( $_product ) ) {
-					return true;
-				}
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
 			}
 		}
 
