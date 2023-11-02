@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-When HPOS is enabled, fix quick-editing the subscription statuses on the admin list table.

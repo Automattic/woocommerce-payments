@@ -1602,11 +1602,11 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Returns if the currency initialization are completed
+	 * Returns if the currency initializations are completed.
 	 *
-	 * @return  bool    If the initializations have been completedÎ
+	 * @return  bool    If the initializations have been completed.
 	 */
-	public static function is_initialized() : bool {
+	public function is_initialized(): bool {
 		return static::$is_initialized;
 	}
 
