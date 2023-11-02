@@ -5,7 +5,6 @@ import React from 'react';
 import { useEffect, useContext } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -75,7 +74,6 @@ const SetupComplete = () => {
 	const {
 		featureFlags: { multiCurrency },
 	} = useContext( WCPaySettingsContext );
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	useEffect( () => {
 		if ( ! isActive ) {
@@ -83,7 +81,7 @@ const SetupComplete = () => {
 		}
 
 		window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = true;
-	}, [ isActive, updateOptions ] );
+	}, [ isActive ] );
 
 	return (
 		<WizardTaskItem

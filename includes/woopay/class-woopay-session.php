@@ -535,9 +535,13 @@ class WooPay_Session {
 	 * @return bool True if request is a Store API request, false otherwise.
 	 */
 	private static function is_store_api_request(): bool {
-		$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$request_path = rtrim( $url_parts['path'], '/' );
-		$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		if ( isset( $_REQUEST['rest_route'] ) ) {
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] );
+		} else {
+			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$request_path = rtrim( $url_parts['path'], '/' );
+			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		}
 
 		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
 			if ( 1 === preg_match( $pattern, $rest_route ) ) {
