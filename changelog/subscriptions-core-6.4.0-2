@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Ensure subscriptions have a date created that correctly accounts for the site's timezone. Fixes issues with subscriptions having a date created double the site's UTC offset.
