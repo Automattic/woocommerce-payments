@@ -26,11 +26,22 @@ class WC_Subscriptions_Synchroniser {
 	 */
 	public static $subscription_contains_synced_product = false;
 
+	/**
+	 * Is the product synced.
+	 *
+	 * @var bool
+	 */
+	public static $is_product_synced = false;
+
 	public static function is_syncing_enabled() {
 		return self::$is_syncing_enabled;
 	}
 
 	public static function subscription_contains_synced_product( $subscription ) {
 		return self::$subscription_contains_synced_product;
+	}
+
+	public static function is_product_synced( $product ) {
+		return self::$is_product_synced;
 	}
 }
