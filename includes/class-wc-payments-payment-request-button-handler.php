@@ -118,10 +118,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return bool
 	 */
 	public function is_account_creation_possible() {
+		$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
+
+		// If a subscription is being purchased, check if account creation is allowed for subscriptions.
+		if ( ! $is_signup_from_checkout_allowed && $this->has_subscription_product() ) {
+			$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'no' );
+		}
+
 		// If automatically generate username/password are disabled, the Payment Request API
 		// can't include any of those fields, so account creation is not possible.
 		return (
-			'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' ) &&
+			$is_signup_from_checkout_allowed &&
 			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
 			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
 		);
