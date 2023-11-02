@@ -29,6 +29,7 @@
       <code>WC_Pre_Orders_Product</code>
       <code>WC_Subscriptions_Product</code>
       <code>WC_Subscriptions_Product</code>
+      <code>WC_Subscriptions_Cart</code>
     </UndefinedClass>
   </file>
   <file src="includes/class-wc-payments.php">
