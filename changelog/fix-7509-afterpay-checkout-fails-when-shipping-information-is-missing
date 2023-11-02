@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Afterpay checkout error when shipping information is missing
