@@ -1051,6 +1051,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 				}
 			}
 
+			if ( $this->product_has_trial_and_needs_shipping( $product ) ) {
+				throw new Exception( __( 'Subscription products with a trial period and require shipping are not supported.', 'woocommerce-payments' ) );
+			}
+
 			// Force quantity to 1 if sold individually and check for existing item in cart.
 			if ( $product->is_sold_individually() ) {
 				$qty = apply_filters( 'wcpay_payment_request_add_to_cart_sold_individually_quantity', 1, $qty, $product_id, $variation_id );
