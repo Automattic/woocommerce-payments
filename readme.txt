@@ -95,6 +95,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 6.7.1 - 2023-11-03 =
+* Fix - Replaced the concrete logging class with a logger interface
 
 
 = 6.7.0 - 2023-11-01 =
