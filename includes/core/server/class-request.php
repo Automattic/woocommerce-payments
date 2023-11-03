@@ -328,7 +328,7 @@ abstract class Request {
 	}
 
 	/**
-	 * This is mimic of send method, but where API execption is handled.
+	 * This is mimic of send method, but where API exception is handled.
 	 * The reason behind this is that sometimes API request can fail for valid reasons and instead of handling this exception on every request, you could use this function.
 	 *
 	 * @return mixed               Either the response array, or the correct object.

@@ -372,10 +372,11 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
     <ul>
       <li>
         <span
-          class="woocommerce-payments__payment-method-icon has-icon-border"
+          class="woocommerce-payments__payment-method-icon"
         >
           <img
-            alt="giropay"
+            alt="Giropay"
+            class="payment-method__icon"
             src="assets/images/payment-methods/giropay.svg"
           />
           <span
@@ -387,10 +388,11 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
       </li>
       <li>
         <span
-          class="woocommerce-payments__payment-method-icon has-icon-border"
+          class="woocommerce-payments__payment-method-icon"
         >
           <img
             alt="Sofort"
+            class="payment-method__icon"
             src="assets/images/payment-methods/sofort.svg"
           />
           <span
@@ -402,10 +404,11 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
       </li>
       <li>
         <span
-          class="woocommerce-payments__payment-method-icon has-icon-border"
+          class="woocommerce-payments__payment-method-icon"
         >
           <img
             alt="SEPA Direct Debit"
+            class="payment-method__icon"
             src="assets/images/payment-methods/sepa-debit.svg"
           />
           <span

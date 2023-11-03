@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Skip some E2E tests until a proper fix is implemented on the frontend
-
-

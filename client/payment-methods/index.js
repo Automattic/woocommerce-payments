@@ -39,6 +39,7 @@ import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import CapabilityRequestNotice from './capability-request';
 import InlineNotice from 'wcpay/components/inline-notice';
+import { BuildMissingCurrenciesTooltipMessage } from 'wcpay/components/currency-information-for-methods';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
@@ -258,56 +259,74 @@ const PaymentMethods = () => {
 								allows_manual_capture: isAllowingManualCapture,
 								setup_required: isSetupRequired,
 								setup_tooltip: setupTooltip,
-							} ) => (
-								<PaymentMethod
-									id={ id }
-									key={ id }
-									label={ label }
-									description={ getPaymentMethodDescription(
-										id,
-										stripeAccountDomesticCurrency
-									) }
-									checked={
-										enabledMethodIds.includes( id ) &&
-										upeCapabilityStatuses.INACTIVE !==
+								currencies,
+							} ) => {
+								if (
+									! wcpaySettings.isMultiCurrencyEnabled &&
+									id !== PAYMENT_METHOD_IDS.CARD
+								) {
+									const currency =
+										wcpaySettings.storeCurrency;
+									if ( currencies.indexOf( currency ) < 0 ) {
+										isSetupRequired = true;
+										setupTooltip = BuildMissingCurrenciesTooltipMessage(
+											label,
+											currencies
+										);
+									}
+								}
+								return (
+									<PaymentMethod
+										id={ id }
+										key={ id }
+										label={ label }
+										description={ getPaymentMethodDescription(
+											id,
+											stripeAccountDomesticCurrency
+										) }
+										checked={
+											enabledMethodIds.includes( id ) &&
+											upeCapabilityStatuses.INACTIVE !==
+												getStatusAndRequirements( id )
+													.status
+										}
+										// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
+										required={
+											PAYMENT_METHOD_IDS.CARD === id &&
+											isUpeEnabled
+										}
+										locked={
+											PAYMENT_METHOD_IDS.CARD === id &&
+											isCreditCardEnabled &&
+											isUpeEnabled
+										}
+										Icon={ Icon }
+										status={
 											getStatusAndRequirements( id )
 												.status
-									}
-									// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
-									required={
-										PAYMENT_METHOD_IDS.CARD === id &&
-										isUpeEnabled
-									}
-									locked={
-										PAYMENT_METHOD_IDS.CARD === id &&
-										isCreditCardEnabled &&
-										isUpeEnabled
-									}
-									Icon={ Icon }
-									status={
-										getStatusAndRequirements( id ).status
-									}
-									isSetupRequired={ isSetupRequired }
-									setupTooltip={ setupTooltip }
-									isAllowingManualCapture={
-										isAllowingManualCapture
-									}
-									onUncheckClick={ () => {
-										handleUncheckClick( id );
-									} }
-									onCheckClick={ () => {
-										handleCheckClick( id );
-									} }
-									isPoEnabled={
-										wcpaySettings?.progressiveOnboarding
-											?.isEnabled
-									}
-									isPoComplete={
-										wcpaySettings?.progressiveOnboarding
-											?.isComplete
-									}
-								/>
-							)
+										}
+										isSetupRequired={ isSetupRequired }
+										setupTooltip={ setupTooltip }
+										isAllowingManualCapture={
+											isAllowingManualCapture
+										}
+										onUncheckClick={ () => {
+											handleUncheckClick( id );
+										} }
+										onCheckClick={ () => {
+											handleCheckClick( id );
+										} }
+										isPoEnabled={
+											wcpaySettings?.progressiveOnboarding
+												?.isEnabled
+										}
+										isPoComplete={
+											wcpaySettings?.progressiveOnboarding
+												?.isComplete
+										}
+									/>
+								);
+							}
 						) }
 					</PaymentMethodsList>
 				</CardBody>
