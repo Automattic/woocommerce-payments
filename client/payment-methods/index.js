@@ -257,8 +257,6 @@ const PaymentMethods = () => {
 								label,
 								icon: Icon,
 								allows_manual_capture: isAllowingManualCapture,
-								setup_required: isSetupRequired,
-								setup_tooltip: setupTooltip,
 								currencies,
 							} ) => {
 								if (

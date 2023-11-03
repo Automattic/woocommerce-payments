@@ -38,8 +38,6 @@ interface PaymentMethodProps {
 	onUncheckClick: ( id: string ) => void;
 	className?: string;
 	isAllowingManualCapture: boolean;
-	isSetupRequired?: boolean;
-	setupTooltip?: string;
 	required: boolean;
 	locked: boolean;
 	isPoEnabled: boolean;
@@ -104,8 +102,6 @@ const PaymentMethod = ( {
 	onUncheckClick,
 	className,
 	isAllowingManualCapture,
-	isSetupRequired,
-	setupTooltip,
 	required,
 	locked,
 	isPoEnabled,
@@ -138,7 +134,6 @@ const PaymentMethod = ( {
 
 	const needsOverlay =
 		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
-		isSetupRequired ||
 		needsAttention;
 
 	const handleChange = ( newStatus: string ) => {
@@ -171,10 +166,6 @@ const PaymentMethod = ( {
 				label,
 				wcpaySettings?.accountEmail ?? ''
 			);
-		}
-
-		if ( isSetupRequired ) {
-			return setupTooltip;
 		}
 
 		if ( needsAttention ) {
@@ -239,8 +230,7 @@ const PaymentMethod = ( {
 						delayMsOnUncheck={ 0 }
 						hideLabel
 						isAllowingManualCapture={ isAllowingManualCapture }
-						isSetupRequired={ isSetupRequired }
-						setupTooltip={ getTooltipContent( id ) as any }
+						tooltipContent={ getTooltipContent( id ) as any }
 						needsAttention={ needsAttention }
 					/>
 				</div>
