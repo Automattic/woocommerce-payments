@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Prevent subscription from turning into manual renewal after deleting payment method.

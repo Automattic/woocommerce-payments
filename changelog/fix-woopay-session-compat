@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Limit early WooPay session requests based on feature flag.
