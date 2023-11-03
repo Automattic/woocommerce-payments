@@ -119,7 +119,7 @@ class WC_Payments_Utils {
 	public static function prepare_amount( $amount, $currency = 'USD' ): int {
 		$conversion_rate = 100;
 
-		if ( self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
+		if ( ! self::is_special_case_zero_decimal_currency( strtolower( $currency ) ) && self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
 			$conversion_rate = 1;
 		}
 
@@ -178,6 +178,23 @@ class WC_Payments_Utils {
 	 */
 	public static function is_zero_decimal_currency( string $currency ): bool {
 		if ( in_array( strtolower( $currency ), self::zero_decimal_currencies(), true ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check whether a given currency is as special case of zero-decimal currencies.
+	 * Described here: https://stripe.com/docs/currencies#special-cases.
+	 * These zero-decimal currencies have to be sent with two decimals.
+	 *
+	 * @param string $currency The currency code.
+	 *
+	 * @return bool
+	 */
+	public static function is_special_case_zero_decimal_currency( string $currency ): bool {
+		if ( in_array( strtolower( $currency ), [ 'ugx', 'isk' ], true ) ) {
 			return true;
 		}
 
