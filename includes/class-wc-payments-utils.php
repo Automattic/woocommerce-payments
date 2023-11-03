@@ -193,7 +193,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return bool
 	 */
-	public static function is_special_case_zero_decimal_currency( string $currency ): bool {
+	private static function is_special_case_zero_decimal_currency( string $currency ): bool {
 		if ( in_array( strtolower( $currency ), [ 'ugx', 'isk' ], true ) ) {
 			return true;
 		}
