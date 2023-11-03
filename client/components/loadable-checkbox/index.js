@@ -23,7 +23,8 @@ const LoadableCheckboxControl = ( {
 	onChange,
 	hideLabel = false,
 	isAllowingManualCapture = false,
-	tooltipContent = '',
+	isSetupRequired = false,
+	setupTooltip = '',
 	delayMsOnCheck = 0,
 	delayMsOnUncheck = 0,
 	needsAttention = false,
@@ -87,13 +88,14 @@ const LoadableCheckboxControl = ( {
 				</div>
 			) }
 			{ ( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
+			isSetupRequired ||
 			needsAttention ? (
 				<div
 					className="loadable-checkbox__icon"
 					style={ { marginRight: '16px' } }
 				>
 					<HoverTooltip
-						content={ tooltipContent }
+						content={ setupTooltip }
 						className="wcpay-tooltip__tooltip--dark"
 					>
 						<div>
