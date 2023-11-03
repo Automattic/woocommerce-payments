@@ -1705,7 +1705,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Returns true if the given product is a subscription that has free trial and requires shipping.
 	 * This could be a subscription product with a trial period or a synchronised subscription with a delayed payment.
 	 *
-	 * If the product is a variable subscription, this function will return true if any of its variations have a trial and require shipping.
+	 * If the product is a variable subscription, this function will return true if all of its variations have a trial and require shipping.
 	 *
 	 * @since 6.8.0
 	 *
@@ -1725,19 +1725,21 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		foreach ( $products as $product ) {
-			// Skip any products that are virtual as we only care about products that require shipping.
+			// Return early if the product doesn't require shipping.
 			if ( ! $product->needs_shipping() ) {
-				continue;
+				return false;
 			}
 
-			// If the product has a trial period or is synchronised and the first payment is not today.
-			if ( WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
-				return true;
-			} elseif ( WC_Subscriptions_Synchroniser::is_product_synced( $product ) && ! WC_Subscriptions_Synchroniser::is_payment_upfront( $product ) && ! WC_Subscriptions_Synchroniser::is_today( WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp' ) ) ) {
-				return true;
+			// If product is synced, check if the first payment is upfront or today (i.e. no trial period). If product is not synced, check if it has a trial period.
+			if ( WC_Subscriptions_Synchroniser::is_product_synced( $product ) ) {
+				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $product ) || WC_Subscriptions_Synchroniser::is_today( WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp' ) ) ) {
+					return false;
+				}
+			} elseif ( WC_Subscriptions_Product::get_trial_length( $product ) <= 0 ) {
+				return false;
 			}
 		}
 
-		return false;
+		return true;
 	}
 }
