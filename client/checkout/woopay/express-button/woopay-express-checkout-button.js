@@ -96,7 +96,7 @@ export const WoopayExpressCheckoutButton = ( {
 	const onClickFallback = useCallback(
 		// OTP flow
 		( e ) => {
-			e.preventDefault();
+			e?.preventDefault();
 
 			if ( isPreview ) {
 				return; // eslint-disable-line no-useless-return
@@ -329,11 +329,7 @@ export const WoopayExpressCheckoutButton = ( {
 			if ( isSessionDataSuccess ) {
 				window.location.href = event.data.value.redirect_url;
 			} else if ( isSessionDataError ) {
-				const errorMessage = __(
-					'WooPay is unavailable at this time. Please try again.',
-					'woocommerce-payments'
-				);
-				showErrorMessage( context, errorMessage );
+				onClickFallback( null );
 
 				// Set button's default onClick handle to use modal checkout flow.
 				initWoopayRef.current = onClickFallback;
