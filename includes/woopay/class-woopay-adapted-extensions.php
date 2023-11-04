@@ -171,7 +171,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 			];
 		}
 
-		if ( defined( 'AFWC_PLUGIN_FILE' ) && function_exists( 'afwc_get_referrer_id' ) ) {
+		if ( $this->is_affiliate_for_woocommerce_enabled() ) {
 			$extension_data[ 'affiliate-for-woocommerce' ] = [
 				'affiliate-user' => afwc_get_referrer_id(),
 			];
@@ -189,11 +189,8 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	 * @param int $order_id The successful WooPay order.
 	 */
 	public function update_order_extension_data( $order_id ) {
-		if ( ! empty( $_GET['affiliate'] ) // phpcs:ignore WordPress.Security.NonceVerification
-			&& is_plugin_active( self::AFFILIATE_FOR_WOOCOMMERCE_PATH )
-			&& class_exists( 'AFWC_API' )
-			&& method_exists( 'AFWC_API', 'get_instance' )
-			&& method_exists( 'AFWC_API', 'track_conversion' )
+		if ( ! empty( $_GET['affiliate'] ) && // phpcs:ignore WordPress.Security.NonceVerification
+			$this->is_affiliate_for_woocommerce_enabled()
 		) {
 			$affiliate_id = wc_clean( wp_unslash( $_GET['affiliate'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
@@ -221,5 +218,19 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if Affiliate for WooCommerce is enabled and
+	 * its functions used on WCPay are available.
+	 *
+	 * @return boolean
+	 */
+	public function is_affiliate_for_woocommerce_enabled() {
+		return defined( 'AFWC_PLUGIN_FILE' ) &&
+			function_exists( 'afwc_get_referrer_id' ) &&
+			class_exists( 'AFWC_API' ) &&
+			method_exists( 'AFWC_API', 'get_instance' ) &&
+			method_exists( 'AFWC_API', 'track_conversion' );
 	}
 }

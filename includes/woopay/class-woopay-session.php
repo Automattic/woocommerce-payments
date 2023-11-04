@@ -168,12 +168,6 @@ class WooPay_Session {
 	 * @param int $order_id The order ID being updated.
 	 */
 	public static function woopay_order_payment_status_changed( $order_id ) {
-		$woopay_verified_email_address = self::get_woopay_verified_email_address();
-
-		if ( null === $woopay_verified_email_address ) {
-			return;
-		}
-
 		if ( ! self::is_woopay_enabled() ) {
 			return;
 		}
@@ -184,6 +178,12 @@ class WooPay_Session {
 
 		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
 		$woopay_adapted_extensions->update_order_extension_data( $order_id );
+
+		$woopay_verified_email_address = self::get_woopay_verified_email_address();
+
+		if ( null === $woopay_verified_email_address ) {
+			return;
+		}
 
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
@@ -473,26 +473,6 @@ class WooPay_Session {
 
 		$body                 = self::get_init_session_request( $order_id, $key, $billing_email );
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
-
-		if ( ! empty( $email ) ) {
-			// Save email in session to skip TYP verify email and check if
-			// WooPay verified email matches.
-			WC()->customer->set_billing_email( $email );
-			WC()->customer->save();
-
-			$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
-			$woopay_adapted_extensions->init();
-			$body['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
-			$body['extension_data']     = $woopay_adapted_extensions->get_extension_data();
-
-			if ( ! is_user_logged_in() && count( $body['adapted_extensions'] ) > 0 ) {
-				$store_user_email_registered = get_user_by( 'email', $email );
-
-				if ( $store_user_email_registered ) {
-					$body['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
-				}
-			}
-		}
 
 		$args = [
 			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
