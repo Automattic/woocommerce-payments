@@ -46,6 +46,13 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	private $mock_utils;
 
 	/**
+	 * WC_Order object.
+	 *
+	 * @var WC_Order
+	 */
+	private $mock_order;
+
+	/**
 	 * FrontendCurrencies instance.
 	 *
 	 * @var FrontendCurrencies
@@ -308,5 +315,90 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 
 	public function test_init_order_currency_returns_order_id() {
 		$this->assertSame( $this->mock_order->get_id(), $this->frontend_currencies->init_order_currency( $this->mock_order ) );
+	}
+
+	/**
+	 * @dataProvider provider_maybe_init_order_currency_from_order_total_prop
+	 */
+	public function test_maybe_init_order_currency_from_order_total_prop( $vars, $backtrace, $expected ) {
+		// Arrange: Set the expected calls and/or returns for is_page_with_vars and is_call_in_backtrace within should_use_order_currency.
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
+			->willReturn( $vars );
+		if ( $vars ) {
+			$this->mock_utils
+				->expects( $this->once() )
+				->method( 'is_call_in_backtrace' )
+				->willReturn( $backtrace );
+		} else {
+			$this->mock_utils
+				->expects( $this->never() )
+				->method( 'is_call_in_backtrace' );
+		}
+
+		// Arrange: Set the currency for the mock order.
+		$this->mock_order->set_currency( 'EUR' );
+
+		// Act: Call our method we're testing.
+		$return = $this->frontend_currencies->maybe_init_order_currency_from_order_total_prop( 10.00, $this->mock_order );
+
+		// Assert: Confirm the return value has not changed and that the expected order_currency is set.
+		$this->assertEquals( 10.00, $return );
+		$this->assertEquals( $expected, $this->frontend_currencies->get_order_currency() );
+	}
+
+	public function provider_maybe_init_order_currency_from_order_total_prop() {
+		return [
+			'return EUR'                        => [ true, true, 'EUR' ],
+			'return null fail first backtrace'  => [ false, true, null ],
+			'return null fail second backtrace' => [ true, false, null ],
+		];
+	}
+
+	public function test_maybe_clear_order_currency_after_formatted_order_total_takes_no_action() {
+		// Arrange: Set the expected calls and/or returns for is_page_with_vars and is_call_in_backtrace within should_use_order_currency.
+		$this->mock_utils
+			->expects( $this->never() )
+			->method( 'is_page_with_vars' );
+		$this->mock_utils
+			->expects( $this->never() )
+			->method( 'is_call_in_backtrace' );
+
+		// Act: Call our method we're testing.
+		$return = $this->frontend_currencies->maybe_clear_order_currency_after_formatted_order_total( 10.00, $this->mock_order, '', false );
+
+		// Assert: Confirm the return value has not changed and that the expected order_currency is set.
+		$this->assertEquals( 10.00, $return );
+		$this->assertEquals( null, $this->frontend_currencies->get_order_currency() );
+	}
+
+	public function test_maybe_clear_order_currency_after_formatted_order_total() {
+		// Arrange: Set the expected calls and/or returns for is_page_with_vars and is_call_in_backtrace within should_use_order_currency.
+		// Noting that the count is set to 2 due to maybe_init_order_currency_from_order_total_prop is called to set the order_currency.
+		$this->mock_utils
+			->expects( $this->exactly( 2 ) )
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->exactly( 2 ) )
+			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
+
+		// Arrange: Set the currency for the mock order.
+		$this->mock_order->set_currency( 'EUR' );
+
+		// Arrange: We call this to set order_currency since there is not a setter method for the property.
+		$this->frontend_currencies->maybe_init_order_currency_from_order_total_prop( 10.00, $this->mock_order );
+
+		// Assert: We want to make sure the order_currency is EUR before acting again.
+		$this->assertEquals( 'EUR', $this->frontend_currencies->get_order_currency() );
+
+		// Act: Call our method we're testing.
+		$return = $this->frontend_currencies->maybe_clear_order_currency_after_formatted_order_total( 10.00, $this->mock_order, '', false );
+
+		// Assert: Confirm the return value has not changed and that the order_currency is now null.
+		$this->assertEquals( 10.00, $return );
+		$this->assertEquals( null, $this->frontend_currencies->get_order_currency() );
 	}
 }

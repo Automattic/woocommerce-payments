@@ -16,6 +16,7 @@ import moment from 'moment';
 import React, { useContext } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import _ from 'lodash';
 
 /**
  * Internal dependencies.
@@ -36,6 +37,7 @@ import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
 import { ClickTooltip } from 'components/tooltip';
+import DisputeStatusChip from 'components/dispute-status-chip';
 import {
 	getDisputeFeeFormatted,
 	isAwaitingResponse,
@@ -49,8 +51,10 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
+import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
+import ErrorBoundary from 'components/error-boundary';
 
 declare const window: any;
 
@@ -167,7 +171,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.currency && balance.currency !== charge.currency;
 
 	const {
-		featureFlags: { isAuthAndCaptureEnabled },
+		featureFlags: { isAuthAndCaptureEnabled, isRefundControlsEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
@@ -215,6 +219,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		},
 	} );
 
+	const formattedAmount = formatCurrency(
+		charge.amount,
+		charge.currency,
+		balance.currency
+	);
+
 	return (
 		<Card>
 			<CardBody>
@@ -225,20 +235,27 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								isLoading={ isLoading }
 								placeholder="Amount placeholder"
 							>
-								{ formatCurrency(
-									charge.amount,
-									charge.currency,
-									balance.currency
-								) }
+								{ formattedAmount }
 								<span className="payment-details-summary__amount-currency">
 									{ charge.currency || 'USD' }
 								</span>
-								<PaymentStatusChip
-									status={ getChargeStatus(
-										charge,
-										paymentIntent
-									) }
-								/>
+								{ charge.dispute ? (
+									<DisputeStatusChip
+										status={ charge.dispute.status }
+										dueBy={
+											charge.dispute.evidence_details
+												?.due_by
+										}
+										prefixDisputeType={ true }
+									/>
+								) : (
+									<PaymentStatusChip
+										status={ getChargeStatus(
+											charge,
+											paymentIntent
+										) }
+									/>
+								) }
 							</Loadable>
 						</p>
 						<div className="payment-details-summary__breakdown">
@@ -461,7 +478,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			</CardBody>
 
 			{ charge.dispute && (
-				<>
+				<ErrorBoundary>
 					{ isAwaitingResponse( charge.dispute.status ) ? (
 						<DisputeAwaitingResponseDetails
 							dispute={ charge.dispute }
@@ -472,9 +489,16 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					) : (
 						<DisputeResolutionFooter dispute={ charge.dispute } />
 					) }
-				</>
+				</ErrorBoundary>
 			) }
-
+			{ isRefundControlsEnabled &&
+				! _.isEmpty( charge ) &&
+				! charge.order && (
+					<MissingOrderNotice
+						isLoading={ isLoading }
+						formattedAmount={ formattedAmount }
+					/>
+				) }
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (

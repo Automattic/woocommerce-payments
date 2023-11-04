@@ -1579,7 +1579,7 @@ class MultiCurrency {
 			}
 		}
 
-		$sub_query  = join( ' UNION ALL ', $query_union );
+		$sub_query  = implode( ' UNION ALL ', $query_union );
 		$query      = "SELECT currency_code FROM ( $sub_query ) as subquery WHERE subquery.exists_in_orders=1 ORDER BY currency_code ASC";
 		$currencies = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
@@ -1602,11 +1602,11 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Returns if the currency initialization are completed
+	 * Returns if the currency initializations are completed.
 	 *
-	 * @return  bool    If the initializations have been completedÎ
+	 * @return  bool    If the initializations have been completed.
 	 */
-	public static function is_initialized() : bool {
+	public function is_initialized(): bool {
 		return static::$is_initialized;
 	}
 

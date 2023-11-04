@@ -65,16 +65,30 @@ class WC_Payments_Customer_Service {
 	private $database_cache;
 
 	/**
+	 * WC_Payments_Session_Service instance for working with session information
+	 *
+	 * @var WC_Payments_Session_Service
+	 */
+	private $session_service;
+
+	/**
 	 * Class constructor
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
-	 * @param WC_Payments_Account    $account             WC_Payments_Account instance.
-	 * @param Database_Cache         $database_cache       Database_Cache instance.
+	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
+	 * @param WC_Payments_Account         $account             WC_Payments_Account instance.
+	 * @param Database_Cache              $database_cache      Database_Cache instance.
+	 * @param WC_Payments_Session_Service $session_service     Session Service class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, Database_Cache $database_cache ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Account $account,
+		Database_Cache $database_cache,
+		WC_Payments_Session_Service $session_service
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
 		$this->database_cache      = $database_cache;
+		$this->session_service     = $session_service;
 
 		/*
 		 * Adds the WooCommerce Payments customer ID found in the user session
@@ -129,8 +143,7 @@ class WC_Payments_Customer_Service {
 	 */
 	public function create_customer_for_user( WP_User $user, array $customer_data ): string {
 		// Include the session ID for the user.
-		$fraud_config                = $this->account->get_fraud_services_config();
-		$customer_data['session_id'] = $fraud_config['sift']['session_id'] ?? null;
+		$customer_data['session_id'] = $this->session_service->get_sift_session_id() ?? null;
 
 		// Create a customer on the WCPay server.
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
@@ -143,6 +156,29 @@ class WC_Payments_Customer_Service {
 			// Save the customer id in the session for non logged in users to reuse it in payments.
 			WC()->session->set( self::CUSTOMER_ID_SESSION_KEY, $customer_id );
 		}
+
+		return $customer_id;
+	}
+
+	/**
+	 * Manages customer details held on WCPay server for WordPress user associated with an order.
+	 *
+	 * @param int      $user_id ID of the WP user to associate with the customer.
+	 * @param WC_Order $order   Woo Order.
+	 * @return string           WooPayments customer ID.
+	 */
+	public function get_or_create_customer_id_from_order( int $user_id, WC_Order $order ): string {
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id = $this->get_customer_id_by_user_id( $user_id );
+
+		if ( null !== $customer_id ) {
+			// @todo: We need to update the customer here.
+			return $customer_id;
+		}
+
+		$customer_data = self::map_customer_data( $order, new WC_Customer( $user_id ) );
+		$user          = get_user_by( 'id', $user_id );
+		$customer_id   = $this->create_customer_for_user( $user, $customer_data );
 
 		return $customer_id;
 	}

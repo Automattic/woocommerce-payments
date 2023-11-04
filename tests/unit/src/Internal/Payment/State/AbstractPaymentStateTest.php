@@ -11,6 +11,7 @@ use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
+use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\AbstractPaymentState;
 use WCPay\Internal\Payment\State\StateFactory;
@@ -79,9 +80,16 @@ class AbstractPaymentStateTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $mock_completed_state, $result );
 	}
 
-	public function test_process_throws_exception() {
+	public function test_calling_start_processing_will_throw_exceptions() {
 		$this->expectException( StateTransitionException::class );
-		$this->expectExceptionMessage( 'The WCPay\Internal\Payment\State\AbstractPaymentState::process method is not available in the current payment state (' . PureState::class . ').' );
-		$this->sut->process();
+		$this->expectExceptionMessage( 'The WCPay\Internal\Payment\State\AbstractPaymentState::start_processing method is not available in the current payment state (' . PureState::class . ').' );
+
+		$this->sut->start_processing( $this->createMock( PaymentRequest::class ) );
+	}
+	public function test_calling_complete_processing_will_throw_exceptions() {
+		$this->expectException( StateTransitionException::class );
+		$this->expectExceptionMessage( 'The WCPay\Internal\Payment\State\AbstractPaymentState::complete_processing method is not available in the current payment state (' . PureState::class . ').' );
+
+		$this->sut->complete_processing();
 	}
 }

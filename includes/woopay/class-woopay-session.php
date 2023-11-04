@@ -144,7 +144,7 @@ class WooPay_Session {
 		// If the email is verified on WooPay, matches session email (set during the redirection),
 		// and the store has an adapted extension installed,
 		// return the user to get extension data without authentication.
-		if ( count( $enabled_adapted_extensions ) > 0 && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
+		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) > 0 && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
 			$user = get_user_by( 'email', $woopay_verified_email_address );
 
 			if ( $woopay_verified_email_address === $customer['email'] && $user ) {
@@ -187,7 +187,7 @@ class WooPay_Session {
 
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		if ( count( $enabled_adapted_extensions ) === 0 ) {
+		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) === 0 ) {
 			return;
 		}
 
@@ -388,13 +388,15 @@ class WooPay_Session {
 		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 		$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
 
+		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
+
 		$request = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
 			'session_nonce'        => self::create_woopay_nonce( $user->ID ),
 			'store_api_token'      => self::init_store_api_token(),
-			'email'                => '',
+			'email'                => $email,
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => $store_logo,
@@ -427,6 +429,26 @@ class WooPay_Session {
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity( $user->ID ),
 		];
 
+		$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
+		$request['extension_data']     = $woopay_adapted_extensions->get_extension_data();
+
+		if ( ! empty( $email ) ) {
+			// Save email in session to skip TYP verify email and check if
+			// WooPay verified email matches.
+			WC()->customer->set_billing_email( $email );
+			WC()->customer->save();
+
+			$request['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
+
+			if ( ! is_user_logged_in() && count( $request['adapted_extensions'] ) > 0 ) {
+				$store_user_email_registered = get_user_by( 'email', $email );
+
+				if ( $store_user_email_registered ) {
+					$request['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
+				}
+			}
+		}
+
 		return $request;
 	}
 
@@ -445,13 +467,11 @@ class WooPay_Session {
 			);
 		}
 
-		$email         = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 		$order_id      = ! empty( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : null;
 		$key           = ! empty( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : null;
 		$billing_email = ! empty( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : null;
 
 		$body                 = self::get_init_session_request( $order_id, $key, $billing_email );
-		$body['email']        = $email;
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
 
 		if ( ! empty( $email ) ) {
@@ -539,9 +559,13 @@ class WooPay_Session {
 	 * @return bool True if request is a Store API request, false otherwise.
 	 */
 	private static function is_store_api_request(): bool {
-		$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$request_path = rtrim( $url_parts['path'], '/' );
-		$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		if ( isset( $_REQUEST['rest_route'] ) ) {
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] );
+		} else {
+			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$request_path = rtrim( $url_parts['path'], '/' );
+			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		}
 
 		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
 			if ( 1 === preg_match( $pattern, $rest_route ) ) {

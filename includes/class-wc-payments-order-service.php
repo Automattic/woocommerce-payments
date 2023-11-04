@@ -277,19 +277,19 @@ class WC_Payments_Order_Service {
 	 * Updates the order to on-hold status and adds a note about the dispute.
 	 *
 	 * @param WC_Order $order      Order object.
-	 * @param string   $dispute_id The ID of the dispute associated with this order.
+	 * @param string   $charge_id  The ID of the disputed charge associated with this order.
 	 * @param string   $amount     The disputed amount – formatted currency value.
 	 * @param string   $reason     The reason for the dispute – human-readable text.
 	 * @param string   $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by ) {
+	public function mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
-		$note = $this->generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by );
+		$note = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -303,17 +303,17 @@ class WC_Payments_Order_Service {
 	 * Updates the order status based on dispute status and adds a note about the dispute.
 	 *
 	 * @param WC_Order $order      Order object.
-	 * @param string   $dispute_id The ID of the dispute associated with this order.
+	 * @param string   $charge_id  The ID of the disputed charge associated with this order.
 	 * @param string   $status     The status of the dispute.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_closed( $order, $dispute_id, $status ) {
+	public function mark_payment_dispute_closed( $order, $charge_id, $status ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
-		$note = $this->generate_dispute_closed_note( $dispute_id, $status );
+		$note = $this->generate_dispute_closed_note( $charge_id, $status );
 
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
@@ -739,6 +739,62 @@ class WC_Payments_Order_Service {
 		$this->set_customer_id_for_order( $order, $customer_id );
 		$this->set_wcpay_intent_currency_for_order( $order, $currency );
 		$order->save();
+	}
+
+	/**
+	 * Create the shipping data array to send to Stripe when making a purchase.
+	 *
+	 * @param WC_Order $order The order that is being paid for.
+	 * @return array          The shipping data to send to Stripe.
+	 */
+	public function get_shipping_data_from_order( WC_Order $order ): array {
+		return [
+			'name'    => implode(
+				' ',
+				array_filter(
+					[
+						$order->get_shipping_first_name(),
+						$order->get_shipping_last_name(),
+					]
+				)
+			),
+			'address' => [
+				'line1'       => $order->get_shipping_address_1(),
+				'line2'       => $order->get_shipping_address_2(),
+				'postal_code' => $order->get_shipping_postcode(),
+				'city'        => $order->get_shipping_city(),
+				'state'       => $order->get_shipping_state(),
+				'country'     => $order->get_shipping_country(),
+			],
+		];
+	}
+
+	/**
+	 * Create the billing data array to send to Stripe when making a purchase, based on order's billing data.
+	 *
+	 * @param WC_Order $order The order that is being paid for.
+	 * @return array          The shipping data to send to Stripe.
+	 */
+	public function get_billing_data_from_order( WC_Order $order ): array {
+		return [
+			'name'    => implode(
+				' ',
+				array_filter(
+					[
+						$order->get_billing_first_name(),
+						$order->get_billing_last_name(),
+					]
+				)
+			),
+			'address' => [
+				'line1'       => $order->get_billing_address_1(),
+				'line2'       => $order->get_billing_address_2(),
+				'postal_code' => $order->get_billing_postcode(),
+				'city'        => $order->get_billing_city(),
+				'state'       => $order->get_billing_state(),
+				'country'     => $order->get_billing_country(),
+			],
+		];
 	}
 
 	/**
@@ -1218,15 +1274,15 @@ class WC_Payments_Order_Service {
 	/**
 	 * Get content for the dispute created order note.
 	 *
-	 * @param string $dispute_id The ID of the dispute associated with this order.
+	 * @param string $charge_id  The ID of the disputes charge associated with this order.
 	 * @param string $amount     The disputed amount – formatted currency value.
 	 * @param string $reason     The reason for the dispute – human-readable text.
 	 * @param string $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by ) {
-		$dispute_url = $this->compose_dispute_url( $dispute_id );
+	private function generate_dispute_created_note( $charge_id, $amount, $reason, $due_by ) {
+		$dispute_url = $this->compose_dispute_url( $charge_id );
 
 		// Get merchant-friendly dispute reason description.
 		$reason = WC_Payments_Utils::get_dispute_reason_description( $reason );
@@ -1248,13 +1304,13 @@ class WC_Payments_Order_Service {
 	/**
 	 * Get content for the dispute closed order note.
 	 *
-	 * @param string $dispute_id The ID of the dispute associated with this order.
-	 * @param string $status     The status of the dispute.
+	 * @param string $charge_id The ID of the disputed charge associated with this order.
+	 * @param string $status    The status of the dispute.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_closed_note( $dispute_id, $status ) {
-		$dispute_url = $this->compose_dispute_url( $dispute_id );
+	private function generate_dispute_closed_note( $charge_id, $status ) {
+		$dispute_url = $this->compose_dispute_url( $charge_id );
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the dispute status */
@@ -1270,16 +1326,16 @@ class WC_Payments_Order_Service {
 	/**
 	 * Composes url for dispute details page.
 	 *
-	 * @param string $dispute_id Dispute id.
+	 * @param string $charge_id The disputed charge ID.
 	 *
-	 * @return string Dispute details page url.
+	 * @return string Transaction details page url.
 	 */
-	private function compose_dispute_url( $dispute_id ) {
+	private function compose_dispute_url( $charge_id ) {
 		return add_query_arg(
 			[
 				'page' => 'wc-admin',
-				'path' => '/payments/disputes/details',
-				'id'   => $dispute_id,
+				'path' => '/payments/transactions/details',
+				'id'   => $charge_id,
 			],
 			admin_url( 'admin.php' )
 		);
