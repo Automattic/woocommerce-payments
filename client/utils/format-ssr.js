@@ -125,7 +125,7 @@ Taxonomies: Product Types: ${ printTerms( systemStatus.settings.taxonomies ) }
 Taxonomies: Product Visibility: ${ printTerms(
 		systemStatus.settings.product_visibility_terms
 	) }
-Connected to WooCommerce.com: ${
+Connected to woo.com: ${
 		systemStatus.settings.woocommerce_com_connected === 'yes'
 			? CHECK_MARK
 			: DASH_MARK

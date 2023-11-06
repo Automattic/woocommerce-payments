@@ -417,7 +417,7 @@ const SingleCurrencySettings = () => {
 													onClick={ () => {
 														open(
 															/* eslint-disable-next-line max-len */
-															'https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#price-rounding',
+															'https://woo.com/document/woopayments/currencies/multi-currency-setup/#price-rounding',
 															'_blank'
 														);
 													} }
@@ -482,7 +482,7 @@ const SingleCurrencySettings = () => {
 													onClick={ () => {
 														open(
 															/* eslint-disable-next-line max-len */
-															'https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#charm-pricing',
+															'https://woo.com/document/woopayments/currencies/multi-currency-setup/#charm-pricing',
 															'_blank'
 														);
 													} }
