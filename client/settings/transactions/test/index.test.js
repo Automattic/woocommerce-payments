@@ -17,6 +17,7 @@ import {
 	useManualCapture,
 	useSavedCards,
 	useCardPresentEligible,
+	useAvailablePaymentGateways,
 } from '../../../data';
 import { select } from '@wordpress/data';
 
@@ -41,6 +42,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useGetSavingError: jest.fn(),
 	useSavedCards: jest.fn(),
 	useCardPresentEligible: jest.fn(),
+	useAvailablePaymentGateways: jest.fn(),
 } ) );
 
 describe( 'Settings - Transactions', () => {
@@ -121,6 +123,9 @@ describe( 'Settings - Transactions', () => {
 
 	it( 'display ipp payment notice', async () => {
 		useCardPresentEligible.mockReturnValue( [ true ] );
+		useAvailablePaymentGateways.mockReturnValue( {
+			cod: { enabled: true },
+		} );
 
 		render( <Transactions /> );
 
@@ -129,6 +134,21 @@ describe( 'Settings - Transactions', () => {
 				new RegExp( 'The setting is not applied to In-Person Payments' )
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( "shouldn't display ipp payment notice when cash on delivery is disabled", async () => {
+		useCardPresentEligible.mockReturnValue( [ true ] );
+		useAvailablePaymentGateways.mockReturnValue( {
+			cod: { enabled: false },
+		} );
+
+		render( <Transactions /> );
+
+		expect(
+			screen.queryByText(
+				new RegExp( 'The setting is not applied to In-Person Payments' )
+			)
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'display support email and phone inputs', async () => {

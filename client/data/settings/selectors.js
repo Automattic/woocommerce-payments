@@ -249,3 +249,7 @@ export const getStripeBillingSubscriptionCount = ( state ) => {
 export const getStripeBillingMigratedCount = ( state ) => {
 	return getSettings( state ).stripe_billing_migrated_count || 0;
 };
+
+export const getAvailablePaymentGateways = ( state ) => {
+	return getSettings( state ).available_payment_gateways || [];
+};
