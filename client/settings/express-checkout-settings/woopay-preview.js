@@ -3,7 +3,6 @@
  * External dependencies
  */
 import React, { useMemo } from 'react';
-import interpolateComponents from '@automattic/interpolate-components';
 import { decodeEntities } from '@wordpress/html-entities';
 import { chevronDown, Icon } from '@wordpress/icons';
 
@@ -115,25 +114,13 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 		if ( rawCustomMessage ) {
 			rawCustomMessage = decodeEntities( rawCustomMessage );
 			rawCustomMessage = rawCustomMessage.replace(
-				'[terms]',
-				'{{termsLink}}Terms of Service{{/termsLink}}'
+				/\[(terms|terms_of_service_link)\]/g,
+				'<span class="preview-layout__shortcode-link">Terms of Service</span>'
 			);
 			rawCustomMessage = rawCustomMessage.replace(
-				'[privacy_policy]',
-				'{{privacyLink}}Privacy Policy{{/privacyLink}}'
+				/\[(privacy_policy|privacy_policy_link)\]/g,
+				'<span class="preview-layout__shortcode-link">Privacy Policy</span>'
 			);
-			rawCustomMessage = interpolateComponents( {
-				mixedString: rawCustomMessage,
-				// prettier-ignore
-				components: {
-					privacyLink: window.wcSettings?.storePages?.privacy?.permalink ?
-						<span className="preview-layout__shortcode-link"/> :
-						<span />,
-					termsLink: window.wcSettings?.storePages?.terms?.permalink ?
-						<span className="preview-layout__shortcode-link"/> :
-						<span />,
-				}
-			} );
 		}
 
 		return rawCustomMessage;
