@@ -11,7 +11,7 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * Internal dependencies
@@ -69,74 +69,67 @@ const PaymentProcessor = ( {
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
-	const [ isPaymentElementComplete, setIsPaymentElementComplete ] = useState(
-		false
-	);
+	const isPaymentElementCompleteRef = useRef( false );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
-	const testingInstructionsIfAppropriate = isTestMode
-		? testingInstructions
-		: '';
 	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
 	const customerData = useCustomerData();
 	const billingData = customerData.billingAddress;
 
 	useEffect( () => {
-		if ( isLinkEnabled( paymentMethodsConfig ) ) {
-			enableStripeLinkPaymentMethod( {
-				api: api,
-				elements: elements,
-				emailId: 'email',
-				fill_field_method: ( address, nodeId, key ) => {
-					const setAddress =
-						BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
-							? customerData.setShippingAddress
-							: customerData.setBillingData ||
-							  customerData.setBillingAddress;
-					const customerAddress =
-						BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
-							? customerData.shippingAddress
-							: customerData.billingData ||
-							  customerData.billingAddress;
-
-					if ( key === 'line1' ) {
-						customerAddress.address_1 = address.address[ key ];
-					} else if ( key === 'line2' ) {
-						customerAddress.address_2 = address.address[ key ];
-					} else if ( key === 'postal_code' ) {
-						customerAddress.postcode = address.address[ key ];
-					} else {
-						customerAddress[ key ] = address.address[ key ];
-					}
-
-					setAddress( customerAddress );
-
-					if ( customerData.billingData ) {
-						customerData.billingData.email = getBlocksEmailValue();
-						customerData.setBillingData( customerData.billingData );
-					} else {
-						customerData.billingAddress.email = getBlocksEmailValue();
-						customerData.setBillingAddress(
-							customerData.billingAddress
-						);
-					}
-				},
-				show_button: blocksShowLinkButtonHandler,
-				shipping_fields: BLOCKS_SHIPPING_ADDRESS_FIELDS,
-				billing_fields: BLOCKS_BILLING_ADDRESS_FIELDS,
-				complete_shipping: () => {
-					return (
-						document.getElementById( 'shipping-address_1' ) !== null
-					);
-				},
-				complete_billing: () => {
-					return (
-						document.getElementById( 'billing-address_1' ) !== null
-					);
-				},
-			} );
+		if ( ! isLinkEnabled( paymentMethodsConfig ) ) {
+			return;
 		}
+
+		enableStripeLinkPaymentMethod( {
+			api: api,
+			elements: elements,
+			emailId: 'email',
+			fill_field_method: ( address, nodeId, key ) => {
+				const setAddress =
+					BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
+						? customerData.setShippingAddress
+						: customerData.setBillingData ||
+						  customerData.setBillingAddress;
+				const customerAddress =
+					BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
+						? customerData.shippingAddress
+						: customerData.billingData ||
+						  customerData.billingAddress;
+
+				if ( key === 'line1' ) {
+					customerAddress.address_1 = address.address[ key ];
+				} else if ( key === 'line2' ) {
+					customerAddress.address_2 = address.address[ key ];
+				} else if ( key === 'postal_code' ) {
+					customerAddress.postcode = address.address[ key ];
+				} else {
+					customerAddress[ key ] = address.address[ key ];
+				}
+
+				setAddress( customerAddress );
+
+				if ( customerData.billingData ) {
+					customerData.billingData.email = getBlocksEmailValue();
+					customerData.setBillingData( customerData.billingData );
+				} else {
+					customerData.billingAddress.email = getBlocksEmailValue();
+					customerData.setBillingAddress(
+						customerData.billingAddress
+					);
+				}
+			},
+			show_button: blocksShowLinkButtonHandler,
+			shipping_fields: BLOCKS_SHIPPING_ADDRESS_FIELDS,
+			billing_fields: BLOCKS_BILLING_ADDRESS_FIELDS,
+			complete_shipping: () => {
+				return document.getElementById( 'shipping-address_1' ) !== null;
+			},
+			complete_billing: () => {
+				return document.getElementById( 'billing-address_1' ) !== null;
+			},
+		} );
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ elements ] );
 
@@ -150,7 +143,7 @@ const PaymentProcessor = ( {
 						return;
 					}
 
-					if ( ! isPaymentElementComplete ) {
+					if ( ! isPaymentElementCompleteRef.current ) {
 						return {
 							type: 'error',
 							message: __(
@@ -174,36 +167,37 @@ const PaymentProcessor = ( {
 					) {
 						return {
 							type: 'error',
-							message:
+							message: __(
 								'This payment method cannot be saved for future use.',
+								'woocommerce-payments'
+							),
 						};
 					}
 
-					await validateElements( elements );
-					let paymentMethodObject;
-
 					try {
-						paymentMethodObject = await api
-							.getStripeForUPE( paymentMethodId )
-							.createPaymentMethod( {
-								elements,
-								params: {
-									billing_details: getBillingDetails(
-										billingData
-									),
-								},
-							} )
-							.then( ( paymentMethod ) => {
-								if ( paymentMethod.error ) {
-									throw paymentMethod.error;
-								}
-
-								return paymentMethod;
-							} );
-					} catch ( error ) {
+						await validateElements( elements );
+					} catch ( e ) {
 						return {
 							type: 'error',
-							message: error.message,
+							message: e.message,
+						};
+					}
+
+					const result = await api
+						.getStripeForUPE( paymentMethodId )
+						.createPaymentMethod( {
+							elements,
+							params: {
+								billing_details: getBillingDetails(
+									billingData
+								),
+							},
+						} );
+
+					if ( result.error ) {
+						return {
+							type: 'error',
+							message: result.error.message,
 						};
 					}
 
@@ -212,8 +206,7 @@ const PaymentProcessor = ( {
 						meta: {
 							paymentMethodData: {
 								payment_method: upeMethods[ paymentMethodId ],
-								'wcpay-payment-method':
-									paymentMethodObject.paymentMethod.id,
+								'wcpay-payment-method': result.paymentMethod.id,
 								'wcpay-fraud-prevention-token': getFraudPreventionToken(),
 								'wcpay-fingerprint': fingerprint,
 							},
@@ -235,7 +228,6 @@ const PaymentProcessor = ( {
 			errorMessage,
 			onPaymentSetup,
 			billingData,
-			isPaymentElementComplete,
 		]
 	);
 
@@ -249,17 +241,19 @@ const PaymentProcessor = ( {
 	);
 
 	const updatePaymentElementCompletionStatus = ( event ) => {
-		setIsPaymentElementComplete( event.complete );
+		isPaymentElementCompleteRef.current = event.complete;
 	};
 
 	return (
 		<>
-			<p
-				className="content"
-				dangerouslySetInnerHTML={ {
-					__html: testingInstructionsIfAppropriate,
-				} }
-			></p>
+			{ isTestMode && (
+				<p
+					className="content"
+					dangerouslySetInnerHTML={ {
+						__html: testingInstructions,
+					} }
+				/>
+			) }
 			<PaymentElement
 				options={ getStripeElementOptions(
 					shouldSavePayment,

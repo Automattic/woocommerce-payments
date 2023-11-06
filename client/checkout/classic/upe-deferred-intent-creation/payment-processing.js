@@ -22,6 +22,7 @@ import {
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
 } from '../../constants';
 
+// It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};
 let fingerprint = null;
 
