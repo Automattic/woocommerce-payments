@@ -10,7 +10,7 @@ use WCPay\Vendor\League\Container\Inflector\{InflectorAggregate, InflectorInterf
 use WCPay\Vendor\League\Container\ServiceProvider\{ServiceProviderAggregate,
     ServiceProviderAggregateInterface,
     ServiceProviderInterface};
-use Psr\Container\ContainerInterface;
+use WCPay\Vendor\Psr\Container\ContainerInterface;
 
 class Container implements DefinitionContainerInterface
 {

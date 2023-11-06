@@ -100,7 +100,7 @@ class WooPay_Order_Status_Sync {
 	 */
 	private function register_webhook() {
 		$webhook = new \WC_Webhook();
-		$webhook->set_name( $this->get_webhook_name() );
+		$webhook->set_name( self::get_webhook_name() );
 		$webhook->set_user_id( get_current_user_id() );
 		$webhook->set_topic( 'order.status_changed' );
 		$webhook->set_secret( wp_generate_password( 50, false ) );

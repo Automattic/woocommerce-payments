@@ -36,7 +36,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	public function get_adapted_extensions_data( $email ) {
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		if ( count( $enabled_adapted_extensions ) === 0 ) {
+		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) === 0 ) {
 			return [];
 		}
 
@@ -153,6 +153,25 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		}
 
 		return $gift_cards_script_data;
+	}
+
+	/**
+	 * The custom data from plugins to be used on WooPay,
+	 * it's not an adapted extension because it doesn't
+	 * use the email verification integration.
+	 *
+	 * @return array The custom data.
+	 */
+	public function get_extension_data() {
+		$extension_data = [];
+
+		if ( defined( 'WOOCOMMERCE_MULTICURRENCY_VERSION' ) ) {
+			$extension_data[ 'woocommerce-multicurrency' ] = [
+				'currency' => get_woocommerce_currency(),
+			];
+		}
+
+		return $extension_data;
 	}
 
 	/**
