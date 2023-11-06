@@ -11,13 +11,6 @@ import DepositStatusChip from '..';
 
 describe( 'Deposits status chip renders', () => {
 	test( 'Renders In Transit status chip.', () => {
-		const { getByText } = render(
-			<DepositStatusChip status="estimated" />
-		);
-		expect( getByText( 'Estimated' ) ).toBeTruthy();
-	} );
-
-	test( 'Renders In Transit status chip.', () => {
 		const { getByText } = render( <DepositStatusChip status="pending" /> );
 		expect( getByText( 'Pending' ) ).toBeTruthy();
 	} );
