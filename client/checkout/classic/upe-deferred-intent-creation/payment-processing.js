@@ -40,13 +40,13 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
  * @param {Object} api The API object used to save the UPE configuration.
  * @return {Object} The appearance object for the UPE.
  */
-function initializeAppearance( api ) {
-	let appearance = getUPEConfig( 'upeAppearance' );
-	if ( ! appearance ) {
-		appearance = getAppearance();
-		api.saveUPEAppearance( appearance );
+async function initializeAppearance( api ) {
+	const appearance = getUPEConfig( 'upeAppearance' );
+	if ( appearance ) {
+		return appearance;
 	}
-	return appearance;
+
+	return await api.saveUPEAppearance( getAppearance() );
 }
 
 /**
