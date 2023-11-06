@@ -467,6 +467,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		return new WP_REST_Response(
 			[
 				'enabled_payment_method_ids'          => $enabled_payment_methods,
+				'available_payment_gateways'          => WC()->payment_gateways->get_available_payment_gateways(),
 				'available_payment_method_ids'        => $available_upe_payment_methods,
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
