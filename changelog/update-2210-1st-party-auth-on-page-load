@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Get WooPay 1st party auth flow to work on page load.
