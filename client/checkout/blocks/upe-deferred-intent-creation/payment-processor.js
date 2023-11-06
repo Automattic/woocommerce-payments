@@ -78,58 +78,60 @@ const PaymentProcessor = ( {
 	const billingData = customerData.billingAddress;
 
 	useEffect( () => {
-		if ( ! isLinkEnabled( paymentMethodsConfig ) ) {
-			return;
-		}
+		if ( isLinkEnabled( paymentMethodsConfig ) ) {
+			enableStripeLinkPaymentMethod( {
+				api: api,
+				elements: elements,
+				emailId: 'email',
+				fill_field_method: ( address, nodeId, key ) => {
+					const setAddress =
+						BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
+							? customerData.setShippingAddress
+							: customerData.setBillingData ||
+							  customerData.setBillingAddress;
+					const customerAddress =
+						BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
+							? customerData.shippingAddress
+							: customerData.billingData ||
+							  customerData.billingAddress;
 
-		enableStripeLinkPaymentMethod( {
-			api: api,
-			elements: elements,
-			emailId: 'email',
-			fill_field_method: ( address, nodeId, key ) => {
-				const setAddress =
-					BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
-						? customerData.setShippingAddress
-						: customerData.setBillingData ||
-						  customerData.setBillingAddress;
-				const customerAddress =
-					BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
-						? customerData.shippingAddress
-						: customerData.billingData ||
-						  customerData.billingAddress;
+					if ( key === 'line1' ) {
+						customerAddress.address_1 = address.address[ key ];
+					} else if ( key === 'line2' ) {
+						customerAddress.address_2 = address.address[ key ];
+					} else if ( key === 'postal_code' ) {
+						customerAddress.postcode = address.address[ key ];
+					} else {
+						customerAddress[ key ] = address.address[ key ];
+					}
 
-				if ( key === 'line1' ) {
-					customerAddress.address_1 = address.address[ key ];
-				} else if ( key === 'line2' ) {
-					customerAddress.address_2 = address.address[ key ];
-				} else if ( key === 'postal_code' ) {
-					customerAddress.postcode = address.address[ key ];
-				} else {
-					customerAddress[ key ] = address.address[ key ];
-				}
+					setAddress( customerAddress );
 
-				setAddress( customerAddress );
-
-				if ( customerData.billingData ) {
-					customerData.billingData.email = getBlocksEmailValue();
-					customerData.setBillingData( customerData.billingData );
-				} else {
-					customerData.billingAddress.email = getBlocksEmailValue();
-					customerData.setBillingAddress(
-						customerData.billingAddress
+					if ( customerData.billingData ) {
+						customerData.billingData.email = getBlocksEmailValue();
+						customerData.setBillingData( customerData.billingData );
+					} else {
+						customerData.billingAddress.email = getBlocksEmailValue();
+						customerData.setBillingAddress(
+							customerData.billingAddress
+						);
+					}
+				},
+				show_button: blocksShowLinkButtonHandler,
+				shipping_fields: BLOCKS_SHIPPING_ADDRESS_FIELDS,
+				billing_fields: BLOCKS_BILLING_ADDRESS_FIELDS,
+				complete_shipping: () => {
+					return (
+						document.getElementById( 'shipping-address_1' ) !== null
 					);
-				}
-			},
-			show_button: blocksShowLinkButtonHandler,
-			shipping_fields: BLOCKS_SHIPPING_ADDRESS_FIELDS,
-			billing_fields: BLOCKS_BILLING_ADDRESS_FIELDS,
-			complete_shipping: () => {
-				return document.getElementById( 'shipping-address_1' ) !== null;
-			},
-			complete_billing: () => {
-				return document.getElementById( 'billing-address_1' ) !== null;
-			},
-		} );
+				},
+				complete_billing: () => {
+					return (
+						document.getElementById( 'billing-address_1' ) !== null
+					);
+				},
+			} );
+		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ elements ] );
 
