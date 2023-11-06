@@ -10,21 +10,16 @@ import { useEffect, useState } from 'react';
 import PaymentProcessor from './payment-processor';
 import { getPaymentMethodTypes } from 'wcpay/checkout/utils/upe';
 
-const PaymentElements = ( {
-	api,
-	paymentMethodId,
-	upeMethods,
-	testingInstructions,
-	...props
-} ) => {
-	const stripe = api.getStripeForUPE( paymentMethodId );
+const PaymentElements = ( { api, ...props } ) => {
+	const stripe = api.getStripeForUPE( props.paymentMethodId );
+	const [ errorMessage, setErrorMessage ] = useState( null );
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )
 	);
 	const [ fingerprint, fingerprintErrorMessage ] = useFingerprint();
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const currency = getUPEConfig( 'currency' ).toLowerCase();
-	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodId );
+	const paymentMethodTypes = getPaymentMethodTypes( props.paymentMethodId );
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
@@ -40,7 +35,17 @@ const PaymentElements = ( {
 		if ( ! appearance ) {
 			generateUPEAppearance();
 		}
-	}, [ api, appearance ] );
+
+		if ( fingerprintErrorMessage ) {
+			setErrorMessage( fingerprintErrorMessage );
+		}
+	}, [
+		api,
+		appearance,
+		fingerprint,
+		fingerprintErrorMessage,
+		props.paymentMethodId,
+	] );
 
 	return (
 		<LoadableBlock isLoading={ ! appearance } numLines={ 3 }>
@@ -57,11 +62,8 @@ const PaymentElements = ( {
 			>
 				<PaymentProcessor
 					api={ api }
-					errorMessage={ fingerprintErrorMessage }
+					errorMessage={ errorMessage }
 					fingerprint={ fingerprint }
-					paymentMethodId={ paymentMethodId }
-					upeMethods={ upeMethods }
-					testingInstructions={ testingInstructions }
 					{ ...props }
 				/>
 			</Elements>
