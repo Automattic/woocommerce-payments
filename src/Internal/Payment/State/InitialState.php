@@ -100,7 +100,7 @@ class InitialState extends AbstractPaymentState {
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception Order could not be found.
 	 * @throws PaymentRequestException   When data is not available or invalid.
-	 * @throws API_Exception
+	 * @throws API_Exception             When server request fails.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
