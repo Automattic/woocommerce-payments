@@ -94,6 +94,24 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 6.8.0-test-1 - unreleased =
+* Add - Added mechanism to track and log changes to the payment context (reengineering payment process)
+* Add - Add UPE appearance filter.
+* Fix - Add WooCommerce Multi-Currency support on WooPay.
+* Fix - Display express payment buttons on checkout blocks pay-for-order page
+* Fix - Do not load WooPay button on external/affiliate product pages
+* Fix - Fix Multi-Currency formatting for totals on My Account > Subscriptions page.
+* Fix - Fix spelling of cancellation
+* Fix - Fix total price for Google Pay on quantity change.
+* Fix - Fix WooPay session handler's Store API route checks.
+* Fix - Redact Stripe support contact prompt from error message when capturing amounts greater than authorized.
+* Fix - Show Google Pay/Apple Pay buttons in the Pay for Order page
+* Fix - Some array key info were not redacted in the logs
+* Dev - Bump WC and WP tested up to versions to 8.2.0 and 6.3
+* Dev - Comment: Skip E2E tests against WC beta
+* Dev - Fire a tracks event for disputed order notice view.
+* Dev - Remove unused JS code
+
 = 6.7.1 - 2023-11-03 =
 * Fix - Replaced the concrete logging class with a logger interface
 
