@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Do not load WooPay button on external/affiliate product pages
