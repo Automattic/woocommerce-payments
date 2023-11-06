@@ -18,21 +18,24 @@ import { useState, useEffect } from '@wordpress/element';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import useIsUpeEnabled from 'wcpay/settings/wcpay-upe-toggle/hook';
 
-const ManualCaptureControl = () => {
+const ManualCaptureControl = (): JSX.Element => {
 	const [
 		isManualCaptureEnabled,
 		setIsManualCaptureEnabled,
-	] = useManualCapture();
-	const [ isCardPresentEligible ] = useCardPresentEligible();
+	] = useManualCapture() as [ boolean, ( value: boolean ) => void ];
+	const [ isCardPresentEligible ] = useCardPresentEligible() as [ boolean ];
 
 	const [
 		isManualDepositConfirmationModalOpen,
 		setIsManualDepositConfirmationModalOpen,
 	] = useState( false );
 
-	const [ isUpeEnabled ] = useIsUpeEnabled();
+	const [ isUpeEnabled ] = useIsUpeEnabled() as [ boolean ];
 
-	const availablePaymentGateways = useAvailablePaymentGateways();
+	const availablePaymentGateways = useAvailablePaymentGateways() as Record<
+		string,
+		any
+	>;
 
 	const [ hasCashOnDeliveryEnabled, setHasCashOnDeliveryEnabled ] = useState(
 		false
@@ -47,7 +50,7 @@ const ManualCaptureControl = () => {
 		}
 	}, [ availablePaymentGateways ] );
 
-	const handleCheckboxToggle = ( isChecked ) => {
+	const handleCheckboxToggle = ( isChecked: boolean ) => {
 		// toggling from "manual" capture to "automatic" capture - no need to show the modal.
 		if ( ! isChecked || ! isUpeEnabled ) {
 			setIsManualCaptureEnabled( isChecked );
