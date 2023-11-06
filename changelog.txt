@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 6.7.1 - 2023-11-03 =
+* Fix - Replaced the concrete logging class with a logger interface
+
 = 6.7.0 - 2023-11-01 =
 * Add - Added an internal logger class, meant for use by classes within src.
 * Add - Added Authorizations reporting endpoint.
