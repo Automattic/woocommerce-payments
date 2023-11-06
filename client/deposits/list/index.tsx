@@ -215,7 +215,7 @@ export const DepositsList = (): JSX.Element => {
 		const userEmail = wcpaySettings.currentUserEmail;
 
 		if ( 'endpoint' === downloadType ) {
-			const {
+			let {
 				date_before: dateBefore,
 				date_after: dateAfter,
 				date_between: dateBetween,
@@ -232,6 +232,13 @@ export const DepositsList = (): JSX.Element => {
 				!! statusIs ||
 				!! statusIsNot ||
 				!! storeCurrencyIs;
+
+			// Temporarily default to excluding estimated deposits.
+			// Client components can (temporarily) opt-in by passing `status_is=estimated`.
+			// When we remove estimated deposits from server / APIs we can remove this default.
+			if ( ! statusIsNot && statusIs !== 'estimated' ) {
+				statusIsNot = 'estimated';
+			}
 
 			const confirmThreshold = 1000;
 			const confirmMessage = sprintf(
