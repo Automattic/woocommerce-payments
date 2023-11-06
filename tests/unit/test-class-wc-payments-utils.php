@@ -334,7 +334,9 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10000, WC_Payments_Utils::prepare_amount( 100, 'USD' ) );
 		$this->assertEquals( 100, WC_Payments_Utils::prepare_amount( 100, 'JPY' ) );
 		$this->assertEquals( 500, WC_Payments_Utils::prepare_amount( 500, 'jpy' ) );
-
+		$this->assertEquals( 50000, WC_Payments_Utils::prepare_amount( 500, 'ugx' ) ); // special case, zero-decimal currency but send with 2 decimals.
+		$this->assertEquals( 24500, WC_Payments_Utils::prepare_amount( 245, 'isk' ) ); // special case, zero-decimal currency but send with 2 zeroes.
+		$this->assertEquals( 10000, WC_Payments_Utils::prepare_amount( 100, 'twd' ) ); // special case, zero-decimal currency only for payouts.
 	}
 
 	public function test_interpret_stripe_amount() {
