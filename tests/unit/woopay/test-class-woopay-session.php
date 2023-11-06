@@ -53,10 +53,15 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->mock_customer_service     = $this->createMock( WC_Payments_Customer_Service::class );
 		$this->original_customer_service = WC_Payments::get_customer_service();
 		WC_Payments::set_customer_service( $this->mock_customer_service );
+
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 	}
 
 	public function tear_down() {
 		WC_Payments::set_customer_service( $this->original_customer_service );
+
+		wp_set_current_user( 0 );
+
 		parent::tear_down();
 	}
 
@@ -100,8 +105,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->setup_adapted_extensions();
 
 		$this->assertEquals( WooPay_Session::get_user_id_from_cart_token(), $user->ID );
-
-		wp_set_current_user( 0 );
 	}
 
 	public function test_get_user_id_from_cart_token_with_verified_user_email_address_header_without_email_in_session() {
@@ -267,6 +270,61 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		// Destroy session data.
 		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, null );
+	}
+
+	public function test_determine_current_user_is_request_woopay_false() {
+		$_SERVER['HTTP_USER_AGENT'] = 'NotWooPay';
+
+		$guest_user  = 0;
+		$woopay_user = self::factory()->user->create_and_get();
+
+		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), 0 );
+	}
+
+	public function test_determine_current_user_is_store_api_request_false() {
+		$_SERVER['REQUEST_URI'] = '/another/store/url';
+
+		$guest_user  = 0;
+		$woopay_user = self::factory()->user->create_and_get();
+
+		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), 0 );
+	}
+
+	public function test_determine_current_user_is_store_api_request_true_using_uri() {
+		$guest_user  = 0;
+		$woopay_user = self::factory()->user->create_and_get();
+
+		wp_set_current_user( $woopay_user->ID );
+
+		$woopay_store_api_token   = WooPay_Store_Api_Token::init();
+		$authenticated_cart_token = $woopay_store_api_token->get_cart_token();
+
+		$_SERVER['HTTP_CART_TOKEN'] = $authenticated_cart_token;
+
+		$this->setup_session( $woopay_user->ID );
+
+		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), $woopay_user->ID );
+	}
+
+	public function test_determine_current_user_is_store_api_request_true_using_rest_route_parameter() {
+		$_SERVER['REQUEST_URI'] = '/index.php';
+		$_REQUEST['rest_route'] = '/wc/store/v1/checkout';
+
+		$guest_user  = 0;
+		$woopay_user = self::factory()->user->create_and_get();
+
+		wp_set_current_user( $woopay_user->ID );
+
+		$woopay_store_api_token   = WooPay_Store_Api_Token::init();
+		$authenticated_cart_token = $woopay_store_api_token->get_cart_token();
+
+		$_SERVER['HTTP_CART_TOKEN'] = $authenticated_cart_token;
+
+		$this->setup_session( $woopay_user->ID );
+
+		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), $woopay_user->ID );
+
+		unset( $_REQUEST['rest_route'] );
 	}
 
 	private function setup_session( $customer_id, $customer_email = null ) {

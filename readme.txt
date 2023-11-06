@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.3
 Requires PHP: 7.3
-Stable tag: 6.7.0
+Stable tag: 6.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,10 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 6.7.1 - 2023-11-03 =
+* Fix - Replaced the concrete logging class with a logger interface
+
 
 = 6.7.0 - 2023-11-01 =
 * Add - Added an internal logger class, meant for use by classes within src.
