@@ -6,6 +6,7 @@ import React, { useEffect } from 'react';
 /**
  * Internal dependencies
  */
+import Page from 'components/page';
 import { OnboardingContextProvider, useOnboardingContext } from './context';
 import { Stepper } from 'components/stepper';
 import { OnboardingForm } from './form';
@@ -78,7 +79,7 @@ const OnboardingPage: React.FC = () => {
 	useEffect( () => {
 		trackStarted();
 
-		// Remove loading class and add those requires for full screen.
+		// Remove loading class and add those required for full screen.
 		document.body.classList.remove( 'woocommerce-admin-is-loading' );
 		document.body.classList.add( 'woocommerce-admin-full-screen' );
 		document.body.classList.add( 'is-wp-toolbar-disabled' );
@@ -93,11 +94,11 @@ const OnboardingPage: React.FC = () => {
 	}, [] );
 
 	return (
-		<div className="wcpay-onboarding-prototype">
+		<Page className="wcpay-onboarding-prototype">
 			<OnboardingContextProvider initialData={ initialData }>
 				<OnboardingStepper />
 			</OnboardingContextProvider>
-		</div>
+		</Page>
 	);
 };
 

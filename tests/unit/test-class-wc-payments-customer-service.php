@@ -46,15 +46,24 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_db_cache;
 
 	/**
+	 * Mock WC_Payments_Session_Service.
+	 *
+	 * @var WC_Payments_Session_Service|MockObject
+	 */
+	private $mock_session_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client  = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_account     = $this->createMock( WC_Payments_Account::class );
-		$this->mock_db_cache    = $this->createMock( Database_Cache::class );
-		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_db_cache );
+		$this->mock_api_client      = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_account         = $this->createMock( WC_Payments_Account::class );
+		$this->mock_db_cache        = $this->createMock( Database_Cache::class );
+		$this->mock_session_service = $this->createMock( WC_Payments_Session_Service::class );
+
+		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_db_cache, $this->mock_session_service );
 	}
 
 	/**
@@ -169,16 +178,16 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 
 		$mock_customer_data = $this->get_mock_customer_data();
 
-		$this->mock_account->expects( $this->once() )
-			->method( 'get_fraud_services_config' )
-			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+		$this->mock_session_service
+			->method( 'get_sift_session_id' )
+			->willReturn( 'sift_session_id' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
 			->with(
 				array_merge(
 					$mock_customer_data,
-					[ 'session_id' => 'woo_session_id' ]
+					[ 'session_id' => 'sift_session_id' ]
 				)
 			)
 			->willReturn( 'cus_test12345' );
@@ -200,16 +209,16 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 
 		$mock_customer_data = $this->get_mock_customer_data();
 
-		$this->mock_account
-			->method( 'get_fraud_services_config' )
-			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+		$this->mock_session_service
+			->method( 'get_sift_session_id' )
+			->willReturn( 'sift_session_id' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
 			->with(
 				array_merge(
 					$mock_customer_data,
-					[ 'session_id' => 'woo_session_id' ]
+					[ 'session_id' => 'sift_session_id' ]
 				)
 			)
 			->willReturn( 'cus_test12345' );
@@ -255,16 +264,16 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$mock_customer_data = $this->get_mock_customer_data();
 		$customer_id        = 'cus_test12345';
 
-		$this->mock_account->expects( $this->once() )
-			->method( 'get_fraud_services_config' )
-			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+		$this->mock_session_service
+			->method( 'get_sift_session_id' )
+			->willReturn( 'sift_session_id' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
 			->with(
 				array_merge(
 					$mock_customer_data,
-					[ 'session_id' => 'woo_session_id' ]
+					[ 'session_id' => 'sift_session_id' ]
 				)
 			)
 			->willReturn( $customer_id );
@@ -665,16 +674,16 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			],
 		];
 
-		$this->mock_account
-			->method( 'get_fraud_services_config' )
-			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+		$this->mock_session_service
+			->method( 'get_sift_session_id' )
+			->willReturn( 'sift_session_id' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
 			->with(
 				array_merge(
 					$mock_customer_data,
-					[ 'session_id' => 'woo_session_id' ]
+					[ 'session_id' => 'sift_session_id' ]
 				)
 			)
 			->willReturn( 'wcpay_cus_test12345' );

@@ -411,6 +411,52 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		$this->assertFalse( $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
 
+	/**
+	 * This test covers the testing of 3 methods.
+	 *
+	 * override_selected_currency - Confirms that if the current_my_account_subscription property contains a valid subscription that the
+	 * currency from that subscription will be returned.
+	 *
+	 * maybe_set_current_my_account_subscription - Tested when the woocommerce_subscription_price_string_details filter is applied. The filter
+	 * itself should not modify the array passed, however, if the backtrace matches, the subscription passed should be set as the value of
+	 * the current_my_account_subscription property.
+	 *
+	 * maybe_clear_current_my_account_subscription - Tested when the woocommerce_get_formatted_subscription_total filter is applied. The filter
+	 * itself should not modify the string passed, however, if the current_my_account_subscription property is set, it should return it's value to null.
+	 */
+	public function test_override_selected_currency_return_currency_code_when_current_my_account_subscription_set() {
+		// Arrange: Create a subscription and set the currency.
+		$mock_subscription = $this->create_mock_subscription();
+		$mock_subscription->set_currency( 'EUR' );
+
+		// Assert: Confirm that override_selected_currency currently returns false.
+		$this->assertFalse( $this->woocommerce_subscriptions->override_selected_currency( false ) );
+
+		// Arrange: Set expectation and return for is_call_in_backtrace.
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with(
+				[
+					'WCS_Template_Loader::get_my_subscriptions ',
+					'WC_Subscription->get_formatted_order_total',
+				]
+			)
+			->willReturn( true );
+
+		// Arrange/Assert: Apply the woocommerce_subscription_price_string_details filter and confirm the filter does not change the passed array.
+		$this->assertSame( [ 1, 2, 3 ], apply_filters( 'woocommerce_subscription_price_string_details', [ 1, 2, 3 ], $mock_subscription ) );
+
+		// Act/Assert: Confirm the currency is what we set.
+		$this->assertSame( 'EUR', $this->woocommerce_subscriptions->override_selected_currency( false ) );
+
+		// Arrange/Assert: Apply the woocommerce_get_formatted_subscription_total filter and confirm the filter does not change the passed string.
+		$this->assertSame( 'expected_string', apply_filters( 'woocommerce_get_formatted_subscription_total', 'expected_string', $mock_subscription ) );
+
+		// Assert: Confirm override_selected_currency returns false again.
+		$this->assertFalse( $this->woocommerce_subscriptions->override_selected_currency( false ) );
+	}
+
 	// The default passed into should_convert_product_price is true, this passes false to confirm false is returned.
 	public function test_should_convert_product_price_return_false_when_false_passed() {
 		// Arrange: Create a subscription and cart_items to be used.
@@ -758,6 +804,47 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 
 		// Act/Assert: Confirm that false is returned.
 		$this->assertFalse( $this->woocommerce_subscriptions->should_disable_currency_switching( false ) );
+	}
+
+	public function test_maybe_get_explicit_format_for_subscription_total() {
+		// Arrange: Create a subscription and set the currency.
+		$mock_subscription = $this->create_mock_subscription();
+		$mock_subscription->set_currency( 'EUR' );
+
+		// Arrange: Set the price string to be passed, and also what is expected.
+		$price    = '<span class="woocommerce-Price-amount amount"><bdi>14,00&nbsp;<span class="woocommerce-Price-currencySymbol">&euro;</span></bdi></span>';
+		$expected = $price . ' EUR';
+
+		// Arrange: Set expectation and return for is_call_in_backtrace.
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with(
+				[
+					'WCS_Template_Loader::get_my_subscriptions ',
+					'WC_Subscription->get_formatted_order_total',
+				]
+			)
+			->willReturn( true );
+
+		// Arrange: Set expectation and return for is_initialized and has_additional_currencies_enabled.
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'is_initialized' )
+			->willReturn( true );
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'has_additional_currencies_enabled' )
+			->willReturn( true );
+
+		// Arrange: Make sure to set our Multi-Currency instance as our mock instance.
+		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->mock_multi_currency );
+
+		// Arrange/Assert: Apply the woocommerce_subscription_price_string_details filter and confirm the filter does not change the passed array.
+		$this->assertSame( [ 1, 2, 3 ], apply_filters( 'woocommerce_subscription_price_string_details', [ 1, 2, 3 ], $mock_subscription ) );
+
+		// Assert: Confirm the price returned is what is expected.
+		$this->assertSame( $expected, $this->woocommerce_subscriptions->maybe_get_explicit_format_for_subscription_total( $price, '14.00', [], 14.00, 14.00 ) );
 	}
 
 	public function provider_sub_types_renewal_resubscribe_switch() {

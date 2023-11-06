@@ -34,7 +34,7 @@ type PaymentMethodProps = {
 const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
 	name,
 } ) => {
-	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
+	const stripeAccountDomesticCurrency = useAccountDomesticCurrency();
 	const description = getPaymentMethodDescription(
 		name,
 		stripeAccountDomesticCurrency as string
@@ -65,6 +65,8 @@ type PaymentMethodCheckboxProps = {
 	status: string;
 	required: boolean;
 	locked: boolean;
+	isSetupRequired?: boolean;
+	setupTooltip?: string;
 };
 
 const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
@@ -75,6 +77,8 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	status,
 	required,
 	locked,
+	isSetupRequired,
+	setupTooltip,
 } ) => {
 	const {
 		accountFees,
@@ -124,6 +128,8 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 				delayMsOnCheck={ 1500 }
 				delayMsOnUncheck={ 0 }
 				hideLabel={ true }
+				isSetupRequired={ isSetupRequired }
+				setupTooltip={ setupTooltip }
 				isAllowingManualCapture={ paymentMethod.allows_manual_capture }
 			/>
 			<div className={ 'woocommerce-payments__payment-method-icon' }>
