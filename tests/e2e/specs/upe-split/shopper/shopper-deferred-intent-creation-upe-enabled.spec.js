@@ -11,6 +11,8 @@ import {
 	confirmCardAuthentication,
 	fillCardDetails,
 	setupProductCheckout,
+	selectGiropayOnCheckout,
+	completeGiropayPayment,
 } from '../../../utils/payments';
 import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
@@ -45,6 +47,19 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 	} );
 
 	describe( 'Enabled UPE with deferred intent creation', () => {
+		it( 'should successfully place order with Giropay', async () => {
+			await setupProductCheckout(
+				config.get( 'addresses.customer.billing' )
+			);
+			await selectGiropayOnCheckout( page );
+			await shopper.placeOrder();
+			await completeGiropayPayment( page, 'success' );
+			await page.waitForNavigation( {
+				waitUntil: 'networkidle0',
+			} );
+			await expect( page ).toMatch( 'Order received' );
+		} );
+
 		it( 'should successfully place order with the default card', async () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
