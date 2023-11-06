@@ -8,8 +8,8 @@
 namespace WCPay\Internal;
 
 use Exception;
-use WC_Logger;
 use WC_Log_Levels;
+use WC_Logger_Interface;
 use WC_Payment_Gateway_WCPay;
 use WCPay\Core\Mode;
 
@@ -21,9 +21,9 @@ class Logger {
 	const LOG_FILENAME = 'woocommerce-payments';
 
 	/**
-	 * The holding property for our WC_Logger instance.
+	 * The holding property for our WC_Logger_Interface instance.
 	 *
-	 * @var WC_Logger $logger
+	 * @var WC_Logger_Interface $logger
 	 */
 	private $wc_logger;
 
@@ -44,11 +44,11 @@ class Logger {
 	/**
 	 * Logger constructor.
 	 *
-	 * @param WC_Logger                $wc_logger    WC_Logger.
+	 * @param WC_Logger_Interface      $wc_logger    WC_Logger_Interface.
 	 * @param Mode                     $mode         Mode.
 	 * @param WC_Payment_Gateway_WCPay $gateway      WC_Payment_Gateway_WCPay.
 	 */
-	public function __construct( WC_Logger $wc_logger, Mode $mode, WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct( WC_Logger_Interface $wc_logger, Mode $mode, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->wc_logger = $wc_logger;
 		$this->mode      = $mode;
 		$this->gateway   = $gateway;
