@@ -7,7 +7,7 @@ import { render, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
-
+import React from 'react';
 import os from 'os';
 
 /**
@@ -16,12 +16,11 @@ import os from 'os';
 import { DepositsList } from '../';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
-import {
+import type {
 	CachedDeposit,
 	CachedDeposits,
 	DepositsSummary,
 } from 'wcpay/types/deposits';
-import React from 'react';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
