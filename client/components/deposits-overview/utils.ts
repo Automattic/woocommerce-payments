@@ -29,7 +29,7 @@ export const getNextDeposit = (
 		return {
 			id: undefined,
 			date: 0,
-			status: 'estimated',
+			status: 'pending',
 			amount: formatCurrency( 0, overview?.currency ),
 		};
 	}
@@ -39,7 +39,7 @@ export const getNextDeposit = (
 	return {
 		id: nextScheduled.id,
 		date: nextScheduled.date ?? 0,
-		status: nextScheduled.status ?? 'estimated',
+		status: nextScheduled.status ?? '-',
 		amount: formatCurrency( nextScheduled.amount ?? 0, currency ),
 	};
 };
