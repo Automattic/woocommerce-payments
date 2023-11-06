@@ -186,8 +186,7 @@ const PaymentMethod = ( {
 			return interpolateComponents( {
 				// translators: {{contactSupportLink}}: placeholders are opening and closing anchor tags.
 				mixedString: __(
-					'Please contact support for more details. ' +
-						'{{contactSupportLink}}Learn more.{{/contactSupportLink}}',
+					'Please {{contactSupportLink}}contact support{{/contactSupportLink}} for more details.',
 					'woocommerce-payments'
 				),
 				components: {
@@ -201,7 +200,7 @@ const PaymentMethod = ( {
 								'woocommerce-payments'
 							) }
 							href={
-								'https://woocommerce.com/document/woopayments/TODO/correct-link'
+								'https://woo.com/my-account/contact-support/'
 							}
 						/>
 					),
