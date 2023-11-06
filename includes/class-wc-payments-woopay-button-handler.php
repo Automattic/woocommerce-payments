@@ -624,6 +624,11 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
+		// External/affiliate products are not supported.
+		if ( is_a( $product, 'WC_Product' ) && $product->is_type( 'external' ) ) {
+			$is_supported = false;
+		}
+
 		// Pre Orders products to be charged upon release are not supported.
 		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
 			$is_supported = false;

@@ -11,6 +11,7 @@ const WCPaySettingsContext = createContext( {
 		isAuthAndCaptureEnabled: false,
 		isDisputeIssuerEvidenceEnabled: false,
 		woopay: false,
+		isRefundControlsEnabled: false,
 	},
 } );
 

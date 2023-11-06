@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Some array key info were not redacted in the logs

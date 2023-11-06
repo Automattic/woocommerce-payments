@@ -25,6 +25,7 @@ class WC_Payments_Features {
 	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
 	const DEFERRED_UPE_SERVER_FLAG_NAME     = 'is_deferred_intent_creation_upe_enabled';
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
+	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -119,6 +120,15 @@ class WC_Payments_Features {
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 
 		return is_array( $account ) && ( $account['payments_enabled'] ?? false );
+	}
+
+	/**
+	 * Checks whether streamline refunds is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_streamline_refunds_enabled(): bool {
+		return '1' === get_option( self::STREAMLINE_REFUNDS_FLAG_NAME, '0' );
 	}
 
 	/**
@@ -460,6 +470,7 @@ class WC_Payments_Features {
 				'progressiveOnboarding'          => self::is_progressive_onboarding_enabled(),
 				'isPayForOrderFlowEnabled'       => self::is_pay_for_order_flow_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
+				'isRefundControlsEnabled'        => self::is_streamline_refunds_enabled(),
 			]
 		);
 	}
