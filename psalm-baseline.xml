@@ -28,6 +28,7 @@
     <UndefinedClass occurrences="3">
       <code>WC_Pre_Orders_Product</code>
       <code>WC_Subscriptions_Product</code>
+      <code>WC_Subscriptions_Product</code>
       <code>WC_Subscriptions_Cart</code>
       <code>WC_Subscriptions_Cart</code>
     </UndefinedClass>
