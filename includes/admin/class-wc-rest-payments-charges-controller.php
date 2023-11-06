@@ -79,8 +79,8 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 			return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 		}
 
-		$amount          = (int) $order->get_total() * 100;
 		$currency        = $order->get_currency();
+		$amount          = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
 		$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
 		$date_created    = $order->get_date_created();
 		$intent_id       = $order->get_meta( '_intent_id' );
