@@ -1,5 +1,57 @@
 *** WooPayments Changelog ***
 
+= 6.7.1 - 2023-11-03 =
+* Fix - Replaced the concrete logging class with a logger interface
+
+= 6.7.0 - 2023-11-01 =
+* Add - Added an internal logger class, meant for use by classes within src.
+* Add - Added Authorizations reporting endpoint.
+* Add - Added documentation for reports API
+* Add - Added WooPay button locations setting
+* Add - Add IE, DK, FI, NO, and SE as supported countries to Klarna payment method
+* Add - Integrate Duplicate Payment Prevention Service to the new payment process (project RPP).
+* Add - Introduce tracking for fraud purposes prior to WooPayments onboarding.
+* Add - Use admin theme color and the correct WooCommerce colors across subscription interfaces.
+* Add - Validate order phone number in InitialState (RPP).
+* Fix - Add additional security checks in the plugin
+* Fix - Capital loans page broken on WooCommerce 8.2.0
+* Fix - Clear floats for payment request button wrapper.
+* Fix - Correct the display style for duplicate relevant notices in the thank-you page.
+* Fix - Ensure subscriptions have a date created that correctly accounts for the site's timezone. Fixes issues with subscriptions having a date created double the site's UTC offset.
+* Fix - Fix Afterpay checkout error when shipping information is missing
+* Fix - Fix Documents page loading on WooCommerce 8.2.0.
+* Fix - Fixed tooltip alignment for mobile view in payment settings
+* Fix - Fix Multi-Currency formatting on My Account > Orders page.
+* Fix - Fix order status inconsistency in HPOS mode on Order Edit screen.
+* Fix - Fix WooPay Same My Info adding unnecessary spacing to checkout
+* Fix - Format the display of created date for payment intent instead of timestamp.
+* Fix - Improve multi-currency compatibility with WooCommerce Deposits
+* Fix - Limit early WooPay session requests based on feature flag.
+* Fix - Prevent deleting wrong order in the duplicate payment prevention service
+* Fix - Prevent settings access to partially onboarded accounts
+* Fix - Prevent subscription from turning into manual renewal after deleting payment method.
+* Fix - Removed link to setup intent
+* Fix - Resolve an issue that would cause 3rd party plugin edit product fields with the show_if_variable-subscription class to be incorrectly hidden.
+* Fix - Set WooPay first party feature flag to off when incompatible extensions are active.
+* Fix - show/hide WooPay checkout page tooltip on click
+* Fix - Show loading state when accepting a dispute from the transaction details screen.
+* Fix - Update to properly show tooltip on Payments > Settings page when account is in PO state.
+* Fix - When HPOS is enabled, fix quick-editing the subscription statuses on the admin list table.
+* Update - Align deferred intent creation UPE checkout script with UPE inn terms of fonts appearance
+* Update - Enables deferred intent UPE for existing legacy card stores
+* Update - feat: add WooPay button SSR
+* Update - Unify payment method icon design
+* Update - Update Checkout appearance section to display WooPay checkout preview UI.
+* Dev - Added authentication required state
+* Dev - Add pay-for-order Tracks events
+* Dev - Add Shopper Tracks events
+* Dev - Bump WC and WP tested up to versions to 8.2.0 and 6.3
+* Dev - Fixed version check regex
+* Dev - PHP 8.1 compatibility
+* Dev - Remove redundant Tracks events in WooPay OTP flow
+* Dev - Restore skipped e2e merchant tests
+* Dev - Update subscriptions-core to 6.4.0.
+
 = 6.6.2 - 2023-10-20 =
 * Fix - Fix PSR container conflicts
 * Update - Deprecate Sofort for any merchants who have not enabled it. Warn existing merchants about future deprecation.

@@ -13,9 +13,9 @@ import { STORE_NAME } from '../constants';
 export const useSavedCards = () => {
 	const { updateIsSavedCardsEnabled } = useDispatch( STORE_NAME );
 
-	const isSavedCardsEnabled = useSelect( ( select ) => {
-		return select( STORE_NAME ).getIsSavedCardsEnabled();
-	}, [] );
+	const isSavedCardsEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsSavedCardsEnabled()
+	);
 
 	return [ isSavedCardsEnabled, updateIsSavedCardsEnabled ];
 };
@@ -23,9 +23,9 @@ export const useSavedCards = () => {
 export const useCardPresentEligible = () => {
 	const { updateIsCardPresentEligible } = useDispatch( STORE_NAME );
 
-	const isCardPresentEligible = useSelect( ( select ) => {
-		return select( STORE_NAME ).getIsCardPresentEligible();
-	}, [] );
+	const isCardPresentEligible = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsCardPresentEligible()
+	);
 
 	return [ isCardPresentEligible, updateIsCardPresentEligible ];
 };
@@ -33,9 +33,9 @@ export const useCardPresentEligible = () => {
 export const useClientSecretEncryption = () => {
 	const { updateIsClientSecretEncryptionEnabled } = useDispatch( STORE_NAME );
 
-	const isClientSecretEncryptionEnabled = useSelect( ( select ) => {
-		return select( STORE_NAME ).getIsClientSecretEncryptionEnabled();
-	}, [] );
+	const isClientSecretEncryptionEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsClientSecretEncryptionEnabled()
+	);
 
 	return [
 		isClientSecretEncryptionEnabled,
@@ -46,580 +46,427 @@ export const useClientSecretEncryption = () => {
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
-
-			return [
-				getEnabledPaymentMethodIds(),
-				updateEnabledPaymentMethodIds,
-			];
-		},
-		[ updateEnabledPaymentMethodIds ]
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
+
+	return [ enabledPaymentMethodIds, updateEnabledPaymentMethodIds ];
 };
 
-export const useAccountDomesticCurrency = () => {
-	return useSelect( ( select ) => {
-		const { getAccountDomesticCurrency } = select( STORE_NAME );
-
-		return [ getAccountDomesticCurrency() ];
-	}, [] );
-};
+export const useAccountDomesticCurrency = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountDomesticCurrency()
+	);
 
 export const useSelectedPaymentMethod = () => {
 	const { updateSelectedPaymentMethod } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
-
-			return [
-				getEnabledPaymentMethodIds(),
-				updateSelectedPaymentMethod,
-			];
-		},
-		[ updateSelectedPaymentMethod ]
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
+
+	return [ enabledPaymentMethodIds, updateSelectedPaymentMethod ];
 };
 
 export const useUnselectedPaymentMethod = () => {
 	const { updateUnselectedPaymentMethod } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
-
-			return [
-				getEnabledPaymentMethodIds(),
-				updateUnselectedPaymentMethod,
-			];
-		},
-		[ updateUnselectedPaymentMethod ]
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
+
+	return [ enabledPaymentMethodIds, updateUnselectedPaymentMethod ];
 };
 
 export const useDebugLog = () => {
 	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsDebugLogEnabled } = select( STORE_NAME );
-
-			return [ getIsDebugLogEnabled(), updateIsDebugLogEnabled ];
-		},
-		[ updateIsDebugLogEnabled ]
+	const isDebugLogEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsDebugLogEnabled()
 	);
+
+	return [ isDebugLogEnabled, updateIsDebugLogEnabled ];
 };
 
 export const useTestMode = () => {
 	const { updateIsTestModeEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsTestModeEnabled } = select( STORE_NAME );
-
-			return [ getIsTestModeEnabled(), updateIsTestModeEnabled ];
-		},
-		[ updateIsTestModeEnabled ]
+	const isTestModeEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsTestModeEnabled()
 	);
+
+	return [ isTestModeEnabled, updateIsTestModeEnabled ];
 };
 
-export const useDevMode = () => {
-	return useSelect( ( select ) => {
-		const { getIsDevModeEnabled } = select( STORE_NAME );
-
-		return getIsDevModeEnabled();
-	}, [] );
-};
+export const useDevMode = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getIsDevModeEnabled(), [] );
 
 export const useMultiCurrency = () => {
 	const { updateIsMultiCurrencyEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsMultiCurrencyEnabled } = select( STORE_NAME );
-			const isMultiCurrencyEnabled = getIsMultiCurrencyEnabled();
-			return [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ];
-		},
-		[ updateIsMultiCurrencyEnabled ]
+	const isMultiCurrencyEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsMultiCurrencyEnabled()
 	);
+
+	return [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ];
 };
 
 export const useWCPaySubscriptions = () => {
 	const { updateIsWCPaySubscriptionsEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const {
-				getIsWCPaySubscriptionsEnabled,
-				getIsWCPaySubscriptionsEligible,
-			} = select( STORE_NAME );
-
-			const isWCPaySubscriptionsEnabled = getIsWCPaySubscriptionsEnabled();
-			const isWCPaySubscriptionsEligible = getIsWCPaySubscriptionsEligible();
-			return [
-				isWCPaySubscriptionsEnabled,
-				isWCPaySubscriptionsEligible,
-				updateIsWCPaySubscriptionsEnabled,
-			];
-		},
-		[ updateIsWCPaySubscriptionsEnabled ]
+	const isWCPaySubscriptionsEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPaySubscriptionsEnabled()
 	);
+	const isWCPaySubscriptionsEligible = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPaySubscriptionsEligible()
+	);
+
+	return [
+		isWCPaySubscriptionsEnabled,
+		isWCPaySubscriptionsEligible,
+		updateIsWCPaySubscriptionsEnabled,
+	];
 };
 
 export const useAccountStatementDescriptor = () => {
 	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountStatementDescriptor } = select( STORE_NAME );
-
-			return [
-				getAccountStatementDescriptor(),
-				updateAccountStatementDescriptor,
-			];
-		},
-		[ updateAccountStatementDescriptor ]
+	const accountStatementDescriptor = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountStatementDescriptor()
 	);
+
+	return [ accountStatementDescriptor, updateAccountStatementDescriptor ];
 };
 
 export const useAccountStatementDescriptorKanji = () => {
 	const { updateAccountStatementDescriptorKanji } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountStatementDescriptorKanji } = select( STORE_NAME );
-
-			return [
-				getAccountStatementDescriptorKanji(),
-				updateAccountStatementDescriptorKanji,
-			];
-		},
-		[ updateAccountStatementDescriptorKanji ]
+	const accountStatementDescriptorKanji = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountStatementDescriptorKanji()
 	);
+
+	return [
+		accountStatementDescriptorKanji,
+		updateAccountStatementDescriptorKanji,
+	];
 };
 
 export const useAccountStatementDescriptorKana = () => {
 	const { updateAccountStatementDescriptorKana } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountStatementDescriptorKana } = select( STORE_NAME );
-
-			return [
-				getAccountStatementDescriptorKana(),
-				updateAccountStatementDescriptorKana,
-			];
-		},
-		[ updateAccountStatementDescriptorKana ]
+	const accountStatementDescriptorKana = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountStatementDescriptorKana()
 	);
+
+	return [
+		accountStatementDescriptorKana,
+		updateAccountStatementDescriptorKana,
+	];
 };
 
 export const useAccountBusinessName = () => {
 	const { updateAccountBusinessName } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountBusinessName } = select( STORE_NAME );
-
-			return [ getAccountBusinessName(), updateAccountBusinessName ];
-		},
-		[ updateAccountBusinessName ]
+	const accountBusinessName = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountBusinessName()
 	);
+
+	return [ accountBusinessName, updateAccountBusinessName ];
 };
 
 export const useAccountBusinessURL = () => {
 	const { updateAccountBusinessURL } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountBusinessURL } = select( STORE_NAME );
-
-			return [ getAccountBusinessURL(), updateAccountBusinessURL ];
-		},
-		[ updateAccountBusinessURL ]
+	const accountBusinessUrl = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountBusinessURL()
 	);
+
+	return [ accountBusinessUrl, updateAccountBusinessURL ];
 };
 
 export const useAccountBusinessSupportAddress = () => {
 	const { updateAccountBusinessSupportAddress } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const {
-				getAccountBusinessSupportAddress,
-				getAccountBusinessSupportAddressCountry,
-				getAccountBusinessSupportAddressLine1,
-				getAccountBusinessSupportAddressLine2,
-				getAccountBusinessSupportAddressCity,
-				getAccountBusinessSupportAddressState,
-				getAccountBusinessSupportAddressPostalCode,
-			} = select( STORE_NAME );
+	const data = useSelect( ( select ) => {
+		const {
+			getAccountBusinessSupportAddress,
+			getAccountBusinessSupportAddressCountry,
+			getAccountBusinessSupportAddressLine1,
+			getAccountBusinessSupportAddressLine2,
+			getAccountBusinessSupportAddressCity,
+			getAccountBusinessSupportAddressState,
+			getAccountBusinessSupportAddressPostalCode,
+		} = select( STORE_NAME );
 
-			return [
-				getAccountBusinessSupportAddress(),
-				getAccountBusinessSupportAddressCountry(),
-				getAccountBusinessSupportAddressLine1(),
-				getAccountBusinessSupportAddressLine2(),
-				getAccountBusinessSupportAddressCity(),
-				getAccountBusinessSupportAddressState(),
-				getAccountBusinessSupportAddressPostalCode(),
-				updateAccountBusinessSupportAddress,
-			];
-		},
-		[ updateAccountBusinessSupportAddress ]
-	);
+		return [
+			getAccountBusinessSupportAddress(),
+			getAccountBusinessSupportAddressCountry(),
+			getAccountBusinessSupportAddressLine1(),
+			getAccountBusinessSupportAddressLine2(),
+			getAccountBusinessSupportAddressCity(),
+			getAccountBusinessSupportAddressState(),
+			getAccountBusinessSupportAddressPostalCode(),
+		];
+	} );
+
+	return [ ...data, updateAccountBusinessSupportAddress ];
 };
 
 export const useAccountBusinessSupportEmail = () => {
 	const { updateAccountBusinessSupportEmail } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountBusinessSupportEmail } = select( STORE_NAME );
-
-			return [
-				getAccountBusinessSupportEmail(),
-				updateAccountBusinessSupportEmail,
-			];
-		},
-		[ updateAccountBusinessSupportEmail ]
+	const accountBusinessSupportEmail = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountBusinessSupportEmail()
 	);
+
+	return [ accountBusinessSupportEmail, updateAccountBusinessSupportEmail ];
 };
 
 export const useAccountBusinessSupportPhone = () => {
 	const { updateAccountBusinessSupportPhone } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountBusinessSupportPhone } = select( STORE_NAME );
-
-			return [
-				getAccountBusinessSupportPhone(),
-				updateAccountBusinessSupportPhone,
-			];
-		},
-		[ updateAccountBusinessSupportPhone ]
+	const accountBusinessSupportPhone = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountBusinessSupportPhone()
 	);
+
+	return [ accountBusinessSupportPhone, updateAccountBusinessSupportPhone ];
 };
 
 export const useAccountBrandingLogo = () => {
 	const { updateAccountBrandingLogo } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingLogo } = select( STORE_NAME );
-
-			return [ getAccountBrandingLogo(), updateAccountBrandingLogo ];
-		},
-		[ updateAccountBrandingLogo ]
+	const accountBrandingLogo = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountBrandingLogo()
 	);
+
+	return [ accountBrandingLogo, updateAccountBrandingLogo ];
 };
 
 export const useDepositScheduleInterval = () => {
 	const { updateDepositScheduleInterval } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getDepositScheduleInterval } = select( STORE_NAME );
-
-			return [
-				getDepositScheduleInterval(),
-				updateDepositScheduleInterval,
-			];
-		},
-		[ updateDepositScheduleInterval ]
+	const depositScheduleInterval = useSelect( ( select ) =>
+		select( STORE_NAME ).getDepositScheduleInterval()
 	);
+
+	return [ depositScheduleInterval, updateDepositScheduleInterval ];
 };
+
 export const useDepositScheduleWeeklyAnchor = () => {
 	const { updateDepositScheduleWeeklyAnchor } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getDepositScheduleWeeklyAnchor } = select( STORE_NAME );
-
-			return [
-				getDepositScheduleWeeklyAnchor(),
-				updateDepositScheduleWeeklyAnchor,
-			];
-		},
-		[ updateDepositScheduleWeeklyAnchor ]
+	const depositScheduleWeeklyAnchor = useSelect( ( select ) =>
+		select( STORE_NAME ).getDepositScheduleWeeklyAnchor()
 	);
+
+	return [ depositScheduleWeeklyAnchor, updateDepositScheduleWeeklyAnchor ];
 };
+
 export const useDepositScheduleMonthlyAnchor = () => {
 	const { updateDepositScheduleMonthlyAnchor } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getDepositScheduleMonthlyAnchor } = select( STORE_NAME );
-
-			return [
-				getDepositScheduleMonthlyAnchor(),
-				updateDepositScheduleMonthlyAnchor,
-			];
-		},
-		[ updateDepositScheduleMonthlyAnchor ]
+	const depositScheduleMonthlyAnchor = useSelect( ( select ) =>
+		select( STORE_NAME ).getDepositScheduleMonthlyAnchor()
 	);
-};
-export const useDepositDelayDays = () => {
-	return useSelect( ( select ) => {
-		const { getDepositDelayDays } = select( STORE_NAME );
 
-		return getDepositDelayDays();
-	}, [] );
+	return [ depositScheduleMonthlyAnchor, updateDepositScheduleMonthlyAnchor ];
 };
-export const useCompletedWaitingPeriod = () => {
-	return useSelect( ( select ) => {
-		const { getCompletedWaitingPeriod } = select( STORE_NAME );
 
-		return getCompletedWaitingPeriod();
-	}, [] );
-};
-export const useDepositStatus = () => {
-	return useSelect( ( select ) => {
-		const { getDepositStatus } = select( STORE_NAME );
+export const useDepositDelayDays = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getDepositDelayDays(), [] );
 
-		return getDepositStatus();
-	}, [] );
-};
-export const useDepositRestrictions = () => {
-	return useSelect( ( select ) => {
-		const { getDepositRestrictions } = select( STORE_NAME );
+export const useCompletedWaitingPeriod = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getCompletedWaitingPeriod() );
 
-		return getDepositRestrictions();
-	}, [] );
-};
+export const useDepositStatus = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getDepositStatus(), [] );
+
+export const useDepositRestrictions = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getDepositRestrictions() );
+
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsManualCaptureEnabled } = select( STORE_NAME );
-
-			return [
-				getIsManualCaptureEnabled(),
-				updateIsManualCaptureEnabled,
-			];
-		},
-		[ updateIsManualCaptureEnabled ]
+	const isManualCaptureEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsManualCaptureEnabled()
 	);
+
+	return [ isManualCaptureEnabled, updateIsManualCaptureEnabled ];
 };
 
 export const useIsWCPayEnabled = () => {
 	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsWCPayEnabled } = select( STORE_NAME );
-
-			return [ getIsWCPayEnabled(), updateIsWCPayEnabled ];
-		},
-		[ updateIsWCPayEnabled ]
+	const IsWCPayEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPayEnabled()
 	);
+
+	return [ IsWCPayEnabled, updateIsWCPayEnabled ];
 };
 
 export const useGetAvailablePaymentMethodIds = () =>
-	useSelect( ( select ) => {
-		const { getAvailablePaymentMethodIds } = select( STORE_NAME );
-
-		return getAvailablePaymentMethodIds();
-	} );
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getAvailablePaymentMethodIds()
+	);
 
 export const useGetPaymentMethodStatuses = () =>
-	useSelect( ( select ) => {
-		const { getPaymentMethodStatuses } = select( STORE_NAME );
+	useSelect( ( select ) => select( STORE_NAME ).getPaymentMethodStatuses() );
 
-		return getPaymentMethodStatuses();
-	} );
+export const useGetSettings = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getSettings() );
 
 export const useSettings = () => {
 	const { saveSettings } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const {
-				getSettings,
-				hasFinishedResolution,
-				isResolving,
-				isSavingSettings,
-			} = select( STORE_NAME );
-
-			const isLoading =
-				!! isResolving( 'getSettings' ) ||
-				! hasFinishedResolution( 'getSettings' );
-
-			return {
-				settings: getSettings(),
-				isLoading,
-				saveSettings,
-				isSaving: isSavingSettings(),
-			};
-		},
-		[ saveSettings ]
+	const isSaving = useSelect( ( select ) =>
+		select( STORE_NAME ).isSavingSettings()
 	);
+
+	const isLoading = useSelect( ( select ) => {
+		select( STORE_NAME ).getSettings();
+		const isResolving = select( STORE_NAME ).isResolving( 'getSettings' );
+		const hasFinishedResolving = select( STORE_NAME ).hasFinishedResolution(
+			'getSettings'
+		);
+		return isResolving || ! hasFinishedResolving;
+	} );
+
+	return {
+		isLoading,
+		saveSettings,
+		isSaving,
+	};
 };
 
 export const usePaymentRequestEnabledSettings = () => {
 	const { updateIsPaymentRequestEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getIsPaymentRequestEnabled } = select( STORE_NAME );
+	const isPaymentRequestEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsPaymentRequestEnabled()
+	);
 
-		return [ getIsPaymentRequestEnabled(), updateIsPaymentRequestEnabled ];
-	} );
+	return [ isPaymentRequestEnabled, updateIsPaymentRequestEnabled ];
 };
 
 export const usePaymentRequestLocations = () => {
 	const { updatePaymentRequestLocations } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getPaymentRequestLocations } = select( STORE_NAME );
+	const paymentRequestLocations = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestLocations()
+	);
 
-		return [ getPaymentRequestLocations(), updatePaymentRequestLocations ];
-	} );
+	return [ paymentRequestLocations, updatePaymentRequestLocations ];
 };
 
 export const usePaymentRequestButtonType = () => {
 	const { updatePaymentRequestButtonType } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getPaymentRequestButtonType } = select( STORE_NAME );
+	const paymentRequestButtonType = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestButtonType()
+	);
 
-		return [
-			getPaymentRequestButtonType(),
-			updatePaymentRequestButtonType,
-		];
-	} );
+	return [ paymentRequestButtonType, updatePaymentRequestButtonType ];
 };
 
 export const usePaymentRequestButtonSize = () => {
 	const { updatePaymentRequestButtonSize } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getPaymentRequestButtonSize } = select( STORE_NAME );
+	const paymentRequestButtonSize = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestButtonSize()
+	);
 
-		return [
-			getPaymentRequestButtonSize(),
-			updatePaymentRequestButtonSize,
-		];
-	} );
+	return [ paymentRequestButtonSize, updatePaymentRequestButtonSize ];
 };
 
 export const usePaymentRequestButtonTheme = () => {
 	const { updatePaymentRequestButtonTheme } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getPaymentRequestButtonTheme } = select( STORE_NAME );
+	const paymentRequestButtonTheme = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestButtonTheme()
+	);
 
-		return [
-			getPaymentRequestButtonTheme(),
-			updatePaymentRequestButtonTheme,
-		];
-	} );
+	return [ paymentRequestButtonTheme, updatePaymentRequestButtonTheme ];
 };
 
 export const useGetSavingError = () => {
-	return useSelect( ( select ) => {
-		const { getSavingError } = select( STORE_NAME );
-
-		return getSavingError();
-	}, [] );
+	return useSelect( ( select ) => select( STORE_NAME ).getSavingError(), [] );
 };
 
 export const useWooPayEnabledSettings = () => {
 	const { updateIsWooPayEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getIsWooPayEnabled } = select( STORE_NAME );
+	const isWooPayEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWooPayEnabled()
+	);
 
-		return [ getIsWooPayEnabled(), updateIsWooPayEnabled ];
-	} );
+	return [ isWooPayEnabled, updateIsWooPayEnabled ];
 };
 
 export const useWooPayCustomMessage = () => {
 	const { updateWooPayCustomMessage } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getWooPayCustomMessage } = select( STORE_NAME );
-
-			return [ getWooPayCustomMessage(), updateWooPayCustomMessage ];
-		},
-		[ updateWooPayCustomMessage ]
+	const wooPayCustomMessage = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayCustomMessage()
 	);
+
+	return [ wooPayCustomMessage, updateWooPayCustomMessage ];
 };
 
 export const useWooPayStoreLogo = () => {
 	const { updateWooPayStoreLogo } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getWooPayStoreLogo } = select( STORE_NAME );
-
-			return [ getWooPayStoreLogo(), updateWooPayStoreLogo ];
-		},
-		[ updateWooPayStoreLogo ]
+	const wooPayStoreLogo = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayStoreLogo()
 	);
+
+	return [ wooPayStoreLogo, updateWooPayStoreLogo ];
 };
 
 export const useWooPayLocations = () => {
 	const { updateWooPayLocations } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getWooPayLocations } = select( STORE_NAME );
+	const wooPayLocations = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayLocations()
+	);
 
-		return [ getWooPayLocations(), updateWooPayLocations ];
-	} );
+	return [ wooPayLocations, updateWooPayLocations ];
 };
 
 export const useCurrentProtectionLevel = () => {
 	const { updateProtectionLevel } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getCurrentProtectionLevel } = select( STORE_NAME );
-
-			return [ getCurrentProtectionLevel(), updateProtectionLevel ];
-		},
-		[ updateProtectionLevel ]
+	const currentProtectionLevel = useSelect( ( select ) =>
+		select( STORE_NAME ).getCurrentProtectionLevel()
 	);
+
+	return [ currentProtectionLevel, updateProtectionLevel ];
 };
 
 export const useAdvancedFraudProtectionSettings = () => {
 	const { updateAdvancedFraudProtectionSettings } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getAdvancedFraudProtectionSettings } = select( STORE_NAME );
-		return [
-			getAdvancedFraudProtectionSettings(),
-			updateAdvancedFraudProtectionSettings,
-		];
-	} );
+	const advancedFraudProtectionSettings = useSelect( ( select ) =>
+		select( STORE_NAME ).getAdvancedFraudProtectionSettings()
+	);
+
+	return [
+		advancedFraudProtectionSettings,
+		updateAdvancedFraudProtectionSettings,
+	];
 };
 
-export const useWooPayShowIncompatibilityNotice = () => {
-	return useSelect( ( select ) => {
-		const { getShowWooPayIncompatibilityNotice } = select( STORE_NAME );
-
-		return getShowWooPayIncompatibilityNotice();
-	} );
-};
+export const useWooPayShowIncompatibilityNotice = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getShowWooPayIncompatibilityNotice()
+	);
 
 export const useStripeBilling = () => {
 	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsStripeBillingEnabled } = select( STORE_NAME );
-
-			return [
-				getIsStripeBillingEnabled(),
-				updateIsStripeBillingEnabled,
-			];
-		},
-		[ updateIsStripeBillingEnabled ]
+	const isStripeBillingEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsStripeBillingEnabled()
 	);
+
+	return [ isStripeBillingEnabled, updateIsStripeBillingEnabled ];
 };
 
 export const useStripeBillingMigration = () => {

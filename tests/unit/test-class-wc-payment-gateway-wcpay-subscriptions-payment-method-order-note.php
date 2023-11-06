@@ -128,7 +128,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			$this->mock_session_rate_limiter,
 			$this->mock_order_service,
 			$mock_dpps,
-			$this->createMock( WC_Payments_Localization_Service::class )
+			$this->createMock( WC_Payments_Localization_Service::class ),
+			$this->createMock( WC_Payments_Fraud_Service::class )
 		);
 		$this->wcpay_gateway->init_hooks();
 

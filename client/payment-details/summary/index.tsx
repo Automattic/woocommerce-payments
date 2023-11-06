@@ -16,6 +16,7 @@ import moment from 'moment';
 import React, { useContext } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import _ from 'lodash';
 
 /**
  * Internal dependencies.
@@ -50,6 +51,7 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
+import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import ErrorBoundary from 'components/error-boundary';
@@ -169,7 +171,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.currency && balance.currency !== charge.currency;
 
 	const {
-		featureFlags: { isAuthAndCaptureEnabled },
+		featureFlags: { isAuthAndCaptureEnabled, isRefundControlsEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
@@ -217,6 +219,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		},
 	} );
 
+	const formattedAmount = formatCurrency(
+		charge.amount,
+		charge.currency,
+		balance.currency
+	);
+
 	return (
 		<Card>
 			<CardBody>
@@ -227,11 +235,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								isLoading={ isLoading }
 								placeholder="Amount placeholder"
 							>
-								{ formatCurrency(
-									charge.amount,
-									charge.currency,
-									balance.currency
-								) }
+								{ formattedAmount }
 								<span className="payment-details-summary__amount-currency">
 									{ charge.currency || 'USD' }
 								</span>
@@ -487,7 +491,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					) }
 				</ErrorBoundary>
 			) }
-
+			{ isRefundControlsEnabled &&
+				! _.isEmpty( charge ) &&
+				! charge.order && (
+					<MissingOrderNotice
+						isLoading={ isLoading }
+						formattedAmount={ formattedAmount }
+					/>
+				) }
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (

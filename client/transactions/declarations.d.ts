@@ -89,7 +89,7 @@ declare module '@woocommerce/components' {
 		className?: string;
 		title?: string;
 		isLoading?: boolean;
-		rowsPerPage?: number;
+		rowsPerPage: number;
 		totalRows?: number;
 		headers?: TableCardColumn[];
 		rows?: TableCardBodyColumn[][];

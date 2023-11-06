@@ -29,6 +29,33 @@ const ListToCommaSeparatedSentencePartConverter = ( items ) => {
 	);
 };
 
+export const BuildMissingCurrenciesTooltipMessage = (
+	paymentMethodLabel,
+	missingCurrencies
+) => {
+	return sprintf(
+		__(
+			'%s requires the %s %s. In order to enable ' +
+				'the payment method, you must add %s to your store.',
+			'woocommerce-payments'
+		),
+		paymentMethodLabel,
+		ListToCommaSeparatedSentencePartConverter( missingCurrencies ),
+		_n(
+			'currency',
+			'currencies',
+			missingCurrencies.length,
+			'woocommerce-payments'
+		),
+		_n(
+			'this currency',
+			'these currencies',
+			missingCurrencies.length,
+			'woocommerce-payments'
+		)
+	);
+};
+
 const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 	const {
 		isLoading: isLoadingCurrencyInformation,

@@ -454,12 +454,12 @@ class WC_Payments_WooPay_Button_Handler {
 			return 'cart';
 		}
 
-		if ( $this->is_checkout() ) {
-			return 'checkout';
-		}
-
 		if ( $this->is_pay_for_order_page() ) {
 			return 'pay_for_order';
+		}
+
+		if ( $this->is_checkout() ) {
+			return 'checkout';
 		}
 
 		return '';
@@ -621,6 +621,11 @@ class WC_Payments_WooPay_Button_Handler {
 		$is_supported = true;
 
 		if ( ! is_object( $product ) ) {
+			$is_supported = false;
+		}
+
+		// External/affiliate products are not supported.
+		if ( is_a( $product, 'WC_Product' ) && $product->is_type( 'external' ) ) {
 			$is_supported = false;
 		}
 
