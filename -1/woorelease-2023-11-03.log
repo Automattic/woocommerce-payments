@@ -1,0 +1,3 @@
+WR [10:46:48] [ERROR] Unable to determine a valid GitHub Token. Please double check you are using a valid one and is not expired.
+WR [10:46:48] [ERROR] Woorelease finished with errors! Please correct the error and retry.
+WR [10:46:48] [ERROR] For more information on the error, please visit https://github.com/woocommerce/woorelease/wiki/Errors#error-61 or ping #woo-devs in Slack 

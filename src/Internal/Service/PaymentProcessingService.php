@@ -9,6 +9,7 @@ namespace WCPay\Internal\Service;
 
 use WC_Payments_API_Abstract_Intention;
 use WC_Payments_API_Setup_Intention;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\PaymentContext;
@@ -73,6 +74,7 @@ class PaymentProcessingService {
 	 * @throws PaymentRequestException   When the request is malformed. This should be converted to a failure state.
 	 * @throws Order_Not_Found_Exception When order is not found.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
+	 * @throws API_Exception             When server requests fails.
 	 */
 	public function process_payment( int $order_id, bool $manual_capture = false ) {
 		// Start with a basis context.

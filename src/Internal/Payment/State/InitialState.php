@@ -7,11 +7,13 @@
 
 namespace WCPay\Internal\Payment\State;
 
+use WC_Customer;
 use WC_Payments_Customer_Service;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
@@ -98,6 +100,7 @@ class InitialState extends AbstractPaymentState {
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception Order could not be found.
 	 * @throws PaymentRequestException   When data is not available or invalid.
+	 * @throws API_Exception
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
@@ -108,6 +111,9 @@ class InitialState extends AbstractPaymentState {
 
 		// Start multiple verification checks.
 		$this->process_order_phone_number();
+
+		// Manage customer details.
+		$this->manage_customer_details();
 
 		$duplicate_order_result = $this->process_duplicate_order();
 		if ( null !== $duplicate_order_result ) {
@@ -170,7 +176,6 @@ class InitialState extends AbstractPaymentState {
 
 	/**
 	 * Populates the context with details, available in the order.
-	 * This includes the update/creation of a customer.
 	 *
 	 * @throws Order_Not_Found_Exception In case the order could not be found.
 	 */
@@ -187,12 +192,34 @@ class InitialState extends AbstractPaymentState {
 			)
 		);
 		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
+	}
 
-		// Customer management involves a remote call.
-		$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
-			$context->get_user_id(),
-			$this->order_service->_deprecated_get_order( $order_id )
-		);
+	/**
+	 * Parse and manage customer details.
+	 * This includes the update/creation of a customer and link it to the order.
+	 *
+	 * @throws Order_Not_Found_Exception In case the order could not be found.
+	 * @throws API_Exception
+	 * @throws \Exception
+	 */
+	protected function manage_customer_details() {
+		$context       = $this->get_context();
+		$user_id       = $context->get_user_id();
+		$user          = get_user_by( 'id', $user_id );
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $this->order_service->_deprecated_get_order( $context->get_order_id() ), new WC_Customer( $user_id ) );
+
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
+		if ( null === $customer_id ) {
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
+		} else {
+			$metadata = $context->get_metadata();
+			// We don't need to apply a filter here as it currently is.
+			if ( filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ) ) {
+				$customer_data['email'] = $user->user_email;
+			}
+			$this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
+		}
 		$context->set_customer_id( $customer_id );
 	}
 
