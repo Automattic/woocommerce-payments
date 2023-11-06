@@ -19,7 +19,7 @@ type NextDepositTableData = {
  * @return {NextDepositTableData} An object containing the formatted next deposit data, with the following properties:
  * - id: An optional string representing the ID of the next scheduled deposit.
  * - date: A Unix timestamp representing the date of the next scheduled deposit.
- * - status: A string representing the status of the next scheduled deposit. If no status is provided, defaults to 'estimated.
+ * - status: A string representing the status of the next scheduled deposit. If no status is provided, defaults to 'pending'.
  * - amount: A formatted string representing the amount of the next scheduled deposit in the currency specified in the overview object.
  */
 export const getNextDeposit = (
