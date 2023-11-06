@@ -444,6 +444,49 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		PHPUnit_Utils::call_method( $this->sut, 'manage_customer_details', [] );
 	}
 
+	public function test_manage_customer_details_update_customer_details_with_woopay() {
+		$user_id     = 1;
+		$customer_id = 'cs_mock';
+		$order       = WC_Helper_Order::create_order();
+
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_user_id' )
+			->willReturn( $user_id );
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_metadata' )
+			->willReturn( [ 'paid_on_woopay' => 'true' ] );
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $order->get_id() );
+		$this->mock_order_service->expects( $this->once() )
+			->method( '_deprecated_get_order' )
+			->with( $order->get_id() )
+			->willReturn( $order );
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( $user_id )
+			->willReturn( $customer_id );
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'update_customer_for_user' )
+			->with(
+				$customer_id,
+				$this->isInstanceOf( \WP_User::class ),
+				$this->callback(
+					function ( $customer_data ) use ( $order ) {
+						$this->assertIsArray( $customer_data );
+						$this->assertArrayHasKey( 'email', $customer_data );
+						$this->assertEquals( $order->get_billing_email(), $customer_data['email'] );
+						return true;
+					}
+				)
+			);
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_customer_id' )
+			->with( $customer_id );
+
+		PHPUnit_Utils::call_method( $this->sut, 'manage_customer_details', [] );
+	}
+
 	public function test_process_duplicate_order_returns_null() {
 		$current_order_id = 123;
 
