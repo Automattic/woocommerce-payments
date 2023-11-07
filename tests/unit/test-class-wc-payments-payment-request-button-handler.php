@@ -338,7 +338,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		WC_Subscriptions_Synchroniser::$is_product_synced  = true;
 		WC_Subscriptions_Synchroniser::$is_payment_upfront = false;
-		WC_Subscriptions_Synchroniser::$is_today           = false;
 		$mock_product
 			->expects( $this->any() )
 			->method( 'needs_shipping' )
@@ -348,26 +347,12 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		WC_Subscriptions_Synchroniser::$is_product_synced  = true;
 		WC_Subscriptions_Synchroniser::$is_payment_upfront = true;
-		WC_Subscriptions_Synchroniser::$is_today           = false;
-
-		$this->assertFalse( $this->pr->product_has_trial_and_needs_shipping( $mock_product ) );
-
-		WC_Subscriptions_Synchroniser::$is_product_synced  = true;
-		WC_Subscriptions_Synchroniser::$is_payment_upfront = false;
-		WC_Subscriptions_Synchroniser::$is_today           = true;
-
-		$this->assertFalse( $this->pr->product_has_trial_and_needs_shipping( $mock_product ) );
-
-		WC_Subscriptions_Synchroniser::$is_product_synced  = true;
-		WC_Subscriptions_Synchroniser::$is_payment_upfront = true;
-		WC_Subscriptions_Synchroniser::$is_today           = true;
 
 		$this->assertFalse( $this->pr->product_has_trial_and_needs_shipping( $mock_product ) );
 
 		WC_Subscriptions_Product::$get_trial_length        = 1;
 		WC_Subscriptions_Synchroniser::$is_product_synced  = false;
 		WC_Subscriptions_Synchroniser::$is_payment_upfront = true;
-		WC_Subscriptions_Synchroniser::$is_today           = true;
 
 		$this->assertTrue( $this->pr->product_has_trial_and_needs_shipping( $mock_product ) );
 
