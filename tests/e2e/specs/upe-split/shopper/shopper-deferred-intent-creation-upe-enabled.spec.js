@@ -13,6 +13,7 @@ import {
 	setupProductCheckout,
 	selectGiropayOnCheckout,
 	completeGiropayPayment,
+	getLastOrderNumber,
 } from '../../../utils/payments';
 import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
@@ -58,6 +59,13 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 				waitUntil: 'networkidle0',
 			} );
 			await expect( page ).toMatch( 'Order received' );
+			const orderNum = await getLastOrderNumber( page );
+			await shopperWCP.logout();
+			await merchant.login();
+			await merchant.openAllOrdersView();
+			await expect( page ).toMatch( `#${ orderNum }` );
+			await merchant.logout();
+			await shopper.login();
 		} );
 
 		it( 'should successfully place order with the default card', async () => {
