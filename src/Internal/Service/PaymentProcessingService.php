@@ -49,8 +49,8 @@ class PaymentProcessingService {
 	/**
 	 * Service constructor.
 	 *
-	 * @param StateFactory                $state_factory Factory for payment states.
-	 * @param LegacyProxy                 $legacy_proxy Legacy proxy.
+	 * @param StateFactory                $state_factory          Factory for payment states.
+	 * @param LegacyProxy                 $legacy_proxy           Legacy proxy.
 	 * @param PaymentContextLoggerService $context_logger_service Context Logging Service.
 	 */
 	public function __construct(
@@ -66,7 +66,7 @@ class PaymentProcessingService {
 	/**
 	 * Process payment.
 	 *
-	 * @param int  $order_id Order ID provided by WooCommerce core.
+	 * @param int  $order_id          Order ID provided by WooCommerce core.
 	 * @param bool $automatic_capture Whether to only create an authorization instead of a charge (optional).
 	 *
 	 * @throws StateTransitionException  In case a state cannot be initialized.
@@ -89,7 +89,7 @@ class PaymentProcessingService {
 	/**
 	 * Get redirect URL when authentication is required (3DS).
 	 *
-	 * @param WC_Payments_API_Abstract_Intention $intent Intent object.
+	 * @param WC_Payments_API_Abstract_Intention $intent   Intent object.
 	 * @param int                                $order_id Order id.
 	 *
 	 * @return string
@@ -126,7 +126,7 @@ class PaymentProcessingService {
 	/**
 	 * Instantiates a new empty payment context.
 	 *
-	 * @param int  $order_id ID of the order that the context belongs to.
+	 * @param int  $order_id          ID of the order that the context belongs to.
 	 * @param bool $automatic_capture Whether automatic capture is enabled.
 	 *
 	 * @return PaymentContext
