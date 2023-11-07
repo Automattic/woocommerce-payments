@@ -8,7 +8,6 @@
 namespace WCPay\Tests\Internal\Payment\State;
 
 use WC_Helper_Intention;
-use WC_Helper_Order;
 use WCPay\Constants\Intent_Status;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
@@ -122,7 +121,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 				[
 					'populate_context_from_request',
 					'populate_context_from_order',
-					'manage_customer_details',
 					'process_order_phone_number',
 					'process_duplicate_order',
 					'process_duplicate_payment',
@@ -143,9 +141,32 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_start_processing() {
+		$order_id             = 123;
+		$user_id              = 456;
+		$customer_id          = 'cus_123';
 		$mock_request         = $this->createMock( PaymentRequest::class );
 		$mock_processed_state = $this->createMock( ProcessedState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
+		$mock_order           = $this->createMock( WC_Order::class );
+
+		// Arrange customer management.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_user_id' )
+			->willReturn( $user_id );
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $order_id );
+		$this->mock_order_service->expects( $this->once() )
+			->method( '_deprecated_get_order' )
+			->with( $order_id )
+			->willReturn( $mock_order );
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'get_or_create_customer_id_from_order' )
+			->with( $user_id, $mock_order )
+			->willReturn( $customer_id );
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_customer_id' )
+			->with( $customer_id );
 
 		$mock_processed_state->expects( $this->once() )
 			->method( 'complete_processing' )
@@ -154,7 +175,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Verify that the context is populated.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
-		$this->mocked_sut->expects( $this->once() )->method( 'manage_customer_details' );
 		$this->mocked_sut->expects( $this->once() )->method( 'process_duplicate_order' )->willReturn( null );
 		$this->mocked_sut->expects( $this->once() )->method( 'process_duplicate_payment' )->willReturn( null );
 
@@ -179,8 +199,32 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_start_processing_will_transition_to_error_state_when_api_exception_occurs() {
+
+		$order_id         = 123;
+		$user_id          = 456;
+		$customer_id      = 'cus_123';
 		$mock_request     = $this->createMock( PaymentRequest::class );
 		$mock_error_state = $this->createMock( SystemErrorState::class );
+		$mock_order       = $this->createMock( WC_Order::class );
+
+		// Arrange customer management.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_user_id' )
+			->willReturn( $user_id );
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $order_id );
+		$this->mock_order_service->expects( $this->once() )
+			->method( '_deprecated_get_order' )
+			->with( $order_id )
+			->willReturn( $mock_order );
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'get_or_create_customer_id_from_order' )
+			->with( $user_id, $mock_order )
+			->willReturn( $customer_id );
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_customer_id' )
+			->with( $customer_id );
 
 		$this->mock_payment_request_service
 			->expects( $this->once() )
@@ -191,7 +235,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Let's mock these services in order to prevent real execution of them.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
-		$this->mocked_sut->expects( $this->once() )->method( 'manage_customer_details' );
 
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
@@ -203,8 +246,27 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 	public function test_processing_will_transition_to_auth_required_state() {
 		$order_id        = 123;
+		$user_id         = 456;
+		$customer_id     = 'cus_123';
+		$mock_order      = $this->createMock( WC_Order::class );
 		$mock_request    = $this->createMock( PaymentRequest::class );
 		$mock_auth_state = $this->createMock( AuthenticationRequiredState::class );
+
+		// Arrange customer management.
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_user_id' )
+			->willReturn( $user_id );
+		$this->mock_order_service->expects( $this->once() )
+			->method( '_deprecated_get_order' )
+			->with( $order_id )
+			->willReturn( $mock_order );
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'get_or_create_customer_id_from_order' )
+			->with( $user_id, $mock_order )
+			->willReturn( $customer_id );
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_customer_id' )
+			->with( $customer_id );
 
 		// Create an intent, and make sure it will be returned by the service.
 		$mock_intent = $this->createMock( WC_Payments_API_Payment_Intention::class );
@@ -217,7 +279,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Let's mock these services in order to prevent real execution of them.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
-		$this->mocked_sut->expects( $this->once() )->method( 'manage_customer_details' );
 
 		// Before the transition, the order service should update the order.
 		$this->mock_context->expects( $this->once() )
@@ -270,7 +331,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$return_state_class  = $is_duplicate_order ? DuplicateOrderDetectedState::class : CompletedState::class;
 		$mock_returned_state = $this->createMock( $return_state_class );
 
-		$this->mocked_sut->expects( $this->once() )->method( 'manage_customer_details' );
 		$this->mocked_sut->expects( $this->once() )
 			->method( 'process_duplicate_order' )
 			->willReturn( $is_duplicate_order ? $mock_returned_state : null );
@@ -304,7 +364,8 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_populate_context_from_order() {
-		$order_id    = 123;
+		$order_id = 123;
+
 		$metadata    = [ 'sample' => 'true' ];
 		$level3_data = [ 'items' => [] ];
 
@@ -375,116 +436,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		// Act and assert.
 		PHPUnit_Utils::call_method( $this->sut, 'process_order_phone_number', [] );
-	}
-
-	public function test_manage_customer_details_creates_customer() {
-		$user_id     = 1;
-		$customer_id = 'cs_mock';
-		$order       = WC_Helper_Order::create_order();
-
-		$this->mock_context->expects( $this->once() )
-			->method( 'get_user_id' )
-			->willReturn( $user_id );
-		$this->mock_context->expects( $this->once() )
-			->method( 'get_order_id' )
-			->willReturn( $order->get_id() );
-		$this->mock_order_service->expects( $this->once() )
-			->method( '_deprecated_get_order' )
-			->with( $order->get_id() )
-			->willReturn( $order );
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->with( $user_id )
-			->willReturn( null );
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'create_customer_for_user' )
-			->with(
-				$this->isInstanceOf( \WP_User::class ),
-				$this->isType( 'array' )
-			)
-			->willReturn( $customer_id );
-
-		$this->mock_context->expects( $this->once() )
-			->method( 'set_customer_id' )
-			->with( $customer_id );
-
-		PHPUnit_Utils::call_method( $this->sut, 'manage_customer_details', [] );
-	}
-
-	public function test_manage_customer_details_update_customer_details() {
-		$user_id     = 1;
-		$customer_id = 'cs_mock';
-		$order       = WC_Helper_Order::create_order();
-
-		$this->mock_context->expects( $this->once() )
-			->method( 'get_user_id' )
-			->willReturn( $user_id );
-		$this->mock_context->expects( $this->once() )
-			->method( 'get_order_id' )
-			->willReturn( $order->get_id() );
-		$this->mock_order_service->expects( $this->once() )
-			->method( '_deprecated_get_order' )
-			->with( $order->get_id() )
-			->willReturn( $order );
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->with( $user_id )
-			->willReturn( $customer_id );
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'update_customer_for_user' )
-			->with(
-				$customer_id,
-				$this->isInstanceOf( \WP_User::class ),
-				$this->isType( 'array' )
-			);
-		$this->mock_context->expects( $this->once() )
-			->method( 'set_customer_id' )
-			->with( $customer_id );
-
-		PHPUnit_Utils::call_method( $this->sut, 'manage_customer_details', [] );
-	}
-
-	public function test_manage_customer_details_update_customer_details_with_woopay() {
-		$user_id     = 1;
-		$customer_id = 'cs_mock';
-		$order       = WC_Helper_Order::create_order();
-
-		$this->mock_context->expects( $this->once() )
-			->method( 'get_user_id' )
-			->willReturn( $user_id );
-		$this->mock_context->expects( $this->once() )
-			->method( 'get_metadata' )
-			->willReturn( [ 'paid_on_woopay' => 'true' ] );
-		$this->mock_context->expects( $this->once() )
-			->method( 'get_order_id' )
-			->willReturn( $order->get_id() );
-		$this->mock_order_service->expects( $this->once() )
-			->method( '_deprecated_get_order' )
-			->with( $order->get_id() )
-			->willReturn( $order );
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->with( $user_id )
-			->willReturn( $customer_id );
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'update_customer_for_user' )
-			->with(
-				$customer_id,
-				$this->isInstanceOf( \WP_User::class ),
-				$this->callback(
-					function ( $customer_data ) use ( $order ) {
-						$this->assertIsArray( $customer_data );
-						$this->assertArrayHasKey( 'email', $customer_data );
-						$this->assertEquals( $order->get_billing_email(), $customer_data['email'] );
-						return true;
-					}
-				)
-			);
-		$this->mock_context->expects( $this->once() )
-			->method( 'set_customer_id' )
-			->with( $customer_id );
-
-		PHPUnit_Utils::call_method( $this->sut, 'manage_customer_details', [] );
 	}
 
 	public function test_process_duplicate_order_returns_null() {

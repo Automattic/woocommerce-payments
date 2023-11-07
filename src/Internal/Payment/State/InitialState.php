@@ -114,9 +114,6 @@ class InitialState extends AbstractPaymentState {
 		// Start multiple verification checks.
 		$this->process_order_phone_number();
 
-		// Manage customer details.
-		$this->manage_customer_details();
-
 		$duplicate_order_result = $this->process_duplicate_order();
 		if ( null !== $duplicate_order_result ) {
 			return $duplicate_order_result;
@@ -128,10 +125,17 @@ class InitialState extends AbstractPaymentState {
 		}
 		// End multiple verification checks.
 
-		// Payments are currently based on intents, request one from the API.
+		// Payments are currently based on intents, request one from the API, and before that make sure that customer is created or updated.
 		try {
-			$context = $this->get_context();
-			$intent  = $this->payment_request_service->create_intent( $context );
+			$context  = $this->get_context();
+			$order_id = $context->get_order_id();
+
+			// Create or update customer and customer details.
+			$customer_id = $this->customer_service->get_or_create_customer_id_from_order( $context->get_user_id(), $this->order_service->_deprecated_get_order( $order_id ) );
+			$context->set_customer_id( $customer_id );
+
+			// After customer is updated or created, make sure that intent is created.
+			$intent = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
@@ -139,7 +143,7 @@ class InitialState extends AbstractPaymentState {
 
 		// Intent requires authorization (3DS check).
 		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
-			$this->order_service->update_order_from_intent_that_requires_action( $context->get_order_id(), $intent, $context );
+			$this->order_service->update_order_from_intent_that_requires_action( $order_id, $intent, $context );
 			return $this->create_state( AuthenticationRequiredState::class );
 		}
 
@@ -194,35 +198,6 @@ class InitialState extends AbstractPaymentState {
 			)
 		);
 		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
-	}
-
-	/**
-	 * Parse and manage customer details.
-	 * This includes the update/creation of a customer and link it to the order.
-	 *
-	 * @throws Order_Not_Found_Exception In case the order could not be found.
-	 * @throws API_Exception
-	 * @throws Exception
-	 */
-	protected function manage_customer_details() {
-		$context       = $this->get_context();
-		$user_id       = $context->get_user_id();
-		$user          = get_user_by( 'id', $user_id );
-		$customer_data = WC_Payments_Customer_Service::map_customer_data( $this->order_service->_deprecated_get_order( $context->get_order_id() ), new WC_Customer( $user_id ) );
-
-		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
-		if ( null === $customer_id ) {
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
-		} else {
-			$metadata = $context->get_metadata();
-			// We don't need to apply a filter here as it currently is.
-			if ( filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ) ) {
-				$customer_data['email'] = $user->user_email;
-			}
-			$this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
-		}
-		$context->set_customer_id( $customer_id );
 	}
 
 	/**

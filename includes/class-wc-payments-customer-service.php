@@ -165,22 +165,21 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @param int      $user_id ID of the WP user to associate with the customer.
 	 * @param WC_Order $order   Woo Order.
+	 *
 	 * @return string           WooPayments customer ID.
-	 */
+	 * @throws API_Exception    Throws when server API request fails.
+*/
 	public function get_or_create_customer_id_from_order( int $user_id, WC_Order $order ): string {
 		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->get_customer_id_by_user_id( $user_id );
-
-		if ( null !== $customer_id ) {
-			// @todo: We need to update the customer here.
-			return $customer_id;
-		}
-
+		$customer_id   = $this->get_customer_id_by_user_id( $user_id );
 		$customer_data = self::map_customer_data( $order, new WC_Customer( $user_id ) );
 		$user          = get_user_by( 'id', $user_id );
-		$customer_id   = $this->create_customer_for_user( $user, $customer_data );
 
-		return $customer_id;
+		if ( null !== $customer_id ) {
+			$this->update_customer_for_user( $customer_id, $user, $customer_data );
+			return $customer_id;
+		}
+		return $this->create_customer_for_user( $user, $customer_data );
 	}
 
 	/**
