@@ -934,7 +934,12 @@ class WC_Payments_Account {
 			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
 			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
-				$this->redirect_to_onboarding_flow_page();
+				// Redirect partially onboarded accounts to the onboarding flow, otherwise to payments overview page.
+				if ( $this->is_account_partially_onboarded() ) {
+					$this->redirect_to_onboarding_flow_page();
+				} else {
+					$this->redirect_to( static::get_overview_page_url() );
+				}
 			}
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
