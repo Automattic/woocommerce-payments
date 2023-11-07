@@ -257,7 +257,7 @@ export const DepositsList = (): JSX.Element => {
 				try {
 					const {
 						exported_deposits: exportedDeposits,
-					} = await apiFetch( {
+					} = await apiFetch< { exported_deposits: number } >( {
 						path: getDepositsCSV( {
 							userEmail,
 							dateAfter,
