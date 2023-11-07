@@ -124,8 +124,14 @@ export const useDeposits = ( {
 	date_between: dateBetween,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
-}: Query ): CachedDeposits =>
-	useSelect(
+}: Query ): CachedDeposits => {
+	// Temporarily default to excluding estimated deposits.
+	// Client components can (temporarily) opt-in by passing `status_is=estimated`.
+	// When we remove estimated deposits from server / APIs we can remove this default.
+	if ( ! statusIsNot && statusIs !== 'estimated' ) {
+		statusIsNot = 'estimated';
+	}
+	return useSelect(
 		( select ) => {
 			const {
 				getDeposits,
@@ -176,6 +182,7 @@ export const useDeposits = ( {
 			statusIsNot,
 		]
 	);
+};
 
 export const useDepositsSummary = ( {
 	match,
@@ -185,8 +192,14 @@ export const useDepositsSummary = ( {
 	date_between: dateBetween,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
-}: Query ): DepositsSummaryCache =>
-	useSelect(
+}: Query ): DepositsSummaryCache => {
+	// Temporarily default to excluding estimated deposits.
+	// Client components can (temporarily) opt-in by passing `status_is=estimated`.
+	// When we remove estimated deposits from server / APIs we can remove this default.
+	if ( ! statusIsNot && statusIs !== 'estimated' ) {
+		statusIsNot = 'estimated';
+	}
+	return useSelect(
 		( select ) => {
 			const { getDepositsSummary, isResolving } = select( STORE_NAME );
 
@@ -215,6 +228,7 @@ export const useDepositsSummary = ( {
 			statusIsNot,
 		]
 	);
+};
 
 export const useInstantDeposit = (
 	transactionIds: string[]
