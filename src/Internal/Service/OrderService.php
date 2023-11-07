@@ -428,8 +428,6 @@ class OrderService {
 	 *
 	 * @param WC_Order $order The order.
 	 * @param string   $mode  Mode from the context.
-	 *
-	 * @throws Order_Not_Found_Exception If the order could not be found.
 	 */
 	private function update_mode_meta_data( WC_Order $order, string $mode ) : void {
 		$order->update_meta_data( '_wcpay_mode', $mode );
