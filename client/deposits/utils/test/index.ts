@@ -84,19 +84,13 @@ describe( 'Deposits Overview Utils / getDepositMonthlyAnchorLabel', () => {
 		).toEqual( 'last day of the month' );
 	} );
 } );
-type DepositsSchedule = AccountOverview.Account[ 'deposits_schedule' ];
-type OptionalDepositsSchedule = Pick<
-	AccountOverview.Account[ 'deposits_schedule' ],
-	'interval'
-> &
-	Partial<
-		Pick<
-			AccountOverview.Account[ 'deposits_schedule' ],
-			'weekly_anchor' | 'monthly_anchor'
-		>
-	>;
 
-type NextDepositDateTestCase = [ string, OptionalDepositsSchedule, string ];
+type NextDepositDateTestCase = [
+	string,
+	Partial< AccountOverview.Account[ 'deposits_schedule' ] >,
+	string
+];
+
 describe( 'Deposits Overview Utils / getNextDepositDate', () => {
 	const currentTimezone = momentLib.tz.guess();
 
@@ -145,25 +139,17 @@ describe( 'Deposits Overview Utils / getNextDepositDate', () => {
 		], // When the anchor >= 29 and the month doesn't have that many days, the last day of month is used instead
 	];
 
-	const createFullDepositSchedule = (
-		schedule: OptionalDepositsSchedule
-	): DepositsSchedule => {
-		return {
-			delay_days: 0, // default value
-			interval: schedule?.interval || 'daily', // default value
-			weekly_anchor: schedule?.weekly_anchor || 'monday', // default value
-			monthly_anchor: schedule?.monthly_anchor || 1, // default value
-		};
-	};
-
 	test.each( testCases )(
 		'given input date %p and depositSchedule %p, returns %p',
 		( inputDate, schedule, expectedOutput ) => {
 			Date.now = jest.fn( () => new Date( inputDate ).getTime() );
 
-			const result = getNextDepositDate(
-				createFullDepositSchedule( schedule )
-			);
+			const result = getNextDepositDate( {
+				delay_days: 0, // default value
+				interval: schedule.interval || 'daily', // default value
+				weekly_anchor: schedule.weekly_anchor || 'monday', // default value
+				monthly_anchor: schedule.monthly_anchor || 1, // default value
+			} );
 			expect( result ).toBe( expectedOutput );
 
 			// Reset Date.now.
