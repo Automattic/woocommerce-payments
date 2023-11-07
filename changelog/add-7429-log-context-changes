@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added mechanism to track and log changes to the payment context (reengineering payment process)
