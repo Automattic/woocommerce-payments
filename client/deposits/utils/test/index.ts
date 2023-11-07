@@ -98,6 +98,18 @@ type OptionalDepositsSchedule = Pick<
 
 type NextDepositDateTestCase = [ string, OptionalDepositsSchedule, string ];
 describe( 'Deposits Overview Utils / getNextDepositDate', () => {
+	const currentTimezone = momentLib.tz.guess();
+
+	beforeEach( () => {
+		// Set the local timezone to UTC for the tests.
+		momentLib.tz.setDefault( 'UTC' );
+	} );
+
+	afterEach( () => {
+		// Reset the local timezone to the original value.
+		momentLib.tz.setDefault( currentTimezone );
+	} );
+
 	const testCases: NextDepositDateTestCase[] = [
 		[ '2023-01-01', { interval: 'daily' }, 'January 2nd, 2023' ],
 		[ '2023-01-06', { interval: 'daily' }, 'January 7th, 2023' ], // weekends are acceptable deposit dates
@@ -144,7 +156,6 @@ describe( 'Deposits Overview Utils / getNextDepositDate', () => {
 		};
 	};
 
-	// roll it back
 	test.each( testCases )(
 		'given input date %p and depositSchedule %p, returns %p',
 		( inputDate, schedule, expectedOutput ) => {
@@ -153,8 +164,10 @@ describe( 'Deposits Overview Utils / getNextDepositDate', () => {
 			const result = getNextDepositDate(
 				createFullDepositSchedule( schedule )
 			);
-			Date.now = () => new Date().getTime();
 			expect( result ).toBe( expectedOutput );
+
+			// Reset Date.now.
+			Date.now = () => new Date().getTime();
 		}
 	);
 } );
