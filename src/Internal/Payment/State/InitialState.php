@@ -7,8 +7,6 @@
 
 namespace WCPay\Internal\Payment\State;
 
-use Exception;
-use WC_Customer;
 use WC_Payments_Customer_Service;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
@@ -102,7 +100,6 @@ class InitialState extends AbstractPaymentState {
 	 * @throws Order_Not_Found_Exception Order could not be found.
 	 * @throws PaymentRequestException   When data is not available or invalid.
 	 * @throws API_Exception             When server request fails.
-	 * @throws Exception                 Can occur when customer data is mapped.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
