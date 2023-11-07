@@ -116,18 +116,37 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * Add the Pay for order params to the JS config.
 	 */
 	public function add_pay_for_order_params_to_js_config() {
+		global $wp;
+		$order_id = $wp->query_vars['order-pay'] ?? null;
+
+		if ( ! $order_id ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) ) {
-			global $wp;
-			$order_id = $wp->query_vars['order-pay'];
-			$order    = wc_get_order( $order_id );
+		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && current_user_can( 'pay_for_order', $order_id ) ) {
 			add_filter(
 				'wcpay_payment_fields_js_config',
 				function( $js_config ) use ( $order ) {
+					$session       = wc()->session;
+					$session_email = '';
+
+					if ( is_a( $session, WC_Session::class ) ) {
+						$customer      = $session->get( 'customer' );
+						$session_email = is_array( $customer ) && isset( $customer['email'] ) ? $customer['email'] : '';
+					}
+
+					$user_email = sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email' ) ) ) ?? $session_email;
+
 					$js_config['order_id']      = $order->get_id();
 					$js_config['pay_for_order'] = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
 					$js_config['key']           = sanitize_text_field( wp_unslash( $_GET['key'] ) );
-					$js_config['billing_email'] = $order->get_billing_email();
+					$js_config['billing_email'] = current_user_can( 'read_private_shop_orders' ) ||
+						( get_current_user_id() !== 0 && $order->get_customer_id() === get_current_user_id() )
+						? $order->get_billing_email()
+						: $user_email;
 
 					return $js_config;
 				}
