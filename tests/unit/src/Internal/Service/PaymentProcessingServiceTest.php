@@ -155,11 +155,11 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'error' );
 
-		$sut                  = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy, $this->mock_context_logger, $this->mock_logger, $this->mock_mode );
-		
+		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy, $this->mock_context_logger, $this->mock_logger, $this->mock_mode );
+
 		$mock_initial_state   = $this->createMock( InitialState::class );
 		$mock_completed_state = $this->createMock( CompletedState::class );
-		
+
 		// Prepare a payment method for the context.
 		$_POST['payment_method']       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$_POST['wcpay-payment-method'] = 'pi_XYZ';
