@@ -325,16 +325,3 @@ export async function completeGiropayPayment( page, action ) {
 	actionButton.click();
 	await page.waitFor( 1000 );
 }
-
-/**
- * Returns the order number as seen on the order received page.
- *
- * @param {*} page The page reference object.
- * @return {string} The order number.
- */
-export async function getLastOrderNumber( page ) {
-	const orderNumSelector =
-		'.woocommerce-order-overview .woocommerce-order-overview__order strong';
-	const orderNum = await page.$eval( orderNumSelector, ( e ) => e.innerText );
-	return orderNum;
-}
