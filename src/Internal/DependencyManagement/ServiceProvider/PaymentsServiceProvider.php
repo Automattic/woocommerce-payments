@@ -73,7 +73,9 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( PaymentProcessingService::class )
 			->addArgument( StateFactory::class )
 			->addArgument( LegacyProxy::class )
-			->addArgument( PaymentContextLoggerService::class );
+			->addArgument( PaymentContextLoggerService::class )
+			->addArgument( Logger::class )
+			->addArgument( Mode::class );
 
 		$container->addShared( PaymentRequestService::class );
 

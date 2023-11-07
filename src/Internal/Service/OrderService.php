@@ -207,6 +207,7 @@ class OrderService {
 
 		$this->legacy_service->attach_transaction_fee_to_order( $order, $charge );
 		$this->legacy_service->update_order_status_from_intent( $order, $intent );
+		$this->update_mode_meta_data( $order, $context->get_mode() );
 
 		if ( ! is_null( $charge ) ) {
 			$this->attach_exchange_info_to_order( $order_id, $charge );
@@ -421,4 +422,18 @@ class OrderService {
 		}
 		return $order;
 	}
+
+	/**
+	 * Updates the '_wcpay_mode' meta data on an order.
+	 *
+	 * @param WC_Order $order The order.
+	 * @param string   $mode  Mode from the context.
+	 *
+	 * @throws Order_Not_Found_Exception If the order could not be found.
+	 */
+	private function update_mode_meta_data( WC_Order $order, string $mode ) : void {
+		$order->update_meta_data( '_wcpay_mode', $mode );
+		$order->save_meta_data();
+	}
+
 }

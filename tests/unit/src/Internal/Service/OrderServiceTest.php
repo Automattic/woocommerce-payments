@@ -355,6 +355,9 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$mock_context->expects( $this->once() )
 			->method( 'get_currency' )
 			->willReturn( $currency );
+		$mock_context->expects( $this->once() )
+			->method( 'get_mode' )
+			->willReturn( 'prod' );
 
 		$this->mock_legacy_service->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )

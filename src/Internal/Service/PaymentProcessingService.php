@@ -7,10 +7,13 @@
 
 namespace WCPay\Internal\Service;
 
+use Exception;
 use WC_Payments_API_Abstract_Intention;
 use WC_Payments_API_Setup_Intention;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
+use WCPay\Core\Mode;
+use WCPay\Internal\Logger;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\StateFactory;
@@ -45,6 +48,20 @@ class PaymentProcessingService {
 	 */
 	private $context_logger_service;
 
+	/**
+	 * Logger instance.
+	 *
+	 * @var Logger
+	 */
+	private $logger;
+
+	/**
+	 * Mode
+	 *
+	 * @var Mode
+	 */
+	private $mode;
+
 
 	/**
 	 * Service constructor.
@@ -52,15 +69,21 @@ class PaymentProcessingService {
 	 * @param StateFactory                $state_factory Factory for payment states.
 	 * @param LegacyProxy                 $legacy_proxy Legacy proxy.
 	 * @param PaymentContextLoggerService $context_logger_service Context Logging Service.
+	 * @param Logger                      $logger Logger.
+	 * @param Mode                        $mode Mode.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
 		LegacyProxy $legacy_proxy,
-		PaymentContextLoggerService $context_logger_service
+		PaymentContextLoggerService $context_logger_service,
+		Logger $logger,
+		Mode $mode
 	) {
 		$this->state_factory          = $state_factory;
 		$this->legacy_proxy           = $legacy_proxy;
 		$this->context_logger_service = $context_logger_service;
+		$this->logger                 = $logger;
+		$this->mode                   = $mode;
 	}
 
 	/**
@@ -134,6 +157,11 @@ class PaymentProcessingService {
 	protected function create_payment_context( int $order_id, bool $manual_capture = false ): PaymentContext {
 		$context = new PaymentContext( $order_id );
 		$context->toggle_manual_capture( $manual_capture );
+		try {
+			$context->set_mode( $this->mode->is_test() ? 'test' : 'prod' );
+		} catch ( Exception $e ) {
+			$this->logger->error( 'Failed to fetch the mode: ' . $e );
+		}
 
 		return $context;
 	}
