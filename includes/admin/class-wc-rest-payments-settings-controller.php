@@ -467,7 +467,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		return new WP_REST_Response(
 			[
 				'enabled_payment_method_ids'          => $enabled_payment_methods,
-				'available_payment_gateways'          => WC()->payment_gateways->get_available_payment_gateways(),
 				'available_payment_method_ids'        => $available_upe_payment_methods,
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
@@ -501,7 +500,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_type'         => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
 				'payment_request_button_theme'        => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 				'is_saved_cards_enabled'              => $this->wcpay_gateway->is_saved_cards_enabled(),
-				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible(),
+				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->payment_gateways()['cod'] ),
 				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'show_woopay_incompatibility_notice'  => get_option( 'woopay_invalid_extension_found', false ),
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),

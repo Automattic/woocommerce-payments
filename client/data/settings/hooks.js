@@ -493,8 +493,3 @@ export const useStripeBillingMigration = () => {
 		];
 	}, [] );
 };
-
-export const useAvailablePaymentGateways = () =>
-	useSelect( ( select ) =>
-		select( STORE_NAME ).getAvailablePaymentGateways()
-	);

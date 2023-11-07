@@ -4,17 +4,12 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl, Button } from '@wordpress/components';
-
+import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import {
-	useManualCapture,
-	useCardPresentEligible,
-	useAvailablePaymentGateways,
-} from '../../data';
+import { useManualCapture, useCardPresentEligible } from '../../data';
 import './style.scss';
-import { useState, useEffect } from '@wordpress/element';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import useIsUpeEnabled from 'wcpay/settings/wcpay-upe-toggle/hook';
 
@@ -31,24 +26,6 @@ const ManualCaptureControl = (): JSX.Element => {
 	] = useState( false );
 
 	const [ isUpeEnabled ] = useIsUpeEnabled() as [ boolean ];
-
-	const availablePaymentGateways = useAvailablePaymentGateways() as Record<
-		string,
-		any
-	>;
-
-	const [ hasCashOnDeliveryEnabled, setHasCashOnDeliveryEnabled ] = useState(
-		false
-	);
-
-	useEffect( () => {
-		const cashOnDeliveryPayementGateway = availablePaymentGateways?.cod;
-		if ( cashOnDeliveryPayementGateway ) {
-			setHasCashOnDeliveryEnabled(
-				!! cashOnDeliveryPayementGateway?.enabled
-			);
-		}
-	}, [ availablePaymentGateways ] );
 
 	const handleCheckboxToggle = ( isChecked: boolean ) => {
 		// toggling from "manual" capture to "automatic" capture - no need to show the modal.
@@ -85,7 +62,7 @@ const ManualCaptureControl = (): JSX.Element => {
 								'otherwise the authorization and order will be canceled.',
 							'woocommerce-payments'
 						) }
-						{ isCardPresentEligible && hasCashOnDeliveryEnabled
+						{ isCardPresentEligible
 							? __(
 									' The setting is not applied to In-Person Payments ' +
 										'(please note that In-Person Payments should be captured within 2 days of authorization).',
