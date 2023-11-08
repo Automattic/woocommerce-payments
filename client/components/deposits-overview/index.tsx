@@ -12,7 +12,7 @@ import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import NextDepositDetails from './next-deposit';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
-import SuspendedDepositNotice from './suspended-deposit-notice';
+import { SuspendedDepositNotice } from './deposit-notices';
 import DepositsOverviewFooter from './footer';
 import DepositOverviewSectionHeading from './section-heading';
 import useRecentDeposits from './hooks';

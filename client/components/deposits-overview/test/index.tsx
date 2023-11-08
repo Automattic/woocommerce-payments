@@ -12,7 +12,7 @@ import NextDepositDetails from '../next-deposit';
 import RecentDepositsList from '../recent-deposits-list';
 import DepositsOverviewFooter from '../footer';
 import DepositSchedule from '../deposit-schedule';
-import SuspendedDepositNotice from '../suspended-deposit-notice';
+import { SuspendedDepositNotice } from '../deposit-notices';
 import {
 	useSelectedCurrencyOverview,
 	useSelectedCurrency,

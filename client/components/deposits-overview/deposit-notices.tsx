@@ -13,10 +13,8 @@ import InlineNotice from 'components/inline-notice';
 
 /**
  * Renders a notice informing the user that their deposits are suspended.
- *
- * @return {JSX.Element} Rendered notice.
  */
-function SuspendedDepositNotice(): JSX.Element {
+export const SuspendedDepositNotice: React.FC = () => {
 	return (
 		<InlineNotice
 			className="wcpay-deposits-overview__suspended-notice"
@@ -43,6 +41,4 @@ function SuspendedDepositNotice(): JSX.Element {
 			} ) }
 		</InlineNotice>
 	);
-}
-
-export default SuspendedDepositNotice;
+};
