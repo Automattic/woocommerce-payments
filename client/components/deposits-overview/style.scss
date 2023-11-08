@@ -14,20 +14,7 @@
 	}
 	.wcpay-inline-notice.components-notice {
 		margin: 0;
-	}
-
-	// Apply a margin bottom to all except the last notice
-	// in the notices container and to the business delay
-	// notice if it's the last child of the Deposit history table.
-	&__notices__container
-		> .wcpay-inline-notice.components-notice:not( :last-child ) {
 		margin-bottom: 16px;
-	}
-
-	// If the notices container is the last element before the footer (no deposit history), apply a margin to the footer, to float the notices on.
-	.wcpay-deposits-overview__notices__container:not( :empty )
-		+ .wcpay-deposits-overview__footer {
-		margin-top: 16px;
 	}
 
 	// Override extraneous CardBody vertical padding -
