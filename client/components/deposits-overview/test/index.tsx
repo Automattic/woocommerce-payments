@@ -267,12 +267,17 @@ describe( 'Deposits Overview information', () => {
 	test( 'Component renders without errors for new account', () => {
 		mockOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: false,
+		} );
 		mockUseSelectedCurrency.mockReturnValue( {
 			selectedCurrency: 'eur',
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
-		const { getByText } = render( <DepositsOverview /> );
-		getByText( '€0.00' );
+		const { container } = render( <DepositsOverview /> );
+		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'Confirm recent deposits renders ', () => {

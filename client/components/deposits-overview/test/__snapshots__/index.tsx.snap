@@ -245,6 +245,8 @@ exports[`Deposits Overview information Component Renders 1`] = `
 </div>
 `;
 
+exports[`Deposits Overview information Component renders without errors for new account 1`] = `<div />`;
+
 exports[`Suspended Deposit Notice Renders Component Renders 1`] = `
 <div>
   <div
