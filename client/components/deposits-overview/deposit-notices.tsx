@@ -130,7 +130,7 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
 					'Deposits may be interrupted while your %s balance remains negative. {{whyLink}}Why?{{/whyLink}}',
 					'woocommerce-payments'
 				),
-				'WooPayments'
+				'woocommerce-payments'
 			),
 			components: {
 				whyLink: (
