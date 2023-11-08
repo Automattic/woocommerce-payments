@@ -122,7 +122,12 @@ class InitialState extends AbstractPaymentState {
 		}
 		// End multiple verification checks.
 
-		// Payments are currently based on intents, request one from the API, and before that make sure that customer is created or updated.
+		/**
+		 * Payments are based on intents, and intents use customer objects for billing details.
+		 *
+		 * The customer is created/updated right before requesting the creation of
+		 * a payment intent, and the two actions must be adjacent to each-other.
+		 */
 		try {
 			$context  = $this->get_context();
 			$order_id = $context->get_order_id();
