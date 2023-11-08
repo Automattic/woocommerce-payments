@@ -11,13 +11,6 @@
 			line-height: 24px;
 			color: $gray-900;
 		}
-
-		&__description {
-			& > &__text {
-				line-height: 16px;
-				color: $gray-700;
-			}
-		}
 	}
 	.wcpay-inline-notice.components-notice {
 		margin: 0;

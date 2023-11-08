@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies.
  */
+import Loadable from 'components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
@@ -18,7 +19,6 @@ import {
 	SuspendedDepositNotice,
 } from './deposit-notices';
 import DepositsOverviewFooter from './footer';
-import DepositOverviewSectionHeading from './section-heading';
 import useRecentDeposits from './hooks';
 import './style.scss';
 
@@ -92,12 +92,17 @@ const DepositsOverview: React.FC = () => {
 				deposits.length > 0 &&
 				! account?.deposits_blocked && (
 					<>
-						<DepositOverviewSectionHeading
-							title={ __(
-								'Deposit history',
-								'woocommerce-payments'
-							) }
-						/>
+						<CardBody className="wcpay-deposits-overview__heading">
+							<span className="wcpay-deposits-overview__heading__title">
+								<Loadable
+									isLoading={ isLoading }
+									value={ __(
+										'Deposit history',
+										'woocommerce-payments'
+									) }
+								/>
+							</span>
+						</CardBody>
 						<RecentDepositsList deposits={ deposits } />
 					</>
 				) }
