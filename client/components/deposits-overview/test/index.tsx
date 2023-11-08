@@ -8,7 +8,6 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import DepositsOverview from '..';
-import NextDepositDetails from '../next-deposit';
 import RecentDepositsList from '../recent-deposits-list';
 import DepositsOverviewFooter from '../footer';
 import DepositSchedule from '../deposit-schedule';
@@ -249,7 +248,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Component Renders', () => {
-		mockOverviews( [ createMockOverview( 'usd', 100, 0, 'estimated' ) ] );
+		mockOverviews( [ createMockOverview( 'usd', 100, 0, 'pending' ) ] );
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
 			deposits: mockDeposits,
@@ -276,52 +275,6 @@ describe( 'Deposits Overview information', () => {
 		getByText( '€0.00' );
 	} );
 
-	test( 'Confirm next deposit in EUR amount', () => {
-		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
-		mockUseSelectedCurrency.mockReturnValue( {
-			selectedCurrency: 'eur',
-			setSelectedCurrency: mockSetSelectedCurrency,
-		} );
-		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
-		const { getByText } = render(
-			<NextDepositDetails isLoading={ false } overview={ overview } />
-		);
-
-		expect( getByText( '$1.00' ) ).toBeTruthy();
-	} );
-
-	test( 'Confirm next deposit in EUR amount', () => {
-		global.wcpaySettings.connect.country = 'EU';
-		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
-		mockUseSelectedCurrency.mockReturnValue( {
-			selectedCurrency: 'eur',
-			setSelectedCurrency: mockSetSelectedCurrency,
-		} );
-
-		const overview = createMockOverview( 'EUR', 647049, 0, 'estimated' );
-		const { getByText } = render(
-			<NextDepositDetails isLoading={ false } overview={ overview } />
-		);
-
-		expect( getByText( '€6.470,49' ) ).toBeTruthy();
-	} );
-
-	test( 'Confirm next deposit dates', () => {
-		const date = Date.parse( '2021-10-01' );
-		const overview = createMockOverview( 'usd', 100, date, 'estimated' );
-
-		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
-		mockUseSelectedCurrency.mockReturnValue( {
-			selectedCurrency: 'eur',
-			setSelectedCurrency: mockSetSelectedCurrency,
-		} );
-
-		const { getByText } = render(
-			<NextDepositDetails isLoading={ false } overview={ overview } />
-		);
-		expect( getByText( 'October 1, 2021' ) ).toBeTruthy();
-	} );
-
 	test( 'Confirm recent deposits renders ', () => {
 		const { getByText } = render(
 			<RecentDepositsList deposits={ mockDeposits } />
@@ -335,70 +288,70 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	test( 'Renders capital loan notice if deposit includes financing payout', () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
-		mockUseDepositIncludesLoan.mockReturnValue( {
-			includesFinancingPayout: true,
-			isLoading: false,
-		} );
-		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
-		mockUseSelectedCurrency.mockReturnValue( {
-			selectedCurrency: 'eur',
-			setSelectedCurrency: mockSetSelectedCurrency,
-		} );
+	// test( 'Renders capital loan notice if deposit includes financing payout', () => {
+	// 	const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+	// 	mockUseDepositIncludesLoan.mockReturnValue( {
+	// 		includesFinancingPayout: true,
+	// 		isLoading: false,
+	// 	} );
+	// 	mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+	// 	mockUseSelectedCurrency.mockReturnValue( {
+	// 		selectedCurrency: 'eur',
+	// 		setSelectedCurrency: mockSetSelectedCurrency,
+	// 	} );
 
-		const { getByRole, getByText } = render(
-			<NextDepositDetails isLoading={ false } overview={ overview } />
-		);
+	// 	const { getByRole, getByText } = render(
+	// 		<NextDepositDetails isLoading={ false } overview={ overview } />
+	// 	);
 
-		getByText(
-			'deposit will include funds from your WooCommerce Capital loan',
-			{
-				exact: false,
-				ignore: '.a11y-speak-region',
-			}
-		);
-		expect(
-			getByRole( 'link', {
-				name: 'Learn more',
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
-		);
-	} );
+	// 	getByText(
+	// 		'deposit will include funds from your WooCommerce Capital loan',
+	// 		{
+	// 			exact: false,
+	// 			ignore: '.a11y-speak-region',
+	// 		}
+	// 	);
+	// 	expect(
+	// 		getByRole( 'link', {
+	// 			name: 'Learn more',
+	// 		} )
+	// 	).toHaveAttribute(
+	// 		'href',
+	// 		'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
+	// 	);
+	// } );
 
-	test( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
-		mockUseDepositIncludesLoan.mockReturnValue( {
-			includesFinancingPayout: false,
-			isLoading: false,
-		} );
-		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
-		mockUseSelectedCurrency.mockReturnValue( {
-			selectedCurrency: 'eur',
-			setSelectedCurrency: mockSetSelectedCurrency,
-		} );
+	// test( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
+	// 	const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+	// 	mockUseDepositIncludesLoan.mockReturnValue( {
+	// 		includesFinancingPayout: false,
+	// 		isLoading: false,
+	// 	} );
+	// 	mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+	// 	mockUseSelectedCurrency.mockReturnValue( {
+	// 		selectedCurrency: 'eur',
+	// 		setSelectedCurrency: mockSetSelectedCurrency,
+	// 	} );
 
-		const { queryByRole, queryByText } = render(
-			<NextDepositDetails isLoading={ false } overview={ overview } />
-		);
+	// 	const { queryByRole, queryByText } = render(
+	// 		<NextDepositDetails isLoading={ false } overview={ overview } />
+	// 	);
 
-		expect(
-			queryByText(
-				'deposit will include funds from your WooCommerce Capital loan',
-				{
-					exact: false,
-					ignore: '.a11y-speak-region',
-				}
-			)
-		).toBeFalsy();
-		expect(
-			queryByRole( 'link', {
-				name: 'Learn more',
-			} )
-		).toBeFalsy();
-	} );
+	// 	expect(
+	// 		queryByText(
+	// 			'deposit will include funds from your WooCommerce Capital loan',
+	// 			{
+	// 				exact: false,
+	// 				ignore: '.a11y-speak-region',
+	// 			}
+	// 		)
+	// 	).toBeFalsy();
+	// 	expect(
+	// 		queryByRole( 'link', {
+	// 			name: 'Learn more',
+	// 		} )
+	// 	).toBeFalsy();
+	// } );
 
 	test( 'Confirm new account waiting period notice does not show', () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
@@ -527,7 +480,6 @@ describe( 'Suspended Deposit Notice Renders', () => {
 
 describe( 'Paused Deposit notice Renders', () => {
 	test( 'When available balance is negative', () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
 			deposits: mockDeposits,
@@ -542,15 +494,12 @@ describe( 'Paused Deposit notice Renders', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 
-		const { getByText } = render(
-			<NextDepositDetails isLoading={ false } overview={ overview } />
-		);
+		const { getByText } = render( <DepositsOverview /> );
 		getByText(
 			'Deposits may be interrupted while your WooPayments balance remains negative. Why?'
 		);
 	} );
 	test( 'When available balance is positive', () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
 			deposits: mockDeposits,
@@ -565,9 +514,7 @@ describe( 'Paused Deposit notice Renders', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 
-		const { queryByText } = render(
-			<NextDepositDetails isLoading={ false } overview={ overview } />
-		);
+		const { queryByText } = render( <DepositsOverview /> );
 		expect(
 			queryByText(
 				'Deposits may be interrupted while your WooPayments balance remains negative. Why?'

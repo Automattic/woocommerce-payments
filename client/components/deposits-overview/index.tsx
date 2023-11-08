@@ -9,7 +9,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
-import NextDepositDetails from './next-deposit';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
 import {
@@ -55,23 +54,6 @@ const DepositsOverview: React.FC = () => {
 			<CardHeader>
 				{ __( 'Deposits', 'woocommerce-payments' ) }
 			</CardHeader>
-			{ /* Only show the next deposit section if the page is loading or if deposits are not blocked. */ }
-			{ ( isLoading || ! account?.deposits_blocked ) && (
-				<>
-					<DepositOverviewSectionHeading
-						title={ __( 'Next deposit', 'woocommerce-payments' ) }
-						text={ __(
-							'The amount may change while payments are still accumulating',
-							'woocommerce-payments'
-						) }
-						isLoading={ isLoading }
-					/>
-					<NextDepositDetails
-						isLoading={ isLoading }
-						overview={ overview }
-					/>
-				</>
-			) }
 
 			{ /* Notices */ }
 			{ ! isLoading && (
