@@ -34,6 +34,8 @@ const DepositsOverview: React.FC = () => {
 		selectedCurrency
 	);
 
+	const isLoading = isLoadingOverview || isLoadingDeposits;
+
 	// If there is no available balance or it is negative, there is no future deposit expected.
 	const isNextDepositExpected = ( overview?.available?.amount ?? 0 ) > 0;
 	// If the available balance is negative, deposits may be paused.
@@ -45,7 +47,12 @@ const DepositsOverview: React.FC = () => {
 	// const { includesFinancingPayout } = useDepositIncludesLoan(
 	// 	nextDeposit.id
 	// );
-	const isLoading = isLoadingOverview || isLoadingDeposits;
+	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
+	const showRecentDeposits =
+		! isLoading &&
+		deposits?.length > 0 &&
+		!! account &&
+		! account?.deposits_blocked;
 
 	// This card isn't shown if there are no deposits, so we can bail early.
 	if ( ! isNextDepositExpected && ! isLoading && deposits.length === 0 ) {
@@ -89,27 +96,16 @@ const DepositsOverview: React.FC = () => {
 				</CardBody>
 			) }
 
-			{ /* Only show the deposit history section if the page is finished loading and there are deposits. */ }
-			{ ! isLoading &&
-				!! account &&
-				!! deposits &&
-				deposits.length > 0 &&
-				! account?.deposits_blocked && (
-					<>
-						<CardBody className="wcpay-deposits-overview__heading">
-							<span className="wcpay-deposits-overview__heading__title">
-								<Loadable
-									isLoading={ isLoading }
-									value={ __(
-										'Deposit history',
-										'woocommerce-payments'
-									) }
-								/>
-							</span>
-						</CardBody>
-						<RecentDepositsList deposits={ deposits } />
-					</>
-				) }
+			{ showRecentDeposits && (
+				<>
+					<CardBody className="wcpay-deposits-overview__heading">
+						<span className="wcpay-deposits-overview__heading__title">
+							{ __( 'Deposit history', 'woocommerce-payments' ) }
+						</span>
+					</CardBody>
+					<RecentDepositsList deposits={ deposits } />
+				</>
+			) }
 
 			<DepositsOverviewFooter />
 		</Card>
