@@ -34,7 +34,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 				mixedString: sprintf(
 					/** translators: {{strong}}: placeholders are opening and closing strong tags. %s: is the date of the next deposit, e.g. "January 1st, 2023". */
 					__(
-						'Available funds are dispatched to your bank account {{strong}}automatically every day{{/strong}}, with your next scheduled deposit estimated for {{strong}}%s{{/strong}}.',
+						'Available funds are automatically dispatched {{strong}}every day{{/strong}} – your next deposit is scheduled for {{strong}}%s{{/strong}}.',
 						'woocommerce-payments'
 					),
 					nextDepositDate
@@ -54,7 +54,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 				mixedString: sprintf(
 					/** translators: %1$s: is the day of the week. eg "Friday". %2$s: is the date of the next deposit, e.g. "January 1st, 2023". {{strong}}: placeholders are opening and closing strong tags. */
 					__(
-						'Available funds are dispatched to your bank account {{strong}}automatically every %1$s{{/strong}}, with your next scheduled deposit estimated for {{strong}}%2$s{{/strong}}.',
+						'Available funds are automatically dispatched {{strong}}every %1$s{{/strong}} – your next deposit is scheduled for {{strong}}%2$s{{/strong}}.',
 						'woocommerce-payments'
 					),
 					dayOfWeek,
@@ -73,7 +73,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 					mixedString: sprintf(
 						/** translators: {{strong}}: placeholders are opening and closing strong tags. %s: is the date of the next deposit, e.g. "January 1st, 2023". */
 						__(
-							'Available funds are dispatched to your bank account {{strong}}automatically on the last day of every month{{/strong}}, with your next scheduled deposit estimated for {{strong}}%s{{/strong}}.',
+							'Available funds are automatically dispatched {{strong}}on the last day of every month{{/strong}} – your next deposit is scheduled for {{strong}}%2$s{{/strong}}.',
 							'woocommerce-payments'
 						),
 						nextDepositDate
@@ -88,7 +88,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 				mixedString: sprintf(
 					/** translators: {{strong}}: placeholders are opening and closing strong tags. %1$s: is the day of the month. eg "31st". %2$s: is the date of the next deposit, e.g. "January 1st, 2023". */
 					__(
-						'Available funds are dispatched to your bank account {{strong}}automatically on the %1$s of every month{{/strong}}, with your next scheduled deposit estimated for {{strong}}%2$s{{/strong}}.',
+						'Available funds are automatically dispatched {{strong}}on the %1$s of every month{{/strong}} – your next deposit is scheduled for {{strong}}%2$s{{/strong}}.',
 						'woocommerce-payments'
 					),
 					getDepositMonthlyAnchorLabel( {
