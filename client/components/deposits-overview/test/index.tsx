@@ -487,19 +487,20 @@ describe( 'Paused Deposit notice Renders', () => {
 			deposits: mockDeposits,
 			isLoading: false,
 		} );
-		mockDepositOverviews( [
+		mockOverviews( [
 			// Negative 100 available balance
 			createMockNewAccountOverview( 'usd', 100, -100 ),
 		] );
+
 		mockUseSelectedCurrency.mockReturnValue( {
 			selectedCurrency: 'usd',
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 
 		const { getByText } = render( <DepositsOverview /> );
-		getByText(
-			'Deposits may be interrupted while your WooPayments balance remains negative. Why?'
-		);
+		getByText( /Deposits may be interrupted/, {
+			ignore: '.a11y-speak-region',
+		} );
 	} );
 	test( 'When available balance is positive', () => {
 		mockUseDeposits.mockReturnValue( {
@@ -507,7 +508,7 @@ describe( 'Paused Deposit notice Renders', () => {
 			deposits: mockDeposits,
 			isLoading: false,
 		} );
-		mockDepositOverviews( [
+		mockOverviews( [
 			// Positive 100 available balance
 			createMockNewAccountOverview( 'usd', 100, 100 ),
 		] );
@@ -517,10 +518,6 @@ describe( 'Paused Deposit notice Renders', () => {
 		} );
 
 		const { queryByText } = render( <DepositsOverview /> );
-		expect(
-			queryByText(
-				'Deposits may be interrupted while your WooPayments balance remains negative. Why?'
-			)
-		).toBeFalsy();
+		expect( queryByText( /Deposits may be interrupted/ ) ).toBeFalsy();
 	} );
 } );
