@@ -27,8 +27,7 @@
 	// in the notices container and to the business delay
 	// notice if it's the last child of the Deposit history table.
 	&__notices__container
-		> .wcpay-inline-notice.components-notice:not( :last-child ),
-	.wcpay-deposits-overview__business-day-delay-notice:last-child {
+		> .wcpay-inline-notice.components-notice:not( :last-child ) {
 		margin-bottom: 16px;
 	}
 

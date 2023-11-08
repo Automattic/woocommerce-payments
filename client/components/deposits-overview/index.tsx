@@ -12,6 +12,7 @@ import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
 import {
+	DepositTransitDaysNotice,
 	NegativeBalanceDepositsPausedNotice,
 	NewAccountWaitingPeriodNotice,
 	SuspendedDepositNotice,
@@ -60,15 +61,19 @@ const DepositsOverview: React.FC = () => {
 				<CardBody
 					className={ 'wcpay-deposits-overview__notices__container' }
 				>
-					{ account?.deposits_blocked && <SuspendedDepositNotice /> }
-					{ /* includesFinancingPayout && (
-					<DepositIncludesLoanPayoutNotice />
-				) */ }
-					{ ! hasCompletedWaitingPeriod && (
-						<NewAccountWaitingPeriodNotice />
-					) }
-					{ isNegativeBalanceDepositsPaused && (
-						<NegativeBalanceDepositsPausedNotice />
+					{ account?.deposits_blocked ? (
+						<SuspendedDepositNotice />
+					) : (
+						<>
+							<DepositTransitDaysNotice />
+							{ /* includesFinancingPayout && <DepositIncludesLoanPayoutNotice /> */ }
+							{ ! hasCompletedWaitingPeriod && (
+								<NewAccountWaitingPeriodNotice />
+							) }
+							{ isNegativeBalanceDepositsPaused && (
+								<NegativeBalanceDepositsPausedNotice />
+							) }
+						</>
 					) }
 				</CardBody>
 			) }
