@@ -125,9 +125,11 @@ describe( 'Settings - Transactions', () => {
 		render( <Transactions /> );
 
 		expect(
-			screen.getByText(
-				new RegExp( 'The setting is not applied to In-Person Payments' )
-			)
+			screen.getByRole( 'link', { name: /In-Person Payments/i } )
+		).toBeInTheDocument();
+
+		expect(
+			screen.getByText( new RegExp( 'The setting is not applied to' ) )
 		).toBeInTheDocument();
 	} );
 
@@ -137,9 +139,11 @@ describe( 'Settings - Transactions', () => {
 		render( <Transactions /> );
 
 		expect(
-			screen.queryByText(
-				new RegExp( 'The setting is not applied to In-Person Payments' )
-			)
+			screen.queryByRole( 'link', { name: /In-Person Payments/i } )
+		).not.toBeInTheDocument();
+
+		expect(
+			screen.queryByText( new RegExp( 'The setting is not applied to' ) )
 		).not.toBeInTheDocument();
 	} );
 

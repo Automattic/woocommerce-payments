@@ -1,9 +1,10 @@
+/* eslint-disable jsx-a11y/anchor-has-content */
 /**
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
-import { CheckboxControl, Button } from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
+import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
@@ -12,6 +13,7 @@ import { useManualCapture, useCardPresentEligible } from '../../data';
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import useIsUpeEnabled from 'wcpay/settings/wcpay-upe-toggle/hook';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const ManualCaptureControl = (): JSX.Element => {
 	const [
@@ -63,11 +65,17 @@ const ManualCaptureControl = (): JSX.Element => {
 							'woocommerce-payments'
 						) }
 						{ isCardPresentEligible
-							? __(
-									' The setting is not applied to In-Person Payments ' +
-										'(please note that In-Person Payments should be captured within 2 days of authorization).',
-									'woocommerce-payments'
-							  )
+							? interpolateComponents( {
+									mixedString: __(
+										'The setting is not applied to {{a}}In-Person Payments{{/a}} (please note that In-Person Payments should be captured within 2 days of authorization).',
+										'woocommerce-payments'
+									),
+									components: {
+										a: (
+											<ExternalLink href="https://woo.com/in-person-payments/" />
+										),
+									},
+							  } )
 							: '' }
 					</span>
 				}
