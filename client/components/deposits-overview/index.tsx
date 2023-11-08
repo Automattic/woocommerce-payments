@@ -18,7 +18,7 @@ import DepositOverviewSectionHeading from './section-heading';
 import useRecentDeposits from './hooks';
 import './style.scss';
 
-const DepositsOverview = (): JSX.Element => {
+const DepositsOverview: React.FC = () => {
 	const {
 		account,
 		overview,
