@@ -108,7 +108,7 @@ export const DepositTransitDaysNotice: React.FC = () => (
 	<InlineNotice
 		icon={ tip }
 		children={
-			'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched'
+			'It may take 1-3 business days for deposits to reach your bank account.'
 		}
 		isDismissible={ false }
 	/>
