@@ -210,8 +210,7 @@ jQuery( function ( $ ) {
 		let appearance = getUPEConfig( 'upeAppearance' );
 
 		if ( ! appearance ) {
-			appearance = getAppearance();
-			api.saveUPEAppearance( appearance );
+			appearance = await api.saveUPEAppearance( getAppearance() );
 		}
 
 		const elements = api.getStripe().elements( {
