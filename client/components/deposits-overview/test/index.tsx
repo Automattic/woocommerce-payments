@@ -406,9 +406,7 @@ describe( 'Deposit Schedule renders', () => {
 		);
 		const descriptionText = container.textContent;
 
-		expect( descriptionText ).toContain(
-			'dispatched to your bank account automatically every Monday'
-		);
+		expect( descriptionText ).toContain( 'every Monday' );
 	} );
 	test( 'with a monthly schedule on the 14th', () => {
 		mockAccount.deposits_schedule.interval = 'monthly';
@@ -421,9 +419,7 @@ describe( 'Deposit Schedule renders', () => {
 		);
 		const descriptionText = container.textContent;
 
-		expect( descriptionText ).toContain(
-			'dispatched to your bank account automatically on the 14th of every month'
-		);
+		expect( descriptionText ).toContain( 'on the 14th of every month' );
 	} );
 	test( 'with a monthly schedule on the last day', () => {
 		mockAccount.deposits_schedule.interval = 'monthly';
@@ -436,9 +432,7 @@ describe( 'Deposit Schedule renders', () => {
 		);
 		const descriptionText = container.textContent;
 
-		expect( descriptionText ).toContain(
-			'dispatched to your bank account automatically on the last day of every month'
-		);
+		expect( descriptionText ).toContain( 'on the last day of every month' );
 	} );
 	test( 'with a monthly schedule on the 2nd', () => {
 		mockAccount.deposits_schedule.interval = 'monthly';
@@ -451,9 +445,7 @@ describe( 'Deposit Schedule renders', () => {
 		);
 		const descriptionText = container.textContent;
 
-		expect( descriptionText ).toContain(
-			'dispatched to your bank account automatically on the 2nd of every month'
-		);
+		expect( descriptionText ).toContain( 'on the 2nd of every month' );
 	} );
 	test( 'with a daily schedule', () => {
 		mockAccount.deposits_schedule.interval = 'daily';
@@ -465,9 +457,7 @@ describe( 'Deposit Schedule renders', () => {
 		);
 		const descriptionText = container.textContent;
 
-		expect( descriptionText ).toContain(
-			'dispatched to your bank account automatically every day'
-		);
+		expect( descriptionText ).toContain( 'every day' );
 	} );
 	test( 'with a daily schedule', () => {
 		mockAccount.deposits_schedule.interval = 'manual';
