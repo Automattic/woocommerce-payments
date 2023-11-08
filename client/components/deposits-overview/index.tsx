@@ -12,7 +12,11 @@ import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import NextDepositDetails from './next-deposit';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
-import { SuspendedDepositNotice } from './deposit-notices';
+import {
+	NegativeBalanceDepositsPausedNotice,
+	NewAccountWaitingPeriodNotice,
+	SuspendedDepositNotice,
+} from './deposit-notices';
 import DepositsOverviewFooter from './footer';
 import DepositOverviewSectionHeading from './section-heading';
 import useRecentDeposits from './hooks';
@@ -24,19 +28,21 @@ const DepositsOverview: React.FC = () => {
 		overview,
 		isLoading: isLoadingOverview,
 	} = useSelectedCurrencyOverview();
-
-	let currency = wcpaySettings.accountDefaultCurrency;
-
-	if ( overview?.currency ) {
-		currency = overview.currency;
-	}
-
+	const selectedCurrency =
+		overview?.currency || wcpaySettings.accountDefaultCurrency;
 	const { isLoading: isLoadingDeposits, deposits } = useRecentDeposits(
-		currency
+		selectedCurrency
 	);
 
 	const hasNextDeposit = !! overview?.nextScheduled;
-
+	const hasCompletedWaitingPeriod =
+		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
+	const isNegativeBalanceDepositsPaused =
+		overview?.available && overview.available.amount < 0;
+	// TODO: Find a condition for rendering the loan notice.
+	// const { includesFinancingPayout } = useDepositIncludesLoan(
+	// 	nextDeposit.id
+	// );
 	const isLoading = isLoadingOverview || isLoadingDeposits;
 
 	// This card isn't shown if there are no deposits, so we can bail early.
@@ -68,9 +74,22 @@ const DepositsOverview: React.FC = () => {
 			) }
 
 			{ /* Notices */ }
-			<CardBody>
-				{ account?.deposits_blocked && <SuspendedDepositNotice /> }
-			</CardBody>
+			{ ! isLoading && (
+				<CardBody
+					className={ 'wcpay-deposits-overview__notices__container' }
+				>
+					{ account?.deposits_blocked && <SuspendedDepositNotice /> }
+					{ /* includesFinancingPayout && (
+					<DepositIncludesLoanPayoutNotice />
+				) */ }
+					{ ! hasCompletedWaitingPeriod && (
+						<NewAccountWaitingPeriodNotice />
+					) }
+					{ isNegativeBalanceDepositsPaused && (
+						<NegativeBalanceDepositsPausedNotice />
+					) }
+				</CardBody>
+			) }
 
 			{ /* Only show the deposit history section if the page is finished loading and there are deposits. */ }
 			{ ! isLoading &&

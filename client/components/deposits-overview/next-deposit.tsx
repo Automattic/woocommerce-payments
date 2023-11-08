@@ -19,14 +19,7 @@ import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
-import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
-import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
-import {
-	DepositIncludesLoanPayoutNotice,
-	NegativeBalanceDepositsPausedNotice,
-	NewAccountWaitingPeriodNotice,
-} from './deposit-notices';
 
 type NextDepositProps = {
 	isLoading: boolean;
@@ -50,26 +43,6 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	const nextDepositDate = getDepositDate(
 		nextDeposit.date > 0 ? nextDeposit : null
 	);
-
-	const { includesFinancingPayout } = useDepositIncludesLoan(
-		nextDeposit.id
-	);
-	const completedWaitingPeriod =
-		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
-
-	const {
-		overviews,
-	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
-	const { selectedCurrency } = useSelectedCurrency();
-	const displayedCurrency =
-		selectedCurrency ?? wcpaySettings.accountDefaultCurrency;
-
-	const availableBalance = overviews?.currencies.find(
-		( currencyOverview ) => displayedCurrency === currencyOverview.currency
-	)?.available;
-
-	const negativeBalanceDepositsPaused =
-		availableBalance && availableBalance.amount < 0;
 
 	return (
 		<>
@@ -132,22 +105,6 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 					</FlexItem>
 				</Flex>
 			</CardBody>
-			{ /* Notices */ }
-			{ ! isLoading && (
-				<CardBody
-					className={ 'wcpay-deposits-overview__notices__container' }
-				>
-					{ includesFinancingPayout && (
-						<DepositIncludesLoanPayoutNotice />
-					) }
-					{ ! completedWaitingPeriod && (
-						<NewAccountWaitingPeriodNotice />
-					) }
-					{ negativeBalanceDepositsPaused && (
-						<NegativeBalanceDepositsPausedNotice />
-					) }
-				</CardBody>
-			) }
 		</>
 	);
 };
