@@ -172,6 +172,9 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		}
 
 		if ( $this->is_affiliate_for_woocommerce_enabled() ) {
+			/**
+			 * @psalm-suppress UndefinedFunction
+			 */
 			$extension_data[ 'affiliate-for-woocommerce' ] = [
 				'affiliate-user' => afwc_get_referrer_id(),
 			];
