@@ -96,7 +96,7 @@ const WooPaySettings = ( { section } ) => {
 												<a
 													target="_blank"
 													rel="noreferrer"
-													href="https://woocommerce.com/document/woopay-merchant-documentation/"
+													href="https://woo.com/document/woopay-merchant-documentation/"
 												/>
 											),
 											tosLink: (
@@ -117,7 +117,7 @@ const WooPaySettings = ( { section } ) => {
 												<a
 													target="_blank"
 													rel="noreferrer"
-													href="https://woocommerce.com/usage-tracking/"
+													href="https://woo.com/usage-tracking/"
 												/>
 											),
 										},
@@ -230,7 +230,7 @@ const WooPaySettings = ( { section } ) => {
 									/* eslint-enable prettier/prettier */
 									learnMoreLink: (
 										// eslint-disable-next-line max-len
-										<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance" />
+										<ExternalLink href="https://woo.com/document/woopay-merchant-documentation/#checkout-appearance" />
 									),
 								}
 							} ) }

@@ -29,7 +29,7 @@ const NeedHelpBarSection = () => {
 				components: {
 					docsLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/">
+						<ExternalLink href="https://woo.com/document/woopayments/payment-methods/additional-payment-methods/">
 							{ sprintf(
 								/* translators: %s: WooPayments */
 								__( '%s docs', 'woocommerce-payments' ),
@@ -39,7 +39,7 @@ const NeedHelpBarSection = () => {
 					),
 					supportLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://woocommerce.com/contact-us/">
+						<ExternalLink href="https://woo.com/contact-us/">
 							{ __( 'contact support', 'woocommerce-payments' ) }
 						</ExternalLink>
 					),
