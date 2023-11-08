@@ -19,6 +19,10 @@
 	.components-card__body.wcpay-deposits-overview__schedule__container {
 		padding-top: 24px;
 		padding-bottom: 0;
+
+		.is-loadable-placeholder {
+			margin-bottom: 24px;
+		}
 	}
 
 	.components-card__footer.wcpay-deposits-overview__footer {

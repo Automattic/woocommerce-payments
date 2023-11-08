@@ -47,6 +47,7 @@ const DepositsOverview: React.FC = () => {
 	// const { includesFinancingPayout } = useDepositIncludesLoan(
 	// 	nextDeposit.id
 	// );
+
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
 	const showRecentDeposits =
 		! isLoading &&
@@ -54,8 +55,35 @@ const DepositsOverview: React.FC = () => {
 		!! account &&
 		! account?.deposits_blocked;
 
+	// Show a loading state if the page is still loading.
+	if ( isLoading ) {
+		return (
+			<Card className="wcpay-deposits-overview">
+				<CardHeader>
+					{ __( 'Deposits', 'woocommerce-payments' ) }
+				</CardHeader>
+
+				<CardBody className="wcpay-deposits-overview__schedule__container">
+					<Loadable
+						isLoading
+						placeholder={
+							<DepositSchedule
+								depositsSchedule={ {
+									delay_days: 0,
+									interval: 'daily',
+									monthly_anchor: 1,
+									weekly_anchor: 'monday',
+								} }
+							/>
+						}
+					/>
+				</CardBody>
+			</Card>
+		);
+	}
+
 	// This card isn't shown if there are no deposits, so we can bail early.
-	if ( ! isNextDepositExpected && ! isLoading && deposits.length === 0 ) {
+	if ( ! isLoading && ! isNextDepositExpected && deposits.length === 0 ) {
 		return <></>;
 	}
 
@@ -66,7 +94,7 @@ const DepositsOverview: React.FC = () => {
 			</CardHeader>
 
 			{ /* Deposit schedule message */ }
-			{ ! isLoading && isNextDepositExpected && !! account && (
+			{ isNextDepositExpected && !! account && (
 				<CardBody className="wcpay-deposits-overview__schedule__container">
 					<DepositSchedule
 						depositsSchedule={ account.deposits_schedule }
@@ -75,26 +103,24 @@ const DepositsOverview: React.FC = () => {
 			) }
 
 			{ /* Notices */ }
-			{ ! isLoading && (
-				<CardBody className="wcpay-deposits-overview__notices__container">
-					{ account?.deposits_blocked ? (
-						<SuspendedDepositNotice />
-					) : (
-						<>
-							{ isNextDepositExpected && (
-								<DepositTransitDaysNotice />
-							) }
-							{ /* includesFinancingPayout && <DepositIncludesLoanPayoutNotice /> */ }
-							{ ! hasCompletedWaitingPeriod && (
-								<NewAccountWaitingPeriodNotice />
-							) }
-							{ isNegativeBalanceDepositsPaused && (
-								<NegativeBalanceDepositsPausedNotice />
-							) }
-						</>
-					) }
-				</CardBody>
-			) }
+			<CardBody className="wcpay-deposits-overview__notices__container">
+				{ account?.deposits_blocked ? (
+					<SuspendedDepositNotice />
+				) : (
+					<>
+						{ isNextDepositExpected && (
+							<DepositTransitDaysNotice />
+						) }
+						{ /* includesFinancingPayout && <DepositIncludesLoanPayoutNotice /> */ }
+						{ ! hasCompletedWaitingPeriod && (
+							<NewAccountWaitingPeriodNotice />
+						) }
+						{ isNegativeBalanceDepositsPaused && (
+							<NegativeBalanceDepositsPausedNotice />
+						) }
+					</>
+				) }
+			</CardBody>
 
 			{ showRecentDeposits && (
 				<>
