@@ -360,7 +360,13 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Confirm new account waiting period notice does not show', () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
-		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		const accountOverview = createMockNewAccountOverview(
+			'eur',
+			12300,
+			45600
+		);
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
 		mockUseSelectedCurrency.mockReturnValue( {
 			selectedCurrency: 'eur',
 			setSelectedCurrency: mockSetSelectedCurrency,
@@ -374,7 +380,13 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Confirm new account waiting period notice shows', () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
-		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		const accountOverview = createMockNewAccountOverview(
+			'eur',
+			12300,
+			45600
+		);
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
 		mockUseSelectedCurrency.mockReturnValue( {
 			selectedCurrency: 'eur',
 			setSelectedCurrency: mockSetSelectedCurrency,
