@@ -407,7 +407,7 @@ describe( 'Deposit Schedule renders', () => {
 		const descriptionText = container.textContent;
 
 		expect( descriptionText ).toContain(
-			'Your deposits are dispatched automatically every Monday'
+			'dispatched to your bank account automatically every Monday'
 		);
 	} );
 	test( 'with a monthly schedule on the 14th', () => {
@@ -422,7 +422,7 @@ describe( 'Deposit Schedule renders', () => {
 		const descriptionText = container.textContent;
 
 		expect( descriptionText ).toContain(
-			'Your deposits are dispatched automatically on the 14th of every month'
+			'dispatched to your bank account automatically on the 14th of every month'
 		);
 	} );
 	test( 'with a monthly schedule on the last day', () => {
@@ -437,7 +437,7 @@ describe( 'Deposit Schedule renders', () => {
 		const descriptionText = container.textContent;
 
 		expect( descriptionText ).toContain(
-			'Your deposits are dispatched automatically on the last day of every month'
+			'dispatched to your bank account automatically on the last day of every month'
 		);
 	} );
 	test( 'with a monthly schedule on the 2nd', () => {
@@ -452,7 +452,7 @@ describe( 'Deposit Schedule renders', () => {
 		const descriptionText = container.textContent;
 
 		expect( descriptionText ).toContain(
-			'Your deposits are dispatched automatically on the 2nd of every month'
+			'dispatched to your bank account automatically on the 2nd of every month'
 		);
 	} );
 	test( 'with a daily schedule', () => {
@@ -466,7 +466,7 @@ describe( 'Deposit Schedule renders', () => {
 		const descriptionText = container.textContent;
 
 		expect( descriptionText ).toContain(
-			'Your deposits are dispatched automatically every day'
+			'dispatched to your bank account automatically every day'
 		);
 	} );
 	test( 'with a daily schedule', () => {
