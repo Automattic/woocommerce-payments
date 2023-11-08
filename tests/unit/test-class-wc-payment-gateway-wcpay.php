@@ -1391,7 +1391,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
 	}
 
-	public function test_process_payment_for_order_not_from_request() {
+	public function test_process_tktk() {
 		// There is no payment method data within the request. This is the case e.g. for the automatic subscription renewals.
 		$_POST['payment_method'] = '';
 
@@ -1404,7 +1404,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->add_payment_token( $token );
 		$order->save();
 
-		$pi = new Payment_Information( 'pm_test', $order );
+		$pi = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
 
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$request->expects( $this->once() )
@@ -1425,7 +1425,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_total( 0.45 );
 		$order->save();
 
-		$pi = new Payment_Information( 'pm_test', $order );
+		$pi = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'The selected payment method requires a total amount of at least $0.50.' );
@@ -1442,7 +1442,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
 		$_POST['payment_method']               = $payment_method;
-		$pi                                    = new Payment_Information( 'pm_test', $order );
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
 
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$request->expects( $this->once() )
@@ -1465,7 +1465,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
 		$_POST['payment_method']               = $payment_method;
-		$pi                                    = new Payment_Information( 'pm_test', $order );
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
 
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$request->expects( $this->once() )
