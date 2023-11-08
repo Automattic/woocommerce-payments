@@ -869,6 +869,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$woopay_custom_message = $request->get_param( 'woopay_custom_message' );
+		$woopay_custom_message = str_replace( '[terms_of_service_link]', '[terms]', $woopay_custom_message );
+		$woopay_custom_message = str_replace( '[privacy_policy_link]', '[privacy_policy]', $woopay_custom_message );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_custom_message', $woopay_custom_message );
 	}
