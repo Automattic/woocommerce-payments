@@ -34,7 +34,8 @@ const DepositsOverview: React.FC = () => {
 		selectedCurrency
 	);
 
-	const hasNextDeposit = !! overview?.nextScheduled;
+	// If there is no available balance, there is no future deposit expected.
+	const isNextDepositExpected = !! overview?.available?.amount;
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 	const isNegativeBalanceDepositsPaused =
@@ -46,7 +47,7 @@ const DepositsOverview: React.FC = () => {
 	const isLoading = isLoadingOverview || isLoadingDeposits;
 
 	// This card isn't shown if there are no deposits, so we can bail early.
-	if ( ! hasNextDeposit && ! isLoading && deposits.length === 0 ) {
+	if ( ! isNextDepositExpected && ! isLoading && deposits.length === 0 ) {
 		return <></>;
 	}
 
@@ -57,7 +58,7 @@ const DepositsOverview: React.FC = () => {
 			</CardHeader>
 
 			{ /* Deposit schedule message */ }
-			{ ! isLoading && hasNextDeposit && !! account && (
+			{ ! isLoading && isNextDepositExpected && !! account && (
 				<CardBody className="wcpay-deposits-overview__schedule__container">
 					<DepositSchedule
 						depositsSchedule={ account.deposits_schedule }
@@ -72,7 +73,9 @@ const DepositsOverview: React.FC = () => {
 						<SuspendedDepositNotice />
 					) : (
 						<>
-							<DepositTransitDaysNotice />
+							{ isNextDepositExpected && (
+								<DepositTransitDaysNotice />
+							) }
 							{ /* includesFinancingPayout && <DepositIncludesLoanPayoutNotice /> */ }
 							{ ! hasCompletedWaitingPeriod && (
 								<NewAccountWaitingPeriodNotice />
