@@ -10,8 +10,7 @@ import {
 	Icon,
 } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
-import interpolateComponents from '@automattic/interpolate-components';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
@@ -21,96 +20,18 @@ import { getNextDeposit } from './utils';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
-import InlineNotice from 'components/inline-notice';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
+import {
+	DepositIncludesLoanPayoutNotice,
+	NegativeBalanceDepositsPausedNotice,
+	NewAccountWaitingPeriodNotice,
+} from './deposit-notices';
 
 type NextDepositProps = {
 	isLoading: boolean;
 	overview?: AccountOverview.Overview;
 };
-
-const DepositIncludesLoanPayoutNotice = () => (
-	<InlineNotice icon status="warning" isDismissible={ false }>
-		{ interpolateComponents( {
-			mixedString: __(
-				'This deposit will include funds from your WooCommerce Capital loan. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-				'woocommerce-payments'
-			),
-			components: {
-				learnMoreLink: (
-					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href={
-							'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
-						}
-						target="_blank"
-						rel="noreferrer"
-					/>
-				),
-			},
-		} ) }
-	</InlineNotice>
-);
-
-const NewAccountWaitingPeriodNotice = () => (
-	<InlineNotice
-		status="warning"
-		icon
-		className="new-account-waiting-period-notice"
-		isDismissible={ false }
-	>
-		{ interpolateComponents( {
-			mixedString: __(
-				'Your first deposit is held for seven business days. {{whyLink}}Why?{{/whyLink}}',
-				'woocommerce-payments'
-			),
-			components: {
-				whyLink: (
-					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						target="_blank"
-						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#new-accounts"
-					/>
-				),
-			},
-		} ) }
-	</InlineNotice>
-);
-
-const NegativeBalanceDepositsPausedNotice = () => (
-	<InlineNotice
-		status="warning"
-		icon
-		className="negative-balance-deposits-paused-notice"
-		isDismissible={ false }
-	>
-		{ interpolateComponents( {
-			mixedString: sprintf(
-				/* translators: %s: WooPayments */
-				__(
-					'Deposits may be interrupted while your %s balance remains negative. {{whyLink}}Why?{{/whyLink}}',
-					'woocommerce-payments'
-				),
-				'WooPayments'
-			),
-			components: {
-				whyLink: (
-					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						target="_blank"
-						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/"
-					/>
-				),
-			},
-		} ) }
-	</InlineNotice>
-);
 
 /**
  * Renders the Next Deposit details component.
