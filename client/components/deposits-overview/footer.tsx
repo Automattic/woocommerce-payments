@@ -4,12 +4,12 @@
 import * as React from 'react';
 import { CardFooter, Button, Flex } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
 import { getAdminUrl } from 'wcpay/utils';
-import strings from './strings';
 import wcpayTracks from 'tracks';
 
 /**
@@ -45,7 +45,10 @@ const DepositsOverviewFooter: React.FC = () => {
 						)
 					}
 				>
-					{ strings.viewAllDeposits }
+					{ __(
+						'View full deposits history',
+						'woocommerce-payments'
+					) }
 				</Button>
 				<Link
 					type="wp-admin"
@@ -57,7 +60,7 @@ const DepositsOverviewFooter: React.FC = () => {
 						)
 					}
 				>
-					{ strings.changeDepositSchedule }
+					{ __( 'Change deposit schedule', 'woocommerce-payments' ) }
 				</Link>
 			</Flex>
 		</CardFooter>

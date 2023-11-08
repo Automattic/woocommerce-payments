@@ -3,12 +3,12 @@
  */
 import * as React from 'react';
 import { Card, CardHeader } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
-import strings from './strings';
 import NextDepositDetails from './next-deposit';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
@@ -46,13 +46,18 @@ const DepositsOverview = (): JSX.Element => {
 
 	return (
 		<Card className="wcpay-deposits-overview">
-			<CardHeader>{ strings.heading }</CardHeader>
+			<CardHeader>
+				{ __( 'Deposits', 'woocommerce-payments' ) }
+			</CardHeader>
 			{ /* Only show the next deposit section if the page is loading or if deposits are not blocked. */ }
 			{ ( isLoading || ! account?.deposits_blocked ) && (
 				<>
 					<DepositOverviewSectionHeading
-						title={ strings.nextDeposit.title }
-						text={ strings.nextDeposit.description }
+						title={ __( 'Next deposit', 'woocommerce-payments' ) }
+						text={ __(
+							'The amount may change while payments are still accumulating',
+							'woocommerce-payments'
+						) }
 						isLoading={ isLoading }
 					/>
 					<NextDepositDetails
@@ -66,12 +71,18 @@ const DepositsOverview = (): JSX.Element => {
 				<>
 					{ account.deposits_blocked ? (
 						<DepositOverviewSectionHeading
-							title={ strings.depositHistoryHeading }
+							title={ __(
+								'Deposit history',
+								'woocommerce-payments'
+							) }
 							children={ <SuspendedDepositNotice /> }
 						/>
 					) : (
 						<DepositOverviewSectionHeading
-							title={ strings.depositHistoryHeading }
+							title={ __(
+								'Deposit history',
+								'woocommerce-payments'
+							) }
 							text={
 								<DepositSchedule
 									{ ...account.deposits_schedule }
