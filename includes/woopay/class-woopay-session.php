@@ -384,13 +384,15 @@ class WooPay_Session {
 		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 		$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
 
+		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
+
 		$request = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
 			'session_nonce'        => self::create_woopay_nonce( $user->ID ),
 			'store_api_token'      => self::init_store_api_token(),
-			'email'                => '',
+			'email'                => $email,
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => $store_logo,
@@ -423,6 +425,26 @@ class WooPay_Session {
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity( $user->ID ),
 		];
 
+		$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
+		$request['extension_data']     = $woopay_adapted_extensions->get_extension_data();
+
+		if ( ! empty( $email ) ) {
+			// Save email in session to skip TYP verify email and check if
+			// WooPay verified email matches.
+			WC()->customer->set_billing_email( $email );
+			WC()->customer->save();
+
+			$request['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
+
+			if ( ! is_user_logged_in() && count( $request['adapted_extensions'] ) > 0 ) {
+				$store_user_email_registered = get_user_by( 'email', $email );
+
+				if ( $store_user_email_registered ) {
+					$request['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
+				}
+			}
+		}
+
 		return $request;
 	}
 
@@ -441,32 +463,12 @@ class WooPay_Session {
 			);
 		}
 
-		$email         = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 		$order_id      = ! empty( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : null;
 		$key           = ! empty( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : null;
 		$billing_email = ! empty( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : null;
 
 		$body                 = self::get_init_session_request( $order_id, $key, $billing_email );
-		$body['email']        = $email;
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
-
-		if ( ! empty( $email ) ) {
-			// Save email in session to skip TYP verify email and check if
-			// WooPay verified email matches.
-			WC()->customer->set_billing_email( $email );
-			WC()->customer->save();
-
-			$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
-			$body['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
-
-			if ( ! is_user_logged_in() && count( $body['adapted_extensions'] ) > 0 ) {
-				$store_user_email_registered = get_user_by( 'email', $email );
-
-				if ( $store_user_email_registered ) {
-					$body['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
-				}
-			}
-		}
 
 		$args = [
 			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
@@ -533,9 +535,13 @@ class WooPay_Session {
 	 * @return bool True if request is a Store API request, false otherwise.
 	 */
 	private static function is_store_api_request(): bool {
-		$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$request_path = rtrim( $url_parts['path'], '/' );
-		$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		if ( isset( $_REQUEST['rest_route'] ) ) {
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] );
+		} else {
+			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$request_path = rtrim( $url_parts['path'], '/' );
+			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		}
 
 		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
 			if ( 1 === preg_match( $pattern, $rest_route ) ) {
@@ -632,13 +638,18 @@ class WooPay_Session {
 	private static function get_formatted_custom_message() {
 		$custom_message = WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' );
 
+		$terms_value = wc_terms_and_conditions_page_id() ?
+			'<a href="' . get_permalink( wc_terms_and_conditions_page_id() ) . '">' . __( 'Terms of Service', 'woocommerce-payments' ) . '</a>' :
+			__( 'Terms of Service', 'woocommerce-payments' );
+		$privacy_policy_value = wc_privacy_policy_page_id() ?
+			'<a href="' . get_permalink( wc_privacy_policy_page_id() ) . '">' . __( 'Privacy Policy', 'woocommerce-payments' ) . '</a>' :
+			__( 'Privacy Policy', 'woocommerce-payments' );
+
 		$replacement_map = [
-			'[terms_of_service_link]' => wc_terms_and_conditions_page_id() ?
-				'<a href="' . get_permalink( wc_terms_and_conditions_page_id() ) . '">' . __( 'Terms of Service', 'woocommerce-payments' ) . '</a>' :
-				__( 'Terms of Service', 'woocommerce-payments' ),
-			'[privacy_policy_link]'   => wc_privacy_policy_page_id() ?
-				'<a href="' . get_permalink( wc_privacy_policy_page_id() ) . '">' . __( 'Privacy Policy', 'woocommerce-payments' ) . '</a>' :
-				__( 'Privacy Policy', 'woocommerce-payments' ),
+			'[terms_of_service_link]' => $terms_value,
+			'[terms]'                 => $terms_value,
+			'[privacy_policy_link]'   => $privacy_policy_value,
+			'[privacy_policy]'        => $privacy_policy_value,
 		];
 
 		return str_replace( array_keys( $replacement_map ), array_values( $replacement_map ), $custom_message );

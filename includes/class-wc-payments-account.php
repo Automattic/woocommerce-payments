@@ -223,6 +223,21 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account has been completed.
+	 * Returns false if the account is not connected.
+	 *
+	 * @return bool True if the account is connected and complete, false otherwise or on error.
+	 */
+	public function is_account_complete(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return 'complete' === $account['status'];
+	}
+
+	/**
 	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
 	 * Returns true if the onboarding is started but did not finish.
 	 *
@@ -575,25 +590,6 @@ class WC_Payments_Account {
 	public function get_is_live() {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['is_live'] ) ? $account['is_live'] : null;
-	}
-
-	/**
-	 * Gets the various anti-fraud services that must be included on every WCPay-related page.
-	 *
-	 * @return array Assoc array. Each key is the slug of a fraud service that must be incorporated to every page, the value is service-specific config for it.
-	 */
-	public function get_fraud_services_config() {
-		$account = $this->get_cached_account_data();
-		if ( empty( $account ) || ! isset( $account['fraud_services'] ) ) {
-			// This was the default before adding new anti-fraud providers, preserve backwards-compatibility.
-			return [ 'stripe' => [] ];
-		}
-		$services_config          = $account['fraud_services'];
-		$filtered_services_config = [];
-		foreach ( $services_config as $service_id => $config ) {
-			$filtered_services_config[ $service_id ] = apply_filters( 'wcpay_prepare_fraud_config', $config, $service_id );
-		}
-		return $filtered_services_config;
 	}
 
 	/**
@@ -953,7 +949,12 @@ class WC_Payments_Account {
 			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
 			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
-				$this->redirect_to_onboarding_flow_page();
+				// Redirect complete accounts to payments overview page, otherwise to the onboarding flow.
+				if ( $this->is_account_complete() ) {
+					$this->redirect_to( static::get_overview_page_url() );
+				} else {
+					$this->redirect_to_onboarding_flow_page();
+				}
 			}
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
@@ -1657,7 +1658,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Returns an array containing the names of all the WCPay related notes that have be actioned.
+	 * Returns an array containing the names of all the WCPay related notes that have been actioned.
 	 *
 	 * @return array
 	 */

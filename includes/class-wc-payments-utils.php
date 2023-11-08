@@ -394,6 +394,27 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Apply a callback on every value in an array, regardless of the number of array dimensions.
+	 *
+	 * @param array    $array The array to map.
+	 * @param callable $callback The callback to apply.
+	 * @return array The mapped array.
+	 */
+	public static function array_map_recursive( array $array, callable $callback ): array {
+		foreach ( $array as $key => $value ) {
+			if ( \is_array( $value ) ) {
+				$value = self::array_map_recursive( $value, $callback );
+			} else {
+				$value = $callback( $value, $key, $array );
+			}
+
+			$array[ $key ] = $value;
+		}
+
+		return $array;
+	}
+
+	/**
 	 * Gets order intent currency from meta data or order currency.
 	 *
 	 * @param WC_Order $order The order whose intent currency we want to get.

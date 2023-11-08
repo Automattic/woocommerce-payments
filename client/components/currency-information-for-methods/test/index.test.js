@@ -8,7 +8,9 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import { useCurrencies, useEnabledCurrencies } from '../../../data';
-import CurrencyInformationForMethods from '..';
+import CurrencyInformationForMethods, {
+	BuildMissingCurrenciesTooltipMessage,
+} from '..';
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 
 jest.mock( '../../../data', () => ( {
@@ -184,5 +186,28 @@ describe( 'CurrencyInformationForMethods', () => {
 				}
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( 'returns correct string with the given LPM label and currency list', () => {
+		const output = BuildMissingCurrenciesTooltipMessage( 'x', [ 'EUR' ] );
+		expect( output ).toBe(
+			'x requires the EUR currency. In order to enable the payment method, you must add this currency to your store.'
+		);
+		const outputMultiple = BuildMissingCurrenciesTooltipMessage( 'x', [
+			'EUR',
+			'PLN',
+		] );
+		expect( outputMultiple ).toBe(
+			'x requires the EUR and PLN currencies. In order to enable the payment method, you must add these currencies to your store.'
+		);
+		const outputMany = BuildMissingCurrenciesTooltipMessage( 'x', [
+			'EUR',
+			'PLN',
+			'TRY',
+		] );
+		expect( outputMany ).toBe(
+			'x requires the EUR, PLN, and TRY currencies. ' +
+				'In order to enable the payment method, you must add these currencies to your store.'
+		);
 	} );
 } );
