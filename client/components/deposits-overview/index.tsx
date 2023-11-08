@@ -56,6 +56,13 @@ const DepositsOverview: React.FC = () => {
 				{ __( 'Deposits', 'woocommerce-payments' ) }
 			</CardHeader>
 
+			{ /* Deposit schedule message */ }
+			{ ! isLoading && hasNextDeposit && !! account && (
+				<CardBody>
+					<DepositSchedule { ...account.deposits_schedule } />
+				</CardBody>
+			) }
+
 			{ /* Notices */ }
 			{ ! isLoading && (
 				<CardBody
@@ -90,11 +97,6 @@ const DepositsOverview: React.FC = () => {
 								'Deposit history',
 								'woocommerce-payments'
 							) }
-							text={
-								<DepositSchedule
-									{ ...account.deposits_schedule }
-								/>
-							}
 						/>
 						<RecentDepositsList deposits={ deposits } />
 					</>
