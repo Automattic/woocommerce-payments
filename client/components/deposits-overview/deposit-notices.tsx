@@ -5,6 +5,7 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
+import { tip } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -105,8 +106,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
  */
 export const DepositTransitDaysNotice: React.FC = () => (
 	<InlineNotice
-		status="info"
-		icon
+		icon={ tip }
 		children={
 			'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched'
 		}
