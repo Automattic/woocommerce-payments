@@ -223,21 +223,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account has been completed.
-	 * Returns false if the account is not connected.
-	 *
-	 * @return bool True if the account is connected and complete, false otherwise or on error.
-	 */
-	public function is_account_complete(): bool {
-		if ( ! $this->is_stripe_connected() ) {
-			return false;
-		}
-
-		$account = $this->get_cached_account_data();
-		return 'complete' === $account['status'];
-	}
-
-	/**
 	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
 	 * Returns true if the onboarding is started but did not finish.
 	 *
@@ -949,11 +934,12 @@ class WC_Payments_Account {
 			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
 			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
-				// Redirect complete accounts to payments overview page, otherwise to the onboarding flow.
-				if ( $this->is_account_complete() ) {
-					$this->redirect_to( static::get_overview_page_url() );
-				} else {
+				// Redirect partially onboarded accounts (details_submitted = false) to the onboarding flow, otherwise to payments overview page.
+				if ( $this->is_stripe_connected() && $this->is_account_partially_onboarded() ) {
 					$this->redirect_to_onboarding_flow_page();
+				} else {
+					// Accounts with details_submitted = true (complete, rejected, restricted_soon etc) will be redirected to the overview page.
+					$this->redirect_to( static::get_overview_page_url() );
 				}
 			}
 
