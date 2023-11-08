@@ -34,8 +34,8 @@ const DepositsOverview: React.FC = () => {
 		selectedCurrency
 	);
 
-	// If there is no available balance, there is no future deposit expected.
-	const isNextDepositExpected = !! overview?.available?.amount;
+	// If there is no available balance or it is negative, there is no future deposit expected.
+	const isNextDepositExpected = ( overview?.available?.amount ?? 0 ) > 0;
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 	const isNegativeBalanceDepositsPaused =
