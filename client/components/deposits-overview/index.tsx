@@ -59,7 +59,9 @@ const DepositsOverview: React.FC = () => {
 			{ /* Deposit schedule message */ }
 			{ ! isLoading && hasNextDeposit && !! account && (
 				<CardBody>
-					<DepositSchedule { ...account.deposits_schedule } />
+					<DepositSchedule
+						depositsSchedule={ account.deposits_schedule }
+					/>
 				</CardBody>
 			) }
 

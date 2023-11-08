@@ -400,7 +400,9 @@ describe( 'Deposits Overview footer renders', () => {
 describe( 'Deposit Schedule renders', () => {
 	test( 'with a weekly schedule', () => {
 		const { container } = render(
-			<DepositSchedule { ...mockAccount.deposits_schedule } />
+			<DepositSchedule
+				depositsSchedule={ mockAccount.deposits_schedule }
+			/>
 		);
 		const descriptionText = container.textContent;
 
@@ -413,7 +415,9 @@ describe( 'Deposit Schedule renders', () => {
 		mockAccount.deposits_schedule.monthly_anchor = 14;
 
 		const { container } = render(
-			<DepositSchedule { ...mockAccount.deposits_schedule } />
+			<DepositSchedule
+				depositsSchedule={ mockAccount.deposits_schedule }
+			/>
 		);
 		const descriptionText = container.textContent;
 
@@ -426,7 +430,9 @@ describe( 'Deposit Schedule renders', () => {
 		mockAccount.deposits_schedule.monthly_anchor = 31;
 
 		const { container } = render(
-			<DepositSchedule { ...mockAccount.deposits_schedule } />
+			<DepositSchedule
+				depositsSchedule={ mockAccount.deposits_schedule }
+			/>
 		);
 		const descriptionText = container.textContent;
 
@@ -439,7 +445,9 @@ describe( 'Deposit Schedule renders', () => {
 		mockAccount.deposits_schedule.monthly_anchor = 2;
 
 		const { container } = render(
-			<DepositSchedule { ...mockAccount.deposits_schedule } />
+			<DepositSchedule
+				depositsSchedule={ mockAccount.deposits_schedule }
+			/>
 		);
 		const descriptionText = container.textContent;
 
@@ -451,7 +459,9 @@ describe( 'Deposit Schedule renders', () => {
 		mockAccount.deposits_schedule.interval = 'daily';
 
 		const { container } = render(
-			<DepositSchedule { ...mockAccount.deposits_schedule } />
+			<DepositSchedule
+				depositsSchedule={ mockAccount.deposits_schedule }
+			/>
 		);
 		const descriptionText = container.textContent;
 
@@ -463,7 +473,9 @@ describe( 'Deposit Schedule renders', () => {
 		mockAccount.deposits_schedule.interval = 'manual';
 
 		const { container } = render(
-			<DepositSchedule { ...mockAccount.deposits_schedule } />
+			<DepositSchedule
+				depositsSchedule={ mockAccount.deposits_schedule }
+			/>
 		);
 
 		// Check that a manual schedule is not rendered.
