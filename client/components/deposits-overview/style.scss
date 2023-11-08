@@ -17,6 +17,14 @@
 		margin-bottom: 16px;
 	}
 
+	.components-card__body.wcpay-deposits-overview__schedule__container {
+		padding-top: 24px;
+	}
+
+	.components-card__footer.wcpay-deposits-overview__footer {
+		padding: 24px;
+	}
+
 	// Override extraneous CardBody vertical padding -
 	// we use multiple stacked CardBody components
 	// so table CardDivider is full width.

@@ -58,7 +58,7 @@ const DepositsOverview: React.FC = () => {
 
 			{ /* Deposit schedule message */ }
 			{ ! isLoading && hasNextDeposit && !! account && (
-				<CardBody>
+				<CardBody className="wcpay-deposits-overview__schedule__container">
 					<DepositSchedule
 						depositsSchedule={ account.deposits_schedule }
 					/>
@@ -67,9 +67,7 @@ const DepositsOverview: React.FC = () => {
 
 			{ /* Notices */ }
 			{ ! isLoading && (
-				<CardBody
-					className={ 'wcpay-deposits-overview__notices__container' }
-				>
+				<CardBody className="wcpay-deposits-overview__notices__container">
 					{ account?.deposits_blocked ? (
 						<SuspendedDepositNotice />
 					) : (
