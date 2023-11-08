@@ -71,6 +71,12 @@ const PaymentMethodLabel = ( {
 					type="warning"
 				/>
 			) }
+			{ upeCapabilityStatuses.REJECTED === status && (
+				<Chip
+					message={ __( 'Rejected', 'woocommerce-payments' ) }
+					type="alert"
+				/>
+			) }
 			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
 				<Chip
 					message={ __(
@@ -133,7 +139,10 @@ const PaymentMethod = ( {
 		upeCapabilityStatuses.PENDING_VERIFICATION,
 	].includes( status );
 
-	const needsAttention = needsMoreInformation || isPoInProgress;
+	const needsAttention =
+		needsMoreInformation ||
+		isPoInProgress ||
+		upeCapabilityStatuses.REJECTED === status;
 	const shouldDisplayNotice = id === 'sofort';
 
 	const needsOverlay =
@@ -171,6 +180,32 @@ const PaymentMethod = ( {
 				label,
 				wcpaySettings?.accountEmail ?? ''
 			);
+		}
+
+		if ( upeCapabilityStatuses.REJECTED === status ) {
+			return interpolateComponents( {
+				// translators: {{contactSupportLink}}: placeholders are opening and closing anchor tags.
+				mixedString: __(
+					'Please {{contactSupportLink}}contact support{{/contactSupportLink}} for more details.',
+					'woocommerce-payments'
+				),
+				components: {
+					contactSupportLink: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							target="_blank"
+							rel="noreferrer"
+							title={ __(
+								'Contact Support',
+								'woocommerce-payments'
+							) }
+							href={
+								'https://woo.com/my-account/contact-support/'
+							}
+						/>
+					),
+				},
+			} );
 		}
 
 		if ( isSetupRequired ) {
