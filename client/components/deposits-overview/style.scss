@@ -39,6 +39,15 @@
 		display: flex;
 	}
 
+	// Override notice colors for transit days notice
+	.wcpay-inline-notice.components-notice.wcpay-deposit-transit-days-notice {
+		background-color: $gray-0;
+
+		.wcpay-inline-notice__icon svg {
+			fill: $gray-900;
+		}
+	}
+
 	&__table {
 		&__row {
 			&__header {

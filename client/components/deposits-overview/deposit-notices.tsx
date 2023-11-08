@@ -105,7 +105,11 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
  * Renders a notice informing the user of the time it takes for deposits to appear in their bank account.
  */
 export const DepositTransitDaysNotice: React.FC = () => (
-	<InlineNotice icon={ tip } isDismissible={ false }>
+	<InlineNotice
+		icon={ tip }
+		isDismissible={ false }
+		className="wcpay-deposit-transit-days-notice"
+	>
 		{ __(
 			'It may take 1-3 business days for deposits to reach your bank account.',
 			'woocommerce-payments'

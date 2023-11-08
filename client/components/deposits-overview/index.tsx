@@ -106,6 +106,7 @@ const DepositsOverview: React.FC = () => {
 						<RecentDepositsList deposits={ deposits } />
 					</>
 				) }
+
 			<DepositsOverviewFooter />
 		</Card>
 	);
