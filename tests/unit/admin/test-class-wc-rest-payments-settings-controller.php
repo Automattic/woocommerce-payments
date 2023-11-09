@@ -821,12 +821,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$cod_gateway          = WC()->payment_gateways()->payment_gateways()['cod'];
 		$cod_gateway->enabled = 'yes';
 
-		$payment_gateways = WC()->payment_gateways()->payment_gateways();
-
-		foreach ( $payment_gateways as $gateway ) {
-			$gateway->enabled = 'yes';
-		}
-
 		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
 			[
 				'currency_code' => 'usd',
