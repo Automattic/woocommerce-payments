@@ -490,7 +490,7 @@ class WC_Payments {
 		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account, self::$session_service, self::$database_cache );
 		self::$in_person_payments_receipts_service  = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                 = new WC_Payments_Localization_Service();
-		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
+		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter();
 		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$woopay_util                          = new WooPay_Utilities();
@@ -1331,6 +1331,15 @@ class WC_Payments {
 	 */
 	public static function get_session_service() {
 		return self::$session_service;
+	}
+
+	/**
+	 * Returns the session rate limiter.
+	 *
+	 * @return Session_Rate_Limiter
+	 */
+	public static function get_session_rate_limiter() {
+		return self::$failed_transaction_rate_limiter;
 	}
 
 	/**

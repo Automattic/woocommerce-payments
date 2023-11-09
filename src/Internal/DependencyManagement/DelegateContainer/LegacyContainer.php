@@ -168,4 +168,13 @@ class LegacyContainer implements ContainerInterface {
 	private function get_wc_payments_order_service_instance() {
 		return WC_Payments::get_order_service();
 	}
+
+	/**
+	 * Returns the Session_Rate_Limiter instance.
+	 *
+	 * @return WCPay\Session_Rate_Limiter
+	 */
+	private function get_wcpay_session_rate_limiter_instance() {
+		return WC_Payments::get_session_rate_limiter();
+	}
 }
