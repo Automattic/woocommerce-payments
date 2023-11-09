@@ -14,6 +14,7 @@ use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\Logger;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
+use WCPay\Internal\Payment\FailedTransactionRateLimiter;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\CompletedState;
@@ -70,6 +71,10 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( StateFactory::class )
 			->addArgument( Container::class );
 
+		$container->addShared( FailedTransactionRateLimiter::class )
+			->addArgument( SessionService::class )
+			->addArgument( LegacyProxy::class );
+
 		$container->addShared( PaymentProcessingService::class )
 			->addArgument( StateFactory::class )
 			->addArgument( LegacyProxy::class )
@@ -90,7 +95,8 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( WC_Payments_Customer_Service::class )
 			->addArgument( Level3Service::class )
 			->addArgument( PaymentRequestService::class )
-			->addArgument( DuplicatePaymentPreventionService::class );
+			->addArgument( DuplicatePaymentPreventionService::class )
+			->addArgument( FailedTransactionRateLimiter::class );
 
 		$container->add( ProcessedState::class )
 			->addArgument( StateFactory::class )

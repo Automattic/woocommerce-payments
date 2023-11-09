@@ -7,6 +7,8 @@
 
 namespace WCPay\Internal\Payment\State;
 
+use WCPay\Exceptions\API_Exception;
+use WCPay\Internal\Payment\FailedTransactionRateLimiter;
 use WC_Payments_Customer_Service;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
@@ -62,14 +64,22 @@ class InitialState extends AbstractPaymentState {
 	private $dpps;
 
 	/**
+	 * FailedTransactionRateLimiter instance.
+	 *
+	 * @var FailedTransactionRateLimiter
+	 */
+	private $failed_transaction_rate_limiter;
+
+	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory                      $state_factory           Factory for payment states.
-	 * @param OrderService                      $order_service           Service for order-related actions.
-	 * @param WC_Payments_Customer_Service      $customer_service        Service for managing remote customers.
-	 * @param Level3Service                     $level3_service          Service for Level3 Data.
-	 * @param PaymentRequestService             $payment_request_service Connection with the server.
-	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
+	 * @param  StateFactory                      $state_factory  Factory for payment states.
+	 * @param  OrderService                      $order_service  Service for order-related actions.
+	 * @param  WC_Payments_Customer_Service      $customer_service  Service for managing remote customers.
+	 * @param  Level3Service                     $level3_service  Service for Level3 Data.
+	 * @param  PaymentRequestService             $payment_request_service  Connection with the server.
+	 * @param  DuplicatePaymentPreventionService $dpps  Service for preventing duplicate payments.
+	 * @param  FailedTransactionRateLimiter      $failed_transaction_rate_limiter Failed Transaction Rate Limiter instance.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -77,15 +87,17 @@ class InitialState extends AbstractPaymentState {
 		WC_Payments_Customer_Service $customer_service,
 		Level3Service $level3_service,
 		PaymentRequestService $payment_request_service,
-		DuplicatePaymentPreventionService $dpps
+		DuplicatePaymentPreventionService $dpps,
+		FailedTransactionRateLimiter $failed_transaction_rate_limiter
 	) {
 		parent::__construct( $state_factory );
 
-		$this->order_service           = $order_service;
-		$this->customer_service        = $customer_service;
-		$this->level3_service          = $level3_service;
-		$this->payment_request_service = $payment_request_service;
-		$this->dpps                    = $dpps;
+		$this->order_service                   = $order_service;
+		$this->customer_service                = $customer_service;
+		$this->level3_service                  = $level3_service;
+		$this->payment_request_service         = $payment_request_service;
+		$this->dpps                            = $dpps;
+		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 	}
 
 	/**
@@ -109,6 +121,13 @@ class InitialState extends AbstractPaymentState {
 		// Start multiple verification checks.
 		$this->process_order_phone_number();
 
+		if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+			throw new StateTransitionException(
+				__( 'Your payment was not processed.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
 		$duplicate_order_result = $this->process_duplicate_order();
 		if ( null !== $duplicate_order_result ) {
 			return $duplicate_order_result;
@@ -127,6 +146,11 @@ class InitialState extends AbstractPaymentState {
 			$context->set_intent( $intent );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
+		} catch ( API_Exception $e ) {
+			if ( $this->failed_transaction_rate_limiter->should_bump_rate_limiter( $e->get_error_code() ) ) {
+				$this->failed_transaction_rate_limiter->bump();
+			}
+			throw $e;
 		}
 
 		// Intent requires authorization (3DS check).
