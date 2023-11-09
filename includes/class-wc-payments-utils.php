@@ -137,7 +137,7 @@ class WC_Payments_Utils {
 	public static function interpret_stripe_amount( int $amount, string $currency = 'usd' ): float {
 		$conversion_rate = 100;
 
-		if ( self::is_zero_decimal_currency( $currency ) ) {
+		if ( ! self::is_special_case_zero_decimal_currency( strtolower( $currency ) ) && self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
 			$conversion_rate = 1;
 		}
 

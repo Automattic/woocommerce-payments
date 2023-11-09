@@ -82,6 +82,19 @@ export const isZeroDecimalCurrency = ( currencyCode ) => {
 };
 
 /**
+ * Determines if the given currency is zero decimal special case.
+ * https://stripe.com/docs/currencies#special-cases.
+ * TODO: ISK fix
+ *
+ * @param {string} currencyCode Currency code
+ *
+ * @return {boolean} true if currency is zero-decimal
+ */
+export const isSpecialCaseZeroDecimalCurrency = ( currencyCode ) => {
+	return [ 'ugx' ].includes( currencyCode.toLowerCase() );
+};
+
+/**
  * Formats amount according to the given currency.
  *
  * @param {number} amount       Amount
@@ -97,7 +110,7 @@ export const formatCurrency = (
 ) => {
 	// Normalize amount with respect to zer decimal currencies and provided data formats
 	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
-	if ( ! isZeroDecimal ) {
+	if ( ! isZeroDecimal || isSpecialCaseZeroDecimalCurrency( currencyCode ) ) {
 		amount /= 100;
 	}
 
