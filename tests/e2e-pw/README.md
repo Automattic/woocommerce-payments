@@ -9,3 +9,4 @@
 -   `npm run test:e2e-pw -- --headed` (headed -- displaying browser window and test interactions)
 -   `npm run test:e2e-pw -- --ui` (runs tests in interactive UI mode)
 -   `npm run test:e2e-pw -- --debug` (runs tests in debug mode)
+-   `npm run test:e2e-pw -- --update-snapshots` (updates snapshots)

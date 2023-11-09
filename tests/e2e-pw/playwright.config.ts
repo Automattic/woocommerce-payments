@@ -31,12 +31,17 @@ export default defineConfig( {
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
 		baseURL: BASE_URL ?? 'http://localhost:8084',
-		screenshot: 'on',
+		screenshot: 'only-on-failure',
 		trace: 'retain-on-failure',
 		video: 'on-first-retry',
 		viewport: { width: 1280, height: 720 },
 		// storageState: 'tests/e2e-pw/storage/state.json',
 	},
+	expect: {
+		toHaveScreenshot: { maxDiffPixels: 100 },
+	},
+	snapshotPathTemplate:
+		'{testDir}/__snapshots__/{testFilePath}/{arg}_{projectName}_{platform}{ext}',
 	// globalSetup: require.resolve( './global-setup' ),
 	// globalTeardown: require.resolve( './global-teardown' ),
 

@@ -12,6 +12,7 @@ test.describe(
 			await expect( title ).toHaveText(
 				/WooCommerce Payments E2E site/i
 			);
+			await expect( page ).toHaveScreenshot();
 		} );
 
 		test.describe( 'Sign in as admin', () => {
