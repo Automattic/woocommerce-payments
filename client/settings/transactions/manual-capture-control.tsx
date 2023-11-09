@@ -67,7 +67,8 @@ const ManualCaptureControl = (): JSX.Element => {
 						{ isCardPresentEligible
 							? interpolateComponents( {
 									mixedString: __(
-										'The setting is not applied to {{a}}In-Person Payments{{/a}} (please note that In-Person Payments should be captured within 2 days of authorization).',
+										/** translators: {{a}}: opening and closing anchor tags. The white space at the beginning of the sentence is intentional. */
+										' The setting is not applied to {{a}}In-Person Payments{{/a}} (please note that In-Person Payments should be captured within 2 days of authorization).',
 										'woocommerce-payments'
 									),
 									components: {
