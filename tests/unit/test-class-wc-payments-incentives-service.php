@@ -207,7 +207,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		$expected = [
 			'incentive'    => [],
 			'ttl'          => 86400,
-			'context_hash' => '6d37bc19d822af681f896b21065134c7',
+			'context_hash' => '34cdc0d98807874e7b1ad659aa49985d',
 		];
 
 		$this->assertSame( $expected, $this->incentives_service->fetch_connect_incentive_details() );
@@ -266,6 +266,6 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		// 'has_orders' => false,
 		// 'has_payments' => false,
 		// 'has_wcpay' => false.
-		'context_hash' => '6d37bc19d822af681f896b21065134c7',
+		'context_hash' => '34cdc0d98807874e7b1ad659aa49985d',
 	];
 }
