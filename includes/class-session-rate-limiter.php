@@ -108,4 +108,15 @@ class Session_Rate_Limiter {
 
 		return false;
 	}
+
+	/**
+	 * Returns true if the code returned from the API represents an error that should be rate-limited.
+	 *
+	 * @param string $error_code The error code returned from the API.
+	 *
+	 * @return bool Whether the rate limiter should be bumped.
+	 */
+	public function should_bump( string $error_code ): bool {
+		return in_array( $error_code, [ 'card_declined', 'incorrect_number', 'incorrect_cvc' ], true );
+	}
 }

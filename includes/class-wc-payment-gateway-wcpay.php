@@ -978,7 +978,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->update_status( Order_Status::FAILED );
 			}
 
-			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
+			if ( $e instanceof API_Exception && $this->failed_transaction_rate_limiter->should_bump( $e->get_error_code() ) ) {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
@@ -3508,17 +3508,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return '';
 		}
 		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
-	}
-
-	/**
-	 * Returns true if the code returned from the API represents an error that should be rate-limited.
-	 *
-	 * @param string $error_code The error code returned from the API.
-	 *
-	 * @return bool Whether the rate limiter should be bumped.
-	 */
-	protected function should_bump_rate_limiter( string $error_code ): bool {
-		return in_array( $error_code, [ 'card_declined', 'incorrect_number', 'incorrect_cvc' ], true );
 	}
 
 	/**
