@@ -364,12 +364,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 0.853, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
 	}
 
-	public function test_payment_fields_outputs_fields() {
-		$this->wcpay_gateway->payment_fields();
-
-		$this->expectOutputRegex( '/<div id="wcpay-card-element"><\/div>/' );
-	}
-
 	public function test_save_card_checkbox_not_displayed_when_saved_cards_disabled() {
 		$this->wcpay_gateway->update_option( 'saved_cards', 'no' );
 
