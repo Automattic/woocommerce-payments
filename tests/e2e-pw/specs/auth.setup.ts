@@ -7,12 +7,12 @@ import { test as setup, expect } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import testConfig from '../../e2e/config/default.json';
+import { config } from '../config/default';
 
 // See https://playwright.dev/docs/auth#multiple-signed-in-roles
 const {
 	users: { admin, customer },
-} = testConfig;
+} = config;
 process.env.ADMINSTATE = `tests/e2e-pw/.auth/admin.json`;
 process.env.CUSTOMERSTATE = `tests/e2e-pw/.auth/customer.json`;
 
