@@ -125,10 +125,26 @@ describe( 'Settings - Transactions', () => {
 		render( <Transactions /> );
 
 		expect(
-			screen.getByText(
-				new RegExp( 'The setting is not applied to In-Person Payments' )
-			)
+			screen.getByRole( 'link', { name: /In-Person Payments/i } )
 		).toBeInTheDocument();
+
+		expect(
+			screen.getByText( new RegExp( 'The setting is not applied to' ) )
+		).toBeInTheDocument();
+	} );
+
+	it( "shouldn't display ipp payment notice when it is not eligible for card present", async () => {
+		useCardPresentEligible.mockReturnValue( [ false ] );
+
+		render( <Transactions /> );
+
+		expect(
+			screen.queryByRole( 'link', { name: /In-Person Payments/i } )
+		).not.toBeInTheDocument();
+
+		expect(
+			screen.queryByText( new RegExp( 'The setting is not applied to' ) )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'display support email and phone inputs', async () => {
