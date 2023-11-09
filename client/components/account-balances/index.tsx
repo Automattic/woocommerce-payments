@@ -219,6 +219,7 @@ const AccountBalances: React.FC = () => {
 											  } )
 											: interpolateComponents( {
 													mixedString: sprintf(
+														// Translators: %d is the number of days, e.g. 1, 2, 3, etc.
 														__(
 															'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
 															'woocommerce-payments'
