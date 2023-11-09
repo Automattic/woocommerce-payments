@@ -201,6 +201,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_localization_service,
 			$this->mock_fraud_service
 		);
+		WC_Payments::set_gateway( $this->wcpay_gateway );
 
 		$this->woopay_utilities = new WooPay_Utilities();
 
