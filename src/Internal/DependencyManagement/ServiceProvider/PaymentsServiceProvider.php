@@ -34,6 +34,7 @@ use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\SessionService;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * WCPay payments service provider.
@@ -90,7 +91,8 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( WC_Payments_Customer_Service::class )
 			->addArgument( Level3Service::class )
 			->addArgument( PaymentRequestService::class )
-			->addArgument( DuplicatePaymentPreventionService::class );
+			->addArgument( DuplicatePaymentPreventionService::class )
+			->addArgument( Session_Rate_Limiter::class );
 
 		$container->add( ProcessedState::class )
 			->addArgument( StateFactory::class )

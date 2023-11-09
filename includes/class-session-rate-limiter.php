@@ -52,7 +52,7 @@ class Session_Rate_Limiter {
 	public function __construct(
 		$key = self::SESSION_KEY_DECLINED_CARD_REGISTRY,
 		$threshold = 5,
-		$delay = 10 * MINUTE_IN_SECONDS
+		$delay = 10 * \MINUTE_IN_SECONDS
 	) {
 		$this->key       = $key;
 		$this->threshold = $threshold;

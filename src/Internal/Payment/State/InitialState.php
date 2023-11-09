@@ -7,11 +7,13 @@
 
 namespace WCPay\Internal\Payment\State;
 
+use Exception;
 use WC_Payments_Customer_Service;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
@@ -21,6 +23,7 @@ use WCPay\Internal\Service\Level3Service;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\PaymentRequestException;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * Initial state, representing a freshly created payment.
@@ -62,6 +65,13 @@ class InitialState extends AbstractPaymentState {
 	private $dpps;
 
 	/**
+	 * Session rate limiter instance.
+	 *
+	 * @var Session_Rate_Limiter
+	 */
+	private $session_rate_limiter;
+
+	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
 	 * @param StateFactory                      $state_factory           Factory for payment states.
@@ -70,6 +80,7 @@ class InitialState extends AbstractPaymentState {
 	 * @param Level3Service                     $level3_service          Service for Level3 Data.
 	 * @param PaymentRequestService             $payment_request_service Connection with the server.
 	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
+	 * @param Session_Rate_Limiter              $session_rate_limiter    Failed transactions rate limiter.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -77,7 +88,8 @@ class InitialState extends AbstractPaymentState {
 		WC_Payments_Customer_Service $customer_service,
 		Level3Service $level3_service,
 		PaymentRequestService $payment_request_service,
-		DuplicatePaymentPreventionService $dpps
+		DuplicatePaymentPreventionService $dpps,
+		Session_Rate_Limiter $session_rate_limiter
 	) {
 		parent::__construct( $state_factory );
 
@@ -86,6 +98,7 @@ class InitialState extends AbstractPaymentState {
 		$this->level3_service          = $level3_service;
 		$this->payment_request_service = $payment_request_service;
 		$this->dpps                    = $dpps;
+		$this->session_rate_limiter    = $session_rate_limiter;
 	}
 
 	/**
@@ -118,6 +131,14 @@ class InitialState extends AbstractPaymentState {
 		if ( null !== $duplicate_payment_result ) {
 			return $duplicate_payment_result;
 		}
+
+		if ( $this->session_rate_limiter->is_limited() ) {
+			throw new Exception(
+				__( 'Your payment was not processed.', 'woocommerce-payments' ),
+				'rate_limiter_enabled'
+			);
+		}
+
 		// End multiple verification checks.
 
 		// Payments are currently based on intents, request one from the API.
@@ -127,6 +148,13 @@ class InitialState extends AbstractPaymentState {
 			$context->set_intent( $intent );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
+		} catch ( API_Exception $e ) {
+			if ( $e instanceof API_Exception && $this->session_rate_limiter->should_bump( $e->get_error_code() ) ) {
+				$this->session_rate_limiter->bump();
+			}
+
+			// Re-throw the exception as usual.
+			throw $e;
 		}
 
 		// Intent requires authorization (3DS check).
