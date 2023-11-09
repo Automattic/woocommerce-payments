@@ -634,6 +634,11 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
+		// WC Bookings require confirmation products are not supported.
+		if ( is_a( $product, 'WC_Product_Booking' ) && $product->get_requires_confirmation() ) {
+			$is_supported = false;
+		}
+
 		return apply_filters( 'wcpay_woopay_button_is_product_supported', $is_supported, $product );
 	}
 
