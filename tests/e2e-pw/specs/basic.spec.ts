@@ -19,10 +19,13 @@ test.describe(
 			test.use( {
 				storageState: process.env.ADMINSTATE,
 			} );
-			test( 'Load wp-admin', async ( { page } ) => {
-				await page.goto( '/wp-admin' );
-				const title = page.locator( 'div.wrap > h1' );
-				await expect( title ).toHaveText( 'Dashboard' );
+			test( 'Load Payments Overview', async ( { page } ) => {
+				await page.goto(
+					'/wp-admin/admin.php?page=wc-admin&path=/payments/overview'
+				);
+				await page.waitForLoadState( 'networkidle' );
+				const logo = page.getByAltText( 'WooPayments logo' );
+				await expect( logo ).toBeVisible();
 			} );
 		} );
 
