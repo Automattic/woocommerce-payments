@@ -20,7 +20,6 @@ type DepositsIntervals = 'daily' | 'weekly' | 'monthly' | 'manual';
 
 interface DepositsStatusProps {
 	iconSize: number;
-	isPoInProgress: boolean;
 	interval: DepositsIntervals;
 }
 
@@ -50,20 +49,12 @@ const DepositsStatusEnabled: React.FC< DepositsStatusProps > = ( props ) => {
 };
 
 const DepositsStatusDisabled: React.FC< DepositsStatusProps > = ( props ) => {
-	const { iconSize, isPoInProgress } = props;
-
-	const description = isPoInProgress
-		? __( 'Not connected', 'woocommerce-payments' )
-		: __( 'Disabled', 'woocommerce-payments' );
-
-	const className = isPoInProgress
-		? 'account-status__info__gray'
-		: 'account-status__info__red';
+	const { iconSize } = props;
 
 	return (
-		<span className={ className }>
+		<span className={ 'account-status__info__red' }>
 			<GridiconNotice size={ iconSize } />
-			{ description }
+			{ __( 'Disabled', 'woocommerce-payments' ) }
 		</span>
 	);
 };
@@ -130,19 +121,17 @@ const DepositsStatus: React.FC< Props > = ( {
 } ) => {
 	const isPoInProgress = poEnabled && ! poComplete;
 
-	if ( accountStatus === 'pending_verification' ) {
+	if ( accountStatus === 'pending_verification' || isPoInProgress ) {
 		return (
 			<DepositsStatusPending
 				iconSize={ iconSize }
-				isPoInProgress={ isPoInProgress }
 				interval={ interval }
 			/>
 		);
-	} else if ( status === 'disabled' ) {
+	} if ( status === 'disabled' ) {
 		return (
 			<DepositsStatusDisabled
 				iconSize={ iconSize }
-				isPoInProgress={ isPoInProgress }
 				interval={ interval }
 			/>
 		);
@@ -150,18 +139,13 @@ const DepositsStatus: React.FC< Props > = ( {
 		return (
 			<DepositsStatusSuspended
 				iconSize={ iconSize }
-				isPoInProgress={ isPoInProgress }
 				interval={ interval }
 			/>
 		);
 	}
 
 	return (
-		<DepositsStatusEnabled
-			iconSize={ iconSize }
-			isPoInProgress={ isPoInProgress }
-			interval={ interval }
-		/>
+		<DepositsStatusEnabled iconSize={ iconSize } interval={ interval } />
 	);
 };
 
