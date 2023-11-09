@@ -105,11 +105,12 @@ class InitialState extends AbstractPaymentState {
 	 *
 	 * @param PaymentRequest $request The incoming payment processing request.
 	 *
-	 * @return AbstractPaymentState      The next state.
-	 * @throws StateTransitionException  In case the completed state could not be initialized.
-	 * @throws ContainerException        When the dependency container cannot instantiate the state.
-	 * @throws Order_Not_Found_Exception Order could not be found.
-	 * @throws PaymentRequestException   When data is not available or invalid.
+	 * @return AbstractPaymentState       The next state.
+	 * @throws StateTransitionException   In case the completed state could not be initialized.
+	 * @throws ContainerException         When the dependency container cannot instantiate the state.
+	 * @throws Order_Not_Found_Exception  Order could not be found.
+	 * @throws PaymentRequestException    When data is not available or invalid.
+	 * @throws Amount_Too_Small_Exception When the order amount is too small.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
@@ -131,16 +132,20 @@ class InitialState extends AbstractPaymentState {
 			return $duplicate_payment_result;
 		}
 
-		$this->verify_minimum_amount();
+		$context = $this->get_context();
+		$this->minimum_amount_service->verify_amount(
+			(string) $context->get_currency(),
+			(int) $context->get_amount()
+		);
 		// End multiple verification checks.
 
 		// Payments are currently based on intents, request one from the API.
 		try {
-			$context = $this->get_context();
-			$intent  = $this->payment_request_service->create_intent( $context );
+			$intent = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
 		} catch ( Amount_Too_Small_Exception $e ) {
-			$this->process_minimum_amount_exception( $e );
+			$this->minimum_amount_service->store_amount_from_exception( $e );
+			throw $e;
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
 		}
@@ -232,42 +237,6 @@ class InitialState extends AbstractPaymentState {
 				)
 			);
 		}
-	}
-
-	/**
-	 * Verifies the minimum order amount, and catches the error without reaching the API.
-	 *
-	 * @throws StateTransitionException
-	 */
-	protected function verify_minimum_amount(): void {
-		$context        = $this->get_context();
-		$currency       = $context->get_currency();
-		$order_amount   = (int) $context->get_amount();
-		$minimum_amount = $this->minimum_amount_service->get_cache( $currency );
-
-		if ( $minimum_amount > $order_amount ) {
-			$error_message = $this->minimum_amount_service->get_error_message_for_shoppers( $currency, $minimum_amount );
-
-			throw new StateTransitionException( $error_message );
-		}
-	}
-
-	/**
-	 * Processes the legacy minimum amount exception from the server API.
-	 *
-	 * @param Amount_Too_Small_Exception $e Legacy Minimum Amount Exception.
-	 *
-	 * @return void
-	 * @throws StateTransitionException
-	 */
-	protected function process_minimum_amount_exception( Amount_Too_Small_Exception $e ): void {
-		$minimum_amount = $e->get_minimum_amount();
-		$currency       = $e->get_currency();
-
-		$this->minimum_amount_service->set_cache( $currency, $minimum_amount );
-		$error_message = $this->minimum_amount_service->get_error_message_for_shoppers( $currency, $minimum_amount );
-
-		throw new StateTransitionException( $error_message );
 	}
 
 	/**
