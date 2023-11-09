@@ -255,6 +255,10 @@
 				overflow: hidden;
 			}
 
+			&__shortcode-link {
+				color: $studio-woocommerce-purple-60;
+			}
+
 			&__checkout-button {
 				background-color: $studio-woocommerce-purple-60;
 				border-radius: 0.12444rem;

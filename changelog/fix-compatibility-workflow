@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Fix a PHPUnit polyfills incompatibility with latest WP (6.4) in the compatibility workflow
+
+
