@@ -796,7 +796,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_upe_get_settings_card_eligible_flag() {
+	public function test_upe_get_settings_card_eligible_flag(): void {
 		// Enable Cash on Delivery gateway for the purpose of this test.
 		$cod_gateway          = WC()->payment_gateways()->payment_gateways()['cod'];
 		$cod_gateway->enabled = 'yes';
@@ -816,7 +816,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$cod_gateway->enabled = 'no';
 	}
 
-	public function test_upe_split_get_settings_card_eligible_flag() {
+	public function test_upe_split_get_settings_card_eligible_flag(): void {
 		// Enable Cash on Delivery gateway for the purpose of this test.
 		$cod_gateway          = WC()->payment_gateways()->payment_gateways()['cod'];
 		$cod_gateway->enabled = 'yes';
