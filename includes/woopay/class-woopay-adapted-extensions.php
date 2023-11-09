@@ -232,6 +232,20 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	}
 
 	/**
+	 * Check if Affiliate for WooCommerce is enabled and
+	 * its functions used on WCPay are available.
+	 *
+	 * @return boolean
+	 */
+	public function is_affiliate_for_woocommerce_enabled() {
+		return defined( 'AFWC_PLUGIN_FILE' ) &&
+			function_exists( 'afwc_get_referrer_id' ) &&
+			class_exists( 'AFWC_API' ) &&
+			method_exists( 'AFWC_API', 'get_instance' ) &&
+			method_exists( 'AFWC_API', 'track_conversion' );
+	}
+
+	/**
 	 * Check if Automate Woo Referrals is enabled and
 	 * its functions used on WCPay are available.
 	 *
