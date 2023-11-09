@@ -396,7 +396,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Test processing payment with the status "requires_capture".
 	 */
-	public function test_tktktk() {
+	public function test_intent_status_requires_capture() {
 		// Arrange: Reusable data.
 		$intent_id   = 'pi_mock';
 		$charge_id   = 'ch_mock';
