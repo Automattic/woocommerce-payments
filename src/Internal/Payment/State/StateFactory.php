@@ -38,9 +38,11 @@ class StateFactory {
 	/**
 	 * Creates a new state based on class name.
 	 *
-	 * @param string         $state_class Name of the state class.
-	 * @param PaymentContext $context     Context for the new state.
-	 * @return AbstractPaymentState       The generated payment state instance.
+	 * @template ConcreteState
+	 * @param class-string<ConcreteState> | string $state_class Name of the state class.
+	 * @param PaymentContext                       $context     Context for the new state.
+	 *
+	 * @return AbstractPaymentState | ConcreteState                        The generated payment state instance.
 	 * @throws ContainerException         When the dependency container cannot instantiate the state.
 	 * @throws StateTransitionException   When the class name is not a state.
 	 */
@@ -57,7 +59,9 @@ class StateFactory {
 		}
 
 		$state = $this->container->get( $state_class );
+		$context->log_state_transition( $state_class );
 		$state->set_context( $context );
+
 		return $state;
 	}
 }

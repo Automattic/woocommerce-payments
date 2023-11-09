@@ -36,7 +36,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	public function get_adapted_extensions_data( $email ) {
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		if ( count( $enabled_adapted_extensions ) === 0 ) {
+		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) === 0 ) {
 			return [];
 		}
 
@@ -171,7 +171,10 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 			];
 		}
 
-		if ( defined( 'AFWC_PLUGIN_FILE' ) && function_exists( 'afwc_get_referrer_id' ) ) {
+		if ( $this->is_affiliate_for_woocommerce_enabled() ) {
+			/**
+			 * @psalm-suppress UndefinedFunction
+			 */
 			$extension_data[ 'affiliate-for-woocommerce' ] = [
 				'affiliate-user' => afwc_get_referrer_id(),
 			];
@@ -197,11 +200,10 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	 * @param int $order_id The successful WooPay order.
 	 */
 	public function update_order_extension_data( $order_id ) {
-		if (
-			! empty( $_GET['affiliate'] ) && // phpcs:ignore WordPress.Security.NonceVerification
-			$this->is_automate_woo_referrals_enabled()
+		if ( ! empty( $_GET['affiliate'] ) && // phpcs:ignore WordPress.Security.NonceVerification
+			$this->is_affiliate_for_woocommerce_enabled()
 		) {
-			$affiliate_id = wc_clean( wp_unslash( $_GET['affiliate'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			$affiliate_id = (int) wc_clean( wp_unslash( $_GET['affiliate'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
 			// phpcs:ignore
 			/**

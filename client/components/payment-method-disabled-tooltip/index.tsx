@@ -14,9 +14,9 @@ import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
 
 export const DocumentationUrlForDisabledPaymentMethod = {
 	DEFAULT:
-		'https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled',
+		'https://woo.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled',
 	BNPLS:
-		'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#contact-support',
+		'https://woo.com/document/woopayments/payment-methods/buy-now-pay-later/#contact-support',
 };
 
 export const getDocumentationUrlForDisabledPaymentMethod = (
@@ -26,6 +26,7 @@ export const getDocumentationUrlForDisabledPaymentMethod = (
 	switch ( paymentMethodId ) {
 		case PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY:
 		case PAYMENT_METHOD_IDS.AFFIRM:
+		case PAYMENT_METHOD_IDS.KLARNA:
 			url = DocumentationUrlForDisabledPaymentMethod.BNPLS;
 			break;
 		default:

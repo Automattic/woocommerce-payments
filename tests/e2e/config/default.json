@@ -3,20 +3,20 @@
     "admin": {
       "username": "admin",
       "password": "password",
-      "email": "e2e-wcpay-admin@woocommerce.com"
+      "email": "e2e-wcpay-admin@woo.com"
     },
     "customer": {
       "username": "customer",
       "password": "password",
-      "email": "e2e-wcpay-customer@woocommerce.com"
+      "email": "e2e-wcpay-customer@woo.com"
     },
     "subscriptions-customer": {
       "username": "subscriptions-customer",
       "password": "password",
-      "email": "e2e-wcpay-customer@woocommerce.com"
+      "email": "e2e-wcpay-customer@woo.com"
     },
     "guest": {
-      "email": "e2e-wcpay-guest@woocommerce.com"
+      "email": "e2e-wcpay-guest@woo.com"
     }
   },
   "products": {
@@ -43,7 +43,7 @@
         "city": "San Francisco",
         "state": "CA",
         "postcode": "94110",
-        "email": "e2e-wcpay-subscriptions-customer@woocommerce.com"
+        "email": "e2e-wcpay-subscriptions-customer@woo.com"
       }
     },
     "customer": {
@@ -58,7 +58,7 @@
         "state": "CA",
         "postcode": "94110",
         "phone": "123456789",
-        "email": "e2e-wcpay-customer@woocommerce.com"
+        "email": "e2e-wcpay-customer@woo.com"
       },
       "shipping": {
         "firstname": "I am",
@@ -71,7 +71,7 @@
         "state": "CA",
         "postcode": "94110",
         "phone": "123456789",
-        "email": "e2e-wcpay-customer@woocommerce.com"
+        "email": "e2e-wcpay-customer@woo.com"
       }
     },
     "subscriptions-customer": {
@@ -86,7 +86,7 @@
         "state": "CA",
         "postcode": "94110",
         "phone": "123456789",
-        "email": "e2e-wcpay-subscriptions-customer@woocommerce.com"
+        "email": "e2e-wcpay-subscriptions-customer@woo.com"
       },
       "shipping": {
         "firstname": "I am",
@@ -99,7 +99,7 @@
         "state": "CA",
         "postcode": "94110",
         "phone": "123456789",
-        "email": "e2e-wcpay-subscriptions-customer@woocommerce.com"
+        "email": "e2e-wcpay-subscriptions-customer@woo.com"
       }
     }
   },

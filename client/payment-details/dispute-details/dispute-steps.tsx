@@ -80,7 +80,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 					{ customer?.email
 						? createInterpolateElement(
 								__(
-									'<a>Email the customer</a> to address their concerns.',
+									'<a>Email the customer</a> to identify the issue and work towards a resolution where possible.',
 									'woocommerce-payments'
 								),
 								{
@@ -95,19 +95,19 @@ export const DisputeSteps: React.FC< Props > = ( {
 								}
 						  )
 						: __(
-								'Email the customer to address their concerns.',
+								'Email the customer to identify the issue and work towards a resolution where possible.',
 								'woocommerce-payments'
 						  ) }
 				</li>
 				<li>
 					{ createInterpolateElement(
 						__(
-							'Provide <a>guidance on dispute withdrawal</a> if the customer agrees.',
+							'Assist the customer <a>in withdrawing their dispute</a> if they agree to do so.',
 							'woocommerce-payments'
 						),
 						{
 							a: (
-								<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
+								<ExternalLink href="https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
 							),
 						}
 					) }
@@ -142,7 +142,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 									content={ sprintf(
 										// Translators: %s is a formatted currency amount, eg $10.00.
 										__(
-											`Accepting this dispute will automatically close it. Your account will be charged a %s fee, and the disputed amount will be refunded to the cardholder.`,
+											`Accepting this dispute will automatically close it. The disputed amount and the %s dispute fee will not be returned to you.`,
 											'woocommerce-payments'
 										),
 										getDisputeFeeFormatted(
@@ -258,7 +258,7 @@ export const InquirySteps: React.FC< Props > = ( {
 										),
 										{
 											learnMoreLink: (
-												<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
+												<ExternalLink href="https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
 											),
 										}
 									) }

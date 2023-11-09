@@ -213,7 +213,7 @@ class WC_Payments_Utils {
 
 	/**
 	 * List of countries enabled for Stripe platform account. See also this URL:
-	 * https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries
+	 * https://woo.com/document/woopayments/compatibility/countries/#supported-countries
 	 *
 	 * @return string[]
 	 */
@@ -391,6 +391,27 @@ class WC_Payments_Utils {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Apply a callback on every value in an array, regardless of the number of array dimensions.
+	 *
+	 * @param array    $array The array to map.
+	 * @param callable $callback The callback to apply.
+	 * @return array The mapped array.
+	 */
+	public static function array_map_recursive( array $array, callable $callback ): array {
+		foreach ( $array as $key => $value ) {
+			if ( \is_array( $value ) ) {
+				$value = self::array_map_recursive( $value, $callback );
+			} else {
+				$value = $callback( $value, $key, $array );
+			}
+
+			$array[ $key ] = $value;
+		}
+
+		return $array;
 	}
 
 	/**
@@ -657,6 +678,10 @@ class WC_Payments_Utils {
 	 */
 	public static function compose_transaction_url( $primary_id, $fallback_id, $query_args = [] ) {
 		if ( empty( $fallback_id ) && empty( $primary_id ) ) {
+			return '';
+		}
+
+		if ( strpos( $primary_id, 'seti_' ) !== false ) {
 			return '';
 		}
 

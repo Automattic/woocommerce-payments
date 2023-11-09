@@ -10,7 +10,6 @@ namespace WCPay\Tests\Internal\Payment;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payment_Token;
 use WC_Payment_Tokens;
-use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
 use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
 use WCPay\Internal\Payment\PaymentRequest;
@@ -251,22 +250,69 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 		$this->sut->get_payment_method();
 	}
 
-	public function test_populate_context() {
-		$payment_method_id = 'pm_XYZ';
+	public function provider_get_cvc_confirmation() {
+		return [
+			'No payment method'                  => [
+				null,
+				null,
+				null,
+			],
+			'Payment method set, no CVC'         => [
+				'woocommerce_payments',
+				null,
+				null,
+			],
+			'Payment method set, new CVC'        => [
+				'woocommerce_payments',
+				'new',
+				null,
+			],
+			'Payment method set, meaningful CVC' => [
+				'woocommerce_payments',
+				'xyz1234',
+				'xyz1234',
+			],
+		];
+	}
 
-		$sut = new PaymentRequest(
-			$this->mock_legacy_proxy,
-			[
-				'payment_method'       => 'woocommerce_payments',
-				'wcpay-payment-method' => $payment_method_id,
-			]
-		);
+	/**
+	 * @dataProvider provider_get_cvc_confirmation
+	 */
+	public function test_get_cvc_confirmation( $payment_method, $cvc, $expected ) {
+		$request = [];
+		if ( $payment_method ) {
+			$request['payment_method'] = $payment_method;
+		}
 
-		$mock_context = $this->createMock( PaymentContext::class );
-		$mock_context->expects( $this->once() )
-			->method( 'set_payment_method' )
-			->with( $this->isInstanceOf( NewPaymentMethod::class ) );
+		if ( $cvc ) {
+			$request[ 'wc-' . $payment_method . '-payment-cvc-confirmation' ] = $cvc;
+		}
 
-		$sut->populate_context( $mock_context );
+		$sut    = new PaymentRequest( $this->mock_legacy_proxy, $request );
+		$result = $sut->get_cvc_confirmation();
+		$this->assertSame( $expected, $result );
+	}
+
+	public function provider_get_fingerprint() {
+		return [
+			'Nothing provided'    => [ null, null ],
+			'Empty string'        => [ '', null ],
+			'Normal string'       => [ 'abc', 'abc' ],
+			'Needs normalization' => [ '<abc', '&lt;abc' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_get_fingerprint
+	 */
+	public function test_get_fingerprint( $provided, $expected ) {
+		$request = [];
+		if ( ! is_null( $provided ) ) {
+			$request['wcpay-fingerprint'] = $provided;
+		}
+
+		$sut    = new PaymentRequest( $this->mock_legacy_proxy, $request );
+		$result = $sut->get_fingerprint();
+		$this->assertSame( $expected, $result );
 	}
 }

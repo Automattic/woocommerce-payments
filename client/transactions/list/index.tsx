@@ -603,12 +603,6 @@ export const TransactionsList = (
 							userEmail
 						)
 					);
-
-					wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-						exported_transactions: exportedTransactions,
-						total_transactions: exportedTransactions,
-						download_type: downloadType,
-					} );
 				} catch {
 					createNotice(
 						'error',
@@ -624,12 +618,6 @@ export const TransactionsList = (
 				generateCSVFileName( title, params ),
 				generateCSVDataFromTable( columnsToDisplay, rows )
 			);
-
-			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-				exported_transactions: rows.length,
-				total_transactions: transactionsSummary.count,
-				download_type: downloadType,
-			} );
 		}
 
 		setIsDownloading( false );

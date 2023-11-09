@@ -51,7 +51,7 @@ const DisputeUnderReviewFooter: React.FC< {
 								<a
 									target="_blank"
 									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+									href="https://woo.com/document/woopayments/fraud-and-disputes/"
 								/>
 							),
 						}
@@ -70,9 +70,10 @@ const DisputeUnderReviewFooter: React.FC< {
 							onClick={ () => {
 								wcpayTracks.recordEvent(
 									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 									{
 										dispute_status: dispute.status,
+										on_page: 'transaction_details',
 									}
 								);
 							} }
@@ -122,7 +123,7 @@ const DisputeWonFooter: React.FC< {
 								<a
 									target="_blank"
 									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+									href="https://woo.com/document/woopayments/fraud-and-disputes/"
 								/>
 							),
 						}
@@ -141,9 +142,10 @@ const DisputeWonFooter: React.FC< {
 							onClick={ () => {
 								wcpayTracks.recordEvent(
 									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 									{
 										dispute_status: dispute.status,
+										on_page: 'transaction_details',
 									}
 								);
 							} }
@@ -229,7 +231,7 @@ const DisputeLostFooter: React.FC< {
 								<a
 									target="_blank"
 									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+									href="https://woo.com/document/woopayments/fraud-and-disputes/"
 								/>
 							),
 						}
@@ -250,9 +252,10 @@ const DisputeLostFooter: React.FC< {
 								onClick={ () => {
 									wcpayTracks.recordEvent(
 										wcpayTracks.events
-											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 										{
 											dispute_status: dispute.status,
+											on_page: 'transaction_details',
 										}
 									);
 								} }
@@ -303,7 +306,7 @@ const InquiryUnderReviewFooter: React.FC< {
 								<a
 									target="_blank"
 									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
+									href="https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
 								/>
 							),
 						}
@@ -322,9 +325,10 @@ const InquiryUnderReviewFooter: React.FC< {
 							onClick={ () => {
 								wcpayTracks.recordEvent(
 									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 									{
 										dispute_status: dispute.status,
+										on_page: 'transaction_details',
 									}
 								);
 							} }
@@ -375,7 +379,7 @@ const InquiryClosedFooter: React.FC< {
 								<a
 									target="_blank"
 									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+									href="https://woo.com/document/woopayments/fraud-and-disputes/"
 								/>
 							),
 						}
@@ -396,9 +400,10 @@ const InquiryClosedFooter: React.FC< {
 								onClick={ () => {
 									wcpayTracks.recordEvent(
 										wcpayTracks.events
-											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICK,
+											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
 										{
 											dispute_status: dispute.status,
+											on_page: 'transaction_details',
 										}
 									);
 								} }

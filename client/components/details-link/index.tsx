@@ -15,7 +15,7 @@ import { getAdminUrl } from 'wcpay/utils';
 /**
  * The parent segment is the first part of the URL after the /payments/ path.
  */
-type ParentSegment = 'deposits' | 'transactions' | 'disputes';
+type ParentSegment = 'deposits' | 'transactions';
 
 export const getDetailsURL = (
 	/**

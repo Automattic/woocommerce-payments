@@ -376,6 +376,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-refund-charge.php';
 		include_once __DIR__ . '/core/server/request/class-list-charge-refunds.php';
 		include_once __DIR__ . '/core/server/request/class-get-request.php';
+		include_once __DIR__ . '/core/server/request/class-request-utils.php';
 
 		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 
@@ -416,6 +417,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
+		include_once __DIR__ . '/exceptions/class-amount-too-large-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
@@ -482,10 +484,10 @@ class WC_Payments {
 		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
 		self::$session_service                      = new WC_Payments_Session_Service( self::$api_client );
 		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service, self::$session_service );
-		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache );
+		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache, self::$session_service );
 		self::$token_service                        = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                  = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
-		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account, self::$session_service );
+		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account, self::$session_service, self::$database_cache );
 		self::$in_person_payments_receipts_service  = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                 = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
@@ -504,7 +506,7 @@ class WC_Payments {
 		self::$onboarding_service->init_hooks();
 		self::$incentives_service->init_hooks();
 
-		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service );
+		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
@@ -530,7 +532,7 @@ class WC_Payments {
 			foreach ( $payment_methods as $payment_method ) {
 				self::$upe_payment_method_map[ $payment_method->get_id() ] = $payment_method;
 
-				$split_gateway = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service );
+				$split_gateway = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
 
 				// Card gateway hooks are registered once below.
 				if ( 'card' !== $payment_method->get_id() ) {
@@ -541,7 +543,7 @@ class WC_Payments {
 			}
 
 			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
-			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service );
+			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
 		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_methods = [];
 			foreach ( $payment_method_classes as $payment_method_class ) {
@@ -549,11 +551,11 @@ class WC_Payments {
 				$payment_methods[ $payment_method->get_id() ] = $payment_method;
 			}
 
-			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service );
-			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service );
+			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
+			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
 		} else {
 			self::$card_gateway         = self::$legacy_card_gateway;
-			self::$wc_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service );
+			self::$wc_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
 		}
 
 		self::$card_gateway->init_hooks();
@@ -565,6 +567,10 @@ class WC_Payments {
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
+
+		// Only register hooks of the new `src` service with the same feature of Duplicate_Payment_Prevention_Service.
+		// To avoid register the same hooks twice.
+		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
 
 		self::maybe_register_woopay_hooks();
 
@@ -623,6 +629,7 @@ class WC_Payments {
 				self::$onboarding_service,
 				self::$order_service,
 				self::$incentives_service,
+				self::$fraud_service,
 				self::$database_cache
 			);
 			$admin->init_hooks();
@@ -653,6 +660,8 @@ class WC_Payments {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
 		}
+
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_disable_wcpay_subscriptions_on_update' ] );
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
@@ -1071,13 +1080,17 @@ class WC_Payments {
 		}
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
-		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller(
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
+		$payment_intents_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-create-controller.php';
+		$payment_intents_create_controller = new WC_REST_Payments_Payment_Intents_Create_Controller(
 			self::$api_client,
 			self::get_gateway(),
 			wcpay_get_container()->get( OrderService::class ),
 			wcpay_get_container()->get( Level3Service::class )
 		);
-		$payment_intents_controller->register_routes();
+		$payment_intents_create_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
 		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
@@ -1086,6 +1099,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
 		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
 		$reports_transactions_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
+		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
+		$reports_authorizations_controller->register_routes();
 
 	}
 
@@ -1305,6 +1322,15 @@ class WC_Payments {
 	 */
 	public static function set_customer_service( WC_Payments_Customer_Service $customer_service_class ) {
 		self::$customer_service = $customer_service_class;
+	}
+
+	/**
+	 * Returns the WC_Payments_Session_Service instance
+	 *
+	 * @return WC_Payments_Session_Service Session Service instance
+	 */
+	public static function get_session_service() {
+		return self::$session_service;
 	}
 
 	/**
@@ -1762,22 +1788,37 @@ class WC_Payments {
 			return true;
 		}
 
+		if ( ! function_exists( 'wcs_get_orders_with_meta_query' ) ) {
+			return false;
+		}
+
 		// If there are any Stripe Billing Subscriptions, we should load the Stripe Billing integration classes. eg while a migration is in progress, or to support legacy subscriptions.
-		return function_exists( 'wcs_get_orders_with_meta_query' ) && (bool) count(
-			wcs_get_orders_with_meta_query(
-				[
-					'status'     => 'any',
-					'return'     => 'ids',
-					'type'       => 'shop_subscription',
-					'limit'      => 1, // We only need to know if there are any - at least 1.
-					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-						[
-							'key'     => '_wcpay_subscription_id',
-							'compare' => 'EXISTS',
-						],
+		$result = wcs_get_orders_with_meta_query(
+			[
+				'status'     => 'any',
+				'return'     => 'ids',
+				'type'       => 'shop_subscription',
+				'limit'      => 1, // We only need to know if there are any - at least 1.
+				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => '_wcpay_subscription_id',
+						'compare' => 'EXISTS',
 					],
-				]
-			)
+				],
+			]
 		);
+
+		return (bool) ( is_countable( $result ) ? count( $result ) : 0 );
+	}
+
+	/**
+	 * Disable the WCPay Subscriptions feature on WooPayments plugin update if it's enabled and the store is no longer eligible.
+	 *
+	 * @see WC_Payments_Features::is_wcpay_subscriptions_eligible() for eligibility criteria.
+	 */
+	public static function maybe_disable_wcpay_subscriptions_on_update() {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ( class_exists( 'WC_Subscriptions' ) || ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) ) {
+			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+		}
 	}
 }

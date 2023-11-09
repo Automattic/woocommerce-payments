@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getAppearance } from '../../upe-styles';
+import { getAppearance, getFontRulesFromPage } from '../../upe-styles';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
 	appendFingerprintInputToForm,
@@ -40,13 +40,13 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
  * @param {Object} api The API object used to save the UPE configuration.
  * @return {Object} The appearance object for the UPE.
  */
-function initializeAppearance( api ) {
-	let appearance = getUPEConfig( 'upeAppearance' );
-	if ( ! appearance ) {
-		appearance = getAppearance();
-		api.saveUPEAppearance( appearance );
+async function initializeAppearance( api ) {
+	const appearance = getUPEConfig( 'upeAppearance' );
+	if ( appearance ) {
+		return appearance;
 	}
-	return appearance;
+
+	return await api.saveUPEAppearance( getAppearance() );
 }
 
 /**
@@ -160,6 +160,7 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 		paymentMethodCreation: 'manual',
 		paymentMethodTypes: paymentMethodTypes,
 		appearance: initializeAppearance( api ),
+		fonts: getFontRulesFromPage(),
 	};
 
 	const elements = api

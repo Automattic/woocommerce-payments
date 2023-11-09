@@ -11,6 +11,7 @@ use Exception;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
+use WC_Payments_Fraud_Service;
 use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
@@ -54,23 +55,33 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	protected $customer_service;
 
 	/**
+	 * WC_Payments_Fraud_Service instance to get information about fraud services.
+	 *
+	 * @var WC_Payments_Fraud_Service
+	 */
+	protected $fraud_service;
+
+	/**
 	 * Construct.
 	 *
-	 * @param UPE_Payment_Gateway          $gateway                WC Payment Gateway.
-	 * @param WooPay_Utilities             $woopay_util WooPay Utilities.
-	 * @param WC_Payments_Account          $account                WC Payments Account.
-	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
+	 * @param UPE_Payment_Gateway          $gateway          WC Payment Gateway.
+	 * @param WooPay_Utilities             $woopay_util      WooPay Utilities.
+	 * @param WC_Payments_Account          $account          WC Payments Account.
+	 * @param WC_Payments_Customer_Service $customer_service WC Payments Customer Service.
+	 * @param WC_Payments_Fraud_Service    $fraud_service    Fraud service instance.
 	 */
 	public function __construct(
 		UPE_Payment_Gateway $gateway,
 		WooPay_Utilities $woopay_util,
 		WC_Payments_Account $account,
-		WC_Payments_Customer_Service $customer_service
+		WC_Payments_Customer_Service $customer_service,
+		WC_Payments_Fraud_Service $fraud_service
 	) {
 		$this->gateway          = $gateway;
 		$this->woopay_util      = $woopay_util;
 		$this->account          = $account;
 		$this->customer_service = $customer_service;
+		$this->fraud_service    = $fraud_service;
 	}
 
 	/**
@@ -90,8 +101,10 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'switch_theme', [ $this->gateway, 'clear_upe_appearance_transient' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this->gateway, 'clear_upe_appearance_transient' ] );
-		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this->gateway, 'create_payment_intent_ajax' ] );
-		add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this->gateway, 'update_payment_intent_ajax' ] );
+		if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this->gateway, 'create_payment_intent_ajax' ] );
+			add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this->gateway, 'update_payment_intent_ajax' ] );
+		}
 		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this->gateway, 'init_setup_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 
@@ -260,7 +273,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 					$payment_method->get_testing_instructions(),
 					[
 						'strong' => '<strong>',
-						'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+						'a'      => '<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 					]
 				);
 				$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
@@ -336,7 +349,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 							$testing_instructions,
 							[
 								'strong' => '<strong>',
-								'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+								'a'      => '<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 							]
 						);
 					}

@@ -118,10 +118,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return bool
 	 */
 	public function is_account_creation_possible() {
+		$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
+
+		// If a subscription is being purchased, check if account creation is allowed for subscriptions.
+		if ( ! $is_signup_from_checkout_allowed && $this->has_subscription_product() ) {
+			$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'no' );
+		}
+
 		// If automatically generate username/password are disabled, the Payment Request API
 		// can't include any of those fields, so account creation is not possible.
 		return (
-			'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' ) &&
+			$is_signup_from_checkout_allowed &&
 			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
 			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
 		);
@@ -381,8 +388,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		];
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestPayForOrderParams', $data );
-
-		$this->display_payment_request_button_html();
 	}
 
 	/**
@@ -531,9 +536,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
+		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
+		if ( $this->is_pay_for_order_page() ) {
+			return true;
+		}
+
 		// Cart total is 0 or is on product page and product price is 0.
+		// Exclude pay-for-order pages from this check.
 		if (
-			( ! $this->is_product() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
+			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
 			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 
 		) {
@@ -593,7 +604,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// We don't support multiple packages with Payment Request Buttons because we can't offer a good UX.
 		$packages = WC()->cart->get_shipping_packages();
-		if ( 1 < count( $packages ) ) {
+		if ( 1 < ( is_countable( $packages ) ? count( $packages ) : 0 ) ) {
 			return false;
 		}
 
@@ -616,11 +627,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 				return true;
 			}
 		} elseif ( $this->is_checkout() || $this->is_cart() ) {
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-				$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
-				if ( WC_Subscriptions_Product::is_subscription( $_product ) ) {
-					return true;
-				}
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
 			}
 		}
 
@@ -676,6 +684,31 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Gets the context for where the button is being displayed.
+	 *
+	 * @return string
+	 */
+	public function get_button_context() {
+		if ( $this->is_product() ) {
+			return 'product';
+		}
+
+		if ( $this->is_cart() ) {
+			return 'cart';
+		}
+
+		if ( $this->is_checkout() ) {
+			return 'checkout';
+		}
+
+		if ( $this->is_pay_for_order_page() ) {
+			return 'pay_for_order';
+		}
+
+		return '';
 	}
 
 	/**
@@ -753,6 +786,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'button'             => $this->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
 			'is_product_page'    => $this->is_product(),
+			'button_context'     => $this->get_button_context(),
 			'is_pay_for_order'   => $this->is_pay_for_order_page(),
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->get_product_data(),
@@ -1076,7 +1110,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$data['displayItems'] = $items;
 			$data['total']        = [
 				'label'   => $this->get_total_label(),
-				'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
+				'amount'  => WC_Payments_Utils::prepare_amount( $total + $total_tax, $currency ),
 				'pending' => true,
 			];
 

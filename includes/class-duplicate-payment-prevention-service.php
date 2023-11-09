@@ -66,9 +66,6 @@ class Duplicate_Payment_Prevention_Service {
 	public function init( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Order_Service $order_service ) {
 		$this->gateway       = $gateway;
 		$this->order_service = $order_service;
-
-		// Priority 21 to run right after wc_clear_cart_after_payment.
-		add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
 	}
 
 	/**
@@ -93,6 +90,7 @@ class Duplicate_Payment_Prevention_Service {
 		try {
 			$request = Get_Intention::create( $intent_id );
 			$request->set_hook_args( $order );
+			/** @var \WC_Payments_API_Abstract_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$intent        = $request->send();
 			$intent_status = $intent->get_status();
 		} catch ( Exception $e ) {
@@ -100,7 +98,7 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		};
 
-		if ( ! in_array( $intent_status, WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true ) ) {
+		if ( ! $intent->is_authorized() ) {
 			return;
 		}
 
@@ -150,6 +148,17 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		}
 
+		if ( ! $current_order->has_status( wc_get_is_pending_statuses() ) ) {
+			return;
+		}
+
+		if ( $session_order->get_id() === $current_order->get_id() ) {
+			return;
+		}
+
+		if ( $session_order->get_customer_id() !== $current_order->get_customer_id() ) {
+			return;
+		}
 		$session_order->add_order_note(
 			sprintf(
 				/* translators: order ID integer number */
@@ -211,19 +220,5 @@ class Duplicate_Payment_Prevention_Service {
 
 		$val = $session->get( self::SESSION_KEY_PROCESSING_ORDER );
 		return null === $val ? null : absint( $val );
-	}
-
-	/**
-	 * Action to remove the order ID when customers reach its order-received page.
-	 *
-	 * @return void
-	 */
-	public function clear_session_processing_order_after_landing_order_received_page() {
-		global $wp;
-
-		if ( is_order_received_page() && isset( $wp->query_vars['order-received'] ) ) {
-			$order_id = absint( $wp->query_vars['order-received'] );
-			$this->remove_session_processing_order( $order_id );
-		}
 	}
 }
