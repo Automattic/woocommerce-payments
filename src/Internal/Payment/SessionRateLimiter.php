@@ -13,7 +13,7 @@ use WCPay\Internal\Service\SessionService;
 /**
  * A wrapper class for keeping track of events in registries, and to trigger a rate limiter after a threshold.
  */
-abstract class AbstractSessionRateLimiter {
+class SessionRateLimiter {
 	/**
 	 * Key used to store the registry in the session
 	 *
@@ -58,7 +58,7 @@ abstract class AbstractSessionRateLimiter {
 	 * @param SessionService $session_service SessionService instance.
 	 * @param LegacyProxy    $legacy_proxy    LegacyProxy instance.
 	 */
-	protected function __construct(
+	public function __construct(
 		string $key,
 		int $threshold,
 		int $delay,

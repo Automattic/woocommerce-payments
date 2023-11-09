@@ -14,7 +14,7 @@ use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\Logger;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
-use WCPay\Internal\Payment\FailedTransactionRateLimiter;
+use WCPay\Internal\Payment\SessionRateLimiter;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\CompletedState;
@@ -71,9 +71,18 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( StateFactory::class )
 			->addArgument( Container::class );
 
-		$container->addShared( FailedTransactionRateLimiter::class )
-			->addArgument( SessionService::class )
-			->addArgument( LegacyProxy::class );
+		$container->addShared(
+			'failed_transaction_rate_limiter',
+			function() use ( $container ) {
+				return new SessionRateLimiter(
+					'wcpay_card_declined_registry',
+					5,
+					10 * MINUTE_IN_SECONDS,
+					$container->get( SessionService::class ),
+					$container->get( LegacyProxy::class )
+				);
+			}
+		);
 
 		$container->addShared( PaymentProcessingService::class )
 			->addArgument( StateFactory::class )
@@ -96,7 +105,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( Level3Service::class )
 			->addArgument( PaymentRequestService::class )
 			->addArgument( DuplicatePaymentPreventionService::class )
-			->addArgument( FailedTransactionRateLimiter::class );
+			->addArgument( 'failed_transaction_rate_limiter' );
 
 		$container->add( ProcessedState::class )
 			->addArgument( StateFactory::class )

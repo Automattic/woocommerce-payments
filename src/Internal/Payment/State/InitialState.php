@@ -8,12 +8,12 @@
 namespace WCPay\Internal\Payment\State;
 
 use WCPay\Exceptions\API_Exception;
-use WCPay\Internal\Payment\FailedTransactionRateLimiter;
 use WC_Payments_Customer_Service;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Internal\Payment\SessionRateLimiter;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
@@ -66,7 +66,7 @@ class InitialState extends AbstractPaymentState {
 	/**
 	 * FailedTransactionRateLimiter instance.
 	 *
-	 * @var FailedTransactionRateLimiter
+	 * @var SessionRateLimiter
 	 */
 	private $failed_transaction_rate_limiter;
 
@@ -79,7 +79,7 @@ class InitialState extends AbstractPaymentState {
 	 * @param  Level3Service                     $level3_service  Service for Level3 Data.
 	 * @param  PaymentRequestService             $payment_request_service  Connection with the server.
 	 * @param  DuplicatePaymentPreventionService $dpps  Service for preventing duplicate payments.
-	 * @param  FailedTransactionRateLimiter      $failed_transaction_rate_limiter Failed Transaction Rate Limiter instance.
+	 * @param  SessionRateLimiter                $failed_transaction_rate_limiter Failed Transaction Rate Limiter instance.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -88,7 +88,7 @@ class InitialState extends AbstractPaymentState {
 		Level3Service $level3_service,
 		PaymentRequestService $payment_request_service,
 		DuplicatePaymentPreventionService $dpps,
-		FailedTransactionRateLimiter $failed_transaction_rate_limiter
+		SessionRateLimiter $failed_transaction_rate_limiter
 	) {
 		parent::__construct( $state_factory );
 
