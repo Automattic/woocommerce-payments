@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { decodeEntities } from '@wordpress/html-entities';
 import { chevronDown, Icon } from '@wordpress/icons';
 
@@ -91,9 +91,13 @@ const LoadingBox = ( { height } ) => {
 
 const TextBox = ( { children, maxHeight } ) => {
 	return (
-		<div className="preview-layout__text-box" style={ { maxHeight } }>
-			{ children }
-		</div>
+		<div
+			className="preview-layout__text-box"
+			style={ { maxHeight } }
+			dangerouslySetInnerHTML={ {
+				__html: children,
+			} }
+		/>
 	);
 };
 
@@ -105,9 +109,62 @@ const CheckoutButton = ( { height } ) => {
 	);
 };
 
+/**
+ * Sanitizes HTML for the preview.
+ *
+ * @param {string} input The HTML to sanitize.
+ * @return {string} The sanitized HTML.
+ */
+function sanitizeHtmlForPreview( input ) {
+	return input.replace( /<\/?([a-zA-Z]+)[^>]*>/g, function (
+		fullMatch,
+		tagName
+	) {
+		tagName = tagName.toLowerCase();
+		const allowedTags = [ 'a', 'em', 'strong', 'b', 'i' ];
+		// Only allow allowedTags.
+		if ( ! allowedTags.includes( tagName ) ) {
+			return '';
+		}
+
+		// 'a' tags are converted to 'span' tags with a class, in the preview.
+		if ( tagName === 'a' ) {
+			if ( fullMatch.startsWith( '</' ) ) {
+				return `</span>`;
+			}
+
+			return `<span class="preview-layout__shortcode-link">`;
+		}
+
+		// Remaining tags are stripped of attributes, in the preview.
+		if ( fullMatch.startsWith( '</' ) ) {
+			return `</${ tagName }>`;
+		}
+
+		return `<${ tagName }>`;
+	} );
+}
+
 export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 	const { style, ...restProps } = props;
-	const trimmedCustomMessage = ( customMessage || '' ).trim();
+
+	const preparedCustomMessage = useMemo( () => {
+		let rawCustomMessage = ( customMessage || '' ).trim();
+
+		if ( rawCustomMessage ) {
+			rawCustomMessage = sanitizeHtmlForPreview( rawCustomMessage );
+			rawCustomMessage = rawCustomMessage.replace(
+				/\[(terms|terms_of_service_link)\]/g,
+				'<span class="preview-layout__shortcode-link">Terms of Service</span>'
+			);
+			rawCustomMessage = rawCustomMessage.replace(
+				/\[(privacy_policy|privacy_policy_link)\]/g,
+				'<span class="preview-layout__shortcode-link">Privacy Policy</span>'
+			);
+		}
+
+		return rawCustomMessage;
+	}, [ customMessage ] );
 
 	let storeHeader;
 	if ( storeLogo ) {
@@ -192,12 +249,10 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 							<VerticalSpacer height="0.498rem" />
 							<LoadingBox height="2rem" />
 							<VerticalSpacer height="0.747rem" />
-							{ trimmedCustomMessage && (
+							{ preparedCustomMessage && (
 								<>
 									<TextBox maxHeight="2.5rem">
-										{ decodeEntities(
-											trimmedCustomMessage
-										) }
+										{ preparedCustomMessage }
 									</TextBox>
 									<VerticalSpacer height="0.747rem" />
 								</>

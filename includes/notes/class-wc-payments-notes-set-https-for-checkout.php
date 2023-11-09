@@ -26,7 +26,7 @@ class WC_Payments_Notes_Set_Https_For_Checkout {
 	/**
 	 * Name of the note for use in the database.
 	 */
-	const NOTE_DOCUMENTATION_URL = 'https://woocommerce.com/document/ssl-and-https/#section-7';
+	const NOTE_DOCUMENTATION_URL = 'https://woo.com/document/ssl-and-https/#section-7';
 
 	/**
 	 * Checks if a note can and should be added.

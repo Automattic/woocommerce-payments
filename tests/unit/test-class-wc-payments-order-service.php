@@ -1012,6 +1012,35 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests if the order status is set to processing by a filter
+	 */
+	public function test_mark_terminal_payment_order_completed_status() {
+		// Create the intent.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] );
+
+		// Filter the order status to processing.
+		add_filter(
+			'wcpay_terminal_payment_completed_order_status',
+			function() {
+				return Order_Status::PROCESSING;
+			}
+		);
+
+		// Attempt to mark the payment/order processing.
+		$this->order_service->mark_terminal_payment_completed( $this->order, $intent->get_id(), $intent->get_status() );
+
+		// Assert: Check that the order status was updated to processing status.
+		$this->assertTrue( $this->order->has_status( [ Order_Status::PROCESSING ] ) );
+
+		remove_filter(
+			'wcpay_terminal_payment_completed_order_status',
+			function() {
+				return Order_Status::PROCESSING;
+			}
+		);
+	}
+
+	/**
 	 * @dataProvider provider_order_note_exists
 	 */
 	public function test_order_note_exists( array $notes, string $note_to_check, bool $expected ) {
