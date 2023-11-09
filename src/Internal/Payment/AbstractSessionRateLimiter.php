@@ -13,7 +13,7 @@ use WCPay\Internal\Service\SessionService;
 /**
  * A wrapper class for keeping track of events in registries, and to trigger a rate limiter after a threshold.
  */
-class AbstractSessionRateLimiter {
+abstract class AbstractSessionRateLimiter {
 	/**
 	 * Key used to store the registry in the session
 	 *
