@@ -223,7 +223,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Test processing payment with the status 'succeeded'.
 	 */
-	public function test_tk_intn() {
+	public function test_intent_status_success() {
 		// Arrange: Reusable data.
 		$intent_id   = 'pi_mock';
 		$charge_id   = 'ch_mock';
