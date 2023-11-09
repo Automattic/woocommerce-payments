@@ -36,6 +36,7 @@
     "test:e2e": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.config.js",
     "test:e2e-dev": "NODE_CONFIG_DIR='tests/e2e/config' JEST_PUPPETEER_CONFIG='tests/e2e/config/jest-puppeteer.config.js' wp-scripts test-e2e --config tests/e2e/config/jest.config.js --puppeteer-interactive",
     "test:e2e-performance": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.performance.config.js",
+    "test:e2e-pw": "playwright test --config=tests/e2e-pw/playwright.config.ts",
     "test:update-snapshots": "npm run test:js -- --updateSnapshot",
     "test:php": "./bin/run-tests.sh",
     "test:php-coverage": "./bin/check-test-coverage.sh",
@@ -83,6 +84,7 @@
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",
     "@jest/test-sequencer": "29.5.0",
+    "@playwright/test": "1.39.0",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.5",
@@ -90,6 +92,7 @@
     "@testing-library/user-event": "10.4.1",
     "@types/intl-tel-input": "17.0.4",
     "@types/lodash": "4.14.170",
+    "@types/node": "20.9.0",
     "@types/react": "17.0.2",
     "@types/react-transition-group": "4.4.6",
     "@types/wordpress__components": "19.10.5",
