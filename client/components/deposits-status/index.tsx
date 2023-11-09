@@ -121,23 +121,23 @@ const DepositsStatus: React.FC< Props > = ( {
 } ) => {
 	const isPoInProgress = poEnabled && ! poComplete;
 
-	if ( accountStatus === 'pending_verification' || isPoInProgress ) {
+	if ( status === 'blocked' ) {
+		return (
+			<DepositsStatusSuspended
+				iconSize={ iconSize }
+				interval={ interval }
+			/>
+		);
+	} else if ( accountStatus === 'pending_verification' || isPoInProgress ) {
 		return (
 			<DepositsStatusPending
 				iconSize={ iconSize }
 				interval={ interval }
 			/>
 		);
-	} if ( status === 'disabled' ) {
+	} else if ( status === 'disabled' ) {
 		return (
 			<DepositsStatusDisabled
-				iconSize={ iconSize }
-				interval={ interval }
-			/>
-		);
-	} else if ( status === 'blocked' ) {
-		return (
-			<DepositsStatusSuspended
 				iconSize={ iconSize }
 				interval={ interval }
 			/>
