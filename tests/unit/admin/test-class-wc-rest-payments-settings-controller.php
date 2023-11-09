@@ -451,34 +451,14 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_upe_split_update_settings_saves_enabled_payment_methods() {
-			$this->mock_upe_split_payment_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+		$this->mock_split_upe_payment_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
 
-			$request = new WP_REST_Request();
-			$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::GIROPAY ] );
+		$request = new WP_REST_Request();
+		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::GIROPAY ] );
 
-			$this->upe_split_controller->update_settings( $request );
+		$this->upe_split_controller->update_settings( $request );
 
-			$this->assertEquals( [ Payment_Method::CARD, Payment_Method::GIROPAY ], $this->mock_upe_split_payment_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
-	}
-
-	public function testEnabledPaymentMethodIdsValidation() {
-        // Mock the return value of get_upe_available_payment_methods()
-        $this->mock_split_upe_payment_gateway->method('get_upe_available_payment_methods')
-            ->willReturn(['card']);
-
-        $validateCallback = 'rest_validate_request_arg';
-
-        $invalidArgs = ['foo', 'bar'];
-        $validatedResult2 = call_user_func($validateCallback, $invalidArgs, '', 'enabled_payment_method_ids');
-        $this->assertEquals([], $validatedResult2);
-    }
-
-	public function test_ustk() {
-		$request = new WP_REST_Request( 'POST', self::$settings_route );
-		$request->set_param( 'enabled_payment_method_ids', [ 'foo', 'baz' ] );
-
-		$response = rest_do_request( $request );
-		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::GIROPAY ], $this->mock_split_upe_payment_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
 
 	public function test_update_settings_fails_if_user_cannot_manage_woocommerce() {

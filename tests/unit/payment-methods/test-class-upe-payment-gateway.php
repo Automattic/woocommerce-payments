@@ -2085,6 +2085,57 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * @dataProvider available_payment_methods_provider
+	 */
+	public function test_get_upe_available_payment_methods( $payment_methods, $expected_result ) {
+		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_fees' )
+			->willReturn( $payment_methods );
+
+		$gateway = new UPE_Payment_Gateway(
+			$this->mock_api_client,
+			$mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			$this->mock_payment_methods,
+			$this->mock_rate_limiter,
+			$this->mock_order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service
+		);
+
+		$this->assertEquals( $expected_result, $gateway->get_upe_available_payment_methods() );
+	}
+
+	public function available_payment_methods_provider() {
+		return [
+			'card only'                  => [
+				[ 'card' => [ 'base' => 0.1 ] ],
+				[ 'card' ],
+			],
+			'no match with fees'         => [
+				[ 'some_other_payment_method' => [ 'base' => 0.1 ] ],
+				[],
+			],
+			'multiple matches with fees' => [
+				[
+					'card'       => [ 'base' => 0.1 ],
+					'bancontact' => [ 'base' => 0.2 ],
+				],
+				[ 'card', 'bancontact' ],
+			],
+			'no fees no methods'         => [
+				[],
+				[],
+			],
+		];
+	}
+
+	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
 	 */
 	private function set_cart_contains_subscription_items( $cart_contains_subscriptions ) {
