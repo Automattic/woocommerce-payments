@@ -5,7 +5,9 @@ import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
-// Internal dependencies
+/**
+ * Internal dependencies
+ */
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
 const formatDate = ( format: string, date: number | string ) =>

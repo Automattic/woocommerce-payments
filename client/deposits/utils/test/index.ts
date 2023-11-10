@@ -11,7 +11,7 @@ import {
 	getDepositMonthlyAnchorLabel,
 	getNextDepositDate,
 } from '../';
-import * as AccountOverview from 'wcpay/types/account-overview';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 
 describe( 'Deposits Overview Utils / getDepositDate', () => {
 	test( 'returns a display value without a deposit', () => {
@@ -105,6 +105,7 @@ describe( 'Deposits Overview Utils / getNextDepositDate', () => {
 	} );
 
 	const testCases: NextDepositDateTestCase[] = [
+		[ '2023-01-01', { interval: 'manual' }, '—' ],
 		[ '2023-01-01', { interval: 'daily' }, 'January 2nd, 2023' ],
 		[ '2023-01-06', { interval: 'daily' }, 'January 7th, 2023' ], // weekends are acceptable deposit dates
 		[
