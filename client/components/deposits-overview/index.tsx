@@ -8,9 +8,7 @@ import {
 	CardBody,
 	CardFooter,
 	CardHeader,
-	Flex,
 } from '@wordpress/components';
-import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -144,50 +142,48 @@ const DepositsOverview: React.FC = () => {
 			) }
 
 			<CardFooter className="wcpay-deposits-overview__footer">
-				<Flex align="center" justify="flex-start">
+				<Button
+					variant="secondary"
+					href={ getAdminUrl( {
+						page: 'wc-admin',
+						path: '/payments/deposits',
+					} ) }
+					onClick={ () =>
+						wcpayTracks.recordEvent(
+							wcpayTracks.events
+								.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+						)
+					}
+				>
+					{ __(
+						'View full deposits history',
+						'woocommerce-payments'
+					) }
+				</Button>
+
+				{ ! account?.deposits_blocked && (
 					<Button
-						isSecondary={ true }
-						href={ getAdminUrl( {
-							page: 'wc-admin',
-							path: '/payments/deposits',
-						} ) }
+						variant="tertiary"
+						href={
+							getAdminUrl( {
+								page: 'wc-settings',
+								tab: 'checkout',
+								section: 'woocommerce_payments',
+							} ) + '#deposit-schedule'
+						}
 						onClick={ () =>
 							wcpayTracks.recordEvent(
 								wcpayTracks.events
-									.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+									.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
 							)
 						}
 					>
 						{ __(
-							'View full deposits history',
+							'Change deposit schedule',
 							'woocommerce-payments'
 						) }
 					</Button>
-
-					{ ! account?.deposits_blocked && (
-						<Link
-							type="wp-admin"
-							href={
-								getAdminUrl( {
-									page: 'wc-settings',
-									tab: 'checkout',
-									section: 'woocommerce_payments',
-								} ) + '#deposit-schedule'
-							}
-							onClick={ () =>
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
-								)
-							}
-						>
-							{ __(
-								'Change deposit schedule',
-								'woocommerce-payments'
-							) }
-						</Link>
-					) }
-				</Flex>
+				) }
 			</CardFooter>
 		</Card>
 	);
