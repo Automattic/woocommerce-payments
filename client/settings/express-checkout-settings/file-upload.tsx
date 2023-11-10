@@ -36,6 +36,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 		label,
 		accept,
 		disabled,
+		help,
 		purpose,
 		fileID,
 		updateFileID,
@@ -196,13 +197,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 				</div>
 			</div>
 
-			<BaseControl
-				id={ 'test' }
-				help={ __(
-					'Use a custom logo to WooPay if the one taken from your store doesn’t look right. For best results, upload a high-resolution horizontal image with white or transparent background.',
-					'woocommerce-payments'
-				) }
-			>
+			<BaseControl id={ 'test' } help={ help }>
 				{ ' ' }
 			</BaseControl>
 		</div>

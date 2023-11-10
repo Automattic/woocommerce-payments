@@ -27,7 +27,7 @@ const CapabilityRequestList: Array< CapabilityRequestMap > = [
 				),
 				actions: 'link',
 				actionUrl:
-					'https://woocommerce.com/document/woopayments/payment-methods/#jcb',
+					'https://woo.com/document/woopayments/payment-methods/#jcb',
 				actionsLabel: __( 'Finish setup', 'woocommerce-payments' ),
 			},
 			pending: {
