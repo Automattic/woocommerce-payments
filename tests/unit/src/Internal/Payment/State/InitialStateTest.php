@@ -13,7 +13,6 @@ use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\ProcessedState;
-use Exception;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\MinimumAmountService;
@@ -133,8 +132,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 					'process_order_phone_number',
 					'process_duplicate_order',
 					'process_duplicate_payment',
-					'verify_minimum_amount',
-					'process_minimum_amount_exception',
 				]
 			)
 			->setConstructorArgs(
@@ -199,11 +196,10 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
-		$this->mocked_sut->expects( $this->once() )->method( 'process_minimum_amount_exception' )
-			->with( $small_amount_exception )
-			->willThrowException( new StateTransitionException() );
+		$this->mock_minimum_amount_service->expects( $this->once() )->method( 'store_amount_from_exception' )
+			->with( $small_amount_exception );
 
-		$this->expectException( StateTransitionException::class );
+		$this->expectExceptionObject( $small_amount_exception );
 
 		// Act.
 		$this->mocked_sut->start_processing( $mock_request );
@@ -312,16 +308,27 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_start_processing_throws_exception_due_to_minimum_amount() {
-		$mock_request = $this->createMock( PaymentRequest::class );
+		$mock_request           = $this->createMock( PaymentRequest::class );
+		$small_amount_exception = new Amount_Too_Small_Exception( 'Amount too small', 50, 'EUR', 400 );
 
 		// Arrange mocks.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
-		$this->mocked_sut->expects( $this->once() )
-			->method( 'verify_minimum_amount' )
-			->willThrowException( new StateTransitionException() );
 
-		$this->expectException( StateTransitionException::class );
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_currency' )
+			->willReturn( 'EUR' );
+
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_amount' )
+			->willReturn( 50 );
+
+		$this->mock_minimum_amount_service->expects( $this->once() )
+			->method( 'verify_amount' )
+			->with( 'EUR', 50 )
+			->willThrowException( $small_amount_exception );
+
+		$this->expectExceptionObject( $small_amount_exception );
 
 		// Act.
 		$this->mocked_sut->start_processing( $mock_request );
@@ -568,65 +575,5 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Act and assert.
 		$result = PHPUnit_Utils::call_method( $this->sut, 'process_duplicate_payment', [] );
 		$this->assertInstanceOf( CompletedState::class, $result );
-	}
-
-	public function provider_verify_minimum_amount() {
-		return [
-			'Throw exception' => [ 'USD', 50, 10, 'Error message' ],
-			'No exception'    => [ 'EUR', 50, 100, null ],
-		];
-	}
-
-	/**
-	 * @dataProvider provider_verify_minimum_amount
-	 */
-	public function test_verify_minimum_amount( string $currency, int $minimum, int $order_amount, ?string $error_message ) {
-		// Arrange mocks.
-		$this->mock_context->expects( $this->once() )
-			->method( 'get_currency' )
-			->willReturn( $currency );
-
-		$this->mock_context->expects( $this->once() )
-			->method( 'get_amount' )
-			->willReturn( $order_amount );
-
-		$this->mock_minimum_amount_service->expects( $this->once() )
-			->method( 'get_cache' )
-			->with( $currency )
-			->willReturn( $minimum );
-
-		if ( null !== $error_message ) {
-			$this->mock_minimum_amount_service->expects( $this->once() )
-				->method( 'get_error_message_for_shoppers' )
-				->with( $currency, $minimum )
-				->willReturn( $error_message );
-
-			$this->expectException( StateTransitionException::class );
-			$this->expectExceptionMessage( $error_message );
-		}
-
-		// Act.
-		PHPUnit_Utils::call_method( $this->sut, 'verify_minimum_amount', [] );
-	}
-
-	public function test_process_minimum_amount_exception() {
-		$small_amount_e = new Amount_Too_Small_Exception( 'Amount too small', 50, 'USD', 400 );
-		$error_message  = 'Error message';
-
-		// Arrange mocks.
-		$this->mock_minimum_amount_service->expects( $this->once() )
-			->method( 'set_cache' )
-			->with( 'USD', 50 );
-
-		$this->mock_minimum_amount_service->expects( $this->once() )
-			->method( 'get_error_message_for_shoppers' )
-			->with( 'USD', 50 )
-			->willReturn( $error_message );
-
-		$this->expectException( StateTransitionException::class );
-		$this->expectExceptionMessage( $error_message );
-
-		// Act and assert.
-		PHPUnit_Utils::call_method( $this->sut, 'process_minimum_amount_exception', [ $small_amount_e ] );
 	}
 }
