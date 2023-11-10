@@ -516,9 +516,10 @@ class WC_Payments_Account {
 	public function get_progressive_onboarding_details(): array {
 		$account = $this->get_cached_account_data();
 		return [
-			'isEnabled'        => $account['progressive_onboarding']['is_enabled'] ?? false,
-			'isComplete'       => $account['progressive_onboarding']['is_complete'] ?? false,
-			'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+			'isEnabled'                   => $account['progressive_onboarding']['is_enabled'] ?? false,
+			'isComplete'                  => $account['progressive_onboarding']['is_complete'] ?? false,
+			'isNewFlowEnabled'            => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+			'isEligibilityModalDismissed' => get_option( WC_Payments_Onboarding_Service::ONBOARDING_ELIGIBILITY_MODAL_OPTION, false ),
 		];
 	}
 
@@ -1239,6 +1240,9 @@ class WC_Payments_Account {
 
 		// Clear persisted onboarding flow state.
 		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
+
+		// Clear onboarding related account options.
+		WC_Payments_Onboarding_Service::clear_account_options();
 
 		$return_url = $this->get_onboarding_return_url( $wcpay_connect_from );
 		if ( ! empty( $additional_args ) ) {

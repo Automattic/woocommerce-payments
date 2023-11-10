@@ -6,6 +6,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { Button, Modal } from '@wordpress/components';
 import { Icon, store, widget, tool } from '@wordpress/icons';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -16,9 +17,23 @@ import './style.scss';
 
 const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 	const [ modalVisible, setModalVisible ] = useState( true );
+	const [ modalDismissed, setModalDismissed ] = useState(
+		wcpaySettings.progressiveOnboarding?.isEligibilityModalDismissed
+	);
+
+	const { updateOptions } = useDispatch( 'wc/admin/options' );
+
+	const markAsDismissed = () => {
+		// Update the option to mark the modal as dismissed.
+		updateOptions( {
+			wcpay_progressive_onboarding_eligibility_modal_dismissed: true,
+		} );
+		setModalDismissed( true );
+	};
 
 	const handleSetup = () => {
 		trackEligibilityModalClosed( 'setup_deposits' );
+		markAsDismissed();
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			collect_payout_requirements: true,
 		} );
@@ -26,11 +41,13 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 
 	const handlePaymentsOnly = () => {
 		trackEligibilityModalClosed( 'enable_payments_only' );
+		markAsDismissed();
 		setModalVisible( false );
 	};
 
 	const handleDismiss = () => {
 		trackEligibilityModalClosed( 'dismiss' );
+		markAsDismissed();
 		setModalVisible( false );
 	};
 
@@ -43,7 +60,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 			?.remove();
 	}, [] );
 
-	if ( ! modalVisible ) return null;
+	if ( ! modalVisible || modalDismissed ) return null;
 
 	return (
 		<Modal
