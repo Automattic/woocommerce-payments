@@ -221,9 +221,12 @@ if [[ "$IS_WORKAROUND_REQUIRED" = "1" ]]; then
 	CART_PAGE_ID=$(cli_debug wp option get woocommerce_cart_page_id)
 	CHECKOUT_PAGE_ID=$(cli_debug wp option get woocommerce_checkout_page_id)
 
+	CART_SHORTCODE="<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->"
+	CHECKOUT_SHORTCODE="<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->"
+
 	# Update cart & checkout pages to use shortcode.
-	cli wp post update "$CART_PAGE_ID" --post_content="<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->"
-	cli wp post update "$CHECKOUT_PAGE_ID" --post_content="<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->"
+	cli wp post update "$CART_PAGE_ID" --post_content="$CART_SHORTCODE"
+	cli wp post update "$CHECKOUT_PAGE_ID" --post_content="$CHECKOUT_SHORTCODE"
 fi
 # End - Workaround for > WC 8.3 compatibility by updating cart & checkout pages to use shortcode.
 
