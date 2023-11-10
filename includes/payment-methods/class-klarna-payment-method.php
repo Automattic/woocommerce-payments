@@ -78,19 +78,6 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 					'min' => 0,
 					'max' => 1000000,
 				],
-				// TODO: set correct limits for next three.
-				'DK' => [
-					'min' => 100,
-					'max' => 10000000,
-				],
-				'NO' => [
-					'min' => 0,
-					'max' => 10000000,
-				],
-				'SE' => [
-					'min' => 0,
-					'max' => 15000000,
-				],
 			],
 			'DKK' => [
 				'DK' => [
