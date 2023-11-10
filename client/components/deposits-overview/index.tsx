@@ -2,12 +2,22 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Card, CardBody, CardHeader } from '@wordpress/components';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardFooter,
+	CardHeader,
+	Flex,
+} from '@wordpress/components';
+import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
+import { getAdminUrl } from 'wcpay/utils';
+import wcpayTracks from 'tracks';
 import Loadable from 'components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
@@ -18,7 +28,6 @@ import {
 	NewAccountWaitingPeriodNotice,
 	SuspendedDepositNotice,
 } from './deposit-notices';
-import DepositsOverviewFooter from './footer';
 import useRecentDeposits from './hooks';
 import './style.scss';
 
@@ -134,7 +143,52 @@ const DepositsOverview: React.FC = () => {
 				</>
 			) }
 
-			<DepositsOverviewFooter />
+			<CardFooter className="wcpay-deposits-overview__footer">
+				<Flex align="center" justify="flex-start">
+					<Button
+						isSecondary={ true }
+						href={ getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/deposits',
+						} ) }
+						onClick={ () =>
+							wcpayTracks.recordEvent(
+								wcpayTracks.events
+									.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+							)
+						}
+					>
+						{ __(
+							'View full deposits history',
+							'woocommerce-payments'
+						) }
+					</Button>
+
+					{ ! account?.deposits_blocked && (
+						<Link
+							type="wp-admin"
+							href={
+								getAdminUrl( {
+									page: 'wc-settings',
+									tab: 'checkout',
+									section: 'woocommerce_payments',
+								} ) + '#deposit-schedule'
+							}
+							onClick={ () =>
+								wcpayTracks.recordEvent(
+									wcpayTracks.events
+										.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
+								)
+							}
+						>
+							{ __(
+								'Change deposit schedule',
+								'woocommerce-payments'
+							) }
+						</Link>
+					) }
+				</Flex>
+			</CardFooter>
 		</Card>
 	);
 };

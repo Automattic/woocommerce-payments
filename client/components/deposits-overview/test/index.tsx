@@ -9,7 +9,6 @@ import { render } from '@testing-library/react';
  */
 import DepositsOverview from '..';
 import RecentDepositsList from '../recent-deposits-list';
-import DepositsOverviewFooter from '../footer';
 import DepositSchedule from '../deposit-schedule';
 import { SuspendedDepositNotice } from '../deposit-notices';
 import {
@@ -242,6 +241,7 @@ describe( 'Deposits Overview information', () => {
 			includesFinancingPayout: false,
 			isLoading: false,
 		} );
+		mockAccount.deposits_blocked = false;
 	} );
 	afterEach( () => {
 		jest.clearAllMocks();
@@ -260,7 +260,10 @@ describe( 'Deposits Overview information', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 
-		const { container } = render( <DepositsOverview /> );
+		const { container, getByText } = render( <DepositsOverview /> );
+		// Check that the button and link is rendered.
+		getByText( 'View full deposits history' );
+		getByText( 'Change deposit schedule' );
 		expect( container ).toMatchSnapshot();
 	} );
 
@@ -278,6 +281,32 @@ describe( 'Deposits Overview information', () => {
 		} );
 		const { container } = render( <DepositsOverview /> );
 		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'Confirm notice renders if deposits blocked', () => {
+		mockAccount.deposits_blocked = true;
+		mockOverviews( [
+			createMockOverview( 'usd', 30000, 50000, 'pending' ),
+		] );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: mockDeposits,
+			isLoading: false,
+		} );
+		mockDepositOverviews( [ createMockNewAccountOverview( 'usd' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'usd',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { getByText, queryByText } = render( <DepositsOverview /> );
+
+		getByText( /Your deposits are temporarily suspended/ );
+
+		// Check that the buttons are rendered as expected.
+		getByText( 'View full deposits history' );
+		// This one is not rendered when deposits are blocked.
+		expect( queryByText( 'Change deposit schedule' ) ).toBeFalsy();
 	} );
 
 	test( 'Confirm recent deposits renders ', () => {
@@ -400,17 +429,6 @@ describe( 'Deposits Overview information', () => {
 			'href',
 			'https://woo.com/document/woopayments/deposits/deposit-schedule/#new-accounts'
 		);
-	} );
-} );
-
-describe( 'Deposits Overview footer renders', () => {
-	test( 'Component Renders', () => {
-		const { container, getByText } = render( <DepositsOverviewFooter /> );
-		expect( container ).toMatchSnapshot();
-
-		// Check that the button and link is rendered.
-		getByText( 'View full deposits history' );
-		getByText( 'Change deposit schedule' );
 	} );
 } );
 
