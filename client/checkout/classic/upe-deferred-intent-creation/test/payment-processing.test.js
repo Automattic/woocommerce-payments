@@ -84,17 +84,7 @@ const mockElements = jest.fn( () => {
 	};
 } );
 
-const mockThen = jest.fn( () => {
-	return {
-		catch: jest.fn(),
-	};
-} );
-
-const mockCreatePaymentMethod = jest.fn( () => {
-	return {
-		then: mockThen,
-	};
-} );
+const mockCreatePaymentMethod = jest.fn().mockResolvedValue( {} );
 
 const mockGetStripeForUPE = jest.fn( () => {
 	return {
@@ -276,6 +266,13 @@ describe( 'Stripe Payment Element mounting', () => {
 		} );
 
 		getUPEConfig.mockImplementation( ( argument ) => {
+			if (
+				argument === 'wcBlocksUPEAppearance' ||
+				argument === 'upeAppearance'
+			) {
+				return {};
+			}
+
 			if ( argument === 'currency' ) {
 				return 'eur';
 			}
@@ -359,7 +356,6 @@ describe( 'Payment processing', () => {
 			expect( mockSubmit ).toHaveBeenCalled();
 		} );
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
-		expect( mockThen ).toHaveBeenCalled();
 		expect( checkoutResult ).toBe( false );
 	} );
 

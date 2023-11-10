@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Remove outdated wcpay_transactions_download tracking events.

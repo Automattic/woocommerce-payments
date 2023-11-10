@@ -33,6 +33,7 @@ declare const global: {
 		};
 		featureFlags: {
 			isAuthAndCaptureEnabled: boolean;
+			isRefundControlsEnabled: boolean;
 		};
 	};
 };
@@ -183,6 +184,7 @@ describe( 'PaymentDetailsSummary', () => {
 			},
 			featureFlags: {
 				isAuthAndCaptureEnabled: true,
+				isRefundControlsEnabled: false,
 			},
 			currencyData: {
 				US: {
@@ -860,5 +862,48 @@ describe( 'PaymentDetailsSummary', () => {
 				name: /Accept/i,
 			} )
 		).toBeNull();
+	} );
+
+	describe( 'order missing notice', () => {
+		test( 'renders notice if order missing', () => {
+			global.wcpaySettings.featureFlags.isRefundControlsEnabled = true;
+
+			const charge = getBaseCharge();
+			charge.order = null;
+
+			const container = renderCharge( charge );
+
+			expect(
+				screen.getByRole( 'button', { name: /Refund/i } )
+			).toBeInTheDocument();
+
+			expect(
+				screen.getByText(
+					/This transaction is not connected to order. Investigate this purchase and refund the transaction as needed./
+				)
+			).toBeInTheDocument();
+
+			expect( container ).toMatchSnapshot();
+		} );
+
+		test( 'does not render notice if order present', () => {
+			global.wcpaySettings.featureFlags.isRefundControlsEnabled = true;
+
+			const charge = getBaseCharge();
+
+			const container = renderCharge( charge );
+
+			expect(
+				screen.queryByRole( 'button', { name: /Refund/i } )
+			).not.toBeInTheDocument();
+
+			expect(
+				screen.queryByText(
+					/This transaction is not connected to order. Investigate this purchase and refund the transaction as needed./
+				)
+			).not.toBeInTheDocument();
+
+			expect( container ).toMatchSnapshot();
+		} );
 	} );
 } );

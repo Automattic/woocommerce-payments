@@ -52,6 +52,7 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 
 		$this->test_user                 = self::factory()->user->create_and_get();
 		$this->woopay_adapted_extensions = new WooPay_Adapted_Extensions();
+		$this->woopay_adapted_extensions->init();
 	}
 
 	public function test_get_adapted_extensions_data_without_enable_adapted_extensions() {
@@ -138,5 +139,15 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 		$this->test_user->ID = 0;
 
 		$this->assertEquals( $this->woopay_adapted_extensions->get_gift_cards_data( $this->test_user ), $expected );
+	}
+
+	public function test_get_extension_data_with_no_data() {
+		$this->assertEquals( $this->woopay_adapted_extensions->get_extension_data(), [] );
+	}
+
+	public function test_get_extension_data() {
+		define( 'WOOCOMMERCE_MULTICURRENCY_VERSION', '0.0.0' );
+
+		$this->assertEquals( $this->woopay_adapted_extensions->get_extension_data(), [ 'woocommerce-multicurrency' => [ 'currency' => 'USD' ] ] );
 	}
 }

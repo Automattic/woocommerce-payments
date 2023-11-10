@@ -934,7 +934,13 @@ class WC_Payments_Account {
 			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
 			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
-				$this->redirect_to_onboarding_flow_page();
+				// Redirect non-onboarded account to the onboarding flow, otherwise to payments overview page.
+				if ( ! $this->is_stripe_connected() ) {
+					$this->redirect_to_onboarding_flow_page();
+				} else {
+					// Accounts with Stripe account connected will be redirected to the overview page.
+					$this->redirect_to( static::get_overview_page_url() );
+				}
 			}
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {

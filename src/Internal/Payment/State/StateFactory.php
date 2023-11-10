@@ -59,7 +59,9 @@ class StateFactory {
 		}
 
 		$state = $this->container->get( $state_class );
+		$context->log_state_transition( $state_class );
 		$state->set_context( $context );
+
 		return $state;
 	}
 }
