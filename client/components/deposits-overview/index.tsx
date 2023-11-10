@@ -92,7 +92,7 @@ const DepositsOverview: React.FC = () => {
 
 	// This card isn't shown if there are no deposits, so we can bail early.
 	if ( ! isLoading && ! isNextDepositExpected && deposits.length === 0 ) {
-		return <></>;
+		return null;
 	}
 
 	return (

@@ -267,7 +267,7 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'Component renders without errors for new account', () => {
+	test( `Component doesn't render for new account`, () => {
 		mockOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockUseDeposits.mockReturnValue( {
@@ -280,7 +280,7 @@ describe( 'Deposits Overview information', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 		const { container } = render( <DepositsOverview /> );
-		expect( container ).toMatchSnapshot();
+		expect( container ).toBeEmptyDOMElement();
 	} );
 
 	test( 'Confirm notice renders if deposits blocked', () => {
