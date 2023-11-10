@@ -134,9 +134,11 @@ abstract class UPE_Payment_Method {
 	 * Returns boolean dependent on whether payment method
 	 * can be used at checkout
 	 *
+	 * @param string $account_country Country of merchants account.
+	 *
 	 * @return bool
 	 */
-	public function is_enabled_at_checkout() {
+	public function is_enabled_at_checkout( string $account_country ) {
 		if ( $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription() ) {
 			return $this->is_reusable();
 		}
@@ -149,7 +151,11 @@ abstract class UPE_Payment_Method {
 			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) ) {
 				$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
 				if ( $amount > 0 ) {
-					$range            = $this->limits_per_currency[ $currency ];
+					$range = $this->limits_per_currency[ $currency ][ $account_country ] ?? null;
+					// If there is no range specified for the currency-country pair we don't support it and return false.
+					if ( null === $range ) {
+						return false;
+					}
 					$is_valid_minimum = null === $range['min'] || $amount >= $range['min'];
 					$is_valid_maximum = null === $range['max'] || $amount <= $range['max'];
 					return $is_valid_minimum && $is_valid_maximum;
