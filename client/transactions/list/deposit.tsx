@@ -6,7 +6,6 @@
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { Link } from '@woocommerce/components';
-import { __ } from '@wordpress/i18n';
 import React from 'react';
 import { getAdminUrl } from 'wcpay/utils';
 
