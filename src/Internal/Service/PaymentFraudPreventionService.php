@@ -1,77 +1,44 @@
 <?php
 /**
- * Class Fraud_Prevention_Service
+ * Class PaymentFraudPreventionService
  *
- * @package WCPay\Fraud_Prevention
+ * @package WooCommerce\Payments
  */
 
 namespace WCPay\Internal\Service;
 
-use WC_Payment_Gateway_WCPay;
-use WC_Payments;
+use WC_Payments_Account;
 
 /**
- * Class Fraud_Prevention_Service
+ * Class PaymentFraudPreventionService
  */
-class Fraud_Prevention_Service {
+class PaymentFraudPreventionService {
 
 	const TOKEN_NAME = 'wcpay-fraud-prevention-token';
 
 	/**
-	 * Singleton instance.
+	 * SessionService instance.
 	 *
-	 * @var Fraud_Prevention_Service
+	 * @var SessionService
 	 */
-	private static $instance;
+	private $session_service;
 
 	/**
-	 * Session instance.
+	 * Instance of WC_Payments_Account.
 	 *
-	 * @var \WC_Session
+	 * @var WC_Payments_Account
 	 */
-	private $session;
+	private $legacy_account_service;
 
 	/**
-	 * Instance of WC_Payment_Gateway_WCPay.
+	 * Constructor.
 	 *
-	 * @var WC_Payment_Gateway_WCPay
+	 * @param SessionService      $session_service SessionService instance.
+	 * @param WC_Payments_Account $legacy_account_service Legacy WC_Payments_Account instance.
 	 */
-	private $wcpay_gateway;
-
-	/**
-	 * Fraud_Prevention_Service constructor.
-	 *
-	 * @param \WC_Session              $session       Session instance.
-	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway Instance of WC_Payment_Gateway_WCPay.
-	 */
-	public function __construct( \WC_Session $session, WC_Payment_Gateway_WCPay $wcpay_gateway ) {
-		$this->session       = $session;
-		$this->wcpay_gateway = $wcpay_gateway;
-	}
-
-	/**
-	 * Returns singleton instance.
-	 *
-	 * @param null $session Session instance.
-	 * @param null $gateway WC_Payment_Gateway_WCPay instance.
-	 * @return Fraud_Prevention_Service
-	 */
-	public static function get_instance( $session = null, $gateway = null ): self {
-		if ( null === self::$instance ) {
-			self::$instance = new self( $session ?? WC()->session, $gateway ?? WC_Payments::get_gateway() );
-		}
-
-		return self::$instance;
-	}
-
-	/**
-	 * Sets a instance to be used in request cycle.
-	 * Introduced primarily for supporting unit tests.
-	 *
-	 * @param Fraud_Prevention_Service|null $instance Instance of self.
-	 */
-	public static function set_instance( self $instance = null ) {
-		self::$instance = $instance;
+	public function __construct( SessionService $session_service, WC_Payments_Account $legacy_account_service ) {
+		$this->session_service        = $session_service;
+		$this->legacy_account_service = $legacy_account_service;
 	}
 
 	/**
@@ -80,7 +47,7 @@ class Fraud_Prevention_Service {
 	 * @return bool
 	 */
 	public function is_enabled(): bool {
-		return $this->wcpay_gateway->is_card_testing_protection_eligible();
+		return $this->legacy_account_service->is_card_testing_protection_eligible();
 	}
 
 	/**
@@ -89,14 +56,10 @@ class Fraud_Prevention_Service {
 	 * For the first page load generates the token,
 	 * for consecutive loads - takes from session.
 	 *
-	 * @return string|mixed
+	 * @return string
 	 */
 	public function get_token(): string {
-		$fraud_prevention_token = $this->session->get( self::TOKEN_NAME );
-		if ( ! $fraud_prevention_token ) {
-			$fraud_prevention_token = $this->regenerate_token();
-		}
-		return $fraud_prevention_token;
+		return $this->session_service->get( self::TOKEN_NAME ) ?? $this->regenerate_token();
 	}
 
 	/**
@@ -106,7 +69,7 @@ class Fraud_Prevention_Service {
 	 */
 	public function regenerate_token(): string {
 		$token = wp_generate_password( 16, false );
-		$this->session->set( self::TOKEN_NAME, $token );
+		$this->session_service->set( self::TOKEN_NAME, $token );
 		return $token;
 	}
 
@@ -116,8 +79,8 @@ class Fraud_Prevention_Service {
 	 * @param string|null $token Token sent in request.
 	 * @return bool
 	 */
-	public function verify_token( string $token = null ): bool {
-		$session_token = $this->session->get( self::TOKEN_NAME );
+	public function verify_token( ?string $token = null ): bool {
+		$session_token = $this->session_service->get( self::TOKEN_NAME );
 
 		// Check if the tokens are both strings.
 		if ( ! is_string( $session_token ) || ! is_string( $token ) ) {
