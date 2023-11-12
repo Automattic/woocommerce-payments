@@ -27,6 +27,7 @@ use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\PaymentContextLoggerService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
+use WCPay\Internal\Service\PaymentFraudPreventionService;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
@@ -84,13 +85,18 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( HooksProxy::class )
 			->addArgument( LegacyProxy::class );
 
+		$container->addShared( PaymentFraudPreventionService::class )
+			->addArgument( SessionService::class )
+			->addArgument( \WC_Payments_Account::class );
+
 		$container->add( InitialState::class )
 			->addArgument( StateFactory::class )
 			->addArgument( OrderService::class )
 			->addArgument( WC_Payments_Customer_Service::class )
 			->addArgument( Level3Service::class )
 			->addArgument( PaymentRequestService::class )
-			->addArgument( DuplicatePaymentPreventionService::class );
+			->addArgument( DuplicatePaymentPreventionService::class )
+			->addArgument( PaymentFraudPreventionService::class );
 
 		$container->add( ProcessedState::class )
 			->addArgument( StateFactory::class )

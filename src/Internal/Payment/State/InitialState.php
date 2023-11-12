@@ -12,6 +12,8 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Internal\Payment\Exception\PaymentProcessingException;
+use WCPay\Internal\Service\PaymentFraudPreventionService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
@@ -62,14 +64,22 @@ class InitialState extends AbstractPaymentState {
 	private $dpps;
 
 	/**
+	 * PaymentFraudPreventionService instance.
+	 *
+	 * @var PaymentFraudPreventionService
+	 */
+	private $fraud_prevention_service;
+
+	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory                      $state_factory           Factory for payment states.
-	 * @param OrderService                      $order_service           Service for order-related actions.
-	 * @param WC_Payments_Customer_Service      $customer_service        Service for managing remote customers.
-	 * @param Level3Service                     $level3_service          Service for Level3 Data.
-	 * @param PaymentRequestService             $payment_request_service Connection with the server.
-	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
+	 * @param StateFactory                      $state_factory            Factory for payment states.
+	 * @param OrderService                      $order_service            Service for order-related actions.
+	 * @param WC_Payments_Customer_Service      $customer_service         Service for managing remote customers.
+	 * @param Level3Service                     $level3_service           Service for Level3 Data.
+	 * @param PaymentRequestService             $payment_request_service  Connection with the server.
+	 * @param DuplicatePaymentPreventionService $dpps                     Service for preventing duplicate payments.
+	 * @param PaymentFraudPreventionService     $fraud_prevention_service Service for preventing fraud payments.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -77,15 +87,17 @@ class InitialState extends AbstractPaymentState {
 		WC_Payments_Customer_Service $customer_service,
 		Level3Service $level3_service,
 		PaymentRequestService $payment_request_service,
-		DuplicatePaymentPreventionService $dpps
+		DuplicatePaymentPreventionService $dpps,
+		PaymentFraudPreventionService $fraud_prevention_service
 	) {
 		parent::__construct( $state_factory );
 
-		$this->order_service           = $order_service;
-		$this->customer_service        = $customer_service;
-		$this->level3_service          = $level3_service;
-		$this->payment_request_service = $payment_request_service;
-		$this->dpps                    = $dpps;
+		$this->order_service            = $order_service;
+		$this->customer_service         = $customer_service;
+		$this->level3_service           = $level3_service;
+		$this->payment_request_service  = $payment_request_service;
+		$this->dpps                     = $dpps;
+		$this->fraud_prevention_service = $fraud_prevention_service;
 	}
 
 	/**
@@ -108,6 +120,13 @@ class InitialState extends AbstractPaymentState {
 
 		// Start multiple verification checks.
 		$this->process_order_phone_number();
+
+		if ( $this->fraud_prevention_service->is_enabled()
+			&& ! $this->fraud_prevention_service->verify_token( $this->get_context()->get_fraud_prevention_token() ) ) {
+			throw new PaymentProcessingException(
+				__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' )
+			);
+		}
 
 		$duplicate_order_result = $this->process_duplicate_order();
 		if ( null !== $duplicate_order_result ) {
@@ -165,6 +184,11 @@ class InitialState extends AbstractPaymentState {
 		$fingerprint = $request->get_fingerprint();
 		if ( ! is_null( $fingerprint ) ) {
 			$context->set_fingerprint( $fingerprint );
+		}
+
+		$fraud_prevention_token = $request->get_fraud_prevention_token();
+		if ( ! is_null( $fraud_prevention_token ) ) {
+			$context->set_fraud_prevention_token( $fraud_prevention_token );
 		}
 	}
 
