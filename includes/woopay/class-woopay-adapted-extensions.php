@@ -255,8 +255,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	 * @return boolean
 	 */
 	private function is_automate_woo_referrals_enabled() {
-		return is_plugin_active( 'automatewoo-referrals/automatewoo-referrals.php' ) &&
-		function_exists( 'AW_Referrals' ) &&
+		return function_exists( 'AW_Referrals' ) &&
 		method_exists( AW_Referrals(), 'options' ) &&
 		AW_Referrals()->options()->type === 'link' &&
 		class_exists( '\AutomateWoo\Referrals\Referral_Manager' ) &&
