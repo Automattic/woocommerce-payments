@@ -657,6 +657,11 @@ class WC_Payments_WooPay_Button_Handler {
 			class_exists( 'WC_Pre_Orders_Cart' ) &&
 			WC_Pre_Orders_Cart::cart_contains_pre_order() &&
 			class_exists( 'WC_Pre_Orders_Product' ) &&
+			/**
+			 * Psalm throws an error here even though we check the class existence.
+			 *
+			 * @psalm-suppress UndefinedClass
+			 */
 			WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() )
 		) {
 			$is_supported = false;
