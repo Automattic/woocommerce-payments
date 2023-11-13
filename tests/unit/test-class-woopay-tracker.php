@@ -43,6 +43,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
+		WC_Payments::get_gateway()->enable();
 
 		$this->mock_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->disableOriginalConstructor()
