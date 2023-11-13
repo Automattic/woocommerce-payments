@@ -568,4 +568,8 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$result = PHPUnit_Utils::call_method( $this->sut, 'process_duplicate_payment', [] );
 		$this->assertInstanceOf( CompletedState::class, $result );
 	}
+
+	private function mock_customer_data() {
+
+	}
 }

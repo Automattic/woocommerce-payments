@@ -133,7 +133,10 @@ class InitialState extends AbstractPaymentState {
 			$order_id = $context->get_order_id();
 
 			// Create or update customer and customer details.
-			$customer_id = $this->customer_service->get_or_create_customer_id_from_order( $context->get_user_id(), $this->order_service->_deprecated_get_order( $order_id ) );
+			$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
+				$context->get_user_id(),
+				$this->order_service->_deprecated_get_order( $order_id )
+			);
 			$context->set_customer_id( $customer_id );
 
 			// After customer is updated or created, make sure that intent is created.
