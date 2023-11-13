@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.8.0 - 2023-11-16 =
+= 6.8.0-test-3 - unreleased =
 * Add - Added mechanism to track and log changes to the payment context (reengineering payment process)
 * Add - Add rejected payment method capability status
 * Add - Add UPE appearance filter.
