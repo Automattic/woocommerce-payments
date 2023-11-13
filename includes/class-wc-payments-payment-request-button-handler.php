@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Exceptions\Invalid_Price_Exception;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Internal\Service\PaymentFraudPreventionService;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 
@@ -821,8 +821,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! $this->should_show_payment_request_button() ) {
 			return;
 		}
-		if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
-			<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
+
+		$fraud_prevention_service = wcpay_get_container()->get( PaymentFraudPreventionService::class );
+		if ( $fraud_prevention_service->is_enabled() ) : ?>
+			<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( $fraud_prevention_service->get_token() ); ?>">
 		<?php endif; ?>
 		<div id="wcpay-payment-request-button">
 			<!-- A Stripe Element will be inserted here. -->

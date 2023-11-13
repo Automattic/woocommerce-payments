@@ -12,8 +12,8 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Amount_Too_Large_Exception;
 use WCPay\Exceptions\Connection_Exception;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
+use WCPay\Internal\Service\PaymentFraudPreventionService;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Database_Cache;
@@ -1975,13 +1975,10 @@ class WC_Payments_API_Client {
 	 */
 	private function maybe_act_on_fraud_prevention( string $error_code ) {
 		// Might be flagged by Stripe Radar or WCPay card testing prevention services.
-		$is_fraudulent = 'fraudulent' === $error_code || 'wcpay_card_testing_prevention' === $error_code;
-		if ( $is_fraudulent && WC()->session ) {
-			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-			if ( $fraud_prevention_service->is_enabled() ) {
-				$fraud_prevention_service->regenerate_token();
-				// Here we tried triggering checkout refresh, but it clashes with AJAX handling.
-			}
+		$is_fraudulent            = 'fraudulent' === $error_code || 'wcpay_card_testing_prevention' === $error_code;
+		$fraud_prevention_service = wcpay_get_container()->get( PaymentFraudPreventionService::class );
+		if ( $is_fraudulent && $fraud_prevention_service->is_enabled() ) {
+			$fraud_prevention_service->regenerate_token();
 		}
 	}
 

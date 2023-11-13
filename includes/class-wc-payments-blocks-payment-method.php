@@ -6,7 +6,6 @@
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WooPay\WooPay_Utilities;
 
@@ -114,7 +113,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			return $content;
 		}
 
-		$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+		$fraud_prevention_service = wcpay_get_container()->get( PaymentFraudPreventionService::class );
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( $fraud_prevention_service->is_enabled() ) {
 			$content .= '<input type="hidden" name="wcpay-fraud-prevention-token" id="wcpay-fraud-prevention-token" value="' . esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ) . '">';
