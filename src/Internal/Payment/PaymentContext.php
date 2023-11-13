@@ -203,9 +203,9 @@ class PaymentContext {
 	/**
 	 * Stores the WP user ID, associated with the payment.
 	 *
-	 * @param int $user_id ID of the user.
+	 * @param int|null $user_id ID of the user.
 	 */
-	public function set_user_id( int $user_id ) {
+	public function set_user_id( ?int $user_id ) {
 		$this->set( 'user_id', $user_id );
 	}
 
