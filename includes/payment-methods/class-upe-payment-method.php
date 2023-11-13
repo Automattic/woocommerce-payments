@@ -73,7 +73,7 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Represent payment total limitations for the payment method (per-currency).
 	 *
-	 * @var array<string,array<string,int>>
+	 * @var array<string,array<string,array<string,int>>>
 	 */
 	protected $limits_per_currency = [];
 
