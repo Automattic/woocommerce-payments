@@ -3,9 +3,7 @@
  */
 import { useEffect } from 'react';
 import { usePaymentCompleteHandler } from './hooks';
-import { select } from '@wordpress/data';
-
-const { getPaymentMethodData } = select( 'wc/store/payment' );
+import { useSelect } from '@wordpress/data';
 
 export const SavedTokenHandler = ( {
 	api,
@@ -14,10 +12,13 @@ export const SavedTokenHandler = ( {
 	eventRegistration: { onPaymentSetup, onCheckoutSuccess },
 	emitResponse,
 } ) => {
+	const paymentMethodData = useSelect( ( select ) => {
+		const store = select( 'wc/store/payment' );
+		return store.getPaymentMethodData();
+	} );
+
 	useEffect( () => {
 		onPaymentSetup( async () => {
-			const paymentMethodData = getPaymentMethodData();
-
 			const fraudPreventionToken = document
 				.querySelector( '#wcpay-fraud-prevention-token' )
 				?.getAttribute( 'value' );
@@ -33,7 +34,7 @@ export const SavedTokenHandler = ( {
 				},
 			};
 		} );
-	}, [ onPaymentSetup ] );
+	}, [ onPaymentSetup, paymentMethodData ] );
 
 	// Once the server has completed payment processing, confirm the intent of necessary.
 	usePaymentCompleteHandler(
