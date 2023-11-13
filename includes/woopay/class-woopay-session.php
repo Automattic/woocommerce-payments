@@ -267,7 +267,7 @@ class WooPay_Session {
 			return false;
 		}
 
-		$automatewoo_referral = wc_clean( wp_unslash( $_GET['automatewoo_referral_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$automatewoo_referral = (int) wc_clean( wp_unslash( $_GET['automatewoo_referral_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
 		return $automatewoo_referral;
 	}
