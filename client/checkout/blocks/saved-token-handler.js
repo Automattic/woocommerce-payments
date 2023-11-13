@@ -18,7 +18,7 @@ export const SavedTokenHandler = ( {
 	} );
 
 	useEffect( () => {
-		onPaymentSetup( async () => {
+		return onPaymentSetup( async () => {
 			const fraudPreventionToken = document
 				.querySelector( '#wcpay-fraud-prevention-token' )
 				?.getAttribute( 'value' );
