@@ -170,7 +170,8 @@ class OrderService {
 
 		$context->set_currency( $currency );
 		$context->set_amount( $amount );
-		$context->set_user_id( $user->ID );
+		// In case we don't have user, we are setting user id to be 0 which could cause more harm since we don't have a real user.
+		$context->set_user_id( $user->ID > 0 ? $user->ID : null );
 	}
 
 	/**
