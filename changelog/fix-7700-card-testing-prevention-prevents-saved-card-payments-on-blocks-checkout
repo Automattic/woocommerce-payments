@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Fix card testing prevention enabling breaking saved card payments on blocks checkout
+
+
