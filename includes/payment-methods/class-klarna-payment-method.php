@@ -60,7 +60,7 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 				],
 				'NL' => [
 					'min' => 1,
-					'max' => 1000000,
+					'max' => 1500000,
 				],
 				'FI' => [
 					'min' => 0,
