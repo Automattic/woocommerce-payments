@@ -32,29 +32,41 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$this->accept_only_domestic_payment = true;
 		$this->limits_per_currency          = [
 			'AUD' => [
-				'min' => 100,
-				'max' => 200000,
-			], // Represents AUD 1 - 2,000 AUD.
+				'AU' => [
+					'min' => 100,
+					'max' => 200000,
+				], // Represents AUD 1 - 2,000 AUD.
+			],
 			'CAD' => [
-				'min' => 100,
-				'max' => 200000,
-			], // Represents CAD 1 - 2,000 CAD.
+				'CA' => [
+					'min' => 100,
+					'max' => 200000,
+				], // Represents CAD 1 - 2,000 CAD.
+			],
 			'NZD' => [
-				'min' => 100,
-				'max' => 200000,
-			], // Represents NZD 1 - 2,000 NZD.
+				'NZ' => [
+					'min' => 100,
+					'max' => 200000,
+				], // Represents NZD 1 - 2,000 NZD.
+			],
 			'GBP' => [
-				'min' => 100,
-				'max' => 120000,
-			], // Represents GBP 1 - 1,200 GBP.
+				'UK' => [
+					'min' => 100,
+					'max' => 120000,
+				], // Represents GBP 1 - 1,200 GBP.
+			],
 			'USD' => [
-				'min' => 100,
-				'max' => 400000,
-			], // Represents USD 1 - 4,000 USD.
+				'US' => [
+					'min' => 100,
+					'max' => 400000,
+				], // Represents USD 1 - 4,000 USD.
+			],
 			'EUR' => [
-				'min' => 100,
-				'max' => 100000,
-			], // Represents EUR 1 - 1,000 EUR.
+				'default' => [
+					'min' => 100,
+					'max' => 100000,
+				], // Represents EUR 1 - 1,000 EUR.
+			],
 		];
 	}
 
