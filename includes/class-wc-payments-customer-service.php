@@ -134,21 +134,21 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Create a customer and associate it with a WordPress user.
 	 *
-	 * @param WP_User $user          User to create a customer for.
-	 * @param array   $customer_data Customer data.
+	 * @param WP_User|null $user          User to create a customer for.
+	 * @param array        $customer_data Customer data.
 	 *
 	 * @return string The created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	public function create_customer_for_user( WP_User $user, array $customer_data ): string {
+	public function create_customer_for_user( WP_User $user = null, array $customer_data ): string {
 		// Include the session ID for the user.
 		$customer_data['session_id'] = $this->session_service->get_sift_session_id() ?? null;
 
 		// Create a customer on the WCPay server.
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
 
-		if ( $user->ID > 0 ) {
+		if ( $user instanceof WP_User && $user->ID > 0 ) {
 			$this->update_user_customer_id( $user->ID, $customer_id );
 		}
 
@@ -179,7 +179,7 @@ class WC_Payments_Customer_Service {
 			$this->update_customer_for_user( $customer_id, $user, $customer_data );
 			return $customer_id;
 		}
-		return $this->create_customer_for_user( $user, $customer_data );
+		return $this->create_customer_for_user( $user ?? null, $customer_data );
 	}
 
 	/**
