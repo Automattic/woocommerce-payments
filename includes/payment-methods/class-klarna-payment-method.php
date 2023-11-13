@@ -88,7 +88,7 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 			'NOK' => [
 				'NO' => [
 					'min' => 0,
-					'max' => 10000000,
+					'max' => 100000000,
 				],
 			],
 			'SEK' => [
