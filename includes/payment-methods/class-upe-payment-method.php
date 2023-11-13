@@ -151,7 +151,12 @@ abstract class UPE_Payment_Method {
 			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) ) {
 				$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
 				if ( $amount > 0 ) {
-					$range = $this->limits_per_currency[ $currency ][ $account_country ] ?? $this->limits_per_currency[ $currency ]['default'] ?? null;
+					$range = null;
+					if ( isset( $this->limits_per_currency[ $currency ][ $account_country ] ) ) {
+						$range = $this->limits_per_currency[ $currency ][ $account_country ];
+					} elseif ( isset( $this->limits_per_currency[ $currency ]['default'] ) ) {
+						$range = $this->limits_per_currency[ $currency ]['default'];
+					}
 					// If there is no range specified for the currency-country pair we don't support it and return false.
 					if ( null === $range ) {
 						return false;
