@@ -97,6 +97,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_flow_to_overview' ] );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 
 		// Add handlers for inbox notes and reminders.
@@ -862,6 +863,49 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Redirects onboarding flow page (payments/onboarding) to the overview page for accounts that have Stripe connected.
+	 *
+	 * Payments onboarding flow page is already hidden for those who has Stripe account connected, but merchants can still access
+	 * it by clicking back in the browser tab.
+	 *
+	 * @return bool True if the redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_onboarding_flow_to_overview(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/onboarding',
+		];
+
+		// We're not in the onboarding flow page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
+
+		// Don't redirect merchants that have no Stripe account connected.
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$this->redirect_to(
+			admin_url(
+				add_query_arg(
+					[
+						'page' => 'wc-admin',
+						'path' => '/payments/overview',
+					],
+					'admin.php'
+				)
+			)
+		);
+
+		return true;
+	}
+
+	/**
 	 * Filter function to add Stripe to the list of allowed redirect hosts
 	 *
 	 * @param array $hosts - array of allowed hosts.
@@ -934,7 +978,13 @@ class WC_Payments_Account {
 			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
 			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
-				$this->redirect_to_onboarding_flow_page();
+				// Redirect non-onboarded account to the onboarding flow, otherwise to payments overview page.
+				if ( ! $this->is_stripe_connected() ) {
+					$this->redirect_to_onboarding_flow_page();
+				} else {
+					// Accounts with Stripe account connected will be redirected to the overview page.
+					$this->redirect_to( static::get_overview_page_url() );
+				}
 			}
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {

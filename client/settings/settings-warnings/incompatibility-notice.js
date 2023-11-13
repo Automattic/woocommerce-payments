@@ -45,7 +45,7 @@ const WooPayIncompatibilityNotice = () => (
 						<a
 							target="_blank"
 							rel="noreferrer"
-							href="https://woocommerce.com/document/woopay-merchant-documentation/#compatibility"
+							href="https://woo.com/document/woopay-merchant-documentation/#compatibility"
 						/>
 					),
 				},
