@@ -62,7 +62,6 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 				], // Represents USD 1 - 4,000 USD.
 			],
 			'EUR' => [
-				// TODO: Stripe docs https://stripe.com/docs/payments/afterpay-clearpay doesn't have EUR as supported currency.
 				'default' => [
 					'min' => 100,
 					'max' => 100000,
