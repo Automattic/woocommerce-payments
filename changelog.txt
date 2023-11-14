@@ -32,9 +32,6 @@
 * Update - Update links across the plugin from woocommerce.com to woo.com (new site URL).
 * Update - Update pay-for-order js config billing email to session email
 * Dev - Bump tested up to version for WP to 6.4
-* Dev - Bump WC and WP tested up to versions to 8.2.0 and 6.3
-* Dev - Comment: E2E - Enable WC beta tests & add workaround to revert to classic checkout for WC 8.3.0 & above
-* Dev - Comment: Skip E2E tests against WC beta
 * Dev - Fire a tracks event for disputed order notice view.
 * Dev - Introduce `wcpay_terminal_payment_completed_order_status` filter. Allows overriding the order status after a successful terminal payment.
 * Dev - Remove outdated wcpay_transactions_download tracking events.
