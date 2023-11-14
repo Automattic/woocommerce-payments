@@ -18,7 +18,7 @@ import PreviewModal from 'wcpay/multi-currency/preview-modal';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
-		'https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#store-settings';
+		'https://woo.com/document/woopayments/currencies/multi-currency-setup/#store-settings';
 
 	return (
 		<>

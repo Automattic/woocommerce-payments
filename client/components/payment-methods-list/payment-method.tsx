@@ -71,6 +71,12 @@ const PaymentMethodLabel = ( {
 					type="warning"
 				/>
 			) }
+			{ upeCapabilityStatuses.REJECTED === status && (
+				<Chip
+					message={ __( 'Rejected', 'woocommerce-payments' ) }
+					type="alert"
+				/>
+			) }
 			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
 				<Chip
 					message={ __(
@@ -133,7 +139,10 @@ const PaymentMethod = ( {
 		upeCapabilityStatuses.PENDING_VERIFICATION,
 	].includes( status );
 
-	const needsAttention = needsMoreInformation || isPoInProgress;
+	const needsAttention =
+		needsMoreInformation ||
+		isPoInProgress ||
+		upeCapabilityStatuses.REJECTED === status;
 	const shouldDisplayNotice = id === 'sofort';
 
 	const needsOverlay =
@@ -173,6 +182,32 @@ const PaymentMethod = ( {
 			);
 		}
 
+		if ( upeCapabilityStatuses.REJECTED === status ) {
+			return interpolateComponents( {
+				// translators: {{contactSupportLink}}: placeholders are opening and closing anchor tags.
+				mixedString: __(
+					'Please {{contactSupportLink}}contact support{{/contactSupportLink}} for more details.',
+					'woocommerce-payments'
+				),
+				components: {
+					contactSupportLink: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							target="_blank"
+							rel="noreferrer"
+							title={ __(
+								'Contact Support',
+								'woocommerce-payments'
+							) }
+							href={
+								'https://woo.com/my-account/contact-support/'
+							}
+						/>
+					),
+				},
+			} );
+		}
+
 		if ( isSetupRequired ) {
 			return setupTooltip;
 		}
@@ -198,7 +233,7 @@ const PaymentMethod = ( {
 							/* eslint-disable-next-line max-len */
 							href={
 								isPoInProgress
-									? 'https://woocommerce.com/document/woopayments/startup-guide/gradual-signup/#additional-payment-methods'
+									? 'https://woo.com/document/woopayments/startup-guide/gradual-signup/#additional-payment-methods'
 									: getDocumentationUrlForDisabledPaymentMethod(
 											paymentMethodId
 									  )
@@ -315,7 +350,7 @@ const PaymentMethod = ( {
 						) }
 						<a
 							// eslint-disable-next-line max-len
-							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-deprecation"
+							href="https://woo.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-deprecation"
 							target="_blank"
 							rel="external noreferrer noopener"
 						>

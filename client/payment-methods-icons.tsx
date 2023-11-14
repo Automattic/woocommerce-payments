@@ -32,12 +32,17 @@ import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
 import CreditCardAsset from 'assets/images/payment-methods/cc.svg?asset';
 import './style.scss';
 
-const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => ( {
-	className,
-	...props
-} ) => (
+const iconComponent = (
+	src: string,
+	alt: string,
+	outline = true
+): ReactImgFuncComponent => ( { className, ...props } ) => (
 	<img
-		className={ classNames( 'payment-method__icon', className ) }
+		className={ classNames(
+			'payment-method__icon',
+			outline ? '' : 'no-outline',
+			className
+		) }
 		src={ src }
 		alt={ alt }
 		{ ...props }
@@ -70,7 +75,8 @@ export const BankDebitIcon = iconComponent(
 );
 export const CreditCardIcon = iconComponent(
 	CreditCardAsset,
-	__( 'Credit card / Debit card', 'woocommerce-payments' )
+	__( 'Credit card / Debit card', 'woocommerce-payments' ),
+	false
 );
 export const DinersClubIcon = iconComponent(
 	DinersClubAsset,

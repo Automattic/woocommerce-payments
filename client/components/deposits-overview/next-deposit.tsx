@@ -43,7 +43,7 @@ const DepositIncludesLoanPayoutNotice = () => (
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
 						href={
-							'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
+							'https://woo.com/document/woopayments/stripe-capital/overview/'
 						}
 						target="_blank"
 						rel="noreferrer"
@@ -73,7 +73,7 @@ const NewAccountWaitingPeriodNotice = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#new-accounts"
+						href="https://woo.com/document/woopayments/deposits/deposit-schedule/#new-accounts"
 					/>
 				),
 			},
@@ -104,7 +104,7 @@ const NegativeBalanceDepositsPausedNotice = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/"
+						href="https://woo.com/document/woopayments/fees-and-debits/account-showing-negative-balance/"
 					/>
 				),
 			},
