@@ -154,7 +154,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 */
 	public function is_available() {
 		$processing_payment_method = $this->payment_methods[ $this->payment_method->get_id() ];
-		if ( ! $processing_payment_method->is_enabled_at_checkout() ) {
+		if ( ! $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) ) {
 			return false;
 		}
 		return parent::is_available();
