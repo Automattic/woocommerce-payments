@@ -57,9 +57,11 @@ describe( 'BNPL checkout', () => {
 
 			it( `should successfully place order with ${ providerName }`, async () => {
 				await uiUnblocked();
+				// Select BNPL provider as paymnent method.
 				await page.waitForSelector( paymentMethodSelector );
 				await expect( page ).toClick( paymentMethodSelector );
 				await shopper.placeOrder();
+				// Authorize payment with Stripe.
 				await page.waitForSelector(
 					STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR
 				);
