@@ -151,9 +151,6 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'is_test' )
 			->willThrowException( new Exception( 'Could not initialize' ) );
-		$this->mock_logger
-			->expects( $this->once() )
-			->method( 'error' );
 
 		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy, $this->mock_context_logger, $this->mock_logger, $this->mock_mode );
 

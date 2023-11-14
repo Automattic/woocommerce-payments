@@ -158,7 +158,7 @@ class PaymentProcessingService {
 		try {
 			$context->set_mode( $this->mode->is_test() ? 'test' : 'prod' );
 		} catch ( Exception $e ) {
-			$this->logger->error( 'Failed to fetch the mode: ' . $e );
+			$context->set_mode( 'unknown' );
 		}
 		$context->toggle_automatic_capture( $automatic_capture );
 

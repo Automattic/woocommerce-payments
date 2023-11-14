@@ -219,6 +219,7 @@ class OrderService {
 	 *
 	 * @param string $order_id The order id.
 	 * @param string $mode  Mode from the context.
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_mode( string $order_id, string $mode ) : void {
 		$order = $this->get_order( $order_id );
@@ -232,6 +233,7 @@ class OrderService {
 	 * @param string $order_id The order id.
 	 *
 	 * @return string The mode.
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_mode( string $order_id ) : string {
 		$order = $this->get_order( $order_id );
