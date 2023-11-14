@@ -685,7 +685,7 @@ export const merchantWCP = {
 	},
 
 	wcpSettingsSaveChanges: async () => {
-		const snackbarSettingsSaved = '.components-snackbar';
+		const snackbarSettingsSaved = '.components-snackbar__content';
 
 		await expect( page ).toClick( '.save-settings-section button' );
 		await expect( page ).toMatchElement( snackbarSettingsSaved, {
