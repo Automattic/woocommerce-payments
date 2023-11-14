@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Do not show the WooPay button on the product page when WC Bookings require confirmation

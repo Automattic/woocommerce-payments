@@ -85,7 +85,7 @@ exports[`Activation Modal matches the snapshot 1`] = `
           >
             <img
               alt="Credit card / Debit card"
-              class="payment-method__icon payment-confirm-illustration__payment-icon"
+              class="payment-method__icon no-outline payment-confirm-illustration__payment-icon"
               src="assets/images/payment-methods/cc.svg"
             />
             <svg
