@@ -374,7 +374,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
 				'type'        => 'select',
 				'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
-				'default'     => 'default',
+				'default'     => 'medium',
 				'desc_tip'    => true,
 				'options'     => [
 					'default' => __( 'Default', 'woocommerce-payments' ),
