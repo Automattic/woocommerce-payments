@@ -1330,17 +1330,6 @@ class WC_Payments_Account {
 			$account_data = [
 				'setup_mode'    => 'test',
 				'business_type' => 'individual',
-				'individual'    => [
-					'first_name' => 'John',
-					'last_name'  => 'Woolliams',
-					'ssn_last_4' => '0000',
-					'phone'      => '+10000000000',
-					'dob'        => [
-						'day'   => '1',
-						'month' => '1',
-						'year'  => '1980',
-					],
-				],
 				'mcc'           => '5734',
 				'url'           => $url,
 				'business_name' => get_bloginfo( 'name' ),
