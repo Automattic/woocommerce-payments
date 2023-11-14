@@ -60,6 +60,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		ExampleServiceWithDependencies::class,
 		PaymentRequestService::class,
 		DuplicatePaymentPreventionService::class,
+		FailedTransactionRateLimiter::class,
 	];
 
 	/**

@@ -79,7 +79,7 @@ abstract class AbstractSessionRateLimiter {
 	 *
 	 * The registry of declined card attemps is cleaned after a new rate limiter is enabled.
 	 */
-	public function bump() {
+	final public function bump() {
 		$registry   = $this->session_service->get( $this->key ) ?? [];
 		$registry[] = time();
 		$this->session_service->set( $this->key, $registry );
@@ -92,7 +92,7 @@ abstract class AbstractSessionRateLimiter {
 	 *
 	 * @return bool The rate limiter is in use.
 	 */
-	public function is_limited(): bool {
+	final public function is_limited(): bool {
 		if ( 'yes' === $this->legacy_proxy->call_function( 'get_option', 'wcpay_session_rate_limiter_disabled_' . $this->key ) ) {
 			return false;
 		}
