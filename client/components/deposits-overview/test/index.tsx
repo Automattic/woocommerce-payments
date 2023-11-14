@@ -535,15 +535,13 @@ describe( 'Suspended Deposit Notice Renders', () => {
 
 describe( 'Paused Deposit notice Renders', () => {
 	test( 'When available balance is negative', () => {
-		mockUseDeposits.mockReturnValue( {
-			depositsCount: 0,
-			deposits: mockDeposits,
-			isLoading: false,
-		} );
-		mockOverviews( [
-			// Negative 100 available balance
-			createMockNewAccountOverview( 'usd', 100, -100 ),
-		] );
+		const accountOverview = createMockNewAccountOverview(
+			'usd',
+			100,
+			-100 // Negative 100 available balance
+		);
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
 
 		mockUseSelectedCurrency.mockReturnValue( {
 			selectedCurrency: 'usd',
@@ -556,19 +554,13 @@ describe( 'Paused Deposit notice Renders', () => {
 		} );
 	} );
 	test( 'When available balance is positive', () => {
-		mockUseDeposits.mockReturnValue( {
-			depositsCount: 0,
-			deposits: mockDeposits,
-			isLoading: false,
-		} );
-		mockOverviews( [
-			// Positive 100 available balance
-			createMockNewAccountOverview( 'usd', 100, 100 ),
-		] );
-		mockUseSelectedCurrency.mockReturnValue( {
-			selectedCurrency: 'usd',
-			setSelectedCurrency: mockSetSelectedCurrency,
-		} );
+		const accountOverview = createMockNewAccountOverview(
+			'usd',
+			100,
+			100 // Positive 100 available balance
+		);
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
 
 		const { queryByText } = render( <DepositsOverview /> );
 		expect( queryByText( /Deposits may be interrupted/ ) ).toBeFalsy();
