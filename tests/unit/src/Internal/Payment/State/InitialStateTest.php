@@ -161,6 +161,11 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Verify that the context is populated.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Make sure that the minimum amount verification is properly called.
+		$this->mock_context->expects( $this->once() )->method( 'get_amount' )->willReturn( 100 );
+		$this->mock_context->expects( $this->once() )->method( 'get_currency' )->willReturn( 'usd' );
+
 		$this->mocked_sut->expects( $this->once() )->method( 'process_duplicate_order' )->willReturn( null );
 		$this->mocked_sut->expects( $this->once() )->method( 'process_duplicate_payment' )->willReturn( null );
 
@@ -194,6 +199,10 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->with( $this->mock_context )
 			->willThrowException( $small_amount_exception );
 
+		// Make sure that the minimum amount verification is properly called.
+		$this->mock_context->expects( $this->once() )->method( 'get_amount' )->willReturn( 1 );
+		$this->mock_context->expects( $this->once() )->method( 'get_currency' )->willReturn( 'eur' );
+
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
 		$this->mock_minimum_amount_service->expects( $this->once() )->method( 'store_amount_from_exception' )
@@ -219,6 +228,10 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
 
+		// Make sure that the minimum amount verification is properly called.
+		$this->mock_context->expects( $this->once() )->method( 'get_amount' )->willReturn( 100 );
+		$this->mock_context->expects( $this->once() )->method( 'get_currency' )->willReturn( 'usd' );
+
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
 			->with( SystemErrorState::class, $this->mock_context )
@@ -243,6 +256,10 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Let's mock these services in order to prevent real execution of them.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Make sure that the minimum amount verification is properly called.
+		$this->mock_context->expects( $this->once() )->method( 'get_amount' )->willReturn( 100 );
+		$this->mock_context->expects( $this->once() )->method( 'get_currency' )->willReturn( 'usd' );
 
 		// Before the transition, the order service should update the order.
 		$this->mock_context->expects( $this->once() )

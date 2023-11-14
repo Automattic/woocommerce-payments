@@ -134,8 +134,8 @@ class InitialState extends AbstractPaymentState {
 
 		$context = $this->get_context();
 		$this->minimum_amount_service->verify_amount(
-			(string) $context->get_currency(),
-			(int) $context->get_amount()
+			$context->get_currency(),
+			$context->get_amount()
 		);
 		// End multiple verification checks.
 
