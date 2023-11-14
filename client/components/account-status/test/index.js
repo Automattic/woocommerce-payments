@@ -128,7 +128,7 @@ describe( 'StatusChip', () => {
 		expect( statusChip ).toMatchSnapshot();
 	} );
 
-	test( 'renders pending verification status for po', () => {
+	test( 'renders pending verification status for progressive onboarding', () => {
 		const { container: statusChip } = renderStatusChip(
 			'pending_verification',
 			true,
