@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove references to In-Person Payments from Transaction settings when Cash on Delivery is disabled.

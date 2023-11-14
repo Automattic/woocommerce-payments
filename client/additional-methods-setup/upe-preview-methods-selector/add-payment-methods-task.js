@@ -283,7 +283,7 @@ const AddPaymentMethodsTask = () => {
 						components: {
 							learnMoreLink: (
 								// eslint-disable-next-line max-len
-								<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/" />
+								<ExternalLink href="https://woo.com/document/woopayments/payment-methods/additional-payment-methods/" />
 							),
 						},
 					} ) }
@@ -303,7 +303,7 @@ const AddPaymentMethodsTask = () => {
 						</span>
 						<a
 							// eslint-disable-next-line max-len
-							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled"
+							href="https://woo.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled"
 							target="_blank"
 							rel="external noreferrer noopener"
 						>

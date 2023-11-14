@@ -1,34 +1,35 @@
+/* eslint-disable jsx-a11y/anchor-has-content */
 /**
  * External dependencies
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, Button } from '@wordpress/components';
-
+import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
 import { useManualCapture, useCardPresentEligible } from '../../data';
 import './style.scss';
-import { useState } from '@wordpress/element';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import useIsUpeEnabled from 'wcpay/settings/wcpay-upe-toggle/hook';
+import interpolateComponents from '@automattic/interpolate-components';
 
-const ManualCaptureControl = () => {
+const ManualCaptureControl = (): JSX.Element => {
 	const [
 		isManualCaptureEnabled,
 		setIsManualCaptureEnabled,
-	] = useManualCapture();
-	const [ isCardPresentEligible ] = useCardPresentEligible();
+	] = useManualCapture() as [ boolean, ( value: boolean ) => void ];
+	const [ isCardPresentEligible ] = useCardPresentEligible() as [ boolean ];
 
 	const [
 		isManualDepositConfirmationModalOpen,
 		setIsManualDepositConfirmationModalOpen,
 	] = useState( false );
 
-	const [ isUpeEnabled ] = useIsUpeEnabled();
+	const [ isUpeEnabled ] = useIsUpeEnabled() as [ boolean ];
 
-	const handleCheckboxToggle = ( isChecked ) => {
+	const handleCheckboxToggle = ( isChecked: boolean ) => {
 		// toggling from "manual" capture to "automatic" capture - no need to show the modal.
 		if ( ! isChecked || ! isUpeEnabled ) {
 			setIsManualCaptureEnabled( isChecked );
@@ -64,11 +65,18 @@ const ManualCaptureControl = () => {
 							'woocommerce-payments'
 						) }
 						{ isCardPresentEligible
-							? __(
-									' The setting is not applied to In-Person Payments ' +
-										'(please note that In-Person Payments should be captured within 2 days of authorization).',
-									'woocommerce-payments'
-							  )
+							? interpolateComponents( {
+									mixedString: __(
+										/** translators: {{a}}: opening and closing anchor tags. The white space at the beginning of the sentence is intentional. */
+										' The setting is not applied to {{a}}In-Person Payments{{/a}} (please note that In-Person Payments should be captured within 2 days of authorization).',
+										'woocommerce-payments'
+									),
+									components: {
+										a: (
+											<ExternalLink href="https://woo.com/in-person-payments/" />
+										),
+									},
+							  } )
 							: '' }
 					</span>
 				}

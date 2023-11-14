@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix not allowed page when clicking Set up WooPayments from Core and account is already onboarded
