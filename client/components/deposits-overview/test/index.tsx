@@ -52,6 +52,9 @@ declare const global: {
 		accountStatus: {
 			deposits: {
 				completed_waiting_period: boolean;
+				minimum_deposit_amounts: {
+					[ currencyCode: string ]: number;
+				};
 			};
 		};
 		accountDefaultCurrency: string;
@@ -211,6 +214,27 @@ describe( 'Deposits Overview information', () => {
 			accountStatus: {
 				deposits: {
 					completed_waiting_period: true,
+					minimum_deposit_amounts: {
+						aud: 500,
+						bgn: 100,
+						cad: 500,
+						chf: 500,
+						czk: 3000,
+						dkk: 5000,
+						eur: 500,
+						gbp: 500,
+						hkd: 5000,
+						huf: 36000,
+						nok: 5000,
+						nzd: 500,
+						jpy: 50,
+						sek: 5000,
+						sgd: 500,
+						usd: 500,
+						ron: 500,
+						pln: 500,
+						aed: 200,
+					},
 				},
 			},
 			accountDefaultCurrency: 'USD',
@@ -564,5 +588,44 @@ describe( 'Paused Deposit notice Renders', () => {
 
 		const { queryByText } = render( <DepositsOverview /> );
 		expect( queryByText( /Deposits may be interrupted/ ) ).toBeFalsy();
+	} );
+} );
+
+describe( 'Minimum Deposit Amount Notice', () => {
+	test( 'When available balance is below the minimum thresholf', () => {
+		const accountOverview = createMockNewAccountOverview( 'eur', 100, 100 );
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
+
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { getByText } = render( <DepositsOverview /> );
+		getByText(
+			/Deposits are paused while your available funds balance remains below €5.00/,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
+	} );
+
+	test( 'When available balance is positive', () => {
+		const accountOverview = createMockNewAccountOverview( 'eur', 100, 100 );
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
+
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { queryByText } = render( <DepositsOverview /> );
+		expect(
+			queryByText(
+				/Deposits are paused while your available funds balance remains below €5.00/
+			)
+		).toBeFalsy();
 	} );
 } );
