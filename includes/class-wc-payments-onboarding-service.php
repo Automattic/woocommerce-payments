@@ -229,13 +229,22 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Function to clear any account options we may want to reset when a new onboarding flow is initialised.
+	 * Clear any account options we may want to reset when a new onboarding flow is initialised.
 	 * Currently, just deletes the option which stores whether the eligibility modal has been dismissed.
 	 *
 	 * @return boolean Whether the option was deleted successfully.
 	 */
 	public static function clear_account_options(): bool {
 		return delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
+	}
+
+	/**
+	 * Set the onboarding eligibility modal dismissed option to true.
+	 *
+	 * @return void
+	 */
+	public static function set_onboarding_eligibility_modal_dismissed(): void {
+		update_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION, true );
 	}
 
 	/**

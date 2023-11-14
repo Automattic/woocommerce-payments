@@ -24,16 +24,18 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	const markAsDismissed = async () => {
+		setModalDismissed( true );
+
 		// Update the option to mark the modal as dismissed.
 		await updateOptions( {
 			wcpay_onboarding_eligibility_modal_dismissed: true,
 		} );
-		setModalDismissed( true );
 	};
 
-	const handleSetup = async () => {
+	const handleSetup = () => {
 		trackEligibilityModalClosed( 'setup_deposits' );
-		await markAsDismissed();
+
+		// Note: we don't need to update the option here because it will be handled upon redirect to the connect URL.
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			collect_payout_requirements: true,
 		} );
