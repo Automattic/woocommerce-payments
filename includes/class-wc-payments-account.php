@@ -930,6 +930,12 @@ class WC_Payments_Account {
 				if ( $this->is_account_partially_onboarded() ) {
 					$args         = $_GET;
 					$args['type'] = 'complete_kyc_link';
+
+					// Allow progressive onboarding accounts to continue onboarding without payout collection.
+					if ( $this->is_progressive_onboarding_in_progress() ) {
+						$args['is_progressive_onboarding'] = $this->is_progressive_onboarding_in_progress() ?? false;
+					}
+
 					$this->redirect_to_account_link( $args );
 				}
 
