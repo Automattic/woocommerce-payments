@@ -45,7 +45,7 @@ export const SuspendedDepositNotice: React.FC = () => {
 };
 
 /**
- * Renders a notice informing the user that the next deposit will include funds from a loan payout.
+ * Renders a notice informing the user that the next deposit will include funds from a loan disbursement.
  */
 export const DepositIncludesLoanPayoutNotice: React.FC = () => (
 	<InlineNotice icon status="warning" isDismissible={ false }>
@@ -72,7 +72,7 @@ export const DepositIncludesLoanPayoutNotice: React.FC = () => (
 );
 
 /**
- * Renders a notice informing the user of the new account waiting period.
+ * Renders a notice informing the user of the new account deposit waiting period.
  */
 export const NewAccountWaitingPeriodNotice: React.FC = () => (
 	<InlineNotice
@@ -102,7 +102,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 );
 
 /**
- * Renders a notice informing the user of the time it takes for deposits to appear in their bank account.
+ * Renders a notice informing the user of the number of days it may take for deposits to appear in their bank account.
  */
 export const DepositTransitDaysNotice: React.FC = () => (
 	<InlineNotice
