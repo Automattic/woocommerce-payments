@@ -283,6 +283,24 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
+	test( `Component doesn't render if pending funds but no available funds`, () => {
+		mockOverviews( [ createMockNewAccountOverview( 'eur', 5000, 0 ) ] );
+		mockDepositOverviews( [
+			createMockNewAccountOverview( 'eur', 5000, 0 ),
+		] );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: false,
+		} );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+		const { container } = render( <DepositsOverview /> );
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
 	test( 'Confirm notice renders if deposits blocked', () => {
 		mockAccount.deposits_blocked = true;
 		mockOverviews( [
