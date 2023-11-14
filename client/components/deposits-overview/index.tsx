@@ -43,12 +43,13 @@ const DepositsOverview: React.FC = () => {
 
 	const isLoading = isLoadingOverview || isLoadingDeposits;
 
+	const availableFunds = overview?.available?.amount ?? 0;
+
 	// If the account has deposits blocked, there is no available balance or it is negative, there is no future deposit expected.
 	const isNextDepositExpected =
-		! account?.deposits_blocked && ( overview?.available?.amount ?? 0 ) > 0;
+		! account?.deposits_blocked && availableFunds > 0;
 	// If the available balance is negative, deposits may be paused.
-	const isNegativeBalanceDepositsPaused =
-		( overview?.available?.amount ?? 0 ) < 0;
+	const isNegativeBalanceDepositsPaused = availableFunds < 0;
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
@@ -86,7 +87,7 @@ const DepositsOverview: React.FC = () => {
 	}
 
 	// This card isn't shown if there are no deposits, so we can bail early.
-	if ( ! isLoading && ! isNextDepositExpected && deposits.length === 0 ) {
+	if ( ! isLoading && availableFunds === 0 && deposits.length === 0 ) {
 		return null;
 	}
 

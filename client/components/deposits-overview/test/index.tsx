@@ -283,6 +283,24 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
+	test( `Component doesn't render if pending funds but no available funds`, () => {
+		mockOverviews( [ createMockNewAccountOverview( 'eur', 5000, 0 ) ] );
+		mockDepositOverviews( [
+			createMockNewAccountOverview( 'eur', 5000, 0 ),
+		] );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: false,
+		} );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+		const { container } = render( <DepositsOverview /> );
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
 	test( 'Confirm notice renders if deposits blocked', () => {
 		mockAccount.deposits_blocked = true;
 		mockOverviews( [
@@ -517,15 +535,13 @@ describe( 'Suspended Deposit Notice Renders', () => {
 
 describe( 'Paused Deposit notice Renders', () => {
 	test( 'When available balance is negative', () => {
-		mockUseDeposits.mockReturnValue( {
-			depositsCount: 0,
-			deposits: mockDeposits,
-			isLoading: false,
-		} );
-		mockOverviews( [
-			// Negative 100 available balance
-			createMockNewAccountOverview( 'usd', 100, -100 ),
-		] );
+		const accountOverview = createMockNewAccountOverview(
+			'usd',
+			100,
+			-100 // Negative 100 available balance
+		);
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
 
 		mockUseSelectedCurrency.mockReturnValue( {
 			selectedCurrency: 'usd',
@@ -538,19 +554,13 @@ describe( 'Paused Deposit notice Renders', () => {
 		} );
 	} );
 	test( 'When available balance is positive', () => {
-		mockUseDeposits.mockReturnValue( {
-			depositsCount: 0,
-			deposits: mockDeposits,
-			isLoading: false,
-		} );
-		mockOverviews( [
-			// Positive 100 available balance
-			createMockNewAccountOverview( 'usd', 100, 100 ),
-		] );
-		mockUseSelectedCurrency.mockReturnValue( {
-			selectedCurrency: 'usd',
-			setSelectedCurrency: mockSetSelectedCurrency,
-		} );
+		const accountOverview = createMockNewAccountOverview(
+			'usd',
+			100,
+			100 // Positive 100 available balance
+		);
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
 
 		const { queryByText } = render( <DepositsOverview /> );
 		expect( queryByText( /Deposits may be interrupted/ ) ).toBeFalsy();
