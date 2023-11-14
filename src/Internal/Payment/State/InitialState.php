@@ -121,7 +121,10 @@ class InitialState extends AbstractPaymentState {
 		// Start multiple verification checks.
 		$this->process_order_phone_number();
 
+		$context = $this->get_context();
+
 		if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+			$this->order_service->add_rate_limiter_note( $context->get_order_id() );
 			throw new StateTransitionException(
 				__( 'Your payment was not processed.', 'woocommerce-payments' ),
 				400
@@ -141,8 +144,7 @@ class InitialState extends AbstractPaymentState {
 
 		// Payments are currently based on intents, request one from the API.
 		try {
-			$context = $this->get_context();
-			$intent  = $this->payment_request_service->create_intent( $context );
+			$intent = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
