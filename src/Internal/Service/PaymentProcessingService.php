@@ -62,7 +62,6 @@ class PaymentProcessingService {
 	 */
 	private $mode;
 
-
 	/**
 	 * Service constructor.
 	 *

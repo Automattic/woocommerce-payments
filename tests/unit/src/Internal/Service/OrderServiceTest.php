@@ -319,7 +319,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		// Create a mock order that will be used.
 		$mock_order = $this->createMock( WC_Order::class );
-		$this->sut->expects( $this->once() )
+		$this->sut->expects( $this->exactly( 2 ) )
 			->method( 'get_order' )
 			->with( $this->order_id )
 			->willReturn( $mock_order );
@@ -640,6 +640,24 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, $result );
 	}
 
+	public function test_set_mode() {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with( '_wcpay_mode', 'prod' );
+		$this->sut->set_mode( $this->order_id, 'prod' );
+	}
+
+	public function test_get_mode() {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_wcpay_mode', true )
+			->willReturn( 'test' );
+		$result = $this->sut->get_mode( $this->order_id, true );
+		$this->assertSame( 'test', $result );
+	}
+
 	/**
 	 * Mocks order retrieval.
 	 *
@@ -657,4 +675,5 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		return $mock_order;
 	}
+
 }
