@@ -162,16 +162,12 @@ class OrderService {
 
 		$currency = strtolower( $order->get_currency() );
 		$amount   = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-
-		$user = $order->get_user();
-		if ( false === $user ) { // Default to the current user.
-			$user = $this->legacy_proxy->call_function( 'wp_get_current_user' );
-		}
+		$user     = $order->get_user();
 
 		$context->set_currency( $currency );
 		$context->set_amount( $amount );
 		// In case we don't have user, we are setting user id to be 0 which could cause more harm since we don't have a real user.
-		$context->set_user_id( $user->ID > 0 ? $user->ID : null );
+		$context->set_user_id( $user->ID ?? null );
 	}
 
 	/**

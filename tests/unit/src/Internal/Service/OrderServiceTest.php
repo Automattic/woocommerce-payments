@@ -277,18 +277,11 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$mock_order->expects( $this->once() )
 			->method( 'get_user' )
 			->willReturn( $user ?? false );
-		if ( ! $user ) {
-			$user     = $this->createMock( WP_User::class );
-			$user->ID = 10;
 
-			$this->mock_legacy_proxy->expects( $this->once() )
-				->method( 'call_function' )
-				->with( 'wp_get_current_user' )
-				->willReturn( $user );
-		}
+		// Mock set user id.
 		$mock_context->expects( $this->once() )
 			->method( 'set_user_id' )
-			->with( 10 );
+			->with( $user->ID ?? null );
 
 		// Act.
 		$this->sut->import_order_data_to_payment_context( $this->order_id, $mock_context );
