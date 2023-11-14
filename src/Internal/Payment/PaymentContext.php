@@ -93,21 +93,21 @@ class PaymentContext {
 	}
 
 	/**
-	 * Controls whether manual capture is enabled.
+	 * Controls whether automatic capture is enabled.
 	 *
-	 * @param bool $manual_capture Whether to enable it or not.
+	 * @param bool $automatic_capture Whether to enable it or not.
 	 */
-	public function toggle_manual_capture( bool $manual_capture ) {
-		$this->set( 'manual_capture', $manual_capture );
+	public function toggle_automatic_capture( bool $automatic_capture ) {
+		$this->set( 'automatic_capture', $automatic_capture );
 	}
 
 	/**
-	 * Indicates whether the payment should be captured manually.
+	 * Indicates whether the payment should be captured automatically.
 	 *
 	 * @return bool
 	 */
-	public function should_capture_manually(): bool {
-		return $this->get( 'manual_capture' ) ?? false;
+	public function should_capture_automatically(): bool {
+		return $this->get( 'automatic_capture' ) ?? false;
 	}
 
 	/**
