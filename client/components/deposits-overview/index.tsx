@@ -51,11 +51,6 @@ const DepositsOverview: React.FC = () => {
 		( overview?.available?.amount ?? 0 ) < 0;
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
-	// TODO: Find a condition for rendering the loan notice.
-	// const { includesFinancingPayout } = useDepositIncludesLoan(
-	// 	nextDeposit.id
-	// );
-
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
 	const showRecentDeposits =
 		! isLoading &&
@@ -119,7 +114,6 @@ const DepositsOverview: React.FC = () => {
 						{ isNextDepositExpected && (
 							<DepositTransitDaysNotice />
 						) }
-						{ /* includesFinancingPayout && <DepositIncludesLoanPayoutNotice /> */ }
 						{ ! hasCompletedWaitingPeriod && (
 							<NewAccountWaitingPeriodNotice />
 						) }
