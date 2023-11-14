@@ -203,6 +203,28 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
+	 * Returns boolean dependent on whether payment method will accept charges
+	 * with chosen currency
+	 *
+	 * @param string   $account_domestic_currency Domestic currency of the account.
+	 * @param int|null $order_id                 Optional order ID, if order currency should take precedence.
+	 *
+	 * @return bool
+	 */
+	public function test_is_currency_valid( string $account_domestic_currency, $order_id = null ) {
+		$current_store_currency = $this->get_currency( $order_id );
+		print_r('currency is' . $current_store_currency . "\n");
+
+		if ( $this->accept_only_domestic_payment ) {
+			if ( strtolower( $current_store_currency ) !== strtolower( $account_domestic_currency ) ) {
+				return false;
+			}
+		}
+
+		return empty( $this->currencies ) || in_array( $current_store_currency, $this->currencies, true );
+	}
+
+	/**
 	 * Add payment method to user and return WC payment token
 	 *
 	 * @param WP_User $user User to get payment token from.
