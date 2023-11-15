@@ -301,6 +301,24 @@ class PaymentContext {
 	}
 
 	/**
+	 * Sets the mode (test or prod).
+	 *
+	 * @param string $mode mode.
+	 */
+	public function set_mode( string $mode ) {
+		$this->set( 'mode', $mode );
+	}
+
+	/**
+	 * Returns the mode (test or prod).
+	 *
+	 * @return string|null mode.
+	 */
+	public function get_mode(): ?string {
+		return $this->get( 'mode' );
+	}
+
+	/**
 	 * Updates previous transition with the next state and creates new transition.
 	 *
 	 * @param string $state The state.

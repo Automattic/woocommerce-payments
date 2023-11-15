@@ -12,7 +12,9 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Internal\Service\MinimumAmountService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
@@ -63,6 +65,13 @@ class InitialState extends AbstractPaymentState {
 	private $dpps;
 
 	/**
+	 * Service for handling minimum amount.
+	 *
+	 * @var MinimumAmountService
+	 */
+	private $minimum_amount_service;
+
+	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
 	 * @param StateFactory                      $state_factory           Factory for payment states.
@@ -71,6 +80,7 @@ class InitialState extends AbstractPaymentState {
 	 * @param Level3Service                     $level3_service          Service for Level3 Data.
 	 * @param PaymentRequestService             $payment_request_service Connection with the server.
 	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
+	 * @param MinimumAmountService              $minimum_amount_service  Service for handling minimum amount.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -78,7 +88,8 @@ class InitialState extends AbstractPaymentState {
 		WC_Payments_Customer_Service $customer_service,
 		Level3Service $level3_service,
 		PaymentRequestService $payment_request_service,
-		DuplicatePaymentPreventionService $dpps
+		DuplicatePaymentPreventionService $dpps,
+		MinimumAmountService $minimum_amount_service
 	) {
 		parent::__construct( $state_factory );
 
@@ -87,6 +98,7 @@ class InitialState extends AbstractPaymentState {
 		$this->level3_service          = $level3_service;
 		$this->payment_request_service = $payment_request_service;
 		$this->dpps                    = $dpps;
+		$this->minimum_amount_service  = $minimum_amount_service;
 	}
 
 	/**
@@ -94,12 +106,13 @@ class InitialState extends AbstractPaymentState {
 	 *
 	 * @param PaymentRequest $request The incoming payment processing request.
 	 *
-	 * @return AbstractPaymentState      The next state.
-	 * @throws StateTransitionException  In case the completed state could not be initialized.
-	 * @throws ContainerException        When the dependency container cannot instantiate the state.
-	 * @throws Order_Not_Found_Exception Order could not be found.
-	 * @throws PaymentRequestException   When data is not available or invalid.
-	 * @throws API_Exception             When server request fails.
+	 * @return AbstractPaymentState       The next state.
+	 * @throws StateTransitionException   In case the completed state could not be initialized.
+	 * @throws ContainerException         When the dependency container cannot instantiate the state.
+	 * @throws Order_Not_Found_Exception  Order could not be found.
+	 * @throws PaymentRequestException    When data is not available or invalid.
+	 * @throws API_Exception              When server request fails.
+	 * @throws Amount_Too_Small_Exception When the order amount is too small.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
@@ -120,6 +133,12 @@ class InitialState extends AbstractPaymentState {
 		if ( null !== $duplicate_payment_result ) {
 			return $duplicate_payment_result;
 		}
+
+		$context = $this->get_context();
+		$this->minimum_amount_service->verify_amount(
+			$context->get_currency(),
+			$context->get_amount()
+		);
 		// End multiple verification checks.
 
 		/**
@@ -142,6 +161,9 @@ class InitialState extends AbstractPaymentState {
 			// After customer is updated or created, make sure that intent is created.
 			$intent = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
+		} catch ( Amount_Too_Small_Exception $e ) {
+			$this->minimum_amount_service->store_amount_from_exception( $e );
+			throw $e;
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
 		}
