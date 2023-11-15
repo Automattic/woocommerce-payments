@@ -244,7 +244,8 @@ jQuery( function ( $ ) {
 		let appearance = getConfig( 'upeAppearance' );
 
 		if ( ! appearance ) {
-			appearance = await api.saveUPEAppearance( getAppearance() );
+			appearance = getAppearance();
+			api.saveUPEAppearance( appearance );
 		}
 
 		elements = api.getStripe().elements( {
