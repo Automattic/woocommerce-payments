@@ -3,7 +3,6 @@
 = 6.8.0 - 2023-11-16 =
 * Add - Added mechanism to track and log changes to the payment context (reengineering payment process)
 * Add - Add rejected payment method capability status
-* Add - Add UPE appearance filter.
 * Add - Per-country amount limits for payment methods
 * Fix - Add Affiliate for WooCommerce support on WooPay.
 * Fix - Add WooCommerce Multi-Currency support on WooPay.
