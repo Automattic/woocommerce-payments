@@ -98,6 +98,13 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
 	require_once $_plugin_dir . 'includes/class-woopay-tracker.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-customer-controller.php';
+
+	DG\BypassFinals::enable( false, true );
+	DG\BypassFinals::setWhitelist(
+		[
+			'*/AbstractSessionRateLimiter.php',
+		]
+	);
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
