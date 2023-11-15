@@ -197,7 +197,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return '56';
 		}
 
-		// for the "default" and "catch-all" scenarios.
+		// for the "default"/"small" and "catch-all" scenarios.
 		return '40';
 	}
 

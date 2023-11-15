@@ -601,10 +601,12 @@ class WC_Payments {
 		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
 
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
+		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-track-upe-status.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Track_Upe_Status', 'maybe_track' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );

@@ -24,7 +24,7 @@ jest.mock( '../../../data', () => ( {
 	useWooPayCustomMessage: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
 	useWooPayStoreLogo: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
-	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
+	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	useWooPayLocations: jest
 		.fn()
