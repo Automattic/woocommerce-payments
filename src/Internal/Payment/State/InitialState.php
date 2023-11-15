@@ -14,6 +14,8 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Internal\Service\MinimumAmountService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
@@ -64,6 +66,13 @@ class InitialState extends AbstractPaymentState {
 	private $dpps;
 
 	/**
+	 * Service for handling minimum amount.
+	 *
+	 * @var MinimumAmountService
+	 */
+	private $minimum_amount_service;
+
+	/**
 	 * FailedTransactionRateLimiter instance.
 	 *
 	 * @var FailedTransactionRateLimiter
@@ -73,13 +82,14 @@ class InitialState extends AbstractPaymentState {
 	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param  StateFactory                      $state_factory  Factory for payment states.
-	 * @param  OrderService                      $order_service  Service for order-related actions.
-	 * @param  WC_Payments_Customer_Service      $customer_service  Service for managing remote customers.
-	 * @param  Level3Service                     $level3_service  Service for Level3 Data.
-	 * @param  PaymentRequestService             $payment_request_service  Connection with the server.
-	 * @param  DuplicatePaymentPreventionService $dpps  Service for preventing duplicate payments.
-	 * @param  FailedTransactionRateLimiter      $failed_transaction_rate_limiter Failed Transaction Rate Limiter instance.
+	 * @param StateFactory                      $state_factory           Factory for payment states.
+	 * @param OrderService                      $order_service           Service for order-related actions.
+	 * @param WC_Payments_Customer_Service      $customer_service        Service for managing remote customers.
+	 * @param Level3Service                     $level3_service          Service for Level3 Data.
+	 * @param PaymentRequestService             $payment_request_service Connection with the server.
+	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
+	 * @param MinimumAmountService              $minimum_amount_service  Service for handling minimum amount.
+	 * @param FailedTransactionRateLimiter      $failed_transaction_rate_limiter Failed Transaction Rate Limiter instance.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -88,6 +98,7 @@ class InitialState extends AbstractPaymentState {
 		Level3Service $level3_service,
 		PaymentRequestService $payment_request_service,
 		DuplicatePaymentPreventionService $dpps,
+		MinimumAmountService $minimum_amount_service,
 		FailedTransactionRateLimiter $failed_transaction_rate_limiter
 	) {
 		parent::__construct( $state_factory );
@@ -97,6 +108,7 @@ class InitialState extends AbstractPaymentState {
 		$this->level3_service                  = $level3_service;
 		$this->payment_request_service         = $payment_request_service;
 		$this->dpps                            = $dpps;
+		$this->minimum_amount_service          = $minimum_amount_service;
 		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 	}
 
@@ -105,11 +117,12 @@ class InitialState extends AbstractPaymentState {
 	 *
 	 * @param PaymentRequest $request The incoming payment processing request.
 	 *
-	 * @return AbstractPaymentState      The next state.
-	 * @throws StateTransitionException  In case the completed state could not be initialized.
-	 * @throws ContainerException        When the dependency container cannot instantiate the state.
-	 * @throws Order_Not_Found_Exception Order could not be found.
-	 * @throws PaymentRequestException   When data is not available or invalid.
+	 * @return AbstractPaymentState       The next state.
+	 * @throws StateTransitionException   In case the completed state could not be initialized.
+	 * @throws ContainerException         When the dependency container cannot instantiate the state.
+	 * @throws Order_Not_Found_Exception  Order could not be found.
+	 * @throws PaymentRequestException    When data is not available or invalid.
+	 * @throws Amount_Too_Small_Exception When the order amount is too small.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
@@ -140,12 +153,20 @@ class InitialState extends AbstractPaymentState {
 		if ( null !== $duplicate_payment_result ) {
 			return $duplicate_payment_result;
 		}
+
+		$this->minimum_amount_service->verify_amount(
+			$context->get_currency(),
+			$context->get_amount()
+		);
 		// End multiple verification checks.
 
 		// Payments are currently based on intents, request one from the API.
 		try {
 			$intent = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
+		} catch ( Amount_Too_Small_Exception $e ) {
+			$this->minimum_amount_service->store_amount_from_exception( $e );
+			throw $e;
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
 		} catch ( API_Exception $e ) {
