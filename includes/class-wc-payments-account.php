@@ -239,6 +239,21 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account has completed onboarding/KYC.
+	 * Returns true if the onboarding/KYC is completed.
+	 *
+	 * @return bool True if the account is connected and details are submitted, false otherwise.
+	 */
+	public function is_account_fully_onboarded(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return true === $account['details_submitted'];
+	}
+
+	/**
 	 * Gets the account status data for rendering on the settings page.
 	 *
 	 * @return array An array containing the status data, or [ 'error' => true ] on error or no connected account.
