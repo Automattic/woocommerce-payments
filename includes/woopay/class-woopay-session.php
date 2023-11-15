@@ -61,6 +61,8 @@ class WooPay_Session {
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
+
+		add_filter( 'automatewoo/referrals/referred_order_advocate', [ __CLASS__, 'automatewoo_refer_a_friend_referral_from_parameter' ] );
 	}
 
 	/**
@@ -254,6 +256,20 @@ class WooPay_Session {
 		}
 
 		wp_clear_scheduled_hook( 'woopay_restore_order_customer_id' );
+	}
+
+	/**
+	 * Fix for AutomateWoo - Refer A Friend Add-on
+	 * plugin when using link referrals.
+	 */
+	public static function automatewoo_refer_a_friend_referral_from_parameter() {
+		if ( empty( $_GET['automatewoo_referral_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return false;
+		}
+
+		$automatewoo_referral = (int) wc_clean( wp_unslash( $_GET['automatewoo_referral_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		return $automatewoo_referral;
 	}
 
 	/**

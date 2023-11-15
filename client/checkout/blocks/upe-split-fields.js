@@ -301,11 +301,8 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	useEffect( () => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
-			let upeAppearance = getAppearance( true );
-			upeAppearance = await api.saveUPEAppearance(
-				upeAppearance,
-				'true'
-			);
+			const upeAppearance = getAppearance( true );
+			await api.saveUPEAppearance( upeAppearance, 'true' );
 
 			// Update appearance state
 			setAppearance( upeAppearance );
