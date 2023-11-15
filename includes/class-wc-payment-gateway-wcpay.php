@@ -377,9 +377,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'medium',
 				'desc_tip'    => true,
 				'options'     => [
-					'default' => __( 'Default', 'woocommerce-payments' ),
-					'medium'  => __( 'Medium', 'woocommerce-payments' ),
-					'large'   => __( 'Large', 'woocommerce-payments' ),
+					'small'  => __( 'Small', 'woocommerce-payments' ),
+					'medium' => __( 'Medium', 'woocommerce-payments' ),
+					'large'  => __( 'Large', 'woocommerce-payments' ),
 				],
 			],
 			'platform_checkout_button_locations' => [
