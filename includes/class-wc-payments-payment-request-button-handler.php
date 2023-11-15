@@ -599,7 +599,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			/**
 			 * Filter whether product supports Payment Request Button on cart page.
 			 *
-			 * @since x.x.x
+			 * @since 6.9.0
 			 *
 			 * @param boolean $is_supported Whether product supports Payment Request Button on cart page.
 			 * @param object  $_product     Product object.
