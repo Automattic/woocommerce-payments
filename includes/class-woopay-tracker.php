@@ -288,6 +288,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$properties['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
 		$properties['wcpay_version'] = WCPAY_VERSION_NUMBER;
 
+		// Add client's user agent to the event properties.
+		if ( !empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
+			$properties['_via_ua']  = $_SERVER['HTTP_USER_AGENT'];
+		}
+
 		$blog_details = [
 			'blog_lang' => isset( $properties['blog_lang'] ) ? $properties['blog_lang'] : get_bloginfo( 'language' ),
 		];

@@ -226,9 +226,23 @@ class WC_Payments_WooPay_Button_Handler {
 
 		WC()->shipping->reset_shipping();
 
-		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
-		$quantity     = ! isset( $_POST['quantity'] ) ? 1 : absint( $_POST['quantity'] );
-		$product      = wc_get_product( $product_id );
+		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+		$quantity   = ! isset( $_POST['quantity'] ) ? 1 : absint( $_POST['quantity'] );
+		$product    = wc_get_product( $product_id );
+
+		if ( ! $product ) {
+			wp_send_json(
+				[
+					'error' => [
+						'code'    => 'invalid_product_id',
+						'message' => __( 'Invalid product id', 'woocommerce-payments' ),
+					],
+				],
+				404
+			);
+			return;
+		}
+
 		$product_type = $product->get_type();
 
 		// First empty the cart to prevent wrong calculation.
