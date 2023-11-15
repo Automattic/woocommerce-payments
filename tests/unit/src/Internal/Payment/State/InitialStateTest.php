@@ -11,6 +11,7 @@ use WC_Helper_Intention;
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
+use WCPay\Internal\Payment\FailedTransactionRateLimiter;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
@@ -93,19 +94,25 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	private $mock_minimum_amount_service;
 
 	/**
+	 * @var FailedTransactionRateLimiter|MockObject
+	 */
+	private $mock_failed_transaction_rate_limiter;
+
+	/**
 	 * Set up the test.
 	 */
 	protected function setUp(): void {
 		parent::setUp();
 
-		$this->mock_state_factory           = $this->createMock( StateFactory::class );
-		$this->mock_order_service           = $this->createMock( OrderService::class );
-		$this->mock_context                 = $this->createMock( PaymentContext::class );
-		$this->mock_customer_service        = $this->createMock( WC_Payments_Customer_Service::class );
-		$this->mock_level3_service          = $this->createMock( Level3Service::class );
-		$this->mock_payment_request_service = $this->createMock( PaymentRequestService::class );
-		$this->mock_dpps                    = $this->createMock( DuplicatePaymentPreventionService::class );
-		$this->mock_minimum_amount_service  = $this->createMock( MinimumAmountService::class );
+		$this->mock_state_factory                   = $this->createMock( StateFactory::class );
+		$this->mock_order_service                   = $this->createMock( OrderService::class );
+		$this->mock_context                         = $this->createMock( PaymentContext::class );
+		$this->mock_customer_service                = $this->createMock( WC_Payments_Customer_Service::class );
+		$this->mock_level3_service                  = $this->createMock( Level3Service::class );
+		$this->mock_payment_request_service         = $this->createMock( PaymentRequestService::class );
+		$this->mock_dpps                            = $this->createMock( DuplicatePaymentPreventionService::class );
+		$this->mock_minimum_amount_service          = $this->createMock( MinimumAmountService::class );
+		$this->mock_failed_transaction_rate_limiter = $this->createMock( FailedTransactionRateLimiter::class );
 
 		$this->sut = new InitialState(
 			$this->mock_state_factory,
@@ -114,7 +121,8 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			$this->mock_level3_service,
 			$this->mock_payment_request_service,
 			$this->mock_dpps,
-			$this->mock_minimum_amount_service
+			$this->mock_minimum_amount_service,
+			$this->mock_failed_transaction_rate_limiter
 		);
 		$this->sut->set_context( $this->mock_context );
 
@@ -143,6 +151,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 					$this->mock_payment_request_service,
 					$this->mock_dpps,
 					$this->mock_minimum_amount_service,
+					$this->mock_failed_transaction_rate_limiter,
 				]
 			)
 			->getMock();
@@ -205,7 +214,12 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
-		$this->mock_minimum_amount_service->expects( $this->once() )->method( 'store_amount_from_exception' )
+		$this->mock_failed_transaction_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+		$this->mock_minimum_amount_service->expects( $this->once() )
+			->method( 'store_amount_from_exception' )
 			->with( $small_amount_exception );
 
 		$this->expectExceptionObject( $small_amount_exception );
@@ -331,6 +345,11 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Arrange mocks.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		$this->mock_failed_transaction_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
 
 		$this->mock_context->expects( $this->once() )
 			->method( 'get_currency' )
