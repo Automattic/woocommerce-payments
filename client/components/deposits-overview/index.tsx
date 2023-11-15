@@ -48,7 +48,7 @@ const DepositsOverview: React.FC = () => {
 	const availableFunds = overview?.available?.amount ?? 0;
 
 	const minimumDepositAmount =
-		wcpaySettings.accountStatus.deposits?.minimum_deposit_amounts[
+		wcpaySettings.accountStatus.deposits?.minimum_deposit_amounts?.[
 			selectedCurrency
 		] ?? 0;
 	const isAboveMinimumDepositAmount = availableFunds >= minimumDepositAmount;
