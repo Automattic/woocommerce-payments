@@ -9,6 +9,7 @@ namespace WCPay\Tests\Internal\Service;
 
 use Exception;
 use WCPAY_UnitTestCase;
+use PHPUnit_Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Intention;
 use WC_Payment_Gateway_WCPay;
@@ -20,7 +21,6 @@ use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Core\Mode;
-use WCPay\Internal\Logger;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Service\PaymentProcessingService;
@@ -30,6 +30,7 @@ use WCPay\Internal\Service\PaymentContextLoggerService;
  * Payment processing service unit tests.
  */
 class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
+
 	/**
 	 * Service under test.
 	 *
@@ -144,28 +145,9 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'is_test' )
 			->willThrowException( new Exception( 'Could not initialize' ) );
-
-		$sut = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy, $this->mock_context_logger, $this->mock_mode );
-
-		$mock_initial_state   = $this->createMock( InitialState::class );
-		$mock_completed_state = $this->createMock( CompletedState::class );
-
-		// Prepare a payment method for the context.
-		$_POST['payment_method']       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$_POST['wcpay-payment-method'] = 'pi_XYZ';
-
-		$this->mock_state_factory->expects( $this->once() )
-			->method( 'create_state' )
-			->with( InitialState::class, $this->isInstanceOf( PaymentContext::class ) )
-			->willReturn( $mock_initial_state );
-
-		$mock_initial_state->expects( $this->once() )
-			->method( 'start_processing' )
-			->with( $this->isInstanceOf( PaymentRequest::class ) )
-			->willReturn( $mock_completed_state );
-
-		// process completes as mode is used only for logging and meta.
-		$this->assertSame( $mock_completed_state, $sut->process_payment( 1 ) );
+		$sut     = new PaymentProcessingService( $this->mock_state_factory, $this->mock_legacy_proxy, $this->mock_context_logger, $this->mock_mode );
+		$context = PHPUnit_Utils::call_method( $sut, 'create_payment_context', [ 123 ] );
+		$this->assertEquals( 'unknown', $context->get_mode() );
 	}
 
 	public function test_get_authentication_redirect_url_will_return_url_from_payment_intent() {
@@ -191,7 +173,6 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 
 		$result = $sut->get_authentication_redirect_url( $intent, 1 );
 		$this->assertSame( $url, $result );
-
 	}
 
 	/**
