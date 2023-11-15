@@ -596,6 +596,18 @@ class WC_Payments_Payment_Request_Button_Handler {
 				return false;
 			}
 
+			/**
+			 * Filter whether product supports Payment Request Button on cart page.
+			 *
+			 * @since 6.9.0
+			 *
+			 * @param boolean $is_supported Whether product supports Payment Request Button on cart page.
+			 * @param object  $_product     Product object.
+			 */
+			if ( ! apply_filters( 'wcpay_payment_request_is_cart_supported', true, $_product ) ) {
+				return false;
+			}
+
 			// Trial subscriptions with shipping are not supported.
 			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
@@ -1144,9 +1156,23 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC()->shipping->reset_shipping();
 
-		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+		$product    = wc_get_product( $product_id );
+
+		if ( ! $product ) {
+			wp_send_json(
+				[
+					'error' => [
+						'code'    => 'invalid_product_id',
+						'message' => __( 'Invalid product id', 'woocommerce-payments' ),
+					],
+				],
+				404
+			);
+			return;
+		}
+
 		$qty          = ! isset( $_POST['qty'] ) ? 1 : absint( $_POST['qty'] );
-		$product      = wc_get_product( $product_id );
 		$product_type = $product->get_type();
 
 		// First empty the cart to prevent wrong calculation.
