@@ -249,7 +249,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Component Renders', () => {
-		mockOverviews( [ createMockOverview( 'usd', 100, 0, 'estimated' ) ] );
+		mockOverviews( [ createMockOverview( 'usd', 100, 0, 'pending' ) ] );
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
 			deposits: mockDeposits,
@@ -282,7 +282,7 @@ describe( 'Deposits Overview information', () => {
 			selectedCurrency: 'eur',
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
-		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+		const overview = createMockOverview( 'usd', 100, 0, 'pending' );
 		const { getByText } = render(
 			<NextDepositDetails isLoading={ false } overview={ overview } />
 		);
@@ -298,7 +298,7 @@ describe( 'Deposits Overview information', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 
-		const overview = createMockOverview( 'EUR', 647049, 0, 'estimated' );
+		const overview = createMockOverview( 'EUR', 647049, 0, 'pending' );
 		const { getByText } = render(
 			<NextDepositDetails isLoading={ false } overview={ overview } />
 		);
@@ -308,7 +308,7 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Confirm next deposit dates', () => {
 		const date = Date.parse( '2021-10-01' );
-		const overview = createMockOverview( 'usd', 100, date, 'estimated' );
+		const overview = createMockOverview( 'usd', 100, date, 'pending' );
 
 		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockUseSelectedCurrency.mockReturnValue( {
@@ -336,7 +336,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Renders capital loan notice if deposit includes financing payout', () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+		const overview = createMockOverview( 'usd', 100, 0, 'pending' );
 		mockUseDepositIncludesLoan.mockReturnValue( {
 			includesFinancingPayout: true,
 			isLoading: false,
@@ -369,7 +369,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+		const overview = createMockOverview( 'usd', 100, 0, 'pending' );
 		mockUseDepositIncludesLoan.mockReturnValue( {
 			includesFinancingPayout: false,
 			isLoading: false,
@@ -527,7 +527,7 @@ describe( 'Suspended Deposit Notice Renders', () => {
 
 describe( 'Paused Deposit notice Renders', () => {
 	test( 'When available balance is negative', () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+		const overview = createMockOverview( 'usd', 100, 0, 'pending' );
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
 			deposits: mockDeposits,
@@ -550,7 +550,7 @@ describe( 'Paused Deposit notice Renders', () => {
 		);
 	} );
 	test( 'When available balance is positive', () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+		const overview = createMockOverview( 'usd', 100, 0, 'pending' );
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
 			deposits: mockDeposits,

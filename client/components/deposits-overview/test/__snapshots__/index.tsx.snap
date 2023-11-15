@@ -141,9 +141,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
             data-wp-component="FlexItem"
           >
             <span
-              class="chip chip-light"
+              class="chip chip-warning"
             >
-              Estimated
+              Pending
             </span>
           </div>
           <div
