@@ -592,7 +592,19 @@ describe( 'Paused Deposit notice Renders', () => {
 } );
 
 describe( 'Minimum Deposit Amount Notice', () => {
-	test( 'When available balance is below the minimum thresholf', () => {
+	beforeAll( () => {
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: false,
+		} );
+	} );
+
+	afterAll( () => {
+		jest.clearAllMocks();
+	} );
+
+	test( 'When available balance is below the minimum threshold', () => {
 		const accountOverview = createMockNewAccountOverview( 'eur', 100, 100 );
 		mockOverviews( [ accountOverview ] );
 		mockDepositOverviews( [ accountOverview ] );
@@ -611,8 +623,8 @@ describe( 'Minimum Deposit Amount Notice', () => {
 		);
 	} );
 
-	test( 'When available balance is positive', () => {
-		const accountOverview = createMockNewAccountOverview( 'eur', 100, 100 );
+	test( 'When available balance is above the minimum threshold', () => {
+		const accountOverview = createMockNewAccountOverview( 'eur', 100, 500 );
 		mockOverviews( [ accountOverview ] );
 		mockDepositOverviews( [ accountOverview ] );
 
