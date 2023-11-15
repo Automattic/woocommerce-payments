@@ -149,6 +149,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 						$session_email = is_array( $customer ) && isset( $customer['email'] ) ? $customer['email'] : '';
 					}
 
+					// Silence the filter_input warning because we are sanitizing the input with sanitize_email().
+					// nosemgrep: audit.php.lang.misc.filter-input-no-filter
 					$user_email = sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email' ) ) ) ?? $session_email;
 
 					$js_config['order_id']      = $order->get_id();
