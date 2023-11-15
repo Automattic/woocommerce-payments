@@ -23,7 +23,7 @@ const WCPayFields = ( {
 	stripe,
 	elements,
 	billing: { billingData },
-	eventRegistration: { onPaymentProcessing, onCheckoutSuccess },
+	eventRegistration: { onPaymentSetup, onCheckoutSuccess },
 	emitResponse,
 	shouldSavePayment,
 } ) => {
@@ -33,7 +33,7 @@ const WCPayFields = ( {
 		<p>
 			<strong>Test mode:</strong> use the test VISA card 4242424242424242
 			with any expiry date and CVC, or any test card numbers listed{ ' ' }
-			<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards">
+			<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards">
 				here
 			</a>
 			.
@@ -49,7 +49,7 @@ const WCPayFields = ( {
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
 		() =>
-			onPaymentProcessing( () => {
+			onPaymentSetup( () => {
 				if ( PAYMENT_METHOD_NAME_CARD !== activePaymentMethod ) {
 					return;
 				}

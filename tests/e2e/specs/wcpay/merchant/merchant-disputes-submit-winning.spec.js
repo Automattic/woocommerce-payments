@@ -17,7 +17,9 @@ const {
 
 let orderId;
 
-describe.skip( 'Disputes > Submit winning dispute', () => {
+describe( 'Disputes > Submit winning dispute', () => {
+	let paymentDetailsLink;
+
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -38,6 +40,25 @@ describe.skip( 'Disputes > Submit winning dispute', () => {
 
 		await merchant.login();
 		await merchant.goToOrder( orderId );
+
+		// Get the payment details link from the order page.
+		paymentDetailsLink = await page.$eval(
+			'p.order_number > a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+
+		// Open the payment details page and wait for it to load.
+		await Promise.all( [
+			page.goto( paymentDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+
+		// Verify we see the dispute details on the transaction details page.
+		await expect( page ).toMatchElement( '.dispute-notice', {
+			text: 'The cardholder claims this is an unauthorized transaction',
+		} );
 	} );
 
 	afterAll( async () => {
@@ -45,20 +66,10 @@ describe.skip( 'Disputes > Submit winning dispute', () => {
 	} );
 
 	it( 'should process and confirm a winning dispute', async () => {
-		// Pull out and follow the link to avoid working in multiple tabs
-		const paymentDetailsLink = await page.$eval(
-			'p.order_number > a',
-			( anchor ) => anchor.getAttribute( 'href' )
-		);
-		await merchantWCP.openPaymentDetails( paymentDetailsLink );
-
-		// Verify we have a dispute for this purchase
-		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Payment disputed as Transaction unauthorized.',
-		} );
-
-		// Challenge the dispute
-		await merchantWCP.openChallengeDispute();
+		// Click the challenge dispute button.
+		await evalAndClick( '[data-testid="challenge-dispute-button"]' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await uiLoaded();
 
 		// Select product type
 		await expect( page ).toSelect(

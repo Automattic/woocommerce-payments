@@ -28,9 +28,16 @@ import { isPreviewing } from 'wcpay/checkout/preview';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
+	const publishableKey = getUPEConfig( 'publishableKey' );
+
+	if ( ! publishableKey ) {
+		// If no configuration is present, probably this is not the checkout page.
+		return;
+	}
+
 	const api = new WCPayAPI(
 		{
-			publishableKey: getUPEConfig( 'publishableKey' ),
+			publishableKey: publishableKey,
 			accountId: getUPEConfig( 'accountId' ),
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
@@ -77,6 +84,13 @@ jQuery( function ( $ ) {
 	}
 
 	$( 'form#add_payment_method' ).on( 'submit', function () {
+		if (
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val() !== 'woocommerce_payments'
+		) {
+			return;
+		}
 		// WC core calls block() when add_payment_method form is submitted, so we need to enable the ignore flag here to avoid
 		// the overlay blink when the form is blocked twice.
 		$.blockUI.defaults.ignoreIfBlocked = true;

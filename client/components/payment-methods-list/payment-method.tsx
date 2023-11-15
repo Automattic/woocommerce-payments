@@ -23,6 +23,7 @@ import Chip from '../chip';
 import LoadableCheckboxControl from '../loadable-checkbox';
 import { getDocumentationUrlForDisabledPaymentMethod } from '../payment-method-disabled-tooltip';
 import Pill from '../pill';
+import InlineNotice from '../inline-notice';
 import './payment-method.scss';
 
 interface PaymentMethodProps {
@@ -70,6 +71,12 @@ const PaymentMethodLabel = ( {
 					type="warning"
 				/>
 			) }
+			{ upeCapabilityStatuses.REJECTED === status && (
+				<Chip
+					message={ __( 'Rejected', 'woocommerce-payments' ) }
+					type="alert"
+				/>
+			) }
 			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
 				<Chip
 					message={ __(
@@ -110,10 +117,15 @@ const PaymentMethod = ( {
 	isPoEnabled,
 	isPoComplete,
 }: PaymentMethodProps ): React.ReactElement => {
+	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
+	const isPoInProgress =
+		isPoEnabled &&
+		! isPoComplete &&
+		status !== upeCapabilityStatuses.ACTIVE;
+
 	// APMs are disabled if they are inactive or if Progressive Onboarding is enabled and not yet complete.
 	const disabled =
-		upeCapabilityStatuses.INACTIVE === status ||
-		( id !== 'card' && isPoEnabled && ! isPoComplete );
+		upeCapabilityStatuses.INACTIVE === status || isPoInProgress;
 	const {
 		accountFees,
 	}: { accountFees: Record< string, FeeStructure > } = useContext(
@@ -121,11 +133,17 @@ const PaymentMethod = ( {
 	);
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
-	const needsAttention = [
+	const needsMoreInformation = [
 		upeCapabilityStatuses.INACTIVE,
 		upeCapabilityStatuses.PENDING_APPROVAL,
 		upeCapabilityStatuses.PENDING_VERIFICATION,
 	].includes( status );
+
+	const needsAttention =
+		needsMoreInformation ||
+		isPoInProgress ||
+		upeCapabilityStatuses.REJECTED === status;
+	const shouldDisplayNotice = id === 'sofort';
 
 	const needsOverlay =
 		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
@@ -164,6 +182,32 @@ const PaymentMethod = ( {
 			);
 		}
 
+		if ( upeCapabilityStatuses.REJECTED === status ) {
+			return interpolateComponents( {
+				// translators: {{contactSupportLink}}: placeholders are opening and closing anchor tags.
+				mixedString: __(
+					'Please {{contactSupportLink}}contact support{{/contactSupportLink}} for more details.',
+					'woocommerce-payments'
+				),
+				components: {
+					contactSupportLink: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							target="_blank"
+							rel="noreferrer"
+							title={ __(
+								'Contact Support',
+								'woocommerce-payments'
+							) }
+							href={
+								'https://woo.com/my-account/contact-support/'
+							}
+						/>
+					),
+				},
+			} );
+		}
+
 		if ( isSetupRequired ) {
 			return setupTooltip;
 		}
@@ -187,9 +231,13 @@ const PaymentMethod = ( {
 								'woocommerce-payments'
 							) }
 							/* eslint-disable-next-line max-len */
-							href={ getDocumentationUrlForDisabledPaymentMethod(
-								paymentMethodId
-							) }
+							href={
+								isPoInProgress
+									? 'https://woo.com/document/woopayments/startup-guide/gradual-signup/#additional-payment-methods'
+									: getDocumentationUrlForDisabledPaymentMethod(
+											paymentMethodId
+									  )
+							}
 						/>
 					),
 				},
@@ -209,83 +257,108 @@ const PaymentMethod = ( {
 	return (
 		<li
 			className={ classNames(
-				'payment-method',
+				'payment-method__list-item',
 				{ 'has-icon-border': id !== 'card' },
 				{ overlay: needsOverlay },
 				className
 			) }
 		>
-			<div className="payment-method__checkbox">
-				<LoadableCheckboxControl
-					label={ label }
-					checked={ checked }
-					disabled={ disabled || locked }
-					onChange={ handleChange }
-					delayMsOnCheck={ 1500 }
-					delayMsOnUncheck={ 0 }
-					hideLabel
-					isAllowingManualCapture={ isAllowingManualCapture }
-					isSetupRequired={ isSetupRequired }
-					setupTooltip={ getTooltipContent( id ) as any }
-					needsAttention={ needsAttention }
-				/>
-			</div>
-			<div className="payment-method__text-container">
-				<div className="payment-method__icon">
-					<Icon />
-				</div>
-				<div className="payment-method__label payment-method__label-mobile">
-					<PaymentMethodLabel
+			<div className="payment-method">
+				<div className="payment-method__checkbox">
+					<LoadableCheckboxControl
 						label={ label }
-						required={ required }
-						status={ status }
-						disabled={ disabled }
+						checked={ checked }
+						disabled={ disabled || locked }
+						onChange={ handleChange }
+						delayMsOnCheck={ 1500 }
+						delayMsOnUncheck={ 0 }
+						hideLabel
+						isAllowingManualCapture={ isAllowingManualCapture }
+						isSetupRequired={ isSetupRequired }
+						setupTooltip={ getTooltipContent( id ) as any }
+						needsAttention={ needsAttention }
 					/>
 				</div>
-				<div className="payment-method__text">
-					<div className="payment-method__label-container">
-						<div className="payment-method__label payment-method__label-desktop">
-							<PaymentMethodLabel
-								label={ label }
-								required={ required }
-								status={ status }
-								disabled={ disabled }
-							/>
-						</div>
-						<div className="payment-method__description">
-							{ description }
-						</div>
+				<div className="payment-method__text-container">
+					<div className="payment-method__icon">
+						<Icon />
 					</div>
-					{ accountFees && accountFees[ id ] && (
-						<div className="payment-method__fees">
-							<HoverTooltip
-								maxWidth={ '300px' }
-								content={ formatMethodFeesTooltip(
-									accountFees[ id ]
-								) }
-							>
-								<Pill
-									aria-label={ sprintf(
-										__(
-											'Base transaction fees: %s',
-											'woocommerce-payments'
-										),
-										formatMethodFeesDescription(
-											accountFees[ id ]
-										)
+					<div className="payment-method__label payment-method__label-mobile">
+						<PaymentMethodLabel
+							label={ label }
+							required={ required }
+							status={ status }
+							disabled={ disabled }
+						/>
+					</div>
+					<div className="payment-method__text">
+						<div className="payment-method__label-container">
+							<div className="payment-method__label payment-method__label-desktop">
+								<PaymentMethodLabel
+									label={ label }
+									required={ required }
+									status={ status }
+									disabled={ disabled }
+								/>
+							</div>
+							<div className="payment-method__description">
+								{ description }
+							</div>
+						</div>
+						{ accountFees && accountFees[ id ] && (
+							<div className="payment-method__fees">
+								<HoverTooltip
+									maxWidth={ '300px' }
+									content={ formatMethodFeesTooltip(
+										accountFees[ id ]
 									) }
 								>
-									<span>
-										{ formatMethodFeesDescription(
-											accountFees[ id ]
+									<Pill
+										aria-label={ sprintf(
+											__(
+												'Base transaction fees: %s',
+												'woocommerce-payments'
+											),
+											formatMethodFeesDescription(
+												accountFees[ id ]
+											)
 										) }
-									</span>
-								</Pill>
-							</HoverTooltip>
-						</div>
-					) }
+									>
+										<span>
+											{ formatMethodFeesDescription(
+												accountFees[ id ]
+											) }
+										</span>
+									</Pill>
+								</HoverTooltip>
+							</div>
+						) }
+					</div>
 				</div>
 			</div>
+			{ shouldDisplayNotice && (
+				<InlineNotice
+					status="warning"
+					icon={ true }
+					isDismissible={ false }
+					className="sofort__notice"
+				>
+					<span>
+						{ __(
+							'Support for Sofort is ending soon. ',
+							'woocommerce-payments'
+						) }
+						<a
+							// eslint-disable-next-line max-len
+							href="https://woo.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-deprecation"
+							target="_blank"
+							rel="external noreferrer noopener"
+						>
+							{ __( 'Learn more', 'woocommerce-payments' ) }
+						</a>
+					</span>
+				</InlineNotice>
+			) }
 		</li>
 	);
 };
