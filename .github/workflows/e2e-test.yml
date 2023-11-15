@@ -28,7 +28,6 @@ env:
   FORCE_E2E_DEPS_SETUP: true
 
 jobs:
-  # [TODO] Enable WC beta tests after fixing failures caused by blocks checkout being default on newer versions
   generate-matrix:
     name: "Generate the matrix for subscriptions-tests dynamically"
     runs-on: ubuntu-latest
@@ -38,7 +37,7 @@ jobs:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          WC_VERSIONS=$( echo "[\"7.7.0\", \"latest\"]" )
+          WC_VERSIONS=$( echo "[\"7.7.0\", \"latest\", \"beta\"]" )
           echo "matrix={\"woocommerce\":$WC_VERSIONS,\"test_groups\":[\"wcpay\", \"subscriptions\"],\"test_branches\":[\"merchant\", \"shopper\"]}" >> $GITHUB_OUTPUT
 
   # Run WCPay & subscriptions tests against specific WC versions
