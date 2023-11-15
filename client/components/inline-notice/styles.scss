@@ -31,6 +31,11 @@
 	.components-notice__content {
 		margin-top: 2px;
 		margin-bottom: 2px;
+
+		// Ensure links don't wrap across lines, e.g. "Learn (newline) more".
+		a {
+			white-space: nowrap;
+		}
 	}
 	.wcpay-inline-notice__content__actions {
 		padding-top: 12px;
