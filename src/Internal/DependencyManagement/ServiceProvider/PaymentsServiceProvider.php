@@ -25,6 +25,7 @@ use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\State\SystemErrorState;
 use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Internal\Service\MinimumAmountService;
 use WCPay\Internal\Service\PaymentContextLoggerService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\PaymentProcessingService;
@@ -47,6 +48,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	protected $provides = [
 		PaymentProcessingService::class,
 		Router::class,
+
 		StateFactory::class,
 		InitialState::class,
 		DuplicateOrderDetectedState::class,
@@ -55,10 +57,12 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		CompletedState::class,
 		SystemErrorState::class,
 		PaymentErrorState::class,
+
 		ExampleService::class,
 		ExampleServiceWithDependencies::class,
 		PaymentRequestService::class,
 		DuplicatePaymentPreventionService::class,
+		MinimumAmountService::class,
 	];
 
 	/**
@@ -73,7 +77,8 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( PaymentProcessingService::class )
 			->addArgument( StateFactory::class )
 			->addArgument( LegacyProxy::class )
-			->addArgument( PaymentContextLoggerService::class );
+			->addArgument( PaymentContextLoggerService::class )
+			->addArgument( Mode::class );
 
 		$container->addShared( PaymentRequestService::class );
 
@@ -84,13 +89,17 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( HooksProxy::class )
 			->addArgument( LegacyProxy::class );
 
+		$container->addShared( MinimumAmountService::class )
+			->addArgument( LegacyProxy::class );
+
 		$container->add( InitialState::class )
 			->addArgument( StateFactory::class )
 			->addArgument( OrderService::class )
 			->addArgument( WC_Payments_Customer_Service::class )
 			->addArgument( Level3Service::class )
 			->addArgument( PaymentRequestService::class )
-			->addArgument( DuplicatePaymentPreventionService::class );
+			->addArgument( DuplicatePaymentPreventionService::class )
+			->addArgument( MinimumAmountService::class );
 
 		$container->add( ProcessedState::class )
 			->addArgument( StateFactory::class )

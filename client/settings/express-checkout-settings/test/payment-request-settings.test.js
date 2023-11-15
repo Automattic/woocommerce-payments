@@ -24,7 +24,7 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	usePaymentRequestLocations: jest.fn(),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
-	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
+	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	useWooPayEnabledSettings: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
@@ -147,7 +147,7 @@ describe( 'PaymentRequestSettings', () => {
 
 		// confirm default values
 		expect( screen.getByLabelText( 'Buy with' ) ).toBeChecked();
-		expect( screen.getByLabelText( 'Default (40 px)' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Small (40 px)' ) ).toBeChecked();
 		expect( screen.getByLabelText( /Dark/ ) ).toBeChecked();
 	} );
 
@@ -191,7 +191,7 @@ describe( 'PaymentRequestSettings', () => {
 			setButtonTypeMock,
 		] );
 		usePaymentRequestButtonSize.mockReturnValue( [
-			'default',
+			'small',
 			setButtonSizeMock,
 		] );
 		usePaymentRequestButtonTheme.mockReturnValue( [
