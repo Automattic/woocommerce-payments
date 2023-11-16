@@ -252,8 +252,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		/** @var WC_Product_Variable $product */ // phpcs:ignore
-		$product  = $this->get_product();
-		$currency = get_woocommerce_currency();
+		$product      = $this->get_product();
+		$currency     = get_woocommerce_currency();
+		$variation_id = 0;
 
 		if ( 'variable' === $product->get_type() || 'variable-subscription' === $product->get_type() ) {
 			$variation_attributes = $product->get_variation_attributes();
@@ -327,6 +328,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
 		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+
+		/**
+		 * On product page load, if there's a variation already selected, check if it's supported.
+		 * For non-variations, we don't need to check as this is already handled by @see should_show_payment_request_button()
+		 */
+		$data['validProductSelected'] = ! empty( $variation_id ) ? $this->is_product_supported( $product ) : true;
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
@@ -845,10 +852,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Whether product page has a supported product.
 	 *
+	 * @param WC_Product|null $product Product object.
+	 *
 	 * @return boolean
 	 */
-	private function is_product_supported() {
-		$product      = $this->get_product();
+	private function is_product_supported( $product = null ) {
+		$product      = ! is_object( $product ) ? $this->get_product() : $product;
 		$is_supported = true;
 
 		if ( is_null( $product )
