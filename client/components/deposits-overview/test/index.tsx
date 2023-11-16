@@ -307,7 +307,7 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	test( `Component doesn't render if pending funds but no available funds`, () => {
+	test( `Component doesn't render for new accounts with pending funds but no available funds`, () => {
 		mockOverviews( [ createMockNewAccountOverview( 'eur', 5000, 0 ) ] );
 		mockDepositOverviews( [
 			createMockNewAccountOverview( 'eur', 5000, 0 ),
@@ -530,7 +530,6 @@ describe( 'Deposit Schedule renders', () => {
 		);
 		const descriptionText = container.textContent;
 
-		expect( descriptionText ).toContain( 'every day' );
 		expect( descriptionText ).toContain( 'every day' );
 	} );
 	test( 'with a daily schedule', () => {
