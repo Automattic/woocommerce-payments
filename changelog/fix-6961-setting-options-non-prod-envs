@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Adds WCPay options to Woo Core option allow list to avoid 403 responses from Options API when geting and updating options in non-prod env.
