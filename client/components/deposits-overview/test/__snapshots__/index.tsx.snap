@@ -247,11 +247,11 @@ exports[`Suspended Deposit Notice Renders Component Renders 1`] = `
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
-          Your deposits are
+          Your deposits are 
           <strong>
             temporarily suspended
           </strong>
-          .
+          . 
           <a
             data-link-type="wc-admin"
             href="https://woo.com/document/woopayments/deposits/why-deposits-suspended/"
