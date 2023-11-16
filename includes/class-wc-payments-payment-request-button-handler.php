@@ -197,7 +197,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return '56';
 		}
 
-		// for the "default" and "catch-all" scenarios.
+		// for the "default"/"small" and "catch-all" scenarios.
 		return '40';
 	}
 
@@ -593,6 +593,18 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
 			if ( ! in_array( $_product->get_type(), $this->supported_product_types(), true ) ) {
+				return false;
+			}
+
+			/**
+			 * Filter whether product supports Payment Request Button on cart page.
+			 *
+			 * @since 6.9.0
+			 *
+			 * @param boolean $is_supported Whether product supports Payment Request Button on cart page.
+			 * @param object  $_product     Product object.
+			 */
+			if ( ! apply_filters( 'wcpay_payment_request_is_cart_supported', true, $_product ) ) {
 				return false;
 			}
 
