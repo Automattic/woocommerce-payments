@@ -11,7 +11,7 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * Internal dependencies
@@ -69,15 +69,10 @@ const PaymentProcessor = ( {
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
-	const [ isPaymentElementComplete, setIsPaymentElementComplete ] = useState(
-		false
-	);
+	const isPaymentElementCompleteRef = useRef( false );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
-	const testingInstructionsIfAppropriate = isTestMode
-		? testingInstructions
-		: '';
 	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
 	const customerData = useCustomerData();
 	const billingData = customerData.billingAddress;
@@ -150,7 +145,7 @@ const PaymentProcessor = ( {
 						return;
 					}
 
-					if ( ! isPaymentElementComplete ) {
+					if ( ! isPaymentElementCompleteRef.current ) {
 						return {
 							type: 'error',
 							message: __(
@@ -174,14 +169,23 @@ const PaymentProcessor = ( {
 					) {
 						return {
 							type: 'error',
-							message:
+							message: __(
 								'This payment method cannot be saved for future use.',
+								'woocommerce-payments'
+							),
 						};
 					}
 
-					await validateElements( elements );
+					try {
+						await validateElements( elements );
+					} catch ( e ) {
+						return {
+							type: 'error',
+							message: e.message,
+						};
+					}
 
-					const paymentMethodObject = await api
+					const result = await api
 						.getStripeForUPE( paymentMethodId )
 						.createPaymentMethod( {
 							elements,
@@ -192,13 +196,19 @@ const PaymentProcessor = ( {
 							},
 						} );
 
+					if ( result.error ) {
+						return {
+							type: 'error',
+							message: result.error.message,
+						};
+					}
+
 					return {
 						type: 'success',
 						meta: {
 							paymentMethodData: {
 								payment_method: upeMethods[ paymentMethodId ],
-								'wcpay-payment-method':
-									paymentMethodObject.paymentMethod.id,
+								'wcpay-payment-method': result.paymentMethod.id,
 								'wcpay-fraud-prevention-token': getFraudPreventionToken(),
 								'wcpay-fingerprint': fingerprint,
 							},
@@ -220,7 +230,6 @@ const PaymentProcessor = ( {
 			errorMessage,
 			onPaymentSetup,
 			billingData,
-			isPaymentElementComplete,
 		]
 	);
 
@@ -234,17 +243,19 @@ const PaymentProcessor = ( {
 	);
 
 	const updatePaymentElementCompletionStatus = ( event ) => {
-		setIsPaymentElementComplete( event.complete );
+		isPaymentElementCompleteRef.current = event.complete;
 	};
 
 	return (
 		<>
-			<p
-				className="content"
-				dangerouslySetInnerHTML={ {
-					__html: testingInstructionsIfAppropriate,
-				} }
-			></p>
+			{ isTestMode && (
+				<p
+					className="content"
+					dangerouslySetInnerHTML={ {
+						__html: testingInstructions,
+					} }
+				/>
+			) }
 			<PaymentElement
 				options={ getStripeElementOptions(
 					shouldSavePayment,

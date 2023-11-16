@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getAppearance } from '../../upe-styles';
+import { getAppearance, getFontRulesFromPage } from '../../upe-styles';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
 	appendFingerprintInputToForm,
@@ -22,6 +22,7 @@ import {
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
 } from '../../constants';
 
+// It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};
 let fingerprint = null;
 
@@ -138,7 +139,14 @@ function createStripePaymentMethod(
 
 	return api
 		.getStripeForUPE( paymentMethodType )
-		.createPaymentMethod( { elements, params: params } );
+		.createPaymentMethod( { elements, params: params } )
+		.then( ( paymentMethod ) => {
+			if ( paymentMethod.error ) {
+				throw paymentMethod.error;
+			}
+
+			return paymentMethod;
+		} );
 }
 
 /**
@@ -160,6 +168,7 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 		paymentMethodCreation: 'manual',
 		paymentMethodTypes: paymentMethodTypes,
 		appearance: initializeAppearance( api ),
+		fonts: getFontRulesFromPage(),
 	};
 
 	const elements = api

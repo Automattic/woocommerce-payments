@@ -111,6 +111,16 @@ class WC_Payments_WooPay_Button_Handler {
 			return;
 		}
 
+		// Create WooPay button location option if it doesn't exist and enable all locations by default.
+		if ( ! array_key_exists( 'platform_checkout_button_locations', get_option( 'woocommerce_woocommerce_payments_settings' ) ) ) {
+
+			$all_locations = $this->gateway->form_fields['platform_checkout_button_locations']['options'];
+
+			$this->gateway->update_option( 'platform_checkout_button_locations', array_keys( $all_locations ) );
+
+			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $all_locations );
+		}
+
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_woopay_config' ] );
@@ -216,9 +226,23 @@ class WC_Payments_WooPay_Button_Handler {
 
 		WC()->shipping->reset_shipping();
 
-		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
-		$quantity     = ! isset( $_POST['quantity'] ) ? 1 : absint( $_POST['quantity'] );
-		$product      = wc_get_product( $product_id );
+		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+		$quantity   = ! isset( $_POST['quantity'] ) ? 1 : absint( $_POST['quantity'] );
+		$product    = wc_get_product( $product_id );
+
+		if ( ! $product ) {
+			wp_send_json(
+				[
+					'error' => [
+						'code'    => 'invalid_product_id',
+						'message' => __( 'Invalid product id', 'woocommerce-payments' ),
+					],
+				],
+				404
+			);
+			return;
+		}
+
 		$product_type = $product->get_type();
 
 		// First empty the cart to prevent wrong calculation.
@@ -444,12 +468,12 @@ class WC_Payments_WooPay_Button_Handler {
 			return 'cart';
 		}
 
-		if ( $this->is_checkout() ) {
-			return 'checkout';
-		}
-
 		if ( $this->is_pay_for_order_page() ) {
 			return 'pay_for_order';
+		}
+
+		if ( $this->is_checkout() ) {
+			return 'checkout';
 		}
 
 		return '';
@@ -614,8 +638,18 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
+		// External/affiliate products are not supported.
+		if ( is_a( $product, 'WC_Product' ) && $product->is_type( 'external' ) ) {
+			$is_supported = false;
+		}
+
 		// Pre Orders products to be charged upon release are not supported.
 		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
+			$is_supported = false;
+		}
+
+		// WC Bookings require confirmation products are not supported.
+		if ( is_a( $product, 'WC_Product_Booking' ) && $product->get_requires_confirmation() ) {
 			$is_supported = false;
 		}
 
@@ -632,14 +666,19 @@ class WC_Payments_WooPay_Button_Handler {
 	private function has_allowed_items_in_cart() {
 		$is_supported = true;
 
+		/**
+		 * Psalm throws an error here even though we check the class existence.
+		 *
+		 * @psalm-suppress UndefinedClass
+		 */
 		// We don't support pre-order products to be paid upon release.
-		if (
-			class_exists( 'WC_Pre_Orders_Cart' ) &&
-			WC_Pre_Orders_Cart::cart_contains_pre_order() &&
-			class_exists( 'WC_Pre_Orders_Product' ) &&
-			WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() )
-		) {
-			$is_supported = false;
+		if ( class_exists( 'WC_Pre_Orders_Cart' ) && class_exists( 'WC_Pre_Orders_Product' ) ) {
+			if (
+				WC_Pre_Orders_Cart::cart_contains_pre_order() &&
+				WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() )
+			) {
+				$is_supported = false;
+			}
 		}
 
 		return apply_filters( 'wcpay_platform_checkout_button_are_cart_items_supported', $is_supported );

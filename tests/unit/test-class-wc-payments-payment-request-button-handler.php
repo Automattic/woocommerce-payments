@@ -151,7 +151,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$mock_rate_limiter,
 			$mock_order_service,
 			$mock_dpps,
-			$this->createMock( WC_Payments_Localization_Service::class )
+			$this->createMock( WC_Payments_Localization_Service::class ),
+			$this->createMock( WC_Payments_Fraud_Service::class )
 		);
 	}
 
@@ -251,7 +252,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			[
 				'type'         => 'buy',
 				'theme'        => 'dark',
-				'height'       => '40',
+				'height'       => '48',
 				'locale'       => 'en',
 				'branded_type' => 'long',
 			],

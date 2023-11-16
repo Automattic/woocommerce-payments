@@ -11,6 +11,8 @@ module.exports = {
 		'^wcpay(.*)$': '<rootDir>/client$1',
 		'^iti/utils$': '<rootDir>/node_modules/intl-tel-input/build/js/utils',
 		'^assets(.*?)(\\?.*)?$': '<rootDir>/assets$1',
+		'^@woocommerce/blocks-registry$':
+			'<rootDir>/tests/js/woocommerce-blocks-registry',
 	},
 	globalSetup: '<rootDir>/tests/js/jest-global-setup.js',
 	setupFiles: [

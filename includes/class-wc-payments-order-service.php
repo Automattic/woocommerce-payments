@@ -347,7 +347,16 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
-		$this->update_order_status( $order, Order_Status::COMPLETED, $intent_id );
+		/**
+		 * Filters the order status value after a successful terminal payment.
+		 *
+		 * This filter can be used to override the order status from `completed` to `processing` after a successful terminal charge.
+		 *
+		 * @since 6.7.0
+		 */
+		$order_status = apply_filters( 'wcpay_terminal_payment_completed_order_status', Order_Status::COMPLETED );
+
+		$this->update_order_status( $order, $order_status, $intent_id );
 		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -739,6 +748,62 @@ class WC_Payments_Order_Service {
 		$this->set_customer_id_for_order( $order, $customer_id );
 		$this->set_wcpay_intent_currency_for_order( $order, $currency );
 		$order->save();
+	}
+
+	/**
+	 * Create the shipping data array to send to Stripe when making a purchase.
+	 *
+	 * @param WC_Order $order The order that is being paid for.
+	 * @return array          The shipping data to send to Stripe.
+	 */
+	public function get_shipping_data_from_order( WC_Order $order ): array {
+		return [
+			'name'    => implode(
+				' ',
+				array_filter(
+					[
+						$order->get_shipping_first_name(),
+						$order->get_shipping_last_name(),
+					]
+				)
+			),
+			'address' => [
+				'line1'       => $order->get_shipping_address_1(),
+				'line2'       => $order->get_shipping_address_2(),
+				'postal_code' => $order->get_shipping_postcode(),
+				'city'        => $order->get_shipping_city(),
+				'state'       => $order->get_shipping_state(),
+				'country'     => $order->get_shipping_country(),
+			],
+		];
+	}
+
+	/**
+	 * Create the billing data array to send to Stripe when making a purchase, based on order's billing data.
+	 *
+	 * @param WC_Order $order The order that is being paid for.
+	 * @return array          The shipping data to send to Stripe.
+	 */
+	public function get_billing_data_from_order( WC_Order $order ): array {
+		return [
+			'name'    => implode(
+				' ',
+				array_filter(
+					[
+						$order->get_billing_first_name(),
+						$order->get_billing_last_name(),
+					]
+				)
+			),
+			'address' => [
+				'line1'       => $order->get_billing_address_1(),
+				'line2'       => $order->get_billing_address_2(),
+				'postal_code' => $order->get_billing_postcode(),
+				'city'        => $order->get_billing_city(),
+				'state'       => $order->get_billing_state(),
+				'country'     => $order->get_billing_country(),
+			],
+		];
 	}
 
 	/**

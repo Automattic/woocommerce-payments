@@ -83,11 +83,11 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_title() {
-		if ( count( $this->disputes_due_within_7d ) === 1 ) {
+		if ( count( (array) $this->disputes_due_within_7d ) === 1 ) {
 			$dispute          = $this->disputes_due_within_7d[0];
 			$amount           = WC_Payments_Utils::interpret_stripe_amount( $dispute['amount'], $dispute['currency'] );
 			$amount_formatted = WC_Payments_Utils::format_currency( $amount, $dispute['currency'] );
-			if ( count( $this->disputes_due_within_1d ) > 0 ) {
+			if ( count( (array) $this->disputes_due_within_1d ) > 0 ) {
 				return sprintf(
 					/* translators: %s is a currency formatted amount */
 					__( 'Respond to a dispute for %s – Last day', 'woocommerce-payments' ),
@@ -161,14 +161,14 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_additional_info() {
-		if ( count( $this->disputes_due_within_7d ) === 1 ) {
+		if ( count( (array) $this->disputes_due_within_7d ) === 1 ) {
 			$local_timezone    = new \DateTimeZone( wp_timezone_string() );
 			$dispute           = $this->disputes_due_within_7d[0];
 			$due_by_local_time = ( new \DateTime( $dispute['due_by'] ) )->setTimezone( $local_timezone );
 			// Sum of Unix timestamp and timezone offset in seconds.
 			$due_by_ts = $due_by_local_time->getTimestamp() + $due_by_local_time->getOffset();
 
-			if ( count( $this->disputes_due_within_1d ) > 0 ) {
+			if ( count( (array) $this->disputes_due_within_1d ) > 0 ) {
 				return sprintf(
 					/* translators: %s is time, eg: 11:59 PM */
 					__( 'Respond today by %s', 'woocommerce-payments' ),
@@ -188,14 +188,14 @@ class WC_Payments_Task_Disputes extends Task {
 			);
 		}
 
-		if ( count( $this->disputes_due_within_1d ) > 0 ) {
+		if ( count( (array) $this->disputes_due_within_1d ) > 0 ) {
 			return sprintf(
 				/* translators: %d is the number of disputes. */
 				__(
 					'Final day to respond to %d of the disputes',
 					'woocommerce-payments'
 				),
-				count( $this->disputes_due_within_1d )
+				count( (array) $this->disputes_due_within_1d )
 			);
 		}
 
@@ -205,7 +205,7 @@ class WC_Payments_Task_Disputes extends Task {
 				'Last week to respond to %d of the disputes',
 				'woocommerce-payments'
 			),
-			count( $this->disputes_due_within_7d )
+			count( (array) $this->disputes_due_within_7d )
 		);
 
 	}
@@ -217,7 +217,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 */
 	public function get_action_url() {
 		$disputes = $this->disputes_due_within_7d;
-		if ( count( $disputes ) === 1 ) {
+		if ( count( (array) $disputes ) === 1 ) {
 			$dispute = $disputes[0];
 			return admin_url(
 				add_query_arg(
@@ -276,7 +276,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return bool
 	 */
 	public function can_view() {
-		return count( $this->disputes_due_within_7d ) > 0;
+		return count( (array) $this->disputes_due_within_7d ) > 0;
 	}
 
 	/**

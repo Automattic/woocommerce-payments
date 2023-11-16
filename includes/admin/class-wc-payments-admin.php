@@ -84,6 +84,13 @@ class WC_Payments_Admin {
 	private $incentives_service;
 
 	/**
+	 * WC_Payments_Fraud_Service instance to get information about fraud services.
+	 *
+	 * @var WC_Payments_Fraud_Service
+	 */
+	private $fraud_service;
+
+	/**
 	 * WCPay admin child pages.
 	 *
 	 * @var array
@@ -117,6 +124,7 @@ class WC_Payments_Admin {
 	 * @param WC_Payments_Onboarding_Service $onboarding_service  Onboarding service instance.
 	 * @param WC_Payments_Order_Service      $order_service       Order service instance.
 	 * @param WC_Payments_Incentives_Service $incentives_service  Incentives service instance.
+	 * @param WC_Payments_Fraud_Service      $fraud_service       Fraud service instance.
 	 * @param Database_Cache                 $database_cache      Database Cache instance.
 	 */
 	public function __construct(
@@ -126,6 +134,7 @@ class WC_Payments_Admin {
 		WC_Payments_Onboarding_Service $onboarding_service,
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_Incentives_Service $incentives_service,
+		WC_Payments_Fraud_Service $fraud_service,
 		Database_Cache $database_cache
 	) {
 		$this->payments_api_client = $payments_api_client;
@@ -134,6 +143,7 @@ class WC_Payments_Admin {
 		$this->onboarding_service  = $onboarding_service;
 		$this->order_service       = $order_service;
 		$this->incentives_service  = $incentives_service;
+		$this->fraud_service       = $fraud_service;
 		$this->database_cache      = $database_cache;
 
 		$this->admin_child_pages = [
@@ -334,13 +344,14 @@ class WC_Payments_Admin {
 		global $submenu;
 
 		try {
-			$should_render_full_menu = $this->account->is_stripe_account_valid();
+			// Render full payments menu with sub-items only if the merchant completed the KYC (details_submitted = true).
+			$should_render_full_menu = $this->account->is_account_fully_onboarded();
 		} catch ( Exception $e ) {
-			// There is an issue with connection but render full menu anyways to provide access to settings.
-			$should_render_full_menu = true;
+			// There is an issue with connection, don't render full menu, user will get redirected to the connect page.
+			$should_render_full_menu = false;
 		}
 
-		$top_level_link = $should_render_full_menu ? '/payments/overview' : '/payments/connect';
+		$top_level_link = $this->account->is_stripe_connected() ? '/payments/overview' : '/payments/connect';
 
 		$menu_icon = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgdmVyc2lvbj0iMS4xIgogICBpZD0ic3ZnNjciCiAgIHNvZGlwb2RpOmRvY25hbWU9IndjcGF5X21lbnVfaWNvbi5zdmciCiAgIHdpZHRoPSI4NTIiCiAgIGhlaWdodD0iNjg0IgogICBpbmtzY2FwZTp2ZXJzaW9uPSIxLjEgKGM0ZThmOWUsIDIwMjEtMDUtMjQpIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxkZWZzCiAgICAgaWQ9ImRlZnM3MSIgLz4KICA8c29kaXBvZGk6bmFtZWR2aWV3CiAgICAgaWQ9Im5hbWVkdmlldzY5IgogICAgIHBhZ2Vjb2xvcj0iI2ZmZmZmZiIKICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiIKICAgICBib3JkZXJvcGFjaXR5PSIxLjAiCiAgICAgaW5rc2NhcGU6cGFnZXNoYWRvdz0iMiIKICAgICBpbmtzY2FwZTpwYWdlb3BhY2l0eT0iMC4wIgogICAgIGlua3NjYXBlOnBhZ2VjaGVja2VyYm9hcmQ9IjAiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGZpdC1tYXJnaW4tdG9wPSIwIgogICAgIGZpdC1tYXJnaW4tbGVmdD0iMCIKICAgICBmaXQtbWFyZ2luLXJpZ2h0PSIwIgogICAgIGZpdC1tYXJnaW4tYm90dG9tPSIwIgogICAgIGlua3NjYXBlOnpvb209IjI1NiIKICAgICBpbmtzY2FwZTpjeD0iLTg0Ljg1NzQyMiIKICAgICBpbmtzY2FwZTpjeT0iLTgzLjI5NDkyMiIKICAgICBpbmtzY2FwZTp3aW5kb3ctd2lkdGg9IjEzMTIiCiAgICAgaW5rc2NhcGU6d2luZG93LWhlaWdodD0iMTA4MSIKICAgICBpbmtzY2FwZTp3aW5kb3cteD0iMTE2IgogICAgIGlua3NjYXBlOndpbmRvdy15PSIyMDIiCiAgICAgaW5rc2NhcGU6d2luZG93LW1heGltaXplZD0iMCIKICAgICBpbmtzY2FwZTpjdXJyZW50LWxheWVyPSJzdmc2NyIgLz4KICA8cGF0aAogICAgIHRyYW5zZm9ybT0ic2NhbGUoLTEsIDEpIHRyYW5zbGF0ZSgtODUwLCAwKSIKICAgICBkPSJNIDc2OCw4NiBWIDU5OCBIIDg0IFYgODYgWiBtIDAsNTk4IGMgNDgsMCA4NCwtMzggODQsLTg2IFYgODYgQyA4NTIsMzggODE2LDAgNzY4LDAgSCA4NCBDIDM2LDAgMCwzOCAwLDg2IHYgNTEyIGMgMCw0OCAzNiw4NiA4NCw4NiB6IE0gMzg0LDEyOCB2IDQ0IGggLTg2IHYgODQgaCAxNzAgdiA0NCBIIDM0MCBjIC0yNCwwIC00MiwxOCAtNDIsNDIgdiAxMjggYyAwLDI0IDE4LDQyIDQyLDQyIGggNDQgdiA0NCBoIDg0IHYgLTQ0IGggODYgViA0MjggSCAzODQgdiAtNDQgaCAxMjggYyAyNCwwIDQyLC0xOCA0MiwtNDIgViAyMTQgYyAwLC0yNCAtMTgsLTQyIC00MiwtNDIgaCAtNDQgdiAtNDQgeiIKICAgICBmaWxsPSIjYTJhYWIyIgogICAgIGlkPSJwYXRoNjUiIC8+Cjwvc3ZnPgo=';
 
@@ -367,7 +378,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( ! $should_render_full_menu ) {
+		if ( ! $this->account->is_stripe_connected() ) {
 			if ( WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
 				wc_admin_register_page(
 					[
@@ -547,7 +558,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index', [ 'wp-api-request' ] );
 
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
 
@@ -784,14 +795,14 @@ class WC_Payments_Admin {
 		try {
 			$test_mode = WC_Payments::mode()->is_test();
 		} catch ( Exception $e ) {
-			Logger::log( sprintf( 'WCPay JS settings: Could not determine if WCPay should be in test mode! Message: %s', $e->getMessage() ), 'warning' );
+			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if WCPay should be in test mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
 		$dev_mode = false;
 		try {
 			$dev_mode = WC_Payments::mode()->is_dev();
 		} catch ( Exception $e ) {
-			Logger::log( sprintf( 'WCPay JS settings: Could not determine if WCPay should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
+			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if WCPay should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
 		$connect_url       = WC_Payments_Account::get_connect_url();
@@ -821,7 +832,7 @@ class WC_Payments_Admin {
 			'isSubscriptionsActive'         => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
 			// Used in the settings page by the AccountFees component.
 			'zeroDecimalCurrencies'         => WC_Payments_Utils::zero_decimal_currencies(),
-			'fraudServices'                 => $this->account->get_fraud_services_config(),
+			'fraudServices'                 => $this->fraud_service->get_fraud_services_config(),
 			'isJetpackConnected'            => $this->payments_api_client->is_server_connected(),
 			'isJetpackIdcActive'            => Jetpack_Identity_Crisis::has_identity_crisis(),
 			'accountStatus'                 => $account_status_data,

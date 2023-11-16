@@ -296,3 +296,32 @@ export async function setupCheckout( billingDetails ) {
 		'.wc_payment_method.payment_method_woocommerce_payments'
 	);
 }
+
+/**
+ * Selects the Giropay payment method on the checkout page.
+ *
+ * @param {*} page The page reference object.
+ */
+export async function selectGiropayOnCheckout( page ) {
+	await page.$( '#payment .payment_method_woocommerce_payments_giropay' );
+	const giropayRadioLabel = await page.waitForSelector(
+		'#payment .payment_method_woocommerce_payments_giropay label'
+	);
+	giropayRadioLabel.click();
+	await page.waitFor( 1000 );
+}
+
+/**
+ * Authorizes or fails a Giropay payment.
+ *
+ * @param {*} page The page reference object.
+ * @param {string} action Either of 'success' or 'failure'.
+ */
+export async function completeGiropayPayment( page, action ) {
+	await page.$( '.actions .common-ButtonGroup' );
+	const actionButton = await page.waitForSelector(
+		`.actions .common-ButtonGroup a[name=${ action }]`
+	);
+	actionButton.click();
+	await page.waitFor( 1000 );
+}

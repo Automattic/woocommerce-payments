@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4ec5561af8e9b50447475a6c0533fb20",
+    "content-hash": "95d672ebb995c8245e0659d2e4d7db3d",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -939,65 +939,17 @@
             "time": "2021-01-14T11:07:16+00:00"
         },
         {
-            "name": "psr/container",
-            "version": "1.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-fig/container.git",
-                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/container/zipball/8622567409010282b7aeebe4bb841fe98b58dcaf",
-                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Container\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "PHP-FIG",
-                    "homepage": "https://www.php-fig.org/"
-                }
-            ],
-            "description": "Common Container Interface (PHP FIG PSR-11)",
-            "homepage": "https://github.com/php-fig/container",
-            "keywords": [
-                "PSR-11",
-                "container",
-                "container-interface",
-                "container-interop",
-                "psr"
-            ],
-            "support": {
-                "issues": "https://github.com/php-fig/container/issues",
-                "source": "https://github.com/php-fig/container/tree/1.1.1"
-            },
-            "time": "2021-03-05T17:36:06+00:00"
-        },
-        {
             "name": "woocommerce/subscriptions-core",
-            "version": "6.3.0",
+            "version": "6.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "8ba0249f97df46caafd625950853f8f5e5a29984"
+                "reference": "a94c9aab6d47f32461974ed09a4d3cad590f25b0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/8ba0249f97df46caafd625950853f8f5e5a29984",
-                "reference": "8ba0249f97df46caafd625950853f8f5e5a29984",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/a94c9aab6d47f32461974ed09a4d3cad590f25b0",
+                "reference": "a94c9aab6d47f32461974ed09a4d3cad590f25b0",
                 "shasum": ""
             },
             "require": {
@@ -1038,10 +990,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/6.3.0",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/6.4.0",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2023-10-06T04:31:08+00:00"
+            "time": "2023-10-18T03:32:50+00:00"
         }
     ],
     "packages-dev": [
@@ -3555,6 +3507,54 @@
                 }
             ],
             "time": "2022-02-18T12:54:07+00:00"
+        },
+        {
+            "name": "psr/container",
+            "version": "1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/container.git",
+                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/container/zipball/8622567409010282b7aeebe4bb841fe98b58dcaf",
+                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Container\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common Container Interface (PHP FIG PSR-11)",
+            "homepage": "https://github.com/php-fig/container",
+            "keywords": [
+                "PSR-11",
+                "container",
+                "container-interface",
+                "container-interop",
+                "psr"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/container/issues",
+                "source": "https://github.com/php-fig/container/tree/1.1.1"
+            },
+            "time": "2021-03-05T17:36:06+00:00"
         },
         {
             "name": "psr/log",
@@ -6462,16 +6462,16 @@
         },
         {
             "name": "yoast/phpunit-polyfills",
-            "version": "1.0.3",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Yoast/PHPUnit-Polyfills.git",
-                "reference": "5ea3536428944955f969bc764bbe09738e151ada"
+                "reference": "224e4a1329c03d8bad520e3fc4ec980034a4b212"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/5ea3536428944955f969bc764bbe09738e151ada",
-                "reference": "5ea3536428944955f969bc764bbe09738e151ada",
+                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/224e4a1329c03d8bad520e3fc4ec980034a4b212",
+                "reference": "224e4a1329c03d8bad520e3fc4ec980034a4b212",
                 "shasum": ""
             },
             "require": {
@@ -6479,13 +6479,12 @@
                 "phpunit/phpunit": "^4.8.36 || ^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0"
             },
             "require-dev": {
-                "yoast/yoastcs": "^2.2.0"
+                "yoast/yoastcs": "^2.3.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.x-dev",
-                    "dev-develop": "1.x-dev"
+                    "dev-main": "2.x-dev"
                 }
             },
             "autoload": {
@@ -6519,7 +6518,7 @@
                 "issues": "https://github.com/Yoast/PHPUnit-Polyfills/issues",
                 "source": "https://github.com/Yoast/PHPUnit-Polyfills"
             },
-            "time": "2021-11-23T01:37:03+00:00"
+            "time": "2023-08-19T14:25:08+00:00"
         },
         {
             "name": "yosymfony/resource-watcher",
@@ -6594,5 +6593,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }

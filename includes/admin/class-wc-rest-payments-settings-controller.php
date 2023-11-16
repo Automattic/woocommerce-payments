@@ -434,8 +434,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
-		$wcpay_form_fields             = $this->wcpay_gateway->get_form_fields();
+		$wcpay_form_fields = $this->wcpay_gateway->get_form_fields();
+
 		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
+
 		/**
 		 * It might be possible that enabled payment methods settings have an invalid state. As an example,
 		 * if an account is switched to a new country and earlier country had PM's that are no longer valid; or if the PM is not available anymore.
@@ -498,7 +500,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_type'         => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
 				'payment_request_button_theme'        => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 				'is_saved_cards_enabled'              => $this->wcpay_gateway->is_saved_cards_enabled(),
-				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible(),
+				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
 				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'show_woopay_incompatibility_notice'  => get_option( 'woopay_invalid_extension_found', false ),
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
@@ -866,6 +868,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$woopay_custom_message = $request->get_param( 'woopay_custom_message' );
+		$woopay_custom_message = str_replace( '[terms_of_service_link]', '[terms]', $woopay_custom_message );
+		$woopay_custom_message = str_replace( '[privacy_policy_link]', '[privacy_policy]', $woopay_custom_message );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_custom_message', $woopay_custom_message );
 	}
@@ -1015,6 +1019,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response|WP_Error The response object, if this is a REST request.
 	 */
 	public function request_capability( WP_REST_Request $request = null ) {
+		$request_result          = null;
 		$id                      = $request->get_param( 'id' );
 		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
 		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
