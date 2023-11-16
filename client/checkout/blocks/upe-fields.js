@@ -41,7 +41,7 @@ const WCPayUPEFields = ( {
 	activePaymentMethod,
 	billing: { billingData },
 	shippingData,
-	eventRegistration: { onPaymentProcessing, onCheckoutSuccess },
+	eventRegistration: { onPaymentSetup, onCheckoutSuccess },
 	emitResponse,
 	paymentIntentId,
 	paymentIntentSecret,
@@ -135,7 +135,7 @@ const WCPayUPEFields = ( {
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
 		() =>
-			onPaymentProcessing( () => {
+			onPaymentSetup( () => {
 				if ( PAYMENT_METHOD_NAME_CARD !== activePaymentMethod ) {
 					return;
 				}
@@ -295,11 +295,8 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	useEffect( () => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
-			let upeAppearance = getAppearance( true );
-			upeAppearance = await api.saveUPEAppearance(
-				upeAppearance,
-				'true'
-			);
+			const upeAppearance = getAppearance( true );
+			await api.saveUPEAppearance( upeAppearance, 'true' );
 
 			// Update appearance state
 			setAppearance( upeAppearance );

@@ -266,13 +266,6 @@ describe( 'Stripe Payment Element mounting', () => {
 		} );
 
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if (
-				argument === 'wcBlocksUPEAppearance' ||
-				argument === 'upeAppearance'
-			) {
-				return {};
-			}
-
 			if ( argument === 'currency' ) {
 				return 'eur';
 			}
