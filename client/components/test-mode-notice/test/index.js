@@ -21,6 +21,13 @@ jest.mock( 'utils', () => ( {
 } ) );
 
 describe( 'Test mode notification', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			accountStatus: {
+				detailsSubmitted: true,
+			},
+		};
+	} );
 	// Set up easy to use lists containing test inputs.
 	const listTopics = [
 		topics.transactions,
@@ -92,6 +99,17 @@ describe( 'Test mode notification', () => {
 			expect( getNoticeMessage( topic ) ).toStrictEqual( expected );
 		}
 	);
+
+	test( 'Returns right notice message without URL component', () => {
+		global.wcpaySettings.accountStatus.detailsSubmitted = false;
+		const topic = topics.overview;
+		isInTestMode.mockReturnValue( true );
+		const { container: testModeNotice } = render(
+			<TestModeNotice topic={ topic } />
+		);
+
+		expect( testModeNotice ).toMatchSnapshot();
+	} );
 
 	test.each( topicsWithTestMode )(
 		'Component is rendered correctly',
