@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Don't show the Apple Pay and Google Pay buttons when loading a variable product page, if the default selected variation cannot be purchased with express payment methods.

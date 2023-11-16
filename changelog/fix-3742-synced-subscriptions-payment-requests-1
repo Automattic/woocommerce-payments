@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Prevent incorrect totals displayed in Apple Pay and Google Pay when purchasing a virtual sychronised subscription from the product page.
