@@ -11,31 +11,18 @@
 			line-height: 24px;
 			color: $gray-900;
 		}
-
-		&__description {
-			& > &__text {
-				line-height: 16px;
-				color: $gray-700;
-			}
-		}
 	}
 	.wcpay-inline-notice.components-notice {
-		margin: 0;
+		margin: 16px 0;
 	}
 
-	// Apply a margin bottom to all except the last notice
-	// in the notices container and to the business delay
-	// notice if it's the last child of the Deposit history table.
-	&__notices__container
-		> .wcpay-inline-notice.components-notice:not( :last-child ),
-	.wcpay-deposits-overview__business-day-delay-notice:last-child {
-		margin-bottom: 16px;
-	}
+	.components-card__body.wcpay-deposits-overview__schedule__container {
+		padding-top: 24px;
+		padding-bottom: 0;
 
-	// If the notices container is the last element before the footer (no deposit history), apply a margin to the footer, to float the notices on.
-	.wcpay-deposits-overview__notices__container:not( :empty )
-		+ .wcpay-deposits-overview__footer {
-		margin-top: 16px;
+		.is-loadable-placeholder {
+			margin-bottom: 24px;
+		}
 	}
 
 	// Override extraneous CardBody vertical padding -
@@ -50,6 +37,15 @@
 	// Override display:block on the first FlexItem with the date and icon
 	.wcpay-deposits-overview__table__cell:first-child {
 		display: flex;
+	}
+
+	// Override notice colors for transit days notice
+	.wcpay-inline-notice.components-notice.wcpay-deposit-transit-days-notice {
+		background-color: $gray-0;
+
+		.wcpay-inline-notice__icon svg {
+			fill: $gray-900;
+		}
 	}
 
 	&__table {
@@ -83,12 +79,21 @@
 			}
 		}
 	}
-	&__footer {
-		:not( :first-child ) {
-			margin-left: 12px;
-		}
-		a:not( .components-button ) {
-			text-decoration: none;
+
+	&__footer.components-card__footer {
+		padding: 24px;
+		flex-wrap: wrap;
+		justify-content: flex-start;
+		align-items: center;
+
+		@media screen and ( max-width: 550px ) {
+			flex-direction: column;
+			justify-content: center;
+			padding: 16px 24px;
+
+			> * {
+				margin: 0;
+			}
 		}
 	}
 }
