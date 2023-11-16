@@ -1386,7 +1386,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
 	}
 
-	public function test_process_tktk() {
+	public function test_process_payment_for_order_not_from_request() {
 		// There is no payment method data within the request. This is the case e.g. for the automatic subscription renewals.
 		$_POST['payment_method'] = '';
 
