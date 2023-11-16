@@ -252,7 +252,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			[
 				'type'         => 'buy',
 				'theme'        => 'dark',
-				'height'       => '40',
+				'height'       => '48',
 				'locale'       => 'en',
 				'branded_type' => 'long',
 			],

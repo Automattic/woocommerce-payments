@@ -22,6 +22,7 @@ import {
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
 } from '../../constants';
 
+// It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};
 let fingerprint = null;
 
@@ -40,13 +41,13 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
  * @param {Object} api The API object used to save the UPE configuration.
  * @return {Object} The appearance object for the UPE.
  */
-async function initializeAppearance( api ) {
-	const appearance = getUPEConfig( 'upeAppearance' );
-	if ( appearance ) {
-		return appearance;
+function initializeAppearance( api ) {
+	let appearance = getUPEConfig( 'upeAppearance' );
+	if ( ! appearance ) {
+		appearance = getAppearance();
+		api.saveUPEAppearance( appearance );
 	}
-
-	return await api.saveUPEAppearance( getAppearance() );
+	return appearance;
 }
 
 /**
@@ -138,7 +139,14 @@ function createStripePaymentMethod(
 
 	return api
 		.getStripeForUPE( paymentMethodType )
-		.createPaymentMethod( { elements, params: params } );
+		.createPaymentMethod( { elements, params: params } )
+		.then( ( paymentMethod ) => {
+			if ( paymentMethod.error ) {
+				throw paymentMethod.error;
+			}
+
+			return paymentMethod;
+		} );
 }
 
 /**

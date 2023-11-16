@@ -10,6 +10,7 @@ import type { Query } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import type { DepositStatus } from 'wcpay/types/deposits';
 
 // TODO: refine this type with more detailed information.
 export interface Transaction {
@@ -25,13 +26,7 @@ export interface Transaction {
 	customer_country: string;
 	customer_currency: string;
 	deposit_id?: string;
-	deposit_status?:
-		| 'paid'
-		| 'pending'
-		| 'in_transit'
-		| 'canceled'
-		| 'failed'
-		| 'estimated';
+	deposit_status?: DepositStatus;
 	available_on: string;
 	currency: string;
 	transaction_id: string;

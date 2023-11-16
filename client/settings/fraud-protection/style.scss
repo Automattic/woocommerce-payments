@@ -103,7 +103,10 @@
 				width: 12px;
 				height: 12px;
 				margin: 3px;
-				background-color: #3582c4;
+				background-color: var(
+					--wp-components-color-accent,
+					var( --wp-admin-theme-color, #3858e9 )
+				);
 				line-height: 1.14285714;
 			}
 		}

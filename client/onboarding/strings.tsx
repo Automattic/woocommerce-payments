@@ -52,7 +52,7 @@ export default {
 						// eslint-disable-next-line jsx-a11y/anchor-has-content
 						<a
 							href={
-								'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/dev-mode/'
+								'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/'
 							}
 							target="_blank"
 							rel="noreferrer"
