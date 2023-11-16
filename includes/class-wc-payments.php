@@ -591,6 +591,7 @@ class WC_Payments {
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
+		add_filter( 'woocommerce_rest_api_option_permissions', [ __CLASS__, 'add_wcpay_options_to_woocommerce_permissions_list' ], 5 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
 		// Add note query support for source.
@@ -1672,6 +1673,36 @@ class WC_Payments {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
 	}
+
+	/**
+	 * Adds WCPay options to Woo Core option allow list.
+	 *
+	 * @param   array $permissions Array containing the permissions.
+	 *
+	 * @return  array              An array containing the modified permissions.
+	 */
+	public static function add_wcpay_options_to_woocommerce_permissions_list( $permissions ) {
+		$wcpay_permissions_list = [
+			'wcpay_frt_discover_banner_settings',
+			'wcpay_multi_currency_setup_completed',
+			'woocommerce_dismissed_todo_tasks',
+			'woocommerce_remind_me_later_todo_tasks',
+			'woocommerce_deleted_todo_tasks',
+			'wcpay_fraud_protection_welcome_tour_dismissed',
+			'wcpay_capability_request_dismissed_notices',
+
+		];
+		if ( is_array( $permissions ) ) {
+			$permissions = array_merge(
+				$permissions,
+				array_fill_keys( $wcpay_permissions_list, true )
+			);
+		} else {
+			$permissions = array_fill_keys( $wcpay_permissions_list, true );
+		}
+		return $permissions;
+	}
+
 
 	/**
 	 * Creates a new request object for a server call.
