@@ -13,6 +13,7 @@ use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Service\MinimumAmountService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
@@ -110,6 +111,7 @@ class InitialState extends AbstractPaymentState {
 	 * @throws ContainerException         When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception  Order could not be found.
 	 * @throws PaymentRequestException    When data is not available or invalid.
+	 * @throws API_Exception              When server request fails.
 	 * @throws Amount_Too_Small_Exception When the order amount is too small.
 	 */
 	public function start_processing( PaymentRequest $request ) {
@@ -139,8 +141,24 @@ class InitialState extends AbstractPaymentState {
 		);
 		// End multiple verification checks.
 
-		// Payments are currently based on intents, request one from the API.
+		/**
+		 * Payments are based on intents, and intents use customer objects for billing details.
+		 *
+		 * The customer is created/updated right before requesting the creation of
+		 * a payment intent, and the two actions must be adjacent to each-other.
+		 */
 		try {
+			$context  = $this->get_context();
+			$order_id = $context->get_order_id();
+
+			// Create or update customer and customer details.
+			$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
+				$context->get_user_id(),
+				$this->order_service->_deprecated_get_order( $order_id )
+			);
+			$context->set_customer_id( $customer_id );
+
+			// After customer is updated or created, make sure that intent is created.
 			$intent = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
 		} catch ( Amount_Too_Small_Exception $e ) {
@@ -152,7 +170,7 @@ class InitialState extends AbstractPaymentState {
 
 		// Intent requires authorization (3DS check).
 		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
-			$this->order_service->update_order_from_intent_that_requires_action( $context->get_order_id(), $intent, $context );
+			$this->order_service->update_order_from_intent_that_requires_action( $order_id, $intent, $context );
 			return $this->create_state( AuthenticationRequiredState::class );
 		}
 
@@ -191,7 +209,6 @@ class InitialState extends AbstractPaymentState {
 
 	/**
 	 * Populates the context with details, available in the order.
-	 * This includes the update/creation of a customer.
 	 *
 	 * @throws Order_Not_Found_Exception In case the order could not be found.
 	 */
@@ -208,13 +225,6 @@ class InitialState extends AbstractPaymentState {
 			)
 		);
 		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
-
-		// Customer management involves a remote call.
-		$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
-			$context->get_user_id(),
-			$this->order_service->_deprecated_get_order( $order_id )
-		);
-		$context->set_customer_id( $customer_id );
 	}
 
 	/**
