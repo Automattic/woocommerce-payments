@@ -202,7 +202,6 @@ class WC_Payments_Utils {
 			'mga', // Malagasy Ariary.
 			'pyg', // Paraguayan Guaraní.
 			'rwf', // Rwandan Franc.
-			'ugx', // Ugandan Shilling.
 			'vnd', // Vietnamese Đồng.
 			'vuv', // Vanuatu Vatu.
 			'xaf', // Central African Cfa Franc.
@@ -213,7 +212,7 @@ class WC_Payments_Utils {
 
 	/**
 	 * List of countries enabled for Stripe platform account. See also this URL:
-	 * https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries
+	 * https://woo.com/document/woopayments/compatibility/countries/#supported-countries
 	 *
 	 * @return string[]
 	 */

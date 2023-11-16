@@ -9,6 +9,8 @@ namespace WCPay\Internal\Payment;
 
 use WC_Payments_API_Abstract_Intention;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
+use WCPay\Internal\Payment\Change;
+use WCPay\Internal\Payment\Transition;
 
 /**
  * A context object, which is shared between payment states.
@@ -29,12 +31,20 @@ class PaymentContext {
 	private $data = [];
 
 	/**
+	 * Stores the transitions of state.
+	 *
+	 * @var Transition[]
+	 */
+	private $transitions = [];
+
+	/**
 	 * Constructs the class, receiving an order ID.
 	 *
 	 * @param int $order_id ID of the order, receiving a payment.
 	 */
 	public function __construct( int $order_id ) {
-		$this->order_id = $order_id;
+		$this->order_id      = $order_id;
+		$this->transitions[] = new Transition( time(), null );
 	}
 
 	/**
@@ -83,21 +93,21 @@ class PaymentContext {
 	}
 
 	/**
-	 * Controls whether manual capture is enabled.
+	 * Controls whether automatic capture is enabled.
 	 *
-	 * @param bool $manual_capture Whether to enable it or not.
+	 * @param bool $automatic_capture Whether to enable it or not.
 	 */
-	public function toggle_manual_capture( bool $manual_capture ) {
-		$this->set( 'manual_capture', $manual_capture );
+	public function toggle_automatic_capture( bool $automatic_capture ) {
+		$this->set( 'automatic_capture', $automatic_capture );
 	}
 
 	/**
-	 * Indicates whether the payment should be captured manually.
+	 * Indicates whether the payment should be captured automatically.
 	 *
 	 * @return bool
 	 */
-	public function should_capture_manually(): bool {
-		return $this->get( 'manual_capture' ) ?? false;
+	public function should_capture_automatically(): bool {
+		return $this->get( 'automatic_capture' ) ?? false;
 	}
 
 	/**
@@ -282,14 +292,45 @@ class PaymentContext {
 	}
 
 	/**
+	 * Returns the transitions array.
+	 *
+	 * @return Transition[]
+	 */
+	public function get_transitions(): array {
+		return $this->transitions;
+	}
+
+	/**
+	 * Updates previous transition with the next state and creates new transition.
+	 *
+	 * @param string $state The state.
+	 */
+	public function log_state_transition( string $state ): void {
+		$last_transition = end( $this->transitions );
+		$last_transition->set_to_state( $state );
+		$this->transitions[] = new Transition( time(), $state );
+	}
+
+	/**
 	 * Stores an internal value.
-	 * Use this method for changes to allow logging in the future.
 	 *
 	 * @param string $key   Property name.
 	 * @param mixed  $value Value to store.
 	 */
-	private function set( string $key, $value ) {
+	private function set( string $key, $value ) : void {
+		$this->log_change( $key, $value );
 		$this->data[ $key ] = $value;
+	}
+
+	/**
+	 * Log the change to a transition
+	 *
+	 * @param string $key   Property name.
+	 * @param mixed  $value Value to store.
+	 */
+	private function log_change( string $key, $value ) : void {
+		$last_transition = end( $this->transitions );
+		$last_transition->add_change( new Change( $key, $this->get( $key ), $value ) );
 	}
 
 	/**
