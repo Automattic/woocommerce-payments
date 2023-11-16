@@ -340,7 +340,7 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	// Capital loans notice temporarily disabled, tests commented out until resolved. See #7689.
+	// Capital loans notice temporarily disabled, tests skipped until resolved. See #7689.
 	test.skip( 'Renders capital loan notice if deposit includes financing payout', () => {
 		mockUseDepositIncludesLoan.mockReturnValue( {
 			includesFinancingPayout: true,
@@ -371,7 +371,7 @@ describe( 'Deposits Overview information', () => {
 		);
 	} );
 
-	// Capital loans notice temporarily disabled, tests commented out until resolved. See #7689.
+	// Capital loans notice temporarily disabled, tests skipped until resolved. See #7689.
 	test.skip( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
 		mockUseDepositIncludesLoan.mockReturnValue( {
 			includesFinancingPayout: false,
