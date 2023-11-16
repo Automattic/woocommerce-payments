@@ -61,7 +61,7 @@ const DepositsOverview: React.FC = () => {
 	const isNegativeBalanceDepositsPaused = availableFunds < 0;
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
-	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
+	// Only show the deposit history section if the page is finished loading and there are deposits.
 	const showRecentDeposits =
 		! isLoading &&
 		deposits?.length > 0 &&
@@ -130,8 +130,8 @@ const DepositsOverview: React.FC = () => {
 						{ isNegativeBalanceDepositsPaused && (
 							<NegativeBalanceDepositsPausedNotice />
 						) }
-						{ ! isAboveMinimumDepositAmount &&
-							! isNegativeBalanceDepositsPaused && (
+						{ availableFunds > 0 &&
+							! isAboveMinimumDepositAmount && (
 								<DepositMinimumBalanceNotice
 									minimumDepositAmountFormatted={ formatExplicitCurrency(
 										minimumDepositAmount,
