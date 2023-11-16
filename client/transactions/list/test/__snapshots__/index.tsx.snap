@@ -767,8 +767,6 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       data-link-type="wc-admin"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
                     >
-                      
-                       
                       Jan 7, 2020
                     </a>
                   </td>
@@ -1700,8 +1698,6 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       data-link-type="wc-admin"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
                     >
-                      
-                       
                       Jan 7, 2020
                     </a>
                   </td>
@@ -3336,8 +3332,6 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       data-link-type="wc-admin"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
                     >
-                      
-                       
                       Jan 7, 2020
                     </a>
                   </td>
@@ -4314,8 +4308,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       data-link-type="wc-admin"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
                     >
-                      
-                       
                       Jan 7, 2020
                     </a>
                   </td>
@@ -5289,8 +5281,6 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       data-link-type="wc-admin"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
                     >
-                      
-                       
                       Jan 7, 2020
                     </a>
                   </td>

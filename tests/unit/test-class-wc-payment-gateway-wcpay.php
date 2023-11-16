@@ -1333,7 +1333,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->wcpay_gateway->get_option( 'payment_request_button_locations' )
 		);
 		$this->assertEquals(
-			'default',
+			'medium',
 			$this->wcpay_gateway->get_option( 'payment_request_button_size' )
 		);
 
@@ -1675,7 +1675,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals(
-			'By placing this order, you agree to our [terms_of_service_link] and understand our [privacy_policy_link].',
+			'By placing this order, you agree to our [terms] and understand our [privacy_policy].',
 			$this->wcpay_gateway->get_option( 'platform_checkout_custom_message' )
 		);
 	}

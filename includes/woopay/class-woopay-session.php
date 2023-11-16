@@ -57,10 +57,12 @@ class WooPay_Session {
 	public static function init() {
 		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
 		add_filter( 'woocommerce_session_handler', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 20 );
-		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
+		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'woopay_order_payment_status_changed' ] );
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
+
+		add_filter( 'automatewoo/referrals/referred_order_advocate', [ __CLASS__, 'automatewoo_refer_a_friend_referral_from_parameter' ] );
 	}
 
 	/**
@@ -159,25 +161,29 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Prevent set order customer ID on requests with
+	 * Update order data for extensions which uses cookies,
+	 * also prevent set order customer ID on requests with
 	 * email verified to skip the login screen on the TYP.
 	 * After 10 minutes, the customer ID will be restored
 	 * and the user will need to login to access the TYP.
 	 *
-	 * @param \WC_Order $order_id The order ID being updated.
+	 * @param int $order_id The order ID being updated.
 	 */
-	public static function remove_order_customer_id_on_requests_with_verified_email( $order_id ) {
-		$woopay_verified_email_address = self::get_woopay_verified_email_address();
-
-		if ( null === $woopay_verified_email_address ) {
-			return;
-		}
-
+	public static function woopay_order_payment_status_changed( $order_id ) {
 		if ( ! self::is_woopay_enabled() ) {
 			return;
 		}
 
 		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+			return;
+		}
+
+		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
+		$woopay_adapted_extensions->update_order_extension_data( $order_id );
+
+		$woopay_verified_email_address = self::get_woopay_verified_email_address();
+
+		if ( null === $woopay_verified_email_address ) {
 			return;
 		}
 
@@ -250,6 +256,20 @@ class WooPay_Session {
 		}
 
 		wp_clear_scheduled_hook( 'woopay_restore_order_customer_id' );
+	}
+
+	/**
+	 * Fix for AutomateWoo - Refer A Friend Add-on
+	 * plugin when using link referrals.
+	 */
+	public static function automatewoo_refer_a_friend_referral_from_parameter() {
+		if ( empty( $_GET['automatewoo_referral_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return false;
+		}
+
+		$automatewoo_referral = (int) wc_clean( wp_unslash( $_GET['automatewoo_referral_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		return $automatewoo_referral;
 	}
 
 	/**
@@ -638,13 +658,18 @@ class WooPay_Session {
 	private static function get_formatted_custom_message() {
 		$custom_message = WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' );
 
+		$terms_value = wc_terms_and_conditions_page_id() ?
+			'<a href="' . get_permalink( wc_terms_and_conditions_page_id() ) . '">' . __( 'Terms of Service', 'woocommerce-payments' ) . '</a>' :
+			__( 'Terms of Service', 'woocommerce-payments' );
+		$privacy_policy_value = wc_privacy_policy_page_id() ?
+			'<a href="' . get_permalink( wc_privacy_policy_page_id() ) . '">' . __( 'Privacy Policy', 'woocommerce-payments' ) . '</a>' :
+			__( 'Privacy Policy', 'woocommerce-payments' );
+
 		$replacement_map = [
-			'[terms_of_service_link]' => wc_terms_and_conditions_page_id() ?
-				'<a href="' . get_permalink( wc_terms_and_conditions_page_id() ) . '">' . __( 'Terms of Service', 'woocommerce-payments' ) . '</a>' :
-				__( 'Terms of Service', 'woocommerce-payments' ),
-			'[privacy_policy_link]'   => wc_privacy_policy_page_id() ?
-				'<a href="' . get_permalink( wc_privacy_policy_page_id() ) . '">' . __( 'Privacy Policy', 'woocommerce-payments' ) . '</a>' :
-				__( 'Privacy Policy', 'woocommerce-payments' ),
+			'[terms_of_service_link]' => $terms_value,
+			'[terms]'                 => $terms_value,
+			'[privacy_policy_link]'   => $privacy_policy_value,
+			'[privacy_policy]'        => $privacy_policy_value,
 		];
 
 		return str_replace( array_keys( $replacement_map ), array_values( $replacement_map ), $custom_message );

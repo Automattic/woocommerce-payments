@@ -11,16 +11,18 @@ import {
 	confirmCardAuthentication,
 	fillCardDetails,
 	setupProductCheckout,
+	selectGiropayOnCheckout,
+	completeGiropayPayment,
 } from '../../../utils/payments';
 import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 const UPE_METHOD_CHECKBOXES = [
-	'#inspector-checkbox-control-3', // bancontact
-	'#inspector-checkbox-control-4', // eps
-	'#inspector-checkbox-control-5', // giropay
-	'#inspector-checkbox-control-6', // ideal
-	'#inspector-checkbox-control-7', // sofort
+	'#inspector-checkbox-control-5', // bancontact
+	'#inspector-checkbox-control-6', // eps
+	'#inspector-checkbox-control-7', // giropay
+	'#inspector-checkbox-control-8', // ideal
+	'#inspector-checkbox-control-9', // sofort
 ];
 const card = config.get( 'cards.basic' );
 const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
@@ -45,6 +47,19 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 	} );
 
 	describe( 'Enabled UPE with deferred intent creation', () => {
+		it( 'should successfully place order with Giropay', async () => {
+			await setupProductCheckout(
+				config.get( 'addresses.customer.billing' )
+			);
+			await selectGiropayOnCheckout( page );
+			await shopper.placeOrder();
+			await completeGiropayPayment( page, 'success' );
+			await page.waitForNavigation( {
+				waitUntil: 'networkidle0',
+			} );
+			await expect( page ).toMatch( 'Order received' );
+		} );
+
 		it( 'should successfully place order with the default card', async () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )

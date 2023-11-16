@@ -624,14 +624,14 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_settings_saves_payment_request_button_size() {
-		$this->assertEquals( 'default', $this->gateway->get_option( 'payment_request_button_size' ) );
+		$this->assertEquals( 'medium', $this->gateway->get_option( 'payment_request_button_size' ) );
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'payment_request_button_size', 'medium' );
+		$request->set_param( 'payment_request_button_size', 'default' );
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( 'medium', $this->gateway->get_option( 'payment_request_button_size' ) );
+		$this->assertEquals( 'default', $this->gateway->get_option( 'payment_request_button_size' ) );
 	}
 
 	public function test_update_settings_saves_payment_request_button_type() {
@@ -796,19 +796,31 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_upe_get_settings_card_eligible_flag() {
+	public function test_upe_get_settings_card_eligible_flag(): void {
+		// Enable Cash on Delivery gateway for the purpose of this test.
+		$cod_gateway          = WC()->payment_gateways()->payment_gateways()['cod'];
+		$cod_gateway->enabled = 'yes';
+
 		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
 			[
 				'currency_code' => 'usd',
 			]
 		);
+
 		$response = $this->upe_controller->get_settings();
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
 		$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
+
+		// Disable Cash on Delivery gateway.
+		$cod_gateway->enabled = 'no';
 	}
 
-	public function test_upe_split_get_settings_card_eligible_flag() {
+	public function test_upe_split_get_settings_card_eligible_flag(): void {
+		// Enable Cash on Delivery gateway for the purpose of this test.
+		$cod_gateway          = WC()->payment_gateways()->payment_gateways()['cod'];
+		$cod_gateway->enabled = 'yes';
+
 		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
 			[
 				'currency_code' => 'usd',
@@ -818,6 +830,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
 		$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
+
+		// Disable Cash on Delivery gateway.
+		$cod_gateway->enabled = 'no';
 	}
 
 	public function test_upe_get_settings_domestic_currency(): void {

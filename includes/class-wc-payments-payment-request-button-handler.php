@@ -118,10 +118,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return bool
 	 */
 	public function is_account_creation_possible() {
+		$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
+
+		// If a subscription is being purchased, check if account creation is allowed for subscriptions.
+		if ( ! $is_signup_from_checkout_allowed && $this->has_subscription_product() ) {
+			$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'no' );
+		}
+
 		// If automatically generate username/password are disabled, the Payment Request API
 		// can't include any of those fields, so account creation is not possible.
 		return (
-			'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' ) &&
+			$is_signup_from_checkout_allowed &&
 			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
 			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
 		);
@@ -190,7 +197,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return '56';
 		}
 
-		// for the "default" and "catch-all" scenarios.
+		// for the "default"/"small" and "catch-all" scenarios.
 		return '40';
 	}
 
@@ -589,6 +596,18 @@ class WC_Payments_Payment_Request_Button_Handler {
 				return false;
 			}
 
+			/**
+			 * Filter whether product supports Payment Request Button on cart page.
+			 *
+			 * @since 6.9.0
+			 *
+			 * @param boolean $is_supported Whether product supports Payment Request Button on cart page.
+			 * @param object  $_product     Product object.
+			 */
+			if ( ! apply_filters( 'wcpay_payment_request_is_cart_supported', true, $_product ) ) {
+				return false;
+			}
+
 			// Trial subscriptions with shipping are not supported.
 			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
@@ -620,11 +639,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 				return true;
 			}
 		} elseif ( $this->is_checkout() || $this->is_cart() ) {
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-				$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
-				if ( WC_Subscriptions_Product::is_subscription( $_product ) ) {
-					return true;
-				}
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
 			}
 		}
 
@@ -1140,9 +1156,23 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC()->shipping->reset_shipping();
 
-		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+		$product    = wc_get_product( $product_id );
+
+		if ( ! $product ) {
+			wp_send_json(
+				[
+					'error' => [
+						'code'    => 'invalid_product_id',
+						'message' => __( 'Invalid product id', 'woocommerce-payments' ),
+					],
+				],
+				404
+			);
+			return;
+		}
+
 		$qty          = ! isset( $_POST['qty'] ) ? 1 : absint( $_POST['qty'] );
-		$product      = wc_get_product( $product_id );
 		$product_type = $product->get_type();
 
 		// First empty the cart to prevent wrong calculation.

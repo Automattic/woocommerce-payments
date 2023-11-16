@@ -63,18 +63,18 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $currency, $this->sut->get_currency() );
 	}
 
-	public function test_manual_capture_disabled() {
-		$toggle_manual_capture = false;
+	public function test_automatic_capture_disabled() {
+		$toggle_automatic_capture = false;
 
-		$this->sut->toggle_manual_capture( $toggle_manual_capture );
-		$this->assertSame( $toggle_manual_capture, $this->sut->should_capture_manually() );
+		$this->sut->toggle_automatic_capture( $toggle_automatic_capture );
+		$this->assertSame( $toggle_automatic_capture, $this->sut->should_capture_automatically() );
 	}
 
-	public function test_manual_capture_enabled() {
-		$toggle_manual_capture = true;
+	public function test_automatic_capture_enabled() {
+		$toggle_automatic_capture = true;
 
-		$this->sut->toggle_manual_capture( $toggle_manual_capture );
-		$this->assertSame( $toggle_manual_capture, $this->sut->should_capture_manually() );
+		$this->sut->toggle_automatic_capture( $toggle_automatic_capture );
+		$this->assertSame( $toggle_automatic_capture, $this->sut->should_capture_automatically() );
 	}
 
 	public function test_metadata() {
@@ -138,6 +138,13 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 
 		$this->sut->set_intent( $intent );
 		$this->assertSame( $intent, $this->sut->get_intent() );
+	}
+
+	public function test_mode() {
+		$mode = 'prod';
+
+		$this->sut->set_mode( $mode );
+		$this->assertSame( $mode, $this->sut->get_mode() );
 	}
 
 	public function test_log_state_transition() {

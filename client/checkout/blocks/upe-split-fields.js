@@ -45,7 +45,7 @@ const WCPayUPEFields = ( {
 	testingInstructions,
 	billing: { billingData },
 	shippingData,
-	eventRegistration: { onPaymentProcessing, onCheckoutSuccess },
+	eventRegistration: { onPaymentSetup, onCheckoutSuccess },
 	emitResponse,
 	paymentMethodId,
 	upeMethods,
@@ -133,7 +133,7 @@ const WCPayUPEFields = ( {
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
 		() =>
-			onPaymentProcessing( () => {
+			onPaymentSetup( () => {
 				if ( upeMethods[ paymentMethodId ] !== activePaymentMethod ) {
 					return;
 				}
