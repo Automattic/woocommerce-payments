@@ -340,70 +340,66 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	// test( 'Renders capital loan notice if deposit includes financing payout', () => {
-	// 	const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
-	// 	mockUseDepositIncludesLoan.mockReturnValue( {
-	// 		includesFinancingPayout: true,
-	// 		isLoading: false,
-	// 	} );
-	// 	mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
-	// 	mockUseSelectedCurrency.mockReturnValue( {
-	// 		selectedCurrency: 'eur',
-	// 		setSelectedCurrency: mockSetSelectedCurrency,
-	// 	} );
+	// Capital loans notice temporarily disabled, tests commented out until resolved. See #7689.
+	test.skip( 'Renders capital loan notice if deposit includes financing payout', () => {
+		mockUseDepositIncludesLoan.mockReturnValue( {
+			includesFinancingPayout: true,
+			isLoading: false,
+		} );
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
 
-	// 	const { getByRole, getByText } = render(
-	// 		<NextDepositDetails isLoading={ false } overview={ overview } />
-	// 	);
+		const { getByRole, getByText } = render( <DepositsOverview /> );
 
-	// 	getByText(
-	// 		'deposit will include funds from your WooCommerce Capital loan',
-	// 		{
-	// 			exact: false,
-	// 			ignore: '.a11y-speak-region',
-	// 		}
-	// 	);
-	// 	expect(
-	// 		getByRole( 'link', {
-	// 			name: 'Learn more',
-	// 		} )
-	// 	).toHaveAttribute(
-	// 		'href',
-	// 		'https://woo.com/document/woopayments/stripe-capital/overview/'
-	// 	);
-	// } );
+		getByText(
+			'deposit will include funds from your WooCommerce Capital loan',
+			{
+				exact: false,
+				ignore: '.a11y-speak-region',
+			}
+		);
+		expect(
+			getByRole( 'link', {
+				name: 'Learn more',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://woo.com/document/woopayments/stripe-capital/overview/'
+		);
+	} );
 
-	// test( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
-	// 	const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
-	// 	mockUseDepositIncludesLoan.mockReturnValue( {
-	// 		includesFinancingPayout: false,
-	// 		isLoading: false,
-	// 	} );
-	// 	mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
-	// 	mockUseSelectedCurrency.mockReturnValue( {
-	// 		selectedCurrency: 'eur',
-	// 		setSelectedCurrency: mockSetSelectedCurrency,
-	// 	} );
+	// Capital loans notice temporarily disabled, tests commented out until resolved. See #7689.
+	test.skip( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
+		mockUseDepositIncludesLoan.mockReturnValue( {
+			includesFinancingPayout: false,
+			isLoading: false,
+		} );
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
 
-	// 	const { queryByRole, queryByText } = render(
-	// 		<NextDepositDetails isLoading={ false } overview={ overview } />
-	// 	);
+		const { queryByRole, queryByText } = render( <DepositsOverview /> );
 
-	// 	expect(
-	// 		queryByText(
-	// 			'deposit will include funds from your WooCommerce Capital loan',
-	// 			{
-	// 				exact: false,
-	// 				ignore: '.a11y-speak-region',
-	// 			}
-	// 		)
-	// 	).toBeFalsy();
-	// 	expect(
-	// 		queryByRole( 'link', {
-	// 			name: 'Learn more',
-	// 		} )
-	// 	).toBeFalsy();
-	// } );
+		expect(
+			queryByText(
+				'deposit will include funds from your WooCommerce Capital loan',
+				{
+					exact: false,
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeFalsy();
+		expect(
+			queryByRole( 'link', {
+				name: 'Learn more',
+			} )
+		).toBeFalsy();
+	} );
 
 	test( 'Confirm new account waiting period notice does not show', () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
