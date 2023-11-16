@@ -609,7 +609,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 
 			// Trial subscriptions with shipping are not supported.
-			if ( $this->product_has_trial_and_needs_shipping( $_product ) ) {
+			if ( $this->is_invalid_subscription_product( $_product ) ) {
 				return false;
 			}
 		}
@@ -854,7 +854,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( is_null( $product )
 			|| ! is_object( $product )
 			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| $this->product_has_trial_and_needs_shipping( $product ) // Trial subscriptions with shipping are not supported.
+			|| $this->is_invalid_subscription_product( $product ) // Trial subscriptions with shipping are not supported.
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
@@ -1070,7 +1070,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				}
 			}
 
-			if ( $this->product_has_trial_and_needs_shipping( $product ) ) {
+			if ( $this->is_invalid_subscription_product( $product ) ) {
 				throw new Exception( __( 'Subscription products with a trial period and require shipping are not supported.', 'woocommerce-payments' ) );
 			}
 
@@ -1750,7 +1750,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * @return boolean
 	 */
-	public function product_has_trial_and_needs_shipping( $product ) {
+	public function is_invalid_subscription_product( $product ) {
 		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Synchroniser' ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return false;
 		}
