@@ -203,9 +203,9 @@ class PaymentContext {
 	/**
 	 * Stores the WP user ID, associated with the payment.
 	 *
-	 * @param int $user_id ID of the user.
+	 * @param int|null $user_id ID of the user.
 	 */
-	public function set_user_id( int $user_id ) {
+	public function set_user_id( ?int $user_id ) {
 		$this->set( 'user_id', $user_id );
 	}
 
@@ -298,6 +298,24 @@ class PaymentContext {
 	 */
 	public function get_transitions(): array {
 		return $this->transitions;
+	}
+
+	/**
+	 * Sets the mode (test or prod).
+	 *
+	 * @param string $mode mode.
+	 */
+	public function set_mode( string $mode ) {
+		$this->set( 'mode', $mode );
+	}
+
+	/**
+	 * Returns the mode (test or prod).
+	 *
+	 * @return string|null mode.
+	 */
+	public function get_mode(): ?string {
+		return $this->get( 'mode' );
 	}
 
 	/**

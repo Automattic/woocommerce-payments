@@ -277,18 +277,11 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$mock_order->expects( $this->once() )
 			->method( 'get_user' )
 			->willReturn( $user ?? false );
-		if ( ! $user ) {
-			$user     = $this->createMock( WP_User::class );
-			$user->ID = 10;
 
-			$this->mock_legacy_proxy->expects( $this->once() )
-				->method( 'call_function' )
-				->with( 'wp_get_current_user' )
-				->willReturn( $user );
-		}
+		// Mock set user id.
 		$mock_context->expects( $this->once() )
 			->method( 'set_user_id' )
-			->with( 10 );
+			->with( $user->ID ?? null );
 
 		// Act.
 		$this->sut->import_order_data_to_payment_context( $this->order_id, $mock_context );
@@ -319,7 +312,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		// Create a mock order that will be used.
 		$mock_order = $this->createMock( WC_Order::class );
-		$this->sut->expects( $this->once() )
+		$this->sut->expects( $this->exactly( 2 ) )
 			->method( 'get_order' )
 			->with( $this->order_id )
 			->willReturn( $mock_order );
@@ -355,6 +348,9 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$mock_context->expects( $this->once() )
 			->method( 'get_currency' )
 			->willReturn( $currency );
+		$mock_context->expects( $this->once() )
+			->method( 'get_mode' )
+			->willReturn( 'prod' );
 
 		$this->mock_legacy_service->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
@@ -637,6 +633,24 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, $result );
 	}
 
+	public function test_set_mode() {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with( '_wcpay_mode', 'prod' );
+		$this->sut->set_mode( $this->order_id, 'prod' );
+	}
+
+	public function test_get_mode() {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_wcpay_mode', true )
+			->willReturn( 'test' );
+		$result = $this->sut->get_mode( $this->order_id, true );
+		$this->assertSame( 'test', $result );
+	}
+
 	/**
 	 * Mocks order retrieval.
 	 *
@@ -654,4 +668,5 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		return $mock_order;
 	}
+
 }
