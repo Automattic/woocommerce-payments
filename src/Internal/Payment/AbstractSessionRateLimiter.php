@@ -81,7 +81,8 @@ abstract class AbstractSessionRateLimiter {
 	 */
 	final public function bump() {
 		$registry   = $this->session_service->get( $this->key ) ?? [];
-		$registry[] = time();
+		$registry[] = $this->legacy_proxy->call_function( 'time' );
+
 		$this->session_service->set( $this->key, $registry );
 	}
 
