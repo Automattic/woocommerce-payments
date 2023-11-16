@@ -93,21 +93,21 @@ class PaymentContext {
 	}
 
 	/**
-	 * Controls whether manual capture is enabled.
+	 * Controls whether automatic capture is enabled.
 	 *
-	 * @param bool $manual_capture Whether to enable it or not.
+	 * @param bool $automatic_capture Whether to enable it or not.
 	 */
-	public function toggle_manual_capture( bool $manual_capture ) {
-		$this->set( 'manual_capture', $manual_capture );
+	public function toggle_automatic_capture( bool $automatic_capture ) {
+		$this->set( 'automatic_capture', $automatic_capture );
 	}
 
 	/**
-	 * Indicates whether the payment should be captured manually.
+	 * Indicates whether the payment should be captured automatically.
 	 *
 	 * @return bool
 	 */
-	public function should_capture_manually(): bool {
-		return $this->get( 'manual_capture' ) ?? false;
+	public function should_capture_automatically(): bool {
+		return $this->get( 'automatic_capture' ) ?? false;
 	}
 
 	/**
@@ -203,9 +203,9 @@ class PaymentContext {
 	/**
 	 * Stores the WP user ID, associated with the payment.
 	 *
-	 * @param int $user_id ID of the user.
+	 * @param int|null $user_id ID of the user.
 	 */
-	public function set_user_id( int $user_id ) {
+	public function set_user_id( ?int $user_id ) {
 		$this->set( 'user_id', $user_id );
 	}
 
@@ -298,6 +298,24 @@ class PaymentContext {
 	 */
 	public function get_transitions(): array {
 		return $this->transitions;
+	}
+
+	/**
+	 * Sets the mode (test or prod).
+	 *
+	 * @param string $mode mode.
+	 */
+	public function set_mode( string $mode ) {
+		$this->set( 'mode', $mode );
+	}
+
+	/**
+	 * Returns the mode (test or prod).
+	 *
+	 * @return string|null mode.
+	 */
+	public function get_mode(): ?string {
+		return $this->get( 'mode' );
 	}
 
 	/**

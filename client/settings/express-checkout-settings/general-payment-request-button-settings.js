@@ -40,11 +40,11 @@ const buttonSizeOptions = [
 	{
 		label: makeButtonSizeText(
 			__(
-				'Default {{helpText}}(40 px){{/helpText}}',
+				'Small {{helpText}}(40 px){{/helpText}}',
 				'woocommerce-payments'
 			)
 		),
-		value: 'default',
+		value: 'small',
 	},
 	{
 		label: makeButtonSizeText(

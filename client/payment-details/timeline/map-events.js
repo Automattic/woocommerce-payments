@@ -70,7 +70,7 @@ const getDepositTimelineItem = (
 	body = []
 ) => {
 	let headline = '';
-	if ( event.deposit ) {
+	if ( event.deposit && ! event.deposit.id.includes( 'wcpay_estimated_' ) ) {
 		headline = sprintf(
 			isPositive
 				? // translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
@@ -89,7 +89,6 @@ const getDepositTimelineItem = (
 				moment( event.deposit.arrival_date * 1000 ).toISOString()
 			)
 		);
-
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/deposits/details',
@@ -136,7 +135,7 @@ const getDepositTimelineItem = (
  */
 const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 	let headline = '';
-	if ( event.deposit ) {
+	if ( event.deposit && ! event.deposit.id.includes( 'wcpay_estimated_' ) ) {
 		headline = sprintf(
 			// translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
 			__(

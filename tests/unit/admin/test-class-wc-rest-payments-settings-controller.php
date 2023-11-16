@@ -616,14 +616,14 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_settings_saves_payment_request_button_size() {
-		$this->assertEquals( 'default', $this->gateway->get_option( 'payment_request_button_size' ) );
+		$this->assertEquals( 'medium', $this->gateway->get_option( 'payment_request_button_size' ) );
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'payment_request_button_size', 'medium' );
+		$request->set_param( 'payment_request_button_size', 'default' );
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( 'medium', $this->gateway->get_option( 'payment_request_button_size' ) );
+		$this->assertEquals( 'default', $this->gateway->get_option( 'payment_request_button_size' ) );
 	}
 
 	public function test_update_settings_saves_payment_request_button_type() {

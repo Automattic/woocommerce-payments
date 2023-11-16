@@ -56,7 +56,7 @@ const BrowserHelpText = () => {
 };
 
 const buttonSizeToPxMap = {
-	default: 40,
+	small: 40,
 	medium: 48,
 	large: 56,
 };
@@ -120,7 +120,7 @@ const PaymentRequestButtonPreview = () => {
 								theme: theme,
 								height: `${
 									buttonSizeToPxMap[ size ] ||
-									buttonSizeToPxMap.default
+									buttonSizeToPxMap.medium
 								}px`,
 								size,
 							} }
@@ -142,7 +142,7 @@ const PaymentRequestButtonPreview = () => {
 											theme: theme,
 											height: `${
 												buttonSizeToPxMap[ size ] ||
-												buttonSizeToPxMap.default
+												buttonSizeToPxMap.medium
 											}px`,
 										},
 									},
