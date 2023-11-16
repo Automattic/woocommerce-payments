@@ -854,7 +854,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( is_null( $product )
 			|| ! is_object( $product )
 			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| $this->is_invalid_subscription_product( $product ) // Trial subscriptions with shipping are not supported.
+			|| $this->is_invalid_subscription_product( $product, true ) // Trial subscriptions with shipping are not supported.
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
@@ -1070,7 +1070,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				}
 			}
 
-			if ( $this->is_invalid_subscription_product( $product ) ) {
+			if ( $this->is_invalid_subscription_product( $product, true ) ) {
 				throw new Exception( __( 'Subscription products with a trial period and require shipping are not supported.', 'woocommerce-payments' ) );
 			}
 
@@ -1739,21 +1739,27 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Returns true if the given product is a subscription that has free trial and requires shipping.
-	 * This could be a subscription product with a trial period or a synchronised subscription with a delayed payment.
+	 * Returns true if the given product is a subscription that cannot be purchased with Payment Request Buttons.
+	 *
+	 * Invalid subscription products include those that have:
+	 *  - a free trial and requires shipping (synchronised subscriptions with a delayed first payment are considered to have a free trial)
+	 *  - a synchronised subscription with no upfront payment and is virtual (this limitation only applies to the product page as we cannot calculate totals until the product is in the cart)
 	 *
 	 * If the product is a variable subscription, this function will return true if all of its variations have a trial and require shipping.
 	 *
 	 * @since 6.8.0
 	 *
-	 * @param WC_Product|null $product Product object.
+	 * @param WC_Product $product                 Product object.
+	 * @param boolean    $is_product_page_request Whether the request is from the product page. Defaulted to false.
 	 *
 	 * @return boolean
 	 */
-	public function is_invalid_subscription_product( $product ) {
+	public function is_invalid_subscription_product( $product, $is_product_page_request = false ) {
 		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Synchroniser' ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return false;
 		}
+
+		$is_invalid = true;
 
 		if ( $product->get_type() === 'variable-subscription' ) {
 			$products = $product->get_available_variations( 'object' );
@@ -1762,21 +1768,34 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		foreach ( $products as $product ) {
-			// Return early if the product doesn't require shipping.
-			if ( ! $product->needs_shipping() ) {
-				return false;
-			}
+			$needs_shipping     = $product->needs_shipping();
+			$is_synced          = WC_Subscriptions_Synchroniser::is_product_synced( $product );
+			$is_payment_upfront = WC_Subscriptions_Synchroniser::is_payment_upfront( $product );
+			$has_trial_period   = WC_Subscriptions_Product::get_trial_length( $product ) > 0;
 
-			// If product is synced, check if the first payment is upfront or today (i.e. no trial period). If product is not synced, check if it has a trial period.
-			if ( WC_Subscriptions_Synchroniser::is_product_synced( $product ) ) {
-				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $product ) ) {
-					return false;
-				}
-			} elseif ( WC_Subscriptions_Product::get_trial_length( $product ) <= 0 ) {
-				return false;
+			if ( $is_product_page_request && $is_synced && ! $is_payment_upfront && ! $needs_shipping ) {
+				/**
+				 * This condition is to prevent the purchase of virtual synced subscription products with no upfront costs via Payment Request Buttons from the product page.
+				 *
+				 * The main issue is on product page load, calling $product->get_price() on a synced subscription does not take into account a mock trial period or prorated price calculations.
+				 * This happens on WC()->cart->calculate_totals() which means that the totals passed to Payment Request buttons are incorrect when on the product page.
+				 * Part of the problem is because the product is virtual, this stops the PaymentRequest API from triggering the necessary `shippingaddresschange` event
+				 * which is when we call WC()->cart->calculate_totals(); which would fix the totals.
+				 *
+				 * The fix here is to not allow virtual synced subscription products with no upfront costs to be purchased via Payment Request Buttons on the product page.
+				 */
+				continue;
+			} elseif ( $is_synced && ! $is_payment_upfront && $needs_shipping ) {
+				continue;
+			} elseif ( $has_trial_period && $needs_shipping ) {
+				continue;
+			} else {
+				// If we made it this far, the product is valid. Break out of the foreach and return early as we only care about invalid cases.
+				$is_invalid = false;
+				break;
 			}
 		}
 
-		return true;
+		return $is_invalid;
 	}
 }
