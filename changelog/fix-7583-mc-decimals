@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix the amount conversion rate for blocked transactions on the transaction details page.
