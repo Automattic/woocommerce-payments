@@ -41,9 +41,6 @@ use WC_Payments_Localization_Service;
 use WCPay\Database_Cache;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
-
-require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
-
 /**
  * UPE_Split_Payment_Gateway unit tests
  */
