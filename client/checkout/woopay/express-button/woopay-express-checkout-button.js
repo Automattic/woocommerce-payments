@@ -54,8 +54,7 @@ export const WoopayExpressCheckoutButton = ( {
 	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
 
 	const { addToCart, getProductData } = useExpressCheckoutProductHandler(
-		api,
-		isProductPage
+		api
 	);
 	const getProductDataRef = useRef( getProductData );
 	const addToCartRef = useRef( addToCart );
