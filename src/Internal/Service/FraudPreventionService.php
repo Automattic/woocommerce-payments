@@ -1,6 +1,6 @@
 <?php
 /**
- * Class PaymentFraudPreventionService
+ * Class FraudPreventionService
  *
  * @package WooCommerce\Payments
  */
@@ -10,9 +10,9 @@ namespace WCPay\Internal\Service;
 use WC_Payments_Account;
 
 /**
- * Class PaymentFraudPreventionService
+ * Class FraudPreventionService
  */
-class PaymentFraudPreventionService {
+class FraudPreventionService {
 
 	const TOKEN_NAME = 'wcpay-fraud-prevention-token';
 
