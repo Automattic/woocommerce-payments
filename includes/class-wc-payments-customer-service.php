@@ -107,7 +107,7 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Get WCPay customer ID for the given WordPress user ID
 	 *
-	 * @param int $user_id The user ID to look for a customer ID with.
+	 * @param int|null $user_id The user ID to look for a customer ID with.
 	 *
 	 * @return string|null WCPay customer ID or null if not found.
 	 */
@@ -134,21 +134,21 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Create a customer and associate it with a WordPress user.
 	 *
-	 * @param WP_User $user          User to create a customer for.
-	 * @param array   $customer_data Customer data.
+	 * @param WP_User|null $user          User to create a customer for.
+	 * @param array        $customer_data Customer data.
 	 *
 	 * @return string The created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	public function create_customer_for_user( WP_User $user, array $customer_data ): string {
+	public function create_customer_for_user( ?WP_User $user, array $customer_data = [] ): string {
 		// Include the session ID for the user.
 		$customer_data['session_id'] = $this->session_service->get_sift_session_id() ?? null;
 
 		// Create a customer on the WCPay server.
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
 
-		if ( $user->ID > 0 ) {
+		if ( $user instanceof WP_User && $user->ID > 0 ) {
 			$this->update_user_customer_id( $user->ID, $customer_id );
 		}
 
@@ -163,38 +163,37 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Manages customer details held on WCPay server for WordPress user associated with an order.
 	 *
-	 * @param int      $user_id ID of the WP user to associate with the customer.
+	 * @param int|null $user_id ID of the WP user to associate with the customer.
 	 * @param WC_Order $order   Woo Order.
+	 *
 	 * @return string           WooPayments customer ID.
-	 */
-	public function get_or_create_customer_id_from_order( int $user_id, WC_Order $order ): string {
+	 * @throws API_Exception    Throws when server API request fails.
+*/
+	public function get_or_create_customer_id_from_order( ?int $user_id, WC_Order $order ): string {
 		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->get_customer_id_by_user_id( $user_id );
+		$customer_id   = $this->get_customer_id_by_user_id( $user_id );
+		$customer_data = self::map_customer_data( $order, new WC_Customer( $user_id ?? 0 ) );
+		$user          =  null === $user_id ? null :  get_user_by( 'id', $user_id );
 
 		if ( null !== $customer_id ) {
-			// @todo: We need to update the customer here.
+			$this->update_customer_for_user( $customer_id, $user, $customer_data );
 			return $customer_id;
 		}
-
-		$customer_data = self::map_customer_data( $order, new WC_Customer( $user_id ) );
-		$user          = get_user_by( 'id', $user_id );
-		$customer_id   = $this->create_customer_for_user( $user, $customer_data );
-
-		return $customer_id;
+		return $this->create_customer_for_user( $user, $customer_data );
 	}
 
 	/**
 	 * Update the customer details held on the WCPay server associated with the given WordPress user.
 	 *
-	 * @param string  $customer_id WCPay customer ID.
-	 * @param WP_User $user        WordPress user.
-	 * @param array   $customer_data Customer data.
+	 * @param string       $customer_id WCPay customer ID.
+	 * @param WP_User|null $user        WordPress user.
+	 * @param array        $customer_data Customer data.
 	 *
 	 * @return string The updated customer's ID. Can be different to the ID parameter if the customer was re-created.
 	 *
 	 * @throws API_Exception Error updating the customer.
 	 */
-	public function update_customer_for_user( string $customer_id, WP_User $user, array $customer_data ): string {
+	public function update_customer_for_user( string $customer_id, ?WP_User $user, array $customer_data ): string {
 		try {
 			// Update the customer on the WCPay server.
 			$this->payments_api_client->update_customer(
@@ -385,15 +384,15 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Recreates the customer for this user.
 	 *
-	 * @param WP_User $user          User to recreate a customer for.
-	 * @param array   $customer_data Customer data.
+	 * @param WP_User|null $user          User to recreate a customer for.
+	 * @param array        $customer_data Customer data.
 	 *
 	 * @return string The newly created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	private function recreate_customer( WP_User $user, array $customer_data ): string {
-		if ( $user->ID > 0 ) {
+	private function recreate_customer( ?WP_User $user, array $customer_data ): string {
+		if ( $user instanceof WP_User && $user->ID > 0 ) {
 			$result = delete_user_option( $user->ID, $this->get_customer_id_option() );
 			if ( ! $result ) {
 				// Log the error, but continue since we'll be trying to update this option in create_customer.

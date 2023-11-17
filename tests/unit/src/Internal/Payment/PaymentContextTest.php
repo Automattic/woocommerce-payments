@@ -140,6 +140,20 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $intent, $this->sut->get_intent() );
 	}
 
+	public function test_fraud_prevention_token() {
+		$token = 'random_token';
+
+		$this->sut->set_fraud_prevention_token( $token );
+		$this->assertSame( $token, $this->sut->get_fraud_prevention_token() );
+	}
+
+	public function test_mode() {
+		$mode = 'prod';
+
+		$this->sut->set_mode( $mode );
+		$this->assertSame( $mode, $this->sut->get_mode() );
+	}
+
 	public function test_log_state_transition() {
 		$this->sut->log_state_transition( 'First_State' );
 		// first transition has 'from_state' null and 'to_state' as 'First_State'.

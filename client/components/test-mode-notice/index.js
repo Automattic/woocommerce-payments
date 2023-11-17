@@ -145,7 +145,10 @@ export const getTopicDetails = ( topic ) => {
  * @return {string} The correct notice message.
  */
 export const getNoticeMessage = ( topic ) => {
-	const urlComponent = getPaymentsSettingsUrlComponent();
+	const { detailsSubmitted } = wcpaySettings.accountStatus;
+	const urlComponent = detailsSubmitted
+		? getPaymentsSettingsUrlComponent()
+		: '';
 
 	if ( detailsTopics.includes( topic ) ) {
 		return (

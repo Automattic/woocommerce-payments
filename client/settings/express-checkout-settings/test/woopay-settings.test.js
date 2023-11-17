@@ -94,7 +94,7 @@ describe( 'WooPaySettings', () => {
 		);
 
 		usePaymentRequestButtonSize.mockReturnValue(
-			getMockPaymentRequestButtonSize( [ 'default' ], jest.fn() )
+			getMockPaymentRequestButtonSize( [ 'small' ], jest.fn() )
 		);
 
 		usePaymentRequestButtonTheme.mockReturnValue(
