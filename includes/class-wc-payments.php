@@ -1682,23 +1682,27 @@ class WC_Payments {
 	 * @return  array              An array containing the modified permissions.
 	 */
 	public static function add_wcpay_options_to_woocommerce_permissions_list( $permissions ) {
-		$wcpay_permissions_list = [
-			'wcpay_frt_discover_banner_settings',
-			'wcpay_multi_currency_setup_completed',
-			'woocommerce_dismissed_todo_tasks',
-			'woocommerce_remind_me_later_todo_tasks',
-			'woocommerce_deleted_todo_tasks',
-			'wcpay_fraud_protection_welcome_tour_dismissed',
-			'wcpay_capability_request_dismissed_notices',
-			'wcpay_onboarding_eligibility_modal_dismissed',
-		];
+		$wcpay_permissions_list = array_fill_keys(
+			[
+				'wcpay_frt_discover_banner_settings',
+				'wcpay_multi_currency_setup_completed',
+				'woocommerce_dismissed_todo_tasks',
+				'woocommerce_remind_me_later_todo_tasks',
+				'woocommerce_deleted_todo_tasks',
+				'wcpay_fraud_protection_welcome_tour_dismissed',
+				'wcpay_capability_request_dismissed_notices',
+				'wcpay_onboarding_eligibility_modal_dismissed',
+			],
+			true
+		);
+
 		if ( is_array( $permissions ) ) {
 			$permissions = array_merge(
 				$permissions,
-				array_fill_keys( $wcpay_permissions_list, true )
+				$wcpay_permissions_list
 			);
 		} else {
-			$permissions = array_fill_keys( $wcpay_permissions_list, true );
+			$permissions = $wcpay_permissions_list;
 		}
 		return $permissions;
 	}
