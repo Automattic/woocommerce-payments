@@ -1690,7 +1690,7 @@ class WC_Payments {
 			'woocommerce_deleted_todo_tasks',
 			'wcpay_fraud_protection_welcome_tour_dismissed',
 			'wcpay_capability_request_dismissed_notices',
-
+			'wcpay_onboarding_eligibility_modal_dismissed',
 		];
 		if ( is_array( $permissions ) ) {
 			$permissions = array_merge(
