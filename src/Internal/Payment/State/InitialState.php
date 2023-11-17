@@ -12,7 +12,6 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
-use WCPay\Internal\Payment\Exception\PaymentProcessingException;
 use WCPay\Internal\Service\PaymentFraudPreventionService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
@@ -123,7 +122,7 @@ class InitialState extends AbstractPaymentState {
 
 		if ( $this->fraud_prevention_service->is_enabled()
 			&& ! $this->fraud_prevention_service->verify_token( $this->get_context()->get_fraud_prevention_token() ) ) {
-			throw new PaymentProcessingException(
+			throw new StateTransitionException(
 				__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' )
 			);
 		}
