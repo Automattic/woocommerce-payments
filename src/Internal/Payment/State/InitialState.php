@@ -110,12 +110,15 @@ class InitialState extends AbstractPaymentState {
 	 * @throws StateTransitionException   In case the completed state could not be initialized.
 	 * @throws ContainerException         When the dependency container cannot instantiate the state.
 	 * @throws Order_Not_Found_Exception  Order could not be found.
-	 * @throws PaymentRequestException    When data is not available or invalid.
-	 * @throws API_Exception              When server request fails.
+	 * @throws Amount_Too_Small_Exception When amount is too small.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
-		$this->populate_context_from_request( $request );
+		try {
+			$this->populate_context_from_request( $request );
+		} catch ( PaymentRequestException $e ) {
+			return $this->create_state( PaymentRequestErrorState::class );
+		}
 
 		// Populate further details from the order.
 		$this->populate_context_from_order();
@@ -165,6 +168,7 @@ class InitialState extends AbstractPaymentState {
 			return $this->create_state( SystemErrorState::class );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
+		} catch ( API_Exception $e ) {
 		}
 
 		// Intent requires authorization (3DS check).

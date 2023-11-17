@@ -84,7 +84,7 @@ class PaymentProcessingService {
 	 * @param bool $automatic_capture Whether to only create an authorization instead of a charge (optional).
 	 *
 	 * @throws StateTransitionException
-*/
+	 */
 	public function process_payment( int $order_id, bool $automatic_capture = false ) {
 		// Start with a basis context.
 		$context = $this->create_payment_context( $order_id, $automatic_capture );
@@ -93,7 +93,6 @@ class PaymentProcessingService {
 		try {
 			$initial_state = $this->state_factory->create_state( InitialState::class, $context );
 			$final_state   = $initial_state->start_processing( $request );
-		} catch ( API_Exception $e ) {
 		} catch ( Order_Not_Found_Exception | StateTransitionException $e ) {
 			$final_state = $this->state_factory->create_state( SystemErrorState::class, $context );
 		} catch ( PaymentRequestException $e ) {
