@@ -82,7 +82,9 @@ class PaymentProcessingService {
 	 *
 	 * @param int  $order_id          Order ID provided by WooCommerce core.
 	 * @param bool $automatic_capture Whether to only create an authorization instead of a charge (optional).
-	 */
+	 *
+	 * @throws StateTransitionException
+*/
 	public function process_payment( int $order_id, bool $automatic_capture = false ) {
 		// Start with a basis context.
 		$context = $this->create_payment_context( $order_id, $automatic_capture );
@@ -93,10 +95,8 @@ class PaymentProcessingService {
 			$final_state   = $initial_state->start_processing( $request );
 		} catch ( Amount_Too_Small_Exception $e ) {
 		} catch ( API_Exception $e ) {
-		} catch ( Order_Not_Found_Exception $e ) {
+		} catch ( Order_Not_Found_Exception | StateTransitionException $e ) {
 			$final_state = $this->state_factory->create_state( SystemErrorState::class, $context );
-		} catch ( StateTransitionException $e ) {
-
 		} catch ( PaymentRequestException $e ) {
 		}
 
