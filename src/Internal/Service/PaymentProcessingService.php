@@ -93,7 +93,6 @@ class PaymentProcessingService {
 		try {
 			$initial_state = $this->state_factory->create_state( InitialState::class, $context );
 			$final_state   = $initial_state->start_processing( $request );
-		} catch ( Amount_Too_Small_Exception $e ) {
 		} catch ( API_Exception $e ) {
 		} catch ( Order_Not_Found_Exception | StateTransitionException $e ) {
 			$final_state = $this->state_factory->create_state( SystemErrorState::class, $context );

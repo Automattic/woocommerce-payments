@@ -112,7 +112,6 @@ class InitialState extends AbstractPaymentState {
 	 * @throws Order_Not_Found_Exception  Order could not be found.
 	 * @throws PaymentRequestException    When data is not available or invalid.
 	 * @throws API_Exception              When server request fails.
-	 * @throws Amount_Too_Small_Exception When the order amount is too small.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
