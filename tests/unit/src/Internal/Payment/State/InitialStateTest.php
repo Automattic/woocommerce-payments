@@ -319,6 +319,22 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$this->mocked_sut->start_processing( $mock_request );
 	}
 
+	public function test_start_processing_throw_exceptions_due_to_invalid_fraud_prevention_token() {
+		$mock_request = $this->createMock( PaymentRequest::class );
+
+		// Arrange mocks.
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( false );
+
+		$this->expectException( StateTransitionException::class );
+
+		// Act.
+		$this->mocked_sut->start_processing( $mock_request );
+	}
+
 	public function provider_start_processing_then_detect_duplicates() {
 		return [
 			'Duplicate order is detected'   => [ true ],
@@ -386,17 +402,20 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$payment_method   = new NewPaymentMethod( 'pm_123' );
 		$fingerprint      = 'fingerprint';
 		$cvc_confirmation = 'CVCConfirmation';
+		$fraud_token      = 'fraud_prevention_token';
 
 		// Setup the mock request.
 		$mock_request = $this->createMock( PaymentRequest::class );
 		$mock_request->expects( $this->once() )->method( 'get_payment_method' )->willReturn( $payment_method );
 		$mock_request->expects( $this->once() )->method( 'get_cvc_confirmation' )->willReturn( $cvc_confirmation );
 		$mock_request->expects( $this->once() )->method( 'get_fingerprint' )->willReturn( $fingerprint );
+		$mock_request->expects( $this->once() )->method( 'get_fraud_prevention_token' )->willReturn( $fraud_token );
 
 		// Assume that everything from the request would be imported into the context.
 		$this->mock_context->expects( $this->once() )->method( 'set_payment_method' )->with( $payment_method );
 		$this->mock_context->expects( $this->once() )->method( 'set_cvc_confirmation' )->with( $cvc_confirmation );
 		$this->mock_context->expects( $this->once() )->method( 'set_fingerprint' )->with( $fingerprint );
+		$this->mock_context->expects( $this->once() )->method( 'set_fraud_prevention_token' )->with( $fraud_token );
 
 		PHPUnit_Utils::call_method( $this->sut, 'populate_context_from_request', [ $mock_request ] );
 	}
