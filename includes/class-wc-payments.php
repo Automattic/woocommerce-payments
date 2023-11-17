@@ -1697,14 +1697,13 @@ class WC_Payments {
 		);
 
 		if ( is_array( $permissions ) ) {
-			$permissions = array_merge(
+			return array_merge(
 				$permissions,
 				$wcpay_permissions_list
 			);
-		} else {
-			$permissions = $wcpay_permissions_list;
 		}
-		return $permissions;
+
+		return $wcpay_permissions_list;
 	}
 
 
