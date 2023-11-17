@@ -163,7 +163,7 @@ class InitialState extends AbstractPaymentState {
 			$context->set_intent( $intent );
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$this->minimum_amount_service->store_amount_from_exception( $e );
-			throw $e;
+			return $this->create_state( SystemErrorState::class );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
 		}
