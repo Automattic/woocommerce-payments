@@ -158,6 +158,9 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
 
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
+
 		// Make sure that the minimum amount verification is properly called.
 		$this->mock_context->expects( $this->once() )->method( 'get_amount' )->willReturn( 100 );
 		$this->mock_context->expects( $this->once() )->method( 'get_currency' )->willReturn( 'usd' );
@@ -204,6 +207,10 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
+
 		// Mock get customer.
 		$this->mock_customer_data( 1, 1, $mock_order, 'cus_mock' );
 		$this->mock_minimum_amount_service->expects( $this->once() )->method( 'store_amount_from_exception' )
@@ -216,7 +223,6 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_start_processing_will_transition_to_error_state_when_api_exception_occurs() {
-
 		$order_id         = 123;
 		$user_id          = 456;
 		$customer_id      = 'cus_123';
@@ -235,6 +241,9 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Let's mock these services in order to prevent real execution of them.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
 
 		// Make sure that the minimum amount verification is properly called.
 		$this->mock_context->expects( $this->once() )->method( 'get_amount' )->willReturn( 100 );
@@ -269,6 +278,9 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Let's mock these services in order to prevent real execution of them.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
 
 		// Make sure that the minimum amount verification is properly called.
 		$this->mock_context->expects( $this->once() )->method( 'get_amount' )->willReturn( 100 );
@@ -332,6 +344,9 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->method( 'process_duplicate_payment' )
 			->willReturn( $is_duplicate_order ? null : $mock_returned_state );
 
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
+
 		// Act.
 		$result = $this->mocked_sut->start_processing( $mock_request );
 		$this->assertInstanceOf( $return_state_class, $result );
@@ -344,6 +359,9 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Arrange mocks.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
 
 		$this->mock_context->expects( $this->once() )
 			->method( 'get_currency' )
