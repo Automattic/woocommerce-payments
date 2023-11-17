@@ -15,6 +15,7 @@ use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
+use WCPay\Internal\Service\FraudPreventionService;
 use WCPay\Internal\Service\MinimumAmountService;
 use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -93,29 +94,30 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	private $mock_minimum_amount_service;
 
 	/**
+	 * Mocked dependencies.
+	 *
+	 * @var MockObject[]
+	 */
+	private $mock_deps;
+
+	/**
 	 * Set up the test.
 	 */
 	protected function setUp(): void {
 		parent::setUp();
+		$this->mock_context = $this->createMock( PaymentContext::class );
+		$this->mock_deps    = [
+			$this->mock_state_factory            = $this->createMock( StateFactory::class ),
+			$this->mock_order_service            = $this->createMock( OrderService::class ),
+			$this->mock_customer_service         = $this->createMock( WC_Payments_Customer_Service::class ),
+			$this->mock_level3_service           = $this->createMock( Level3Service::class ),
+			$this->mock_payment_request_service  = $this->createMock( PaymentRequestService::class ),
+			$this->mock_dpps                     = $this->createMock( DuplicatePaymentPreventionService::class ),
+			$this->mock_minimum_amount_service   = $this->createMock( MinimumAmountService::class ),
+			$this->mock_fraud_prevention_service = $this->createMock( FraudPreventionService::class ),
+		];
 
-		$this->mock_state_factory           = $this->createMock( StateFactory::class );
-		$this->mock_order_service           = $this->createMock( OrderService::class );
-		$this->mock_context                 = $this->createMock( PaymentContext::class );
-		$this->mock_customer_service        = $this->createMock( WC_Payments_Customer_Service::class );
-		$this->mock_level3_service          = $this->createMock( Level3Service::class );
-		$this->mock_payment_request_service = $this->createMock( PaymentRequestService::class );
-		$this->mock_dpps                    = $this->createMock( DuplicatePaymentPreventionService::class );
-		$this->mock_minimum_amount_service  = $this->createMock( MinimumAmountService::class );
-
-		$this->sut = new InitialState(
-			$this->mock_state_factory,
-			$this->mock_order_service,
-			$this->mock_customer_service,
-			$this->mock_level3_service,
-			$this->mock_payment_request_service,
-			$this->mock_dpps,
-			$this->mock_minimum_amount_service
-		);
+		$this->sut = new InitialState( ... $this->mock_deps );
 		$this->sut->set_context( $this->mock_context );
 
 		/**
@@ -134,17 +136,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 					'process_duplicate_payment',
 				]
 			)
-			->setConstructorArgs(
-				[
-					$this->mock_state_factory,
-					$this->mock_order_service,
-					$this->mock_customer_service,
-					$this->mock_level3_service,
-					$this->mock_payment_request_service,
-					$this->mock_dpps,
-					$this->mock_minimum_amount_service,
-				]
-			)
+			->setConstructorArgs( $this->mock_deps )
 			->getMock();
 		$this->mocked_sut->set_context( $this->mock_context );
 	}
