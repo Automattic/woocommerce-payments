@@ -28,17 +28,17 @@ class FraudPreventionService {
 	 *
 	 * @var WC_Payments_Account
 	 */
-	private $legacy_account_service;
+	private $account_service;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param SessionService      $session_service SessionService instance.
-	 * @param WC_Payments_Account $legacy_account_service Legacy WC_Payments_Account instance.
+	 * @param WC_Payments_Account $account_service Legacy WC_Payments_Account instance.
 	 */
-	public function __construct( SessionService $session_service, WC_Payments_Account $legacy_account_service ) {
-		$this->session_service        = $session_service;
-		$this->legacy_account_service = $legacy_account_service;
+	public function __construct( SessionService $session_service, WC_Payments_Account $account_service ) {
+		$this->session_service = $session_service;
+		$this->account_service = $account_service;
 	}
 
 	/**
@@ -47,7 +47,7 @@ class FraudPreventionService {
 	 * @return bool
 	 */
 	public function is_enabled(): bool {
-		return $this->legacy_account_service->is_card_testing_protection_eligible();
+		return $this->account_service->is_card_testing_protection_eligible();
 	}
 
 	/**
