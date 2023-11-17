@@ -239,6 +239,21 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account has completed onboarding/KYC.
+	 * Returns true if the onboarding/KYC is completed.
+	 *
+	 * @return bool True if the account is connected and details are submitted, false otherwise.
+	 */
+	public function is_account_fully_onboarded(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return true === $account['details_submitted'];
+	}
+
+	/**
 	 * Gets the account status data for rendering on the settings page.
 	 *
 	 * @return array An array containing the status data, or [ 'error' => true ] on error or no connected account.
@@ -517,9 +532,10 @@ class WC_Payments_Account {
 	public function get_progressive_onboarding_details(): array {
 		$account = $this->get_cached_account_data();
 		return [
-			'isEnabled'        => $account['progressive_onboarding']['is_enabled'] ?? false,
-			'isComplete'       => $account['progressive_onboarding']['is_complete'] ?? false,
-			'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+			'isEnabled'                   => $account['progressive_onboarding']['is_enabled'] ?? false,
+			'isComplete'                  => $account['progressive_onboarding']['is_complete'] ?? false,
+			'isNewFlowEnabled'            => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+			'isEligibilityModalDismissed' => get_option( WC_Payments_Onboarding_Service::ONBOARDING_ELIGIBILITY_MODAL_OPTION, false ),
 		];
 	}
 
@@ -1275,8 +1291,13 @@ class WC_Payments_Account {
 		// Clear account transient when generating Stripe's oauth data.
 		$this->clear_cache();
 
+		// Flags to enable progressive onboarding and collect payout requirements.
+		$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+		$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
+
 		// Enable dev mode if the test_mode query param is set.
 		$test_mode = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
+
 		if ( $test_mode ) {
 			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
@@ -1284,14 +1305,19 @@ class WC_Payments_Account {
 		// Clear persisted onboarding flow state.
 		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
 
+		if ( ! $collect_payout_requirements ) {
+			// Clear onboarding related account options if this is an initial onboarding attempt.
+			WC_Payments_Onboarding_Service::clear_account_options();
+		} else {
+			// Since we assume user has already either gotten here from the eligibility modal,
+			// or has already dismissed it, we should set the modal as dismissed so it doesn't display again.
+			WC_Payments_Onboarding_Service::set_onboarding_eligibility_modal_dismissed();
+		}
+
 		$return_url = $this->get_onboarding_return_url( $wcpay_connect_from );
 		if ( ! empty( $additional_args ) ) {
 			$return_url = add_query_arg( $additional_args, $return_url );
 		}
-
-		// Flags to enable progressive onboarding and collect payout requirements.
-		$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
-		$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
 		// Onboarding self-assessment data.
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];

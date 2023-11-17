@@ -84,6 +84,7 @@ declare global {
 			isNewFlowEnabled: boolean;
 			isEnabled: boolean;
 			isComplete: boolean;
+			isEligibilityModalDismissed: boolean;
 		};
 		enabledPaymentMethods: string[];
 		accountDefaultCurrency: string;

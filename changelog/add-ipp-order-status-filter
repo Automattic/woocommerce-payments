@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Introduce `wcpay_terminal_payment_completed_order_status` filter. Allows overriding the order status after a successful terminal payment.
