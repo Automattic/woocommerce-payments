@@ -80,6 +80,10 @@ class FraudPreventionService {
 	 * @return bool
 	 */
 	public function verify_token( ?string $token = null ): bool {
+		if ( ! $this->is_enabled() ) {
+			return true;
+		}
+
 		$session_token = $this->session_service->get( self::TOKEN_NAME );
 
 		// Check if the tokens are both strings.
