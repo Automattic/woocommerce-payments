@@ -15,6 +15,7 @@ use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\OrderService;
+use WCPay\Internal\Proxy\LegacyProxy;
 use WCPAY_UnitTestCase;
 
 /**
@@ -49,6 +50,11 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 	private $mock_context;
 
 	/**
+	 * @var LegacyProxy|MockObject
+	 */
+	private $mock_legacy_proxy;
+
+	/**
 	 * Set up the test.
 	 */
 	protected function setUp(): void {
@@ -58,11 +64,13 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 		$this->mock_order_service = $this->createMock( OrderService::class );
 		$this->mock_dpps          = $this->createMock( DuplicatePaymentPreventionService::class );
 		$this->mock_context       = $this->createMock( PaymentContext::class );
+		$this->mock_legacy_proxy  = $this->createMock( LegacyProxy::class );
 
 		$this->sut = new ProcessedState(
 			$this->mock_state_factory,
 			$this->mock_order_service,
-			$this->mock_dpps
+			$this->mock_dpps,
+			$this->mock_legacy_proxy
 		);
 		$this->sut->set_context( $this->mock_context );
 	}
@@ -93,8 +101,24 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 			->with( CompletedState::class, $this->mock_context )
 			->willReturn( $mock_completed_state );
 
+		$this->mock_legacy_proxy
+			->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'wc' )
+			->willReturnCallback(
+				function () {
+					$mock_cart = $this->getMockBuilder( \stdClass::class )
+						->setMethods( [ 'empty_cart' ] )
+						->getMock();
+					return (object) [
+						'cart' => $mock_cart,
+					];
+				}
+			);
+
 		$result = $this->sut->complete_processing();
 
 		$this->assertSame( $mock_completed_state, $result );
 	}
+
 }
