@@ -81,7 +81,7 @@ class WC_Payments_Features {
 		if ( null === $account ) {
 			return true;
 		}
-		return is_array( $account ) && ( $account[ self::DEFERRED_UPE_SERVER_FLAG_NAME ] ?? false );
+		return is_array( $account ) && ( $account[ self::DEFERRED_UPE_SERVER_FLAG_NAME ] ?? true );
 	}
 
 	/**
