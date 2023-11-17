@@ -113,7 +113,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			return $content;
 		}
 
-		$fraud_prevention_service = wcpay_get_container()->get( PaymentFraudPreventionService::class );
+		$fraud_prevention_service = wcpay_get_container()->get( FraudPreventionService::class );
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( $fraud_prevention_service->is_enabled() ) {
 			$content .= '<input type="hidden" name="wcpay-fraud-prevention-token" id="wcpay-fraud-prevention-token" value="' . esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ) . '">';

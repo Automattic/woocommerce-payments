@@ -15,7 +15,7 @@ use WC_Payments_Fraud_Service;
 use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
-use WCPay\Internal\Service\PaymentFraudPreventionService;
+use WCPay\Internal\Service\FraudPreventionService;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
@@ -382,7 +382,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			</fieldset>
 
 			<?php
-			$fraud_prevention_service = wcpay_get_container()->get( PaymentFraudPreventionService::class );
+			$fraud_prevention_service = wcpay_get_container()->get( FraudPreventionService::class );
 			if ( $fraud_prevention_service->is_enabled() ) :
 				?>
 				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( $fraud_prevention_service->get_token() ); ?>">

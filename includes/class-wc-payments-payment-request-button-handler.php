@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Exceptions\Invalid_Price_Exception;
-use WCPay\Internal\Service\PaymentFraudPreventionService;
+use WCPay\Internal\Service\FraudPreventionService;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 
@@ -834,7 +834,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		$fraud_prevention_service = wcpay_get_container()->get( PaymentFraudPreventionService::class );
+		$fraud_prevention_service = wcpay_get_container()->get( FraudPreventionService::class );
 		if ( $fraud_prevention_service->is_enabled() ) : ?>
 			<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( $fraud_prevention_service->get_token() ); ?>">
 		<?php endif; ?>

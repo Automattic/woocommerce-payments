@@ -33,7 +33,7 @@ use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
-use WCPay\Internal\Service\PaymentFraudPreventionService;
+use WCPay\Internal\Service\FraudPreventionService;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -915,7 +915,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$fraud_prevention_service = wcpay_get_container()->get( PaymentFraudPreventionService::class );
+			$fraud_prevention_service = wcpay_get_container()->get( FraudPreventionService::class );
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			if ( ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
 				throw new Process_Payment_Exception(

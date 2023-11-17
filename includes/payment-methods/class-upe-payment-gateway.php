@@ -27,7 +27,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Internal\Service\PaymentFraudPreventionService;
+use WCPay\Internal\Service\FraudPreventionService;
 use WCPay\Logger;
 use WCPay\Session_Rate_Limiter;
 use Exception;
@@ -507,7 +507,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			if ( $payment_needed ) {
 				// Check if session exists before instantiating Fraud_Prevention_Service.
 				if ( WC()->session ) {
-					$fraud_prevention_service = wcpay_get_container()->get( PaymentFraudPreventionService::class );
+					$fraud_prevention_service = wcpay_get_container()->get( FraudPreventionService::class );
 					// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					if ( ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
 						throw new Process_Payment_Exception(
