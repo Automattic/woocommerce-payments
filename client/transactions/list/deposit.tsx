@@ -6,7 +6,6 @@
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { Link } from '@woocommerce/components';
-import { __ } from '@wordpress/i18n';
 import React from 'react';
 import { getAdminUrl } from 'wcpay/utils';
 
@@ -16,7 +15,11 @@ interface DepositProps {
 }
 
 const Deposit = ( { depositId, dateAvailable }: DepositProps ): JSX.Element => {
-	if ( depositId && dateAvailable ) {
+	if (
+		depositId &&
+		dateAvailable &&
+		! depositId.includes( 'wcpay_estimated_' )
+	) {
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/deposits/details',
@@ -29,15 +32,7 @@ const Deposit = ( { depositId, dateAvailable }: DepositProps ): JSX.Element => {
 			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 		);
 
-		const estimated = depositId.includes( 'wcpay_estimated_' )
-			? __( 'Estimated', 'woocommerce-payments' )
-			: '';
-
-		return (
-			<Link href={ depositUrl }>
-				{ estimated } { formattedDateAvailable }
-			</Link>
-		);
+		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
 	}
 
 	return <></>;

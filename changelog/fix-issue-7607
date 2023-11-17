@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Allow customers using express payment methods (eg Apple Pay, Google Pay) to create an account automatically when purchasing subscription products if the store settings allow.

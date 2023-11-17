@@ -149,6 +149,9 @@ class CurrencySwitcherBlock {
 		}
 
 		$widget_content .= '</select></div></form>';
+
+		// Silence XSS warning because we are manually constructing the content and escaping everything above.
+		// nosemgrep: audit.php.wp.security.xss.block-attr -- reason: we are manually constructing the content and escaping everything above.
 		return $widget_content;
 	}
 

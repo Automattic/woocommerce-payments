@@ -12,6 +12,9 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\API_Exception;
+use WCPay\Internal\Service\MinimumAmountService;
 use WCPay\Internal\Service\FraudPreventionService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
@@ -63,6 +66,13 @@ class InitialState extends AbstractPaymentState {
 	private $dpps;
 
 	/**
+	 * Service for handling minimum amount.
+	 *
+	 * @var MinimumAmountService
+	 */
+	private $minimum_amount_service;
+
+	/**
 	 * FraudPreventionService instance.
 	 *
 	 * @var FraudPreventionService
@@ -72,12 +82,13 @@ class InitialState extends AbstractPaymentState {
 	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
-	 * @param StateFactory                      $state_factory            Factory for payment states.
-	 * @param OrderService                      $order_service            Service for order-related actions.
-	 * @param WC_Payments_Customer_Service      $customer_service         Service for managing remote customers.
-	 * @param Level3Service                     $level3_service           Service for Level3 Data.
-	 * @param PaymentRequestService             $payment_request_service  Connection with the server.
-	 * @param DuplicatePaymentPreventionService $dpps                     Service for preventing duplicate payments.
+	 * @param StateFactory                      $state_factory           Factory for payment states.
+	 * @param OrderService                      $order_service           Service for order-related actions.
+	 * @param WC_Payments_Customer_Service      $customer_service        Service for managing remote customers.
+	 * @param Level3Service                     $level3_service          Service for Level3 Data.
+	 * @param PaymentRequestService             $payment_request_service Connection with the server.
+	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
+	 * @param MinimumAmountService              $minimum_amount_service  Service for handling minimum amount.
 	 * @param FraudPreventionService            $fraud_prevention_service Service for preventing fraud payments.
 	 */
 	public function __construct(
@@ -87,6 +98,7 @@ class InitialState extends AbstractPaymentState {
 		Level3Service $level3_service,
 		PaymentRequestService $payment_request_service,
 		DuplicatePaymentPreventionService $dpps,
+		MinimumAmountService $minimum_amount_service,
 		FraudPreventionService $fraud_prevention_service
 	) {
 		parent::__construct( $state_factory );
@@ -96,6 +108,7 @@ class InitialState extends AbstractPaymentState {
 		$this->level3_service           = $level3_service;
 		$this->payment_request_service  = $payment_request_service;
 		$this->dpps                     = $dpps;
+		$this->minimum_amount_service   = $minimum_amount_service;
 		$this->fraud_prevention_service = $fraud_prevention_service;
 	}
 
@@ -104,11 +117,13 @@ class InitialState extends AbstractPaymentState {
 	 *
 	 * @param PaymentRequest $request The incoming payment processing request.
 	 *
-	 * @return AbstractPaymentState      The next state.
-	 * @throws StateTransitionException  In case the completed state could not be initialized.
-	 * @throws ContainerException        When the dependency container cannot instantiate the state.
-	 * @throws Order_Not_Found_Exception Order could not be found.
-	 * @throws PaymentRequestException   When data is not available or invalid.
+	 * @return AbstractPaymentState       The next state.
+	 * @throws StateTransitionException   In case the completed state could not be initialized.
+	 * @throws ContainerException         When the dependency container cannot instantiate the state.
+	 * @throws Order_Not_Found_Exception  Order could not be found.
+	 * @throws PaymentRequestException    When data is not available or invalid.
+	 * @throws API_Exception              When server request fails.
+	 * @throws Amount_Too_Small_Exception When the order amount is too small.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
@@ -137,19 +152,43 @@ class InitialState extends AbstractPaymentState {
 		if ( null !== $duplicate_payment_result ) {
 			return $duplicate_payment_result;
 		}
+
+		$context = $this->get_context();
+		$this->minimum_amount_service->verify_amount(
+			$context->get_currency(),
+			$context->get_amount()
+		);
 		// End multiple verification checks.
 
-		// Payments are currently based on intents, request one from the API.
+		/**
+		 * Payments are based on intents, and intents use customer objects for billing details.
+		 *
+		 * The customer is created/updated right before requesting the creation of
+		 * a payment intent, and the two actions must be adjacent to each-other.
+		 */
 		try {
+			$order_id = $context->get_order_id();
+
+			// Create or update customer and customer details.
+			$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
+				$context->get_user_id(),
+				$this->order_service->_deprecated_get_order( $order_id )
+			);
+			$context->set_customer_id( $customer_id );
+
+			// After customer is updated or created, make sure that intent is created.
 			$intent = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
+		} catch ( Amount_Too_Small_Exception $e ) {
+			$this->minimum_amount_service->store_amount_from_exception( $e );
+			throw $e;
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
 		}
 
 		// Intent requires authorization (3DS check).
 		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
-			$this->order_service->update_order_from_intent_that_requires_action( $context->get_order_id(), $intent, $context );
+			$this->order_service->update_order_from_intent_that_requires_action( $order_id, $intent, $context );
 			return $this->create_state( AuthenticationRequiredState::class );
 		}
 
@@ -193,7 +232,6 @@ class InitialState extends AbstractPaymentState {
 
 	/**
 	 * Populates the context with details, available in the order.
-	 * This includes the update/creation of a customer.
 	 *
 	 * @throws Order_Not_Found_Exception In case the order could not be found.
 	 */
@@ -210,13 +248,6 @@ class InitialState extends AbstractPaymentState {
 			)
 		);
 		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
-
-		// Customer management involves a remote call.
-		$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
-			$context->get_user_id(),
-			$this->order_service->_deprecated_get_order( $order_id )
-		);
-		$context->set_customer_id( $customer_id );
 	}
 
 	/**
