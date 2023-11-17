@@ -90,16 +90,15 @@ class ProcessedState extends AbstractPaymentState {
 
 	/**
 	 * Clear the cart.
+	 *
+	 * @return void
 	 */
-
 	private function clear_cart() {
 		$cart = $this->legacy_proxy->call_function( 'wc' )->cart;
 		if ( isset( $cart ) ) {
 			$cart->empty_cart();
 		}
 	}
-
-
 
 	/**
 	 * Remove UPE payment intents from session.
