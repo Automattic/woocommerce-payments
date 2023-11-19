@@ -9,7 +9,6 @@ namespace WCPay\Internal\Payment\State;
 
 use Exception;
 use WCPay\Internal\Logger;
-use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Service\OrderService;
 
 /**
@@ -42,22 +41,6 @@ abstract class AbstractPaymentErrorState extends AbstractPaymentState {
 		parent::__construct( $state_factory );
 		$this->logger        = $logger;
 		$this->order_service = $order_service;
-	}
-
-	/**
-	 * Create error state function. Almost same as original create state, but it also stores occurred exception.
-	 *
-	 * @param string    $state_class State class.
-	 * @param Exception $exception   Occurred exception that triggered error state change.
-	 *
-	 * @return string|AbstractPaymentState
-	 * @throws StateTransitionException
-	 */
-	public function create_error_state( string $state_class, $exception ) {
-		$context = $this->get_context();
-		$context->set_exception( $exception );
-		return $this->create_state( $state_class );
-
 	}
 
 	/**

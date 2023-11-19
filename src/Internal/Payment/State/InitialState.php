@@ -106,18 +106,18 @@ class InitialState extends AbstractPaymentState {
 	 *
 	 * @param PaymentRequest $request The incoming payment processing request.
 	 *
-	 * @return AbstractPaymentState       The next state.
-	 * @throws StateTransitionException   In case the completed state could not be initialized.
-	 * @throws ContainerException         When the dependency container cannot instantiate the state.
-	 * @throws Order_Not_Found_Exception  Order could not be found.
-	 * @throws Amount_Too_Small_Exception When amount is too small.
+	 * @return AbstractPaymentState|AbstractPaymentErrorState The next state.
+	 * @throws StateTransitionException                       In case the completed state could not be initialized.
+	 * @throws ContainerException                             When the dependency container cannot instantiate the state.
+	 * @throws Order_Not_Found_Exception                      Order could not be found.
+	 * @throws Amount_Too_Small_Exception                     When amount is too small.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
 		try {
 			$this->populate_context_from_request( $request );
 		} catch ( PaymentRequestException $e ) {
-			return $this->create_state( PaymentRequestErrorState::class );
+			return $this->create_error_state( PaymentRequestErrorState::class, $e );
 		}
 
 		// Populate further details from the order.
@@ -165,11 +165,11 @@ class InitialState extends AbstractPaymentState {
 			$context->set_intent( $intent );
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$this->minimum_amount_service->store_amount_from_exception( $e );
-			return $this->create_state( SystemErrorState::class );
+			return $this->create_error_state( SystemErrorState::class, $e );
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
-			return $this->create_state( SystemErrorState::class );
+			return $this->create_error_state( SystemErrorState::class, $e );
 		} catch ( API_Exception $e ) {
-			return $this->create_state( WooPaymentsApiServerErrorState::class );
+			return $this->create_error_state( WooPaymentsApiServerErrorState::class, $e );
 		}
 
 		// Intent requires authorization (3DS check).

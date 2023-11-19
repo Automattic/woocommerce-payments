@@ -115,16 +115,24 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( StateFactory::class );
 
 		$container->add( SystemErrorState::class )
-			->addArgument( StateFactory::class );
+			->addArgument( StateFactory::class )
+			->addArgument( Logger::class )
+			->addArgument( OrderService::class );
 
 		$container->add( PaymentRequestErrorState::class )
-			->addArgument( StateFactory::class );
+			->addArgument( StateFactory::class )
+			->addArgument( Logger::class )
+			->addArgument( OrderService::class );
 
 		$container->add( WooPaymentsApiServerErrorState::class )
-			->addArgument( StateFactory::class );
+			->addArgument( StateFactory::class )
+			->addArgument( Logger::class )
+			->addArgument( OrderService::class );
 
 		$container->add( PaymentErrorState::class )
-			->addArgument( StateFactory::class );
+			->addArgument( StateFactory::class )
+			->addArgument( Logger::class )
+			->addArgument( OrderService::class );
 
 		$container->add( DuplicateOrderDetectedState::class )
 			->addArgument( StateFactory::class );

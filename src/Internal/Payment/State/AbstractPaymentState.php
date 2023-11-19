@@ -7,6 +7,7 @@
 
 namespace WCPay\Internal\Payment\State;
 
+use Exception;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
@@ -112,6 +113,21 @@ abstract class AbstractPaymentState {
 		// This is where logging will be added.
 
 		return $state;
+	}
+
+	/**
+	 * Create error state function. Almost same as original create state, but it also stores occurred exception.
+	 *
+	 * @param string    $state_class State class.
+	 * @param Exception $exception   Occurred exception that triggered error state change.
+	 *
+	 * @return string|AbstractPaymentState
+	 * @throws StateTransitionException
+	 */
+	protected function create_error_state( string $state_class, $exception ) {
+		$this->context->set_exception( $exception );
+		return $this->create_state( $state_class );
+
 	}
 
 	/**

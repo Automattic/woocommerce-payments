@@ -94,8 +94,8 @@ class PaymentProcessingService {
 			$initial_state = $this->state_factory->create_state( InitialState::class, $context );
 			$final_state   = $initial_state->start_processing( $request );
 		} catch ( Order_Not_Found_Exception | StateTransitionException $e ) {
+			$context->set_exception( $e );
 			$final_state = $this->state_factory->create_state( SystemErrorState::class, $context );
-		} catch ( PaymentRequestException $e ) {
 		}
 
 		$this->context_logger_service->log_changes( $context );
