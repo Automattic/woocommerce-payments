@@ -11,8 +11,6 @@ use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentRequest;
-use WCPay\Internal\Payment\PaymentRequestException;
-use WCPay\Exceptions\Order_Not_Found_Exception;
 
 /**
  * Base class for payment states.

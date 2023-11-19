@@ -38,6 +38,13 @@ class PaymentContext {
 	private $transitions = [];
 
 	/**
+	 * Stores exception that is triggered before error state is created.
+	 *
+	 * @var \Exception
+	 */
+	private $exception;
+
+	/**
 	 * Constructs the class, receiving an order ID.
 	 *
 	 * @param int $order_id ID of the order, receiving a payment.
@@ -298,6 +305,24 @@ class PaymentContext {
 	 */
 	public function get_transitions(): array {
 		return $this->transitions;
+	}
+
+	/**
+	 * Stores state exception.
+	 *
+	 * @param \Exception $exception Exception to store.
+	 */
+	public function set_exception( $exception ) {
+		$this->set( 'exception', $exception );
+	}
+
+	/**
+	 * Get state exception
+	 *
+	 * @return \Exception|null
+	 */
+	public function get_exception() {
+		return $this->get( 'exception' );
 	}
 
 	/**
