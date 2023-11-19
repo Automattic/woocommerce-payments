@@ -1,6 +1,6 @@
 <?php
 /**
- * Class SystemErrorState
+ * Class PaymentRequestErrorState
  *
  * @package WooCommerce\Payments
  */

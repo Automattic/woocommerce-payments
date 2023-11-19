@@ -75,8 +75,6 @@ abstract class AbstractPaymentState {
 	 *
 	 * @throws StateTransitionException  In case the completed state could not be initialized.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
-	 * @throws Order_Not_Found_Exception Order could not be found.
-	 * @throws PaymentRequestException   When data is not available or invalid.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		$this->throw_unavailable_method_exception( __METHOD__ );
@@ -88,7 +86,6 @@ abstract class AbstractPaymentState {
 	 * @psalm-suppress InvalidReturnType
 	 *
 	 * @return AbstractPaymentState
-	 * @throws Order_Not_Found_Exception
 	 * @throws StateTransitionException
 	 */
 	public function complete_processing() {

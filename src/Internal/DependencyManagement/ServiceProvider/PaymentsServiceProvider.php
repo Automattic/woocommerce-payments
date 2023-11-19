@@ -24,6 +24,7 @@ use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\State\SystemErrorState;
+use WCPay\Internal\Payment\State\WooPaymentsApiServerErrorState;
 use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\MinimumAmountService;
@@ -117,6 +118,9 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( StateFactory::class );
 
 		$container->add( PaymentRequestErrorState::class )
+			->addArgument( StateFactory::class );
+
+		$container->add( WooPaymentsApiServerErrorState::class )
 			->addArgument( StateFactory::class );
 
 		$container->add( PaymentErrorState::class )

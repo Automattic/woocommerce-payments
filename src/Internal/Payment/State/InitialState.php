@@ -169,6 +169,7 @@ class InitialState extends AbstractPaymentState {
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
 		} catch ( API_Exception $e ) {
+			return $this->create_state( WooPaymentsApiServerErrorState::class );
 		}
 
 		// Intent requires authorization (3DS check).
