@@ -108,49 +108,41 @@ class InitialState extends AbstractPaymentState {
 	 *
 	 * @return AbstractPaymentState|AbstractPaymentErrorState The next state.
 	 * @throws StateTransitionException                       In case the completed state could not be initialized.
-	 * @throws ContainerException                             When the dependency container cannot instantiate the state.
-	 * @throws Order_Not_Found_Exception                      Order could not be found.
-	 * @throws Amount_Too_Small_Exception                     When amount is too small.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
 		try {
 			$this->populate_context_from_request( $request );
-		} catch ( PaymentRequestException $e ) {
-			return $this->create_error_state( PaymentRequestErrorState::class, $e );
-		}
+			// Populate further details from the order.
+			$this->populate_context_from_order();
 
-		// Populate further details from the order.
-		$this->populate_context_from_order();
+			// Start multiple verification checks.
+			$this->process_order_phone_number();
 
-		// Start multiple verification checks.
-		$this->process_order_phone_number();
+			$duplicate_order_result = $this->process_duplicate_order();
+			if ( null !== $duplicate_order_result ) {
+				return $duplicate_order_result;
+			}
 
-		$duplicate_order_result = $this->process_duplicate_order();
-		if ( null !== $duplicate_order_result ) {
-			return $duplicate_order_result;
-		}
+			$duplicate_payment_result = $this->process_duplicate_payment();
+			if ( null !== $duplicate_payment_result ) {
+				return $duplicate_payment_result;
+			}
 
-		$duplicate_payment_result = $this->process_duplicate_payment();
-		if ( null !== $duplicate_payment_result ) {
-			return $duplicate_payment_result;
-		}
+			/**
+			 * Payments are based on intents, and intents use customer objects for billing details.
+			 *
+			 * The customer is created/updated right before requesting the creation of
+			 * a payment intent, and the two actions must be adjacent to each-other.
+			 */
 
-		$context = $this->get_context();
-		$this->minimum_amount_service->verify_amount(
-			$context->get_currency(),
-			$context->get_amount()
-		);
-		// End multiple verification checks.
+			$context = $this->get_context();
 
-		/**
-		 * Payments are based on intents, and intents use customer objects for billing details.
-		 *
-		 * The customer is created/updated right before requesting the creation of
-		 * a payment intent, and the two actions must be adjacent to each-other.
-		 */
-		try {
-			$context  = $this->get_context();
+			$this->minimum_amount_service->verify_amount(
+				$context->get_currency(),
+				$context->get_amount()
+			);
+
 			$order_id = $context->get_order_id();
 
 			// Create or update customer and customer details.
@@ -163,25 +155,27 @@ class InitialState extends AbstractPaymentState {
 			// After customer is updated or created, make sure that intent is created.
 			$intent = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
+
+			// Intent requires authorization (3DS check).
+			if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
+				$this->order_service->update_order_from_intent_that_requires_action( $order_id, $intent, $context );
+				return $this->create_state( AuthenticationRequiredState::class );
+			}
+
+			// All good. Proceed to processed state.
+			$next_state = $this->create_state( ProcessedState::class );
+
+			return $next_state->complete_processing();
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$this->minimum_amount_service->store_amount_from_exception( $e );
 			return $this->create_error_state( SystemErrorState::class, $e );
-		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
+		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception | Order_Not_Found_Exception | StateTransitionException $e ) {
 			return $this->create_error_state( SystemErrorState::class, $e );
 		} catch ( API_Exception $e ) {
 			return $this->create_error_state( WooPaymentsApiServerErrorState::class, $e );
+		} catch ( PaymentRequestException $e ) {
+			return $this->create_error_state( PaymentRequestErrorState::class, $e );
 		}
-
-		// Intent requires authorization (3DS check).
-		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
-			$this->order_service->update_order_from_intent_that_requires_action( $order_id, $intent, $context );
-			return $this->create_state( AuthenticationRequiredState::class );
-		}
-
-		// All good. Proceed to processed state.
-		$next_state = $this->create_state( ProcessedState::class );
-
-		return $next_state->complete_processing();
 	}
 
 	/**

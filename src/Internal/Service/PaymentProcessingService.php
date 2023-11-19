@@ -10,20 +10,13 @@ namespace WCPay\Internal\Service;
 use Exception;
 use WC_Payments_API_Abstract_Intention;
 use WC_Payments_API_Setup_Intention;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Order_Not_Found_Exception;
-use WCPay\Internal\Payment\State\SystemErrorState;
-use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Core\Mode;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
-use WCPay\Internal\Payment\PaymentRequestException;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Proxy\LegacyProxy;
-use WCPay\Internal\Service\PaymentContextLoggerService;
 
 /**
  * Payment Processing Service.
@@ -89,14 +82,9 @@ class PaymentProcessingService {
 		// Start with a basis context.
 		$context = $this->create_payment_context( $order_id, $automatic_capture );
 
-		$request = new PaymentRequest( $this->legacy_proxy );
-		try {
-			$initial_state = $this->state_factory->create_state( InitialState::class, $context );
-			$final_state   = $initial_state->start_processing( $request );
-		} catch ( Order_Not_Found_Exception | StateTransitionException $e ) {
-			$context->set_exception( $e );
-			$final_state = $this->state_factory->create_state( SystemErrorState::class, $context );
-		}
+		$request       = new PaymentRequest( $this->legacy_proxy );
+		$initial_state = $this->state_factory->create_state( InitialState::class, $context );
+		$final_state   = $initial_state->start_processing( $request );
 
 		$this->context_logger_service->log_changes( $context );
 		return $final_state;

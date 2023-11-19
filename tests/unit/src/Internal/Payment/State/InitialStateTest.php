@@ -379,19 +379,30 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_start_processing_throw_exceptions_due_to_invalid_phone() {
-		$mock_request = $this->createMock( PaymentRequest::class );
+		$mock_request     = $this->createMock( PaymentRequest::class );
+		$mock_error_state = $this->createMock( SystemErrorState::class );
+		$exception        = new StateTransitionException();
 
 		// Arrange mocks.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
 		$this->mocked_sut->expects( $this->once() )
 			->method( 'process_order_phone_number' )
-			->willThrowException( new StateTransitionException() );
+			->willThrowException( $exception );
 
-		$this->expectException( StateTransitionException::class );
+		$this->mock_context
+			->expects( $this->once() )
+			->method( 'set_exception' )
+			->with( $exception );
+		$this->mock_state_factory
+			->expects( $this->once() )
+			->method( 'create_state' )
+			->with( SystemErrorState::class, $this->mock_context )
+			->willReturn( $mock_error_state );
 
 		// Act.
-		$this->mocked_sut->start_processing( $mock_request );
+		$result = $this->mocked_sut->start_processing( $mock_request );
+		$this->assertSame( $mock_error_state, $result );
 	}
 
 	public function provider_start_processing_then_detect_duplicates() {
@@ -426,11 +437,23 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 	public function test_start_processing_throws_exception_due_to_minimum_amount() {
 		$mock_request           = $this->createMock( PaymentRequest::class );
+		$mock_error_state       = $this->createMock( SystemErrorState::class );
 		$small_amount_exception = new Amount_Too_Small_Exception( 'Amount too small', 50, 'EUR', 400 );
 
 		// Arrange mocks.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		$this->mock_context
+			->expects( $this->once() )
+			->method( 'set_exception' )
+			->with( $small_amount_exception );
+
+		$this->mock_state_factory
+			->expects( $this->once() )
+			->method( 'create_state' )
+			->with( SystemErrorState::class, $this->mock_context )
+			->willReturn( $mock_error_state );
 
 		$this->mock_context->expects( $this->once() )
 			->method( 'get_currency' )
@@ -445,10 +468,10 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->with( 'EUR', 50 )
 			->willThrowException( $small_amount_exception );
 
-		$this->expectExceptionObject( $small_amount_exception );
-
 		// Act.
-		$this->mocked_sut->start_processing( $mock_request );
+		$result = $this->mocked_sut->start_processing( $mock_request );
+
+		$this->assertSame( $mock_error_state, $result );
 	}
 
 	public function test_populate_context_from_request() {
