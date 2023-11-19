@@ -64,7 +64,6 @@ class AbstractPaymentErrorStateTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_error_state_will_not_log_exception_and_mark_order_as_failed_on_default_values() {
-
 		$error_msg = 'foo';
 		$exception = new Exception( $error_msg );
 		$this->mock_error_state( 1, $exception );
@@ -102,6 +101,22 @@ class AbstractPaymentErrorStateTest extends WCPAY_UnitTestCase {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'The payment process could not be completed.' );
 		$this->mock_sut->handle_error_state();
+	}
+
+	public function test_should_methods_will_return_default_values() {
+		$state = new class($this->mock_state_factory, $this->mock_logger, $this->mock_order_service) extends AbstractPaymentErrorState {
+			// phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found
+			public function should_log_error(): bool {
+				return parent::should_log_error();
+			}
+			// phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found
+			public function should_mark_order_as_failed() : bool {
+				return parent::should_mark_order_as_failed();
+			}
+		};
+
+		$this->assertFalse( $state->should_log_error() );
+		$this->assertFalse( $state->should_mark_order_as_failed() );
 	}
 
 	/**
