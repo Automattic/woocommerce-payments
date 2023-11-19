@@ -10,10 +10,14 @@ namespace WCPay\Tests\Internal\Payment\State;
 use WC_Helper_Intention;
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
+use WCPay\Internal\Payment\PaymentRequestException;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
+use WCPay\Internal\Payment\State\PaymentRequestErrorState;
 use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
+use WCPay\Internal\Payment\State\WooPaymentsApiServerErrorState;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\MinimumAmountService;
 use WCPAY_UnitTestCase;
@@ -233,11 +237,12 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $mock_error_state, $result );
 	}
 
-	public function test_start_processing_will_transition_to_error_state_when_api_exception_occurs() {
+	public function test_start_processing_will_transition_to_error_state_when_server_request_exception_occurs() {
 
 		$order_id         = 123;
 		$user_id          = 456;
 		$customer_id      = 'cus_123';
+		$exception        = new Invalid_Request_Parameter_Exception( 'Invalid param', 'invalid_param' );
 		$mock_request     = $this->createMock( PaymentRequest::class );
 		$mock_error_state = $this->createMock( SystemErrorState::class );
 		$mock_order       = $this->createMock( WC_Order::class );
@@ -248,7 +253,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'create_intent' )
 			->with( $this->mock_context )
-			->willThrowException( new Invalid_Request_Parameter_Exception( 'Invalid param', 'invalid_param' ) );
+			->willThrowException( $exception );
 
 		// Let's mock these services in order to prevent real execution of them.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
@@ -258,10 +263,74 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		$this->mock_context->expects( $this->once() )->method( 'get_amount' )->willReturn( 100 );
 		$this->mock_context->expects( $this->once() )->method( 'get_currency' )->willReturn( 'usd' );
 
+		$this->mock_context
+			->expects( $this->once() )
+			->method( 'set_exception' )
+			->with( $exception );
+
 		$this->mock_state_factory->expects( $this->once() )
 			->method( 'create_state' )
 			->with( SystemErrorState::class, $this->mock_context )
 			->willReturn( $mock_error_state );
+		$result = $this->mocked_sut->start_processing( $mock_request );
+		$this->assertSame( $mock_error_state, $result );
+	}
+
+	public function test_start_processing_will_transition_to_error_state_when_server_api_exception_occurs() {
+
+		$order_id         = 123;
+		$user_id          = 456;
+		$customer_id      = 'cus_123';
+		$exception        = new API_Exception( 'Error message', 'Error_code', 0 );
+		$mock_request     = $this->createMock( PaymentRequest::class );
+		$mock_error_state = $this->createMock( SystemErrorState::class );
+		$mock_order       = $this->createMock( WC_Order::class );
+
+		$this->mock_customer_data( $user_id, $order_id, $mock_order, $customer_id );
+
+		$this->mock_payment_request_service
+			->expects( $this->once() )
+			->method( 'create_intent' )
+			->with( $this->mock_context )
+			->willThrowException( $exception );
+
+		// Let's mock these services in order to prevent real execution of them.
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Make sure that the minimum amount verification is properly called.
+		$this->mock_context->expects( $this->once() )->method( 'get_amount' )->willReturn( 100 );
+		$this->mock_context->expects( $this->once() )->method( 'get_currency' )->willReturn( 'usd' );
+
+		$this->mock_context
+			->expects( $this->once() )
+			->method( 'set_exception' )
+			->with( $exception );
+
+		$this->mock_state_factory->expects( $this->once() )
+			->method( 'create_state' )
+			->with( WooPaymentsApiServerErrorState::class, $this->mock_context )
+			->willReturn( $mock_error_state );
+		$result = $this->mocked_sut->start_processing( $mock_request );
+		$this->assertSame( $mock_error_state, $result );
+	}
+
+	public function test_processing_will_transition_to_payment_request_error_state() {
+		$exception        = new PaymentRequestException( 'error' );
+		$mock_error_state = $this->createMock( PaymentRequestErrorState::class );
+		$mock_request     = $this->createMock( PaymentRequest::class );
+		$this->mocked_sut
+			->expects( $this->once() )
+			->method( 'populate_context_from_request' )
+			->willThrowException( $exception );
+		$this->mock_context->expects( $this->once() )
+			->method( 'set_exception' )
+			->with( $exception );
+		$this->mock_state_factory->expects( $this->once() )
+			->method( 'create_state' )
+			->with( PaymentRequestErrorState::class, $this->mock_context )
+			->willReturn( $mock_error_state );
+
 		$result = $this->mocked_sut->start_processing( $mock_request );
 		$this->assertSame( $mock_error_state, $result );
 	}
