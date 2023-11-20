@@ -129,6 +129,12 @@ declare module '@woocommerce/navigation' {
 		type_is_not?: unknown;
 		source_device_is?: unknown;
 		source_device_is_not?: unknown;
+		channel_is?: unknown;
+		channel_is_not?: unknown;
+		customer_country_is?: unknown;
+		customer_country_is_not?: unknown;
+		risk_level_is?: unknown;
+		risk_level_is_not?: unknown;
 		customer_currency_is?: unknown;
 		customer_currency_is_not?: unknown;
 		store_currency_is?: string;

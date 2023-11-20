@@ -39,6 +39,7 @@ declare const global: {
 			country: string;
 		};
 	};
+	wcSettings: { countries: Record< string, string > };
 };
 
 describe( 'Deposit overview', () => {
@@ -58,6 +59,13 @@ describe( 'Deposit overview', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
+			},
+		};
+		global.wcSettings = {
+			countries: {
+				US: 'United States of America',
+				CA: 'Canada',
+				UK: 'United Kingdom',
 			},
 		};
 	} );
