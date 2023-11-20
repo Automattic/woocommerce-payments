@@ -1149,11 +1149,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			define( 'WOOCOMMERCE_CART', true );
 		}
 
-		$subscription_types = [
-			'subscription',
-			'subscription_variation',
-		];
-
 		WC()->shipping->reset_shipping();
 
 		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
@@ -1187,7 +1182,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			WC()->cart->add_to_cart( $product->get_id(), $qty, $variation_id, $attributes );
 		}
 
-		if ( 'simple' === $product_type || in_array( $product_type, $subscription_types, true ) ) {
+		if ( in_array( $product_type, [ 'simple', 'variation', 'subscription', 'subscription_variation' ], true ) ) {
 			WC()->cart->add_to_cart( $product->get_id(), $qty );
 		}
 
