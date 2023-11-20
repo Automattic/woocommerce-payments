@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Introduce filters for channel, customer country, and risk level on the transactions list page.
