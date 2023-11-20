@@ -2922,19 +2922,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( null !== $order ) {
 			$intent_id = $this->order_service->get_intent_id_for_order( $order );
 			if ( null !== $intent_id ) {
-				$request = Get_Intention::create( $intent_id );
-				$request->set_hook_args( $order );
-				$intent = $request->send();
+				try {
+					$request = Get_Intention::create( $intent_id );
+					$request->set_hook_args( $order );
+					$charge = $request->send()->get_charge();
 
-				$charge = $intent->get_charge();
-				/**
-				 * Successful but not captured Charge is an authorization
-				 * that needs to be cancelled.
-				 */
-				if ( null !== $charge
-					&& false === $charge->is_captured()
-					&& Intent_Status::SUCCEEDED === $charge->get_status() ) {
-					$this->cancel_authorization( $order );
+					/**
+					 * Successful but not captured Charge is an authorization
+					 * that needs to be cancelled.
+					 */
+					if ( null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status() ) {
+							$request = Cancel_Intention::create( $intent_id );
+							$request->set_hook_args( $order );
+							$request->send();
+					}
+				} catch ( \Exception $e ) {
+					$order->add_order_note(
+						WC_Payments_Utils::esc_interpolated_html(
+							__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+							[ 'strong' => '<strong>' ]
+						)
+					);
 				}
 			}
 		}

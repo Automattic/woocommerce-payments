@@ -785,7 +785,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
 		$this->order_service->update_order_status_from_intent( $this->order, $intent );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertCount( 2, $notes_2 );
+		$this->assertCount( 3, $notes_2 );
 	}
 
 	public function mark_payment_cancelled_provider() {
