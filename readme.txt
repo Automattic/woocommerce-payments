@@ -94,6 +94,31 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 6.9.0-test-1 - unreleased =
+* Add - Adds new option to track dismissal of PO eligibility modal.
+* Add - Handle mimium amount in InitialState (project RPP).
+* Add - Store the working mode of the gateway (RPP)
+* Fix - Add AutomateWoo - Refer A Friend Add-On support on WooPay.
+* Fix - Add invalid prodcut id error check
+* Fix - Do not show the WooPay button on the product page when WC Bookings require confirmation
+* Fix - Enable deferred intent creation when initialization process encounters cache unavailability
+* Fix - Fix saved card payments not working on block checkout while card testing prevention is active
+* Fix - Remove unsupported EUR currency from Afterpay payment method.
+* Fix - Show Payments menu sub-items only for merchants that completed KYC
+* Fix - Support 'variation' product type when re-adding items to a cart.
+* Update - chore: change PRB default height for new installations
+* Update - Correct some links that now lead to better documentation
+* Update - Exclude estimated deposits from the deposits list screen
+* Update - Remove estimated status option from the advanced filters on the deposits list screen
+* Update - Update Payments Overview deposits UI to simplify how we communicate upcoming deposits.
+* Update - Update to the new onboarding builder flow to not prefill country/address to US.
+* Dev - Add client user-agent value to Tracks event props
+* Dev - Add E2E tests for Affirm and Afterpay checkouts
+* Dev - Add E2E tests for checking out with Giropay
+* Dev - Added customer details management within the re-engineered payment process.
+* Dev - Adds WCPay options to Woo Core option allow list to avoid 403 responses from Options API when getting and updating options in non-prod env.
+* Dev - Introduce filter `wcpay_payment_request_is_cart_supported`.  Allow plugins to conditionally disable payment request buttons on cart and checkout pages containing products that do not support them.
+
 = 6.8.0 - 2023-11-16 =
 * Add - Added mechanism to track and log changes to the payment context (reengineering payment process)
 * Add - Add rejected payment method capability status
