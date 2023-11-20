@@ -215,6 +215,7 @@ describe( 'Deposits Overview information', () => {
 				deposits: {
 					completed_waiting_period: true,
 					minimum_deposit_amounts: {
+						eur: 500,
 						usd: 500,
 					},
 				},
