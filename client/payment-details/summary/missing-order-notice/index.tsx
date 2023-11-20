@@ -9,6 +9,7 @@ import { Button, RadioControl } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import interpolateComponents from '@automattic/interpolate-components';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies.
@@ -18,13 +19,16 @@ import './style.scss';
 import CardNotice from 'wcpay/components/card-notice';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import Loadable from 'wcpay/components/loadable';
+import { Charge } from 'wcpay/types/charges';
 
 interface MissingOrderNoticeProps {
+	charge: Charge;
 	isLoading: boolean;
 	formattedAmount: string;
 }
 
 const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
+	charge,
 	isLoading,
 	formattedAmount,
 } ) => {
@@ -40,8 +44,15 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 		setIsModalOpen( false );
 	};
 
-	const handleModalConfirmation = () => {
-		// TODO: Handle the refund.
+	const handleModalConfirmation = async () => {
+		const response = await apiFetch( {
+			path: `/wc/v3/payments/refund/`,
+			method: 'post',
+			data: {
+				charge_id: charge.id,
+				amount: charge.amount,
+			},
+		} );
 	};
 
 	return (

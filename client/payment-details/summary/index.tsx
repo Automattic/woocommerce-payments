@@ -11,6 +11,8 @@ import {
 	CardFooter,
 	CardDivider,
 	Flex,
+	DropdownMenu,
+	MenuItem,
 } from '@wordpress/components';
 import moment from 'moment';
 import React, { useContext } from 'react';
@@ -55,6 +57,7 @@ import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-noti
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import ErrorBoundary from 'components/error-boundary';
+import { moreVertical } from '@wordpress/icons';
 
 declare const window: any;
 
@@ -224,6 +227,18 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.currency,
 		balance.currency
 	);
+
+	const dropDownButtons = [
+		{
+			icon: moreVertical,
+			title: __( 'Refund in full', 'woocommerce-payments' ),
+			onClick: () => alert( 'Refund in full' ),
+		},
+		// {
+		// 	title: __( 'Partial refund', 'woocommerce-payments' ),
+		// 	onClick: () => alert( 'Partial refund' ),
+		// },
+	];
 
 	return (
 		<Card>
@@ -495,6 +510,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				! _.isEmpty( charge ) &&
 				! charge.order && (
 					<MissingOrderNotice
+						charge={ charge }
 						isLoading={ isLoading }
 						formattedAmount={ formattedAmount }
 					/>
