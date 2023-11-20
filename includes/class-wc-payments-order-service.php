@@ -347,7 +347,16 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
-		$this->update_order_status( $order, Order_Status::COMPLETED, $intent_id );
+		/**
+		 * Filters the order status value after a successful terminal payment.
+		 *
+		 * This filter can be used to override the order status from `completed` to `processing` after a successful terminal charge.
+		 *
+		 * @since 6.7.0
+		 */
+		$order_status = apply_filters( 'wcpay_terminal_payment_completed_order_status', Order_Status::COMPLETED );
+
+		$this->update_order_status( $order, $order_status, $intent_id );
 		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
 		$this->complete_order_processing( $order, $intent_status );
 	}

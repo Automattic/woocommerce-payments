@@ -22,6 +22,7 @@ import {
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
 } from '../../constants';
 
+// It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};
 let fingerprint = null;
 
@@ -138,7 +139,14 @@ function createStripePaymentMethod(
 
 	return api
 		.getStripeForUPE( paymentMethodType )
-		.createPaymentMethod( { elements, params: params } );
+		.createPaymentMethod( { elements, params: params } )
+		.then( ( paymentMethod ) => {
+			if ( paymentMethod.error ) {
+				throw paymentMethod.error;
+			}
+
+			return paymentMethod;
+		} );
 }
 
 /**

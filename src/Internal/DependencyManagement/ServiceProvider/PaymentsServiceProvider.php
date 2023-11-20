@@ -12,8 +12,8 @@ use WC_Payments_Customer_Service;
 use WCPay\Container;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
-use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Logger;
+use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\CompletedState;
@@ -25,6 +25,8 @@ use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\State\SystemErrorState;
 use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Internal\Service\MinimumAmountService;
+use WCPay\Internal\Service\PaymentContextLoggerService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Service\ExampleService;
@@ -46,6 +48,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	protected $provides = [
 		PaymentProcessingService::class,
 		Router::class,
+
 		StateFactory::class,
 		InitialState::class,
 		DuplicateOrderDetectedState::class,
@@ -54,10 +57,12 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		CompletedState::class,
 		SystemErrorState::class,
 		PaymentErrorState::class,
+
 		ExampleService::class,
 		ExampleServiceWithDependencies::class,
 		PaymentRequestService::class,
 		DuplicatePaymentPreventionService::class,
+		MinimumAmountService::class,
 	];
 
 	/**
@@ -71,7 +76,9 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 
 		$container->addShared( PaymentProcessingService::class )
 			->addArgument( StateFactory::class )
-			->addArgument( LegacyProxy::class );
+			->addArgument( LegacyProxy::class )
+			->addArgument( PaymentContextLoggerService::class )
+			->addArgument( Mode::class );
 
 		$container->addShared( PaymentRequestService::class );
 
@@ -82,13 +89,17 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( HooksProxy::class )
 			->addArgument( LegacyProxy::class );
 
+		$container->addShared( MinimumAmountService::class )
+			->addArgument( LegacyProxy::class );
+
 		$container->add( InitialState::class )
 			->addArgument( StateFactory::class )
 			->addArgument( OrderService::class )
 			->addArgument( WC_Payments_Customer_Service::class )
 			->addArgument( Level3Service::class )
 			->addArgument( PaymentRequestService::class )
-			->addArgument( DuplicatePaymentPreventionService::class );
+			->addArgument( DuplicatePaymentPreventionService::class )
+			->addArgument( MinimumAmountService::class );
 
 		$container->add( ProcessedState::class )
 			->addArgument( StateFactory::class )
@@ -112,6 +123,9 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 
 		$container->addShared( Router::class )
 			->addArgument( Database_Cache::class );
+
+		$container->addShared( PaymentContextLoggerService::class )
+			->addArgument( Logger::class );
 
 		$container->addShared( ExampleService::class );
 		$container->addShared( ExampleServiceWithDependencies::class )

@@ -7,10 +7,13 @@
 
 namespace WCPay\Internal\Service;
 
+use Exception;
 use WC_Payments_API_Abstract_Intention;
 use WC_Payments_API_Setup_Intention;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
+use WCPay\Core\Mode;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\StateFactory;
@@ -18,6 +21,7 @@ use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentRequestException;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Internal\Service\PaymentContextLoggerService;
 
 /**
  * Payment Processing Service.
@@ -38,44 +42,67 @@ class PaymentProcessingService {
 	private $legacy_proxy;
 
 	/**
+	 * PaymentContextLoggerService.
+	 *
+	 * @var PaymentContextLoggerService
+	 */
+	private $context_logger_service;
+
+	/**
+	 * Mode
+	 *
+	 * @var Mode
+	 */
+	private $mode;
+
+	/**
 	 * Service constructor.
 	 *
-	 * @param StateFactory $state_factory Factory for payment states.
-	 * @param LegacyProxy  $legacy_proxy Legacy proxy.
+	 * @param StateFactory                $state_factory          Factory for payment states.
+	 * @param LegacyProxy                 $legacy_proxy           Legacy proxy.
+	 * @param PaymentContextLoggerService $context_logger_service Context Logging Service.
+	 * @param Mode                        $mode Mode.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
-		LegacyProxy $legacy_proxy
+		LegacyProxy $legacy_proxy,
+		PaymentContextLoggerService $context_logger_service,
+		Mode $mode
 	) {
-		$this->state_factory = $state_factory;
-		$this->legacy_proxy  = $legacy_proxy;
+		$this->state_factory          = $state_factory;
+		$this->legacy_proxy           = $legacy_proxy;
+		$this->context_logger_service = $context_logger_service;
+		$this->mode                   = $mode;
 	}
 
 	/**
 	 * Process payment.
 	 *
-	 * @param int  $order_id Order ID provided by WooCommerce core.
-	 * @param bool $manual_capture Whether to only create an authorization instead of a charge (optional).
+	 * @param int  $order_id          Order ID provided by WooCommerce core.
+	 * @param bool $automatic_capture Whether to only create an authorization instead of a charge (optional).
 	 *
 	 * @throws StateTransitionException  In case a state cannot be initialized.
 	 * @throws PaymentRequestException   When the request is malformed. This should be converted to a failure state.
 	 * @throws Order_Not_Found_Exception When order is not found.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
+	 * @throws API_Exception             When server requests fails.
 	 */
-	public function process_payment( int $order_id, bool $manual_capture = false ) {
+	public function process_payment( int $order_id, bool $automatic_capture = false ) {
 		// Start with a basis context.
-		$context = $this->create_payment_context( $order_id, $manual_capture );
+		$context = $this->create_payment_context( $order_id, $automatic_capture );
 
 		$request       = new PaymentRequest( $this->legacy_proxy );
 		$initial_state = $this->state_factory->create_state( InitialState::class, $context );
+		$final_state   = $initial_state->start_processing( $request );
 
-		return $initial_state->start_processing( $request );
+		$this->context_logger_service->log_changes( $context );
+		return $final_state;
 	}
 
 	/**
 	 * Get redirect URL when authentication is required (3DS).
 	 *
-	 * @param WC_Payments_API_Abstract_Intention $intent Intent object.
+	 * @param WC_Payments_API_Abstract_Intention $intent   Intent object.
 	 * @param int                                $order_id Order id.
 	 *
 	 * @return string
@@ -112,14 +139,19 @@ class PaymentProcessingService {
 	/**
 	 * Instantiates a new empty payment context.
 	 *
-	 * @param int  $order_id ID of the order that the context belongs to.
-	 * @param bool $manual_capture Whether manual capture is enabled.
+	 * @param int  $order_id          ID of the order that the context belongs to.
+	 * @param bool $automatic_capture Whether automatic capture is enabled.
 	 *
 	 * @return PaymentContext
 	 */
-	protected function create_payment_context( int $order_id, bool $manual_capture = false ): PaymentContext {
+	protected function create_payment_context( int $order_id, bool $automatic_capture = false ): PaymentContext {
 		$context = new PaymentContext( $order_id );
-		$context->toggle_manual_capture( $manual_capture );
+		try {
+			$context->set_mode( $this->mode->is_test() ? 'test' : 'prod' );
+		} catch ( Exception $e ) {
+			$context->set_mode( 'unknown' );
+		}
+		$context->toggle_automatic_capture( $automatic_capture );
 
 		return $context;
 	}

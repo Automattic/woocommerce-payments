@@ -162,15 +162,12 @@ class OrderService {
 
 		$currency = strtolower( $order->get_currency() );
 		$amount   = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-
-		$user = $order->get_user();
-		if ( false === $user ) { // Default to the current user.
-			$user = $this->legacy_proxy->call_function( 'wp_get_current_user' );
-		}
+		$user     = $order->get_user();
 
 		$context->set_currency( $currency );
 		$context->set_amount( $amount );
-		$context->set_user_id( $user->ID );
+		// In case we don't have user, we are setting user id to be 0 which could cause more harm since we don't have a real user.
+		$context->set_user_id( $user->ID ?? null );
 	}
 
 	/**
@@ -207,10 +204,37 @@ class OrderService {
 
 		$this->legacy_service->attach_transaction_fee_to_order( $order, $charge );
 		$this->legacy_service->update_order_status_from_intent( $order, $intent );
+		$this->set_mode( $order_id, $context->get_mode() );
 
 		if ( ! is_null( $charge ) ) {
 			$this->attach_exchange_info_to_order( $order_id, $charge );
 		}
+	}
+
+	/**
+	 * Sets the '_wcpay_mode' meta data on an order.
+	 *
+	 * @param string $order_id The order id.
+	 * @param string $mode  Mode from the context.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_mode( string $order_id, string $mode ) : void {
+		$order = $this->get_order( $order_id );
+		$order->update_meta_data( '_wcpay_mode', $mode );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Gets the '_wcpay_mode' meta data on an order.
+	 *
+	 * @param string $order_id The order id.
+	 *
+	 * @return string The mode.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_mode( string $order_id ) : string {
+		$order = $this->get_order( $order_id );
+		return $order->get_meta( '_wcpay_mode', true );
 	}
 
 	/**
@@ -421,4 +445,5 @@ class OrderService {
 		}
 		return $order;
 	}
+
 }
