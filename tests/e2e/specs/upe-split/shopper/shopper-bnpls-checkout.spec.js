@@ -10,22 +10,12 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 import { merchantWCP, shopperWCP } from '../../../utils/flows';
 import { setupProductCheckout } from '../../../utils/payments';
 
-const bnplProviders = [
-	[ 'Affirm', 'li.payment_method_woocommerce_payments_affirm', 'button' ],
-	[
-		'Afterpay/Clearpay',
-		'li.payment_method_woocommerce_payments_afterpay_clearpay',
-		'a',
-	],
-];
+const bnplProviders = [ [ 'Affirm' ], [ 'Afterpay' ] ];
 
 const UPE_METHOD_CHECKBOXES = [
 	'#inspector-checkbox-control-3', // affirm
 	'#inspector-checkbox-control-4', // afterpay
 ];
-
-const STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR =
-	'.common-Button.common-Button--default[name="success"]';
 
 describe( 'BNPL checkout', () => {
 	beforeAll( async () => {
@@ -45,34 +35,39 @@ describe( 'BNPL checkout', () => {
 		await merchant.logout();
 	} );
 
-	describe.each( bnplProviders )(
-		'Checkout with %s',
-		( providerName, paymentMethodSelector, stripeButtonHTMLElement ) => {
-			beforeEach( async () => {
-				await setupProductCheckout(
-					config.get( 'addresses.customer.billing' ),
-					[ [ 'Beanie', 3 ] ]
-				);
-			} );
+	describe.each( bnplProviders )( 'Checkout with %s', ( providerName ) => {
+		beforeEach( async () => {
+			await setupProductCheckout(
+				config.get( 'addresses.customer.billing' ),
+				[ [ 'Beanie', 3 ] ]
+			);
+		} );
 
-			it( `should successfully place order with ${ providerName }`, async () => {
-				await uiUnblocked();
-				// Select BNPL provider as paymnent method.
-				await page.waitForSelector( paymentMethodSelector );
-				await expect( page ).toClick( paymentMethodSelector );
-				await shopper.placeOrder();
-				// Authorize payment with Stripe.
-				await page.waitForSelector(
-					STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR
-				);
-				await expect( page ).toClick( stripeButtonHTMLElement, {
-					text: 'Authorize Test Payment',
-				} );
-				await page.waitForNavigation( {
-					waitUntil: 'networkidle0',
-				} );
-				await expect( page ).toMatch( 'Order received' );
+		it( `should successfully place order with ${ providerName }`, async () => {
+			await uiUnblocked();
+			// Select BNPL provider as payment method.
+			const xPathPaymentMethodSelector = `//*[@id='payment']/ul/li/label[contains(text(), '${ providerName }')]`;
+			await page.waitForXPath( xPathPaymentMethodSelector );
+			const [ paymentMethodLabel ] = await page.$x(
+				xPathPaymentMethodSelector
+			);
+			await paymentMethodLabel.click();
+			await shopper.placeOrder();
+
+			// Authorize payment with Stripe.
+			// This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
+			const xPathAuthorizePaymentButton = `//*[self::button or self::a][contains(text(), 'Authorize Test Payment')]`;
+			await page.waitForXPath( xPathAuthorizePaymentButton );
+			const [ stripeButton ] = await page.$x(
+				xPathAuthorizePaymentButton
+			);
+			await stripeButton.click();
+
+			// Wait for the order confirmation page to load.
+			await page.waitForNavigation( {
+				waitUntil: 'networkidle0',
 			} );
-		}
-	);
+			await expect( page ).toMatch( 'Order received' );
+		} );
+	} );
 } );
