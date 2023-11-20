@@ -22,6 +22,7 @@ const bnplProviders = [
 const UPE_METHOD_CHECKBOXES = [
 	'#inspector-checkbox-control-3', // affirm
 	'#inspector-checkbox-control-4', // afterpay
+	'#inspector-checkbox-control-5', // klarna
 ];
 
 const STRIPE_AUTHORIZE_PAYMENT_BUTTON_SELECTOR =
@@ -34,7 +35,7 @@ describe( 'BNPL checkout', () => {
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
-		await shopperWCP.changeAccountCurrencyTo( 'USD' );
+		// await shopperWCP.changeAccountCurrencyTo( 'USD' );
 	} );
 
 	afterAll( async () => {
@@ -75,4 +76,61 @@ describe( 'BNPL checkout', () => {
 			} );
 		}
 	);
+
+	describe( 'Klarna', () => {
+		it( 'should checkout', async () => {
+			await setupProductCheckout(
+				config.get( 'addresses.customer.billing' ),
+				[ [ 'Beanie', 3 ] ]
+			);
+			await uiUnblocked();
+			// Select BNPL provider as payment method and place order.
+			const klarnaPaymentMethod = await page.waitForSelector(
+				'li.payment_method_woocommerce_payments_klarna'
+			);
+			await klarnaPaymentMethod.click();
+			await shopper.placeOrder();
+
+			// Authorize payment with Klarna.
+			// Everything happens in an iframe. We need to switch to it.
+			const frameHandle = await page.waitForSelector(
+				'#klarna-apf-iframe'
+			);
+			const klarnaFrame = await frameHandle.contentFrame();
+
+			const continueButton = await klarnaFrame.waitForSelector(
+				'button[data-testid="kaf-button"]'
+			);
+			await continueButton.click();
+
+			const otpInput = await klarnaFrame.waitForSelector( '#otp_field' );
+			await otpInput.type( '123456', { delay: 20 } );
+
+			// const pickPlanButton = await klarnaFrame.waitForSelector(
+			// 	'button[data-testid="pick-plan"]'
+			// );
+
+			// if ( pickPlanButton ) {
+			// 	await pickPlanButton.click();
+			// }
+
+			// const selectPaymentCategoryButton = await klarnaFrame.waitForSelector(
+			// 	'button[data-testid="select-payment-category"]'
+			// );
+
+			// if ( selectPaymentCategoryButton ) {
+			// 	await selectPaymentCategoryButton.click();
+			// }
+
+			const buyButton = await klarnaFrame.waitForSelector(
+				'#buy_button'
+			);
+			await buyButton.click();
+
+			await page.waitForNavigation( {
+				waitUntil: 'networkidle0',
+			} );
+			await expect( page ).toMatch( 'Order received' );
+		} );
+	} );
 } );
