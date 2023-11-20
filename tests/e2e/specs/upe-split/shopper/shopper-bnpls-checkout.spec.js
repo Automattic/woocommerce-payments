@@ -13,8 +13,8 @@ import { setupProductCheckout } from '../../../utils/payments';
 const bnplProviders = [ [ 'Affirm' ], [ 'Afterpay' ] ];
 
 const UPE_METHOD_CHECKBOXES = [
-	'#inspector-checkbox-control-3', // affirm
-	'#inspector-checkbox-control-4', // afterpay
+	"//label[contains(text(), 'Affirm')]/preceding-sibling::span/input[@type='checkbox']", // affirm
+	"//label[contains(text(), 'Afterpay')]/preceding-sibling::span/input[@type='checkbox']", // afterpay
 ];
 
 describe( 'BNPL checkout', () => {
