@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Revert 7596-transactions-filter
+Comment: Revert 7596-transactions-filter
