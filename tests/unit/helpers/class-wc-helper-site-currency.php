@@ -8,7 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 /**
- * Overriding global function within namespace for testing
+ * If mock value is set, return mock value. Otherwise, return the global function value.
  */
 function get_woocommerce_currency() {
 	return WC_Helper_Site_Currency::$mock_site_currency ? WC_Helper_Site_Currency::$mock_site_currency : \get_woocommerce_currency();

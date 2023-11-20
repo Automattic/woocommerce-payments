@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Enable deferred intent creation when initialization process encounters cache unavailability
