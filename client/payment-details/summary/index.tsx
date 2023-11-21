@@ -475,6 +475,25 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								{ charge.payment_intent
 									? charge.payment_intent
 									: charge.id }
+								<DropdownMenu
+									icon={ moreVertical }
+									label="Some label"
+									popoverProps={ {
+										// __unstableForcePosition: false,
+										position: 'bottom left',
+									} }
+								>
+									{ ( { onClose } ) => (
+										<>
+											<MenuItem onClick={ onClose }>
+												Foo
+											</MenuItem>
+											<MenuItem onClick={ onClose }>
+												Bar
+											</MenuItem>
+										</>
+									) }
+								</DropdownMenu>
 							</Loadable>
 						</div>
 					</div>
@@ -506,15 +525,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					) }
 				</ErrorBoundary>
 			) }
-			{ isRefundControlsEnabled &&
-				! _.isEmpty( charge ) &&
-				! charge.order && (
-					<MissingOrderNotice
-						charge={ charge }
-						isLoading={ isLoading }
-						formattedAmount={ formattedAmount }
-					/>
-				) }
+			{ true && (
+				<MissingOrderNotice
+					charge={ charge }
+					isLoading={ isLoading }
+					formattedAmount={ formattedAmount }
+				/>
+			) }
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
