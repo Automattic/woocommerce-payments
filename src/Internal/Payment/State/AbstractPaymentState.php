@@ -121,8 +121,10 @@ abstract class AbstractPaymentState {
 	 * @param string    $state_class State class.
 	 * @param Exception $exception   Occurred exception that triggered error state change.
 	 *
-	 * @return string|AbstractPaymentState
+	 * @return AbstractPaymentState
+	 *
 	 * @throws StateTransitionException
+	 * @throws ContainerException
 	 */
 	protected function create_error_state( string $state_class, $exception ) {
 		$this->context->set_exception( $exception );

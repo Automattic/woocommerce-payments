@@ -17,6 +17,7 @@ use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentRequest;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 
 /**
  * Payment Processing Service.
@@ -77,6 +78,7 @@ class PaymentProcessingService {
 	 * @param bool $automatic_capture Whether to only create an authorization instead of a charge (optional).
 	 *
 	 * @throws StateTransitionException
+	 * @throws ContainerException
 	 */
 	public function process_payment( int $order_id, bool $automatic_capture = false ) {
 		// Start with a basis context.

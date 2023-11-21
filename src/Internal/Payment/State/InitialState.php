@@ -106,8 +106,9 @@ class InitialState extends AbstractPaymentState {
 	 *
 	 * @param PaymentRequest $request The incoming payment processing request.
 	 *
-	 * @return AbstractPaymentState|AbstractPaymentErrorState The next state.
-	 * @throws StateTransitionException                       In case the completed state could not be initialized.
+	 * @return AbstractPaymentState     The next state.
+	 * @throws StateTransitionException In case the completed state could not be initialized.
+	 * @throws ContainerException       In case DI has exception.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
@@ -169,7 +170,14 @@ class InitialState extends AbstractPaymentState {
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$this->minimum_amount_service->store_amount_from_exception( $e );
 			return $this->create_error_state( SystemErrorState::class, $e );
-		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception | Order_Not_Found_Exception | StateTransitionException $e ) {
+		} catch (
+			Invalid_Request_Parameter_Exception |
+			Extend_Request_Exception |
+			Immutable_Parameter_Exception |
+			Order_Not_Found_Exception |
+			StateTransitionException |
+			ContainerException $e
+		) {
 			return $this->create_error_state( SystemErrorState::class, $e );
 		} catch ( API_Exception $e ) {
 			return $this->create_error_state( WooPaymentsApiServerErrorState::class, $e );
