@@ -460,6 +460,16 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								{ charge.payment_intent
 									? charge.payment_intent
 									: charge.id }
+								<br />
+								{ charge.payment_intent && (
+									<>
+										{ `${ __(
+											'Charge ID',
+											'woocommerce-payments'
+										) }: ` }
+										{ charge.id }
+									</>
+								) }
 							</Loadable>
 						</div>
 					</div>

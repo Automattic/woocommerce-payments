@@ -84,6 +84,7 @@
 		display: flex;
 		align-items: start;
 		justify-content: initial;
+		text-align: right;
 		@include breakpoint( '>660px' ) {
 			justify-content: flex-end;
 		}
