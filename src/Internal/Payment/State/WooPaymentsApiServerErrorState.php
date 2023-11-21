@@ -1,6 +1,6 @@
 <?php
 /**
- * Class PaymentErrorState
+ * Class WooPaymentsApiServerErrorState
  *
  * @package WooCommerce\Payments
  */
@@ -8,12 +8,9 @@
 namespace WCPay\Internal\Payment\State;
 
 /**
- * Erroneous state, caused by invalid/non-working customer input.
- *
- * Though this is an erroneous state, it is not unexpected, and
- * represents an error on the buyer's side, which cannot be fixed through code.
+ * Erroneous state, caused when WooPayments API return error response.
  */
-class PaymentErrorState extends AbstractPaymentErrorState {
+class WooPaymentsApiServerErrorState extends AbstractPaymentErrorState {
 
 	/**
 	 * Determines whether an error should be logged.

@@ -15,6 +15,7 @@ use WC_Payments_API_Payment_Intention;
 use WC_Payments_API_Setup_Intention;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Payment\PaymentContext;
@@ -649,6 +650,48 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->willReturn( 'test' );
 		$result = $this->sut->get_mode( $this->order_id, true );
 		$this->assertSame( 'test', $result );
+	}
+
+	public function test_mark_order_as_failed() {
+		$this->sut  = new OrderService(
+			$this->mock_legacy_service,
+			$this->mock_legacy_proxy,
+			$this->mock_account,
+			$this->mock_hooks_proxy
+		);
+		$reason     = 'foo';
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order->expects( $this->once() )
+			->method( 'update_status' )
+			->with( Order_Status::FAILED, "Order failed. Reason: $reason" );
+
+		$this->mock_legacy_proxy
+			->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'wc_get_order', $this->order_id )
+			->willReturn( $mock_order );
+
+		$this->sut->mark_order_as_failed( $this->order_id, $reason );
+	}
+
+	public function test_mark_order_as_failed_will_handle_exception() {
+		$this->sut  = new OrderService(
+			$this->mock_legacy_service,
+			$this->mock_legacy_proxy,
+			$this->mock_account,
+			$this->mock_hooks_proxy
+		);
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_legacy_proxy
+			->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'wc_get_order', $this->order_id )
+			->willReturn( false );
+
+		$this->sut->mark_order_as_failed( $this->order_id, 'foo' );
 	}
 
 	/**

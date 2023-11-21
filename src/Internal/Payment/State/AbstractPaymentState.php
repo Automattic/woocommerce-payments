@@ -7,12 +7,11 @@
 
 namespace WCPay\Internal\Payment\State;
 
+use Exception;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentRequest;
-use WCPay\Internal\Payment\PaymentRequestException;
-use WCPay\Exceptions\Order_Not_Found_Exception;
 
 /**
  * Base class for payment states.
@@ -75,8 +74,6 @@ abstract class AbstractPaymentState {
 	 *
 	 * @throws StateTransitionException  In case the completed state could not be initialized.
 	 * @throws ContainerException        When the dependency container cannot instantiate the state.
-	 * @throws Order_Not_Found_Exception Order could not be found.
-	 * @throws PaymentRequestException   When data is not available or invalid.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		$this->throw_unavailable_method_exception( __METHOD__ );
@@ -88,7 +85,6 @@ abstract class AbstractPaymentState {
 	 * @psalm-suppress InvalidReturnType
 	 *
 	 * @return AbstractPaymentState
-	 * @throws Order_Not_Found_Exception
 	 * @throws StateTransitionException
 	 */
 	public function complete_processing() {
@@ -117,6 +113,23 @@ abstract class AbstractPaymentState {
 		// This is where logging will be added.
 
 		return $state;
+	}
+
+	/**
+	 * Create error state function. Almost same as original create state, but it also stores occurred exception.
+	 *
+	 * @param string    $state_class State class.
+	 * @param Exception $exception   Occurred exception that triggered error state change.
+	 *
+	 * @return AbstractPaymentState
+	 *
+	 * @throws StateTransitionException
+	 * @throws ContainerException
+	 */
+	protected function create_error_state( string $state_class, $exception ) {
+		$this->context->set_exception( $exception );
+		return $this->create_state( $state_class );
+
 	}
 
 	/**

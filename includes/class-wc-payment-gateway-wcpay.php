@@ -30,6 +30,7 @@ use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Internal\Payment\State\AbstractPaymentErrorState;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
@@ -884,6 +885,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'result'   => 'success',
 				'redirect' => $service->get_authentication_redirect_url( $context->get_intent(), $context->get_order_id() ),
 			];
+		}
+
+		if ( $state instanceof AbstractPaymentErrorState ) {
+			return $state->handle_error_state();
 		}
 
 		throw new Exception( __( 'The payment process could not be completed.', 'woocommerce-payments' ) );

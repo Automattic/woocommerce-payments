@@ -7,6 +7,7 @@
 
 namespace WCPay\Tests\Internal\Payment;
 
+use Exception;
 use WC_Helper_Intention;
 use WCPAY_UnitTestCase;
 use WCPay\Internal\Payment\PaymentContext;
@@ -145,6 +146,13 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 
 		$this->sut->set_mode( $mode );
 		$this->assertSame( $mode, $this->sut->get_mode() );
+	}
+
+	public function test_exception() {
+		$exception = new Exception( 'foo' );
+
+		$this->sut->set_exception( $exception );
+		$this->assertSame( $exception, $this->sut->get_exception() );
 	}
 
 	public function test_log_state_transition() {

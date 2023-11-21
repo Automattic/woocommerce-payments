@@ -15,6 +15,7 @@ use WC_Payments_API_Payment_Intention;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WC_Payments_Utils;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Payment\PaymentContext;
@@ -346,6 +347,23 @@ class OrderService {
 	 */
 	public function get_customer_id( int $order_id ): int {
 		return $this->get_order( $order_id )->get_customer_id();
+	}
+
+
+	/**
+	 * Mark order as failed.
+	 *
+	 * @param int    $order_id Order id.
+	 * @param string $reason   Reason why order failed.
+	 */
+	public function mark_order_as_failed( int $order_id, string $reason = '' ) {
+		try {
+			$order = $this->get_order( $order_id );
+		} catch ( Order_Not_Found_Exception $e ) {
+			return;
+		}
+		$order->update_status( Order_Status::FAILED, "Order failed. Reason: $reason" );
+
 	}
 
 	/**
