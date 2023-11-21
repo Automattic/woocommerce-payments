@@ -24,12 +24,10 @@ class SessionServiceTest extends WCPAY_UnitTestCase {
 	 */
 	private $sut;
 
-
 	/**
 	 * @var LegacyProxy|MockObject
 	 */
 	private $mock_legacy_proxy;
-
 
 	/**
 	 * Set up the test.

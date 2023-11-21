@@ -1012,7 +1012,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;
@@ -1104,14 +1104,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$is_blocks_checkout = isset( $_POST['is_blocks_checkout'] ) ? rest_sanitize_boolean( wc_clean( wp_unslash( $_POST['is_blocks_checkout'] ) ) ) : false;
 			$appearance         = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
 
-			/**
-			 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
-			 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
-			 *
-			 * @since 6.8.0
-			 */
-			$appearance = apply_filters( 'wcpay_upe_appearance', $appearance, $is_blocks_checkout );
-
 			$appearance_transient = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT : self::UPE_APPEARANCE_TRANSIENT;
 
 			if ( null !== $appearance ) {
@@ -1120,7 +1112,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			wp_send_json_success( $appearance, 200 );
 		} catch ( Exception $e ) {
-			// Send back error, so it can be displayed to the customer.
+			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
 				[
 					'error' => [

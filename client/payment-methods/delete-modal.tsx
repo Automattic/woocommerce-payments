@@ -94,7 +94,7 @@ const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 						) }
 						<a
 							// eslint-disable-next-line max-len
-							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-deprecation"
+							href="https://woo.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-deprecation"
 							target="_blank"
 							rel="external noreferrer noopener"
 						>
