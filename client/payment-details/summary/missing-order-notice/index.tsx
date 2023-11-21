@@ -53,6 +53,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 				amount: charge.amount,
 			},
 		} );
+		setIsModalOpen( false );
 	};
 
 	return (
@@ -60,13 +61,17 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 			<Loadable isLoading={ isLoading } placeholder="">
 				<CardNotice
 					actions={
-						<Button
-							variant="primary"
-							isSmall={ false }
-							onClick={ handleOnButtonClick }
-						>
-							{ __( 'Refund', 'woocommerce-payments' ) }
-						</Button>
+						! charge.refunded ? (
+							<Button
+								variant="primary"
+								isSmall={ false }
+								onClick={ handleOnButtonClick }
+							>
+								{ __( 'Refund', 'woocommerce-payments' ) }
+							</Button>
+						) : (
+							<></>
+						)
 					}
 				>
 					{ __(
