@@ -591,6 +591,7 @@ class WC_Payments {
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
+		add_filter( 'woocommerce_rest_api_option_permissions', [ __CLASS__, 'add_wcpay_options_to_woocommerce_permissions_list' ], 5 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
 		// Add note query support for source.
@@ -601,10 +602,12 @@ class WC_Payments {
 		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
 
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
+		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-track-upe-status.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Track_Upe_Status', 'maybe_track' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
@@ -1670,6 +1673,39 @@ class WC_Payments {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
 	}
+
+	/**
+	 * Adds WCPay options to Woo Core option allow list.
+	 *
+	 * @param   array $permissions Array containing the permissions.
+	 *
+	 * @return  array              An array containing the modified permissions.
+	 */
+	public static function add_wcpay_options_to_woocommerce_permissions_list( $permissions ) {
+		$wcpay_permissions_list = array_fill_keys(
+			[
+				'wcpay_frt_discover_banner_settings',
+				'wcpay_multi_currency_setup_completed',
+				'woocommerce_dismissed_todo_tasks',
+				'woocommerce_remind_me_later_todo_tasks',
+				'woocommerce_deleted_todo_tasks',
+				'wcpay_fraud_protection_welcome_tour_dismissed',
+				'wcpay_capability_request_dismissed_notices',
+				'wcpay_onboarding_eligibility_modal_dismissed',
+			],
+			true
+		);
+
+		if ( is_array( $permissions ) ) {
+			return array_merge(
+				$permissions,
+				$wcpay_permissions_list
+			);
+		}
+
+		return $wcpay_permissions_list;
+	}
+
 
 	/**
 	 * Creates a new request object for a server call.

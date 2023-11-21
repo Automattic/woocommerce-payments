@@ -78,7 +78,10 @@ class WC_Payments_Features {
 	 */
 	public static function is_upe_deferred_intent_enabled() {
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		return is_array( $account ) && ( $account[ self::DEFERRED_UPE_SERVER_FLAG_NAME ] ?? false );
+		if ( null === $account ) {
+			return true;
+		}
+		return is_array( $account ) && ( $account[ self::DEFERRED_UPE_SERVER_FLAG_NAME ] ?? true );
 	}
 
 	/**
