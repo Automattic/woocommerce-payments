@@ -51,6 +51,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 			data: {
 				charge_id: charge.id,
 				amount: charge.amount,
+				reason: reason,
 			},
 		} );
 		setIsModalOpen( false );
@@ -150,7 +151,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 							},
 							{
 								label: __( 'Other', 'woocommerce-payments' ),
-								value: 'other',
+								value: null,
 							},
 						] }
 						onChange={ ( value: string ) => setReason( value ) }

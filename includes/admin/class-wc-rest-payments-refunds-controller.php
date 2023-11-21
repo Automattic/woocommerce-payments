@@ -49,6 +49,7 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 			$refund_request = Refund_Charge::create( $charge_id );
 			$refund_request->set_charge( $charge_id );
 			$refund_request->set_amount( $amount );
+			$refund_request->set_reason( $amount );
 			$response = $refund_request->send();
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( 'wcpay_refund_payment', $e->getMessage() ) );

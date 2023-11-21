@@ -19,6 +19,7 @@ class Refund_Charge extends Request {
 
 	const DEFAULT_PARAMS = [
 		'amount' => null,
+		'reason' => null,
 	];
 
 	const IMMUTABLE_PARAMS = [ 'charge' ];
@@ -57,6 +58,16 @@ class Refund_Charge extends Request {
 	public function set_amount( int $amount ) {
 		$this->validate_is_larger_than( $amount, 0 );
 		$this->set_param( 'amount', $amount );
+	}
+
+	/**
+	 * Sets the reason for the refund.
+	 *
+	 * @param string|null $reason The reason for the refund.
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_reason( ?string $reason ) {
+		$this->set_param( 'reason', $reason );
 	}
 
 	/**
