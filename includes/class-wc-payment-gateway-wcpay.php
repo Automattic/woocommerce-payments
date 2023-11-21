@@ -2921,7 +2921,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = new WC_Order( $order_id );
 		if ( null !== $order ) {
 			$intent_id = $this->order_service->get_intent_id_for_order( $order );
-			if ( null !== $intent_id ) {
+			if ( null !== $intent_id && '' !== $intent_id ) {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );
