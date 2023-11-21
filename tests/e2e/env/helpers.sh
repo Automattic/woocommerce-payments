@@ -46,14 +46,14 @@ function log_block() {
 	local message=$1
 	local message_length=$((${#message} + 5))
 
-	echo -e "\n### $message"
+	echo -e "\n# $message"
 	printf '%.0s-' $(seq 1 $message_length)
 	echo
 }
 
 function log_step() {
 	local message=$1
-	colorize_blue "\n--> $message"
+	colorize_blue "\n###--> $message"
 }
 
 function log_step_success() {
