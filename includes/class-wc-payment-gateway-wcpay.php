@@ -2925,7 +2925,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );
-					$charge = $request->send()->get_charge();
+					$intent = $request->send();
+					$charge = $intent->get_charge();
 
 					/**
 					 * Successful but not captured Charge is an authorization
@@ -2933,11 +2934,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					 */
 					if ( null !== $charge
 						&& false === $charge->is_captured()
-						&& Intent_Status::SUCCEEDED === $charge->get_status() ) {
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+					) {
 							$request = Cancel_Intention::create( $intent_id );
 							$request->set_hook_args( $order );
-							$request->send();
+							$intent = $request->send();
+
+							$this->order_service->update_order_status_from_intent( $order, $intent );
 					}
+
+					$this->order_service->set_intention_status_for_order( $order, $intent->get_status() );
+					$order->save();
 				} catch ( \Exception $e ) {
 					$order->add_order_note(
 						WC_Payments_Utils::esc_interpolated_html(

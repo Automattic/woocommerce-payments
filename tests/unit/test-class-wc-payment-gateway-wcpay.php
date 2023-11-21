@@ -944,6 +944,97 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( Order_Status::PROCESSING, $order->get_status() );
 	}
 
+	public function test_capture_cancelling_order_cancels_authorization() {
+		$intent_id = uniqid( 'pi_' );
+		$charge_id = uniqid( 'ch_' );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
+		$order->update_status( Order_Status::ON_HOLD );
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => $intent_id,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+				'charge' => [
+					'amount_captured' => 0,
+					'status'          => Intent_Status::SUCCEEDED,
+					'id'              => $charge_id,
+				],
+			]
+		);
+
+		$mock_canceled_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => $intent_id,
+				'status' => Intent_Status::CANCELED,
+				'charge' => [
+					'status' => Intent_Status::CANCELED,
+					'id'     => $charge_id,
+				],
+			]
+		);
+
+		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$get_intent_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		$cancel_intent_request = $this->mock_wcpay_request( Cancel_Intention::class, 1, $intent_id );
+		$cancel_intent_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_canceled_intent );
+
+		$order->set_status( 'cancelled' );
+		$order->save();
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertEquals( Intent_Status::CANCELED, $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( Order_Status::CANCELLED, $order->get_status() );
+	}
+
+	public function test_capture_cancelling_order_does_not_cancel_captured_authorization() {
+		$intent_id = uniqid( 'pi_' );
+		$charge_id = uniqid( 'ch_' );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', Intent_Status::SUCCEEDED );
+		$order->update_status( Order_Status::PROCESSING );
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => $intent_id,
+				'status' => Intent_Status::SUCCEEDED,
+				'charge' => [
+					'status' => Intent_Status::SUCCEEDED,
+					'id'     => $charge_id,
+				],
+			]
+		);
+
+		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$get_intent_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		$this->mock_wcpay_request( Cancel_Intention::class, 0, $intent_id );
+
+		$order->set_status( 'cancelled' );
+		$order->save();
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertEquals( Intent_Status::SUCCEEDED, $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( Order_Status::CANCELLED, $order->get_status() );
+	}
+
 	public function test_cancel_authorization_handles_api_exception_when_canceling() {
 		$intent_id = 'pi_mock';
 		$charge_id = 'ch_mock';
