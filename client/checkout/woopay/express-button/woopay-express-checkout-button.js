@@ -18,6 +18,7 @@ import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 import interpolateComponents from '@automattic/interpolate-components';
+import { appendRedirectionParams } from 'wcpay/checkout/woopay/utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -331,7 +332,9 @@ export const WoopayExpressCheckoutButton = ( {
 			}
 
 			if ( isSessionDataSuccess ) {
-				window.location.href = event.data.value.redirect_url;
+				window.location.href = appendRedirectionParams(
+					event.data.value.redirect_url
+				);
 			} else if ( isSessionDataError ) {
 				onClickFallback( null );
 
