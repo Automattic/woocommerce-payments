@@ -108,7 +108,7 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 			->willReturnCallback(
 				function () {
 					$mock_cart = $this->getMockBuilder( \stdClass::class )
-						->setMethods( [ 'empty_cart' ] )
+						->onlyMethods( [ 'empty_cart' ] )
 						->getMock();
 					return (object) [
 						'cart' => $mock_cart,

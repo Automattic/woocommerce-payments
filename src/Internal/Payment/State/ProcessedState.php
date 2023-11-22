@@ -7,7 +7,6 @@
 
 namespace WCPay\Internal\Payment\State;
 
-use WC_Cart;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
@@ -103,10 +102,8 @@ class ProcessedState extends AbstractPaymentState {
 	/**
 	 * Remove UPE payment intents from session.
 	 * Using Legacy_Proxy temporarily to provide functionality until replaced by deferred intents.
-	 *
-	 * @return void
 	 */
-	private function clear_upe_payment_intent_from_session() {
+	private function clear_upe_payment_intent_from_session() : void {
 		$this->legacy_proxy->call_static( UPE_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' );
 		$this->legacy_proxy->call_static( UPE_Split_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' );
 	}
