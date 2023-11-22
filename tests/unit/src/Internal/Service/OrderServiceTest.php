@@ -13,8 +13,10 @@ use WC_Payments_Account;
 use WC_Payments_API_Charge;
 use WC_Payments_API_Payment_Intention;
 use WC_Payments_API_Setup_Intention;
+use WC_Payments_Explicit_Price_Formatter;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
+use WC_Payments_Utils;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Payment\PaymentContext;
@@ -616,6 +618,49 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->willReturn( $note_id );
 
 		$result = $this->sut->add_note( $this->order_id, $note_content );
+		$this->assertSame( $note_id, $result );
+	}
+
+	public function test_add_rate_limiter_note() {
+		$mock_order = $this->mock_get_order();
+		$mock_order->expects( $this->once() )
+			->method( 'get_total' )
+			->willReturn( 50.12 );
+		$mock_order->expects( $this->once() )
+			->method( 'get_currency' )
+			->willReturn( 'EUR' );
+
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'wc_price', 50.12, [ 'currency' => 'EUR' ] )
+			->willReturn( '€50.12' );
+
+		$first_call     = [
+			WC_Payments_Explicit_Price_Formatter::class,
+			'get_explicit_price',
+			'€50.12',
+			$mock_order,
+		];
+		$second_call    = [
+			WC_Payments_Utils::class,
+			'esc_interpolated_html',
+			'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.',
+			[ 'strong' => '<strong>' ],
+		];
+		$explicit_price = '€50.12 EUR';
+		$note_content   = 'A payment of €50.12 EUR <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.';
+		$this->mock_legacy_proxy->expects( $this->exactly( 2 ) )
+			->method( 'call_static' )
+			->withConsecutive( $first_call, $second_call )
+			->willReturnOnConsecutiveCalls( $explicit_price, $note_content );
+
+		$note_id = 777;
+		$mock_order->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with( $note_content )
+			->willReturn( $note_id );
+
+		$result = $this->sut->add_rate_limiter_note( $this->order_id );
 		$this->assertSame( $note_id, $result );
 	}
 
