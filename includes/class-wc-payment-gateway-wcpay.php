@@ -2941,7 +2941,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							$request->set_hook_args( $order );
 							$intent = $request->send();
 
-							$this->order_service->update_order_status_from_intent( $order, $intent );
+							$this->order_service->post_unique_capture_cancelled_note( $order );
 					}
 
 					$this->order_service->set_intention_status_for_order( $order, $intent->get_status() );

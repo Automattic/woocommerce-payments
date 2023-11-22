@@ -988,7 +988,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $mock_canceled_intent );
 
-		$order->set_status( 'cancelled' );
+		$order->set_status( Order_Status::CANCELLED );
 		$order->save();
 
 		$order = wc_get_order( $order->get_id() );
@@ -1026,7 +1026,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_request( Cancel_Intention::class, 0, $intent_id );
 
-		$order->set_status( 'cancelled' );
+		$order->set_status( Order_Status::CANCELLED );
 		$order->save();
 
 		$order = wc_get_order( $order->get_id() );
@@ -1065,7 +1065,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			]
 		)[0];
 
-		$this->assertStringContainsString( 'cancelled', $note->content );
+		$this->assertStringContainsString( 'cancelled', strtolower( $note->content ) );
 		$this->assertEquals( Order_Status::CANCELLED, $order->get_status() );
 	}
 
