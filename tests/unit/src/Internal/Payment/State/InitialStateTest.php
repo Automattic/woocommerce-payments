@@ -289,6 +289,10 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
+
 		// Mock get customer.
 		$this->mock_customer_data( 1, 1, $mock_order, 'cus_mock' );
 
@@ -365,6 +369,9 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		// Arrange mocks.
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
 		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
 
 		$this->mock_failed_transaction_rate_limiter->expects( $this->once() )
 			->method( 'is_limited' )
