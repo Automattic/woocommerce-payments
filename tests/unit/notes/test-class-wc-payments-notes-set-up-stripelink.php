@@ -55,14 +55,6 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 		$this->assertStringStartsWith( 'https://woo.com/document/woopayments/payment-methods/link-by-stripe/', $set_up_action->query );
 	}
 
-	public function test_stripelink_setup_note_null_when_upe_disabled() {
-		$this->mock_gateway_data( '0', [ 'card', 'link' ], [ 'card' ] );
-
-		$note = \WC_Payments_Notes_Set_Up_StripeLink::get_note();
-
-		$this->assertNull( $note );
-	}
-
 	public function test_stripelink_setup_note_null_when_link_not_available() {
 		$this->mock_gateway_data( '1', [ 'card' ], [ 'card' ] );
 
