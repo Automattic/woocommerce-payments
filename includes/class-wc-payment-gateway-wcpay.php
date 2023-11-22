@@ -1409,7 +1409,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_hook_args( $payment_information, false, $save_user_in_woopay );
 
 				if (
-					WC_Payments_Features::is_upe_deferred_intent_enabled() &&
 					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
 					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
 					) {
