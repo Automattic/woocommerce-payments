@@ -44,16 +44,23 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 		setIsModalOpen( false );
 	};
 
+	const [ refundInProgress, setRefundInProgress ] = useState< boolean >(
+		false
+	);
+
 	const handleModalConfirmation = async () => {
+		setRefundInProgress( true );
 		const response = await apiFetch( {
 			path: `/wc/v3/payments/refund/`,
 			method: 'post',
 			data: {
 				charge_id: charge.id,
 				amount: charge.amount,
-				reason: reason,
+				reason: reason === 'other' ? null : reason,
 			},
 		} );
+
+		setRefundInProgress( false );
 		setIsModalOpen( false );
 	};
 
@@ -96,6 +103,8 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 							<Button
 								onClick={ handleModalConfirmation }
 								isPrimary
+								isBusy={ refundInProgress }
+								disabled={ refundInProgress }
 							>
 								{ __(
 									'Refund transaction',
@@ -151,7 +160,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 							},
 							{
 								label: __( 'Other', 'woocommerce-payments' ),
-								value: null,
+								value: 'other',
 							},
 						] }
 						onChange={ ( value: string ) => setReason( value ) }
