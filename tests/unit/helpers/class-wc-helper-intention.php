@@ -83,10 +83,11 @@ class WC_Helper_Intention {
 	 * Create a payment intent.
 	 *
 	 * @param array $data Data to override defaults.
+	 * @param bool  $has_charge Whether or not the intention has a charge.
 	 *
 	 * @return WC_Payments_API_Payment_Intention
 	 */
-	public static function create_intention( $data = [] ) {
+	public static function create_intention( $data = [], $has_charge = true ) {
 		$intent_data = wp_parse_args(
 			$data,
 			[
@@ -124,7 +125,7 @@ class WC_Helper_Intention {
 			$intent_data['created'],
 			$intent_data['status'],
 			$intent_data['client_secret'],
-			self::create_charge( $charge_data ),
+			$has_charge ? self::create_charge( $charge_data ) : null,
 			$intent_data['next_action'],
 			$intent_data['last_payment_error'],
 			$intent_data['metadata'],
