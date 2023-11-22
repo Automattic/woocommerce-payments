@@ -807,7 +807,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Creates an "authorization cancelled" order not if not already present.
+	 * Creates an "authorization cancelled" order note if not already present.
 	 *
 	 * @param WC_Order $order The order.
 	 * @return boolean        True if the note was added, false otherwise.
