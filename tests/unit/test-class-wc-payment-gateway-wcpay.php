@@ -993,8 +993,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order = wc_get_order( $order->get_id() );
 
-		$this->assertEquals( Intent_Status::CANCELED, $order->get_meta( '_intention_status', true ) );
-		$this->assertEquals( Order_Status::CANCELLED, $order->get_status() );
+		$this->assertSame( Intent_Status::CANCELED, $order->get_meta( '_intention_status', true ) );
+		$this->assertSame( Order_Status::CANCELLED, $order->get_status() );
 	}
 
 	public function test_capture_cancelling_order_does_not_cancel_captured_authorization() {
@@ -1031,8 +1031,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order = wc_get_order( $order->get_id() );
 
-		$this->assertEquals( Intent_Status::SUCCEEDED, $order->get_meta( '_intention_status', true ) );
-		$this->assertEquals( Order_Status::CANCELLED, $order->get_status() );
+		$this->assertSame( Intent_Status::SUCCEEDED, $order->get_meta( '_intention_status', true ) );
+		$this->assertSame( Order_Status::CANCELLED, $order->get_status() );
 	}
 
 	public function test_cancel_authorization_handles_api_exception_when_canceling() {
