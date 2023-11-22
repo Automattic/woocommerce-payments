@@ -176,5 +176,10 @@ img {
 		outline-offset: -1px;
 		border-radius: 3px;
 		display: block;
+
+		&.no-outline {
+			outline: none;
+			border-radius: 0;
+		}
 	}
 }

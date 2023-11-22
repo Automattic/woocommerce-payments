@@ -13,8 +13,10 @@ use WC_Payments_Account;
 use WC_Payments_API_Charge;
 use WC_Payments_API_Payment_Intention;
 use WC_Payments_API_Setup_Intention;
+use WC_Payments_Explicit_Price_Formatter;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
+use WC_Payments_Utils;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Payment\PaymentContext;
@@ -277,18 +279,11 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$mock_order->expects( $this->once() )
 			->method( 'get_user' )
 			->willReturn( $user ?? false );
-		if ( ! $user ) {
-			$user     = $this->createMock( WP_User::class );
-			$user->ID = 10;
 
-			$this->mock_legacy_proxy->expects( $this->once() )
-				->method( 'call_function' )
-				->with( 'wp_get_current_user' )
-				->willReturn( $user );
-		}
+		// Mock set user id.
 		$mock_context->expects( $this->once() )
 			->method( 'set_user_id' )
-			->with( 10 );
+			->with( $user->ID ?? null );
 
 		// Act.
 		$this->sut->import_order_data_to_payment_context( $this->order_id, $mock_context );
@@ -319,7 +314,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		// Create a mock order that will be used.
 		$mock_order = $this->createMock( WC_Order::class );
-		$this->sut->expects( $this->once() )
+		$this->sut->expects( $this->exactly( 2 ) )
 			->method( 'get_order' )
 			->with( $this->order_id )
 			->willReturn( $mock_order );
@@ -355,6 +350,9 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$mock_context->expects( $this->once() )
 			->method( 'get_currency' )
 			->willReturn( $currency );
+		$mock_context->expects( $this->once() )
+			->method( 'get_mode' )
+			->willReturn( 'prod' );
 
 		$this->mock_legacy_service->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
@@ -623,6 +621,49 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $note_id, $result );
 	}
 
+	public function test_add_rate_limiter_note() {
+		$mock_order = $this->mock_get_order();
+		$mock_order->expects( $this->once() )
+			->method( 'get_total' )
+			->willReturn( 50.12 );
+		$mock_order->expects( $this->once() )
+			->method( 'get_currency' )
+			->willReturn( 'EUR' );
+
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'wc_price', 50.12, [ 'currency' => 'EUR' ] )
+			->willReturn( '€50.12' );
+
+		$first_call     = [
+			WC_Payments_Explicit_Price_Formatter::class,
+			'get_explicit_price',
+			'€50.12',
+			$mock_order,
+		];
+		$second_call    = [
+			WC_Payments_Utils::class,
+			'esc_interpolated_html',
+			'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.',
+			[ 'strong' => '<strong>' ],
+		];
+		$explicit_price = '€50.12 EUR';
+		$note_content   = 'A payment of €50.12 EUR <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.';
+		$this->mock_legacy_proxy->expects( $this->exactly( 2 ) )
+			->method( 'call_static' )
+			->withConsecutive( $first_call, $second_call )
+			->willReturnOnConsecutiveCalls( $explicit_price, $note_content );
+
+		$note_id = 777;
+		$mock_order->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with( $note_content )
+			->willReturn( $note_id );
+
+		$result = $this->sut->add_rate_limiter_note( $this->order_id );
+		$this->assertSame( $note_id, $result );
+	}
+
 	public function test_delete_order() {
 		$force_delete = false;
 		$expected     = true;
@@ -635,6 +676,24 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		$result = $this->sut->delete( $this->order_id, $force_delete );
 		$this->assertSame( $expected, $result );
+	}
+
+	public function test_set_mode() {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with( '_wcpay_mode', 'prod' );
+		$this->sut->set_mode( $this->order_id, 'prod' );
+	}
+
+	public function test_get_mode() {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_wcpay_mode', true )
+			->willReturn( 'test' );
+		$result = $this->sut->get_mode( $this->order_id, true );
+		$this->assertSame( 'test', $result );
 	}
 
 	/**
@@ -654,4 +713,5 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		return $mock_order;
 	}
+
 }

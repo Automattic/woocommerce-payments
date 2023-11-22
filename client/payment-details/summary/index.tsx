@@ -125,7 +125,12 @@ const composePaymentSummaryItems = ( {
 		},
 		{
 			title: __( 'Customer', 'woocommerce-payments' ),
-			content: <CustomerLink customer={ charge.billing_details } />,
+			content: (
+				<CustomerLink
+					billing_details={ charge.billing_details }
+					order_details={ charge.order }
+				/>
+			),
 		},
 		{
 			title: __( 'Order', 'woocommerce-payments' ),
@@ -515,7 +520,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											a: (
 												// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
 												<a
-													href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+													href="https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
 													target="_blank"
 													rel="noreferer"
 												/>

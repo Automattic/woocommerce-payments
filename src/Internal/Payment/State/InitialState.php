@@ -7,11 +7,16 @@
 
 namespace WCPay\Internal\Payment\State;
 
+use WCPay\Exceptions\API_Exception;
+use WCPay\Internal\Payment\FailedTransactionRateLimiter;
 use WC_Payments_Customer_Service;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Internal\Service\MinimumAmountService;
+use WCPay\Internal\Service\FraudPreventionService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
@@ -62,6 +67,27 @@ class InitialState extends AbstractPaymentState {
 	private $dpps;
 
 	/**
+	 * Service for handling minimum amount.
+	 *
+	 * @var MinimumAmountService
+	 */
+	private $minimum_amount_service;
+
+	/**
+	 * FraudPreventionService instance.
+	 *
+	 * @var FraudPreventionService
+	 */
+	private $fraud_prevention_service;
+
+	/**
+	 * FailedTransactionRateLimiter instance.
+	 *
+	 * @var FailedTransactionRateLimiter
+	 */
+	private $failed_transaction_rate_limiter;
+
+	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
 	 * @param StateFactory                      $state_factory           Factory for payment states.
@@ -70,6 +96,9 @@ class InitialState extends AbstractPaymentState {
 	 * @param Level3Service                     $level3_service          Service for Level3 Data.
 	 * @param PaymentRequestService             $payment_request_service Connection with the server.
 	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
+	 * @param MinimumAmountService              $minimum_amount_service  Service for handling minimum amount.
+	 * @param FraudPreventionService            $fraud_prevention_service Service for preventing fraud payments.
+	 * @param FailedTransactionRateLimiter      $failed_transaction_rate_limiter Failed Transaction Rate Limiter instance.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -77,15 +106,21 @@ class InitialState extends AbstractPaymentState {
 		WC_Payments_Customer_Service $customer_service,
 		Level3Service $level3_service,
 		PaymentRequestService $payment_request_service,
-		DuplicatePaymentPreventionService $dpps
+		DuplicatePaymentPreventionService $dpps,
+		MinimumAmountService $minimum_amount_service,
+		FraudPreventionService $fraud_prevention_service,
+		FailedTransactionRateLimiter $failed_transaction_rate_limiter
 	) {
 		parent::__construct( $state_factory );
 
-		$this->order_service           = $order_service;
-		$this->customer_service        = $customer_service;
-		$this->level3_service          = $level3_service;
-		$this->payment_request_service = $payment_request_service;
-		$this->dpps                    = $dpps;
+		$this->order_service                   = $order_service;
+		$this->customer_service                = $customer_service;
+		$this->level3_service                  = $level3_service;
+		$this->payment_request_service         = $payment_request_service;
+		$this->dpps                            = $dpps;
+		$this->minimum_amount_service          = $minimum_amount_service;
+		$this->fraud_prevention_service        = $fraud_prevention_service;
+		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 	}
 
 	/**
@@ -93,11 +128,13 @@ class InitialState extends AbstractPaymentState {
 	 *
 	 * @param PaymentRequest $request The incoming payment processing request.
 	 *
-	 * @return AbstractPaymentState      The next state.
-	 * @throws StateTransitionException  In case the completed state could not be initialized.
-	 * @throws ContainerException        When the dependency container cannot instantiate the state.
-	 * @throws Order_Not_Found_Exception Order could not be found.
-	 * @throws PaymentRequestException   When data is not available or invalid.
+	 * @return AbstractPaymentState       The next state.
+	 * @throws StateTransitionException   In case the completed state could not be initialized.
+	 * @throws ContainerException         When the dependency container cannot instantiate the state.
+	 * @throws Order_Not_Found_Exception  Order could not be found.
+	 * @throws PaymentRequestException    When data is not available or invalid.
+	 * @throws API_Exception              When server request fails.
+	 * @throws Amount_Too_Small_Exception When the order amount is too small.
 	 */
 	public function start_processing( PaymentRequest $request ) {
 		// Populate basic details from the request.
@@ -109,6 +146,22 @@ class InitialState extends AbstractPaymentState {
 		// Start multiple verification checks.
 		$this->process_order_phone_number();
 
+		$context = $this->get_context();
+
+		if ( ! $this->fraud_prevention_service->verify_token( $context->get_fraud_prevention_token() ) ) {
+			throw new StateTransitionException(
+				__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' )
+			);
+		}
+
+		if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+			$this->order_service->add_rate_limiter_note( $context->get_order_id() );
+			throw new StateTransitionException(
+				__( 'Your payment was not processed.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
 		$duplicate_order_result = $this->process_duplicate_order();
 		if ( null !== $duplicate_order_result ) {
 			return $duplicate_order_result;
@@ -118,20 +171,47 @@ class InitialState extends AbstractPaymentState {
 		if ( null !== $duplicate_payment_result ) {
 			return $duplicate_payment_result;
 		}
+
+		$this->minimum_amount_service->verify_amount(
+			$context->get_currency(),
+			$context->get_amount()
+		);
 		// End multiple verification checks.
 
-		// Payments are currently based on intents, request one from the API.
+		/**
+		 * Payments are based on intents, and intents use customer objects for billing details.
+		 *
+		 * The customer is created/updated right before requesting the creation of
+		 * a payment intent, and the two actions must be adjacent to each-other.
+		 */
 		try {
-			$context = $this->get_context();
-			$intent  = $this->payment_request_service->create_intent( $context );
+			$order_id = $context->get_order_id();
+
+			// Create or update customer and customer details.
+			$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
+				$context->get_user_id(),
+				$this->order_service->_deprecated_get_order( $order_id )
+			);
+			$context->set_customer_id( $customer_id );
+
+			// After customer is updated or created, make sure that intent is created.
+			$intent = $this->payment_request_service->create_intent( $context );
 			$context->set_intent( $intent );
+		} catch ( Amount_Too_Small_Exception $e ) {
+			$this->minimum_amount_service->store_amount_from_exception( $e );
+			throw $e;
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
+		} catch ( API_Exception $e ) {
+			if ( $this->failed_transaction_rate_limiter->should_bump_rate_limiter( $e->get_error_code() ) ) {
+				$this->failed_transaction_rate_limiter->bump();
+			}
+			throw $e;
 		}
 
 		// Intent requires authorization (3DS check).
 		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
-			$this->order_service->update_order_from_intent_that_requires_action( $context->get_order_id(), $intent, $context );
+			$this->order_service->update_order_from_intent_that_requires_action( $order_id, $intent, $context );
 			return $this->create_state( AuthenticationRequiredState::class );
 		}
 
@@ -166,11 +246,15 @@ class InitialState extends AbstractPaymentState {
 		if ( ! is_null( $fingerprint ) ) {
 			$context->set_fingerprint( $fingerprint );
 		}
+
+		$fraud_prevention_token = $request->get_fraud_prevention_token();
+		if ( ! is_null( $fraud_prevention_token ) ) {
+			$context->set_fraud_prevention_token( $fraud_prevention_token );
+		}
 	}
 
 	/**
 	 * Populates the context with details, available in the order.
-	 * This includes the update/creation of a customer.
 	 *
 	 * @throws Order_Not_Found_Exception In case the order could not be found.
 	 */
@@ -187,13 +271,6 @@ class InitialState extends AbstractPaymentState {
 			)
 		);
 		$context->set_level3_data( $this->level3_service->get_data_from_order( $order_id ) );
-
-		// Customer management involves a remote call.
-		$customer_id = $this->customer_service->get_or_create_customer_id_from_order(
-			$context->get_user_id(),
-			$this->order_service->_deprecated_get_order( $order_id )
-		);
-		$context->set_customer_id( $customer_id );
 	}
 
 	/**

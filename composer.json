@@ -39,12 +39,13 @@
         "php-stubs/wordpress-stubs": "5.8.2",
         "php-stubs/woocommerce-stubs": "6.8.0",
         "rregeer/phpunit-coverage-check": "0.3.1",
-        "yoast/phpunit-polyfills": "1.0.3",
+        "yoast/phpunit-polyfills": "1.1.0",
         "cweagans/composer-patches": "1.7.1",
         "automattic/jetpack-changelogger": "3.3.2",
         "spatie/phpunit-watcher": "1.23",
         "woocommerce/qit-cli": "0.3.4",
-        "slevomat/coding-standard": "8.0.0"
+        "slevomat/coding-standard": "8.0.0",
+        "dg/bypass-finals": "1.5.1"
     },
     "scripts": {
         "test": [

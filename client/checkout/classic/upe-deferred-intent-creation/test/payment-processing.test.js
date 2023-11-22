@@ -84,17 +84,7 @@ const mockElements = jest.fn( () => {
 	};
 } );
 
-const mockThen = jest.fn( () => {
-	return {
-		catch: jest.fn(),
-	};
-} );
-
-const mockCreatePaymentMethod = jest.fn( () => {
-	return {
-		then: mockThen,
-	};
-} );
+const mockCreatePaymentMethod = jest.fn().mockResolvedValue( {} );
 
 const mockGetStripeForUPE = jest.fn( () => {
 	return {
@@ -359,7 +349,6 @@ describe( 'Payment processing', () => {
 			expect( mockSubmit ).toHaveBeenCalled();
 		} );
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
-		expect( mockThen ).toHaveBeenCalled();
 		expect( checkoutResult ).toBe( false );
 	} );
 

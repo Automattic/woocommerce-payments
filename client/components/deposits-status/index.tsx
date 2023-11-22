@@ -18,6 +18,90 @@ import type { AccountStatus } from 'wcpay/types/account/account-status';
 type DepositsStatus = 'enabled' | 'disabled' | 'blocked';
 type DepositsIntervals = 'daily' | 'weekly' | 'monthly' | 'manual';
 
+interface DepositsStatusProps {
+	iconSize: number;
+	interval: DepositsIntervals;
+}
+
+const getIntervalType = ( interval: DepositsIntervals ): string => {
+	switch ( interval ) {
+		case 'daily':
+		case 'weekly':
+		case 'monthly':
+			return __( 'Automatic', 'woocommerce-payments' );
+		case 'manual':
+			return __( 'Manual', 'woocommerce-payments' );
+		default:
+			return __( 'Unknown', 'woocommerce-payments' );
+	}
+};
+
+const DepositsStatusEnabled: React.FC< DepositsStatusProps > = ( props ) => {
+	const { iconSize, interval } = props;
+
+	const description = getIntervalType( interval );
+	return (
+		<span className={ 'account-status__info__green' }>
+			<GridiconCheckmarkCircle size={ iconSize } />
+			{ description }
+		</span>
+	);
+};
+
+const DepositsStatusDisabled: React.FC< DepositsStatusProps > = ( props ) => {
+	const { iconSize } = props;
+
+	return (
+		<span className={ 'account-status__info__red' }>
+			<GridiconNotice size={ iconSize } />
+			{ __( 'Disabled', 'woocommerce-payments' ) }
+		</span>
+	);
+};
+
+const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
+	const { iconSize } = props;
+
+	const learnMoreHref =
+		'https://woo.com/document/woopayments/deposits/why-deposits-suspended/';
+
+	const description = createInterpolateElement(
+		/* translators: <a> - suspended accounts FAQ URL */
+		__(
+			'Temporarily suspended (<a>learn more</a>)',
+			'woocommerce-payments'
+		),
+		{
+			a: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href={ learnMoreHref }
+					target="_blank"
+					rel="noopener noreferrer"
+				/>
+			),
+		}
+	);
+
+	return (
+		<span className={ 'account-status__info__yellow' }>
+			<GridiconNotice size={ iconSize } />
+			{ description }
+		</span>
+	);
+};
+
+const DepositsStatusPending: React.FC< DepositsStatusProps > = ( props ) => {
+	const { iconSize } = props;
+
+	return (
+		<span className={ 'account-status__info__gray' }>
+			<GridiconNotice size={ iconSize } />
+			{ __( 'Pending verification', 'woocommerce-payments' ) }
+		</span>
+	);
+};
+
 interface Props {
 	status: DepositsStatus;
 	interval: DepositsIntervals;
@@ -35,65 +119,33 @@ const DepositsStatus: React.FC< Props > = ( {
 	poComplete,
 	iconSize,
 } ) => {
-	let className = 'account-status__info__green';
-	let description;
-	let icon = <GridiconCheckmarkCircle size={ iconSize } />;
-	const automaticIntervals: DepositsIntervals[] = [
-		'daily',
-		'weekly',
-		'monthly',
-	];
-	const showSuspendedNotice = 'blocked' === status;
+	const isPoInProgress = poEnabled && ! poComplete;
 
-	if ( 'pending_verification' === accountStatus ) {
-		description = __( 'Pending verification', 'woocommerce-payments' );
-		className = 'account-status__info__gray';
-		icon = <GridiconNotice size={ iconSize } />;
-	} else if ( 'disabled' === status ) {
-		description =
-			poEnabled && ! poComplete
-				? __( 'Not connected', 'woocommerce-payments' )
-				: __( 'Disabled', 'woocommerce-payments' );
-		className =
-			poEnabled && ! poComplete
-				? 'account-status__info__gray'
-				: 'account-status__info__red';
-		icon = <GridiconNotice size={ iconSize } />;
-	} else if ( showSuspendedNotice ) {
-		const learnMoreHref =
-			'https://woocommerce.com/document/woopayments/deposits/why-deposits-suspended/';
-		description = createInterpolateElement(
-			/* translators: <a> - suspended accounts FAQ URL */
-			__(
-				'Temporarily suspended (<a>learn more</a>)',
-				'woocommerce-payments'
-			),
-			{
-				a: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href={ learnMoreHref }
-						target="_blank"
-						rel="noopener noreferrer"
-					/>
-				),
-			}
+	if ( status === 'blocked' ) {
+		return (
+			<DepositsStatusSuspended
+				iconSize={ iconSize }
+				interval={ interval }
+			/>
 		);
-		className = 'account-status__info__yellow';
-		icon = <GridiconNotice size={ iconSize } />;
-	} else if ( automaticIntervals.includes( interval ) ) {
-		description = __( 'Automatic', 'woocommerce-payments' );
-	} else if ( 'manual' === interval ) {
-		description = __( 'Manual', 'woocommerce-payments' );
-	} else {
-		description = __( 'Unknown', 'woocommerce-payments' );
+	} else if ( accountStatus === 'pending_verification' || isPoInProgress ) {
+		return (
+			<DepositsStatusPending
+				iconSize={ iconSize }
+				interval={ interval }
+			/>
+		);
+	} else if ( status === 'disabled' ) {
+		return (
+			<DepositsStatusDisabled
+				iconSize={ iconSize }
+				interval={ interval }
+			/>
+		);
 	}
 
 	return (
-		<span className={ className }>
-			{ icon }
-			{ description }
-		</span>
+		<DepositsStatusEnabled iconSize={ iconSize } interval={ interval } />
 	);
 };
 

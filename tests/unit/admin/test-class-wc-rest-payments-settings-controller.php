@@ -69,16 +69,16 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * An array of mocked split UPE payment gateways mapped to payment method ID.
 	 *
-	 * @var array
+	 * @var UPE_Payment_Gateway
 	 */
 	private $mock_upe_payment_gateway;
 
 	/**
 	 * An array of mocked split UPE payment gateways mapped to payment method ID.
 	 *
-	 * @var array
+	 * @var UPE_Split_Payment_Gateway
 	 */
-	private $mock_split_upe_payment_gateways;
+	private $mock_split_upe_payment_gateway;
 
 	/**
 	 * UPE system under test.
@@ -201,7 +201,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway, $this->mock_wcpay_account );
 
-		$this->mock_upe_split_payment_gateway = new UPE_Split_Payment_Gateway(
+		$this->mock_split_upe_payment_gateway = new UPE_Split_Payment_Gateway(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$customer_service,
@@ -216,7 +216,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$this->mock_fraud_service
 		);
 
-		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway, $this->mock_wcpay_account );
+		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_split_upe_payment_gateway, $this->mock_wcpay_account );
 
 		$this->mock_api_client
 			->method( 'is_server_connected' )
@@ -451,22 +451,14 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_upe_split_update_settings_saves_enabled_payment_methods() {
-			$this->mock_upe_split_payment_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+		$this->mock_split_upe_payment_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
 
-			$request = new WP_REST_Request();
-			$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::GIROPAY ] );
+		$request = new WP_REST_Request();
+		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::GIROPAY ] );
 
-			$this->upe_split_controller->update_settings( $request );
+		$this->upe_split_controller->update_settings( $request );
 
-			$this->assertEquals( [ Payment_Method::CARD, Payment_Method::GIROPAY ], $this->mock_upe_split_payment_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
-	}
-
-	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
-		$request = new WP_REST_Request( 'POST', self::$settings_route );
-		$request->set_param( 'enabled_payment_method_ids', [ 'foo', 'baz' ] );
-
-		$response = rest_do_request( $request );
-		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::GIROPAY ], $this->mock_split_upe_payment_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
 
 	public function test_update_settings_fails_if_user_cannot_manage_woocommerce() {
@@ -624,14 +616,14 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_settings_saves_payment_request_button_size() {
-		$this->assertEquals( 'default', $this->gateway->get_option( 'payment_request_button_size' ) );
+		$this->assertEquals( 'medium', $this->gateway->get_option( 'payment_request_button_size' ) );
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'payment_request_button_size', 'medium' );
+		$request->set_param( 'payment_request_button_size', 'default' );
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( 'medium', $this->gateway->get_option( 'payment_request_button_size' ) );
+		$this->assertEquals( 'default', $this->gateway->get_option( 'payment_request_button_size' ) );
 	}
 
 	public function test_update_settings_saves_payment_request_button_type() {
@@ -796,19 +788,31 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_upe_get_settings_card_eligible_flag() {
+	public function test_upe_get_settings_card_eligible_flag(): void {
+		// Enable Cash on Delivery gateway for the purpose of this test.
+		$cod_gateway          = WC()->payment_gateways()->payment_gateways()['cod'];
+		$cod_gateway->enabled = 'yes';
+
 		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
 			[
 				'currency_code' => 'usd',
 			]
 		);
+
 		$response = $this->upe_controller->get_settings();
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
 		$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
+
+		// Disable Cash on Delivery gateway.
+		$cod_gateway->enabled = 'no';
 	}
 
-	public function test_upe_split_get_settings_card_eligible_flag() {
+	public function test_upe_split_get_settings_card_eligible_flag(): void {
+		// Enable Cash on Delivery gateway for the purpose of this test.
+		$cod_gateway          = WC()->payment_gateways()->payment_gateways()['cod'];
+		$cod_gateway->enabled = 'yes';
+
 		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
 			[
 				'currency_code' => 'usd',
@@ -818,6 +822,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
 		$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
+
+		// Disable Cash on Delivery gateway.
+		$cod_gateway->enabled = 'no';
 	}
 
 	public function test_upe_get_settings_domestic_currency(): void {

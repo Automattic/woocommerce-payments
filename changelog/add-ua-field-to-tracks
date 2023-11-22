@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Add client user-agent value to Tracks event props
