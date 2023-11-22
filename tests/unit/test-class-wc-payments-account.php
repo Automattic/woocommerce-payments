@@ -607,6 +607,35 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
 	}
 
+	public function test_is_stripe_connected_after_force_refresh_refreshes_the_cache() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )
+			->withConsecutive(
+				[
+					Database_Cache::ACCOUNT_KEY,
+					$this->isType( 'callable' ),
+					$this->isType( 'callable' ),
+					true,
+				],
+				[
+					Database_Cache::ACCOUNT_KEY,
+					$this->isType( 'callable' ),
+					$this->isType( 'callable' ),
+					false,
+				]
+			)->willReturn(
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_live_',
+					'test_publishable_key'     => 'pk_test_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+				]
+			);
+
+		$this->assertTrue( $this->wcpay_account->is_stripe_connected_after_force_refresh() );
+	}
+
 	public function test_is_stripe_account_valid_when_not_connected() {
 		$this->mock_empty_cache();
 
