@@ -2414,67 +2414,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test get_payment_methods_from_gateway_id function with UPE disabled.
-	 *
-	 * @return void
-	 */
-	public function test_get_payment_methods_from_gateway_id_non_upe() {
-		$this->mock_cache
-			->method( 'get' )
-			->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => false ] );
-
-		$order            = WC_Helper_Order::create_order();
-		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
-			->setConstructorArgs(
-				[
-					$this->mock_api_client,
-					$this->mock_wcpay_account,
-					$this->mock_customer_service,
-					$this->mock_token_service,
-					$this->mock_action_scheduler_service,
-					$this->mock_payment_methods[ Payment_Method::CARD ],
-					$this->mock_payment_methods,
-					$this->mock_rate_limiter,
-					$this->order_service,
-					$this->mock_dpps,
-					$this->mock_localization_service,
-					$this->mock_fraud_service,
-				]
-			)
-			->onlyMethods(
-				[
-					'get_upe_enabled_payment_method_ids',
-					'get_payment_method_ids_enabled_at_checkout',
-				]
-			)
-			->getMock();
-
-		$gateway = WC_Payments::get_gateway();
-		WC_Payments::set_gateway( $mock_upe_gateway );
-
-		$mock_upe_gateway->expects( $this->any() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
-			->will(
-				$this->returnValueMap(
-					[
-						[ null, true, [ Payment_Method::CARD, Payment_Method::BANCONTACT ] ],
-						[ $order->get_id(), true, [ Payment_Method::CARD ] ],
-					]
-				)
-			);
-
-		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
-
-		$this->assertSame( [ Payment_Method::CARD, Payment_Method::BANCONTACT ], $payment_methods );
-
-		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID, $order->get_id() );
-
-		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
-
-		WC_Payments::set_gateway( $gateway );
-	}
-
-	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
 	 */
 	private function set_cart_contains_subscription_items( $cart_contains_subscriptions ) {

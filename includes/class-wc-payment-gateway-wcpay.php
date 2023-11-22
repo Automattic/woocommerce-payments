@@ -1613,20 +1613,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			// If split or deferred intent UPE is enabled and $gateway_id is `woocommerce_payments`, this must be the CC gateway.
-			// We only need to return single `card` payment method, adding `link` since deferred intent UPE gateway is compatible with Link.
-			$payment_methods = [ Payment_Method::CARD ];
-			if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
-				$payment_methods[] = Payment_Method::LINK;
-			}
-
-			return $payment_methods;
+		// If $gateway_id is `woocommerce_payments`, this must be the CC gateway.
+		// We only need to return single `card` payment method, adding `link` since Stripe Link is also supported.
+		$payment_methods = [ Payment_Method::CARD ];
+		if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
+			$payment_methods[] = Payment_Method::LINK;
 		}
 
-		// $gateway_id must be `woocommerce_payments` and gateway is either legacy UPE or legacy card.
-		// Find the relevant gateway and return all available payment methods.
-		return $eligible_payment_methods;
+		return $payment_methods;
 	}
 
 	/**
