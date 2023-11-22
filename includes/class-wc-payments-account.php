@@ -171,23 +171,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * After refreshing the cache, checks if the account is connected, assumes the value of $on_error on server error.
-	 * Please use carefully!
-	 *
-	 * @param bool $on_error Value to return on server error, defaults to false.
-	 *
-	 * @return bool True if the account is connected, false otherwise, $on_error on error.
-	 */
-	public function is_stripe_connected_after_force_refresh( bool $on_error = false ): bool {
-		try {
-			$this->refresh_account_data();
-			return $this->try_is_stripe_connected();
-		} catch ( Exception $e ) {
-			return $on_error;
-		}
-	}
-
-	/**
 	 * Checks if the account is connected, throws on server error.
 	 *
 	 * @return bool      True if the account is connected, false otherwise.
@@ -918,11 +901,13 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Don't redirect merchants that have no Stripe account connected.
 		// We check it here after refreshing the cache, because merchant might have clicked back in browser (after Stripe KYC).
 		// That will mean that no redirect from Stripe happened and user might be able to go through onboarding again if no webhook processed yet.
 		// That might cause issues if user selects dev onboarding after live one.
-		if ( ! $this->is_stripe_connected_after_force_refresh() ) {
+		$this->refresh_account_data();
+
+		// Don't redirect merchants that have no Stripe account connected.
+		if ( ! $this->is_stripe_connected() ) {
 			return false;
 		}
 
