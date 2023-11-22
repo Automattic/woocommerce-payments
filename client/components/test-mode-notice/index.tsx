@@ -2,21 +2,28 @@
  * External dependencies
  */
 import React from 'react';
-import { _n, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { isInTestMode } from 'utils';
+import { getPaymentSettingsUrl, isInTestMode } from 'utils';
 import BannerNotice from '../banner-notice';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
-type Section = 'documents' | 'deposits' | 'disputes' | 'payments';
+type CurrentPage =
+	| 'overview'
+	| 'documents'
+	| 'deposits'
+	| 'disputes'
+	| 'loans'
+	| 'payments'
+	| 'transactions';
 
 interface Props {
-	children: React.ReactNode;
-	section?: Section;
-	// TODO: Simplify what we pass in here
+	currentPage: CurrentPage;
 	actions?: ReadonlyArray< {
 		label: string;
 		className?: string;
@@ -24,32 +31,145 @@ interface Props {
 		url?: string;
 		onClick?: React.MouseEventHandler< HTMLAnchorElement >;
 	} >;
+	isDetailsView?: boolean;
+	isDevMode?: boolean;
 }
 
-/**
- * Returns notice details depending on the section provided.
- *
- * @param {string} section The notice message section.
- *
- * @return {string} The specific details the notice is supposed to contain.
- */
-export const getDetailsString = ( section: string ): string => {
-	return sprintf(
-		/* translators: %s: WooPayments */
-		_n(
-			'%s was in test mode when this order was placed.',
-			'%s was in test mode when these orders were placed.',
-			'deposits' === section ? 2 : 1,
-			'woocommerce-payments'
-		),
-		'WooPayments'
-	);
+const nounToUse = {
+	documents: __( 'document', 'woocommerce-payments' ),
+	deposits: __( 'deposit', 'woocommerce-payments' ),
+	disputes: __( 'dispute', 'woocommerce-payments' ),
+	loans: __( 'loan', 'woocommerce-payments' ),
+	payments: __( 'order', 'woocommerce-payments' ),
+	transactions: __( 'order', 'woocommerce-payments' ),
+};
+
+const verbToUse = {
+	documents: __( 'created', 'woocommerce-payments' ),
+	deposits: __( 'created', 'woocommerce-payments' ),
+	disputes: __( 'created', 'woocommerce-payments' ),
+	loans: __( 'created', 'woocommerce-payments' ),
+	payments: __( 'placed', 'woocommerce-payments' ),
+	transactions: __( 'placed', 'woocommerce-payments' ),
+};
+
+const getNoticeContent = (
+	currentPage: CurrentPage,
+	isDetailsView: boolean,
+	isDevMode: boolean
+): JSX.Element => {
+	switch ( currentPage ) {
+		case 'overview':
+			return isDevMode ? (
+				<>
+					{ interpolateComponents( {
+						mixedString: sprintf(
+							/* translators: %1$s: WooPayments */
+							__(
+								'{{strong}}%1s is in dev mode.{{/strong}} You need to set up a live %2s account before you can accept real transactions.',
+								'woocommerce-payments'
+							),
+							'WooPayments'
+						),
+						components: {
+							strong: <strong />,
+						},
+					} ) }
+				</>
+			) : (
+				<>
+					{ interpolateComponents( {
+						mixedString: sprintf(
+							/* translators: %1$s: WooPayments */
+							__(
+								'{{strong}}%1s is in dev mode.{{/strong}} All transactions will be simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								'woocommerce-payments'
+							),
+							'WooPayments'
+						),
+						components: {
+							strong: <strong />,
+							learnMoreLink: (
+								// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<Link
+									href={
+										'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/'
+									}
+									target="_blank"
+									rel="noreferrer"
+								/>
+							),
+						},
+					} ) }
+				</>
+			);
+		case 'documents':
+		case 'deposits':
+		case 'disputes':
+		case 'payments':
+		case 'loans':
+		case 'transactions':
+			return isDetailsView ? (
+				<>
+					{ interpolateComponents( {
+						mixedString: sprintf(
+							/* translators: %1$s: WooPayments */
+							_n(
+								'%1s was in test mode when this %2s was placed. To view live %3s, disable test mode in {{settingsLink}}%1s settings{{/settingsLink}}.',
+								'%1s was in test mode when these %2ss were placed. To view live %3s, disable test mode in {{settingsLink}}%1s settings{{/settingsLink}}.',
+								'deposits' === currentPage ? 2 : 1,
+								'woocommerce-payments'
+							),
+							'WooPayments',
+							nounToUse[ currentPage ],
+							verbToUse[ currentPage ]
+						),
+						components: {
+							settingsLink: (
+								// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<Link
+									href={ getPaymentSettingsUrl() }
+									rel="noreferrer"
+								/>
+							),
+						},
+					} ) }
+				</>
+			) : (
+				<>
+					{ interpolateComponents( {
+						mixedString: sprintf(
+							/* translators: %1$s: WooPayments */
+							__(
+								'Viewing test %1s. To view live %1s, disable test mode in {{settingsLink}}%2s settings{{/settingsLink}}.',
+								'woocommerce-payments'
+							),
+							currentPage,
+							'WooPayments'
+						),
+						components: {
+							settingsLink: (
+								// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<Link
+									href={ getPaymentSettingsUrl() }
+									rel="noreferrer"
+								/>
+							),
+						},
+					} ) }
+				</>
+			);
+	}
 };
 
 export const TestModeNotice: React.FC< Props > = ( {
-	children,
-	section,
+	currentPage,
 	actions,
+	isDetailsView = false,
+	isDevMode = false,
 } ) => {
 	if ( ! isInTestMode() ) return null;
 
@@ -61,7 +181,7 @@ export const TestModeNotice: React.FC< Props > = ( {
 			isDismissible={ false }
 			actions={ actions }
 		>
-			{ children }
+			{ getNoticeContent( currentPage, isDetailsView, isDevMode ) }
 		</BannerNotice>
 	);
 };

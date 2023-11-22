@@ -20,8 +20,6 @@ import { TestModeNotice } from 'components/test-mode-notice';
 import Page from 'components/page';
 import DownloadButton from 'components/download-button';
 import { formatExplicitCurrency } from 'utils/currency';
-import { notice } from '../strings';
-import { getPaymentSettingsUrl } from 'wcpay/utils';
 
 const PaymentCardReaderChargeDetails = ( props ) => {
 	const { readers, chargeError, isLoading } = useCardReaderStats(
@@ -33,16 +31,7 @@ const PaymentCardReaderChargeDetails = ( props ) => {
 	if ( ! isLoading && chargeError instanceof Error ) {
 		return (
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
-				<TestModeNotice
-					actions={ [
-						{
-							label: notice.action,
-							url: getPaymentSettingsUrl(),
-						},
-					] }
-				>
-					{ notice.content }
-				</TestModeNotice>
+				<TestModeNotice currentPage="payments" isDetailsView={ true } />
 				<Card>
 					<CardBody>
 						{ __(
@@ -137,16 +126,7 @@ const RenderPaymentCardReaderChargeDetails = ( props ) => {
 	const downloadable = !! rows.length;
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
-			<TestModeNotice
-				actions={ [
-					{
-						label: notice.action,
-						url: getPaymentSettingsUrl(),
-					},
-				] }
-			>
-				{ notice.content }
-			</TestModeNotice>
+			<TestModeNotice currentPage="payments" isDetailsView={ true } />
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
 				title={ __( 'Card readers', 'woocommerce-payments' ) }

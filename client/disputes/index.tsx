@@ -31,8 +31,8 @@ import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import Page from 'components/page';
 import { TestModeNotice } from 'components/test-mode-notice';
-import { notice, reasons } from './strings';
-import { formatStringValue, getPaymentSettingsUrl } from 'utils';
+import { reasons } from './strings';
+import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
@@ -508,16 +508,7 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
-			<TestModeNotice
-				actions={ [
-					{
-						label: notice.action,
-						url: getPaymentSettingsUrl(),
-					},
-				] }
-			>
-				{ notice.content }
-			</TestModeNotice>
+			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
 				className="wcpay-disputes-list"

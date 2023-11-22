@@ -19,13 +19,13 @@ import classNames from 'classnames';
  * Internal dependencies.
  */
 import { useDeposit } from 'wcpay/data';
-import { notice, displayStatus } from '../strings';
+import { displayStatus } from '../strings';
 import TransactionsList from 'transactions/list';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import { CachedDeposit } from 'wcpay/types/deposits';
-import InlineNotice from 'wcpay/components/inline-notice';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
 import './style.scss';
 
 const Status = ( { status }: { status: string } ): JSX.Element => (
@@ -166,9 +166,7 @@ export const DepositDetails = ( {
 	query: { id: string };
 } ): JSX.Element => (
 	<Page>
-		<InlineNotice status="warning" icon={ true } isDismissible={ false }>
-			{ notice.details }
-		</InlineNotice>
+		<TestModeNotice currentPage="deposits" isDetailsView={ true } />
 		<ErrorBoundary>
 			<DepositOverview depositId={ depositId } />
 		</ErrorBoundary>

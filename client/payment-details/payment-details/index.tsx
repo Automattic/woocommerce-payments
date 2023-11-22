@@ -17,8 +17,6 @@ import PaymentDetailsPaymentMethod from '../payment-method';
 import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
-import { getPaymentSettingsUrl } from 'wcpay/utils';
-import { notice } from '../strings';
 
 interface PaymentDetailsProps {
 	id: string;
@@ -43,16 +41,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 	if ( ! isLoading && error instanceof Error ) {
 		return (
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
-				<TestModeNotice
-					actions={ [
-						{
-							label: notice.action,
-							url: getPaymentSettingsUrl(),
-						},
-					] }
-				>
-					{ notice.content }
-				</TestModeNotice>
+				<TestModeNotice currentPage="payments" isDetailsView={ true } />
 				<Card>
 					<CardBody>
 						{ __(
@@ -67,17 +56,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
-			<TestModeNotice
-				actions={ [
-					{
-						label: notice.action,
-						url: getPaymentSettingsUrl(),
-					},
-				] }
-			>
-				{ notice.content }
-			</TestModeNotice>
-
+			<TestModeNotice currentPage="payments" isDetailsView={ true } />
 			<ErrorBoundary>
 				<PaymentDetailsSummary
 					charge={ charge }

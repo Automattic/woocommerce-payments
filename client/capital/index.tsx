@@ -20,8 +20,7 @@ import { CapitalLoan } from 'data/capital/types';
 import ClickableCell from 'components/clickable-cell';
 import Chip from 'components/chip';
 import { useLoans } from 'wcpay/data';
-import { getAdminUrl, getPaymentSettingsUrl } from 'wcpay/utils';
-import strings from './strings';
+import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 
 const columns = [
@@ -205,16 +204,8 @@ const CapitalPage = (): JSX.Element => {
 
 	return (
 		<Page>
-			<TestModeNotice
-				actions={ [
-					{
-						label: strings.notice.action,
-						url: getPaymentSettingsUrl(),
-					},
-				] }
-			>
-				{ strings.notice.content }
-			</TestModeNotice>
+			<TestModeNotice currentPage="loans" />
+
 			{ wcpaySettings.accountLoans.has_active_loan && (
 				<ErrorBoundary>
 					<ActiveLoanSummary />

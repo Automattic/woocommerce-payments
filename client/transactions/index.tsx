@@ -25,8 +25,6 @@ import {
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import RiskReviewList from './risk-review';
 import BlockedList from './blocked';
-import { notice } from './strings';
-import { getPaymentSettingsUrl } from 'wcpay/utils';
 
 declare const window: any;
 
@@ -52,61 +50,25 @@ export const TransactionsPage: React.FC = () => {
 	const tabsComponentMap = {
 		'transactions-page': (
 			<>
-				<TestModeNotice
-					actions={ [
-						{
-							label: notice.action,
-							url: getPaymentSettingsUrl(),
-						},
-					] }
-				>
-					{ notice.content }
-				</TestModeNotice>
+				<TestModeNotice currentPage="transactions" />
 				<TransactionsList />
 			</>
 		),
 		'uncaptured-page': (
 			<>
-				<TestModeNotice
-					actions={ [
-						{
-							label: notice.action,
-							url: getPaymentSettingsUrl(),
-						},
-					] }
-				>
-					{ notice.content }
-				</TestModeNotice>
+				<TestModeNotice currentPage="transactions" />
 				<Authorizations />
 			</>
 		),
 		'review-page': (
 			<>
-				<TestModeNotice
-					actions={ [
-						{
-							label: notice.action,
-							url: getPaymentSettingsUrl(),
-						},
-					] }
-				>
-					{ notice.content }
-				</TestModeNotice>
+				<TestModeNotice currentPage="transactions" />
 				<RiskReviewList />
 			</>
 		),
 		'blocked-page': (
 			<>
-				<TestModeNotice
-					actions={ [
-						{
-							label: notice.action,
-							url: getPaymentSettingsUrl(),
-						},
-					] }
-				>
-					{ notice.content }
-				</TestModeNotice>
+				<TestModeNotice currentPage="transactions" />
 				<BlockedList />
 			</>
 		),
