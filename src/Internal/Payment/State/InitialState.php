@@ -16,6 +16,7 @@ use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Internal\Service\MinimumAmountService;
+use WCPay\Internal\Service\FraudPreventionService;
 use WCPay\Internal\Service\PaymentRequestService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
@@ -73,6 +74,13 @@ class InitialState extends AbstractPaymentState {
 	private $minimum_amount_service;
 
 	/**
+	 * FraudPreventionService instance.
+	 *
+	 * @var FraudPreventionService
+	 */
+	private $fraud_prevention_service;
+
+	/**
 	 * FailedTransactionRateLimiter instance.
 	 *
 	 * @var FailedTransactionRateLimiter
@@ -89,6 +97,7 @@ class InitialState extends AbstractPaymentState {
 	 * @param PaymentRequestService             $payment_request_service Connection with the server.
 	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
 	 * @param MinimumAmountService              $minimum_amount_service  Service for handling minimum amount.
+	 * @param FraudPreventionService            $fraud_prevention_service Service for preventing fraud payments.
 	 * @param FailedTransactionRateLimiter      $failed_transaction_rate_limiter Failed Transaction Rate Limiter instance.
 	 */
 	public function __construct(
@@ -99,6 +108,7 @@ class InitialState extends AbstractPaymentState {
 		PaymentRequestService $payment_request_service,
 		DuplicatePaymentPreventionService $dpps,
 		MinimumAmountService $minimum_amount_service,
+		FraudPreventionService $fraud_prevention_service,
 		FailedTransactionRateLimiter $failed_transaction_rate_limiter
 	) {
 		parent::__construct( $state_factory );
@@ -109,6 +119,7 @@ class InitialState extends AbstractPaymentState {
 		$this->payment_request_service         = $payment_request_service;
 		$this->dpps                            = $dpps;
 		$this->minimum_amount_service          = $minimum_amount_service;
+		$this->fraud_prevention_service        = $fraud_prevention_service;
 		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 	}
 
@@ -136,6 +147,12 @@ class InitialState extends AbstractPaymentState {
 		$this->process_order_phone_number();
 
 		$context = $this->get_context();
+
+		if ( ! $this->fraud_prevention_service->verify_token( $context->get_fraud_prevention_token() ) ) {
+			throw new StateTransitionException(
+				__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' )
+			);
+		}
 
 		if ( $this->failed_transaction_rate_limiter->is_limited() ) {
 			$this->order_service->add_rate_limiter_note( $context->get_order_id() );
@@ -168,7 +185,6 @@ class InitialState extends AbstractPaymentState {
 		 * a payment intent, and the two actions must be adjacent to each-other.
 		 */
 		try {
-			$context  = $this->get_context();
 			$order_id = $context->get_order_id();
 
 			// Create or update customer and customer details.
@@ -229,6 +245,11 @@ class InitialState extends AbstractPaymentState {
 		$fingerprint = $request->get_fingerprint();
 		if ( ! is_null( $fingerprint ) ) {
 			$context->set_fingerprint( $fingerprint );
+		}
+
+		$fraud_prevention_token = $request->get_fraud_prevention_token();
+		if ( ! is_null( $fraud_prevention_token ) ) {
+			$context->set_fraud_prevention_token( $fraud_prevention_token );
 		}
 	}
 
