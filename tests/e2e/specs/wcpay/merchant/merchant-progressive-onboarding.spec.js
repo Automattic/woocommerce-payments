@@ -35,6 +35,7 @@ describe( 'Admin merchant progressive onboarding', () => {
 		// Merchant vs builder flow step
 		await expect( page ).toMatchElement( 'h1.stepper__heading', {
 			text: 'Let’s get your store ready to accept payments',
+			timeout: 10000,
 		} );
 		await expect( page ).toClick(
 			'div.stepper__content button.components-button.is-primary',
