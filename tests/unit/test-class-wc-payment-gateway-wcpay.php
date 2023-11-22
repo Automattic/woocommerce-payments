@@ -201,6 +201,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_localization_service,
 			$this->mock_fraud_service
 		);
+		WC_Payments::set_gateway( $this->wcpay_gateway );
 
 		$this->woopay_utilities = new WooPay_Utilities();
 
@@ -362,12 +363,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->wcpay_gateway->attach_exchange_info_to_order( $order, $charge_id );
 		$this->assertEquals( 0.853, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
-	}
-
-	public function test_payment_fields_outputs_fields() {
-		$this->wcpay_gateway->payment_fields();
-
-		$this->expectOutputRegex( '/<div id="wcpay-card-element"><\/div>/' );
 	}
 
 	public function test_save_card_checkbox_not_displayed_when_saved_cards_disabled() {
@@ -1404,7 +1399,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->add_payment_token( $token );
 		$order->save();
 
-		$pi = new Payment_Information( 'pm_test', $order );
+		$pi = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
 
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$request->expects( $this->once() )
@@ -1425,7 +1420,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_total( 0.45 );
 		$order->save();
 
-		$pi = new Payment_Information( 'pm_test', $order );
+		$pi = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'The selected payment method requires a total amount of at least $0.50.' );
@@ -1442,7 +1437,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
 		$_POST['payment_method']               = $payment_method;
-		$pi                                    = new Payment_Information( 'pm_test', $order );
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
 
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$request->expects( $this->once() )
@@ -1465,7 +1460,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
 		$_POST['payment_method']               = $payment_method;
-		$pi                                    = new Payment_Information( 'pm_test', $order );
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
 
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$request->expects( $this->once() )
