@@ -79,7 +79,7 @@ class ProcessedState extends AbstractPaymentState {
 		$this->order_service->update_order_from_successful_intent( $order_id, $context->get_intent(), $context );
 
 		// cleaning up.
-		wc_reduce_stock_levels( $order_id );
+		$this->legacy_proxy->call_function( 'wc_reduce_stock_levels', $order_id );
 		$this->clear_cart();
 		$this->clear_upe_payment_intent_from_session();
 

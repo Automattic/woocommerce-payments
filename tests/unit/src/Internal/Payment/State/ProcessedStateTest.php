@@ -102,17 +102,19 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 			->willReturn( $mock_completed_state );
 
 		$this->mock_legacy_proxy
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'call_function' )
-			->with( 'wc' )
+			->withConsecutive( [ 'wc_reduce_stock_levels', 1 ], [ 'wc' ] )
 			->willReturnCallback(
-				function () {
-					$mock_cart = $this->getMockBuilder( \stdClass::class )
-						->onlyMethods( [ 'empty_cart' ] )
-						->getMock();
-					return (object) [
-						'cart' => $mock_cart,
-					];
+				function ( $arg ) {
+					if ( 'wc' === $arg ) {
+						$mock_cart = $this->getMockBuilder( \stdClass::class )
+							->addMethods( [ 'empty_cart' ] )
+							->getMock();
+							return (object) [
+								'cart' => $mock_cart,
+							];
+					}
 				}
 			);
 
