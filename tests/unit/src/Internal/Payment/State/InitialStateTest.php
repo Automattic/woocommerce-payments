@@ -10,7 +10,9 @@ namespace WCPay\Tests\Internal\Payment\State;
 use WC_Helper_Intention;
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
+use WCPay\Internal\Payment\FailedTransactionRateLimiter;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
@@ -94,6 +96,11 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 	private $mock_minimum_amount_service;
 
 	/**
+	 * @var FailedTransactionRateLimiter|MockObject
+	 */
+	private $mock_failed_transaction_rate_limiter;
+
+	/**
 	 * Mocked dependencies.
 	 *
 	 * @var MockObject[]
@@ -107,14 +114,15 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 		parent::setUp();
 		$this->mock_context = $this->createMock( PaymentContext::class );
 		$this->mock_deps    = [
-			$this->mock_state_factory            = $this->createMock( StateFactory::class ),
-			$this->mock_order_service            = $this->createMock( OrderService::class ),
-			$this->mock_customer_service         = $this->createMock( WC_Payments_Customer_Service::class ),
-			$this->mock_level3_service           = $this->createMock( Level3Service::class ),
-			$this->mock_payment_request_service  = $this->createMock( PaymentRequestService::class ),
-			$this->mock_dpps                     = $this->createMock( DuplicatePaymentPreventionService::class ),
-			$this->mock_minimum_amount_service   = $this->createMock( MinimumAmountService::class ),
-			$this->mock_fraud_prevention_service = $this->createMock( FraudPreventionService::class ),
+			$this->mock_state_factory                   = $this->createMock( StateFactory::class ),
+			$this->mock_order_service                   = $this->createMock( OrderService::class ),
+			$this->mock_customer_service                = $this->createMock( WC_Payments_Customer_Service::class ),
+			$this->mock_level3_service                  = $this->createMock( Level3Service::class ),
+			$this->mock_payment_request_service         = $this->createMock( PaymentRequestService::class ),
+			$this->mock_dpps                            = $this->createMock( DuplicatePaymentPreventionService::class ),
+			$this->mock_minimum_amount_service          = $this->createMock( MinimumAmountService::class ),
+			$this->mock_fraud_prevention_service        = $this->createMock( FraudPreventionService::class ),
+			$this->mock_failed_transaction_rate_limiter = $this->createMock( FailedTransactionRateLimiter::class ),
 		];
 
 		$this->sut = new InitialState( ... $this->mock_deps );
@@ -213,7 +221,13 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		// Mock get customer.
 		$this->mock_customer_data( 1, 1, $mock_order, 'cus_mock' );
-		$this->mock_minimum_amount_service->expects( $this->once() )->method( 'store_amount_from_exception' )
+
+		$this->mock_failed_transaction_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+		$this->mock_minimum_amount_service->expects( $this->once() )
+			->method( 'store_amount_from_exception' )
 			->with( $small_amount_exception );
 
 		$this->expectExceptionObject( $small_amount_exception );
@@ -255,6 +269,51 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			->willReturn( $mock_error_state );
 		$result = $this->mocked_sut->start_processing( $mock_request );
 		$this->assertSame( $mock_error_state, $result );
+	}
+
+	public function test_start_processing_will_bump_rate_limiter_when_specific_error_codes_happen() {
+		$mock_request = $this->createMock( PaymentRequest::class );
+		$mock_order   = $this->createMock( WC_Order::class );
+		$error_code   = 'card_declined';
+		$exception    = new API_Exception( 'Card decline', $error_code, 400 );
+
+		$this->mock_payment_request_service
+			->expects( $this->once() )
+			->method( 'create_intent' )
+			->with( $this->mock_context )
+			->willThrowException( $exception );
+
+		// Make sure that the minimum amount verification is properly called.
+		$this->mock_context->expects( $this->once() )->method( 'get_amount' )->willReturn( 1 );
+		$this->mock_context->expects( $this->once() )->method( 'get_currency' )->willReturn( 'eur' );
+
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
+
+		// Mock get customer.
+		$this->mock_customer_data( 1, 1, $mock_order, 'cus_mock' );
+
+		$this->mock_failed_transaction_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+		$this->mock_failed_transaction_rate_limiter
+			->expects( $this->once() )
+			->method( 'should_bump_rate_limiter' )
+			->with( $error_code )
+			->willReturn( true );
+
+		$this->mock_failed_transaction_rate_limiter
+			->expects( $this->once() )
+			->method( 'bump' );
+
+		$this->expectExceptionObject( $exception );
+
+		// Act.
+		$this->mocked_sut->start_processing( $mock_request );
 	}
 
 	public function test_processing_will_transition_to_auth_required_state() {
@@ -301,6 +360,34 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		$result = $this->mocked_sut->start_processing( $mock_request );
 		$this->assertSame( $mock_auth_state, $result );
+	}
+
+	public function test_start_processing_throw_exceptions_due_to_rate_limited() {
+		$order_id     = 123;
+		$mock_request = $this->createMock( PaymentRequest::class );
+
+		// Arrange mocks.
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_request' )->with( $mock_request );
+		$this->mocked_sut->expects( $this->once() )->method( 'populate_context_from_order' );
+
+		// Verify that FraudPreventionService is called.
+		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
+
+		$this->mock_failed_transaction_rate_limiter->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( true );
+
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( $order_id );
+		$this->mock_order_service->expects( $this->once() )
+			->method( 'add_rate_limiter_note' )
+			->with( $order_id );
+
+		$this->expectException( StateTransitionException::class );
+
+		// Act.
+		$this->mocked_sut->start_processing( $mock_request );
 	}
 
 	public function test_start_processing_throw_exceptions_due_to_invalid_phone() {
@@ -378,6 +465,11 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 
 		// Verify that FraudPreventionService is called.
 		$this->mock_fraud_prevention_service->method( 'verify_token' )->willReturn( true );
+
+		$this->mock_failed_transaction_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
 
 		$this->mock_context->expects( $this->once() )
 			->method( 'get_currency' )

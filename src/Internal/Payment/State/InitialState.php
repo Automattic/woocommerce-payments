@@ -7,13 +7,14 @@
 
 namespace WCPay\Internal\Payment\State;
 
+use WCPay\Exceptions\API_Exception;
+use WCPay\Internal\Payment\FailedTransactionRateLimiter;
 use WC_Payments_Customer_Service;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Service\MinimumAmountService;
 use WCPay\Internal\Service\FraudPreventionService;
 use WCPay\Internal\Service\PaymentRequestService;
@@ -80,6 +81,13 @@ class InitialState extends AbstractPaymentState {
 	private $fraud_prevention_service;
 
 	/**
+	 * FailedTransactionRateLimiter instance.
+	 *
+	 * @var FailedTransactionRateLimiter
+	 */
+	private $failed_transaction_rate_limiter;
+
+	/**
 	 * Class constructor, only meant for storing dependencies.
 	 *
 	 * @param StateFactory                      $state_factory           Factory for payment states.
@@ -90,6 +98,7 @@ class InitialState extends AbstractPaymentState {
 	 * @param DuplicatePaymentPreventionService $dpps                    Service for preventing duplicate payments.
 	 * @param MinimumAmountService              $minimum_amount_service  Service for handling minimum amount.
 	 * @param FraudPreventionService            $fraud_prevention_service Service for preventing fraud payments.
+	 * @param FailedTransactionRateLimiter      $failed_transaction_rate_limiter Failed Transaction Rate Limiter instance.
 	 */
 	public function __construct(
 		StateFactory $state_factory,
@@ -99,17 +108,19 @@ class InitialState extends AbstractPaymentState {
 		PaymentRequestService $payment_request_service,
 		DuplicatePaymentPreventionService $dpps,
 		MinimumAmountService $minimum_amount_service,
-		FraudPreventionService $fraud_prevention_service
+		FraudPreventionService $fraud_prevention_service,
+		FailedTransactionRateLimiter $failed_transaction_rate_limiter
 	) {
 		parent::__construct( $state_factory );
 
-		$this->order_service            = $order_service;
-		$this->customer_service         = $customer_service;
-		$this->level3_service           = $level3_service;
-		$this->payment_request_service  = $payment_request_service;
-		$this->dpps                     = $dpps;
-		$this->minimum_amount_service   = $minimum_amount_service;
-		$this->fraud_prevention_service = $fraud_prevention_service;
+		$this->order_service                   = $order_service;
+		$this->customer_service                = $customer_service;
+		$this->level3_service                  = $level3_service;
+		$this->payment_request_service         = $payment_request_service;
+		$this->dpps                            = $dpps;
+		$this->minimum_amount_service          = $minimum_amount_service;
+		$this->fraud_prevention_service        = $fraud_prevention_service;
+		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 	}
 
 	/**
@@ -143,6 +154,14 @@ class InitialState extends AbstractPaymentState {
 			);
 		}
 
+		if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+			$this->order_service->add_rate_limiter_note( $context->get_order_id() );
+			throw new StateTransitionException(
+				__( 'Your payment was not processed.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
 		$duplicate_order_result = $this->process_duplicate_order();
 		if ( null !== $duplicate_order_result ) {
 			return $duplicate_order_result;
@@ -153,7 +172,6 @@ class InitialState extends AbstractPaymentState {
 			return $duplicate_payment_result;
 		}
 
-		$context = $this->get_context();
 		$this->minimum_amount_service->verify_amount(
 			$context->get_currency(),
 			$context->get_amount()
@@ -184,6 +202,11 @@ class InitialState extends AbstractPaymentState {
 			throw $e;
 		} catch ( Invalid_Request_Parameter_Exception | Extend_Request_Exception | Immutable_Parameter_Exception $e ) {
 			return $this->create_state( SystemErrorState::class );
+		} catch ( API_Exception $e ) {
+			if ( $this->failed_transaction_rate_limiter->should_bump_rate_limiter( $e->get_error_code() ) ) {
+				$this->failed_transaction_rate_limiter->bump();
+			}
+			throw $e;
 		}
 
 		// Intent requires authorization (3DS check).
