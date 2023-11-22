@@ -102,6 +102,8 @@ function _manually_load_plugin() {
 	// Load currency helper class early to ensure its implementation is used over the one resolved during further test initialization.
 	require_once __DIR__ . '/helpers/class-wc-helper-site-currency.php';
 
+	// Assist testing methods and classes with keyword `final`.
+	// Woo Core uses the similar approach from this package, and implements it as class `CodeHacker`.
 	DG\BypassFinals::enable( false, true );
 	DG\BypassFinals::setWhitelist(
 		[
