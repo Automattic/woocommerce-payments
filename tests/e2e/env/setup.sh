@@ -342,6 +342,11 @@ cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m
 echo "Setting up a coupon for E2E tests"
 cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
 
+echo "Setting up multi-currency"
+cli wp option update wcpay_multi_currency_enabled_currencies '{"0":"EUR","1":"USD"}' --format=json
+cli wp option update wcpay_multi_currency_enable_auto_currency no
+cli wp option update wcpay_multi_currency_enable_storefront_switcher yes
+
 # Log test configuration for visibility
 echo
 echo "*******************************************************"
