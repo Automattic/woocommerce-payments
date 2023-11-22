@@ -193,7 +193,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$invoice = $this->invoice_service->record_subscription_payment_context( $wcpay_invoice_id );
 
 		// Update charge and transaction metadata - add order id for Stripe Billing
-		$this->invoice_service->update_transaction_order_id( $invoice, $order->get_id() );
+		$this->invoice_service->update_charge_details( $invoice, $order->get_id() );
 	}
 
 	/**

@@ -337,19 +337,17 @@ class WC_Payments_Invoice_Service {
 	 * @return void
 	 * @throws API_Exception
 	 */
-	public function update_transaction_order_id( array $invoice, int $order_id ) {
+	public function update_charge_details( array $invoice, int $order_id ) {
 
 		if ( ! isset( $invoice['charge'] ) ) {
 			return;
 		}
-
-		$charge = $this->payments_api_client->get_charge( $invoice['charge'] );
-
-		if ( !isset( $charge['balance_transaction'] ) || !isset( $charge['balance_transaction']['id'] ) ) {
-			return;
-		}
-
-		$this->payments_api_client->update_transaction( $charge['balance_transaction']['id'], [ 'order_id' => $order_id ] );
+		$this->payments_api_client->update_charge(
+			$invoice['charge'],
+			[
+				'metadata' => ['order_id' => $order_id ],
+			]
+		);
 	}
 
 	/**

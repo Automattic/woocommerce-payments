@@ -1176,16 +1176,16 @@ class WC_Payments_API_Client {
 	/**
 	 * Updates a transaction.
 	 *
-	 * @param string $transaction_id ID of the transaction to update.
+	 * @param string $charge_id ID of the charge to update.
 	 * @param array  $data arameters to send to the transaction endpoint. Optional. Default is an empty array.
 	 *
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function update_transaction( string $transaction_id, array $data = [] ) {
+	public function update_charge( string $charge_id, array $data = [] ) {
 		return $this->request(
 			$data,
-			self::TRANSACTIONS_API . '/' . $transaction_id,
+			self::CHARGES_API . '/' . $charge_id,
 			self::POST
 		);
 	}
