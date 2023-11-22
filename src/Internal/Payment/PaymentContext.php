@@ -292,6 +292,24 @@ class PaymentContext {
 	}
 
 	/**
+	 * Stores the fraud prevention token.
+	 *
+	 * @param string $token Token from request.
+	 */
+	public function set_fraud_prevention_token( string $token ) {
+		$this->set( 'fraud_prevention_token', $token );
+	}
+
+	/**
+	 * Returns the fraud prevention token.
+	 *
+	 * @return string|null
+	 */
+	public function get_fraud_prevention_token(): ?string {
+		return $this->get( 'fraud_prevention_token' );
+	}
+
+	/**
 	 * Returns the transitions array.
 	 *
 	 * @return Transition[]
