@@ -1,18 +1,20 @@
+/** @format **/
+
 /**
  * External dependencies
  */
 import React from 'react';
 
 /**
- * Internal dependencies
+ * Internal dependencies.
  */
 import Page from 'components/page';
-import DocumentsList from './list';
 import { TestModeNotice } from 'components/test-mode-notice';
+import DepositsList from './list';
 import { notice } from './strings';
 import { getPaymentSettingsUrl } from 'wcpay/utils';
 
-export const DocumentsPage = (): JSX.Element => {
+const DepositsPage: React.FC = () => {
 	return (
 		<Page>
 			<TestModeNotice
@@ -25,9 +27,9 @@ export const DocumentsPage = (): JSX.Element => {
 			>
 				{ notice.content }
 			</TestModeNotice>
-			<DocumentsList />
+			<DepositsList />
 		</Page>
 	);
 };
 
-export default DocumentsPage;
+export default DepositsPage;

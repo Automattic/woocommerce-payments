@@ -95,32 +95,36 @@ const GeneralSettings = () => {
 						className="wcpay-general-settings__notice"
 					>
 						<span>
-							<b>
-								{
+							{ interpolateComponents( {
+								mixedString: sprintf(
 									/* translators: %s: WooPayments */
-									sprintf(
-										__(
-											'%s is in dev mode.',
-											'woocommerce-payments'
-										),
-										'WooPayments'
-									)
-								}
-							</b>
-							{ sprintf(
-								__(
-									'You need to finish setting up %s before you can turn off test mode to accept live transactions.',
-									'woocommerce-payments'
+									__(
+										'{{b}}%s is in dev mode.{{/b}} You need to finish setting up %s before you can ' +
+											'turn off test mode to accept live transactions. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+										'woocommerce-payments'
+									),
+									'WooPayments',
+									'WooPayments'
 								),
-								'WooPayments'
-							) }
+								components: {
+									b: <b />,
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											target="_blank"
+											rel="noreferrer"
+											href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/"
+										/>
+									),
+								},
+							} ) }
 						</span>
 					</InlineNotice>
 				</CardBody>
 			</Card>
 			{ modalVisible && (
 				<SetupLivePaymentsModal
-					closeModal={ setModalVisible( false ) }
+					closeModal={ () => setModalVisible( false ) }
 				/>
 			) }
 		</>

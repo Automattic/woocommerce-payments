@@ -31,10 +31,11 @@ import Info from '../info';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import Loadable, { LoadableBlock } from 'components/loadable';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
+import { notice as _notice } from '../strings';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
 const PRODUCT_TYPE_META_KEY = '__product_type';
@@ -295,7 +296,6 @@ export const DisputeEvidencePage = ( props ) => {
 		dispute.status !== 'needs_response' &&
 		dispute.status !== 'warning_needs_response';
 	const disputeIsAvailable = ! isLoading && dispute.id;
-	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
 
 	const readOnlyNotice = (
 		<Notice
@@ -313,7 +313,13 @@ export const DisputeEvidencePage = ( props ) => {
 	if ( ! isLoading && ! disputeIsAvailable ) {
 		return (
 			<Page isNarrow className="wcpay-dispute-details">
-				{ testModeNotice }
+				<InlineNotice
+					status="warning"
+					icon={ true }
+					isDismissible={ false }
+				>
+					{ _notice.details }
+				</InlineNotice>
 				<div>
 					{ __( 'Dispute not loaded', 'woocommerce-payments' ) }
 				</div>
@@ -323,7 +329,13 @@ export const DisputeEvidencePage = ( props ) => {
 
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
-			{ testModeNotice }
+			<InlineNotice
+				status="warning"
+				icon={ true }
+				isDismissible={ false }
+			>
+				{ _notice.details }
+			</InlineNotice>
 			{ readOnly && ! isLoading && readOnlyNotice }
 			<ErrorBoundary>
 				<Card size="large">

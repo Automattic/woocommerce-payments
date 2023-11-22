@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { TestModeNotice, topics } from '../../components/test-mode-notice';
+import { TestModeNotice } from '../../components/test-mode-notice';
 import Page from '../../components/page';
 import { Card, CardBody } from '@wordpress/components';
 import ErrorBoundary from '../../components/error-boundary';
@@ -17,6 +17,8 @@ import PaymentDetailsPaymentMethod from '../payment-method';
 import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
+import { getPaymentSettingsUrl } from 'wcpay/utils';
+import { notice } from '../strings';
 
 interface PaymentDetailsProps {
 	id: string;
@@ -37,13 +39,20 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 	showTimeline = true,
 	paymentIntent,
 } ) => {
-	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
-
 	// Check instance of error because its default value is empty object
 	if ( ! isLoading && error instanceof Error ) {
 		return (
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
-				{ testModeNotice }
+				<TestModeNotice
+					actions={ [
+						{
+							label: notice.action,
+							url: getPaymentSettingsUrl(),
+						},
+					] }
+				>
+					{ notice.content }
+				</TestModeNotice>
 				<Card>
 					<CardBody>
 						{ __(
@@ -58,7 +67,16 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
-			{ testModeNotice }
+			<TestModeNotice
+				actions={ [
+					{
+						label: notice.action,
+						url: getPaymentSettingsUrl(),
+					},
+				] }
+			>
+				{ notice.content }
+			</TestModeNotice>
 
 			<ErrorBoundary>
 				<PaymentDetailsSummary

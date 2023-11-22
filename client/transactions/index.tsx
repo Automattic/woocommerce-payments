@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { Experiment } from '@woocommerce/explat';
 import { TabPanel } from '@wordpress/components';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
@@ -14,7 +13,7 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import Page from 'components/page';
 import TransactionsList from './list';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice } from 'components/test-mode-notice';
 import Authorizations from './uncaptured';
 import './style.scss';
 import {
@@ -26,6 +25,8 @@ import {
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import RiskReviewList from './risk-review';
 import BlockedList from './blocked';
+import { notice } from './strings';
+import { getPaymentSettingsUrl } from 'wcpay/utils';
 
 declare const window: any;
 
@@ -51,25 +52,61 @@ export const TransactionsPage: React.FC = () => {
 	const tabsComponentMap = {
 		'transactions-page': (
 			<>
-				<TestModeNotice topic={ topics.transactions } />
+				<TestModeNotice
+					actions={ [
+						{
+							label: notice.action,
+							url: getPaymentSettingsUrl(),
+						},
+					] }
+				>
+					{ notice.content }
+				</TestModeNotice>
 				<TransactionsList />
 			</>
 		),
 		'uncaptured-page': (
 			<>
-				<TestModeNotice topic={ topics.authorizations } />
+				<TestModeNotice
+					actions={ [
+						{
+							label: notice.action,
+							url: getPaymentSettingsUrl(),
+						},
+					] }
+				>
+					{ notice.content }
+				</TestModeNotice>
 				<Authorizations />
 			</>
 		),
 		'review-page': (
 			<>
-				<TestModeNotice topic={ topics.riskReviewTransactions } />
+				<TestModeNotice
+					actions={ [
+						{
+							label: notice.action,
+							url: getPaymentSettingsUrl(),
+						},
+					] }
+				>
+					{ notice.content }
+				</TestModeNotice>
 				<RiskReviewList />
 			</>
 		),
 		'blocked-page': (
 			<>
-				<TestModeNotice topic={ topics.blockedTransactions } />
+				<TestModeNotice
+					actions={ [
+						{
+							label: notice.action,
+							url: getPaymentSettingsUrl(),
+						},
+					] }
+				>
+					{ notice.content }
+				</TestModeNotice>
 				<BlockedList />
 			</>
 		),

@@ -4,7 +4,28 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+
+// Content for test mode notice.
+export const notice = {
+	content: __(
+		'Viewing test disputes. To view live disputes, disable test mode in ',
+		'woocommerce-payments'
+	),
+	action: sprintf(
+		/* translators: %s: WooPayments */
+		__( '%s settings.', 'woocommerce-payments' ),
+		'WooPayments'
+	),
+	details: sprintf(
+		/* translators: %s: WooPayments */
+		__(
+			'%s was in test mode when this disputes was created.',
+			'woocommerce-payments'
+		),
+		'WooPayments'
+	),
+};
 
 // Mapping of dispute reason to strings.
 // This mapping is duplicated in \WC_Payments_Utils::get_dispute_reason_description() and on Server.

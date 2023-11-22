@@ -30,9 +30,9 @@ import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import Page from 'components/page';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
-import { reasons } from './strings';
-import { formatStringValue } from 'utils';
+import { TestModeNotice } from 'components/test-mode-notice';
+import { notice, reasons } from './strings';
+import { formatStringValue, getPaymentSettingsUrl } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
@@ -508,7 +508,16 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
-			<TestModeNotice topic={ topics.disputes } />
+			<TestModeNotice
+				actions={ [
+					{
+						label: notice.action,
+						url: getPaymentSettingsUrl(),
+					},
+				] }
+			>
+				{ notice.content }
+			</TestModeNotice>
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
 				className="wcpay-disputes-list"
