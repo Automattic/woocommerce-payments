@@ -86,7 +86,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		).toBeInTheDocument();
 	} );
 
-	test( 'prefetch session data by default', async () => {
+	test( 'does not prefetch session data by default', async () => {
 		getConfig.mockImplementation( ( v ) => {
 			switch ( v ) {
 				case 'wcAjaxUrl':
@@ -108,14 +108,12 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		);
 
 		await waitFor( () => {
-			expect( request ).toHaveBeenCalledWith( 'woopay.url', {
-				_ajax_nonce: 'sessionnonce',
-			} );
+			expect( request ).not.toHaveBeenCalled();
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );
 	} );
 
-	test( 'request session data on button click', async () => {
+	test( 'should not request session data on button click', async () => {
 		getConfig.mockImplementation( ( v ) => {
 			switch ( v ) {
 				case 'wcAjaxUrl':
@@ -142,9 +140,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		userEvent.click( expressButton );
 
 		await waitFor( () => {
-			expect( request ).toHaveBeenCalledWith( 'woopay.url', {
-				_ajax_nonce: 'sessionnonce',
-			} );
+			expect( request ).not.toHaveBeenCalled();
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );
 	} );

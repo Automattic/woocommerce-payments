@@ -259,7 +259,6 @@ export const WoopayExpressCheckoutButton = ( {
 							} );
 					} );
 				} else {
-					// Non-product pages already have pre-fetched session data.
 					request(
 						buildAjaxURL(
 							getConfig( 'wcAjaxUrl' ),
