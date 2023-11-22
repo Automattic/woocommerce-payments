@@ -113,23 +113,10 @@ export const WoopayExpressCheckoutButton = ( {
 							'woocommerce-payments'
 						)
 				);
-			} else if (
-				addToCartButton.classList.contains(
-					'wc-variation-selection-needed'
-				)
-			) {
-				window.alert(
-					window?.wc_add_to_cart_variation_params
-						?.i18n_make_a_selection_text ||
-						__(
-							'Please select some product options before adding this product to your cart.',
-							'woocommerce-payments'
-						)
-				);
 			} else {
 				window.alert(
 					__(
-						'Please select all required options to continue.',
+						'Please select your product options before proceeding.',
 						'woocommerce-payments'
 					)
 				);
