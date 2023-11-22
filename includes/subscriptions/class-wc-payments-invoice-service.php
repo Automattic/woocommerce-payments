@@ -313,8 +313,7 @@ class WC_Payments_Invoice_Service {
 	/**
 	 * Sends a request to server to record the store's context for an invoice payment.
 	 *
-	 * @param string   $invoice_id
-	 * @param int|null $order_id
+	 * @param string $invoice_id The subscription invoice ID.
 	 *
 	 * @return array
 	 * @throws API_Exception
@@ -329,7 +328,7 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
-	 * Update a transaction with the order id from invoice.
+	 * Update a charge with the order id from invoice.
 	 *
 	 * @param array $invoice
 	 * @param int   $order_id

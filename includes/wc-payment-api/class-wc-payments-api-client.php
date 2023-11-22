@@ -1174,7 +1174,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Updates a transaction.
+	 * Updates a charge.
 	 *
 	 * @param string $charge_id ID of the charge to update.
 	 * @param array  $data arameters to send to the transaction endpoint. Optional. Default is an empty array.
