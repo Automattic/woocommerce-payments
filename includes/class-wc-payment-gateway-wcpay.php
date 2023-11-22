@@ -1566,10 +1566,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string|null Payment method to use for the intent.
 	 */
 	public function get_payment_method_to_use_for_intent() {
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-			return $this->get_payment_methods_from_gateway_id( $requested_payment_method )[0];
-		}
+		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		return $this->get_payment_methods_from_gateway_id( $requested_payment_method )[0];
 	}
 
 	/**
