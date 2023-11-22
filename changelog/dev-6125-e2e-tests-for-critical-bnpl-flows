@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add E2E tests for Affirm and Afterpay checkouts
