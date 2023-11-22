@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
+use WCPay\Internal\Payment\FailedTransactionRateLimiter;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -32,7 +33,6 @@ use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
-use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
@@ -184,9 +184,9 @@ class WC_Payments {
 	private static $apple_pay_registration;
 
 	/**
-	 * Instance of Session_Rate_Limiter to limit failed transactions
+	 * Instance of FailedTransactionRateLimiter to limit failed transactions
 	 *
-	 * @var Session_Rate_Limiter
+	 * @var FailedTransactionRateLimiter
 	 */
 	private static $failed_transaction_rate_limiter;
 
@@ -490,7 +490,7 @@ class WC_Payments {
 		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account, self::$session_service, self::$database_cache );
 		self::$in_person_payments_receipts_service  = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                 = new WC_Payments_Localization_Service();
-		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
+		self::$failed_transaction_rate_limiter      = wcpay_get_container()->get( FailedTransactionRateLimiter::class );
 		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$woopay_util                          = new WooPay_Utilities();

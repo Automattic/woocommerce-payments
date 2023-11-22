@@ -16,8 +16,8 @@ use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Address_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Internal\Payment\FailedTransactionRateLimiter;
 use WCPay\Logger;
-use WCPay\Session_Rate_Limiter;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
@@ -64,7 +64,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service             - Action Scheduler service instance.
 	 * @param UPE_Payment_Method                   $payment_method                       - Specific UPE_Payment_Method instance for gateway.
 	 * @param array                                $payment_methods                      - Array of payment methods to supply to parent.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter      - Session Rate Limiter instance.
+	 * @param FailedTransactionRateLimiter         $failed_transaction_rate_limiter      - Session Rate Limiter instance.
 	 * @param WC_Payments_Order_Service            $order_service                        - Order class instance.
 	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
 	 * @param WC_Payments_Localization_Service     $localization_service                 - Localization service instance.
@@ -78,7 +78,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		UPE_Payment_Method $payment_method,
 		array $payment_methods,
-		Session_Rate_Limiter $failed_transaction_rate_limiter,
+		FailedTransactionRateLimiter $failed_transaction_rate_limiter,
 		WC_Payments_Order_Service $order_service,
 		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service,
 		WC_Payments_Localization_Service $localization_service,

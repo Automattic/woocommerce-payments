@@ -30,6 +30,7 @@ use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Internal\Payment\FailedTransactionRateLimiter;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
@@ -40,7 +41,6 @@ use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
-use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Payment\Factor;
@@ -144,9 +144,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $action_scheduler_service;
 
 	/**
-	 * Session_Rate_Limiter instance for limiting failed transactions.
+	 * FailedTransactionRateLimiter instance for limiting failed transactions.
 	 *
-	 * @var Session_Rate_Limiter
+	 * @var FailedTransactionRateLimiter
 	 */
 	protected $failed_transaction_rate_limiter;
 
@@ -193,7 +193,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payments_Customer_Service         $customer_service                     - Customer class instance.
 	 * @param WC_Payments_Token_Service            $token_service                        - Token class instance.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service             - Action Scheduler service instance.
-	 * @param Session_Rate_Limiter|null            $failed_transaction_rate_limiter      - Rate Limiter for failed transactions.
+	 * @param FailedTransactionRateLimiter|null    $failed_transaction_rate_limiter      - Rate Limiter for failed transactions.
 	 * @param WC_Payments_Order_Service            $order_service                        - Order class instance.
 	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
 	 * @param WC_Payments_Localization_Service     $localization_service                 - Localization service instance.
@@ -205,7 +205,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Customer_Service $customer_service,
 		WC_Payments_Token_Service $token_service,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
-		Session_Rate_Limiter $failed_transaction_rate_limiter = null,
+		FailedTransactionRateLimiter $failed_transaction_rate_limiter = null,
 		WC_Payments_Order_Service $order_service,
 		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service,
 		WC_Payments_Localization_Service $localization_service,
