@@ -25,6 +25,13 @@ class FraudPreventionServiceTest extends WCPAY_UnitTestCase {
 	private $sut;
 
 	/**
+	 * SUT with some methods mocked.
+	 *
+	 * @var FraudPreventionService|MockObject
+	 */
+	private $mock_sut;
+
+	/**
 	 * @var SessionService|MockObject
 	 */
 	private $mock_session_service;
@@ -79,7 +86,7 @@ class FraudPreventionServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $token_stub, $this->sut->get_token() );
 	}
 
-	public function test_get_token__on_first_page_load() {
+	public function test_get_token_on_first_page_load() {
 		$new_token_stub = 'new-token';
 		$this->mock_sut = $this->getMockBuilder( FraudPreventionService::class )
 			->setConstructorArgs( [ $this->mock_session_service, $this->mock_account_service ] )
