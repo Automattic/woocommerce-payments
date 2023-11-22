@@ -38,9 +38,6 @@ jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
 jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
 global.fetch = jest.fn( () => Promise.resolve( { json: () => ( {} ) } ) );
-global.window.wc_add_to_cart_variation_params = {
-	i18n_make_a_selection_text: 'Mock text',
-};
 
 describe( 'WoopayExpressCheckoutButton', () => {
 	const buttonSettings = {
@@ -245,8 +242,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			userEvent.click( expressButton );
 
 			expect( window.alert ).toBeCalledWith(
-				window.wc_add_to_cart_variation_params
-					.i18n_make_a_selection_text
+				'Please select your product options before proceeding.'
 			);
 
 			document.body.removeChild( addToCartButton );
