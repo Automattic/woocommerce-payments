@@ -167,7 +167,6 @@ export const TestModeNotice: React.FC< Props > = ( {
 } ) => {
 	if ( ! isInTestMode() ) return null;
 
-	// TODO: If this is a details, we should serve an inline banner instead. We should also simplify and tidy up the logic.
 	return (
 		<BannerNotice
 			status="warning"
