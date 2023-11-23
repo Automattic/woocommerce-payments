@@ -12,6 +12,7 @@ import {
 	CardDivider,
 	Flex,
 	DropdownMenu,
+	MenuGroup,
 	MenuItem,
 } from '@wordpress/components';
 import moment from 'moment';
@@ -19,6 +20,10 @@ import React, { useContext } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
+
+// This is a workaround for the position of the dropdown menu. At the same time underlines the need for a better solution.
+import '../../../node_modules/@wordpress/components/src/dropdown-menu/style.scss';
+import '../../../node_modules/@wordpress/components/src/popover/style.scss';
 
 /**
  * Internal dependencies.
@@ -476,6 +481,26 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									? charge.payment_intent
 									: charge.id }
 							</Loadable>
+							<DropdownMenu
+								icon={ moreVertical }
+								label="more"
+								popoverProps={ {
+									position: 'bottom left',
+								} }
+							>
+								{ ( { onClose } ) => (
+									<>
+										<MenuGroup>
+											<MenuItem onClick={ onClose }>
+												Action A
+											</MenuItem>
+											<MenuItem onClick={ onClose }>
+												Action B
+											</MenuItem>
+										</MenuGroup>
+									</>
+								) }
+							</DropdownMenu>
 						</div>
 					</div>
 				</div>
