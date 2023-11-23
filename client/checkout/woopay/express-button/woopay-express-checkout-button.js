@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { sprintf, __ } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import classNames from 'classnames';
 
@@ -17,8 +17,17 @@ import { getConfig } from 'wcpay/utils/checkout';
 import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import interpolateComponents from '@automattic/interpolate-components';
+import { appendRedirectionParams } from 'wcpay/checkout/woopay/utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
+
+const ButtonTypeTextMap = {
+	default: __( 'WooPay', 'woocommerce-payments' ),
+	buy: __( 'Buy with WooPay', 'woocommerce-payments' ),
+	donate: __( 'Donate with WooPay', 'woocommerce-payments' ),
+	book: __( 'Book with WooPay', 'woocommerce-payments' ),
+};
 
 export const WoopayExpressCheckoutButton = ( {
 	listenForCartChanges = {},
@@ -43,14 +52,10 @@ export const WoopayExpressCheckoutButton = ( {
 		buttonWidthTypes.wide
 	);
 
-	const text =
-		buttonType !== 'default'
-			? sprintf(
-					__( `%s with`, 'woocommerce-payments' ),
-					buttonType.charAt( 0 ).toUpperCase() +
-						buttonType.slice( 1 ).toLowerCase()
-			  )
-			: '';
+	const buttonText =
+		ButtonTypeTextMap[ buttonType || 'default' ] ??
+		ButtonTypeTextMap.default;
+
 	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
 
 	const {
@@ -327,7 +332,9 @@ export const WoopayExpressCheckoutButton = ( {
 			}
 
 			if ( isSessionDataSuccess ) {
-				window.location.href = event.data.value.redirect_url;
+				window.location.href = appendRedirectionParams(
+					event.data.value.redirect_url
+				);
 			} else if ( isSessionDataError ) {
 				onClickFallback( null );
 
@@ -374,7 +381,7 @@ export const WoopayExpressCheckoutButton = ( {
 		<button
 			ref={ buttonRef }
 			key={ `${ buttonType }-${ theme }-${ size }` }
-			aria-label={ buttonType !== 'default' ? text : __( 'WooPay' ) }
+			aria-label={ buttonText }
 			onClick={ ( e ) => initWoopayRef.current( e ) }
 			className={ classNames( 'woopay-express-button', {
 				'is-loading': isLoading,
@@ -390,8 +397,15 @@ export const WoopayExpressCheckoutButton = ( {
 				<span className="wc-block-components-spinner" />
 			) : (
 				<>
-					{ text }
-					<ThemedWooPayIcon />
+					{ interpolateComponents( {
+						mixedString: buttonText.replace(
+							ButtonTypeTextMap.default,
+							'{{wooPayLogo /}}'
+						),
+						components: {
+							wooPayLogo: <ThemedWooPayIcon />,
+						},
+					} ) }
 				</>
 			) }
 		</button>

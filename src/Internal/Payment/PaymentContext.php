@@ -203,9 +203,9 @@ class PaymentContext {
 	/**
 	 * Stores the WP user ID, associated with the payment.
 	 *
-	 * @param int $user_id ID of the user.
+	 * @param int|null $user_id ID of the user.
 	 */
-	public function set_user_id( int $user_id ) {
+	public function set_user_id( ?int $user_id ) {
 		$this->set( 'user_id', $user_id );
 	}
 
@@ -289,6 +289,24 @@ class PaymentContext {
 	 */
 	public function get_intent(): ?WC_Payments_API_Abstract_Intention {
 		return $this->get( 'intent' );
+	}
+
+	/**
+	 * Stores the fraud prevention token.
+	 *
+	 * @param string $token Token from request.
+	 */
+	public function set_fraud_prevention_token( string $token ) {
+		$this->set( 'fraud_prevention_token', $token );
+	}
+
+	/**
+	 * Returns the fraud prevention token.
+	 *
+	 * @return string|null
+	 */
+	public function get_fraud_prevention_token(): ?string {
+		return $this->get( 'fraud_prevention_token' );
 	}
 
 	/**

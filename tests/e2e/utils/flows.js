@@ -551,7 +551,17 @@ export const merchantWCP = {
 				);
 			}
 
-			await page.$eval( paymentMethod, ( method ) => method.click() );
+			// Check if paymentMethod is an XPath
+			if ( paymentMethod.startsWith( '//' ) ) {
+				// Find the element using XPath and click it
+				const elements = await page.$x( paymentMethod );
+				if ( elements.length > 0 ) {
+					await elements[ 0 ].click();
+				}
+			} else {
+				// If it's a CSS selector, use $eval
+				await page.$eval( paymentMethod, ( method ) => method.click() );
+			}
 			await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
 		}
 
