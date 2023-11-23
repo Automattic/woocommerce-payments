@@ -18,8 +18,8 @@ interface Props {
 	closeModal: () => void;
 }
 
-const SetupLivePaymentsModal = ( { closeModal }: Props ): any => {
-	const handleContinue = () => {
+const SetupLivePaymentsModal: React.FC< Props > = ( { closeModal }: Props ) => {
+	const handleSetup = () => {
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			'wcpay-disable-onboarding-test-mode': true,
 		} );
@@ -62,7 +62,7 @@ const SetupLivePaymentsModal = ( { closeModal }: Props ): any => {
 				<Button isTertiary onClick={ closeModal }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
-				<Button isPrimary onClick={ handleContinue }>
+				<Button isPrimary onClick={ handleSetup }>
 					{ __( 'Continue setup', 'woocommerce-payments' ) }
 				</Button>
 			</div>

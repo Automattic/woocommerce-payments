@@ -29,7 +29,6 @@ import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import { useDisputes, useGetSettings, useSettings } from 'wcpay/data';
 import strings from './strings';
 import './style.scss';
-import { getPaymentSettingsUrl } from 'wcpay/utils';
 import SetupLivePaymentsModal from './modal/setup-live-payments';
 
 const OverviewPageError = () => {
@@ -140,6 +139,8 @@ const OverviewPage = () => {
 				</Notice>
 			) }
 			<TestModeNotice
+				currentPage="overview"
+				isDevMode={ isDevMode }
 				actions={
 					isDevMode
 						? [
@@ -154,18 +155,9 @@ const OverviewPage = () => {
 										'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/',
 								},
 						  ]
-						: [
-								{
-									label: strings.notice.action.goLive,
-									url: getPaymentSettingsUrl(), // TODO: update to go live url
-								},
-						  ]
+						: []
 				}
-			>
-				{ isDevMode
-					? strings.notice.content.dev
-					: strings.notice.content.test }
-			</TestModeNotice>
+			/>
 			<ErrorBoundary>
 				<FRTDiscoverabilityBanner />
 			</ErrorBoundary>

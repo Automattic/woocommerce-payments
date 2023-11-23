@@ -66,7 +66,7 @@ const getNoticeContent = (
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								'{{strong}}%1s is in dev mode.{{/strong}} You need to set up a live %2s account before you can accept real transactions.',
+								'{{strong}}%1$s is in dev mode.{{/strong}} You need to set up a live %1$s account before you can accept real transactions.',
 								'woocommerce-payments'
 							),
 							'WooPayments'
@@ -82,7 +82,7 @@ const getNoticeContent = (
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								'{{strong}}%1s is in dev mode.{{/strong}} All transactions will be simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								'{{strong}}%1$s is in test mode.{{/strong}} All transactions will be simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
 							),
 							'WooPayments'
@@ -116,8 +116,8 @@ const getNoticeContent = (
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							_n(
-								'%1s was in test mode when this %2s was placed. To view live %3s, disable test mode in {{settingsLink}}%1s settings{{/settingsLink}}.',
-								'%1s was in test mode when these %2ss were placed. To view live %3s, disable test mode in {{settingsLink}}%1s settings{{/settingsLink}}.',
+								'%1$s was in test mode when this %2$s was %3$s. To view live %2$ss, disable test mode in {{settingsLink}}%1$s settings{{/settingsLink}}.',
+								'%1$s was in test mode when these %2$ss were %3$s. To view live %2$ss, disable test mode in {{settingsLink}}%1$s settings{{/settingsLink}}.',
 								'deposits' === currentPage ? 2 : 1,
 								'woocommerce-payments'
 							),
@@ -129,10 +129,7 @@ const getNoticeContent = (
 							settingsLink: (
 								// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
 								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<Link
-									href={ getPaymentSettingsUrl() }
-									rel="noreferrer"
-								/>
+								<a href={ getPaymentSettingsUrl() } />
 							),
 						},
 					} ) }
@@ -143,7 +140,7 @@ const getNoticeContent = (
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								'Viewing test %1s. To view live %1s, disable test mode in {{settingsLink}}%2s settings{{/settingsLink}}.',
+								'Viewing test %1$s. To view live %1s, disable test mode in {{settingsLink}}%2s settings{{/settingsLink}}.',
 								'woocommerce-payments'
 							),
 							currentPage,
@@ -153,10 +150,7 @@ const getNoticeContent = (
 							settingsLink: (
 								// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
 								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<Link
-									href={ getPaymentSettingsUrl() }
-									rel="noreferrer"
-								/>
+								<a href={ getPaymentSettingsUrl() } />
 							),
 						},
 					} ) }
