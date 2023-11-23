@@ -729,6 +729,7 @@ class WC_Payments_Utils {
 
 	/**
 	 * Helper function to check whether the user is either in the PO experiment, or has manually enabled PO via the dev tools.
+	 * TODO GH-7738 update the logic
 	 *
 	 * @return boolean
 	 */
@@ -751,6 +752,7 @@ class WC_Payments_Utils {
 
 	/**
 	 * Check to see if the current user is in progressive onboarding experiment treatment mode.
+	 * TODO GH-7738 cleanup experiment logic
 	 *
 	 * @return bool
 	 */
