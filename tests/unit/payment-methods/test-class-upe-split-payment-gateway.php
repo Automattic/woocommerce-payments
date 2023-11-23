@@ -2360,7 +2360,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_get_payment_methods_from_gateway_id_upe() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 		WC_Helper_Order::create_order();
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
 			->setConstructorArgs(
@@ -2395,21 +2394,25 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->will(
 				$this->returnValue( [ Payment_Method::CARD, Payment_Method::LINK ] )
 			);
+
+		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::BANCONTACT );
+		$this->assertSame( [ Payment_Method::BANCONTACT ], $payment_methods );
+
 		$mock_upe_gateway->expects( $this->any() )
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->will(
-				$this->returnValue(
-					[ Payment_Method::CARD, Payment_Method::LINK ]
+				$this->onConsecutiveCalls(
+					[ Payment_Method::CARD, Payment_Method::LINK ],
+					[ Payment_Method::CARD ]
 				)
 			);
 
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
-
 		$this->assertSame( [ Payment_Method::CARD, Payment_Method::LINK ], $payment_methods );
 
-		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::BANCONTACT );
+		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
+		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
 
-		$this->assertSame( [ Payment_Method::BANCONTACT ], $payment_methods );
 		WC_Payments::set_gateway( $gateway );
 	}
 
