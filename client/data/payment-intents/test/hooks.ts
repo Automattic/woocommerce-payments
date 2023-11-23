@@ -57,6 +57,8 @@ export const chargeMock: Charge = {
 		number: Number( '67' ),
 		url: 'http://order.url',
 		customer_url: 'customer.url',
+		customer_name: '',
+		customer_email: '',
 		subscriptions: [],
 	},
 	outcome: {
@@ -89,6 +91,8 @@ export const paymentIntentMock: PaymentIntent = {
 		number: 123,
 		url: 'http://order.url',
 		customer_url: 'customer.url',
+		customer_name: '',
+		customer_email: '',
 		fraud_meta_box_type: 'review',
 	},
 };
