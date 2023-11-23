@@ -508,7 +508,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			) }
 			{ isRefundControlsEnabled &&
 				! _.isEmpty( charge ) &&
-				! charge.order && (
+				! charge.order &&
+				! isLoading && (
 					<MissingOrderNotice
 						charge={ charge }
 						isLoading={ isLoading }

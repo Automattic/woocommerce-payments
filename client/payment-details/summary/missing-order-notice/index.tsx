@@ -9,7 +9,6 @@ import { Button, RadioControl } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import interpolateComponents from '@automattic/interpolate-components';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies.
@@ -20,6 +19,8 @@ import CardNotice from 'wcpay/components/card-notice';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import Loadable from 'wcpay/components/loadable';
 import { Charge } from 'wcpay/types/charges';
+import { usePaymentIntentWithChargeFallback } from 'wcpay/data';
+import { PaymentChargeDetailsResponse } from 'wcpay/payment-details/types';
 
 interface MissingOrderNoticeProps {
 	charge: Charge;
@@ -36,6 +37,10 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 
 	const [ reason, setReason ] = useState< string | null >( null );
 
+	const [ isRefundInProgress, setIsRefundInProgress ] = useState< boolean >(
+		false
+	);
+
 	const handleOnButtonClick = () => {
 		setIsModalOpen( true );
 	};
@@ -44,23 +49,15 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 		setIsModalOpen( false );
 	};
 
-	const [ refundInProgress, setRefundInProgress ] = useState< boolean >(
-		false
-	);
+	const { doRefund } = usePaymentIntentWithChargeFallback(
+		charge.payment_intent as string
+	) as PaymentChargeDetailsResponse;
 
 	const handleModalConfirmation = async () => {
-		setRefundInProgress( true );
-		const response = await apiFetch( {
-			path: `/wc/v3/payments/refund/`,
-			method: 'post',
-			data: {
-				charge_id: charge.id,
-				amount: charge.amount,
-				reason: reason === 'other' ? null : reason,
-			},
-		} );
+		setIsRefundInProgress( true );
+		await doRefund( charge, reason === 'other' ? null : reason );
+		setIsRefundInProgress( false );
 
-		setRefundInProgress( false );
 		setIsModalOpen( false );
 	};
 
@@ -103,8 +100,10 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 							<Button
 								onClick={ handleModalConfirmation }
 								isPrimary
-								isBusy={ refundInProgress }
-								disabled={ refundInProgress }
+								isBusy={ isRefundInProgress }
+								disabled={
+									isRefundInProgress || reason === null
+								}
 							>
 								{ __(
 									'Refund transaction',
