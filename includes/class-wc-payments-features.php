@@ -21,7 +21,6 @@ class WC_Payments_Features {
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME = '_wcpay_feature_woopay_first_party_auth';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
-	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
 	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
 	const DEFERRED_UPE_SERVER_FLAG_NAME     = 'is_deferred_intent_creation_upe_enabled';
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
@@ -355,15 +354,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Progressive Onboarding is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_progressive_onboarding_enabled(): bool {
-		return '1' === get_option( self::PROGRESSIVE_ONBOARDING_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Checks whether the Fraud and Risk Tools feature flag is enabled.
 	 *
 	 * @return  bool
@@ -470,7 +460,6 @@ class WC_Payments_Features {
 				'clientSecretEncryption'         => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
-				'progressiveOnboarding'          => self::is_progressive_onboarding_enabled(),
 				'isPayForOrderFlowEnabled'       => self::is_pay_for_order_flow_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 				'isRefundControlsEnabled'        => self::is_streamline_refunds_enabled(),
