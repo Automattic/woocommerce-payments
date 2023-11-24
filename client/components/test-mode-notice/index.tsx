@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -164,7 +163,6 @@ export const TestModeNotice: React.FC< Props > = ( {
 	return (
 		<BannerNotice
 			status="warning"
-			icon={ false }
 			isDismissible={ false }
 			actions={ actions }
 		>
