@@ -665,22 +665,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
 	}
 
-	public function test_enable_woopay_converts_upe_flag() {
-		update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '0' );
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
-		$this->gateway->update_option( 'platform_checkout', 'no' );
-
-		$request = new WP_REST_Request();
-		$request->set_param( 'is_woopay_enabled', true );
-
-		$this->controller->update_settings( $request );
-
-		$this->assertEquals( '0', get_option( WC_Payments_Features::UPE_FLAG_NAME ) );
-		$this->assertEquals( '0', get_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME ) );
-		$this->assertEquals( '1', get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME ) );
-	}
-
 	public function deposit_schedules_data_provider() {
 		return [
 			[

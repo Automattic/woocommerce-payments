@@ -46,15 +46,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the legacy UPE gateway is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_upe_legacy_enabled() {
-		return '1' === get_option( self::UPE_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Checks whether the Split-UPE gateway is enabled
 	 */
 	public static function is_upe_split_enabled() {

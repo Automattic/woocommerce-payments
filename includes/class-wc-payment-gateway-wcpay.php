@@ -935,10 +935,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
-			if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
-			}
-
 			$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 			if ( is_array( $check_session_order ) ) {
 				return $check_session_order;
@@ -1037,10 +1033,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order )
 				);
 				$order->add_order_note( $note );
-			}
-
-			if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 			}
 
 			// Re-throw the exception after setting everything up.
@@ -2086,13 +2078,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( ! $is_woopay_enabled ) {
 				WooPay_Order_Status_Sync::remove_webhook();
-			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
-				update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
-
-				if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-					wc_admin_record_tracks_event( 'wcpay_deferred_intent_upe_enabled' );
-				}
 			}
 		}
 	}
