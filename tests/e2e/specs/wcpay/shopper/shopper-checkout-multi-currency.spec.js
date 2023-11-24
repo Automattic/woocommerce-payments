@@ -43,9 +43,27 @@ describe( 'Shopper Multi-Currency checkout', () => {
 		).toMatch( /EUR/ );
 	} );
 
-	it( 'should show correct currency in order received page', async () => {} );
+	it( 'should show correct currency in order received page', async () => {
+		// part of the previous test.
+	} );
 
-	it( 'should show the correct currency in the order page', async () => {} );
+	it( 'should show the correct currency in the order page', async () => {
+		await shopperWCP.goToOrders();
+		await page.waitFor( 100000 );
 
-	it( 'should show the correct currency in a previous order with a different currency', async () => {} );
+		expect(
+			await page.$eval(
+				'.woocommerce-orders-table__row:first-of-type .woocommerce-orders-table__cell.woocommerce-orders-table__cell-order-total',
+				( el ) => el.textContent
+			)
+		).toMatch( /EUR/ );
+	} );
+
+	it( 'should show the correct currency in a previous order with a different currency', async () => {
+		// have a previous order with a different currency
+		// save this order id in a variable
+		// go to orders page
+		// click on the order with the different currency
+		// check that the currency is correct
+	} );
 } );
