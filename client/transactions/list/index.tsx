@@ -561,7 +561,6 @@ export const TransactionsList = (
 				!! search ||
 				!! typeIs ||
 				!! typeIsNot ||
-				!! typeIsNot ||
 				!! channelIs ||
 				!! channelIsNot ||
 				!! customerCountryIs ||
