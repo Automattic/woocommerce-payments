@@ -161,6 +161,7 @@ abstract class Request {
 		WC_Payments_API_Client::AUTHORIZATIONS_API         => 'authorizations',
 		WC_Payments_API_Client::FRAUD_OUTCOMES_API         => 'fraud_outcomes',
 		WC_Payments_API_Client::FRAUD_RULESET_API          => 'fraud_ruleset',
+		WC_Payments_API_Client::COMPATIBILITY_API          => 'compatibility',
 	];
 
 	/**

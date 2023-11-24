@@ -296,6 +296,13 @@ class WC_Payments {
 	private static $incentives_service;
 
 	/**
+	 * Instance of WC_Payments_Compatibility_Service, created in init function
+	 *
+	 * @var WC_Payments_Compatibility_Service
+	 */
+	private static $compatibility_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -463,6 +470,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
+		include_once __DIR__ . '/class-wc-payments-compatibility-service.php';
 		include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 
 		self::$woopay_checkout_service = new Checkout_Service();
@@ -497,6 +505,7 @@ class WC_Payments {
 		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
 		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
+		self::$compatibility_service                = new WC_Payments_Compatibility_Service( self::$api_client );
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
@@ -505,6 +514,7 @@ class WC_Payments {
 		self::$fraud_service->init_hooks();
 		self::$onboarding_service->init_hooks();
 		self::$incentives_service->init_hooks();
+		self::$compatibility_service->init_hooks();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
 
