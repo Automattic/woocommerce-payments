@@ -41,85 +41,91 @@ const GeneralSettings = () => {
 							'WooPayments'
 						) }
 					/>
-					<h4>{ __( 'Test mode', 'woocommerce-payments' ) }</h4>
-					<CheckboxControl
-						checked={ isDevModeEnabled || isEnabled }
-						disabled={ isDevModeEnabled }
-						onChange={ updateIsTestModeEnabled }
-						label={ __(
-							'Enable test mode',
-							'woocommerce-payments'
-						) }
-						help={ interpolateComponents( {
-							mixedString: __(
-								'Use {{testCardHelpLink}}test card numbers{{/testCardHelpLink}} to simulate various transactions. ' +
-									'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
-								'woocommerce-payments'
-							),
-							components: {
-								testCardHelpLink: (
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<a
-										target="_blank"
-										rel="noreferrer"
-										/* eslint-disable-next-line max-len */
-										href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards"
-									/>
-								),
-								learnMoreLink: (
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<a
-										target="_blank"
-										rel="noreferrer"
-										href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/"
-									/>
-								),
-							},
-						} ) }
-					/>
-					<InlineNotice
-						status="warning"
-						isDismissible={ false }
-						actions={ [
-							{
-								label: __(
-									'Set up payments',
+					{ ! isDevModeEnabled && (
+						<>
+							<h4>
+								{ __( 'Test mode', 'woocommerce-payments' ) }
+							</h4>
+							<CheckboxControl
+								checked={ isEnabled }
+								onChange={ updateIsTestModeEnabled }
+								label={ __(
+									'Enable test mode',
 									'woocommerce-payments'
-								),
-								variant: 'secondary',
-								onClick: () => {
-									setModalVisible( true );
-								},
-							},
-						] }
-						className="wcpay-general-settings__notice"
-					>
-						<span>
-							{ interpolateComponents( {
-								mixedString: sprintf(
-									/* translators: %s: WooPayments */
-									__(
-										'{{b}}%s is in dev mode.{{/b}} You need to finish setting up %s before you can ' +
-											'turn off test mode to accept live transactions. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								) }
+								help={ interpolateComponents( {
+									mixedString: __(
+										'Use {{testCardHelpLink}}test card numbers{{/testCardHelpLink}} to simulate ' +
+											'various transactions. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 										'woocommerce-payments'
 									),
-									'WooPayments',
-									'WooPayments'
-								),
-								components: {
-									b: <b />,
-									learnMoreLink: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											target="_blank"
-											rel="noreferrer"
-											href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/"
-										/>
+									components: {
+										testCardHelpLink: (
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												target="_blank"
+												rel="noreferrer"
+												/* eslint-disable-next-line max-len */
+												href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards"
+											/>
+										),
+										learnMoreLink: (
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												target="_blank"
+												rel="noreferrer"
+												href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/"
+											/>
+										),
+									},
+								} ) }
+							/>
+						</>
+					) }
+					{ isDevModeEnabled && (
+						<InlineNotice
+							status="warning"
+							isDismissible={ false }
+							actions={ [
+								{
+									label: __(
+										'Set up payments',
+										'woocommerce-payments'
 									),
+									variant: 'secondary',
+									onClick: () => {
+										setModalVisible( true );
+									},
 								},
-							} ) }
-						</span>
-					</InlineNotice>
+							] }
+							className="wcpay-general-settings__notice"
+						>
+							<span>
+								{ interpolateComponents( {
+									mixedString: sprintf(
+										/* translators: %s: WooPayments */
+										__(
+											'{{b}}%1$s is in dev mode.{{/b}} You need to set up a live %1$s account before ' +
+												'you can accept real transactions. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+											'woocommerce-payments'
+										),
+										'WooPayments'
+									),
+									components: {
+										b: <b />,
+										learnMoreLink: (
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												target="_blank"
+												rel="noreferrer"
+												href="https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/"
+											/>
+										),
+									},
+								} ) }
+							</span>
+						</InlineNotice>
+					) }
 				</CardBody>
 			</Card>
 			{ modalVisible && (
