@@ -462,46 +462,6 @@ export const merchantWCP = {
 		} );
 	},
 
-	enableProgressiveOnboarding: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if (
-			! ( await page.$(
-				'#_wcpay_feature_progressive_onboarding:checked'
-			) )
-		) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_progressive_onboarding"]'
-			);
-		}
-
-		await expect( page ).toClick( 'input#submit' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	disableProgressiveOnboarding: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if (
-			await page.$( '#_wcpay_feature_progressive_onboarding:checked' )
-		) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_progressive_onboarding"]'
-			);
-		}
-
-		await expect( page ).toClick( 'input#submit' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
 	enableActAsDisconnectedFromWCPay: async () => {
 		await page.goto( WCPAY_DEV_TOOLS, {
 			waitUntil: 'networkidle0',
