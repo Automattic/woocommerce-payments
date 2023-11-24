@@ -2097,7 +2097,7 @@ class WC_Payments_API_Client {
 			'number'              => $order->get_order_number(),
 			'url'                 => $order->get_edit_order_url(),
 			'customer_url'        => $this->get_customer_url( $order ),
-			'customer_name'       => $order->get_formatted_billing_full_name(),
+			'customer_name'       => trim( $order->get_formatted_billing_full_name() ),
 			'customer_email'      => $order->get_billing_email(),
 			'fraud_meta_box_type' => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
 		];
