@@ -117,11 +117,7 @@ class WC_Payments_Token_Service {
 	 * @return bool                       True, if payment method type matches gateway, false if otherwise.
 	 */
 	public function is_valid_payment_method_type_for_gateway( $payment_method_type, $gateway_id ) {
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			return self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD[ $payment_method_type ] === $gateway_id;
-		} else {
-			return WC_Payments::get_gateway()->id === $gateway_id;
-		}
+		return self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD[ $payment_method_type ] === $gateway_id;
 	}
 
 	/**
