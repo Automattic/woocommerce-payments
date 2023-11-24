@@ -1158,22 +1158,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Fetch a charge by id.
-	 *
-	 * @param string $charge_id ID of the charge.
-	 *
-	 * @return array
-	 * @throws API_Exception
-	 */
-	public function get_charge( string $charge_id ) {
-		return $this->request(
-			[],
-			self::CHARGES_API . '/' . $charge_id,
-			self::GET
-		);
-	}
-
-	/**
 	 * Updates a charge.
 	 *
 	 * @param string $charge_id ID of the charge to update.
