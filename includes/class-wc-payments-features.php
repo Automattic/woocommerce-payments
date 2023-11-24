@@ -33,7 +33,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_enabled() {
-		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled();
+		return true;
 	}
 
 	/**
@@ -42,19 +42,7 @@ class WC_Payments_Features {
 	 * @return string
 	 */
 	public static function get_enabled_upe_type() {
-		if ( self::is_upe_deferred_intent_enabled() ) {
-			return 'deferred_intent';
-		}
-
-		if ( self::is_upe_split_enabled() ) {
-			return 'split';
-		}
-
-		if ( self::is_upe_legacy_enabled() ) {
-			return 'legacy';
-		}
-
-		return '';
+		return 'deferred_intent';
 	}
 
 	/**
@@ -71,17 +59,6 @@ class WC_Payments_Features {
 	 */
 	public static function is_upe_split_enabled() {
 		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
-	}
-
-	/**
-	 * Checks whether the Split UPE with deferred intent creation is enabled
-	 */
-	public static function is_upe_deferred_intent_enabled() {
-		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		if ( null === $account ) {
-			return true;
-		}
-		return is_array( $account ) && ( $account[ self::DEFERRED_UPE_SERVER_FLAG_NAME ] ?? true );
 	}
 
 	/**
@@ -462,7 +439,7 @@ class WC_Payments_Features {
 			[
 				'upe'                            => self::is_upe_enabled(),
 				'upeSplit'                       => self::is_upe_split_enabled(),
-				'upeDeferred'                    => self::is_upe_deferred_intent_enabled(),
+				'upeDeferred'                    => true,
 				'upeSettingsPreview'             => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),
 				'woopay'                         => self::is_woopay_eligible(),
