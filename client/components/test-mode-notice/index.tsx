@@ -24,14 +24,7 @@ type CurrentPage =
 
 interface Props {
 	currentPage: CurrentPage;
-	actions?: ReadonlyArray< {
-		label: string;
-		className?: string;
-		variant?: Button.Props[ 'variant' ];
-		url?: string;
-		urlTarget?: string;
-		onClick?: React.MouseEventHandler< HTMLAnchorElement >;
-	} >;
+	actions?: React.ComponentProps< typeof BannerNotice >[ 'actions' ];
 	isDetailsView?: boolean;
 	isDevMode?: boolean;
 }
