@@ -1334,7 +1334,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				// For Stripe Link & SEPA with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
+				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
 				if ( $this->is_mandate_data_required() ) {
 					$request->set_mandate_data( $this->get_mandate_data() );
 				}

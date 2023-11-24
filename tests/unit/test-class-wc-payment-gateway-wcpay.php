@@ -29,6 +29,7 @@ use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
@@ -1427,6 +1428,93 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'The selected payment method requires a total amount of at least $0.50.' );
 		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function test_mandate_data_not_added_to_payment_intent_if_not_required() {
+		// Mandate data is required for SEPA and Stripe Link only, hence initializing the gateway with a CC payment method should not add mandate data.
+		$gateway = new UPE_Split_Payment_Gateway(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			new CC_Payment_Method( $this->mock_token_service ),
+			[],
+			$this->mock_rate_limiter,
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service
+		);
+		WC_Payments::set_gateway( $gateway );
+		$payment_method = 'woocommerce_payments_sepa_debit';
+		$order          = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+		$request->expects( $this->never() )
+			->method( 'set_mandate_data' );
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+		WC_Payments::set_gateway( $this->wcpay_gateway );
+	}
+
+	public function test_mandate_data_added_to_payment_intent_if_required() {
+		// Mandate data is required for SEPA and Stripe Link, hence initializing the gateway with a SEPA payment method should add mandate data.
+		$gateway = new UPE_Split_Payment_Gateway(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			new Sepa_Payment_Method( $this->mock_token_service ),
+			[],
+			$this->mock_rate_limiter,
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service
+		);
+		WC_Payments::set_gateway( $gateway );
+		$payment_method = 'woocommerce_payments_sepa_debit';
+		$order          = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+								return isset( $data['customer_acceptance']['type'] ) &&
+								'online' === $data['customer_acceptance']['type'] &&
+								isset( $data['customer_acceptance']['online'] ) &&
+								is_array( $data['customer_acceptance']['online'] );
+					}
+				)
+			);
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+		WC_Payments::set_gateway( $this->wcpay_gateway );
 	}
 
 	public function test_mandate_data_not_added_to_setup_intent_request_when_link_is_disabled() {
