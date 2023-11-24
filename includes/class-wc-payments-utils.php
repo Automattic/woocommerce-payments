@@ -728,12 +728,12 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Helper function to check whether to show default progressive onboarding experience or as an expection disable it (if specific constant is set) .
+	 * Helper function to check whether to show default new onboarding flow or as an exception disable it (if specific constant is set) .
 	 *
 	 * @return boolean
 	 */
-	public static function should_use_progressive_onboarding_flow(): bool {
-		if ( defined( 'WCPAY_DISABLE_PO' ) && WCPAY_DISABLE_PO ) {
+	public static function should_use_new_onboarding_flow(): bool {
+		if ( defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) {
 			return false;
 		}
 
