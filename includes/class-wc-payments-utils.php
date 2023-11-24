@@ -27,6 +27,11 @@ class WC_Payments_Utils {
 	const ORDER_INTENT_CURRENCY_META_KEY = '_wcpay_intent_currency';
 
 	/**
+	 * Force disconnected flag name.
+	 */
+	const FORCE_DISCONNECTED_FLAG_NAME = 'wcpaydev_force_disconnected';
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
@@ -733,6 +738,15 @@ class WC_Payments_Utils {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks whether the Force disconnected option is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function force_disconnected_enabled(): bool {
+		return '1' === get_option( self::FORCE_DISCONNECTED_FLAG_NAME, '0' );
 	}
 
 	/**
