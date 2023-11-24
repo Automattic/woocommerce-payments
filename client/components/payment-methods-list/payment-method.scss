@@ -1,19 +1,26 @@
+.payment-method__list-item {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	padding: 24px;
+
+	&:not( :last-child ) {
+		box-shadow: inset 0 -1px 0 #e8eaeb;
+	}
+
+	& .sofort__notice {
+		margin-top: 20px;
+	}
+}
+
 .payment-method {
 	display: flex;
-	margin: 0;
-	padding: 16px 24px 14px 24px;
 	background: #fff;
-	flex-wrap: wrap;
 	justify-content: space-between;
 	align-items: center;
 
 	@include breakpoint( '>660px' ) {
-		padding: 24px 24px 24px 24px;
 		flex-wrap: nowrap;
-	}
-
-	&:not( :last-child ) {
-		box-shadow: inset 0 -1px 0 #e8eaeb;
 	}
 
 	&__text {
@@ -21,10 +28,15 @@
 		order: 1;
 		display: flex;
 		flex-wrap: nowrap;
+		justify-content: space-between;
 
 		@include breakpoint( '>660px' ) {
 			flex: 1 1 auto;
 			order: 3;
+		}
+
+		@include breakpoint( '<660px' ) {
+			flex-wrap: wrap;
 		}
 	}
 
@@ -36,15 +48,59 @@
 		.components-base-control__field {
 			margin: 0 4px 0 0;
 		}
+
+		input[type='checkbox'] {
+			&:disabled {
+				cursor: not-allowed;
+			}
+		}
+
+		@include breakpoint( '<660px' ) {
+			align-self: flex-start;
+			margin-top: 5px;
+		}
+	}
+
+	&__text-container {
+		display: flex;
+		flex: 1;
+
+		@include breakpoint( '<660px' ) {
+			flex-wrap: wrap;
+		}
 	}
 
 	&__label {
-		display: inline-block;
 		font-size: 14px;
 		font-weight: 600;
 		line-height: 20px;
 		color: $gray-900;
 		margin-bottom: 4px;
+	}
+
+	&__label-desktop {
+		display: block;
+
+		@include breakpoint( '<660px' ) {
+			display: none;
+		}
+	}
+
+	&__label-mobile {
+		display: none;
+
+		@include breakpoint( '<660px' ) {
+			display: block;
+			align-self: center;
+			font-size: 16px;
+		}
+	}
+
+	&__required-label {
+		font-size: 12px;
+		font-weight: normal;
+		color: $gray-700;
+		margin-left: $gap-smaller;
 	}
 
 	&__description {
@@ -80,15 +136,23 @@
 	}
 
 	&__icon {
-		border-radius: 2px;
-		display: none;
 		flex: 0 0 63.69px;
-		height: 40px;
 		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
+		align-self: center;
 
 		@include breakpoint( '>660px' ) {
 			display: flex;
 			order: 2;
+		}
+
+		@include breakpoint( '<660px' ) {
+			margin: 0 10px 5px 0;
+			flex: 0;
+			height: auto;
+
+			img {
+				height: 30px;
+			}
 		}
 	}
 
@@ -98,6 +162,10 @@
 		justify-content: flex-end;
 		white-space: nowrap;
 		margin-left: 16px;
+
+		@include breakpoint( '<660px' ) {
+			margin-left: 0;
+		}
 	}
 
 	&.has-icon-border &__icon {
@@ -106,6 +174,7 @@
 
 	&.overlay {
 		position: relative;
+
 		&::after {
 			content: '';
 			position: absolute;
@@ -121,18 +190,12 @@
 		}
 	}
 
-	.wcpay-pill {
+	.chip {
 		margin-left: $gap-smaller;
-		&.payment-status-pending-approval,
-		&.payment-status-pending-verification {
-			border: 0 solid transparent;
-			background: #f0b849;
-			color: #1f1f1f;
-		}
-		&.payment-status-inactive {
-			border: 0 solid transparent;
-			background: #cc1818;
-			color: #fff;
+		padding: 2px $gap-smaller;
+
+		@include breakpoint( '<660px' ) {
+			margin-left: 0;
 		}
 	}
 }

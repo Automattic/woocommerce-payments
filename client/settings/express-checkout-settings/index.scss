@@ -35,13 +35,16 @@
 		font-style: italic;
 	}
 
+	&__icons {
+		display: flex;
+		align-items: flex-start;
+	}
+
 	&__icon {
-		border-radius: 2px;
 		display: flex;
 		width: 64px;
 		height: 40px;
 		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
-		box-shadow: 0 0 0 1px #ddd;
 		background: #fff;
 
 		svg {
@@ -54,13 +57,16 @@
 	box-sizing: border-box;
 }
 
-.platform-checkout-settings {
+.woopay-settings {
 	&__custom-message-wrapper {
-		max-width: 500px;
 		position: relative;
 
 		.components-base-control__field .components-text-control__input {
 			padding-right: 70px;
+		}
+
+		.components-textarea-control__input {
+			font-size: 0.8125rem;
 		}
 
 		.input-help-text {
@@ -107,6 +113,16 @@
 		}
 	}
 
+	&__appearance-card-settings,
+	&__appearance-card-preview {
+		background-color: $studio-white;
+		box-shadow: 0 0 0 1px #0000001a;
+	}
+
+	&__appearance-card-preview {
+		margin-top: 1rem;
+	}
+
 	&__preview {
 		position: relative;
 
@@ -121,11 +137,215 @@
 				#fff 100%
 			);
 		}
+
+		.preview-layout {
+			border: 1px solid #ddd;
+			border-radius: $grid-unit-05;
+			box-shadow: 0 2px 6px 0 rgba( 0, 0, 0, 0.05 );
+			padding: 0 3.797%;
+
+			&__v-spacer {
+				background-color: #0000;
+				width: 100%;
+			}
+
+			&__store-header {
+				width: 100%;
+				display: flex;
+				justify-content: center;
+
+				.header-text {
+					color: $studio-gray-60;
+					font-size: 1.125rem;
+					letter-spacing: 0.1rem;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+				}
+			}
+
+			&__checkout-row {
+				width: 100%;
+				display: flex;
+				justify-content: space-between;
+
+				.checkout-text {
+					width: 68.268%;
+					display: flex;
+					align-items: center;
+
+					color: $studio-black;
+					font-size: 0.99563rem;
+					font-style: normal;
+					font-weight: 400;
+					line-height: 1.2445rem;
+				}
+
+				.secure-block {
+					width: 30.805%;
+					display: flex;
+					align-items: center;
+					justify-content: flex-end;
+
+					&__text {
+						text-align: right;
+						color: $studio-gray-50;
+						font-size: 0.43556rem;
+						font-style: normal;
+						font-weight: 400;
+						line-height: 0.62225rem;
+						margin-left: 0.125rem;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+					}
+				}
+			}
+
+			&__container {
+				width: 100%;
+			}
+
+			&__body {
+				width: 100%;
+			}
+
+			&__hr {
+				color: $studio-gray-5;
+				margin: 0;
+				border-bottom: 0;
+			}
+
+			&__left-column {
+				width: 54.201%;
+			}
+
+			&__right-column {
+				width: 40.155%;
+			}
+
+			&__columns-container {
+				width: 100%;
+				display: flex;
+				justify-content: space-between;
+			}
+
+			&__section-header {
+				font-weight: 500;
+				font-size: 0.62225rem;
+				color: $studio-black;
+				line-height: 0.74669rem;
+				display: flex;
+				justify-content: space-between;
+			}
+
+			&__loading-box {
+				background-color: $studio-gray-0;
+				border-radius: 0.25rem;
+				width: 100%;
+			}
+
+			&__text-box {
+				width: 100%;
+				font-size: 0.43556rem;
+				color: $studio-gray-50;
+				text-align: center;
+				font-weight: 400;
+				line-height: 0.62225rem;
+				overflow: hidden;
+			}
+
+			&__shortcode-link {
+				color: $studio-woocommerce-purple-60;
+			}
+
+			&__checkout-button {
+				background-color: $studio-woocommerce-purple-60;
+				border-radius: 0.12444rem;
+				align-items: center;
+				display: flex;
+				justify-content: center;
+
+				color: $studio-white;
+				font-size: 0.56rem;
+				font-weight: 600;
+				line-height: 0.56rem;
+				letter-spacing: 0.01119rem;
+			}
+		}
 	}
+}
+
+.woopay-settings--appearance {
+	background-color: #0000 !important;
+	box-shadow: none !important;
 }
 
 .payment-request-settings {
 	&__location {
 		margin-bottom: 26px;
+	}
+}
+
+.express-checkout__notice {
+	margin-left: 0;
+	margin-right: 0;
+	border: 0;
+}
+
+.payment-method-settings {
+	&__option-help-text {
+		color: #757575;
+	}
+
+	&__preview-help-text {
+		color: #757575;
+	}
+
+	&__preview {
+		padding: 24px;
+		border: 1px solid rgba( 25, 23, 17, 0.3 );
+		border-radius: 4px;
+		display: flex;
+		justify-content: center;
+
+		.woopay-express-button,
+		.StripeElement {
+			width: 100%;
+			&:not( :last-child ) {
+				margin-right: 8px;
+			}
+		}
+		@media screen and ( max-width: 782px ) {
+			flex-wrap: wrap;
+
+			& > * {
+				display: block;
+				margin-top: 14px;
+			}
+
+			& > *:first-child {
+				margin-top: 0;
+			}
+		}
+
+		&[data-theme='light'],
+		&[data-theme='light-outline'] {
+			background: #2b2b2b;
+		}
+	}
+}
+
+.components-radio-control {
+	.payment-method-settings {
+		&__option-help-text {
+			margin-left: 26px;
+		}
+	}
+}
+
+.components-notice {
+	&__content {
+		display: flex;
 	}
 }

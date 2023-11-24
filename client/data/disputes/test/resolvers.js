@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -12,6 +13,7 @@ import {
 	updateDispute,
 	updateDisputes,
 	updateDisputesSummary,
+	updateErrorForDispute,
 } from '../actions';
 import { getDispute, getDisputes, getDisputesSummary } from '../resolvers';
 
@@ -61,11 +63,14 @@ describe( 'getDispute resolver', () => {
 	describe( 'on error', () => {
 		test( 'should update state with error on error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'core/notices',
 					'createErrorNotice',
 					expect.any( String )
 				)
+			);
+			expect( generator.next().value ).toEqual(
+				updateErrorForDispute( 'dp_mock1', undefined, errorResponse )
 			);
 		} );
 	} );
@@ -100,7 +105,7 @@ describe( 'getDisputes resolver', () => {
 	describe( 'on error', () => {
 		test( 'should update state with error on error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'core/notices',
 					'createErrorNotice',
 					expect.any( String )
@@ -142,7 +147,7 @@ describe( 'getDisputesSummary resolver', () => {
 	describe( 'on error', () => {
 		test( 'should update state with error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'core/notices',
 					'createErrorNotice',
 					expect.any( String )

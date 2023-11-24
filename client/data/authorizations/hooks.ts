@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import type { Query } from '@woocommerce/navigation';
 
 /**
@@ -12,6 +12,7 @@ import { STORE_NAME } from '../constants';
 import {
 	AuthorizationsSummary,
 	Authorizations,
+	Authorization,
 } from 'wcpay/types/authorizations';
 
 export const useAuthorizations = ( {
@@ -36,7 +37,7 @@ export const useAuthorizations = ( {
 				paged: pagedQuery ? '1' : paged,
 				per_page: perPageQuery ? '25' : per_page,
 				orderby: orderby || 'created',
-				order: order || 'desc',
+				order: order || 'asc',
 			};
 
 			return {
@@ -67,3 +68,51 @@ export const useAuthorizationsSummary = (
 			isLoading: isResolving( 'getAuthorizationsSummary', [ query ] ),
 		};
 	} );
+
+export const useAuthorization = (
+	paymentIntentId: string,
+	orderId: number,
+	requiresCapture = true
+): {
+	isLoading: boolean;
+	isRequesting: boolean;
+	doCaptureAuthorization: () => void;
+	doCancelAuthorization: () => void;
+	authorization?: Authorization;
+} => {
+	const { authorization, isRequesting, isLoading } = useSelect(
+		( select ) => {
+			const { getAuthorization, getIsRequesting, isResolving } = select(
+				STORE_NAME
+			);
+			return {
+				authorization: requiresCapture
+					? getAuthorization( paymentIntentId )
+					: null,
+				isLoading: isResolving( 'getAuthorization', [
+					paymentIntentId,
+				] ),
+				isRequesting: getIsRequesting(),
+			};
+		}
+	);
+
+	const {
+		submitCaptureAuthorization,
+		submitCancelAuthorization,
+	} = useDispatch( STORE_NAME );
+
+	const doCaptureAuthorization = () =>
+		submitCaptureAuthorization( paymentIntentId, orderId );
+
+	const doCancelAuthorization = () =>
+		submitCancelAuthorization( paymentIntentId, orderId );
+
+	return {
+		authorization,
+		isLoading,
+		isRequesting,
+		doCaptureAuthorization,
+		doCancelAuthorization,
+	};
+};

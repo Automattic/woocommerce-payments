@@ -27,5 +27,15 @@ class Link_Payment_Method extends UPE_Payment_Method {
 		$this->title       = __( 'Link', 'woocommerce-payments' );
 		$this->is_reusable = true;
 		$this->currencies  = [ 'USD' ];
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/link.svg', WCPAY_PLUGIN_FILE );
+	}
+
+	/**
+	 * Returns testing credentials to be printed at checkout in test mode.
+	 *
+	 * @return string
+	 */
+	public function get_testing_instructions() {
+		return '';
 	}
 }

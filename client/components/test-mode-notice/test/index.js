@@ -21,6 +21,13 @@ jest.mock( 'utils', () => ( {
 } ) );
 
 describe( 'Test mode notification', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			accountStatus: {
+				detailsSubmitted: true,
+			},
+		};
+	} );
 	// Set up easy to use lists containing test inputs.
 	const listTopics = [
 		topics.transactions,
@@ -44,7 +51,7 @@ describe( 'Test mode notification', () => {
 	test( 'Returns correct URL component', () => {
 		const expected = (
 			<a href={ getPaymentSettingsUrl() }>
-				{ 'View WooCommerce Payments settings' }
+				{ 'View WooPayments settings' }
 			</a>
 		);
 
@@ -66,15 +73,15 @@ describe( 'Test mode notification', () => {
 
 	test( 'Notice details are correct for details topics', () => {
 		expect( getTopicDetails( topics.depositDetails ) ).toBe(
-			'WooCommerce Payments was in test mode when these orders were placed.'
+			'WooPayments was in test mode when these orders were placed.'
 		);
 
 		expect( getTopicDetails( topics.disputeDetails ) ).toBe(
-			'WooCommerce Payments was in test mode when this order was placed.'
+			'WooPayments was in test mode when this order was placed.'
 		);
 
 		expect( getTopicDetails( topics.paymentDetails ) ).toBe(
-			'WooCommerce Payments was in test mode when this order was placed.'
+			'WooPayments was in test mode when this order was placed.'
 		);
 	} );
 
@@ -92,6 +99,17 @@ describe( 'Test mode notification', () => {
 			expect( getNoticeMessage( topic ) ).toStrictEqual( expected );
 		}
 	);
+
+	test( 'Returns right notice message without URL component', () => {
+		global.wcpaySettings.accountStatus.detailsSubmitted = false;
+		const topic = topics.overview;
+		isInTestMode.mockReturnValue( true );
+		const { container: testModeNotice } = render(
+			<TestModeNotice topic={ topic } />
+		);
+
+		expect( testModeNotice ).toMatchSnapshot();
+	} );
 
 	test.each( topicsWithTestMode )(
 		'Component is rendered correctly',

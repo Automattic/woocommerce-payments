@@ -23,6 +23,7 @@ class Track_Upe_Status_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		delete_option( Track_Upe_Status::IS_TRACKED_OPTION );
+		delete_option( WC_Payments_Features::UPE_FLAG_NAME );
 	}
 
 	/**
@@ -33,6 +34,11 @@ class Track_Upe_Status_Test extends WCPAY_UnitTestCase {
 
 		Tracker::remove_admin_event( 'wcpay_upe_enabled' );
 		Tracker::remove_admin_event( 'wcpay_upe_disabled' );
+
+		delete_option( Track_Upe_Status::IS_TRACKED_OPTION );
+		delete_option( WC_Payments_Features::UPE_FLAG_NAME );
+		delete_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME );
+		delete_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME );
 	}
 
 	/**
@@ -53,24 +59,7 @@ class Track_Upe_Status_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '1', get_option( Track_Upe_Status::IS_TRACKED_OPTION ) );
 	}
 
-	public function test_track_disabled_on_upgrade() {
-		update_option( WC_Payments_Features::UPE_FLAG_NAME, 'disabled' );
-
-		Track_Upe_Status::maybe_track();
-
-		$this->assertEquals(
-			[
-				'wcpay_upe_disabled' => [],
-			],
-			Tracker::get_admin_events()
-		);
-
-		$this->assertSame( '1', get_option( Track_Upe_Status::IS_TRACKED_OPTION ) );
-	}
-
 	public function test_do_nothing_default_on_upgrade() {
-		delete_option( WC_Payments_Features::UPE_FLAG_NAME );
-
 		Track_Upe_Status::maybe_track();
 
 		$this->assertEquals( [], Tracker::get_admin_events() );

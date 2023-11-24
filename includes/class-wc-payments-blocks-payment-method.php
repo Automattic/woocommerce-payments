@@ -6,7 +6,9 @@
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\WC_Payments_Checkout;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
@@ -33,6 +35,8 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 		$this->name                 = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$this->gateway              = WC_Payments::get_gateway();
 		$this->wc_payments_checkout = WC_Payments::get_wc_payments_checkout();
+
+		add_filter( 'the_content', [ $this, 'maybe_add_card_testing_token' ] );
 	}
 
 	/**
@@ -50,11 +54,12 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return string[] A list of script handles.
 	 */
 	public function get_payment_method_script_handles() {
-		wp_enqueue_style(
+		WC_Payments_Utils::enqueue_style(
 			'wc-blocks-checkout-style',
-			plugins_url( 'dist/upe-blocks-checkout.css', WCPAY_PLUGIN_FILE ),
+			plugins_url( 'dist/blocks-checkout.css', WCPAY_PLUGIN_FILE ),
 			[],
-			'1.0'
+			'1.0',
+			'all'
 		);
 		wp_register_script(
 			'stripe',
@@ -64,13 +69,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			true
 		);
 
-		wp_register_script(
-			'WCPAY_BLOCKS_CHECKOUT',
-			plugins_url( 'dist/blocks-checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe' ],
-			'1.0.1',
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_BLOCKS_CHECKOUT', 'dist/blocks-checkout', [ 'stripe' ] );
 		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
 
 		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
@@ -82,13 +81,13 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return array An associative array, containing all necessary values.
 	 */
 	public function get_payment_method_data() {
-		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		$is_platform_checkout_enabled  = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
-		$platform_checkout_config      = [];
+		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
+		$is_woopay_enabled  = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
+		$woopay_config      = [];
 
-		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
-			$platform_checkout_config = [
-				'platformCheckoutHost' => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
+		if ( $is_woopay_eligible && $is_woopay_enabled ) {
+			$woopay_config = [
+				'woopayHost' => WooPay_Utilities::get_woopay_url(),
 			];
 		}
 
@@ -98,8 +97,28 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 				'description' => $this->gateway->get_option( 'description', '' ),
 				'is_admin'    => is_admin(), // Used to display payment method preview in wp-admin.
 			],
-			$platform_checkout_config,
+			$woopay_config,
 			$this->wc_payments_checkout->get_payment_fields_js_config()
 		);
+	}
+
+	/**
+	 * Adds the hidden input containing the card testing prevention token to the blocks checkout page.
+	 *
+	 * @param   string $content  The content that's going to be flushed to the browser.
+	 *
+	 * @return  string
+	 */
+	public function maybe_add_card_testing_token( $content ) {
+		if ( ! wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) || ! WC()->session ) {
+			return $content;
+		}
+
+		$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( $fraud_prevention_service->is_enabled() ) {
+			$content .= '<input type="hidden" name="wcpay-fraud-prevention-token" id="wcpay-fraud-prevention-token" value="' . esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ) . '">';
+		}
+		return $content;
 	}
 }

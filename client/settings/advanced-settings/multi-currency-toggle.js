@@ -9,7 +9,7 @@ import { useEffect, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import { useMultiCurrency } from 'wcpay/data';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const MultiCurrencyToggle = () => {
 	const [
@@ -40,12 +40,13 @@ const MultiCurrencyToggle = () => {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://woocommerce.com/document/payments/currencies/multi-currency-setup" />
+						<ExternalLink href="https://woo.com/document/woopayments/currencies/multi-currency-setup/" />
 					),
 				},
 			} ) }
 			checked={ isMultiCurrencyEnabled }
 			onChange={ handleMultiCurrencyStatusChange }
+			data-testid="multi-currency-toggle"
 		/>
 	);
 };

@@ -2,6 +2,11 @@
 	font-size: 13px;
 	color: $gray-900;
 
+	.components-custom-select-control__label {
+		display: inline-block;
+		margin-bottom: $gap-smaller;
+	}
+
 	.components-custom-select-control__item {
 		padding: $gap-small;
 		margin: 0;
@@ -13,14 +18,44 @@
 		}
 	}
 
-	.components-custom-select-control__button {
-		display: block;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		overflow-x: hidden;
+	button.components-custom-select-control__button {
+		width: 100%;
+		background-color: #fff;
+		margin: 0 1px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 6px 8px;
+		border: 1px solid $gray-600;
+
+		&:hover {
+			color: initial;
+		}
 
 		&.placeholder {
 			color: $gray-50;
 		}
+
+		.components-custom-select-control__button-value {
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			overflow-x: hidden;
+		}
+
+		svg {
+			fill: initial;
+			width: 18px;
+			flex: 0 0 18px;
+		}
+
+		@media screen and ( max-width: 782px ) {
+			font-size: 16px;
+		}
+	}
+
+	.components-custom-select-control__menu {
+		margin: $gap 1px;
+		border-color: $gray-700;
+		max-height: 300px;
 	}
 }

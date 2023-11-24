@@ -8,6 +8,7 @@
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
+use WCPay\Constants\Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -64,16 +65,30 @@ class WC_Payments_Customer_Service {
 	private $database_cache;
 
 	/**
+	 * WC_Payments_Session_Service instance for working with session information
+	 *
+	 * @var WC_Payments_Session_Service
+	 */
+	private $session_service;
+
+	/**
 	 * Class constructor
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
-	 * @param WC_Payments_Account    $account             WC_Payments_Account instance.
-	 * @param Database_Cache         $database_cache       Database_Cache instance.
+	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
+	 * @param WC_Payments_Account         $account             WC_Payments_Account instance.
+	 * @param Database_Cache              $database_cache      Database_Cache instance.
+	 * @param WC_Payments_Session_Service $session_service     Session Service class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, Database_Cache $database_cache ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Account $account,
+		Database_Cache $database_cache,
+		WC_Payments_Session_Service $session_service
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
 		$this->database_cache      = $database_cache;
+		$this->session_service     = $session_service;
 
 		/*
 		 * Adds the WooCommerce Payments customer ID found in the user session
@@ -92,7 +107,7 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Get WCPay customer ID for the given WordPress user ID
 	 *
-	 * @param int $user_id The user ID to look for a customer ID with.
+	 * @param int|null $user_id The user ID to look for a customer ID with.
 	 *
 	 * @return string|null WCPay customer ID or null if not found.
 	 */
@@ -119,43 +134,66 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Create a customer and associate it with a WordPress user.
 	 *
-	 * @param WP_User $user          User to create a customer for.
-	 * @param array   $customer_data Customer data.
+	 * @param WP_User|null $user          User to create a customer for.
+	 * @param array        $customer_data Customer data.
 	 *
 	 * @return string The created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	public function create_customer_for_user( WP_User $user, array $customer_data ): string {
+	public function create_customer_for_user( ?WP_User $user, array $customer_data = [] ): string {
 		// Include the session ID for the user.
-		$fraud_config                = $this->account->get_fraud_services_config();
-		$customer_data['session_id'] = $fraud_config['sift']['session_id'] ?? null;
+		$customer_data['session_id'] = $this->session_service->get_sift_session_id() ?? null;
 
 		// Create a customer on the WCPay server.
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
 
-		if ( $user->ID > 0 ) {
+		if ( $user instanceof WP_User && $user->ID > 0 ) {
 			$this->update_user_customer_id( $user->ID, $customer_id );
 		}
 
-		// Save the customer id in the session for non logged in users to reuse it in payments.
-		WC()->session->set( self::CUSTOMER_ID_SESSION_KEY, $customer_id );
+		if ( isset( WC()->session ) ) {
+			// Save the customer id in the session for non logged in users to reuse it in payments.
+			WC()->session->set( self::CUSTOMER_ID_SESSION_KEY, $customer_id );
+		}
 
 		return $customer_id;
 	}
 
 	/**
+	 * Manages customer details held on WCPay server for WordPress user associated with an order.
+	 *
+	 * @param int|null $user_id ID of the WP user to associate with the customer.
+	 * @param WC_Order $order   Woo Order.
+	 *
+	 * @return string           WooPayments customer ID.
+	 * @throws API_Exception    Throws when server API request fails.
+*/
+	public function get_or_create_customer_id_from_order( ?int $user_id, WC_Order $order ): string {
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id   = $this->get_customer_id_by_user_id( $user_id );
+		$customer_data = self::map_customer_data( $order, new WC_Customer( $user_id ?? 0 ) );
+		$user          =  null === $user_id ? null :  get_user_by( 'id', $user_id );
+
+		if ( null !== $customer_id ) {
+			$this->update_customer_for_user( $customer_id, $user, $customer_data );
+			return $customer_id;
+		}
+		return $this->create_customer_for_user( $user, $customer_data );
+	}
+
+	/**
 	 * Update the customer details held on the WCPay server associated with the given WordPress user.
 	 *
-	 * @param string  $customer_id WCPay customer ID.
-	 * @param WP_User $user        WordPress user.
-	 * @param array   $customer_data Customer data.
+	 * @param string       $customer_id WCPay customer ID.
+	 * @param WP_User|null $user        WordPress user.
+	 * @param array        $customer_data Customer data.
 	 *
 	 * @return string The updated customer's ID. Can be different to the ID parameter if the customer was re-created.
 	 *
 	 * @throws API_Exception Error updating the customer.
 	 */
-	public function update_customer_for_user( string $customer_id, WP_User $user, array $customer_data ): string {
+	public function update_customer_for_user( string $customer_id, ?WP_User $user, array $customer_data ): string {
 		try {
 			// Update the customer on the WCPay server.
 			$this->payments_api_client->update_customer(
@@ -266,8 +304,10 @@ class WC_Payments_Customer_Service {
 		if ( WC_Payments::is_network_saved_cards_enabled() ) {
 			return; // No need to do anything, payment methods will never be cached in this case.
 		}
-		$customer_id = $this->get_customer_id_by_user_id( $user_id );
-		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
+
+		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::SEPA ];
+		$customer_id                      = $this->get_customer_id_by_user_id( $user_id );
+		foreach ( $retrievable_payment_method_types as $type ) {
 			$this->database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
 		}
 	}
@@ -344,15 +384,15 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Recreates the customer for this user.
 	 *
-	 * @param WP_User $user          User to recreate a customer for.
-	 * @param array   $customer_data Customer data.
+	 * @param WP_User|null $user          User to recreate a customer for.
+	 * @param array        $customer_data Customer data.
 	 *
 	 * @return string The newly created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	private function recreate_customer( WP_User $user, array $customer_data ): string {
-		if ( $user->ID > 0 ) {
+	private function recreate_customer( ?WP_User $user, array $customer_data ): string {
+		if ( $user instanceof WP_User && $user->ID > 0 ) {
 			$result = delete_user_option( $user->ID, $this->get_customer_id_option() );
 			if ( ! $result ) {
 				// Log the error, but continue since we'll be trying to update this option in create_customer.
@@ -369,7 +409,7 @@ class WC_Payments_Customer_Service {
 	 * @return string The customer ID option name.
 	 */
 	private function get_customer_id_option(): string {
-		return WC_Payments::get_gateway()->is_in_test_mode()
+		return WC_Payments::mode()->is_test()
 			? self::WCPAY_TEST_CUSTOMER_ID_OPTION
 			: self::WCPAY_LIVE_CUSTOMER_ID_OPTION;
 	}
@@ -440,7 +480,7 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
-	 * Adds the WooComerce Payments customer ID found in the user session
+	 * Adds the WooCommerce Payments customer ID found in the user session
 	 * to the WordPress user as metadata.
 	 *
 	 * @param int $user_id The WordPress user ID.
@@ -454,7 +494,7 @@ class WC_Payments_Customer_Service {
 			return;
 		}
 
-		// Retrieve the WooComerce Payments customer ID from the user session.
+		// Retrieve the WooCommerce Payments customer ID from the user session.
 		$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
 
 		if ( ! $customer_id ) {

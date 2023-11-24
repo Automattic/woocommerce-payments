@@ -81,12 +81,27 @@ class WC_Payments_Product_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
 
-		add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
-		add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
-		add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
-		add_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this, 'exclude_meta_wcpay_product' ] );
+		/**
+		 * When a store is in staging mode, we don't want any product handling to be sent to the server.
+		 *
+		 * Sending these requests from staging sites can have unintended consequences for the live store. For example,
+		 * deleting a subscription product on a staging site would delete the product record at Stripe and that product
+		 * would be in use for the live site.
+		 */
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
+			return;
+		}
 
-		$this->add_product_update_listeners();
+		// Only create, update and restore/unarchive WCPay Subscription products when Stripe Billing is active.
+		if ( WC_Payments_Features::should_use_stripe_billing() ) {
+			add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
+			add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
+
+			$this->add_product_update_listeners();
+		}
+
+		add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
+		add_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this, 'exclude_meta_wcpay_product' ] );
 	}
 
 	/**
@@ -110,7 +125,7 @@ class WC_Payments_Product_Service {
 	public function get_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
 		// If the subscription product doesn't have a WC Pay product ID, create one.
 		if ( ! self::has_wcpay_product_id( $product, $test_mode ) ) {
-			$is_current_environment = null === $test_mode || WC_Payments::get_gateway()->is_in_test_mode() === $test_mode;
+			$is_current_environment = null === $test_mode || WC_Payments::mode()->is_test() === $test_mode;
 
 			// Only create a new wcpay product if we're trying to fetch a wcpay product ID in the current environment.
 			if ( $is_current_environment ) {
@@ -186,7 +201,6 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id The ID of the product to handle.
 	 */
 	public function maybe_schedule_product_create_or_update( int $product_id ) {
-
 		// Skip products which have already been scheduled or aren't subscriptions.
 		$product = wc_get_product( $product_id );
 		if ( ! $product || isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
@@ -283,7 +297,7 @@ class WC_Payments_Product_Service {
 		}
 
 		$wcpay_product_ids = $this->get_all_wcpay_product_ids( $product );
-		$test_mode         = WC_Payments::get_gateway()->is_in_test_mode();
+		$test_mode         = WC_Payments::mode()->is_test();
 
 		// If the current environment doesn't have a product ID, make sure we create one.
 		if ( ! isset( $wcpay_product_ids[ $test_mode ? 'test' : 'live' ] ) ) {
@@ -430,7 +444,7 @@ class WC_Payments_Product_Service {
 	/**
 	 * Prevents the subscription interval to be greater than 1 for yearly subscriptions.
 	 *
-	 * @param int $product_id Post ID of the product.
+	 * @param int $product_id ID of the product that's being saved.
 	 */
 	public function limit_subscription_product_intervals( $product_id ) {
 		if ( $this->is_subscriptions_plugin_active() ) {
@@ -522,7 +536,7 @@ class WC_Payments_Product_Service {
 		// This needs to run before WC_Subscriptions_Admin::save_product_variation(), which has a priority of 20.
 		add_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19, 2 );
 
-		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		add_action( 'save_post_product', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
@@ -533,7 +547,7 @@ class WC_Payments_Product_Service {
 		remove_action( 'save_post', [ $this, 'limit_subscription_product_intervals' ], 10 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19 );
 
-		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		remove_action( 'save_post_product', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
@@ -582,7 +596,7 @@ class WC_Payments_Product_Service {
 	 * @return bool Whether the product needs to be update in WC Pay.
 	 */
 	private function product_needs_update( WC_Product $product ) : bool {
-		return $this->get_product_hash( $product ) !== $this->get_wcpay_product_hash( $product );
+		return $this->get_product_hash( $product ) !== static::get_wcpay_product_hash($product);
 	}
 
 	/**
@@ -615,7 +629,7 @@ class WC_Payments_Product_Service {
 	 * @return string The WCPay product ID meta key/option name.
 	 */
 	public static function get_wcpay_product_id_option( $test_mode = null ) : string {
-		$test_mode = null === $test_mode ? WC_Payments::get_gateway()->is_in_test_mode() : $test_mode;
+		$test_mode = null === $test_mode ? WC_Payments::mode()->is_test() : $test_mode;
 		return $test_mode ? self::TEST_PRODUCT_ID_KEY : self::LIVE_PRODUCT_ID_KEY;
 	}
 
@@ -627,7 +641,7 @@ class WC_Payments_Product_Service {
 	 * @return string The price hash option name.
 	 */
 	public static function get_wcpay_price_id_option( $test_mode = null ) : string {
-		$test_mode = null === $test_mode ? WC_Payments::get_gateway()->is_in_test_mode() : $test_mode;
+		$test_mode = null === $test_mode ? WC_Payments::mode()->is_test() : $test_mode;
 		return $test_mode ? self::TEST_PRICE_ID_KEY : self::LIVE_PRICE_ID_KEY;
 	}
 
@@ -769,7 +783,7 @@ class WC_Payments_Product_Service {
 
 		// If the subscription product doesn't have a WC Pay price ID, create one now.
 		if ( empty( $price_id ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
-			$is_current_environment = null === $test_mode || WC_Payments::get_gateway()->is_in_test_mode() === $test_mode;
+			$is_current_environment = null === $test_mode || WC_Payments::mode()->is_test() === $test_mode;
 
 			// Only create WCPay Price object if we're trying to getch a wcpay price ID in the current environment.
 			if ( $is_current_environment ) {

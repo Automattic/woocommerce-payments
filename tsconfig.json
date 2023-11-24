@@ -5,7 +5,7 @@
     "strict": true,             // enable strict type checks as a best practice
     "module": "es6",            // specify module code generation
     "jsx": "react",             // use typescript to transpile jsx to js
-    "target": "es5",            // specify ECMAScript target version
+    "target": "es6",            // specify ECMAScript target version
     "allowJs": true,            // allow a partial TypeScript and JavaScript codebase
     "moduleResolution": "node",
     "baseUrl": "./client",
@@ -13,14 +13,18 @@
     "esModuleInterop": true,
     "noImplicitAny": true,
     "paths": {
+      "assets/*": [ "../assets/*" ],
       "wcpay/*": [ "./*" ],
-      "iti/utils": [ "../node_modules/intl-tel-input/build/js/utils" ]
+      "iti/utils": [ "../node_modules/intl-tel-input/build/js/utils" ],
+      "react": ["../node_modules/@types/react"]
     },
     "types": [
-      "node", 
+      "node",
       "jest",
-      "@testing-library/jest-dom",
-    ]
+      "@testing-library/jest-dom"
+    ],
+    "resolveJsonModule": true,
+    "skipLibCheck": true // To be removed when the lint errors related to types and multiple resolutions are gone
   },
   "include": [
     "./client/"

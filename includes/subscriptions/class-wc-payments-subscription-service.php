@@ -105,14 +105,14 @@ class WC_Payments_Subscription_Service {
 	private $is_creating_subscription_from_update_payment_method = false;
 
 	/**
-	 * WC Payments Subscriptions Constructor
+	 * WC Payments Subscriptions Constructor.
+	 *
+	 * Attaches callbacks for managing WC Subscriptions.
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WC payments API Client.
-	 * @param WC_Payments_Customer_Service $customer_service WC payments customer serivce.
+	 * @param WC_Payments_Customer_Service $customer_service WC payments customer service.
 	 * @param WC_Payments_Product_Service  $product_service  WC payments Products service.
 	 * @param WC_Payments_Invoice_Service  $invoice_service  WC payments Invoice service.
-	 *
-	 * @return void
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
@@ -120,12 +120,24 @@ class WC_Payments_Subscription_Service {
 		WC_Payments_Product_Service $product_service,
 		WC_Payments_Invoice_Service $invoice_service
 	) {
+
 		$this->payments_api_client = $api_client;
 		$this->customer_service    = $customer_service;
 		$this->product_service     = $product_service;
 		$this->invoice_service     = $invoice_service;
 
-		if ( ! $this->is_subscriptions_plugin_active() ) {
+		/**
+		 * When a store is in staging mode, we don't want any subscription updates or purchases to be sent to the server.
+		 *
+		 * Sending these requests from staging sites can have unintended consequences for the live store. For example,
+		 * Subscriptions which renew on the staging site will lead to pausing the shared subscription record at Stripe
+		 * and that will result in inexplicable paused subscriptions and missed renewal payments for the live site.
+		 */
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
+			return;
+		}
+
+		if ( WC_Payments_Features::should_use_stripe_billing() ) {
 			add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );
 			add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'create_subscription_for_manual_renewal' ] );
 			add_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'maybe_create_subscription_from_update_payment_method' ], 10, 2 );
@@ -133,11 +145,10 @@ class WC_Payments_Subscription_Service {
 
 		add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
 		add_action( 'woocommerce_subscription_status_expired', [ $this, 'cancel_subscription' ] );
-		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'suspend_subscription' ] );
+		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'handle_subscription_status_on_hold' ] );
 		add_action( 'woocommerce_subscription_status_pending-cancel', [ $this, 'set_pending_cancel_for_subscription' ] );
 		add_action( 'woocommerce_subscription_status_pending-cancel_to_active', [ $this, 'reactivate_subscription' ] );
 		add_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this, 'reactivate_subscription' ] );
-		add_action( 'save_post_shop_subscription', [ $this, 'maybe_update_date_for_subscription' ] );
 
 		// Save the new token on the WCPay subscription when it's added to a WC subscription.
 		add_action( 'woocommerce_payment_token_added_to_order', [ $this, 'update_wcpay_subscription_payment_method' ], 10, 3 );
@@ -146,6 +157,8 @@ class WC_Payments_Subscription_Service {
 
 		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
 		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'show_wcpay_subscription_id' ] );
+
+		add_action( 'woocommerce_subscription_payment_method_updated_from_' . WC_Payment_Gateway_WCPay::GATEWAY_ID, [ $this, 'maybe_cancel_subscription' ], 10, 2 );
 	}
 
 	/**
@@ -159,12 +172,14 @@ class WC_Payments_Subscription_Service {
 		$trial_end = $subscription->get_time( 'trial_end' );
 		$has_sync  = false;
 
-		// TODO: Check if there is a better way to see if sync date is today.
 		if ( WC_Subscriptions_Synchroniser::is_syncing_enabled() && WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 			$has_sync = true;
 
 			foreach ( $subscription->get_items() as $item ) {
-				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $item->get_product() ) ) {
+				$synced_payment_date = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $item->get_product(), 'timestamp' );
+
+				// Check if the subscription starts from today because in those cases we don't need a dynamic trial period to align to the payment date.
+				if ( WC_Subscriptions_Synchroniser::is_today( $synced_payment_date ) ) {
 					$has_sync = false;
 					break;
 				}
@@ -182,19 +197,19 @@ class WC_Payments_Subscription_Service {
 	 * @return WC_Subscription|bool The WC subscription or false if it can't be found.
 	 */
 	public static function get_subscription_from_wcpay_subscription_id( string $wcpay_subscription_id ) {
-		global $wpdb;
-
-		$subscription_id = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT post_id FROM {$wpdb->prefix}postmeta
-				WHERE meta_key = %s
-				AND meta_value = %s",
-				self::SUBSCRIPTION_ID_META_KEY,
-				$wcpay_subscription_id
-			)
+		$subscriptions = wcs_get_subscriptions(
+			[
+				'subscriptions_per_page' => 1,
+				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'   => self::SUBSCRIPTION_ID_META_KEY,
+						'value' => $wcpay_subscription_id,
+					],
+				],
+			]
 		);
 
-		return wcs_get_subscription( $subscription_id );
+		return empty( $subscriptions ) ? false : reset( $subscriptions );
 	}
 
 	/**
@@ -246,12 +261,15 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Determines if a given WC subscription is a WCPay subscription.
 	 *
+	 * On duplicate sites (staging or dev environments) all WCPay Subscrptions are disabled and so return false.
+	 * This is to avoid dev environments interacting with WCPay Subscriptions and communicating on behalf of the live store.
+	 *
 	 * @param WC_Subscription $subscription WC Subscription object.
 	 *
 	 * @return bool
 	 */
 	public static function is_wcpay_subscription( WC_Subscription $subscription ) : bool {
-		return WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
+		return ! WC_Payments_Subscriptions::is_duplicate_site() && WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
 	}
 
 	/**
@@ -350,7 +368,7 @@ class WC_Payments_Subscription_Service {
 	 */
 	public function create_subscription( WC_Subscription $subscription ) {
 		/*
-		 * Bail early if the subscription payment method is not WooCommerce Payments.
+		 * Bail early if the subscription payment method is not WooPayments.
 		 * WCPay Subscriptions are not created in the following scenarios:
 		 *
 		 * - A different payment gateway was used to purchase the subscription (e.g. PayPal).
@@ -372,13 +390,15 @@ class WC_Payments_Subscription_Service {
 			$subscription_data = $this->prepare_wcpay_subscription_data( $wcpay_customer_id, $subscription );
 			$this->validate_subscription_data( $subscription_data );
 
+			$subscription_data['metadata']['subscription_source'] = $this->is_subscriptions_plugin_active() ? 'woo_subscriptions' : 'wcpay_subscriptions';
+
 			$response = $this->payments_api_client->create_subscription( $subscription_data );
 
 			$this->set_wcpay_subscription_id( $subscription, $response['id'] );
 			$this->set_wcpay_subscription_item_ids( $subscription, $response['items']['data'] );
 
 			if ( isset( $response['discounts'] ) ) {
-				$this->set_wcpay_discount_ids( $subscription, $response['discounts'] );
+				static::set_wcpay_discount_ids($subscription, $response['discounts']);
 			}
 
 			if ( ! empty( $response['latest_invoice'] ) ) {
@@ -413,7 +433,7 @@ class WC_Payments_Subscription_Service {
 	 * @return void
 	 */
 	public function maybe_create_subscription_from_update_payment_method( WC_Subscription $subscription, string $new_payment_method ) {
-		// Not changing the subscription payment method to WooCommerce Payments, bail.
+		// Not changing the subscription payment method to WooPayments, bail.
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
 			return;
 		}
@@ -450,13 +470,59 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Suspends the WCPay subscription when a WC subscription is put on-hold.
+	 * Handle subscription status change to on-hold.
 	 *
-	 * @param WC_Subscription $subscription The WC subscription that was suspended.
+	 * @param WC_Subscription $subscription The WC subscription.
+	 *
+	 * @return void
+	 */
+	public function handle_subscription_status_on_hold( WC_Subscription $subscription ) {
+		// Check if the subscription is a WCPay subscription before proceeding.
+		// In stores that have WC Subscriptions active, or previously had WC S,
+		// this method may be called with regular tokenised subscriptions.
+		if ( ! static::is_wcpay_subscription($subscription) ) {
+			return;
+		}
+
+		$this->suspend_subscription( $subscription );
+
+		// Add an order note as a visible record of suspend.
+		$subscription->add_order_note( __( 'Suspended WCPay Subscription because subscription status changed to on-hold.', 'woocommerce-payments' ) );
+
+		// Log that the subscription was suspended.
+		// Include a brief stack trace to help determine where status change originated.
+		// For example, admin user action, or a code interaction with customizations.
+		$e     = new Exception();
+		$trace = $e->getTraceAsString();
+		Logger::log(
+			sprintf(
+				'Suspended WCPay Subscription because subscription status changed to on-hold. WC ID: %d; WCPay ID: %s; stack: %s',
+				$subscription->get_id(),
+				self::get_wcpay_subscription_id( $subscription ),
+				$trace
+			)
+		);
+	}
+
+	/**
+	 * Suspends a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription to suspend.
 	 *
 	 * @return void
 	 */
 	public function suspend_subscription( WC_Subscription $subscription ) {
+		// Check if the subscription is a WCPay subscription before proceeding.
+		if ( ! static::is_wcpay_subscription($subscription) ) {
+			Logger::log(
+				sprintf(
+					'Aborting WC_Payments_Subscription_Service::suspend_subscription; subscription is a tokenised (non WCPay) subscription. WC ID: %d.',
+					$subscription->get_id()
+				)
+			);
+			return;
+		}
+
 		$this->update_subscription( $subscription, [ 'pause_collection' => [ 'behavior' => 'void' ] ] );
 	}
 
@@ -495,17 +561,15 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * If the WCPay subscription's payment method was updated while there's a failed invoice, trigger a retry.
 	 *
-	 * @param int              $post_id  Post ID (WC subscription ID) that had its payment method updated.
-	 * @param int              $token_id Payment Token post ID stored in DB.
-	 * @param WC_Payment_Token $token    Payment Token object.
-	 *
-	 * @return void
+	 * @param int              $subscription_id Post ID (WC subscription ID) that had its payment method updated.
+	 * @param int              $token_id        Payment Token post ID stored in DB.
+	 * @param WC_Payment_Token $token           Payment Token object.
 	 */
-	public function update_wcpay_subscription_payment_method( int $post_id, int $token_id, WC_Payment_Token $token ) {
-		$subscription = wcs_get_subscription( $post_id );
+	public function update_wcpay_subscription_payment_method( int $subscription_id, int $token_id, WC_Payment_Token $token ) {
+		$subscription = wcs_get_subscription( $subscription_id );
 
-		if ( $subscription ) {
-			$wcpay_subscription_id   = $this->get_wcpay_subscription_id( $subscription );
+		if ( $subscription && self::is_wcpay_subscription( $subscription ) ) {
+			$wcpay_subscription_id   = static::get_wcpay_subscription_id($subscription);
 			$wcpay_payment_method_id = $token->get_token();
 
 			if ( $wcpay_subscription_id && $wcpay_payment_method_id ) {
@@ -516,38 +580,6 @@ class WC_Payments_Subscription_Service {
 					return;
 				}
 			}
-		}
-	}
-
-	/**
-	 * Updates the next payment or trial end dates for a WCPay Subscription.
-	 *
-	 * @param int $post_id WC Subscription ID.
-	 *
-	 * @return void
-	 */
-	public function maybe_update_date_for_subscription( int $post_id ) {
-		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
-			return;
-		}
-
-		$subscription = wcs_get_subscription( $post_id );
-
-		if ( ! self::get_wcpay_subscription_id( $subscription ) ) {
-			return;
-		}
-
-		// Check for new trial end date.
-		if ( array_key_exists( 'trial_end_timestamp_utc', $_POST ) && (int) $_POST['trial_end_timestamp_utc'] !== $subscription->get_time( 'trial_end' ) ) {
-			$timestamp = empty( $_POST['trial_end_timestamp_utc'] ) ? 0 : (int) $_POST['trial_end_timestamp_utc'];
-			$this->set_trial_end_for_subscription( $subscription, $timestamp );
-			return; // Trial end should be equal to next payment, so we can return early.
-		}
-
-		// Check for new next payment date.
-		if ( array_key_exists( 'next_payment_timestamp_utc', $_POST ) && (int) $_POST['next_payment_timestamp_utc'] !== $subscription->get_time( 'next_payment' ) ) {
-			$timestamp = empty( $_POST['next_payment_timestamp_utc'] ) ? 0 : (int) $_POST['next_payment_timestamp_utc'];
-			$this->set_trial_end_for_subscription( $subscription, $timestamp );
 		}
 	}
 
@@ -567,7 +599,7 @@ class WC_Payments_Subscription_Service {
 
 		$wcpay_invoice_id = WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription );
 
-		if ( ! $wcpay_invoice_id ) {
+		if ( ! $wcpay_invoice_id || ! self::is_wcpay_subscription( $subscription ) ) {
 			return;
 		}
 
@@ -607,12 +639,23 @@ class WC_Payments_Subscription_Service {
 	 * @return bool
 	 */
 	public function prevent_wcpay_subscription_changes( bool $supported, string $feature, WC_Subscription $subscription ) {
+		$is_stripe_billing = self::is_wcpay_subscription( $subscription );
 
-		if ( ! self::is_wcpay_subscription( $subscription ) ) {
-			return $supported;
+		switch ( $feature ) {
+			case 'subscription_amount_changes':
+			case 'subscription_date_changes':
+				$supported = ! $is_stripe_billing;
+				break;
+			case 'gateway_scheduled_payments':
+				$supported = $is_stripe_billing;
+				break;
 		}
 
-		return in_array( $feature, $this->supports, true ) || isset( $this->feature_support_exceptions[ $subscription->get_id() ][ $feature ] );
+		if ( $is_stripe_billing ) {
+			$supported = in_array( $feature, $this->supports, true ) || isset( $this->feature_support_exceptions[ $subscription->get_id() ][ $feature ] );
+		}
+
+		return $supported;
 	}
 
 	/**
@@ -649,7 +692,11 @@ class WC_Payments_Subscription_Service {
 			return;
 		}
 
-		echo '<p><strong>' . esc_html__( 'WooCommerce Payments Subscription ID', 'woocommerce-payments' ) . ':</strong> ' . esc_html( $wcpay_subscription_id ) . '</p>';
+		echo '<p><strong>' . sprintf(
+			/* translators: %s: WooPayments */
+			esc_html__( '%s Subscription ID', 'woocommerce-payments' ),
+			'WooPayments'
+		) . ':</strong> ' . esc_html( $wcpay_subscription_id ) . '</p>';
 	}
 
 	/**
@@ -743,13 +790,7 @@ class WC_Payments_Subscription_Service {
 			$data[] = [
 				'metadata'   => $this->get_item_metadata( $item ),
 				'quantity'   => $item->get_quantity(),
-				'price_data' => $this->format_item_price_data(
-					$subscription->get_currency(),
-					$this->product_service->get_wcpay_product_id( $item->get_product() ),
-					$item->get_subtotal() / $item->get_quantity(),
-					$subscription->get_billing_period(),
-					$subscription->get_billing_interval()
-				),
+				'price_data' => static::format_item_price_data($subscription->get_currency(), $this->product_service->get_wcpay_product_id( $item->get_product() ), $item->get_subtotal() / $item->get_quantity(), $subscription->get_billing_period(), $subscription->get_billing_interval()),
 			];
 		}
 
@@ -779,6 +820,25 @@ class WC_Payments_Subscription_Service {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Cancels a WCPay subscription when a customer changes their payment method
+	 *
+	 * @param WC_Subscription $subscription       The subscription that was updated.
+	 * @param string          $new_payment_method The subscription's new payment method ID.
+	 */
+	public function maybe_cancel_subscription( $subscription, $new_payment_method ) {
+		$wcpay_subscription_id = self::get_wcpay_subscription_id( $subscription );
+
+		if ( (bool) $wcpay_subscription_id && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+			$this->cancel_subscription( $subscription );
+
+			// Delete the WCPay Subscription meta but keep a record of it.
+			$subscription->update_meta_data( '_cancelled' . self::SUBSCRIPTION_ID_META_KEY, $wcpay_subscription_id );
+			$subscription->delete_meta_data( self::SUBSCRIPTION_ID_META_KEY );
+			$subscription->save();
+		}
 	}
 
 	/**
@@ -830,11 +890,10 @@ class WC_Payments_Subscription_Service {
 	 * @return array|null Updated wcpay subscription or null if there was an error.
 	 */
 	private function update_subscription( WC_Subscription $subscription, array $data ) {
-		$wcpay_subscription_id = $this->get_wcpay_subscription_id( $subscription );
+		$wcpay_subscription_id = static::get_wcpay_subscription_id($subscription);
 		$response              = null;
 
 		if ( ! $wcpay_subscription_id ) {
-			Logger::log( 'There was a problem updating the WCPay subscription in: Subscription does not contain a valid subscription ID.' );
 			return;
 		}
 
@@ -1003,5 +1062,28 @@ class WC_Payments_Subscription_Service {
 				throw new Exception( sprintf( 'The subscription billing period cannot be any longer than one year. A billing period of "every %s %s(s)" was given.', $billing_interval, $billing_period ) );
 			}
 		}
+	}
+
+	/**
+	 * Determines if the store has any active WCPay subscriptions.
+	 *
+	 * @return bool True if store has active WCPay subscriptions, otherwise false.
+	 */
+	public static function store_has_active_wcpay_subscriptions() {
+		$active_wcpay_subscriptions = wcs_get_subscriptions(
+			[
+				'subscriptions_per_page' => 1,
+				'subscription_status'    => 'active',
+				// Ignoring phpcs warning, we need to search meta.
+				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => self::SUBSCRIPTION_ID_META_KEY,
+						'compare' => 'EXISTS',
+					],
+				],
+			]
+		);
+
+		return (is_countable($active_wcpay_subscriptions) ? count( $active_wcpay_subscriptions ) : 0) > 0;
 	}
 }

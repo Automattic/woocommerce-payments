@@ -20,6 +20,7 @@ interface PhoneNumberInputProps {
 		ariaLabel: string;
 		name: string;
 	};
+	isBlocksCheckout: boolean;
 }
 
 const PhoneNumberInput = ( {
@@ -31,6 +32,7 @@ const PhoneNumberInput = ( {
 		ariaLabel: '',
 		name: '',
 	},
+	isBlocksCheckout,
 	...props
 }: PhoneNumberInputProps ): JSX.Element => {
 	const [
@@ -68,16 +70,35 @@ const PhoneNumberInput = ( {
 			}
 		};
 
+		let phoneCountries = {
+			initialCountry: 'US',
+			onlyCountries: [],
+		};
+
+		//if in admin panel
+		if ( 'undefined' !== typeof wcpaySettings ) {
+			const accountCountry = wcpaySettings?.accountStatus?.country ?? '';
+			// Special case for Japan: Only Japanese phone numbers are accepted by Stripe
+			if ( accountCountry === 'JP' ) {
+				phoneCountries = {
+					initialCountry: 'JP',
+					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+					// @ts-ignore
+					onlyCountries: [ 'JP' ],
+				};
+			}
+		}
+
 		if ( currentRef ) {
 			iti = intlTelInput( currentRef, {
-				initialCountry: 'US',
 				customPlaceholder: () => '',
 				separateDialCode: true,
 				hiddenInput: 'full',
 				utilsScript: utils,
+				dropdownContainer: document.body,
+				...phoneCountries,
 			} );
 			setInputInstance( iti );
-			onValidationChange( iti.isValidNumber() );
 
 			currentRef.addEventListener( 'countrychange', handleCountryChange );
 		}
@@ -96,10 +117,20 @@ const PhoneNumberInput = ( {
 		};
 	}, [ onValueChange, onValidationChange ] );
 
+	useEffect( () => {
+		if ( inputInstance && inputRef.current ) {
+			onValidationChange( inputInstance.isValidNumber() );
+		}
+	}, [ value, inputInstance, inputRef, onValidationChange ] );
+
 	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
 	// alters the DOM and we'll get warnings about "removing content without using React."
 	return (
-		<div>
+		<div
+			className={
+				isBlocksCheckout ? 'wc-block-components-text-input' : ''
+			}
+		>
 			<input
 				type="tel"
 				ref={ inputRef }

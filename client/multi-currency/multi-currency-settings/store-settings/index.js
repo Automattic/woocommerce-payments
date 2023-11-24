@@ -1,9 +1,9 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
-import { sprintf, __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
@@ -18,7 +18,7 @@ import PreviewModal from 'wcpay/multi-currency/preview-modal';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
-		'https://woocommerce.com/document/payments/currencies/multi-currency-setup/';
+		'https://woo.com/document/woopayments/currencies/multi-currency-setup/#store-settings';
 
 	return (
 		<>
@@ -138,36 +138,44 @@ const StoreSettings = () => {
 									}
 								) }
 							</div>
-							{ 'Storefront' === storeSettings.site_theme ? (
-								<CheckboxControl
-									checked={ isStorefrontSwitcherEnabledValue }
-									onChange={
-										handleIsStorefrontSwitcherEnabledClick
-									}
-									data-testid={ 'enable_storefront_switcher' }
-									label={ __(
-										'Add a currency switcher to the Storefront theme on breadcrumb section.',
-										'woocommerce-payments'
-									) }
-								/>
-							) : null }
-							<div className="multi-currency-settings__description">
-								{ createInterpolateElement(
-									sprintf(
-										/* translators: %s: url to the widgets page */
-										__(
-											'A currency switcher is also available in your widgets. ' +
-												'<linkToWidgets>Configure now</linkToWidgets>',
+							{ storeSettings.site_theme === 'Storefront' ? (
+								<>
+									<CheckboxControl
+										checked={
+											isStorefrontSwitcherEnabledValue
+										}
+										onChange={
+											handleIsStorefrontSwitcherEnabledClick
+										}
+										data-testid={
+											'enable_storefront_switcher'
+										}
+										label={ __(
+											'Add a currency switcher to the Storefront theme on breadcrumb section.',
 											'woocommerce-payments'
-										),
-										'widgets.php'
-									),
-									{
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										linkToWidgets: <a href="widgets.php" />,
-									}
-								) }
-							</div>
+										) }
+									/>
+									<div className="multi-currency-settings__description">
+										{ createInterpolateElement(
+											sprintf(
+												/* translators: %s: url to the widgets page */
+												__(
+													'A currency switcher is also available in your widgets. ' +
+														'<linkToWidgets>Configure now</linkToWidgets>',
+													'woocommerce-payments'
+												),
+												'widgets.php'
+											),
+											{
+												linkToWidgets: (
+													// eslint-disable-next-line jsx-a11y/anchor-has-content
+													<a href="widgets.php" />
+												),
+											}
+										) }
+									</div>
+								</>
+							) : null }
 						</CardBody>
 						<PreviewModal
 							isPreviewModalOpen={ isPreviewModalOpen }

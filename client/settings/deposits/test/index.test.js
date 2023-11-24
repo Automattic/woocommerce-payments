@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { render, screen, within } from '@testing-library/react';
+import { select } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -10,11 +11,14 @@ import Deposits from '..';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 import {
 	useDepositStatus,
+	useDepositRestrictions,
 	useCompletedWaitingPeriod,
 	useDepositScheduleInterval,
 	useDepositScheduleWeeklyAnchor,
 	useDepositScheduleMonthlyAnchor,
 } from 'wcpay/data';
+
+jest.mock( '@wordpress/data' );
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
@@ -23,6 +27,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useSavedCards: jest.fn(),
 	useCardPresentEligible: jest.fn(),
 	useDepositStatus: jest.fn(),
+	useDepositRestrictions: jest.fn(),
 	useCompletedWaitingPeriod: jest.fn(),
 	useDepositScheduleInterval: jest.fn(),
 	useDepositScheduleWeeklyAnchor: jest.fn(),
@@ -31,19 +36,12 @@ jest.mock( 'wcpay/data', () => ( {
 
 describe( 'Deposits', () => {
 	const settingsContext = {
-		accountStatus: {
-			accountLink: '/account-link',
-			deposits: {
-				minimum_deposit_amounts: {},
-			},
-		},
-		storeCurrencies: {
-			default: 'usd',
-		},
+		accountStatus: { accountLink: '/account-link' },
 	};
 
 	beforeEach( () => {
 		useDepositStatus.mockReturnValue( 'enabled' );
+		useDepositRestrictions.mockReturnValue( 'deposits_unrestricted' );
 		useCompletedWaitingPeriod.mockReturnValue( true );
 		useDepositScheduleInterval.mockReturnValue( [ 'daily', jest.fn() ] );
 		useDepositScheduleMonthlyAnchor.mockReturnValue( [ '1', jest.fn() ] );
@@ -51,26 +49,11 @@ describe( 'Deposits', () => {
 			'monday',
 			jest.fn(),
 		] );
-
-		global.wcpaySettings = {
-			featureFlags: {},
-			isSubscriptionsActive: false,
-			zeroDecimalCurrencies: [],
-			currentUserEmail: 'mock@example.com',
-			connect: {
-				country: 'US',
-			},
-			currencyData: {
-				US: {
-					code: 'USD',
-					symbol: '$',
-					symbolPosition: 'left',
-					thousandSeparator: ',',
-					decimalSeparator: '.',
-					precision: 2,
-				},
-			},
-		};
+		select.mockImplementation( () => ( {
+			getSettings: jest.fn().mockReturnValue( {
+				account_country: 'US',
+			} ),
+		} ) );
 	} );
 
 	it( 'renders', () => {
@@ -90,6 +73,26 @@ describe( 'Deposits', () => {
 
 	it( 'renders the deposits blocked message', () => {
 		useDepositStatus.mockReturnValue( 'blocked' );
+		useCompletedWaitingPeriod.mockReturnValue( true );
+
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		const depositsMessage = screen.getByText(
+			/Deposit scheduling is currently unavailable for your store/,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
+		expect( depositsMessage ).toBeInTheDocument();
+	} );
+
+	it( 'renders the deposits blocked message when deposits are not blocked, but restricted', () => {
+		useDepositStatus.mockReturnValue( 'enabled' );
+		useDepositRestrictions.mockReturnValue( 'schedule_restricted' );
 		useCompletedWaitingPeriod.mockReturnValue( true );
 
 		render(
@@ -159,9 +162,27 @@ describe( 'Deposits', () => {
 		within( frequencySelect ).getByRole( 'option', { name: /Daily/ } );
 		within( frequencySelect ).getByRole( 'option', { name: /Weekly/ } );
 		within( frequencySelect ).getByRole( 'option', { name: /Monthly/ } );
+	} );
 
-		const automaticDepositsRadio = screen.getByLabelText( /Automatic/ );
-		expect( automaticDepositsRadio ).toBeChecked();
+	it( 'renders the frequency select without daily for Japan', () => {
+		useDepositScheduleInterval.mockReturnValue( [ 'daily', jest.fn() ] );
+
+		select.mockImplementation( () => ( {
+			getSettings: jest.fn().mockReturnValue( {
+				account_country: 'JP',
+			} ),
+		} ) );
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		const frequencySelect = screen.getByLabelText( /Frequency/ );
+		expect( frequencySelect ).toHaveValue( 'weekly' );
+
+		within( frequencySelect ).getByRole( 'option', { name: /Weekly/ } );
+		within( frequencySelect ).getByRole( 'option', { name: /Monthly/ } );
 	} );
 
 	it( 'renders the weekly offset select', () => {
@@ -196,9 +217,6 @@ describe( 'Deposits', () => {
 				name: anchor,
 			} );
 		}
-
-		const automaticDepositsRadio = screen.getByLabelText( /Automatic/ );
-		expect( automaticDepositsRadio ).toBeChecked();
 	} );
 
 	it( 'renders the monthly offset select', () => {
@@ -223,38 +241,5 @@ describe( 'Deposits', () => {
 				name: anchor,
 			} );
 		}
-
-		const automaticDepositsRadio = screen.getByLabelText( /Automatic/ );
-		expect( automaticDepositsRadio ).toBeChecked();
-	} );
-
-	it( 'renders automatic and manual radios', () => {
-		render(
-			<WCPaySettingsContext.Provider value={ settingsContext }>
-				<Deposits />
-			</WCPaySettingsContext.Provider>
-		);
-
-		const automaticRadio = screen.getByLabelText( /Automatic/ );
-		expect( automaticRadio ).toBeInTheDocument();
-
-		const manualRadio = screen.getByLabelText( /Manual/ );
-		expect( manualRadio ).toBeInTheDocument();
-	} );
-
-	it( 'renders correctly when manual deposit is selected', () => {
-		useDepositScheduleInterval.mockReturnValue( [ 'manual', jest.fn() ] );
-
-		render(
-			<WCPaySettingsContext.Provider value={ settingsContext }>
-				<Deposits />
-			</WCPaySettingsContext.Provider>
-		);
-
-		const manualDepositsRadio = screen.getByLabelText( /Manual/ );
-		expect( manualDepositsRadio ).toBeChecked();
-
-		const frequencySelect = screen.queryByLabelText( /Frequency/ );
-		expect( frequencySelect ).toBeDisabled();
 	} );
 } );

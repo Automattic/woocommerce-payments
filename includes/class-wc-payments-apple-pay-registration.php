@@ -246,9 +246,9 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return string A string representation of the current mode.
 	 */
 	private function get_gateway_mode_string() {
-		if ( $this->gateway->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return 'dev';
-		} elseif ( $this->gateway->is_in_test_mode() ) {
+		} elseif ( WC_Payments::mode()->is_test() ) {
 			return 'test';
 		}
 		return 'live';
@@ -285,7 +285,6 @@ class WC_Payments_Apple_Pay_Registration {
 		} catch ( API_Exception $e ) {
 			$error = $e->getMessage();
 		}
-
 		// Display error message in notice.
 		$this->apple_pay_verify_notice = $error;
 
@@ -359,7 +358,13 @@ class WC_Payments_Apple_Pay_Registration {
 		<div class="notice notice-warning apple-pay-message">
 			<p>
 				<strong><?php echo esc_html( 'Apple Pay:' ); ?></strong>
-				<?php echo esc_html_e( 'Express checkouts are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+				<?php
+					printf(
+						/* translators: %s: WooPayments */
+						esc_html__( 'Express checkouts are enabled. To use Apple Pay, please use a live %s account.', 'woocommerce-payments' ),
+						'WooPayments'
+					);
+				?>
 			</p>
 		</div>
 		<?php
@@ -406,7 +411,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$learn_more_text = WC_Payments_Utils::esc_interpolated_html(
 			__( '<a>Learn more</a>.', 'woocommerce-payments' ),
 			[
-				'a' => '<a href="https://woocommerce.com/document/payments/apple-pay/#triggering-domain-registration" target="_blank">',
+				'a' => '<a href="https://woo.com/document/woopayments/payment-methods/apple-pay/#domain-registration" target="_blank">',
 			]
 		);
 
@@ -418,16 +423,16 @@ class WC_Payments_Apple_Pay_Registration {
 					<?php echo esc_html( $verification_failed_without_error ); ?>
 					<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
 				</p>
-			<?php else : ?>
+<?php else : ?>
 				<p>
 					<strong><?php echo esc_html( $payment_request_button_text ); ?></strong>
 					<?php echo esc_html( $verification_failed_with_error ); ?>
 					<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
 				</p>
 				<p><i><?php echo wp_kses( make_clickable( esc_html( $this->apple_pay_verify_notice ) ), $allowed_html ); ?></i></p>
-			<?php endif; ?>
+<?php endif; ?>
 			<p><?php echo $check_log_text; /* @codingStandardsIgnoreLine */ ?></p>
 		</div>
-		<?php
+<?php
 	}
 }

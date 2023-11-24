@@ -29,6 +29,16 @@ jest.mock( '@stripe/react-stripe-js', () => ( {
 	useStripe: jest.fn(),
 } ) );
 
+jest.mock( 'wcpay/data', () => {
+	const actual = jest.requireActual( 'wcpay/data' );
+	return {
+		__esModule: true,
+		...actual,
+		useWooPayEnabledSettings: () => [ false, jest.fn() ],
+		usePaymentRequestEnabledSettings: () => [ true, jest.fn() ],
+	};
+} );
+
 describe( 'PaymentRequestButtonPreview', () => {
 	const canMakePaymentMock = jest.fn();
 
@@ -75,12 +85,11 @@ describe( 'PaymentRequestButtonPreview', () => {
 	it( 'does not display anything if stripe is falsy', () => {
 		useStripe.mockReturnValue( null );
 
-		const { container } = render( <PaymentRequestButtonPreview /> );
+		render( <PaymentRequestButtonPreview /> );
 
 		expect(
 			screen.queryByText( 'Stripe button mock' )
 		).not.toBeInTheDocument();
-		expect( container.firstChild ).toBeNull();
 	} );
 
 	it( 'displays an info notice if stripe fails to load', async () => {
@@ -89,7 +98,10 @@ describe( 'PaymentRequestButtonPreview', () => {
 
 		expect(
 			await screen.findByText(
-				/To preview the buttons, ensure your device is configured/
+				/To preview the Apple Pay and Google Pay buttons, ensure your device is configured/,
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 		expect(
@@ -104,7 +116,9 @@ describe( 'PaymentRequestButtonPreview', () => {
 			await screen.findByText( 'Stripe button mock' )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByText( /ensure your device is configured/ )
+			screen.queryByText( /ensure your device is configured/, {
+				ignore: '.a11y-speak-region',
+			} )
 		).not.toBeInTheDocument();
 	} );
 } );

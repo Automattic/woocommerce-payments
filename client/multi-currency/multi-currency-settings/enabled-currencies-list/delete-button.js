@@ -5,7 +5,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon } from '@wordpress/components';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import CurrencyDeleteIllustration from 'wcpay/components/currency-delete-illustration';
@@ -24,7 +24,7 @@ const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 	const isModalNeededToConfirm =
 		currencyDependentPaymentMethods &&
 		currencyDependentPaymentMethods[ code ] &&
-		0 < Object.keys( currencyDependentPaymentMethods[ code ] ).length;
+		Object.keys( currencyDependentPaymentMethods[ code ] ).length > 0;
 
 	const dependentPaymentMethods = isModalNeededToConfirm
 		? Object.keys( currencyDependentPaymentMethods[ code ] )

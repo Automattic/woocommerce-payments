@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-i18n usage of strftime has been deprecated for subscription titles. Date is now formatted using woocommerce standard date formatting.

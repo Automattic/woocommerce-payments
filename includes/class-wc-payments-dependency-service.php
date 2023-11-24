@@ -25,15 +25,16 @@ class WC_Payments_Dependency_Service {
 	const DEV_ASSETS_NOT_BUILT  = 'dev_assets_not_built';
 
 	/**
-	 * Constructor.
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
 	 */
-	public function __construct() {
-
+	public function init_hooks() {
 		add_filter( 'admin_notices', [ $this, 'display_admin_notices' ] );
 	}
 
 	/**
-	 * Checks if all the dependencies needed to run WooCommerce Payments are present
+	 * Checks if all the dependencies needed to run WooPayments are present
 	 *
 	 * @return bool True if all required dependencies are met.
 	 */
@@ -83,7 +84,7 @@ class WC_Payments_Dependency_Service {
 		$invalid_dependencies = [];
 
 		// Either ignore the account connection check or check if there's a cached account connection.
-		$ignore_when_account_is_connected = $check_account_connection && $this->has_cached_account_connection();
+		$ignore_when_account_is_connected = $check_account_connection && self::has_cached_account_connection();
 
 		if ( ! $this->is_woo_core_active() ) {
 			$invalid_dependencies[] = self::WOOCORE_NOT_FOUND;
@@ -120,7 +121,7 @@ class WC_Payments_Dependency_Service {
 	}
 
 	/**
-	 * Checks if the version of WooCommerce is compatible with WooCommerce Payments.
+	 * Checks if the version of WooCommerce is compatible with WooPayments.
 	 *
 	 * @return bool True if WooCommerce version is greater than or equal the minimum accepted
 	 */
@@ -129,7 +130,7 @@ class WC_Payments_Dependency_Service {
 		$plugin_headers = WC_Payments::get_plugin_headers();
 		$wc_version     = $plugin_headers['WCRequires'];
 
-		// Check if the version of WooCommerce is compatible with WooCommerce Payments.
+		// Check if the version of WooCommerce is compatible with WooPayments.
 		return ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, $wc_version, '>=' ) );
 	}
 
@@ -150,18 +151,18 @@ class WC_Payments_Dependency_Service {
 	}
 
 	/**
-	 * Checks if the version of WC Admin is compatible with WooCommerce Payments.
+	 * Checks if the version of WC Admin is compatible with WooPayments.
 	 *
 	 * @return bool True if WC Admin version is greater than or equal the minimum accepted
 	 */
 	public function is_wc_admin_version_compatible() {
 
-		// Check if the version of WooCommerce Admin is compatible with WooCommerce Payments.
+		// Check if the version of WooCommerce Admin is compatible with WooPayments.
 		return ( defined( 'WC_ADMIN_VERSION_NUMBER' ) && version_compare( WC_ADMIN_VERSION_NUMBER, WCPAY_MIN_WC_ADMIN_VERSION, '>=' ) );
 	}
 
 	/**
-	 * Checks if the version of WordPress is compatible with WooCommerce Payments.
+	 * Checks if the version of WordPress is compatible with WooPayments.
 	 *
 	 * @return bool True if WordPress version is greater than or equal the minimum accepted
 	 */
@@ -200,7 +201,12 @@ class WC_Payments_Dependency_Service {
 		switch ( $code ) {
 			case self::WOOCORE_NOT_FOUND:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
-					__( 'WooCommerce Payments requires <a>WooCommerce</a> to be installed and active.', 'woocommerce-payments' ),
+					sprintf(
+						/* translators: %1$s: WooPayments, %2$s: WooCommerce */
+						__( '%1$s requires <a>%2$s</a> to be installed and active.', 'woocommerce-payments' ),
+						'WooPayments',
+						'WooCommerce'
+					),
 					[ 'a' => '<a href="https://wordpress.org/plugins/woocommerce">' ]
 				);
 
@@ -221,9 +227,11 @@ class WC_Payments_Dependency_Service {
 			case self::WOOCORE_INCOMPATIBLE:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
-						/* translators: %1: current WooCommerce Payment version, %2: required WC version number, %3: currently installed WC version number */
-						__( 'WooCommerce Payments %1$s requires <strong>WooCommerce %2$s</strong> or greater to be installed (you are using %3$s). ', 'woocommerce-payments' ),
+						/* translators: %1: WooPayments, %2: current WooCommerce Payment version, %3: WooCommerce, %4: required WC version number, %5: currently installed WC version number */
+						__( '%1$s %2$s requires <strong>%3$s %4$s</strong> or greater to be installed (you are using %5$s). ', 'woocommerce-payments' ),
+						'WooPayments',
 						WCPAY_VERSION_NUMBER,
+						'WooCommerce',
 						$wc_version,
 						WC_VERSION
 					),
@@ -234,8 +242,12 @@ class WC_Payments_Dependency_Service {
 					// Take the user to the "plugins" screen instead of trying to update WooCommerce inline. WooCommerce adds important information
 					// on its plugin row regarding the currently installed extensions and their compatibility with the latest WC version.
 					$error_message .= '<br/>' . WC_Payments_Utils::esc_interpolated_html(
-						/* translators: a1: link to the Plugins page, a2: link to the page having all previous versions */
-						__( '<a1>Update WooCommerce</a1> <strong>(recommended)</strong> or manually re-install <a2>a previous version</a2> of WooCommerce Payments.', 'woocommerce-payments' ),
+						sprintf(
+							/* translators: %1$s: WooCommerce, %2$s: WooPayments, a1: link to the Plugins page, a2: link to the page having all previous versions */
+							__( '<a1>Update %1$s</a1> <strong>(recommended)</strong> or manually re-install <a2>a previous version</a2> of %2$s.', 'woocommerce-payments' ),
+							'WooCommerce',
+							'WooPayments'
+						),
 						[
 
 							'a1'     => '<a href="' . admin_url( 'plugins.php' ) . '">',
@@ -248,7 +260,12 @@ class WC_Payments_Dependency_Service {
 				break;
 			case self::WOOADMIN_NOT_FOUND:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
-					__( 'WooCommerce Payments requires WooCommerce Admin to be enabled. Please remove the <code>woocommerce_admin_disabled</code> filter to use WooCommerce Payments.', 'woocommerce-payments' ),
+					sprintf(
+						/* translators: %1$s: WooPayments, %2$s: WooCommerce Admin */
+						__( '%1$s requires %2$s to be enabled. Please remove the <code>woocommerce_admin_disabled</code> filter to use %1$s.', 'woocommerce-payments' ),
+						'WooPayments',
+						'WooCommerce Admin'
+					),
 					[ 'code' => '<code>' ]
 				);
 
@@ -256,8 +273,10 @@ class WC_Payments_Dependency_Service {
 			case self::WOOADMIN_INCOMPATIBLE:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
-						/* translators: %1: required WC-Admin version number, %2: currently installed WC-Admin version number */
-						__( 'WooCommerce Payments requires <strong>WooCommerce Admin %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
+						/* translators: %1: WooPayments, %2: WooCommerce Admin, %3: required WC-Admin version number, %4: currently installed WC-Admin version number */
+						__( '%1$s requires <strong>%2$s %3$s</strong> or greater to be installed (you are using %4$s).', 'woocommerce-payments' ),
+						'WooPayments',
+						'WooCommerce Admin',
 						WCPAY_MIN_WC_ADMIN_VERSION,
 						WC_ADMIN_VERSION_NUMBER
 					),
@@ -276,8 +295,9 @@ class WC_Payments_Dependency_Service {
 			case self::WP_INCOMPATIBLE:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
-						/* translators: %1: required WP version number, %2: currently installed WP version number */
-						__( 'WooCommerce Payments requires <strong>WordPress %1$s</strong> or greater (you are using %2$s).', 'woocommerce-payments' ),
+						/* translators: %1: WooPayments, %2: required WP version number, %3: currently installed WP version number */
+						__( '%1$s requires <strong>WordPress %2$s</strong> or greater (you are using %3$s).', 'woocommerce-payments' ),
+						'WooPayments',
 						$wp_version,
 						get_bloginfo( 'version' )
 					),
@@ -289,9 +309,13 @@ class WC_Payments_Dependency_Service {
 				break;
 			case self::DEV_ASSETS_NOT_BUILT:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
-					__(
-						'You have installed a development version of WooCommerce Payments which requires files to be built. From the plugin directory, run <code>npm run build:client</code> to build and minify assets. Alternatively, you can download a pre-built version of the plugin from the <a1>WordPress.org repository</a1> or by visiting the <a2>releases page in the GitHub repository</a2>.',
-						'woocommerce-payments'
+					sprintf(
+						/* translators: %s: WooPayments */
+						__(
+							'You have installed a development version of %s which requires files to be built. From the plugin directory, run <code>npm run build:client</code> to build and minify assets. Alternatively, you can download a pre-built version of the plugin from the <a1>WordPress.org repository</a1> or by visiting the <a2>releases page in the GitHub repository</a2>.',
+							'woocommerce-payments'
+						),
+						'WooPayments'
 					),
 					[
 						'code' => '<code>',

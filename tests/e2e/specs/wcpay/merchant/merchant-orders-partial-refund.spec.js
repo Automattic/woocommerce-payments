@@ -55,6 +55,13 @@ describe.each( dataTable )(
 		let orderTotal;
 
 		beforeAll( async () => {
+			// Disable multi-currency in the merchant settings. This step is important because local environment setups
+			// might have multi-currency enabled. We need to ensure a consistent
+			// environment for the test.
+			await merchant.login();
+			await merchantWCP.deactivateMulticurrency();
+			await merchant.logout();
+
 			// Set up the test order
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' ),
@@ -79,6 +86,7 @@ describe.each( dataTable )(
 		}, 200000 );
 
 		afterAll( async () => {
+			await merchantWCP.activateMulticurrency();
 			await merchant.logout();
 		} );
 
@@ -120,7 +128,7 @@ describe.each( dataTable )(
 			// Fill up the rest of the form and complete the refund flow
 			await expect( page ).toFill( '#refund_reason', refundReason );
 			await expect( page ).toMatchElement( '.do-api-refund', {
-				text: `Refund $${ refundTotalString } via WooCommerce Payments`,
+				text: `Refund $${ refundTotalString } via WooPayments`,
 			} );
 			const refundDialog = await expect( page ).toDisplayDialog(
 				async () => {

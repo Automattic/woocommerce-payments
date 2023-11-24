@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -29,7 +30,7 @@ export function* getActiveLoanSummary(): unknown {
 		const result = yield apiFetch( { path } );
 		yield updateActiveLoanSummary( result as Summary );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__(
@@ -51,7 +52,7 @@ export function* getLoans(): unknown {
 		const result = yield apiFetch( { path } );
 		yield updateLoans( result as LoansList );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__(

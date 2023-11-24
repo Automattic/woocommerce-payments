@@ -13,6 +13,10 @@ includes:
     - wp-api-v3/introduction
     - wp-api-v3/authentication
     - wp-api-v3/order
+    - wp-api-v3/authorization
+    - wp-api-v3/customer
+    - wp-api-v3/intent
+    - wp-api-v3/reports
 
 search: false
 ---

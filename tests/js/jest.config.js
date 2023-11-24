@@ -10,6 +10,9 @@ module.exports = {
 		'^moment-timezone$': '<rootDir>/node_modules/moment-timezone',
 		'^wcpay(.*)$': '<rootDir>/client$1',
 		'^iti/utils$': '<rootDir>/node_modules/intl-tel-input/build/js/utils',
+		'^assets(.*?)(\\?.*)?$': '<rootDir>/assets$1',
+		'^@woocommerce/blocks-registry$':
+			'<rootDir>/tests/js/woocommerce-blocks-registry',
 	},
 	globalSetup: '<rootDir>/tests/js/jest-global-setup.js',
 	setupFiles: [
@@ -21,6 +24,7 @@ module.exports = {
 	setupFilesAfterEnv: [
 		'<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/setup-test-framework.js',
 		'<rootDir>/tests/js/jest-extensions-setup.js',
+		'expect-puppeteer',
 	],
 	preset: '@wordpress/jest-preset-default',
 	testMatch: [
@@ -38,8 +42,10 @@ module.exports = {
 	],
 	transform: {
 		...tsjPreset.transform,
-		'^.+\\.(jpg|svg|png|gif)$': '<rootDir>/tests/js/fileMock.js',
+		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',
 	},
-	transformIgnorePatterns: [ 'node_modules/(?!(@woocommerce/.+)/)' ],
+	transformIgnorePatterns: [
+		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/)',
+	],
 	verbose: true,
 };

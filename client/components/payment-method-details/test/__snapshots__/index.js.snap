@@ -13,9 +13,19 @@ exports[`PaymentMethodDetails renders a valid card brand and last 4 digits 1`] =
   <span
     class="payment-method-details"
   >
-    <span
-      class="payment-method__brand payment-method__brand--visa"
-    />
+    <button
+      class="wcpay-tooltip__content-wrapper"
+      type="button"
+    >
+      <div
+        class="wcpay-tooltip__content-wrapper"
+      >
+        <span
+          aria-label="Visa"
+          class="payment-method__brand payment-method__brand--visa"
+        />
+      </div>
+    </button>
      •••• 
     4242
   </span>

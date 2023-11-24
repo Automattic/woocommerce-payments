@@ -14,8 +14,8 @@ const CardReaderListItem: React.FunctionComponent< {
 	const { id, device_type: deviceType, is_active: isActive } = reader;
 
 	const status = isActive
-		? __( 'Active', 'woocomerce-payments' )
-		: __( 'Inactive', 'woocomerce-payments' );
+		? __( 'Active', 'woocommerce-payments' )
+		: __( 'Inactive', 'woocommerce-payments' );
 
 	return (
 		<li className={ classNames( 'card-readers-item', id ) }>

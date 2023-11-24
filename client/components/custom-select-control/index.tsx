@@ -11,7 +11,7 @@
  */
 import React from 'react';
 import { Button } from '@wordpress/components';
-import { Icon, check, chevronDown } from '@wordpress/icons';
+import { check, chevronDown, Icon } from '@wordpress/icons';
 import { useCallback } from '@wordpress/element';
 import classNames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
@@ -29,18 +29,19 @@ export interface Item {
 	style?: React.CSSProperties;
 }
 
-interface ControlProps< ItemType > {
+export interface ControlProps< ItemType > {
+	name?: string;
 	className?: string;
 	label: string;
 	describedBy?: string;
 	options: ItemType[];
-	value?: ItemType;
+	value?: ItemType | null;
 	placeholder?: string;
 	onChange?: ( changes: Partial< UseSelectState< ItemType > > ) => void;
 	children?: ( item: ItemType ) => JSX.Element;
 }
 
-const itemToString = ( item: { name?: string } ) => item?.name || '';
+const itemToString = ( item: { name?: string } | null ) => item?.name || '';
 // This is needed so that in Windows, where
 // the menu does not necessarily open on
 // key up/down, you can still switch between
@@ -81,6 +82,7 @@ const stateReducer = (
 };
 
 function CustomSelectControl< ItemType extends Item >( {
+	name,
 	className,
 	label,
 	describedBy,
@@ -168,9 +170,12 @@ function CustomSelectControl< ItemType extends Item >( {
 						'components-custom-select-control__button',
 						{ placeholder: ! itemString }
 					),
+					name,
 				} ) }
 			>
-				{ itemString || placeholder }
+				<span className="components-custom-select-control__button-value">
+					{ itemString || placeholder }
+				</span>
 				<Icon
 					icon={ chevronDown }
 					className="components-custom-select-control__button-icon"

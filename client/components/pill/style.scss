@@ -1,10 +1,36 @@
-.wcpay-pill {
-	border: 1px solid $gray-700;
-	border-radius: 28px;
-	color: $gray-700;
-	display: inline-block;
-	padding: 2px $gap-smaller;
-	font-size: 12px;
-	font-weight: 400;
-	line-height: 1.4em;
+.woocommerce-pill {
+	&.wcpay-pill {
+		border-color: $gray-700;
+		color: $gray-700;
+
+		&__light {
+			border: 0;
+			background: #f0f0f1;
+			color: #2c3338;
+		}
+
+		&__alert {
+			border: 0;
+			background: #fcf9e8;
+			color: #614200;
+		}
+
+		&__danger {
+			border: 0;
+			background: #fcf0f1;
+			color: #8a2424;
+		}
+
+		&__success {
+			border: 0;
+			background: #edfaef;
+			color: #005c12;
+		}
+
+		&__primary {
+			border: 0;
+			background: #f0f6fc;
+			color: #193a6f;
+		}
+	}
 }

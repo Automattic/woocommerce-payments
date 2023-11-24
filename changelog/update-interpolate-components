@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Update the deprecated interpolate-components npm package with the @automattic/interpolate-components package, and update to v1.2.1.

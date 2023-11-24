@@ -3,18 +3,21 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import { acceptDispute, updateDispute } from '../actions';
+import { getPaymentIntent } from '../../payment-intents/resolvers';
 
 describe( 'acceptDispute action', () => {
 	const mockDispute = {
 		id: 'dp_mock1',
 		reason: 'product_unacceptable',
 		status: 'lost',
+		payment_intent: 'payment_intent',
 	};
 
 	beforeEach( () => {
@@ -26,10 +29,10 @@ describe( 'acceptDispute action', () => {
 	} );
 
 	test( 'should close dispute and update state with dispute data', () => {
-		const generator = acceptDispute( 'dp_mock1' );
+		const generator = acceptDispute( mockDispute );
 
 		expect( generator.next().value ).toEqual(
-			dispatch( 'wc/payments', 'startResolution', 'getDispute', [
+			controls.dispatch( 'wc/payments', 'startResolution', 'getDispute', [
 				'dp_mock1',
 			] )
 		);
@@ -43,15 +46,20 @@ describe( 'acceptDispute action', () => {
 			updateDispute( mockDispute )
 		);
 		expect( generator.next().value ).toEqual(
-			dispatch( 'wc/payments', 'finishResolution', 'getDispute', [
-				'dp_mock1',
-			] )
+			getPaymentIntent( mockDispute.payment_intent )
+		);
+		expect( generator.next().value ).toEqual(
+			controls.dispatch(
+				'wc/payments',
+				'finishResolution',
+				'getDispute',
+				[ 'dp_mock1' ]
+			)
 		);
 
 		const noticeAction = generator.next().value;
-		expect( window.location.replace ).toHaveBeenCalledTimes( 1 );
 		expect( noticeAction ).toEqual(
-			dispatch(
+			controls.dispatch(
 				'core/notices',
 				'createSuccessNotice',
 				expect.any( String )
@@ -61,11 +69,11 @@ describe( 'acceptDispute action', () => {
 	} );
 
 	test( 'should show notice on error', () => {
-		const generator = acceptDispute( 'dp_mock1' );
+		const generator = acceptDispute( mockDispute );
 
 		generator.next();
 		expect( generator.throw( { code: 'error' } ).value ).toEqual(
-			dispatch(
+			controls.dispatch(
 				'core/notices',
 				'createErrorNotice',
 				expect.any( String )

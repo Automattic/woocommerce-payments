@@ -2,6 +2,30 @@
 	&__content-wrapper {
 		// ensures that the element needed for position calculations isn't included in the DOM layout
 		display: contents;
+
+		// Ensure that the tooltip doesn't shift neighboring elements when it appears.
+		> div {
+			display: inline;
+		}
+
+		// Styles for buttonIcon
+		[role='button'] {
+			cursor: pointer;
+			display: inline-flex;
+			align-items: center;
+			color: $gray-600;
+			transition: all 0.3s ease;
+			fill: currentColor;
+			margin: 0 0.4em;
+			vertical-align: text-bottom;
+
+			&:focus,
+			&:hover,
+			&:active {
+				outline: none;
+				color: var( --wp-admin-theme-color, $gutenberg-blue );
+			}
+		}
 	}
 
 	&__tooltip-wrapper {
@@ -11,6 +35,8 @@
 		transition: opacity 150ms ease-in;
 		// gotta do it a bit higher than the modal used in Gutenberg, to ensure the tooltip appears on top 😅
 		z-index: 100010;
+		// Initial left position is set to 0 to fix a positioning bug in mobile Safari.
+		left: 0;
 
 		&.is-hiding {
 			opacity: 0 !important;
@@ -26,17 +52,32 @@
 		padding: 10px;
 		text-align: center;
 
-		&::after {
-			content: ' ';
-			position: absolute;
+		a {
+			color: var( --wp-admin-theme-color, $gutenberg-blue );
+		}
+	}
 
-			// assuming all the tooltips are displayed at the top of the wrapped element.
-			// no need to complicate things since that's the only use case at the moment.
-			bottom: 0;
-			left: 50%;
-			transform: translate( -50%, 22px );
-			border: solid 15px transparent;
-			border-top-color: $gray-900;
+	&--click {
+		&__content-wrapper {
+			cursor: pointer;
+		}
+
+		&__tooltip {
+			// Specific styles for the click tooltip variant.
+			position: relative;
+			max-width: 292px;
+			padding: 12px;
+			color: $gray-900;
+			text-align: left;
+			border-radius: 2px;
+			border: 1px solid $gray-400;
+			background: $white;
+			box-shadow: 0 2px 6px 0 rgba( 0, 0, 0, 0.05 );
+
+			&::after {
+				// Remove the arrow from the click tooltip variant.
+				display: none;
+			}
 		}
 	}
 }

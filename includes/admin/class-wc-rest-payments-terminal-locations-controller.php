@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Core\Server\Request;
 use WCPay\Exceptions\API_Exception;
 /**
  * REST controller for account details and status.
@@ -162,7 +163,25 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 
 			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
-			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+			$error = new WP_Error( $e->get_error_code(), $e->getMessage() );
+			// Stripe will return a 400 for incorrect city, state, or country. Ideally, we should return
+			// a more appropriate error code like 'store_address_is_incorrect', but that will break older mobile app clients.
+			// Until we have a more granular versioning support for WCPay REST endpoints, this is the best we can do.
+			if ( 'invalid_request_error' === $e->get_error_code() ) {
+				$error = new WP_Error(
+					'store_address_is_incomplete',
+					admin_url(
+						add_query_arg(
+							[
+								'page' => 'wc-settings',
+								'tab'  => 'general',
+							],
+							'admin.php'
+						)
+					)
+				);
+			}
+			return rest_ensure_response( $error );
 		}
 	}
 
@@ -217,9 +236,10 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 					return rest_ensure_response( $this->extract_location_fields( $location ) );
 				}
 			}
-
 			// If the location is missing, fetch it individually and reload the transient.
-			$location = $this->api_client->get_terminal_location( $location_id );
+			$request = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API, $location_id );
+			$request->assign_hook( 'wcpay_get_terminal_location' );
+			$location = $request->send();
 			$this->reload_locations();
 
 			return rest_ensure_response( $this->extract_location_fields( $location ) );
@@ -284,7 +304,9 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	private function fetch_locations(): array {
 		$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
 		if ( ! $locations ) {
-			$locations = $this->api_client->get_terminal_locations();
+			$request = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+			$request->assign_hook( 'wcpay_get_terminal_locations' );
+			$locations = $request->send();
 			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 		}
 
@@ -298,7 +320,10 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * @throws API_Exception If request to server fails.
 	 */
 	private function reload_locations() {
-		$locations = $this->api_client->get_terminal_locations();
+		$request = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->assign_hook( 'wcpay_get_terminal_locations' );
+
+		$locations = $request->send();
 		set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 	}
 }

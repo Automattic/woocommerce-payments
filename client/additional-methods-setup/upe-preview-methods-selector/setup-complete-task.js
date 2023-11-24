@@ -5,7 +5,6 @@ import React from 'react';
 import { useEffect, useContext } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -33,7 +32,7 @@ const SetupCompleteMessaging = () => {
 	// we need to check that the type of `enableUpePreviewPayload` is an object - it can also just be `true` or `undefined`
 	let addedPaymentMethodsCount = 0;
 	if (
-		'object' === typeof enableUpePreviewPayload &&
+		typeof enableUpePreviewPayload === 'object' &&
 		enableUpePreviewPayload.initialMethods
 	) {
 		const { initialMethods } = enableUpePreviewPayload;
@@ -41,7 +40,7 @@ const SetupCompleteMessaging = () => {
 	}
 
 	// can't just check for "0", some methods could have been disabled
-	if ( 0 >= addedPaymentMethodsCount ) {
+	if ( addedPaymentMethodsCount <= 0 ) {
 		return __( 'Setup complete!', 'woocommerce-payments' );
 	}
 
@@ -75,7 +74,6 @@ const SetupComplete = () => {
 	const {
 		featureFlags: { multiCurrency },
 	} = useContext( WCPaySettingsContext );
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	useEffect( () => {
 		if ( ! isActive ) {
@@ -83,12 +81,12 @@ const SetupComplete = () => {
 		}
 
 		window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = true;
-	}, [ isActive, updateOptions ] );
+	}, [ isActive ] );
 
 	return (
 		<WizardTaskItem
-			title={ __( 'Enjoy the new features', 'woocommerce-payments' ) }
-			index={ 3 }
+			title={ __( 'Enablement complete', 'woocommerce-payments' ) }
+			index={ 2 }
 		>
 			<CollapsibleBody>
 				<p className="wcpay-wizard-task__description-element is-muted-color">

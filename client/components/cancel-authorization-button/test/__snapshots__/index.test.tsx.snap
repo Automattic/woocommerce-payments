@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CancelAuthorizationButton should be disabled when requesting is true 1`] = `
+<div>
+  <button
+    class="components-button is-small"
+    disabled=""
+    type="button"
+  >
+    Cancel
+  </button>
+</div>
+`;
+
+exports[`CancelAuthorizationButton should render normal status 1`] = `
+<div>
+  <button
+    class="components-button is-destructive"
+    type="button"
+  >
+    Cancel
+  </button>
+</div>
+`;
+
+exports[`CancelAuthorizationButton should transition to busy state when clicked 1`] = `
+<div>
+  <button
+    class="components-button is-busy is-destructive"
+    disabled=""
+    type="button"
+  >
+    Cancel
+  </button>
+</div>
+`;

@@ -28,6 +28,12 @@ export function updateIsCardPresentEligible( isEnabled ) {
 	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
 }
 
+export function updateIsClientSecretEncryptionEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_client_secret_encryption_enabled: isEnabled,
+	} );
+}
+
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
@@ -75,6 +81,20 @@ export function updateIsSavingSettings( isSaving, error ) {
 	};
 }
 
+export function updateSelectedPaymentMethod( id ) {
+	return {
+		type: ACTION_TYPES.SET_SELECTED_PAYMENT_METHOD,
+		id,
+	};
+}
+
+export function updateUnselectedPaymentMethod( id ) {
+	return {
+		type: ACTION_TYPES.SET_UNSELECTED_PAYMENT_METHOD,
+		id,
+	};
+}
+
 export function updateIsManualCaptureEnabled( isEnabled ) {
 	return updateSettingsValues( { is_manual_capture_enabled: isEnabled } );
 }
@@ -100,6 +120,22 @@ export function updateIsWCPaySubscriptionsEnabled( isEnabled ) {
 export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	return updateSettingsValues( {
 		account_statement_descriptor: accountStatementDescriptor,
+	} );
+}
+
+export function updateAccountStatementDescriptorKanji(
+	accountStatementDescriptorKanji
+) {
+	return updateSettingsValues( {
+		account_statement_descriptor_kanji: accountStatementDescriptorKanji,
+	} );
+}
+
+export function updateAccountStatementDescriptorKana(
+	accountStatementDescriptorKana
+) {
+	return updateSettingsValues( {
+		account_statement_descriptor_kana: accountStatementDescriptorKana,
 	} );
 }
 
@@ -162,7 +198,7 @@ export function updateDepositScheduleMonthlyAnchor(
 ) {
 	return updateSettingsValues( {
 		deposit_schedule_monthly_anchor:
-			'' === depositScheduleMonthlyAnchor
+			depositScheduleMonthlyAnchor === ''
 				? null
 				: parseInt( depositScheduleMonthlyAnchor, 10 ),
 	} );
@@ -189,11 +225,17 @@ export function* saveSettings() {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error saving settings.', 'woocommerce-payments' )
 		);
+
+		if ( error.server_error ) {
+			yield dispatch( 'core/notices' ).createErrorNotice(
+				error.server_error
+			);
+		}
 	} finally {
 		yield updateIsSavingSettings( false, error );
 	}
 
-	return null === error;
+	return error === null;
 }
 
 export function updatePaymentRequestLocations( locations ) {
@@ -202,18 +244,62 @@ export function updatePaymentRequestLocations( locations ) {
 	} );
 }
 
-export function updateIsPlatformCheckoutEnabled( isEnabled ) {
-	return updateSettingsValues( { is_platform_checkout_enabled: isEnabled } );
+export function updateIsWooPayEnabled( isEnabled ) {
+	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
 }
 
-export function updatePlatformCheckoutCustomMessage( message ) {
+export function updateWooPayCustomMessage( message ) {
 	return updateSettingsValues( {
-		platform_checkout_custom_message: message,
+		woopay_custom_message: message,
 	} );
 }
 
-export function updatePlatformCheckoutStoreLogo( storeLogo ) {
+export function updateWooPayStoreLogo( storeLogo ) {
 	return updateSettingsValues( {
-		platform_checkout_store_logo: storeLogo,
+		woopay_store_logo: storeLogo,
 	} );
+}
+
+export function updateWooPayLocations( locations ) {
+	return updateSettingsValues( {
+		woopay_enabled_locations: [ ...locations ],
+	} );
+}
+
+export function updateProtectionLevel( level ) {
+	return updateSettingsValues( { current_protection_level: level } );
+}
+
+export function updateAdvancedFraudProtectionSettings( settings ) {
+	return updateSettingsValues( {
+		advanced_fraud_protection_settings: settings,
+	} );
+}
+
+export function updateIsStripeBillingEnabled( isEnabled ) {
+	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
+}
+
+export function* submitStripeBillingSubscriptionMigration() {
+	try {
+		yield dispatch( STORE_NAME ).startResolution(
+			'scheduleStripeBillingMigration'
+		);
+
+		yield apiFetch( {
+			path: `${ NAMESPACE }/settings/schedule-stripe-billing-migration`,
+			method: 'post',
+		} );
+	} catch ( e ) {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__(
+				'Error starting the Stripe Billing migration.',
+				'woocommerce-payments'
+			)
+		);
+	}
+
+	yield dispatch( STORE_NAME ).finishResolution(
+		'scheduleStripeBillingMigration'
+	);
 }

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -67,6 +68,84 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/router/po_eligible',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'args'                => [
+					'business'        => [
+						'required'    => true,
+						'description' => 'The context about the merchant\'s business (self-assessment data).',
+						'type'        => 'object',
+						'properties'  => [
+							'country' => [
+								'type'        => 'string',
+								'description' => 'The country code where the company is legally registered.',
+								'required'    => true,
+							],
+							'type'    => [
+								'type'        => 'string',
+								'description' => 'The company incorporation type.',
+								'required'    => true,
+							],
+							'mcc'     => [
+								'type'        => 'string',
+								'description' => 'The merchant category code. This can either be a true MCC or an MCCs tree item id from the onboarding form.',
+								'required'    => true,
+							],
+						],
+					],
+					'store'           => [
+						'required'    => true,
+						'description' => 'The context about the merchant\'s store (self-assessment data).',
+						'type'        => 'object',
+						'properties'  => [
+							'annual_revenue'    => [
+								'type'        => 'string',
+								'description' => 'The estimated annual revenue bucket id.',
+								'required'    => true,
+							],
+							'go_live_timeframe' => [
+								'type'        => 'string',
+								'description' => 'The timeframe bucket for the estimated first live transaction.',
+								'required'    => true,
+							],
+						],
+					],
+					'woo_store_stats' => [
+						'required'    => false,
+						'description' => 'Context about the merchant\'s current WooCommerce store.',
+						'type'        => 'object',
+					],
+				],
+				'callback'            => [ $this, 'get_progressive_onboarding_eligible' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			],
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/flow-state',
+			[
+				'methods'             => WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'update_flow_state' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'current_step' => [
+						'required'    => true,
+						'description' => 'The current step of the onboarding process.',
+						'type'        => 'string',
+					],
+					'data'         => [
+						'required'    => true,
+						'description' => 'The onboarding context data.',
+						'type'        => 'object',
+					],
+				],
+			],
+		);
 	}
 
 	/**
@@ -76,7 +155,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_business_types( $request ) {
+	public function get_business_types( WP_REST_Request $request ) {
 		$business_types = $this->onboarding_service->get_cached_business_types();
 		return rest_ensure_response( [ 'data' => $business_types ] );
 	}
@@ -90,7 +169,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 *
 	 * @throws Rest_Request_Exception
 	 */
-	public function get_required_verification_information( $request ) {
+	public function get_required_verification_information( WP_REST_Request $request ) {
 		$country_code = $request->get_param( 'country' ) ?? null;
 		$type         = $request->get_param( 'type' ) ?? null;
 		$structure    = $request->get_param( 'structure' ) ?? null;
@@ -109,6 +188,36 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			);
 		} catch ( Rest_Request_Exception $e ) {
 			return new WP_REST_Response( [ 'result' => self::RESULT_BAD_REQUEST ], 400 );
+		} catch ( API_Exception $e ) {
+			return new WP_Error( $e->get_error_code(), $e->getMessage() );
 		}
+	}
+
+	/**
+	 * Get progressive onboarding eligibility via API.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_progressive_onboarding_eligible( WP_REST_Request $request ) {
+		return $this->forward_request(
+			'get_onboarding_po_eligible',
+			[
+				'business_info'   => $request->get_param( 'business' ),
+				'store_info'      => $request->get_param( 'store' ),
+				'woo_store_stats' => $request->get_param( 'woo_store_stats' ) ?? [],
+			]
+		);
+	}
+
+	/**
+	 * Update the onboarding flow state.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return void
+	 */
+	public function update_flow_state( WP_REST_Request $request ) {
+		$this->onboarding_service->set_onboarding_flow_state( $request->get_json_params() );
 	}
 }

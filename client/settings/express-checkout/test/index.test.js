@@ -14,15 +14,17 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
-	usePlatformCheckoutEnabledSettings,
+	useWooPayEnabledSettings,
+	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
 jest.mock( 'wcpay/data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
-	usePlatformCheckoutEnabledSettings: jest.fn(),
+	useWooPayEnabledSettings: jest.fn(),
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
+	useWooPayShowIncompatibilityNotice: jest.fn(),
 } ) );
 
 const getMockPaymentRequestEnabledSettings = (
@@ -30,33 +32,32 @@ const getMockPaymentRequestEnabledSettings = (
 	updateIsPaymentRequestEnabledHandler
 ) => [ isEnabled, updateIsPaymentRequestEnabledHandler ];
 
-const getMockPlatformCheckoutEnabledSettings = (
+const getMockWooPayEnabledSettings = (
 	isEnabled,
-	updateIsPlatformCheckoutEnabledHandler
-) => [ isEnabled, updateIsPlatformCheckoutEnabledHandler ];
+	updateIsWooPayEnabledHandler
+) => [ isEnabled, updateIsWooPayEnabledHandler ];
 
 describe( 'ExpressCheckout', () => {
 	beforeEach( () => {
 		usePaymentRequestEnabledSettings.mockReturnValue(
 			getMockPaymentRequestEnabledSettings( false, jest.fn() )
 		);
-		usePlatformCheckoutEnabledSettings.mockReturnValue(
-			getMockPlatformCheckoutEnabledSettings( false, jest.fn() )
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( false, jest.fn() )
 		);
+
+		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
 	} );
 
 	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {
-		const updateIsPlatformCheckoutEnabledHandler = jest.fn();
+		const updateIsWooPayEnabledHandler = jest.fn();
 		const updateIsPaymentRequestEnabledHandler = jest.fn();
 
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
-		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
-		usePlatformCheckoutEnabledSettings.mockReturnValue(
-			getMockPlatformCheckoutEnabledSettings(
-				false,
-				updateIsPlatformCheckoutEnabledHandler
-			)
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( true, updateIsWooPayEnabledHandler )
 		);
 		usePaymentRequestEnabledSettings.mockReturnValue(
 			getMockPaymentRequestEnabledSettings(
@@ -65,7 +66,7 @@ describe( 'ExpressCheckout', () => {
 			)
 		);
 
-		const context = { featureFlags: { platformCheckout: true } };
+		const context = { featureFlags: { woopay: true } };
 
 		render(
 			<WCPaySettingsContext.Provider value={ context }>
@@ -73,24 +74,13 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		const [
-			platformCheckoutCheckbox,
-			paymentRequestCheckbox,
-		] = screen.queryAllByRole( 'checkbox' );
+		userEvent.click( screen.getByLabelText( 'WooPay' ) );
 
-		userEvent.click( platformCheckoutCheckbox );
-		userEvent.click( paymentRequestCheckbox );
-
-		expect( updateIsPlatformCheckoutEnabledHandler ).toHaveBeenCalledWith(
-			true
-		);
-		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
-			true
-		);
+		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith( false );
 	} );
 
 	it( 'has the correct href links to the express checkout settings pages', async () => {
-		const context = { featureFlags: { platformCheckout: true } };
+		const context = { featureFlags: { woopay: true } };
 
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
@@ -102,13 +92,13 @@ describe( 'ExpressCheckout', () => {
 		);
 
 		const [
-			platformCheckoutCheckbox,
+			woopayCheckbox,
 			paymentRequestCheckbox,
 		] = screen.getAllByRole( 'link', { name: 'Customize' } );
 
-		expect( platformCheckoutCheckbox ).toHaveAttribute(
+		expect( woopayCheckbox ).toHaveAttribute(
 			'href',
-			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&method=platform_checkout'
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&method=woopay'
 		);
 
 		expect( paymentRequestCheckbox ).toHaveAttribute(
@@ -118,7 +108,7 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'hide link payment if card payment method is inactive', async () => {
-		const context = { featureFlags: { platformCheckout: true } };
+		const context = { featureFlags: { woopay: true } };
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'link' ] ] );
 
@@ -132,7 +122,7 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'show link payment if card payment method is active', async () => {
-		const context = { featureFlags: { platformCheckout: true } };
+		const context = { featureFlags: { woopay: true } };
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
 
@@ -146,7 +136,7 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'test stripe link checkbox checked', async () => {
-		const context = { featureFlags: { platformCheckout: true } };
+		const context = { featureFlags: { woopay: true } };
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
 
@@ -160,7 +150,7 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'test stripe link checkbox not checked', async () => {
-		const context = { featureFlags: { platformCheckout: true } };
+		const context = { featureFlags: { woopay: true } };
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
@@ -171,5 +161,57 @@ describe( 'ExpressCheckout', () => {
 		);
 		const linkCheckbox = container.getByLabelText( 'Link by Stripe' );
 		expect( linkCheckbox ).not.toBeChecked();
+	} );
+
+	it( 'should prevent enabling both Link and WooPay at the same time', async () => {
+		const updateIsWooPayEnabledHandler = jest.fn();
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( false, updateIsWooPayEnabledHandler )
+		);
+		const context = { featureFlags: { woopay: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				'WooPay cannot be enabled at checkout. Click to expand.'
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				'Link by Stripe cannot be enabled at checkout. Click to expand.'
+			)
+		).not.toBeInTheDocument();
+		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeChecked();
+	} );
+
+	it( 'should show incompatibility warning', async () => {
+		const updateIsWooPayEnabledHandler = jest.fn();
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( false, updateIsWooPayEnabledHandler )
+		);
+		const context = { featureFlags: { woopay: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+
+		useWooPayShowIncompatibilityNotice.mockReturnValue( true );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				'One or more of your extensions are incompatible with WooPay.'
+			)
+		).toBeInTheDocument();
 	} );
 } );

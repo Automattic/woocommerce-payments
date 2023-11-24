@@ -102,12 +102,12 @@ class WC_Payments_Captured_Event_Note {
 
 		$fee_rates      = $data['fee_rates'];
 		$percentage     = $fee_rates['percentage'];
-		$fixed          = WC_Payments_Utils::interpret_stripe_amount( (int) $fee_rates['fixed'] );
 		$fixed_currency = $fee_rates['fixed_currency'];
+		$fixed          = WC_Payments_Utils::interpret_stripe_amount( (int) $fee_rates['fixed'], $fixed_currency );
 		$history        = $fee_rates['history'];
 
-		$fee_amount   = WC_Payments_Utils::interpret_stripe_amount( (int) $data['transaction_details']['store_fee'] );
 		$fee_currency = $data['transaction_details']['store_currency'];
+		$fee_amount   = WC_Payments_Utils::interpret_stripe_amount( (int) $data['transaction_details']['store_fee'], $fee_currency );
 
 		$base_fee_label = $this->is_base_fee_only()
 			? __( 'Base fee', 'woocommerce-payments' )
@@ -173,7 +173,7 @@ class WC_Payments_Captured_Event_Note {
 	public function compose_net_string(): string {
 		$data = $this->captured_event['transaction_details'];
 
-		$net = WC_Payments_Utils::interpret_stripe_amount( (int) $data['store_amount'] - $data['store_fee'] );
+		$net = WC_Payments_Utils::interpret_stripe_amount( (int) $data['store_amount'] - $data['store_fee'], $data['store_currency'] );
 
 		return sprintf(
 			/* translators: %s is a monetary amount */
@@ -206,7 +206,7 @@ class WC_Payments_Captured_Event_Note {
 
 		foreach ( $history as $fee ) {
 			$label_type = $fee['type'];
-			if ( isset( $fee['additional_type'] ) ) {
+			if ( $fee['additional_type'] ?? '' ) {
 				$label_type .= '-' . $fee['additional_type'];
 			}
 
@@ -277,7 +277,7 @@ class WC_Payments_Captured_Event_Note {
 
 		$history = $this->captured_event['fee_rates']['history'];
 
-		return 1 === count( $history ) && 'base' === $history[0]['type'];
+		return 1 === ( is_countable( $history ) ? count( $history ) : 0 ) && 'base' === $history[0]['type'];
 	}
 
 	/**
@@ -421,9 +421,8 @@ class WC_Payments_Captured_Event_Note {
 		$custom_format = WC_Payments_Utils::get_currency_format_for_wc_price( $base_currency );
 		unset( $custom_format['currency'] );
 
-		if ( 0 === WC_Payments_Utils::get_currency_format_for_wc_price( $currency )['decimals'] ) {
-			unset( $custom_format['decimals'] );
-		}
+		// Given this is used to display the $amount, the decimals for $base_currency shouldn't interfere with decimals for $currency.
+		$custom_format['decimals'] = WC_Payments_Utils::get_currency_format_for_wc_price( $currency )['decimals'];
 
 		return WC_Payments_Utils::format_explicit_currency( $amount, $currency, $skip_symbol, $custom_format );
 	}

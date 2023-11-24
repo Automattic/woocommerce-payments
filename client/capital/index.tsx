@@ -27,8 +27,8 @@ import './style.scss';
 const columns = [
 	{
 		key: 'paid_out_at',
-		label: __( 'Dispursed', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Dispursed', 'woocommerce-payments' ),
+		label: __( 'Disbursed', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Disbursed', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 		defaultSort: true,
@@ -218,6 +218,7 @@ const CapitalPage = (): JSX.Element => {
 				totalRows={ loans.length }
 				headers={ columns }
 				rows={ getRowsData( loans ) }
+				rowsPerPage={ loans.length }
 				summary={ getSummary( loans ) }
 				showMenu={ false }
 			/>

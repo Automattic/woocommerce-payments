@@ -3,10 +3,9 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
-import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
 import { getChargeData } from '../charges';
-import { ChargeResponse } from '../charges/types';
+import { PaymentChargeDetailsResponse } from '../../payment-details/types';
 import { STORE_NAME } from '../constants';
 
 export const getIsChargeId = ( id: string ): boolean =>
@@ -14,7 +13,7 @@ export const getIsChargeId = ( id: string ): boolean =>
 
 export const usePaymentIntentWithChargeFallback = (
 	id: string
-): ChargeResponse =>
+): PaymentChargeDetailsResponse =>
 	useSelect(
 		( select ) => {
 			const selectors = select( STORE_NAME );
@@ -38,14 +37,17 @@ export const usePaymentIntentWithChargeFallback = (
 				getPaymentIntent,
 				getPaymentIntentError,
 				isResolving,
+				hasFinishedResolution,
 			} = selectors;
 
 			const paymentIntent: PaymentIntent = getPaymentIntent( id );
 
 			return {
-				data: paymentIntent?.charge || ( {} as Charge ),
+				data: paymentIntent || ( {} as PaymentIntent ),
 				error: getPaymentIntentError( id ),
-				isLoading: isResolving( 'getPaymentIntent', [ id ] ),
+				isLoading:
+					isResolving( 'getPaymentIntent', [ id ] ) ||
+					! hasFinishedResolution( 'getPaymentIntent', [ id ] ),
 			};
 		},
 		[ id ]

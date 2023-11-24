@@ -26,7 +26,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 			->setMethods(
 				[
 					'get_upe_available_payment_methods',
-					'get_payment_method_ids_enabled_at_checkout',
+					'get_payment_method_ids_enabled_at_checkout_filtered_by_fees',
 				]
 			)
 			->getMock();
@@ -52,15 +52,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 		list( $set_up_action ) = $note->get_actions();
 		$this->assertSame( 'wc-payments-notes-set-up-stripe-link', $set_up_action->name );
 		$this->assertSame( 'Set up now', $set_up_action->label );
-		$this->assertStringStartsWith( 'https://woocommerce.com/document/payments/woocommerce-payments-stripe-link/', $set_up_action->query );
-	}
-
-	public function test_stripelink_setup_note_null_when_upe_disabled() {
-		$this->mock_gateway_data( '0', [ 'card', 'link' ], [ 'card' ] );
-
-		$note = \WC_Payments_Notes_Set_Up_StripeLink::get_note();
-
-		$this->assertNull( $note );
+		$this->assertStringStartsWith( 'https://woo.com/document/woopayments/payment-methods/link-by-stripe/', $set_up_action->query );
 	}
 
 	public function test_stripelink_setup_note_null_when_link_not_available() {
@@ -89,7 +81,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->method( 'get_payment_method_ids_enabled_at_checkout_filtered_by_fees' )
 			->willReturn( $enabled_methods );
 
 		\WC_Payments_Notes_Set_Up_StripeLink::set_gateway( $this->mock_wcpay_gateway );

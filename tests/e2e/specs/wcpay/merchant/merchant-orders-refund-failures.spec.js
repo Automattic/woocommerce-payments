@@ -76,7 +76,7 @@ describe( 'Order > Refund Failure', () => {
 					visible: true,
 				} );
 
-				// Verify Refund via WooCommerce Payments button is displayed
+				// Verify Refund via WooPayments button is displayed
 				await page.waitForSelector( 'button.do-api-refund' );
 			} );
 
@@ -85,7 +85,7 @@ describe( 'Order > Refund Failure', () => {
 				await expect( page ).toFill( selector, value );
 
 				await expect( page ).toMatchElement( '.do-api-refund', {
-					text: /Refund .* via WooCommerce Payments/,
+					text: /Refund .* via WooPayments/,
 				} );
 
 				// Confirm the refund

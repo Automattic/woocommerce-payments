@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class for loading WooCommerce Payments Subscription empty state screen.
+ * Class for loading WooPayments Subscription empty state screen.
  */
 class WC_Payments_Subscriptions_Empty_State_Manager {
 
@@ -33,7 +33,6 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 
 		if ( ! $this->is_subscriptions_plugin_active() ) {
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts_and_styles' ] );
-			add_filter( 'woocommerce_subscriptions_not_found_label', [ $this, 'replace_subscriptions_empty_state' ] );
 		}
 	}
 
@@ -48,22 +47,12 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 			return;
 		}
 
-		$script_src_url    = plugins_url( 'dist/subscriptions-empty-state.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/subscriptions-empty-state.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
-		$wcpay_settings    = [
+		WC_Payments::register_script_with_dependencies( 'WCPAY_SUBSCRIPTIONS_EMPTY_STATE', 'dist/subscriptions-empty-state' );
+		$wcpay_settings = [
 			'connectUrl'    => WC_Payments_Account::get_connect_url( 'WC_SUBSCRIPTIONS_TABLE' ),
 			'isConnected'   => $this->account->is_stripe_connected(),
 			'newProductUrl' => WC_Subscriptions_Admin::add_subscription_url(),
 		];
-
-		wp_register_script(
-			'WCPAY_SUBSCRIPTIONS_EMPTY_STATE',
-			$script_src_url,
-			$script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/subscriptions-empty-state.js' ),
-			true
-		);
 
 		wp_localize_script(
 			'WCPAY_SUBSCRIPTIONS_EMPTY_STATE',
@@ -71,25 +60,26 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 			$wcpay_settings
 		);
 
-		wp_register_style(
+		WC_Payments_Utils::enqueue_style(
 			'WCPAY_SUBSCRIPTIONS_EMPTY_STATE',
 			plugins_url( 'dist/subscriptions-empty-state.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/subscriptions-empty-state.css' )
+			WC_Payments::get_file_version( 'dist/subscriptions-empty-state.css' ),
+			'all'
 		);
 
 		wp_enqueue_script( 'WCPAY_SUBSCRIPTIONS_EMPTY_STATE' );
-		wp_enqueue_style( 'WCPAY_SUBSCRIPTIONS_EMPTY_STATE' );
 	}
 
 	/**
 	 * Replaces the default empty subscriptions state HTML with a wrapper for our content to be placed into.
 	 *
+	 * @deprecated 6.3.0
 	 * @param string $default_empty_state_html The default Subscriptions empty state HTML.
 	 * @return string The empty subscriptions sate wrapper.
 	 */
 	public function replace_subscriptions_empty_state( $default_empty_state_html ) {
-
+		wc_deprecated_function( __FUNCTION__, '6.3.0' );
 		if ( wcs_do_subscriptions_exist() ) {
 			return $default_empty_state_html;
 		}

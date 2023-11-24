@@ -14,12 +14,17 @@ import {
 	paymentMethodHandler,
 	payForOrderHandler,
 } from './event-handlers.js';
+import '../checkout/express-checkout-buttons.scss';
+import wcpayTracks from 'tracks';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
-	if ( wcpayPaymentRequestParams.has_block ) {
+	if (
+		wcpayPaymentRequestParams.has_block &&
+		! wcpayPaymentRequestParams.is_pay_for_order
+	) {
 		return;
 	}
 
@@ -46,10 +51,28 @@ jQuery( ( $ ) => {
 
 	let paymentRequestType;
 
+	// Track the payment request button click event.
+	const trackPaymentRequestButtonClick = ( source ) => {
+		const paymentRequestTypeEvents = {
+			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
+			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+		};
+
+		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
+			const event = paymentRequestTypeEvents[ paymentRequestType ];
+			wcpayTracks.recordUserEvent( event, { source } );
+		}
+	};
+
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
 	const wcpayPaymentRequest = {
+		/**
+		 * Whether the payment was aborted by the customer.
+		 */
+		paymentAborted: false,
+
 		getAttributes: function () {
 			const select = $( '.variations_form' ).find( '.variations select' );
 			const data = {};
@@ -62,7 +85,7 @@ jQuery( ( $ ) => {
 					$( this ).attr( 'name' );
 				const value = $( this ).val() || '';
 
-				if ( 0 < value.length ) {
+				if ( value.length > 0 ) {
 					chosen++;
 				}
 
@@ -219,6 +242,10 @@ jQuery( ( $ ) => {
 				wcpayPaymentRequest.showPaymentRequestButton( prButton );
 			} );
 
+			paymentRequest.on( 'cancel', () => {
+				wcpayPaymentRequest.paymentAborted = true;
+			} );
+
 			paymentRequest.on( 'shippingaddresschange', ( event ) =>
 				shippingAddressChangeHandler( api, event )
 			);
@@ -340,6 +367,8 @@ jQuery( ( $ ) => {
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
+				trackPaymentRequestButtonClick( 'product' );
+
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( wcpayPaymentRequestParams.login_confirmation ) {
 					evt.preventDefault();
@@ -366,7 +395,7 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				if ( 0 < paymentRequestError.length ) {
+				if ( paymentRequestError.length > 0 ) {
 					evt.preventDefault();
 					window.alert( paymentRequestError );
 					return;
@@ -380,14 +409,37 @@ jQuery( ( $ ) => {
 
 				$.when( wcpayPaymentRequest.getSelectedProductData() )
 					.then( ( response ) => {
-						$.when(
+						/**
+						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
+						 * options are refetched. If the customer didn't abort the payment request, and the product's shipping status is
+						 * consistent, we can simply update the payment request button with the new total and display items.
+						 */
+						if (
+							! wcpayPaymentRequest.paymentAborted &&
+							wcpayPaymentRequestParams.product.needs_shipping ===
+								response.needs_shipping
+						) {
 							paymentRequest.update( {
 								total: response.total,
 								displayItems: response.displayItems,
-							} )
-						).then( () => {
-							wcpayPaymentRequest.unblockPaymentRequestButton();
-						} );
+							} );
+						} else {
+							/**
+							 * Re init the payment request button.
+							 *
+							 * This ensures that when the customer clicks on the payment button, the available shipping options are
+							 * refetched based on the selected variable product's data and the chosen address.
+							 */
+							wcpayPaymentRequestParams.product.needs_shipping =
+								response.needs_shipping;
+							wcpayPaymentRequestParams.product.total =
+								response.total;
+							wcpayPaymentRequestParams.product.displayItems =
+								response.displayItems;
+							wcpayPaymentRequest.init();
+						}
+
+						wcpayPaymentRequest.unblockPaymentRequestButton();
 					} )
 					.catch( () => {
 						wcpayPaymentRequest.hide();
@@ -435,12 +487,15 @@ jQuery( ( $ ) => {
 					evt.preventDefault();
 					displayLoginConfirmation( paymentRequestType );
 				}
+				trackPaymentRequestButtonClick(
+					wcpayPaymentRequestParams.button_context
+				);
 			} );
 		},
 
 		getElements: () => {
 			return $(
-				'#wcpay-payment-request-wrapper,#wcpay-payment-request-button-separator'
+				'.wcpay-payment-request-wrapper,#wcpay-payment-request-button-separator'
 			);
 		},
 
@@ -515,6 +570,9 @@ jQuery( ( $ ) => {
 					} );
 				} );
 			}
+
+			// After initializing a new payment request, we need to reset the paymentAborted flag.
+			wcpayPaymentRequest.paymentAborted = false;
 		},
 	};
 

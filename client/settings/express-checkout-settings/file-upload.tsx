@@ -17,7 +17,7 @@ import classNames from 'classnames';
  */
 import { FileUploadControl } from 'components/file-upload';
 
-interface PlatformCheckoutFileUploadProps {
+interface WooPayFileUploadProps {
 	fieldKey: string;
 	label: string;
 	accept: string;
@@ -28,7 +28,7 @@ interface PlatformCheckoutFileUploadProps {
 	updateFileID: ( id: string ) => void;
 }
 
-const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileUploadProps > = (
+const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 	props
 ) => {
 	const {
@@ -36,6 +36,7 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 		label,
 		accept,
 		disabled,
+		help,
 		purpose,
 		fileID,
 		updateFileID,
@@ -133,7 +134,7 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 			| HTMLInputElement
 			| null
 			| undefined = ( event.target as HTMLButtonElement )
-			.closest( '.platform-checkout-settings__update-store-logo' )
+			.closest( '.woopay-settings__update-store-logo' )
 			?.querySelector( 'input[type="file"]' );
 
 		fileInput?.click();
@@ -146,7 +147,7 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 		<div className="wcpay-branding-upload-field__wrapper">
 			<div
 				className={ classNames(
-					'platform-checkout-settings__update-store-logo',
+					'woopay-settings__update-store-logo',
 					fileID && 'has-file'
 				) }
 			>
@@ -164,6 +165,7 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 					onFileChange={ handleFileChange }
 					onFileRemove={ handleFileRemove }
 					showPreview={ true }
+					type="image"
 					uploadButtonLabel={ __(
 						'Upload custom logo',
 						'woocommerce-payments'
@@ -195,17 +197,11 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 				</div>
 			</div>
 
-			<BaseControl
-				id={ 'test' }
-				help={ __(
-					'Use a custom logo to WooPay if the one taken from your store doesn’t look right. For best results, upload a high-resolution horizontal image with white or transparent background.',
-					'woocommerce-payments'
-				) }
-			>
+			<BaseControl id={ 'test' } help={ help }>
 				{ ' ' }
 			</BaseControl>
 		</div>
 	);
 };
 
-export default PlatformCheckoutFileUpload;
+export default WooPayFileUpload;

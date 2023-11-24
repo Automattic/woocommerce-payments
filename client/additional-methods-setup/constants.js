@@ -7,6 +7,10 @@ export const upeMethods = [
 	'p24',
 	'sepa_debit',
 	'sofort',
+	'affirm',
+	'afterpay_clearpay',
+	'jcb',
+	'klarna',
 ];
 
 export const upeCapabilityStatuses = {
@@ -15,4 +19,5 @@ export const upeCapabilityStatuses = {
 	ACTIVE: 'active',
 	INACTIVE: 'inactive',
 	UNREQUESTED: 'unrequested',
+	REJECTED: 'rejected',
 };

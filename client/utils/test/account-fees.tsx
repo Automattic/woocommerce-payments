@@ -3,6 +3,7 @@
  */
 import { sprintf } from '@wordpress/i18n';
 import React from 'react';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -10,7 +11,8 @@ import React from 'react';
 import {
 	formatAccountFeesDescription,
 	formatMethodFeesDescription,
-	getCurrentFee,
+	formatMethodFeesTooltip,
+	getCurrentBaseFee,
 } from '../account-fees';
 import { formatCurrency } from '../currency';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
@@ -20,6 +22,14 @@ jest.mock( '../currency', () => ( {
 		return sprintf( '$%.2f', amount / 100 );
 	} ),
 } ) );
+
+declare const global: {
+	wcpaySettings: {
+		connect: {
+			country: string;
+		};
+	};
+};
 
 const mockAccountFees = (
 	base: BaseFee,
@@ -59,7 +69,7 @@ const mockAccountFees = (
 };
 
 describe( 'Account fees utility functions', () => {
-	describe( 'getCurrentFee()', () => {
+	describe( 'getCurrentBaseFee()', () => {
 		it( 'returns first discount regardless of amount', () => {
 			const accountFees = mockAccountFees(
 				{
@@ -70,7 +80,7 @@ describe( 'Account fees utility functions', () => {
 				[ { discount: 0.1 }, { discount: 0.2 } ]
 			);
 
-			expect( getCurrentFee( accountFees ) ).toEqual(
+			expect( getCurrentBaseFee( accountFees ) ).toEqual(
 				accountFees.discount[ 0 ]
 			);
 		} );
@@ -81,7 +91,9 @@ describe( 'Account fees utility functions', () => {
 				fixed_rate: 456.78,
 				currency: 'USD',
 			} );
-			expect( getCurrentFee( accountFees ) ).toEqual( accountFees.base );
+			expect( getCurrentBaseFee( accountFees ) ).toEqual(
+				accountFees.base
+			);
 		} );
 	} );
 
@@ -261,6 +273,99 @@ describe( 'Account fees utility functions', () => {
 			expect( formatMethodFeesDescription( undefined ) ).toEqual(
 				'missing fees'
 			);
+		} );
+	} );
+
+	describe( 'formatMethodFeesTooltip()', () => {
+		beforeAll( () => {
+			global.wcpaySettings = { connect: { country: 'US' } };
+		} );
+		afterAll( () => {
+			global.wcpaySettings = { connect: { country: '' } };
+		} );
+
+		it( 'displays base percentage and fixed fee - no custom fee nor discount', () => {
+			const methodFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
+
+			methodFees.additional = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			methodFees.fx = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			const { container } = render(
+				formatMethodFeesTooltip( methodFees )
+			);
+
+			expect( container ).toMatchSnapshot();
+		} );
+
+		it( 'displays custom fee details, when applicable', () => {
+			const methodFees = mockAccountFees(
+				{
+					percentage_rate: 0.123,
+					fixed_rate: 456.78,
+					currency: 'USD',
+				},
+				[ { percentage_rate: 0.101, fixed_rate: 400.78 } ]
+			);
+
+			methodFees.additional = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			methodFees.fx = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			const { container } = render(
+				formatMethodFeesTooltip( methodFees )
+			);
+
+			expect( container ).toMatchSnapshot();
+		} );
+
+		it( 'displays base fee, when only promo discount without percentage or fixed', () => {
+			const methodFees = mockAccountFees(
+				{
+					percentage_rate: 0.123,
+					fixed_rate: 456.78,
+					currency: 'USD',
+				},
+				[ { discount: 0.2 } ]
+			);
+
+			methodFees.additional = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			methodFees.fx = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			const { container } = render(
+				formatMethodFeesTooltip( methodFees )
+			);
+
+			expect( container ).toMatchSnapshot();
 		} );
 	} );
 } );

@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { Dispute } from 'types/disputes';
 import { Charge, ChargeAmounts } from 'types/charges';
+import { PaymentIntent } from '../../types/payment-intents';
 
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
@@ -52,8 +53,56 @@ export const isChargePartiallyRefunded = (
 	charge: Charge = <Charge>{}
 ): boolean => isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
+const getFraudMetaBoxType = (
+	charge?: Charge,
+	paymentIntent?: PaymentIntent
+): string =>
+	charge?.order?.fraud_meta_box_type ||
+	paymentIntent?.order?.fraud_meta_box_type ||
+	'';
+
+export const isOnHoldByFraudTools = (
+	charge?: Charge,
+	paymentIntent?: PaymentIntent
+): boolean => {
+	const fraudMetaBoxType = getFraudMetaBoxType( charge, paymentIntent );
+
+	if ( ! fraudMetaBoxType ) {
+		return false;
+	}
+
+	return (
+		paymentIntent?.status === 'requires_capture' &&
+		'review' === fraudMetaBoxType
+	);
+};
+
+export const isBlockedByFraudTools = (
+	charge?: Charge,
+	paymentIntent?: PaymentIntent
+): boolean => {
+	const fraudMetaBoxType = getFraudMetaBoxType( charge, paymentIntent );
+
+	if ( ! fraudMetaBoxType ) {
+		return false;
+	}
+
+	return [ 'block', 'review_blocked' ].includes( fraudMetaBoxType );
+};
+
 /* TODO: implement authorization and SCA charge statuses */
-export const getChargeStatus = ( charge: Charge = <Charge>{} ): string => {
+export const getChargeStatus = (
+	charge: Charge = <Charge>{},
+	paymentIntent?: PaymentIntent
+): string => {
+	if ( isOnHoldByFraudTools( charge, paymentIntent ) ) {
+		return 'fraud_outcome_review';
+	}
+
+	if ( isBlockedByFraudTools( charge, paymentIntent ) ) {
+		return 'fraud_outcome_block';
+	}
+
 	if ( isChargeFailed( charge ) ) {
 		return 'failed';
 	}

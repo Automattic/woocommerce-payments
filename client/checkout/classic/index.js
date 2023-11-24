@@ -4,22 +4,22 @@
  * Internal dependencies
  */
 import './style.scss';
-import {
-	PAYMENT_METHOD_NAME_BECS,
-	PAYMENT_METHOD_NAME_CARD,
-	PAYMENT_METHOD_NAME_GIROPAY,
-	PAYMENT_METHOD_NAME_SEPA,
-	PAYMENT_METHOD_NAME_SOFORT,
-} from '../constants.js';
+import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 import { getConfig } from 'utils/checkout';
-import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
+import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { isWCPayChosen } from '../utils/upe';
+import { isPreviewing } from '../preview';
+import {
+	getFingerprint,
+	appendFingerprintInputToForm,
+} from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 
+	let fingerprint = '';
 	const publishableKey = getConfig( 'publishableKey' );
 
 	if ( ! publishableKey ) {
@@ -48,7 +48,7 @@ jQuery( function ( $ ) {
 	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */
 	const preparedCustomerData =
-		'undefined' !== typeof wcpayCustomerData ? wcpayCustomerData : {};
+		typeof wcpayCustomerData !== 'undefined' ? wcpayCustomerData : {};
 
 	// Create a card element.
 	const cardElement = elements.create( 'card', {
@@ -176,7 +176,7 @@ jQuery( function ( $ ) {
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
-	$( document.body ).on( 'updated_checkout', () => {
+	$( document.body ).on( 'updated_checkout', async () => {
 		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
 		// We also don't re-mount if already mounted in DOM.
 		if (
@@ -184,6 +184,19 @@ jQuery( function ( $ ) {
 			! $( '#wcpay-card-element' ).children().length
 		) {
 			cardElement.unmount();
+
+			if ( ! fingerprint ) {
+				try {
+					const { visitorId } = await getFingerprint();
+					fingerprint = visitorId;
+				} catch ( error ) {
+					// Do not mount element if fingerprinting is not available
+					showError( error.message );
+
+					return;
+				}
+			}
+
 			cardElement.mount( '#wcpay-card-element' );
 		}
 
@@ -279,7 +292,11 @@ jQuery( function ( $ ) {
 			.catch( function ( error ) {
 				paymentMethodGenerated = null;
 				$form.removeClass( 'processing' ).unblock();
-				showError( error.message );
+				if ( error.responseJSON && ! error.responseJSON.success ) {
+					showError( error.responseJSON.data.error.message );
+				} else if ( error.message ) {
+					showError( error.message );
+				}
 			} );
 	};
 
@@ -396,7 +413,7 @@ jQuery( function ( $ ) {
 		);
 
 		// Boolean `true` means that there is nothing to confirm.
-		if ( true === confirmation ) {
+		if ( confirmation === true ) {
 			return;
 		}
 
@@ -461,31 +478,16 @@ jQuery( function ( $ ) {
 		);
 	}
 
-	// Handle the checkout form when WooCommerce Payments is chosen.
-	const wcpayPaymentMethods = [
-		PAYMENT_METHOD_NAME_BECS,
-		PAYMENT_METHOD_NAME_CARD,
-		PAYMENT_METHOD_NAME_GIROPAY,
-		PAYMENT_METHOD_NAME_SEPA,
-		PAYMENT_METHOD_NAME_SOFORT,
-	];
+	// Handle the checkout form when WooPayments is chosen.
+	const wcpayPaymentMethods = [ PAYMENT_METHOD_NAME_CARD ];
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
-		if ( ! isUsingSavedPaymentMethod() ) {
-			let paymentMethodDetails = cardPayment;
-			if ( isWCPaySepaChosen() ) {
-				paymentMethodDetails = sepaPayment;
-			} else if ( isWCPayGiropayChosen() ) {
-				paymentMethodDetails = giropayPayment;
-			} else if ( isWCPaySofortChosen() ) {
-				sofortPayment.sofort = {
-					country: $( '#billing_country' ).val(),
-				};
-				paymentMethodDetails = sofortPayment;
-			}
+		appendFingerprintInputToForm( $( this ), fingerprint );
 
+		if ( ! isUsingSavedPaymentMethod() ) {
+			const paymentMethodDetails = cardPayment;
 			return handlePaymentMethodCreation(
 				$( this ),
 				handleOrderPayment,
@@ -494,7 +496,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	// Handle the Pay for Order form if WooCommerce Payments is chosen.
+	// Handle the Pay for Order form if WooPayments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		if (
 			isUsingSavedPaymentMethod() ||
@@ -510,13 +512,12 @@ jQuery( function ( $ ) {
 		);
 	} );
 
-	// Handle the add payment method form for WooCommerce Payments.
+	// Handle the add payment method form for WooPayments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if (
-			'woocommerce_payments' !==
 			$(
 				"#add_payment_method input:checked[name='payment_method']"
-			).val()
+			).val() !== 'woocommerce_payments'
 		) {
 			return;
 		}
@@ -550,23 +551,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	/**
-	 * Checks whether we're in a preview context.
-	 *
-	 * @return {boolean} Whether we're in a preview context.
-	 */
-	const isPreviewing = () => {
-		const searchParams = new URLSearchParams( window.location.search );
-
-		// Check for the URL parameter used in the iframe of the customize.php page
-		// and for the is_preview() value for posts.
-		return (
-			null !== searchParams.get( 'customize_messenger_channel' ) ||
-			getConfig( 'isPreview' )
-		);
-	};
-
-	if ( getConfig( 'isPlatformCheckoutEnabled' ) && ! isPreviewing() ) {
-		handlePlatformCheckoutEmailInput( '#billing_email', api );
+	if ( getConfig( 'isWooPayEnabled' ) && ! isPreviewing() ) {
+		handleWooPayEmailInput( '#billing_email', api );
 	}
 } );

@@ -6,33 +6,29 @@ on:
 jobs:
   i18n-release:
     name: Release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Use project specific node version
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
 
       # enable dependencies caching (vendor and node_modules are wiped during build so they are ignored here)
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.npm/
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.4'
-          tools:       composer
-          coverage:    none
-
+      - name: "Set up PHP"
+        uses: ./.github/actions/setup-php
       - name: Build release
         run: |
           npm ci

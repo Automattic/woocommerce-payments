@@ -30,13 +30,16 @@ interface ChargeRefunds {
 export interface PaymentMethodDetails {
 	card?: any;
 	type:
-		| 'card'
-		| 'card_present'
+		| 'affirm'
+		| 'afterpay_clearpay'
 		| 'au_becs_debit'
 		| 'bancontact'
+		| 'card'
+		| 'card_present'
 		| 'eps'
 		| 'giropay'
 		| 'ideal'
+		| 'klarna'
 		| 'p24'
 		| 'sepa_debit'
 		| 'sofort';
@@ -82,6 +85,8 @@ export interface Charge {
 	refunded: boolean;
 	refunds: null | ChargeRefunds;
 	status: string;
+	reader_model?: string;
+	platform?: string;
 }
 
 export interface ChargeAmounts {

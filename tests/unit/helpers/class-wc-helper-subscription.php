@@ -93,6 +93,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $currency = 'USD';
 
 	/**
+	 * Created timestamp
+	 *
+	 * @var int
+	 */
+	public $date_created;
+
+	/**
 	 * Helper variable for mocking the subscription's billing period.
 	 *
 	 * @var string
@@ -105,6 +112,20 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	 * @var string
 	 */
 	public $billing_interval = 1;
+
+	/**
+	 * If the subscription has a certain product in it.
+	 *
+	 * @var bool
+	 */
+	public $has_product = false;
+
+	/**
+	 * The customer ID for the subscription.
+	 *
+	 * @var null|int
+	 */
+	public $customer_id = null;
 
 	/**
 	 * A helper function for handling function calls not yet implimented on this helper.
@@ -200,6 +221,10 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return $this->currency;
 	}
 
+	public function set_currency( $currency = 'USD' ) {
+		$this->currency = $currency;
+	}
+
 	public function add_order_note( $note = '' ) {
 		// do nothing.
 	}
@@ -234,5 +259,22 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function update_status( $status ) {
 		$this->status = $status;
+	}
+
+	public function set_has_product( bool $has_product ) {
+		$this->has_product = $has_product;
+	}
+
+	public function has_product() {
+		return $this->has_product;
+	}
+
+	public function get_customer_id() {
+		return $this->customer_id ?? get_current_user_id();
+	}
+
+	public function set_customer_id( $customer_id = null ) {
+		$this->customer_id = $customer_id ?? get_current_user_id();
+
 	}
 }

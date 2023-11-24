@@ -14,13 +14,13 @@ import 'wp-mediaelement';
  * Internal dependencies
  */
 import './style.scss';
-import ConnectAccountPageExperiment from 'connect-account-page-experiment';
+import ConnectAccountPage from 'connect-account-page';
 import DepositsPage from 'deposits';
 import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
 import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
-import DisputeDetailsPage from 'disputes/details';
+import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
 import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
 import MultiCurrencySetupPage from 'wcpay/multi-currency-setup';
@@ -30,6 +30,7 @@ import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
 import OnboardingPage from 'onboarding';
+import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
@@ -41,11 +42,11 @@ addFilter(
 		const isNavigationEnabled =
 			window.wcAdminFeatures && window.wcAdminFeatures.navigation;
 		const connectionPageTitle = isNavigationEnabled
-			? __( 'WooCommerce Payments', 'woocommerce-payments' )
+			? 'WooPayments'
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
-			container: ConnectAccountPageExperiment,
+			container: ConnectAccountPage,
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
@@ -102,6 +103,10 @@ addFilter(
 				],
 				__( 'Deposit details', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-deposit-details',
+				parentPath: '/payments/deposits',
+			},
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
@@ -129,6 +134,10 @@ addFilter(
 				],
 				__( 'Payment details', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-transaction-details',
+				parentPath: '/payments/transactions',
+			},
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
@@ -141,8 +150,9 @@ addFilter(
 			},
 			capability: 'manage_woocommerce',
 		} );
+
 		pages.push( {
-			container: DisputeDetailsPage,
+			container: RedirectToTransactionDetails,
 			path: '/payments/disputes/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -153,8 +163,13 @@ addFilter(
 				],
 				__( 'Dispute details', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-disputes-details-legacy-redirect',
+				parentPath: '/payments/disputes',
+			},
 			capability: 'manage_woocommerce',
 		} );
+
 		pages.push( {
 			container: DisputeEvidencePage,
 			path: '/payments/disputes/challenge',
@@ -167,6 +182,10 @@ addFilter(
 				],
 				__( 'Challenge dispute', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-disputes-challenge',
+				parentPath: '/payments/disputes',
+			},
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
@@ -239,6 +258,15 @@ addFilter(
 				capability: 'manage_woocommerce',
 			} );
 		}
+		if ( wcpaySettings ) {
+			pages.push( {
+				container: FraudProtectionAdvancedSettingsPage,
+				path: '/payments/fraud-protection',
+				wpOpenMenu: menuID,
+				breadcrumbs: [ 'WooPayments' ],
+				capability: 'manage_woocommerce',
+			} );
+		}
 		return pages;
 	}
 );
@@ -267,18 +295,11 @@ addFilter(
 	'woocommerce_admin_onboarding_task_list',
 	'woocommerce-payments',
 	( tasks ) => {
-		const {
-			accountStatus,
-			showUpdateDetailsTask,
-			wpcomReconnectUrl,
-			featureFlags: { accountOverviewTaskList },
-		} = wcpaySettings;
+		const { showUpdateDetailsTask, wpcomReconnectUrl } = wcpaySettings;
 
 		const wcPayTasks = getTasks( {
-			accountStatus,
-			showUpdateDetailsTask,
-			wpcomReconnectUrl,
-			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
+			showUpdateDetailsTask: showUpdateDetailsTask,
+			wpcomReconnectUrl: wpcomReconnectUrl,
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];

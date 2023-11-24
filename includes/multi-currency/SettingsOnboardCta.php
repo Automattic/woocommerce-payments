@@ -18,7 +18,7 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 	 *
 	 * @var string
 	 */
-	const LEARN_MORE_URL = 'https://woocommerce.com/document/payments/currencies/multi-currency-setup/';
+	const LEARN_MORE_URL = 'https://woo.com/document/woopayments/currencies/multi-currency-setup/';
 
 	/**
 	 * MultiCurrency instance.
@@ -37,9 +37,16 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 		$this->id             = $this->multi_currency->id;
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
-		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_onboarding_cta', [ $this, 'currencies_settings_onboarding_cta' ] );
-
 		parent::__construct();
+	}
+
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_onboarding_cta', [ $this, 'currencies_settings_onboarding_cta' ] );
 	}
 
 	/**
@@ -54,7 +61,13 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 		?>
 			<div>
 				<p>
-					<?php esc_html_e( 'To add new currencies to your store, please finish setting up WooCommerce Payments.', 'woocommerce-payments' ); ?>
+					<?php
+						printf(
+							/* translators: %s: WooPayments */
+							esc_html__( 'To add new currencies to your store, please finish setting up %s.', 'woocommerce-payments' ),
+							'WooPayments'
+						);
+					?>
 				</p>
 				<a href="<?php echo esc_url( $href ); ?>" id="wcpay_enabled_currencies_onboarding_cta" type="button" class="button-primary">
 					<?php esc_html_e( 'Get started', 'woocommerce-payments' ); ?>
@@ -70,6 +83,10 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 	 * @return array
 	 */
 	public function get_settings( $current_section = '' ) {
+		// Hide the save button because there are no settings to save.
+		global $hide_save_button;
+		$hide_save_button = true;
+
 		return [
 			[
 				'title' => __( 'Enabled currencies', 'woocommerce-payments' ),
@@ -83,6 +100,10 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 			],
 			[
 				'type' => 'wcpay_currencies_settings_onboarding_cta',
+			],
+			[
+				'type' => 'sectionend',
+				'id'   => $this->id . '_enabled_currencies',
 			],
 		];
 	}

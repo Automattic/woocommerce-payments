@@ -7,9 +7,13 @@ const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 // WooCommerce Checkout
 export async function fillCardDetails( page, card ) {
-	if ( await page.$( '#payment #wcpay-upe-element' ) ) {
+	if (
+		await page.$(
+			'#payment .payment_method_woocommerce_payments .wcpay-upe-element'
+		)
+	) {
 		const frameHandle = await page.waitForSelector(
-			'#payment #wcpay-upe-element iframe'
+			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
 		);
 
 		const stripeFrame = await frameHandle.contentFrame();
@@ -28,11 +32,18 @@ export async function fillCardDetails( page, card ) {
 		await cardDateInput.type( card.expires.month + card.expires.year, {
 			delay: 20,
 		} );
+		await page.waitFor( 1000 );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
 			'[name="cvc"]'
 		);
 		await cardCvcInput.type( card.cvc, { delay: 20 } );
+		await page.waitFor( 1000 );
+
+		const zip = await stripeFrame.$( '[name="postalCode"]' );
+		if ( zip !== null ) {
+			await zip.type( '90210', { delay: 20 } );
+		}
 	} else {
 		await page.waitForSelector( '.__PrivateStripeElement' );
 		const frameHandle = await page.waitForSelector(
@@ -45,48 +56,116 @@ export async function fillCardDetails( page, card ) {
 			{ timeout: 30000 }
 		);
 		await cardNumberInput.type( card.number, { delay: 20 } );
+		await page.waitFor( 1000 );
 
 		const cardDateInput = await stripeFrame.waitForSelector(
-			'[name="exp-date"]'
+			'[name="exp-date"]',
+			{ timeout: 30000 }
 		);
 
 		await cardDateInput.type( card.expires.month + card.expires.year, {
 			delay: 20,
 		} );
+		await page.waitFor( 1000 );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
-			'[name="cvc"]'
+			'[name="cvc"]',
+			{ timeout: 30000 }
 		);
 		await cardCvcInput.type( card.cvc, { delay: 20 } );
+		await page.waitFor( 1000 );
 	}
 }
 
 // Clear WC Checkout Card Details
 export async function clearCardDetails() {
+	if ( await page.$( '#payment #wcpay-card-element' ) ) {
+		const frameHandle = await page.waitForSelector(
+			'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+		);
+		const stripeFrame = await frameHandle.contentFrame();
+
+		const cardNumberInput = await stripeFrame.waitForSelector(
+			'[name="cardnumber"]'
+		);
+		await cardNumberInput.click();
+		await page.waitFor( 1000 );
+		await cardNumberInput.click( { clickCount: 3 } );
+		await page.keyboard.press( 'Backspace' );
+
+		const cardDateInput = await stripeFrame.waitForSelector(
+			'[name="exp-date"]'
+		);
+		await page.waitFor( 1000 );
+		await cardDateInput.click( { clickCount: 3 } );
+		await page.keyboard.press( 'Backspace' );
+
+		const cardCvcInput = await stripeFrame.waitForSelector(
+			'[name="cvc"]'
+		);
+		await page.waitFor( 1000 );
+		await cardCvcInput.click( { clickCount: 3 } );
+		await page.keyboard.press( 'Backspace' );
+
+		await page.waitFor( 1000 );
+	} else {
+		// Handling Stripe UPE element
+		const frameHandle = await page.waitForSelector(
+			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe[name^="__privateStripeFrame"]'
+		);
+		const stripeFrame = await frameHandle.contentFrame();
+		const cardNumberInput = await stripeFrame.waitForSelector(
+			'[name="number"]',
+			{ timeout: 30000 }
+		);
+		await cardNumberInput.click( { clickCount: 3 } );
+		await page.keyboard.press( 'Backspace' );
+
+		const cardDateInput = await stripeFrame.waitForSelector(
+			'[name="expiry"]',
+			{ timeout: 30000 }
+		);
+		await cardDateInput.click( { clickCount: 3 } );
+		await page.keyboard.press( 'Backspace' );
+
+		const cardCvcInput = await stripeFrame.waitForSelector(
+			'[name="cvc"]',
+			{ timeout: 30000 }
+		);
+		await cardCvcInput.click( { clickCount: 3 } );
+		await page.keyboard.press( 'Backspace' );
+		await page.waitFor( 1000 );
+	}
+}
+export async function fillCardDetailsPayForOrder( page, card ) {
+	await page.waitForSelector( '.__PrivateStripeElement' );
 	const frameHandle = await page.waitForSelector(
-		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+		'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
+
 	const cardNumberInput = await stripeFrame.waitForSelector(
-		'[name="cardnumber"]'
+		'[name="number"]',
+		{ timeout: 30000 }
 	);
+	await cardNumberInput.type( card.number, { delay: 20 } );
+
 	const cardDateInput = await stripeFrame.waitForSelector(
-		'[name="exp-date"]'
+		'[name="expiry"]'
 	);
+
+	await cardDateInput.type( card.expires.month + card.expires.year, {
+		delay: 20,
+	} );
+
 	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
-
-	await cardNumberInput.click();
+	await cardCvcInput.type( card.cvc, { delay: 20 } );
 	await page.waitFor( 1000 );
-	await cardNumberInput.click( { clickCount: 3 } );
-	await page.keyboard.press( 'Backspace' );
 
-	await page.waitFor( 1000 );
-	await cardDateInput.click( { clickCount: 3 } );
-	await page.keyboard.press( 'Backspace' );
-
-	await page.waitFor( 1000 );
-	await cardCvcInput.click( { clickCount: 3 } );
-	await page.keyboard.press( 'Backspace' );
+	const zip = await stripeFrame.$( '[name="postalCode"]' );
+	if ( zip !== null ) {
+		await zip.type( '90210', { delay: 20 } );
+	}
 }
 
 // WooCommerce Blocks Checkout
@@ -148,7 +227,7 @@ export async function confirmCardAuthentication(
 	);
 	let challengeFrame = await challengeFrameHandle.contentFrame();
 	// 3DS 1 cards have another iframe enclosing the authorize form
-	if ( '3DS' === cardType.toUpperCase() ) {
+	if ( cardType.toUpperCase() === '3DS' ) {
 		const acsFrameHandle = await challengeFrame.waitForSelector(
 			'iframe[name="acsFrame"]'
 		);
@@ -208,6 +287,7 @@ export async function setupCheckout( billingDetails ) {
 	await shopper.goToCheckout();
 	await uiUnblocked();
 	await shopper.fillBillingDetails( billingDetails );
+
 	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
 	await page.waitFor( 1000 );
@@ -215,4 +295,33 @@ export async function setupCheckout( billingDetails ) {
 	await expect( page ).toClick(
 		'.wc_payment_method.payment_method_woocommerce_payments'
 	);
+}
+
+/**
+ * Selects the Giropay payment method on the checkout page.
+ *
+ * @param {*} page The page reference object.
+ */
+export async function selectGiropayOnCheckout( page ) {
+	await page.$( '#payment .payment_method_woocommerce_payments_giropay' );
+	const giropayRadioLabel = await page.waitForSelector(
+		'#payment .payment_method_woocommerce_payments_giropay label'
+	);
+	giropayRadioLabel.click();
+	await page.waitFor( 1000 );
+}
+
+/**
+ * Authorizes or fails a Giropay payment.
+ *
+ * @param {*} page The page reference object.
+ * @param {string} action Either of 'success' or 'failure'.
+ */
+export async function completeGiropayPayment( page, action ) {
+	await page.$( '.actions .common-ButtonGroup' );
+	const actionButton = await page.waitForSelector(
+		`.actions .common-ButtonGroup a[name=${ action }]`
+	);
+	actionButton.click();
+	await page.waitFor( 1000 );
 }

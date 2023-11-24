@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import { ApiError } from '../../types/errors';
 import { PaymentIntent } from '../../types/payment-intents';
@@ -21,7 +22,7 @@ export function* getPaymentIntent( id: string ): Generator< unknown > {
 		} );
 		yield updatePaymentIntent( id, result as PaymentIntent );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error retrieving transaction.', 'woocommerce-payments' )

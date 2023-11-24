@@ -3,10 +3,14 @@ name: Code coverage
 on:
   pull_request
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   woocommerce-coverage:
     name:    Code coverage
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast:    false
       max-parallel: 10
@@ -14,14 +18,16 @@ jobs:
         woocommerce: [ 'latest' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.4' ]
+        directory:   [ 'includes', 'src' ]
     env:
-      WP_VERSION: ${{ matrix.wordpress }}
-      WC_VERSION: ${{ matrix.woocommerce }}
+      WP_VERSION:   ${{ matrix.wordpress }}
+      WC_VERSION:   ${{ matrix.woocommerce }}
+      COVERAGE_DIR: ${{ matrix.directory }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
@@ -32,5 +38,4 @@ jobs:
           tools:       composer
           coverage:    xdebug2
       # run CI checks
-      - run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
       - run: bash bin/run-ci-tests-check-coverage.bash

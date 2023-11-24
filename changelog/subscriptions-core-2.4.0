@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-The subscription creation function `wcs_create_subscription` has been updated to use WooCommerce CRUD methods in preparation for supporting High Performance Order Storage (HPOS).

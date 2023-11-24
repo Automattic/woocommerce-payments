@@ -63,3 +63,50 @@ export const getTransactionsSummary = ( state, query ) => {
 export const getTransactionsSummaryError = ( state, query ) => {
 	return getTransactionsSummaryForQuery( state, query ).error || {};
 };
+
+const getFraudOutcomeTransactionsForQuery = ( state, status, query ) => {
+	const index = getResourceId( query );
+	return (
+		getTransactionsState( state ).fraudProtection?.[ status ]?.[ index ] ||
+		{}
+	);
+};
+
+export const getFraudOutcomeTransactions = ( state, status, query ) => {
+	return (
+		getFraudOutcomeTransactionsForQuery( state, status, query ).data || []
+	);
+};
+
+export const getFraudOutcomeTransactionsError = ( state, status, query ) => {
+	return (
+		getFraudOutcomeTransactionsForQuery( state, status, query ).error || {}
+	);
+};
+
+const getFraudOutcomeTransactionsSummaryForQuery = ( state, status, query ) => {
+	const index = getResourceId( query );
+	return (
+		getTransactionsState( state ).fraudProtection?.[ status ]?.summary[
+			index
+		] || {}
+	);
+};
+
+export const getFraudOutcomeTransactionsSummary = ( state, status, query ) => {
+	return (
+		getFraudOutcomeTransactionsSummaryForQuery( state, status, query )
+			.data || {}
+	);
+};
+
+export const getFraudOutcomeTransactionsSummaryError = (
+	state,
+	status,
+	query
+) => {
+	return (
+		getFraudOutcomeTransactionsSummaryForQuery( state, status, query )
+			.error || {}
+	);
+};
