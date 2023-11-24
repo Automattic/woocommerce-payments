@@ -61,13 +61,6 @@ describe( 'Deposit overview', () => {
 				},
 			},
 		};
-		global.wcSettings = {
-			countries: {
-				US: 'United States of America',
-				CA: 'Canada',
-				UK: 'United Kingdom',
-			},
-		};
 	} );
 
 	test( 'renders automatic deposit correctly', () => {
