@@ -757,7 +757,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Redirect directly to onboarding page if come from WC Admin task and are in treatment mode.
+		// Redirect directly to onboarding page if come from WC Admin task.
 		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
 		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
 			$this->redirect_to_onboarding_flow_page();
@@ -1885,7 +1885,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects to the onboarding flow page if the Progressive Onboarding feature flag is enabled or in the experiment treatment mode.
+	 * Redirects to the onboarding flow page if the Progressive Onboarding is enabled (default experience).
 	 * Also checks if the server is connected and try to connect it otherwise.
 	 *
 	 * @return void

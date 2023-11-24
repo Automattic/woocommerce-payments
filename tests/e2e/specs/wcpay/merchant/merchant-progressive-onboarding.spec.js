@@ -11,12 +11,10 @@ import { merchantWCP, uiLoaded } from '../../../utils';
 describe( 'Admin merchant progressive onboarding', () => {
 	beforeAll( async () => {
 		await merchant.login();
-		await merchantWCP.enableProgressiveOnboarding();
 		await merchantWCP.enableActAsDisconnectedFromWCPay();
 	} );
 
 	afterAll( async () => {
-		await merchantWCP.disableProgressiveOnboarding();
 		await merchantWCP.disableActAsDisconnectedFromWCPay();
 		await merchant.logout();
 	} );
