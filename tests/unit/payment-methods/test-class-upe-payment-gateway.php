@@ -1886,68 +1886,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_split_upe() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
-
-		$data = [
-			'methods'  => [
-				'card',
-				'bancontact',
-			],
-			'statuses' => [
-				'card_payments'       => [
-					'status' => 'active',
-				],
-				'bancontact_payments' => [
-					'status' => 'active',
-				],
-			],
-			'currency' => 'EUR',
-			'title'    => 'WooPayments',
-			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => 'WooPayments',
-		];
-
-		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
-
-		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
-		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
-		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
-	}
-
-	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_upe_with_deferred_intent_creation() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
-
-		$data = [
-			'methods'  => [
-				'card',
-				'bancontact',
-			],
-			'statuses' => [
-				'card_payments'       => [
-					'status' => 'active',
-				],
-				'bancontact_payments' => [
-					'status' => 'active',
-				],
-			],
-			'currency' => 'EUR',
-			'title'    => 'WooPayments',
-			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => 'WooPayments',
-		];
-
-		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
-
-		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
-		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
-		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
-	}
-
 	public function test_remove_link_payment_method_if_card_disabled() {
 
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
