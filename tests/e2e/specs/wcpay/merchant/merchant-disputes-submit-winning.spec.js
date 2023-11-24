@@ -120,11 +120,16 @@ describe( 'Disputes > Submit winning dispute', () => {
 			uiLoaded(),
 		] );
 
+		await new Promise( ( resolve ) => setTimeout( resolve, 10000 ) );
+
 		// If webhooks are not received, the dispute status won't be updated in the dispute list page resulting in test failure.
 		// Workaround - Open payment details page again and check dispute's status.
 		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
 		// Confirm dispute status is Won.
 		await page.waitForSelector( 'li.woocommerce-timeline-item' );
+		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
+			text: 'Dispute won! The bank ruled in your favor.',
+		} );
 	} );
 } );
