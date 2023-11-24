@@ -74,24 +74,27 @@ const getStripeFeeSectionUrl = ( country: string ): string => {
 	);
 };
 
-const getFeeDescriptionString = ( fee: BaseFee ): string => {
+const getFeeDescriptionString = (
+	fee: BaseFee,
+	discountRate: number
+): string => {
 	if ( fee.fixed_rate && fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%% + %2$s',
-			formatFee( fee.percentage_rate ),
-			formatCurrency( fee.fixed_rate, fee.currency )
+			formatFee( fee.percentage_rate * discountRate ),
+			formatCurrency( fee.fixed_rate * discountRate, fee.currency )
 		);
 	} else if ( fee.fixed_rate ) {
 		return sprintf(
 			'%2$s',
-			formatFee( fee.percentage_rate ),
-			formatCurrency( fee.fixed_rate, fee.currency )
+			formatFee( fee.percentage_rate * discountRate ),
+			formatCurrency( fee.fixed_rate * discountRate, fee.currency )
 		);
 	} else if ( fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%%',
-			formatFee( fee.percentage_rate ),
-			formatCurrency( fee.fixed_rate, fee.currency )
+			formatFee( fee.percentage_rate * discountRate ),
+			formatCurrency( fee.fixed_rate * discountRate, fee.currency )
 		);
 	}
 	return '';
@@ -109,19 +112,19 @@ export const formatMethodFeesTooltip = (
 	accountFees: FeeStructure
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
-	const currentBaseFee = getCurrentBaseFee( accountFees );
-	// If the current fee doesn't have a fixed or percentage rate, use the base fee's rate. Eg. when there is a promotional discount fee applied. Use this to calculate the total fee too.
-	const currentFeeWithBaseFallBack = currentBaseFee.percentage_rate
-		? currentBaseFee
-		: accountFees.base;
+
+	const discountFeeRate: number =
+		accountFees.discount.length && accountFees.discount[ 0 ].discount
+			? accountFees.discount[ 0 ].discount
+			: 1;
 
 	const total = {
 		percentage_rate:
-			currentFeeWithBaseFallBack.percentage_rate +
+			accountFees.base.percentage_rate +
 			accountFees.additional.percentage_rate +
 			accountFees.fx.percentage_rate,
 		fixed_rate:
-			currentFeeWithBaseFallBack.fixed_rate +
+			accountFees.base.fixed_rate +
 			accountFees.additional.fixed_rate +
 			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
@@ -136,14 +139,20 @@ export const formatMethodFeesTooltip = (
 			<div>
 				<div>Base fee</div>
 				<div>
-					{ getFeeDescriptionString( currentFeeWithBaseFallBack ) }
+					{ getFeeDescriptionString(
+						accountFees.base,
+						discountFeeRate
+					) }
 				</div>
 			</div>
 			{ hasFees( accountFees.additional ) ? (
 				<div>
 					<div>International payment method fee</div>
 					<div>
-						{ getFeeDescriptionString( accountFees.additional ) }
+						{ getFeeDescriptionString(
+							accountFees.additional,
+							discountFeeRate
+						) }
 					</div>
 				</div>
 			) : (
@@ -152,7 +161,12 @@ export const formatMethodFeesTooltip = (
 			{ hasFees( accountFees.fx ) ? (
 				<div>
 					<div>Foreign exchange fee</div>
-					<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
+					<div>
+						{ getFeeDescriptionString(
+							accountFees.fx,
+							discountFeeRate
+						) }
+					</div>
 				</div>
 			) : (
 				''
@@ -160,7 +174,7 @@ export const formatMethodFeesTooltip = (
 			<div>
 				<div>Total per transaction</div>
 				<div className={ 'wcpay-fees-tooltip__bold' }>
-					{ getFeeDescriptionString( total ) }
+					{ getFeeDescriptionString( total, discountFeeRate ) }
 				</div>
 			</div>
 			{ wcpaySettings &&
