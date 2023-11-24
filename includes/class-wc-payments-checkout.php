@@ -145,14 +145,8 @@ class WC_Payments_Checkout {
 			! has_block( 'woocommerce/checkout' )
 		) {
 			WC_Payments::get_gateway()->tokenization_script();
-			$script_handle = 'WCPAY_CHECKOUT';
-			$js_object     = 'wcpayConfig';
-			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-				$script_handle = 'wcpay-upe-checkout';
-				$js_object     = 'wcpay_upe_config';
-			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				$script_handle = 'wcpay-upe-checkout';
-			}
+			$script_handle = 'wcpay-upe-checkout';
+			$js_object     = 'wcpay_upe_config';
 			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
 			wp_enqueue_script( $script_handle );
 		}
