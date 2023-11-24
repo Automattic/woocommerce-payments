@@ -29,6 +29,7 @@ interface Props {
 		className?: string;
 		variant?: Button.Props[ 'variant' ];
 		url?: string;
+		urlTarget?: string;
 		onClick?: React.MouseEventHandler< HTMLAnchorElement >;
 	} >;
 	isDetailsView?: boolean;

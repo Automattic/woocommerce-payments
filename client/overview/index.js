@@ -153,6 +153,7 @@ const OverviewPage = () => {
 									label: strings.notice.actions.learnMore,
 									url:
 										'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/',
+									urlTarget: '_blank',
 								},
 						  ]
 						: []

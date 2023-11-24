@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { getPaymentSettingsUrl, isInTestMode } from 'utils';
+import { isInTestMode } from 'utils';
 import { TestModeNotice } from '../index';
 
 declare const global: {
