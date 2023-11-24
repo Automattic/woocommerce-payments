@@ -46,25 +46,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Split-UPE gateway is enabled
-	 */
-	public static function is_upe_split_enabled() {
-		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
-	}
-
-	/**
-	 * Checks for the requirements to have the split-UPE enabled.
-	 */
-	private static function is_upe_split_eligible() {
-		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		if ( empty( $account['capabilities']['sepa_debit_payments'] ) ) {
-			return true;
-		}
-
-		return 'active' !== $account['capabilities']['sepa_debit_payments'];
-	}
-
-	/**
 	 * Checks whether the UPE gateway is enabled
 	 *
 	 * @return bool
@@ -429,7 +410,7 @@ class WC_Payments_Features {
 		return array_filter(
 			[
 				'upe'                            => self::is_upe_enabled(),
-				'upeSplit'                       => self::is_upe_split_enabled(),
+				'upeSplit'                       => false,
 				'upeDeferred'                    => true,
 				'upeSettingsPreview'             => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),

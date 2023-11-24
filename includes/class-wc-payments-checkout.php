@@ -187,7 +187,7 @@ class WC_Payments_Checkout {
 			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isPreview'                      => is_preview(),
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
-			'isUPESplitEnabled'              => WC_Payments_Features::is_upe_split_enabled(),
+			'isUPESplitEnabled'              => false,
 			'isUPEDeferredEnabled'           => true,
 			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
 			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_cart_or_checkout(),
