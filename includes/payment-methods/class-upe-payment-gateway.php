@@ -274,52 +274,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Handle AJAX request for creating a payment intent for Stripe UPE.
-	 *
-	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
-	 */
-	public function create_payment_intent_ajax() {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Process_Payment_Exception(
-					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-					'wcpay_upe_intent_error'
-				);
-			}
-
-			// If paying from order, we need to get the total from the order instead of the cart.
-			$order_id    = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
-			$fingerprint = isset( $_POST['wcpay-fingerprint'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fingerprint'] ) ) : '';
-
-			$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id, true );
-
-			$response = $this->create_payment_intent( $enabled_payment_methods, $order_id, $fingerprint );
-
-			// Encrypt client secret before exposing it to the browser.
-			if ( $response['client_secret'] ) {
-				$response['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $response['client_secret'] );
-			}
-
-			if ( strpos( $response['id'], 'pi_' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
-				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'] );
-			}
-
-			wp_send_json_success( $response, 200 );
-		} catch ( Exception $e ) {
-			// Send back error so it can be displayed to the customer.
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
-					],
-				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
-			);
-		}
-	}
-
-	/**
 	 * Creates payment intent using current cart or order and store details.
 	 *
 	 * @param array    $displayed_payment_methods Array of enabled payment methods to display in payment element.
