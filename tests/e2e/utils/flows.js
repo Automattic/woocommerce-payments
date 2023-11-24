@@ -72,6 +72,12 @@ export const shopperWCP = {
 		} );
 	},
 
+	goToOrder: async ( orderId ) => {
+		await page.goto( SHOP_MY_ACCOUNT_PAGE + `view-order/${ orderId }`, {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
 	logout: async () => {
 		await page.goto( SHOP_MY_ACCOUNT_PAGE, {
 			waitUntil: 'networkidle0',
