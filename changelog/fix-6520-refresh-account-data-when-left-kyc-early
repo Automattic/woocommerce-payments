@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent merchants to access onboarding again after starting it in new flow

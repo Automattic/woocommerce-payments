@@ -8,6 +8,7 @@
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Paginated;
 use WCPay\Core\Server\Request\List_Transactions;
+use WCPay\Core\Server\Request\Update_Intention;
 
 // phpcs:disable
 class My_Request extends Request {
@@ -53,6 +54,10 @@ class Another_ThirdParty_Request extends WooPay_Request {
 	public function set_param_4( int $value ) {
 		$this->set_param( 'param_4', $value );
 	}
+}
+
+class Request_With_Id extends Update_Intention {
+
 }
 // phpcs:enable
 // phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
@@ -133,5 +138,22 @@ class WCPay_Core_Request_Test extends WCPAY_UnitTestCase {
 			],
 			$result
 		);
+	}
+
+	public function test_extension_works_with_ids() {
+		$intent_id = 'pi_XYZ';
+		$hook      = 'some_request_class_with_id';
+		$base      = Update_Intention::create( $intent_id );
+
+		add_filter(
+			$hook,
+			function( $base ) {
+				return Request_With_Id::extend( $base );
+			}
+		);
+
+		$filtered = $base->apply_filters( $hook );
+		$this->assertInstanceOf( Request_With_Id::class, $filtered );
+		$this->assertStringContainsString( $intent_id, $filtered->get_api() );
 	}
 }
