@@ -534,7 +534,7 @@ class WC_Payments_Account {
 		return [
 			'isEnabled'                   => $account['progressive_onboarding']['is_enabled'] ?? false,
 			'isComplete'                  => $account['progressive_onboarding']['is_complete'] ?? false,
-			'isNewFlowEnabled'            => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+			'isNewFlowEnabled'            => WC_Payments_Utils::should_use_new_onboarding_flow(),
 			'isEligibilityModalDismissed' => get_option( WC_Payments_Onboarding_Service::ONBOARDING_ELIGIBILITY_MODAL_OPTION, false ),
 		];
 	}
@@ -757,7 +757,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Redirect directly to onboarding page if come from WC Admin task and are in treatment mode.
+		// Redirect directly to onboarding page if come from WC Admin task.
 		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
 		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
 			$this->redirect_to_onboarding_flow_page();
@@ -1885,13 +1885,13 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects to the onboarding flow page if the Progressive Onboarding feature flag is enabled or in the experiment treatment mode.
+	 * Redirects to the onboarding flow page.
 	 * Also checks if the server is connected and try to connect it otherwise.
 	 *
 	 * @return void
 	 */
 	private function redirect_to_onboarding_flow_page() {
-		if ( ! WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
+		if ( ! WC_Payments_Utils::should_use_new_onboarding_flow() ) {
 			return;
 		}
 
