@@ -5,7 +5,7 @@ import config from 'config';
 /**
  * Internal dependencies
  */
-import { merchantWCP, uiLoaded } from '../../../utils';
+import { merchantWCP, uiLoaded, takeScreenshot } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 const {
@@ -120,7 +120,8 @@ describe( 'Disputes > Submit winning dispute', () => {
 			uiLoaded(),
 		] );
 
-		await new Promise( ( resolve ) => setTimeout( resolve, 10000 ) );
+		await evalAndClick( '#toplevel_page_wcpaydev a' );
+		await takeScreenshot( 'merchant-disputes-submit-winning-wcpaydev' );
 
 		// If webhooks are not received, the dispute status won't be updated in the dispute list page resulting in test failure.
 		// Workaround - Open payment details page again and check dispute's status.
