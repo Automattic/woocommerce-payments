@@ -9,6 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import {
 	Card,
+	CardBody,
 	CardHeader,
 	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
@@ -190,9 +191,9 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 			<ErrorBoundary>
 				{ isInstantDeposit ? (
 					// If instant deposit, show a message instead of the transactions list.
+					// Matching the components used in @woocommerce/components TableCard for consistent UI.
 					<Card>
 						<CardHeader>
-							{ /* Matching the components used in TableCard */ }
 							<Text size={ 16 } weight={ 600 } as="h2">
 								{ __(
 									'Deposit transactions',
@@ -200,6 +201,12 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 								) }
 							</Text>
 						</CardHeader>
+						<CardBody className="wcpay-deposit-overview--instant__transactions-list-message">
+							{ __(
+								`We're unable to show transaction history on instant deposits. Learn more`,
+								'woocommerce-payments'
+							) }
+						</CardBody>
 					</Card>
 				) : (
 					<TransactionsList depositId={ depositId } />
