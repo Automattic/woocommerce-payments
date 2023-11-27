@@ -231,3 +231,24 @@ exports[`Test mode notification Component is rendered correctly 14`] = `<div />`
 exports[`Test mode notification Component is rendered correctly 15`] = `<div />`;
 
 exports[`Test mode notification Component is rendered correctly 16`] = `<div />`;
+
+exports[`Test mode notification Returns right notice message without URL component 1`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        WooPayments is in test mode.
+         
+        
+      </span>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</div>
+`;
