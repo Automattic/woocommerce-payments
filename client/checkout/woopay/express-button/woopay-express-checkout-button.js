@@ -18,6 +18,7 @@ import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 import interpolateComponents from '@automattic/interpolate-components';
+import { appendRedirectionParams } from 'wcpay/checkout/woopay/utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -57,11 +58,9 @@ export const WoopayExpressCheckoutButton = ( {
 
 	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
 
-	const {
-		addToCart,
-		getProductData,
-		isAddToCartDisabled,
-	} = useExpressCheckoutProductHandler( api, isProductPage );
+	const { addToCart, getProductData } = useExpressCheckoutProductHandler(
+		api
+	);
 	const getProductDataRef = useRef( getProductData );
 	const addToCartRef = useRef( addToCart );
 
@@ -88,14 +87,64 @@ export const WoopayExpressCheckoutButton = ( {
 		}
 	}, [ isPreview, context ] );
 
-	const defaultOnClick = useCallback( ( event ) => {
-		// This will only be called if user clicks the button too quickly.
-		// It saves the event for later use.
-		initialOnClickEventRef.current = event;
-		// Set isLoadingRef to true to prevent multiple clicks.
-		isLoadingRef.current = true;
-		setIsLoading( true );
-	}, [] );
+	const canAddProductToCart = useCallback( () => {
+		if ( ! isProductPage ) {
+			return true;
+		}
+
+		const addToCartButton = document.querySelector(
+			'.single_add_to_cart_button'
+		);
+
+		if (
+			addToCartButton &&
+			( addToCartButton.disabled ||
+				addToCartButton.classList.contains( 'disabled' ) )
+		) {
+			if (
+				addToCartButton.classList.contains(
+					'wc-variation-is-unavailable'
+				)
+			) {
+				window.alert(
+					window?.wc_add_to_cart_variation_params
+						?.i18n_unavailable_text ||
+						__(
+							'Sorry, this product is unavailable. Please choose a different combination.',
+							'woocommerce-payments'
+						)
+				);
+			} else {
+				window.alert(
+					__(
+						'Please select your product options before proceeding.',
+						'woocommerce-payments'
+					)
+				);
+			}
+
+			return false;
+		}
+
+		return true;
+	}, [ isProductPage ] );
+
+	const defaultOnClick = useCallback(
+		( event ) => {
+			event?.preventDefault();
+
+			if ( ! canAddProductToCart() ) {
+				return;
+			}
+			// This will only be called if user clicks the button too quickly.
+			// It saves the event for later use.
+			initialOnClickEventRef.current = event;
+			// Set isLoadingRef to true to prevent multiple clicks.
+			isLoadingRef.current = true;
+			setIsLoading( true );
+		},
+		[ canAddProductToCart ]
+	);
 
 	const onClickFallback = useCallback(
 		// OTP flow
@@ -113,19 +162,11 @@ export const WoopayExpressCheckoutButton = ( {
 				}
 			);
 
-			if ( isProductPage ) {
-				if ( isAddToCartDisabled ) {
-					alert(
-						window.wc_add_to_cart_variation_params
-							?.i18n_make_a_selection_text ||
-							__(
-								'Please select all required options to continue.',
-								'woocommerce-payments'
-							)
-					);
-					return;
-				}
+			if ( ! canAddProductToCart() ) {
+				return;
+			}
 
+			if ( isProductPage ) {
 				const productData = getProductDataRef.current();
 				if ( ! productData ) {
 					return;
@@ -151,9 +192,9 @@ export const WoopayExpressCheckoutButton = ( {
 			api,
 			context,
 			emailSelector,
-			isAddToCartDisabled,
 			isPreview,
 			isProductPage,
+			canAddProductToCart,
 		]
 	);
 
@@ -200,16 +241,20 @@ export const WoopayExpressCheckoutButton = ( {
 					return;
 				}
 
-				// Set isLoadingRef to true to prevent multiple clicks.
-				isLoadingRef.current = true;
-				setIsLoading( true );
-
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.WOOPAY_BUTTON_CLICK,
 					{
 						source: context,
 					}
 				);
+
+				if ( ! canAddProductToCart() ) {
+					return;
+				}
+
+				// Set isLoadingRef to true to prevent multiple clicks.
+				isLoadingRef.current = true;
+				setIsLoading( true );
 
 				if ( isProductPage ) {
 					const productData = getProductDataRef.current();
@@ -296,6 +341,7 @@ export const WoopayExpressCheckoutButton = ( {
 		isPreview,
 		listenForCartChanges,
 		onClickFallback,
+		canAddProductToCart,
 	] );
 
 	useEffect( () => {
@@ -331,7 +377,9 @@ export const WoopayExpressCheckoutButton = ( {
 			}
 
 			if ( isSessionDataSuccess ) {
-				window.location.href = event.data.value.redirect_url;
+				window.location.href = appendRedirectionParams(
+					event.data.value.redirect_url
+				);
 			} else if ( isSessionDataError ) {
 				onClickFallback( null );
 

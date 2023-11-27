@@ -12,6 +12,7 @@ use WC_Payments_Account;
 use WC_Payments_API_Abstract_Intention;
 use WC_Payments_API_Charge;
 use WC_Payments_API_Payment_Intention;
+use WC_Payments_Explicit_Price_Formatter;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WC_Payments_Utils;
@@ -402,6 +403,44 @@ class OrderService {
 	 */
 	public function add_note( int $order_id, string $note ): int {
 		return $this->get_order( $order_id )->add_order_note( $note );
+	}
+
+	/**
+	 * Adds a note to order when rate limiter is triggered.
+	 *
+	 * @param int $order_id ID of the order.
+	 *
+	 * @return int Note ID.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function add_rate_limiter_note( int $order_id ) {
+		$order = $this->get_order( $order_id );
+
+		$wc_price       = $this->legacy_proxy->call_function( 'wc_price', $order->get_total(), [ 'currency' => $order->get_currency() ] );
+		$explicit_price = $this->legacy_proxy->call_static(
+			WC_Payments_Explicit_Price_Formatter::class,
+			'get_explicit_price',
+			$wc_price,
+			$order
+		);
+
+		$note = sprintf(
+			$this->legacy_proxy->call_static(
+				WC_Payments_Utils::class,
+				'esc_interpolated_html',
+				/* translators: %1: the failed payment amount */
+				__(
+					'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.',
+					'woocommerce-payments'
+				),
+				[
+					'strong' => '<strong>',
+				]
+			),
+			$explicit_price
+		);
+
+		return $order->add_order_note( $note );
 	}
 
 	/**

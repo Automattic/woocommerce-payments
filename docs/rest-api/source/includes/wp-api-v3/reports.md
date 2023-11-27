@@ -155,6 +155,9 @@ Fetch a detailed overview of authorizations.
 
 ### Optional parameters
 
+- `date_before`: Filter authorizations before this date.
+- `date_after`: Filter authorizations after this date. If it's not provided the default it will be 7 days before today.
+- `date_between`: Filter authorizations between these dates.
 - `order_id`: Filter authorizations based on the associated order ID.
 - `deposit_id`: Filter authorizations based on the associated deposit ID.
 - `customer_email`: Filter authorizations based on the customer email.

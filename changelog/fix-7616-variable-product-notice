@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Display notice when clicking the WooPay button if variable product selection is incomplete.

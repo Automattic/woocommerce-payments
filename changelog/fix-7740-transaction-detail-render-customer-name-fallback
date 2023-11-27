@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+When rendering customer reference in transaction details, fallback to order data.
