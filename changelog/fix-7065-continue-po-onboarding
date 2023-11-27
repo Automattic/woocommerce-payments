@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Allow Gradual signup accounts to continue with the Gradual KYC after abandoning it
