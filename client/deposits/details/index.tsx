@@ -212,12 +212,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 								),
 								components: {
 									learnMoreLink: (
-										<ExternalLink
-											href={
-												// TODO: Update link to point to the correct page once it's ready.
-												'https://woo.com/document/woopayments/deposits/instant-deposits/'
-											}
-										/>
+										<ExternalLink href="https://woo.com/document/woopayments/deposits/instant-deposits/" />
 									),
 								},
 							} ) }
