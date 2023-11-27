@@ -46,23 +46,21 @@ const placeOrderWithCurrency = async ( currency ) => {
 	}
 };
 
-const getOrderTotalTextForCurrency = async ( orderId ) => {
+const getOrderTotalTextForOrder = async ( orderId ) => {
 	return await page.$$eval(
 		ORDER_HISTORY_ORDER_ROW_SELECTOR,
-		( rows, currentOrderId ) => {
-			const orderSelector = `${ ORDER_HISTORY_ORDER_ROW_NUMBER_COL_SELECTOR } a[href*="view-order/${ currentOrderId }/"]`;
+		( rows, currentOrderId, orderNumberColSelector, totalColSelector ) => {
+			const orderSelector = `${ orderNumberColSelector } a[href*="view-order/${ currentOrderId }/"]`;
 			return rows
 				.filter( ( row ) => row.querySelector( orderSelector ) )
 				.map( ( row ) =>
-					row
-						.querySelector(
-							ORDER_HISTORY_ORDER_ROW_TOTAL_COL_SELECTOR
-						)
-						?.textContent.trim()
+					row.querySelector( totalColSelector )?.textContent.trim()
 				)
 				.find( ( text ) => text !== null );
 		},
-		orderId
+		orderId,
+		ORDER_HISTORY_ORDER_ROW_NUMBER_COL_SELECTOR,
+		ORDER_HISTORY_ORDER_ROW_TOTAL_COL_SELECTOR
 	);
 };
 
@@ -122,9 +120,9 @@ describe( 'Shopper Multi-Currency checkout', () => {
 		it( 'should show the correct currency in the order history table', async () => {
 			await shopperWCP.goToOrders();
 
-			for ( const currency of Object.values( currenciesOrders ) ) {
-				const orderTotalText = await getOrderTotalTextForCurrency(
-					currency
+			for ( const currency in currenciesOrders ) {
+				const orderTotalText = await getOrderTotalTextForOrder(
+					currenciesOrders[ currency ]
 				);
 				expect( orderTotalText ).toMatch( new RegExp( currency ) );
 			}
