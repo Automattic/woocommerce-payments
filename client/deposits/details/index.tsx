@@ -37,8 +37,10 @@ import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 import { CachedDeposit } from 'wcpay/types/deposits';
 
-const Status = ( { status }: { status: string } ): JSX.Element => (
-	// Re-purpose order status indicator for deposit status.
+/**
+ * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
+ */
+const Status: React.FC< { status: string } > = ( { status } ) => (
 	<OrderStatus order={ { status } } orderStatusMap={ displayStatus } />
 );
 
