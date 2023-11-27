@@ -42,17 +42,21 @@ const Status = ( { status }: { status: string } ): JSX.Element => (
 	<OrderStatus order={ { status } } orderStatusMap={ displayStatus } />
 );
 
-// Custom SummaryNumber with custom value className reusing @woocommerce/components styles.
-const SummaryItem = ( {
-	label,
-	value,
-	valueClass,
-	detail,
-}: {
+interface SummaryItemProps {
 	label: string;
 	value: string | JSX.Element;
 	valueClass?: string | false;
 	detail?: string;
+}
+
+/**
+ * A custom SummaryNumber with custom value className, reusing @woocommerce/components styles.
+ */
+const SummaryItem: React.FC< SummaryItemProps > = ( {
+	label,
+	value,
+	valueClass,
+	detail,
 } ) => (
 	<li className="woocommerce-summary__item-container">
 		<div className="woocommerce-summary__item">
