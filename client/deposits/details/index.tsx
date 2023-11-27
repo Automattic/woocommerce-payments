@@ -65,15 +65,15 @@ const SummaryItem = ( {
 	</li>
 );
 
-export const DepositOverview = ( {
-	depositId,
-}: {
-	depositId: string;
-} ): JSX.Element => {
-	const { deposit = {} as CachedDeposit, isLoading } = useDeposit(
-		depositId
-	);
+interface DepositOverviewProps {
+	deposit: CachedDeposit;
+	isLoading: boolean;
+}
 
+export const DepositOverview: React.FC< DepositOverviewProps > = ( {
+	deposit,
+	isLoading,
+} ) => {
 	const depositDateLabel = deposit.automatic
 		? __( 'Deposit date', 'woocommerce-payments' )
 		: __( 'Instant deposit date', 'woocommerce-payments' );
@@ -160,20 +160,30 @@ export const DepositOverview = ( {
 	);
 };
 
-export const DepositDetails = ( {
+interface DepositDetailsProps {
+	query: {
+		id: string;
+	};
+}
+
+export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 	query: { id: depositId },
-}: {
-	query: { id: string };
-} ): JSX.Element => (
-	<Page>
-		<TestModeNotice topic={ topics.depositDetails } />
-		<ErrorBoundary>
-			<DepositOverview depositId={ depositId } />
-		</ErrorBoundary>
-		<ErrorBoundary>
-			<TransactionsList depositId={ depositId } />
-		</ErrorBoundary>
-	</Page>
-);
+} ) => {
+	const { deposit = {} as CachedDeposit, isLoading } = useDeposit(
+		depositId
+	);
+
+	return (
+		<Page>
+			<TestModeNotice topic={ topics.depositDetails } />
+			<ErrorBoundary>
+				<DepositOverview deposit={ deposit } isLoading={ isLoading } />
+			</ErrorBoundary>
+			<ErrorBoundary>
+				<TransactionsList depositId={ depositId } />
+			</ErrorBoundary>
+		</Page>
+	);
+};
 
 export default DepositDetails;
