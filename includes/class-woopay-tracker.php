@@ -278,8 +278,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$identity = $this->tracks_get_identity( $user->ID );
 		$site_url = get_option( 'siteurl' );
 
-		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ): '';
 		$properties['blog_url']  = $site_url;
 		$properties['blog_id']   = \Jetpack_Options::get_option( 'id' );
 		$properties['user_lang'] = $user->get( 'WPLANG' );
@@ -290,7 +289,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		// Add client's user agent to the event properties.
 		if ( !empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
-			$properties['_via_ua']  = $_SERVER['HTTP_USER_AGENT'];
+			$properties['_via_ua'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
 		}
 
 		$blog_details = [

@@ -38,9 +38,6 @@ jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
 jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
 global.fetch = jest.fn( () => Promise.resolve( { json: () => ( {} ) } ) );
-global.window.wc_add_to_cart_variation_params = {
-	i18n_make_a_selection_text: 'Mock text',
-};
 
 describe( 'WoopayExpressCheckoutButton', () => {
 	const buttonSettings = {
@@ -62,7 +59,6 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		};
 		useExpressCheckoutProductHandler.mockImplementation( () => ( {
 			addToCart: mockAddToCart,
-			isAddToCartDisabled: false,
 		} ) );
 	} );
 
@@ -214,14 +210,20 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			} );
 		} );
 
-		test( 'should shown an alert when clicking the button when add to cart button is disabled', () => {
+		test( 'should show an alert when clicking the button when add to cart button is disabled', () => {
 			getConfig.mockImplementation( ( v ) => {
 				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
 			} );
 			useExpressCheckoutProductHandler.mockImplementation( () => ( {
 				addToCart: mockAddToCart,
-				isAddToCartDisabled: true,
 			} ) );
+
+			// Add a disabled add to cart button to the DOM.
+			const addToCartButton = document.createElement( 'button' );
+			addToCartButton.classList.add( 'single_add_to_cart_button' );
+			addToCartButton.classList.add( 'disabled' );
+			addToCartButton.classList.add( 'wc-variation-selection-needed' );
+			document.body.appendChild( addToCartButton );
 
 			render(
 				<WoopayExpressCheckoutButton
@@ -240,9 +242,10 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			userEvent.click( expressButton );
 
 			expect( window.alert ).toBeCalledWith(
-				window.wc_add_to_cart_variation_params
-					.i18n_make_a_selection_text
+				'Please select your product options before proceeding.'
 			);
+
+			document.body.removeChild( addToCartButton );
 		} );
 
 		test( 'call `addToCart` and `expressCheckoutIframe` on express button click on product page', async () => {
@@ -252,7 +255,6 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			useExpressCheckoutProductHandler.mockImplementation( () => ( {
 				addToCart: mockAddToCart,
 				getProductData: jest.fn().mockReturnValue( {} ),
-				isAddToCartDisabled: false,
 			} ) );
 			render(
 				<WoopayExpressCheckoutButton
@@ -288,7 +290,6 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			useExpressCheckoutProductHandler.mockImplementation( () => ( {
 				addToCart: mockAddToCart,
 				getProductData: jest.fn().mockReturnValue( false ),
-				isAddToCartDisabled: false,
 			} ) );
 			render(
 				<WoopayExpressCheckoutButton

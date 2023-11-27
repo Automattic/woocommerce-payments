@@ -534,7 +534,7 @@ class WC_Payments_Account {
 		return [
 			'isEnabled'                   => $account['progressive_onboarding']['is_enabled'] ?? false,
 			'isComplete'                  => $account['progressive_onboarding']['is_complete'] ?? false,
-			'isNewFlowEnabled'            => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+			'isNewFlowEnabled'            => WC_Payments_Utils::should_use_new_onboarding_flow(),
 			'isEligibilityModalDismissed' => get_option( WC_Payments_Onboarding_Service::ONBOARDING_ELIGIBILITY_MODAL_OPTION, false ),
 		];
 	}
@@ -757,7 +757,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Redirect directly to onboarding page if come from WC Admin task and are in treatment mode.
+		// Redirect directly to onboarding page if come from WC Admin task.
 		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
 		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
 			$this->redirect_to_onboarding_flow_page();
@@ -899,6 +899,14 @@ class WC_Payments_Account {
 		// We're not in the onboarding flow page, don't redirect.
 		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			return false;
+		}
+
+		// We check it here after refreshing the cache, because merchant might have clicked back in browser (after Stripe KYC).
+		// That will mean that no redirect from Stripe happened and user might be able to go through onboarding again if no webhook processed yet.
+		// That might cause issues if user selects dev onboarding after live one.
+		// Shouldn't be called with force disconnected option enabled, otherwise we'll get current account data.
+		if ( ! WC_Payments_Utils::force_disconnected_enabled() ) {
+			$this->refresh_account_data();
 		}
 
 		// Don't redirect merchants that have no Stripe account connected.
@@ -1877,13 +1885,13 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects to the onboarding flow page if the Progressive Onboarding feature flag is enabled or in the experiment treatment mode.
+	 * Redirects to the onboarding flow page.
 	 * Also checks if the server is connected and try to connect it otherwise.
 	 *
 	 * @return void
 	 */
 	private function redirect_to_onboarding_flow_page() {
-		if ( ! WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
+		if ( ! WC_Payments_Utils::should_use_new_onboarding_flow() ) {
 			return;
 		}
 
