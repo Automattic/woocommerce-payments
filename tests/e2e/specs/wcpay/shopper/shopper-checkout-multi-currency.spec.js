@@ -12,6 +12,16 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 import { shopperWCP } from '../../../utils';
 
+const ORDER_RECEIVED_ORDER_TOTAL_SELECTOR =
+	'.woocommerce-order-overview__total';
+const ORDER_HISTORY_ORDER_ROW_SELECTOR = '.woocommerce-orders-table__row';
+const ORDER_HISTORY_ORDER_ROW_NUMBER_COL_SELECTOR =
+	'.woocommerce-orders-table__cell-order-number';
+const ORDER_HISTORY_ORDER_ROW_TOTAL_COL_SELECTOR =
+	'.woocommerce-orders-table__cell-order-total';
+const ORDER_DETAILS_ORDER_TOTAL_SELECTOR =
+	'.woocommerce-table--order-details tfoot tr:last-child td';
+
 const placeOrderWithCurrency = async ( currency ) => {
 	try {
 		await setupProductCheckout(
@@ -34,6 +44,26 @@ const placeOrderWithCurrency = async ( currency ) => {
 		);
 		throw error;
 	}
+};
+
+const getOrderTotalTextForCurrency = async ( orderId ) => {
+	return await page.$$eval(
+		ORDER_HISTORY_ORDER_ROW_SELECTOR,
+		( rows, currentOrderId ) => {
+			const orderSelector = `${ ORDER_HISTORY_ORDER_ROW_NUMBER_COL_SELECTOR } a[href*="view-order/${ currentOrderId }/"]`;
+			return rows
+				.filter( ( row ) => row.querySelector( orderSelector ) )
+				.map( ( row ) =>
+					row
+						.querySelector(
+							ORDER_HISTORY_ORDER_ROW_TOTAL_COL_SELECTOR
+						)
+						?.textContent.trim()
+				)
+				.find( ( text ) => text !== null );
+		},
+		orderId
+	);
 };
 
 describe( 'Shopper Multi-Currency checkout', () => {
@@ -62,7 +92,7 @@ describe( 'Shopper Multi-Currency checkout', () => {
 				// should show correct currency in order received page
 				expect(
 					await page.$eval(
-						'.woocommerce-order-overview__total',
+						ORDER_RECEIVED_ORDER_TOTAL_SELECTOR,
 						( el ) => el.textContent
 					)
 				).toMatch( new RegExp( testCurrency ) );
@@ -80,7 +110,7 @@ describe( 'Shopper Multi-Currency checkout', () => {
 			it( 'should show the correct currency in the order page for the order', async () => {
 				expect(
 					await page.$eval(
-						'.woocommerce-table--order-details tfoot tr:last-child td',
+						ORDER_DETAILS_ORDER_TOTAL_SELECTOR,
 						( el ) => el.textContent
 					)
 				).toMatch( new RegExp( testCurrency ) );
@@ -92,26 +122,10 @@ describe( 'Shopper Multi-Currency checkout', () => {
 		it( 'should show the correct currency in the order history table', async () => {
 			await shopperWCP.goToOrders();
 
-			for ( const currency in currenciesOrders ) {
-				const orderTotalText = await page.$$eval(
-					'.woocommerce-orders-table__row',
-					( rows, orderId ) => {
-						const orderSelector = `.woocommerce-orders-table__cell-order-number a[href*="view-order/${ orderId }/"]`;
-						for ( const row of rows ) {
-							if ( row.querySelector( orderSelector ) ) {
-								const totalCell = row.querySelector(
-									'.woocommerce-orders-table__cell-order-total'
-								);
-								return totalCell
-									? totalCell.textContent.trim()
-									: null;
-							}
-						}
-						return null;
-					},
-					currenciesOrders[ currency ]
+			for ( const currency of Object.values( currenciesOrders ) ) {
+				const orderTotalText = await getOrderTotalTextForCurrency(
+					currency
 				);
-
 				expect( orderTotalText ).toMatch( new RegExp( currency ) );
 			}
 		} );
