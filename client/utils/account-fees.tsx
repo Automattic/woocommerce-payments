@@ -115,7 +115,7 @@ export const formatMethodFeesTooltip = (
 
 	const discountFeeRate: number =
 		accountFees.discount.length && accountFees.discount[ 0 ].discount
-			? accountFees.discount[ 0 ].discount
+			? 1 - accountFees.discount[ 0 ].discount
 			: 1;
 
 	const total = {
