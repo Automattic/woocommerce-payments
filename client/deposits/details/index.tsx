@@ -11,6 +11,7 @@ import {
 	Card,
 	CardBody,
 	CardHeader,
+	ExternalLink,
 	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
 	__experimentalText as Text,
@@ -34,6 +35,7 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 import { CachedDeposit } from 'wcpay/types/deposits';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const Status = ( { status }: { status: string } ): JSX.Element => (
 	// Re-purpose order status indicator for deposit status.
@@ -202,10 +204,23 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 							</Text>
 						</CardHeader>
 						<CardBody className="wcpay-deposit-overview--instant__transactions-list-message">
-							{ __(
-								`We're unable to show transaction history on instant deposits. Learn more`,
-								'woocommerce-payments'
-							) }
+							{ interpolateComponents( {
+								/* Translators: {{learnMoreLink}} is a link element (<a/>). */
+								mixedString: __(
+									`We're unable to show transaction history on instant deposits. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
+									'woocommerce-payments'
+								),
+								components: {
+									learnMoreLink: (
+										<ExternalLink
+											href={
+												// TODO: Update link to point to the correct page once it's ready.
+												'https://woo.com/document/woopayments/deposits/instant-deposits/'
+											}
+										/>
+									),
+								},
+							} ) }
 						</CardBody>
 					</Card>
 				) : (
