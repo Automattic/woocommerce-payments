@@ -57,17 +57,14 @@ describe( 'Deposit overview', () => {
 
 	test( 'renders automatic deposit correctly', () => {
 		const { container: overview } = render(
-			<DepositOverview deposit={ mockDeposit } isLoading={ false } />
+			<DepositOverview deposit={ mockDeposit } />
 		);
 		expect( overview ).toMatchSnapshot();
 	} );
 
 	test( 'renders instant deposit correctly', () => {
 		const { container: overview } = render(
-			<DepositOverview
-				deposit={ { ...mockDeposit, automatic: false } }
-				isLoading={ false }
-			/>
+			<DepositOverview deposit={ { ...mockDeposit, automatic: false } } />
 		);
 		expect( overview ).toMatchSnapshot();
 	} );

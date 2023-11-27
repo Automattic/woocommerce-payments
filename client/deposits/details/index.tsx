@@ -76,12 +76,10 @@ const SummaryItem = ( {
 
 interface DepositOverviewProps {
 	deposit: CachedDeposit;
-	isLoading: boolean;
 }
 
 export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 	deposit,
-	isLoading,
 } ) => {
 	const depositDateLabel = deposit.automatic
 		? __( 'Deposit date', 'woocommerce-payments' )
@@ -103,7 +101,6 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 		/>
 	);
 
-	if ( isLoading ) return <SummaryListPlaceholder numberOfItems={ 2 } />;
 	return (
 		<div className="wcpay-deposit-overview">
 			{ deposit.automatic ? (
@@ -178,18 +175,21 @@ interface DepositDetailsProps {
 export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 	query: { id: depositId },
 } ) => {
-	const { deposit = {} as CachedDeposit, isLoading } = useDeposit(
-		depositId
-	);
+	const { deposit, isLoading } = useDeposit( depositId );
 
-	const isInstantDeposit = deposit && ! deposit.automatic;
+	const isInstantDeposit = ! isLoading && deposit && ! deposit.automatic;
 
 	return (
 		<Page>
 			<TestModeNotice topic={ topics.depositDetails } />
 			<ErrorBoundary>
-				<DepositOverview deposit={ deposit } isLoading={ isLoading } />
+				{ isLoading ? (
+					<SummaryListPlaceholder numberOfItems={ 2 } />
+				) : (
+					<DepositOverview deposit={ deposit } />
+				) }
 			</ErrorBoundary>
+
 			<ErrorBoundary>
 				{ isInstantDeposit ? (
 					// If instant deposit, show a message instead of the transactions list.
