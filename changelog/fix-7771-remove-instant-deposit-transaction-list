@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Replace the deposits overview transactions list with a "transaction history is unavailable for instant deposits" message.
