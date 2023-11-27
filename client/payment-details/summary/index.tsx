@@ -11,8 +11,6 @@ import {
 	CardFooter,
 	CardDivider,
 	Flex,
-	DropdownMenu,
-	MenuItem,
 } from '@wordpress/components';
 import moment from 'moment';
 import React, { useContext } from 'react';
@@ -227,18 +225,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.currency,
 		balance.currency
 	);
-
-	const dropDownButtons = [
-		{
-			icon: moreVertical,
-			title: __( 'Refund in full', 'woocommerce-payments' ),
-			onClick: () => alert( 'Refund in full' ),
-		},
-		// {
-		// 	title: __( 'Partial refund', 'woocommerce-payments' ),
-		// 	onClick: () => alert( 'Partial refund' ),
-		// },
-	];
 
 	return (
 		<Card>
