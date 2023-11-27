@@ -20,7 +20,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
 		'_wcpay_feature_upe'                      => 'upe',
-		'_wcpay_feature_upe_split'                => 'upeSplit',
 		'_wcpay_feature_upe_settings_preview'     => 'upeSettingsPreview',
 		'_wcpay_feature_customer_multi_currency'  => 'multiCurrency',
 		'_wcpay_feature_documents'                => 'documents',
@@ -241,19 +240,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		);
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
 		$this->assertFalse( WC_Payments_Features::is_woopay_express_checkout_enabled() );
-	}
-
-	public function test_deferred_upe_enabled_with_sepa() {
-		$this->mock_cache->method( 'get' )->willReturn(
-			[
-				'capabilities'                            => [ 'sepa_debit_payments' => 'active' ],
-				'is_deferred_intent_creation_upe_enabled' => true,
-			]
-		);
-
-		$this->assertTrue( WC_Payments_Features::is_upe_enabled() );
-		$this->assertFalse( WC_Payments_Features::is_upe_legacy_enabled() );
-		$this->assertTrue( WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
 	public function test_is_wcpay_frt_review_feature_active_returns_true() {
