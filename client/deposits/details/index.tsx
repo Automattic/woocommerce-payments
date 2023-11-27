@@ -27,15 +27,15 @@ import classNames from 'classnames';
 /**
  * Internal dependencies.
  */
-import { useDeposit } from 'wcpay/data';
-import { displayStatus } from '../strings';
+import type { CachedDeposit } from 'types/deposits';
+import { useDeposit } from 'data';
 import TransactionsList from 'transactions/list';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import { displayStatus } from '../strings';
 import './style.scss';
-import { CachedDeposit } from 'wcpay/types/deposits';
 
 /**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
