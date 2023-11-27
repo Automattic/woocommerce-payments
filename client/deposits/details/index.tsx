@@ -21,6 +21,7 @@ import {
 	SummaryList,
 	OrderStatus,
 } from '@woocommerce/components';
+import interpolateComponents from '@automattic/interpolate-components';
 import classNames from 'classnames';
 
 /**
@@ -35,7 +36,6 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 import { CachedDeposit } from 'wcpay/types/deposits';
-import interpolateComponents from '@automattic/interpolate-components';
 
 const Status = ( { status }: { status: string } ): JSX.Element => (
 	// Re-purpose order status indicator for deposit status.
