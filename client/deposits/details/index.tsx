@@ -7,7 +7,13 @@ import React from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
-import { Card } from '@wordpress/components';
+import {
+	Card,
+	CardHeader,
+	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
+	__experimentalText as Text,
+} from '@wordpress/components';
 import {
 	SummaryListPlaceholder,
 	SummaryList,
@@ -173,6 +179,8 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 		depositId
 	);
 
+	const isInstantDeposit = deposit && ! deposit.automatic;
+
 	return (
 		<Page>
 			<TestModeNotice topic={ topics.depositDetails } />
@@ -180,7 +188,22 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 				<DepositOverview deposit={ deposit } isLoading={ isLoading } />
 			</ErrorBoundary>
 			<ErrorBoundary>
-				<TransactionsList depositId={ depositId } />
+				{ isInstantDeposit ? (
+					// If instant deposit, show a message instead of the transactions list.
+					<Card>
+						<CardHeader>
+							{ /* Matching the components used in TableCard */ }
+							<Text size={ 16 } weight={ 600 } as="h2">
+								{ __(
+									'Deposit transactions',
+									'woocommerce-payments'
+								) }
+							</Text>
+						</CardHeader>
+					</Card>
+				) : (
+					<TransactionsList depositId={ depositId } />
+				) }
 			</ErrorBoundary>
 		</Page>
 	);
