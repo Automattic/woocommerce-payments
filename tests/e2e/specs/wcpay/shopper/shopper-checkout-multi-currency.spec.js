@@ -13,19 +13,27 @@ import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 import { shopperWCP } from '../../../utils';
 
 const placeOrderWithCurrency = async ( currency ) => {
-	await setupProductCheckout(
-		config.get( 'addresses.customer.billing' ),
-		[ [ config.get( 'products.simple.name' ), 1 ] ],
-		currency
-	);
-	const card = config.get( 'cards.basic' );
-	await fillCardDetails( page, card );
-	await shopper.placeOrder();
-	await expect( page ).toMatch( 'Order received' );
+	try {
+		await setupProductCheckout(
+			config.get( 'addresses.customer.billing' ),
+			[ [ config.get( 'products.simple.name' ), 1 ] ],
+			currency
+		);
+		const card = config.get( 'cards.basic' );
+		await fillCardDetails( page, card );
+		await shopper.placeOrder();
+		await expect( page ).toMatch( 'Order received' );
 
-	const url = await page.url();
-	// Extracting the order ID from the URL
-	return url.match( /\/order-received\/(\d+)\// )[ 1 ];
+		const url = await page.url();
+		return url.match( /\/order-received\/(\d+)\// )[ 1 ];
+	} catch ( error ) {
+		// eslint-disable-next-line no-console
+		console.error(
+			`Error placing order with currency ${ currency }: `,
+			error
+		);
+		throw error;
+	}
 };
 
 describe( 'Shopper Multi-Currency checkout', () => {
