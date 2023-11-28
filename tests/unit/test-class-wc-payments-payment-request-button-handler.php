@@ -494,7 +494,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_product_has_trial_and_needs_shipping() {
 		$mock_product = $this->createMock( WC_Subscriptions_Product::class );
-		$this->assertFalse( $this->pr->product_has_trial_and_needs_shipping( $mock_product ) );
+		$this->assertFalse( $this->pr->is_invalid_subscription_product( $mock_product ) );
 
 		WC_Subscriptions_Synchroniser::$is_product_synced  = true;
 		WC_Subscriptions_Synchroniser::$is_payment_upfront = false;
@@ -503,18 +503,18 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			->method( 'needs_shipping' )
 			->willReturn( true );
 
-		$this->assertTrue( $this->pr->product_has_trial_and_needs_shipping( $mock_product ) );
+		$this->assertTrue( $this->pr->is_invalid_subscription_product( $mock_product ) );
 
 		WC_Subscriptions_Synchroniser::$is_product_synced  = true;
 		WC_Subscriptions_Synchroniser::$is_payment_upfront = true;
 
-		$this->assertFalse( $this->pr->product_has_trial_and_needs_shipping( $mock_product ) );
+		$this->assertFalse( $this->pr->is_invalid_subscription_product( $mock_product ) );
 
 		WC_Subscriptions_Product::$get_trial_length        = 1;
 		WC_Subscriptions_Synchroniser::$is_product_synced  = false;
 		WC_Subscriptions_Synchroniser::$is_payment_upfront = true;
 
-		$this->assertTrue( $this->pr->product_has_trial_and_needs_shipping( $mock_product ) );
+		$this->assertTrue( $this->pr->is_invalid_subscription_product( $mock_product ) );
 
 		$mock_virtual = $this->createMock( WC_Subscriptions_Product::class );
 		$mock_virtual
@@ -522,7 +522,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			->method( 'needs_shipping' )
 			->willReturn( false );
 
-		$this->assertfalse( $this->pr->product_has_trial_and_needs_shipping( $mock_virtual ) );
+		$this->assertfalse( $this->pr->is_invalid_subscription_product( $mock_virtual ) );
 	}
 
 	private function create_mock_subscription( $type ) {
