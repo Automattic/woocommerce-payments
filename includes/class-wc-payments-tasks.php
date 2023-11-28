@@ -7,6 +7,7 @@
 
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\TaskLists;
 use WooCommerce\Payments\Tasks\WC_Payments_Task_Disputes;
+use WooCommerce\Payments\Tasks\WC_Payments_Task_Refund_Policy;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -22,8 +23,10 @@ class WC_Payments_Tasks {
 	 */
 	public static function init() {
 		include_once WCPAY_ABSPATH . 'includes/admin/tasks/class-wc-payments-task-disputes.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/tasks/class-wc-payments-task-refund-policy.php';
 
 		add_action( 'init', [ __CLASS__, 'add_task_disputes_need_response' ] );
+		add_action( 'init', [ __CLASS__, 'add_task_setup_refund_policy' ] );
 	}
 
 	/**
@@ -37,5 +40,13 @@ class WC_Payments_Tasks {
 
 		// 'extended' = 'Things to do next' task list on WooCommerce > Home.
 		TaskLists::add_task( 'extended', new WC_Payments_Task_Disputes() );
+	}
+
+	/**
+	 * Adds a task to the WC 'Things to do next' task list the if disputes awaiting response.
+	 */
+	public static function add_task_setup_refund_policy() {
+		// 'extended' = 'Things to do next' task list on WooCommerce > Home.
+		TaskLists::add_task( 'extended', new WC_Payments_Task_Refund_Policy() );
 	}
 }
