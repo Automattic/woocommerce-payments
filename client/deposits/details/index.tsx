@@ -218,7 +218,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 								),
 								components: {
 									learnMoreLink: (
-										<ExternalLink href="https://woo.com/document/woopayments/deposits/instant-deposits/" />
+										<ExternalLink href="https://woo.com/document/woopayments/deposits/instant-deposits/#transactions" />
 									),
 								},
 							} ) }
