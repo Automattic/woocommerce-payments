@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-When rendering customer reference on transaction details page, handle case with name being not provided in the order.
