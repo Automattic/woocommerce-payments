@@ -28,6 +28,12 @@ describe( 'Admin Multi-Currency', () => {
 			waitUntil: 'networkidle0',
 		} );
 		await uiLoaded();
+
+		const closeWelcomeModal = await page.$( 'button[aria-label="Close"]' );
+		if ( closeWelcomeModal ) {
+			await closeWelcomeModal.click();
+		}
+
 		await page.click( 'button[aria-label="Add block"]' );
 
 		const searchInput = await page.waitForSelector(
