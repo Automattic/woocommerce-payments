@@ -73,11 +73,13 @@
     </UndefinedClass>
   </file>
   <file src="includes/class-wc-payments-tasks.php">
-    <UndefinedDocblockClass occurrences="1">
+    <UndefinedDocblockClass occurrences="2">
       <code>TaskLists::add_task( 'extended', new WC_Payments_Task_Disputes() )</code>
+      <code>TaskLists::add_task( 'extended', new WC_Payments_Task_Refund_Policy() )</code>
     </UndefinedDocblockClass>
-    <InvalidArgument occurrences="1">
+    <InvalidArgument occurrences="2">
       <code>new WC_Payments_Task_Disputes()</code>
+      <code>new WC_Payments_Task_Refund_Policy()</code>
     </InvalidArgument>
   </file>
   <file src="includes/class-wc-payments-utils.php">
