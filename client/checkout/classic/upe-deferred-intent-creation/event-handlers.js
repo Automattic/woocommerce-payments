@@ -49,7 +49,25 @@ jQuery( function ( $ ) {
 		},
 		apiRequest
 	);
-	showAuthenticationModalIfRequired( api );
+	function blockUI() {
+		$( 'form#order_review' )
+			.addClass( 'processing' )
+			.block( {
+				message: null,
+				overlayCSS: {
+					background: '#fff',
+					opacity: 0.6,
+				},
+			} );
+		$( '#payment' ).hide( 500 );
+	}
+
+	function unblockUI() {
+		$( 'form#form.checkout' ).removeClass( 'processing' ).unblock();
+		$( 'form#order_review' ).removeClass( 'processing' ).unblock();
+		$( '#payment' ).show( 500 );
+	}
+	showAuthenticationModalIfRequired( api, blockUI, unblockUI );
 
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement();
@@ -61,7 +79,7 @@ jQuery( function ( $ ) {
 
 	window.addEventListener( 'hashchange', () => {
 		if ( window.location.hash.startsWith( '#wcpay-confirm-' ) ) {
-			showAuthenticationModalIfRequired( api );
+			showAuthenticationModalIfRequired( api, blockUI, unblockUI );
 		}
 	} );
 

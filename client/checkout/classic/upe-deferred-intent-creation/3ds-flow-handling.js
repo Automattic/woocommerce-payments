@@ -21,7 +21,11 @@ const cleanupURL = () => {
 	);
 };
 
-export const showAuthenticationModalIfRequired = ( api ) => {
+export const showAuthenticationModalIfRequired = (
+	api,
+	blockUI,
+	unblockUI
+) => {
 	const url = window.location.href;
 	const paymentMethodId = document.querySelector( '#wcpay-payment-method' )
 		?.value;
@@ -36,7 +40,10 @@ export const showAuthenticationModalIfRequired = ( api ) => {
 		return;
 	}
 
-	const { request } = confirmation;
+	const { request, isOrderPage } = confirmation;
+	if ( isOrderPage ) {
+		blockUI();
+	}
 	cleanupURL();
 
 	request
@@ -44,14 +51,7 @@ export const showAuthenticationModalIfRequired = ( api ) => {
 			window.location = redirectUrl;
 		} )
 		.catch( ( error ) => {
-			document
-				.querySelector( 'form.checkout' )
-				.classList.remove( 'processing' );
-
-			const elements = document.getElementsByClassName( 'blockUI' );
-			Array.from( elements ).forEach( ( element ) => {
-				element.parentNode.removeChild( element );
-			} );
+			unblockUI();
 
 			let errorMessage = error.message;
 
