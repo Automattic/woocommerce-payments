@@ -462,46 +462,6 @@ export const merchantWCP = {
 		} );
 	},
 
-	enableProgressiveOnboarding: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if (
-			! ( await page.$(
-				'#_wcpay_feature_progressive_onboarding:checked'
-			) )
-		) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_progressive_onboarding"]'
-			);
-		}
-
-		await expect( page ).toClick( 'input#submit' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	disableProgressiveOnboarding: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if (
-			await page.$( '#_wcpay_feature_progressive_onboarding:checked' )
-		) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_progressive_onboarding"]'
-			);
-		}
-
-		await expect( page ).toClick( 'input#submit' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
 	enableActAsDisconnectedFromWCPay: async () => {
 		await page.goto( WCPAY_DEV_TOOLS, {
 			waitUntil: 'networkidle0',
@@ -551,7 +511,17 @@ export const merchantWCP = {
 				);
 			}
 
-			await page.$eval( paymentMethod, ( method ) => method.click() );
+			// Check if paymentMethod is an XPath
+			if ( paymentMethod.startsWith( '//' ) ) {
+				// Find the element using XPath and click it
+				const elements = await page.$x( paymentMethod );
+				if ( elements.length > 0 ) {
+					await elements[ 0 ].click();
+				}
+			} else {
+				// If it's a CSS selector, use $eval
+				await page.$eval( paymentMethod, ( method ) => method.click() );
+			}
 			await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
 		}
 

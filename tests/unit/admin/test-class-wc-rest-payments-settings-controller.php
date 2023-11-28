@@ -69,16 +69,16 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * An array of mocked split UPE payment gateways mapped to payment method ID.
 	 *
-	 * @var array
+	 * @var UPE_Payment_Gateway
 	 */
 	private $mock_upe_payment_gateway;
 
 	/**
 	 * An array of mocked split UPE payment gateways mapped to payment method ID.
 	 *
-	 * @var array
+	 * @var UPE_Split_Payment_Gateway
 	 */
-	private $mock_split_upe_payment_gateways;
+	private $mock_split_upe_payment_gateway;
 
 	/**
 	 * UPE system under test.
@@ -201,7 +201,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway, $this->mock_wcpay_account );
 
-		$this->mock_upe_split_payment_gateway = new UPE_Split_Payment_Gateway(
+		$this->mock_split_upe_payment_gateway = new UPE_Split_Payment_Gateway(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$customer_service,
@@ -216,7 +216,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$this->mock_fraud_service
 		);
 
-		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway, $this->mock_wcpay_account );
+		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_split_upe_payment_gateway, $this->mock_wcpay_account );
 
 		$this->mock_api_client
 			->method( 'is_server_connected' )
@@ -451,22 +451,14 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_upe_split_update_settings_saves_enabled_payment_methods() {
-			$this->mock_upe_split_payment_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+		$this->mock_split_upe_payment_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
 
-			$request = new WP_REST_Request();
-			$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::GIROPAY ] );
+		$request = new WP_REST_Request();
+		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::GIROPAY ] );
 
-			$this->upe_split_controller->update_settings( $request );
+		$this->upe_split_controller->update_settings( $request );
 
-			$this->assertEquals( [ Payment_Method::CARD, Payment_Method::GIROPAY ], $this->mock_upe_split_payment_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
-	}
-
-	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
-		$request = new WP_REST_Request( 'POST', self::$settings_route );
-		$request->set_param( 'enabled_payment_method_ids', [ 'foo', 'baz' ] );
-
-		$response = rest_do_request( $request );
-		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::GIROPAY ], $this->mock_split_upe_payment_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
 
 	public function test_update_settings_fails_if_user_cannot_manage_woocommerce() {
@@ -671,22 +663,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->update_settings( $request );
 
 		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
-	}
-
-	public function test_enable_woopay_converts_upe_flag() {
-		update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '0' );
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
-		$this->gateway->update_option( 'platform_checkout', 'no' );
-
-		$request = new WP_REST_Request();
-		$request->set_param( 'is_woopay_enabled', true );
-
-		$this->controller->update_settings( $request );
-
-		$this->assertEquals( '0', get_option( WC_Payments_Features::UPE_FLAG_NAME ) );
-		$this->assertEquals( '0', get_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME ) );
-		$this->assertEquals( '1', get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME ) );
 	}
 
 	public function deposit_schedules_data_provider() {

@@ -101,16 +101,11 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'switch_theme', [ $this->gateway, 'clear_upe_appearance_transient' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this->gateway, 'clear_upe_appearance_transient' ] );
-		if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this->gateway, 'create_payment_intent_ajax' ] );
-			add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this->gateway, 'update_payment_intent_ajax' ] );
-		}
 		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this->gateway, 'init_setup_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
-		add_action( 'woocommerce_email_before_order_table', [ $this->gateway, 'set_payment_method_title_for_email' ], 10, 3 );
 	}
 
 	/**
@@ -137,11 +132,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
 
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$script = 'dist/upe_with_deferred_intent_creation_checkout';
-		} else {
-			$script = 'dist/upe_checkout';
-		}
+		$script = 'dist/upe_with_deferred_intent_creation_checkout';
 
 		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
 	}
@@ -166,16 +157,9 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
-
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$payment_fields['currency']  = get_woocommerce_currency();
-			$cart_total                  = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
-			$payment_fields['cartTotal'] = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
-		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-			$payment_fields['checkoutTitle']        = $this->gateway->get_checkout_title();
-			$payment_fields['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session();
-			$payment_fields['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session();
-		}
+		$payment_fields['currency']                 = get_woocommerce_currency();
+		$cart_total                                 = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+		$payment_fields['cartTotal']                = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -264,20 +248,18 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				'countries'      => $payment_method->get_countries(),
 			];
 
-			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-				$gateway_for_payment_method                             = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
-				$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
-				$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
-				$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
-					/* translators: link to Stripe testing page */
-					$payment_method->get_testing_instructions(),
-					[
-						'strong' => '<strong>',
-						'a'      => '<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-					]
-				);
-				$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
-			}
+			$gateway_for_payment_method                             = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+			$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
+			$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
+			$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
+				/* translators: link to Stripe testing page */
+				$payment_method->get_testing_instructions(),
+				[
+					'strong' => '<strong>',
+					'a'      => '<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+				]
+			);
+			$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
 		}
 
 		return $settings;
@@ -311,7 +293,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			 * before `$this->saved_payment_methods()`.
 			 */
 			$payment_fields  = $this->get_payment_fields_js_config();
-			$upe_object_name = WC_Payments_Features::is_upe_deferred_intent_enabled() ? 'wcpay_upe_config' : 'wcpayConfig';
+			$upe_object_name = 'wcpay_upe_config';
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
