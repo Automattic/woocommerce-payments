@@ -337,7 +337,6 @@ class WC_Payments_Invoice_Service {
 	 * @throws API_Exception
 	 */
 	public function update_charge_details( array $invoice, int $order_id ) {
-
 		if ( ! isset( $invoice['charge'] ) ) {
 			return;
 		}
