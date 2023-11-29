@@ -65,6 +65,8 @@ const chargeFromOrderMock = {
 		url: 'http://wcpay.test/wp-admin/post.php?post=776&action=edit',
 		customer_url:
 			'admin.php?page=wc-admin&path=/customers&filter=single_customer&customers=55',
+		customer_name: '',
+		customer_email: '',
 		subscriptions: [],
 		fraud_meta_box_type: 'succeeded',
 	},

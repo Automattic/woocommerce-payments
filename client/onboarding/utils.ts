@@ -19,6 +19,11 @@ export const fromDotNotation = (
 		return value != null ? set( result, key, value ) : result;
 	}, {} );
 
+export const getAvailableCountries = (): Country[] =>
+	Object.entries( wcpaySettings?.connect.availableCountries || [] )
+		.map( ( [ key, name ] ) => ( { key, name, types: [] } ) )
+		.sort( ( a, b ) => a.name.localeCompare( b.name ) );
+
 export const getBusinessTypes = (): Country[] => {
 	const data = wcpaySettings?.onboardingFieldsData?.business_types;
 
