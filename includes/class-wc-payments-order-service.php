@@ -558,6 +558,21 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Checks if order has an open (uncaptured) authorization.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 *
+	 * @return bool
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function has_open_authorization( $order ) : bool {
+		$order = $this->get_order( $order );
+		return Intent_Status::REQUIRES_CAPTURE === $order->get_meta( self::INTENTION_STATUS_META_KEY, true );
+	}
+
+
+	/**
 	 * Set the payment metadata for customer id.
 	 *
 	 * @param  mixed  $order The order.

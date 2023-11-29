@@ -12,6 +12,7 @@ import { getConfig } from 'utils/order';
 import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
+import CancelAuthorizationConfirmationModal from './cancel-authorization-confirm-modal';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
 
 function disableWooOrderRefundButton( disputeStatus ) {
@@ -95,6 +96,7 @@ jQuery( function ( $ ) {
 
 		const canRefund = getConfig( 'canRefund' );
 		const refundAmount = getConfig( 'refundAmount' );
+		const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
 		if (
 			this.value === 'wc-refunded' &&
 			originalStatus !== 'wc-refunded'
@@ -108,6 +110,20 @@ jQuery( function ( $ ) {
 			this.value === 'wc-cancelled' &&
 			originalStatus !== 'wc-cancelled'
 		) {
+			// If order has an uncaptured authorization, confirm
+			// that merchant indeed wants to cancel both the order
+			// and the authorization.
+			if ( hasOpenAuthorization ) {
+				renderModal(
+					<CancelAuthorizationConfirmationModal
+						originalOrderStatus={ originalStatus }
+					/>
+				);
+				return;
+			}
+			// If it is possible to refund an order, double check that
+			// merchants indeed wants to cancel, or if they just want to
+			// refund.
 			if ( ! canRefund || refundAmount <= 0 ) {
 				return;
 			}
