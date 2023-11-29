@@ -11,12 +11,19 @@ import {
 	CardFooter,
 	CardDivider,
 	Flex,
+	DropdownMenu,
+	MenuGroup,
+	MenuItem,
 } from '@wordpress/components';
 import moment from 'moment';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
+
+// This is a workaround for the position of the dropdown menu. At the same time underlines the need for a better solution.
+import '../../../node_modules/@wordpress/components/src/dropdown-menu/style.scss';
+import '../../../node_modules/@wordpress/components/src/popover/style.scss';
 
 /**
  * Internal dependencies.
@@ -56,6 +63,7 @@ import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import ErrorBoundary from 'components/error-boundary';
 import { moreVertical } from '@wordpress/icons';
+import RefundModal from 'wcpay/payment-details/summary/RefundModal';
 
 declare const window: any;
 
@@ -171,8 +179,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
 
+	// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// // @ts-ignore
+	// delete charge?.order;
+	//
 	const {
-		featureFlags: { isAuthAndCaptureEnabled, isRefundControlsEnabled },
+		featureFlags: { isAuthAndCaptureEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
@@ -226,6 +238,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		balance.currency
 	);
 
+	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
 	return (
 		<Card>
 			<CardBody>
@@ -461,6 +474,41 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								{ charge.payment_intent
 									? charge.payment_intent
 									: charge.id }
+								{ ! charge?.refunded && (
+									<DropdownMenu
+										icon={ moreVertical }
+										label="more"
+										popoverProps={ {
+											position: 'bottom left',
+										} }
+									>
+										{ () => (
+											<MenuGroup>
+												<MenuItem
+													onClick={ () =>
+														setIsRefundModalOpen(
+															true
+														)
+													}
+												>
+													Refund in full
+												</MenuItem>
+												{ charge.order && (
+													<MenuItem
+														onClick={ () =>
+															( window.location =
+																// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+																// @ts-ignore
+																charge.order.url )
+														}
+													>
+														Partial refund
+													</MenuItem>
+												) }
+											</MenuGroup>
+										) }
+									</DropdownMenu>
+								) }
 							</Loadable>
 						</div>
 					</div>
@@ -492,16 +540,20 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					) }
 				</ErrorBoundary>
 			) }
-			{ isRefundControlsEnabled &&
-				! _.isEmpty( charge ) &&
-				! charge.order &&
-				! isLoading && (
-					<MissingOrderNotice
-						charge={ charge }
-						isLoading={ isLoading }
-						formattedAmount={ formattedAmount }
-					/>
-				) }
+			{ isRefundModalOpen && (
+				<RefundModal
+					charge={ charge }
+					formattedAmount={ formattedAmount }
+					onModalClose={ () => setIsRefundModalOpen( false ) }
+				/>
+			) }
+			{ ! _.isEmpty( charge ) && ! charge.order && ! isLoading && (
+				<MissingOrderNotice
+					charge={ charge }
+					isLoading={ isLoading }
+					onButtonClick={ () => setIsRefundModalOpen( true ) }
+				/>
+			) }
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (

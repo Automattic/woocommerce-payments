@@ -42,20 +42,30 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function process_refund( $request ) {
+		$order_id  = $request->get_param( 'order_id' );
 		$charge_id = $request->get_param( 'charge_id' );
 		$amount    = $request->get_param( 'amount' );
 		$reason    = $request->get_param( 'reason' );
 
-		try {
-			$refund_request = Refund_Charge::create( $charge_id );
-			$refund_request->set_charge( $charge_id );
-			$refund_request->set_amount( $amount );
-			$refund_request->set_reason( $reason );
-			$response = $refund_request->send();
-		} catch ( API_Exception $e ) {
-			return rest_ensure_response( new WP_Error( 'wcpay_refund_payment', $e->getMessage() ) );
-		}
+		if ( $order_id ) {
+			$order   = wc_get_order( $order_id );
+			$gateway = wc_get_payment_gateway_by_order( $order );
+			// TODO: Correct way to parse amount to WC style floats.
+			$result = $gateway->process_refund( $order_id, floatval( $amount / 100 ), $reason );
 
-		return rest_ensure_response( $response );
+			return rest_ensure_response( $result );
+		} else {
+			try {
+				$refund_request = Refund_Charge::create( $charge_id );
+				$refund_request->set_charge( $charge_id );
+				$refund_request->set_amount( $amount );
+				$refund_request->set_reason( $reason );
+				$response = $refund_request->send();
+
+				return rest_ensure_response( $response );
+			} catch ( API_Exception $e ) {
+				return rest_ensure_response( new WP_Error( 'wcpay_refund_payment', $e->getMessage() ) );
+			}
+		}
 	}
 }
