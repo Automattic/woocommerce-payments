@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import './../style.scss';
+import './style.scss';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	generateCheckoutEventNames,
@@ -12,7 +12,7 @@ import {
 	isPaymentMethodRestrictedToLocation,
 	isUsingSavedPaymentMethod,
 	togglePaymentMethodForCountry,
-} from '../../utils/upe';
+} from '../utils/upe';
 import {
 	processPayment,
 	mountStripePaymentElement,
@@ -23,7 +23,7 @@ import {
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
 import WCPayAPI from 'wcpay/checkout/api';
-import apiRequest from '../../utils/request';
+import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
 

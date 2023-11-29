@@ -26,7 +26,7 @@ import {
 } from 'wcpay/checkout/utils/upe';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { validateElements } from 'wcpay/checkout/classic/upe-deferred-intent-creation/payment-processing';
+import { validateElements } from 'wcpay/checkout/classic/payment-processing';
 import {
 	BLOCKS_SHIPPING_ADDRESS_FIELDS,
 	BLOCKS_BILLING_ADDRESS_FIELDS,

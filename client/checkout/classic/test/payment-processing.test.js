@@ -7,7 +7,7 @@ import {
 	processPayment,
 	renderTerms,
 } from '../payment-processing';
-import { getAppearance } from '../../../upe-styles';
+import { getAppearance } from '../../upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getFingerprint } from 'wcpay/checkout/utils/fingerprint';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
