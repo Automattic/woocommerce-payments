@@ -89,6 +89,12 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					return 'woopay.url';
 				case 'woopaySessionNonce':
 					return 'sessionnonce';
+				case 'billing_email':
+					return 'test@test.com';
+				case 'key':
+					return 'testkey';
+				case 'order_id':
+					return 1;
 				default:
 					return 'foo';
 			}
@@ -116,6 +122,12 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					return 'woopay.url';
 				case 'woopaySessionNonce':
 					return 'sessionnonce';
+				case 'billing_email':
+					return 'test@test.com';
+				case 'key':
+					return 'testkey';
+				case 'order_id':
+					return 1;
 				default:
 					return 'foo';
 			}
