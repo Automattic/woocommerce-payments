@@ -832,4 +832,42 @@ export const merchantWCP = {
 		}
 		return wasInitiallyEnabled;
 	},
+
+	addMulticurrencyWidget: async () => {
+		await merchantWCP.openWCPSettings();
+		await merchantWCP.activateMulticurrency();
+		await page.goto( `${ config.get( 'url' ) }wp-admin/widgets.php`, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+
+		const closeWelcomeModal = await page.$( 'button[aria-label="Close"]' );
+		if ( closeWelcomeModal ) {
+			await closeWelcomeModal.click();
+		}
+
+		const isWidgetAdded = await page.$(
+			'.wp-block iframe[srcdoc*=\'name="currency"\']'
+		);
+		if ( ! isWidgetAdded ) {
+			await page.click( 'button[aria-label="Add block"]' );
+
+			const searchInput = await page.waitForSelector(
+				'input.components-search-control__input'
+			);
+			searchInput.type( 'switcher', { delay: 20 } );
+
+			await page.click( 'button.components-button[role="option"]' );
+			await page.waitForSelector(
+				'.edit-widgets-header .edit-widgets-header__actions button.is-primary'
+			);
+			await page.click(
+				'.edit-widgets-header .edit-widgets-header__actions button.is-primary'
+			);
+			await expect( page ).toMatchElement( '.components-snackbar', {
+				text: 'Widgets saved.',
+				timeout: 15000,
+			} );
+		}
+	},
 };
