@@ -14,14 +14,19 @@ import {
 	OnboardingSelectField,
 	OnboardingTextField,
 } from '../form';
-import { getBusinessTypes, getMccsFlatList } from 'onboarding/utils';
+import {
+	getAvailableCountries,
+	getBusinessTypes,
+	getMccsFlatList,
+} from 'onboarding/utils';
 import { BusinessType } from 'onboarding/types';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
-	const countries = getBusinessTypes();
+	const countries = getAvailableCountries();
+	const businessTypes = getBusinessTypes();
 
-	const selectedCountry = countries.find(
+	const selectedCountry = businessTypes.find(
 		( country ) => country.key === data.country
 	);
 	const selectedBusinessType = selectedCountry?.types.find(

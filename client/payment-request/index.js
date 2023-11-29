@@ -1,7 +1,8 @@
-/* global jQuery, wcpayPaymentRequestParams, wcpayPaymentRequestPayForOrderParams, wc_add_to_cart_variation_params */
+/* global jQuery, wcpayPaymentRequestParams, wcpayPaymentRequestPayForOrderParams */
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { doAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
@@ -383,13 +384,19 @@ jQuery( ( $ ) => {
 						addToCartButton.is( '.wc-variation-is-unavailable' )
 					) {
 						window.alert(
-							wc_add_to_cart_variation_params.i18n_unavailable_text
+							window?.wc_add_to_cart_variation_params
+								?.i18n_unavailable_text ||
+								__(
+									'Sorry, this product is unavailable. Please choose a different combination.',
+									'woocommerce-payments'
+								)
 						);
-					} else if (
-						addToCartButton.is( '.wc-variation-selection-needed' )
-					) {
+					} else {
 						window.alert(
-							wc_add_to_cart_variation_params.i18n_make_a_selection_text
+							__(
+								'Please select your product options before proceeding.',
+								'woocommerce-payments'
+							)
 						);
 					}
 					return;

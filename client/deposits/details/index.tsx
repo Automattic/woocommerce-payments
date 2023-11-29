@@ -7,12 +7,21 @@ import React from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
-import { Card } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+	ExternalLink,
+	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
+	__experimentalText as Text,
+} from '@wordpress/components';
 import {
 	SummaryListPlaceholder,
 	SummaryList,
 	OrderStatus,
 } from '@woocommerce/components';
+import interpolateComponents from '@automattic/interpolate-components';
 import classNames from 'classnames';
 
 /**
@@ -65,15 +74,13 @@ const SummaryItem = ( {
 	</li>
 );
 
-export const DepositOverview = ( {
-	depositId,
-}: {
-	depositId: string;
-} ): JSX.Element => {
-	const { deposit = {} as CachedDeposit, isLoading } = useDeposit(
-		depositId
-	);
+interface DepositOverviewProps {
+	deposit: CachedDeposit;
+}
 
+export const DepositOverview: React.FC< DepositOverviewProps > = ( {
+	deposit,
+} ) => {
 	const depositDateLabel = deposit.automatic
 		? __( 'Deposit date', 'woocommerce-payments' )
 		: __( 'Instant deposit date', 'woocommerce-payments' );
@@ -94,7 +101,6 @@ export const DepositOverview = ( {
 		/>
 	);
 
-	if ( isLoading ) return <SummaryListPlaceholder numberOfItems={ 2 } />;
 	return (
 		<div className="wcpay-deposit-overview">
 			{ deposit.automatic ? (
@@ -160,20 +166,64 @@ export const DepositOverview = ( {
 	);
 };
 
-export const DepositDetails = ( {
+interface DepositDetailsProps {
+	query: {
+		id: string;
+	};
+}
+
+export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 	query: { id: depositId },
-}: {
-	query: { id: string };
-} ): JSX.Element => (
-	<Page>
-		<TestModeNotice topic={ topics.depositDetails } />
-		<ErrorBoundary>
-			<DepositOverview depositId={ depositId } />
-		</ErrorBoundary>
-		<ErrorBoundary>
-			<TransactionsList depositId={ depositId } />
-		</ErrorBoundary>
-	</Page>
-);
+} ) => {
+	const { deposit, isLoading } = useDeposit( depositId );
+
+	const isInstantDeposit = ! isLoading && deposit && ! deposit.automatic;
+
+	return (
+		<Page>
+			<TestModeNotice topic={ topics.depositDetails } />
+			<ErrorBoundary>
+				{ isLoading ? (
+					<SummaryListPlaceholder numberOfItems={ 2 } />
+				) : (
+					<DepositOverview deposit={ deposit } />
+				) }
+			</ErrorBoundary>
+
+			<ErrorBoundary>
+				{ isInstantDeposit ? (
+					// If instant deposit, show a message instead of the transactions list.
+					// Matching the components used in @woocommerce/components TableCard for consistent UI.
+					<Card>
+						<CardHeader>
+							<Text size={ 16 } weight={ 600 } as="h2">
+								{ __(
+									'Deposit transactions',
+									'woocommerce-payments'
+								) }
+							</Text>
+						</CardHeader>
+						<CardBody className="wcpay-deposit-overview--instant__transactions-list-message">
+							{ interpolateComponents( {
+								/* Translators: {{learnMoreLink}} is a link element (<a/>). */
+								mixedString: __(
+									`We're unable to show transaction history on instant deposits. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
+									'woocommerce-payments'
+								),
+								components: {
+									learnMoreLink: (
+										<ExternalLink href="https://woo.com/document/woopayments/deposits/instant-deposits/#transactions" />
+									),
+								},
+							} ) }
+						</CardBody>
+					</Card>
+				) : (
+					<TransactionsList depositId={ depositId } />
+				) }
+			</ErrorBoundary>
+		</Page>
+	);
+};
 
 export default DepositDetails;
