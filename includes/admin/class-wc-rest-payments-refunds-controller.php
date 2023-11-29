@@ -49,8 +49,12 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 
 		if ( $order_id ) {
 			$gateway = WC_Payments::get_gateway();
-			// TODO: Correct way to parse amount to WC style floats.
-			$result = $gateway->process_refund( $order_id, floatval( $amount / 100 ), $reason );
+			$order   = wc_get_order( $order_id );
+			$result  = $gateway->process_refund(
+				$order_id,
+				WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() ),
+				$reason
+			);
 
 			return rest_ensure_response( $result );
 		} else {
