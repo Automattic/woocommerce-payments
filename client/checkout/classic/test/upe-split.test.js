@@ -2,7 +2,6 @@
  * Internal dependencies
  */
 import * as CheckoutUtils from 'utils/checkout';
-import { getSetupIntentFromSession } from '../upe-split';
 
 import {
 	getSelectedUPEGatewayPaymentMethod,
@@ -147,46 +146,6 @@ describe( 'UPE split checkout', () => {
 			input.checked = true;
 
 			expect( getSelectedUPEGatewayPaymentMethod() ).toBe( 'bancontact' );
-		} );
-	} );
-
-	describe( 'getSetupIntentFromSession', () => {
-		beforeEach( () => {
-			const spy = jest.spyOn( CheckoutUtils, 'getUPEConfig' );
-			spy.mockReturnValue( {
-				card: {
-					upeSetupIntentData: 'card-1234',
-				},
-				bancontact: {
-					upeSetupIntentData: 'bancontact-5678',
-				},
-				eps: {
-					upeSetupIntentData: null,
-				},
-			} );
-		} );
-
-		afterEach( () => {
-			jest.clearAllMocks();
-		} );
-
-		const cardData = { clientSecret: '1234', intentId: 'card' };
-		const bancontactData = { clientSecret: '5678', intentId: 'bancontact' };
-
-		test( 'Get setup intent data from for Card method', () => {
-			expect( getSetupIntentFromSession( 'card' ) ).toMatchObject(
-				cardData
-			);
-		} );
-
-		test( 'Get setup intent data from for UPE method', () => {
-			expect( getSetupIntentFromSession( 'bancontact' ) ).toMatchObject(
-				bancontactData
-			);
-		} );
-
-		test( 'Get null setup intent data returns empty object', () => {
-			expect( getSetupIntentFromSession( 'eps' ) ).toMatchObject( {} );
 		} );
 	} );
 } );
