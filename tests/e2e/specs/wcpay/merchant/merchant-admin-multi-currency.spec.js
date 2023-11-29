@@ -7,8 +7,7 @@ const { merchant } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 import config from 'config';
-import { merchantWCP, takeScreenshot } from '../../../utils';
-import { uiLoaded } from '../../../utils/helpers';
+import { merchantWCP, takeScreenshot, uiLoaded } from '../../../utils';
 
 describe( 'Admin Multi-Currency', () => {
 	beforeAll( async () => {
