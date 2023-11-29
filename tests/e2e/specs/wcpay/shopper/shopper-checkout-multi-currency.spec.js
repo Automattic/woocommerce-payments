@@ -3,14 +3,14 @@
  */
 import config from 'config';
 
-const { shopper } = require( '@woocommerce/e2e-utils' );
+const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
  */
 
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
-import { shopperWCP } from '../../../utils';
+import { merchantWCP, shopperWCP } from '../../../utils';
 
 const ORDER_RECEIVED_ORDER_TOTAL_SELECTOR =
 	'.woocommerce-order-overview__total';
@@ -70,11 +70,27 @@ describe( 'Shopper Multi-Currency checkout', () => {
 		EUR: null,
 	};
 	beforeAll( async () => {
+		// Enable multi-currency
+		await merchant.login();
+
+		await merchantWCP.activateMulticurrency();
+		for ( const currency in currenciesOrders ) {
+			await merchantWCP.addCurrency( currency );
+		}
+
+		await merchant.logout();
+
 		await shopper.login();
 	} );
 
 	afterAll( async () => {
 		await shopperWCP.emptyCart();
+		await shopper.logout();
+
+		// Disable multi-currency
+		await merchant.login();
+		await merchantWCP.deactivateMulticurrency();
+		await merchant.logout();
 	} );
 
 	describe.each( Object.keys( currenciesOrders ) )(
