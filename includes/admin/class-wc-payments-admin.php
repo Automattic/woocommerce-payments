@@ -385,7 +385,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! $this->account->is_stripe_connected() ) {
-			if ( WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
+			if ( WC_Payments_Utils::should_use_new_onboarding_flow() ) {
 				wc_admin_register_page(
 					[
 						'id'         => 'wc-payments-onboarding',
