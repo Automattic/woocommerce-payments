@@ -118,7 +118,7 @@ class WC_Payments_WooPay_Button_Handler {
 
 			$this->gateway->update_option( 'platform_checkout_button_locations', array_keys( $all_locations ) );
 
-			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $all_locations );
+			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, array_keys( $all_locations ) );
 		}
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
