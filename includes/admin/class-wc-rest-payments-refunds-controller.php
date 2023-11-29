@@ -48,8 +48,7 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 		$reason    = $request->get_param( 'reason' );
 
 		if ( $order_id ) {
-			$order   = wc_get_order( $order_id );
-			$gateway = wc_get_payment_gateway_by_order( $order );
+			$gateway = WC_Payments::get_gateway();
 			// TODO: Correct way to parse amount to WC style floats.
 			$result = $gateway->process_refund( $order_id, floatval( $amount / 100 ), $reason );
 
