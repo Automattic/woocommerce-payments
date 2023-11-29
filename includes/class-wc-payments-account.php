@@ -1017,11 +1017,16 @@ class WC_Payments_Account {
 				}
 			}
 
+			// Handle the flow for a builder moving from test to live.
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
-				// Delete the account if the dev mode is enabled otherwise it'll cause issues to onboard again.
-				if ( WC_Payments::mode()->is_dev() ) {
-					$this->payments_api_client->delete_account();
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+
+				// Delete the account if the test mode is enabled otherwise it'll cause issues to onboard again.
+				if ( $test_mode ) {
+					$this->payments_api_client->delete_account( $test_mode );
 				}
+
+				// Set the test mode to false now that we are handling a real onboarding.
 				WC_Payments_Onboarding_Service::set_test_mode( false );
 				$this->redirect_to_onboarding_flow_page();
 				return;

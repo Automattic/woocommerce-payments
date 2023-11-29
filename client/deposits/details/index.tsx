@@ -32,10 +32,10 @@ import { displayStatus } from '../strings';
 import TransactionsList from 'transactions/list';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
-import './style.scss';
 import { CachedDeposit } from 'wcpay/types/deposits';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
+import './style.scss';
 
 const Status = ( { status }: { status: string } ): JSX.Element => (
 	// Re-purpose order status indicator for deposit status.
@@ -181,7 +181,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 
 	return (
 		<Page>
-			<TestModeNotice topic={ topics.depositDetails } />
+			<TestModeNotice currentPage="deposits" isDetailsView={ true } />
 			<ErrorBoundary>
 				{ isLoading ? (
 					<SummaryListPlaceholder numberOfItems={ 2 } />
