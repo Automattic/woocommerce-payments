@@ -3,6 +3,7 @@
 /**
  * Internal dependencies
  */
+import './../style.scss';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	generateCheckoutEventNames,
