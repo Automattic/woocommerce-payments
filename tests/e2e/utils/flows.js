@@ -619,6 +619,37 @@ export const merchantWCP = {
 		await uiLoaded();
 	},
 
+	addCurrency: async ( currencyCode ) => {
+		if ( currencyCode === 'USD' ) {
+			return;
+		}
+		await merchantWCP.openMultiCurrency();
+		await page.click( '[data-testid="enabled-currencies-add-button"]' );
+
+		await page.evaluate( ( code ) => {
+			const inputs = Array.from(
+				document.querySelectorAll( 'input[type="checkbox"]' )
+			);
+			const targetInput = inputs.find(
+				( input ) => input.getAttribute( 'code' ) === code
+			);
+			if ( targetInput && ! targetInput.checked ) {
+				targetInput.click();
+			}
+		}, currencyCode );
+
+		await page.click(
+			'div.wcpay-confirmation-modal__footer button.components-button.is-primary',
+			{ text: 'Update selected' }
+		);
+
+		const selector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
+		await page.waitForSelector( selector );
+		const element = await page.$( selector );
+
+		expect( element ).not.toBeNull();
+	},
+
 	openConnectPage: async () => {
 		await page.goto( WCPAY_CONNECT, {
 			waitUntil: 'networkidle0',
