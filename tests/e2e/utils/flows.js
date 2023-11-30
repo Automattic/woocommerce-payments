@@ -820,7 +820,13 @@ export const merchantWCP = {
 
 	activateMulticurrency: async () => {
 		await merchantWCP.openWCPSettings();
-		await merchantWCP.setCheckboxByTestId( 'multi-currency-toggle' );
-		await merchantWCP.wcpSettingsSaveChanges();
+		const wasInitiallyEnabled = document.querySelector(
+			"[data-testid='multi-currency-toggle']"
+		).checked;
+		if ( ! wasInitiallyEnabled ) {
+			await merchantWCP.setCheckboxByTestId( 'multi-currency-toggle' );
+			await merchantWCP.wcpSettingsSaveChanges();
+		}
+		return wasInitiallyEnabled;
 	},
 };

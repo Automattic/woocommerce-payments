@@ -63,6 +63,7 @@ const getOrderTotalTextForOrder = async ( orderId ) => {
 };
 
 describe( 'Shopper Multi-Currency checkout', () => {
+	let wasMulticurrencyEnabled;
 	const currenciesOrders = {
 		USD: null,
 		EUR: null,
@@ -71,7 +72,7 @@ describe( 'Shopper Multi-Currency checkout', () => {
 		// Enable multi-currency
 		await merchant.login();
 
-		await merchantWCP.activateMulticurrency();
+		wasMulticurrencyEnabled = await merchantWCP.activateMulticurrency();
 		for ( const currency in currenciesOrders ) {
 			await merchantWCP.addCurrency( currency );
 		}
@@ -85,10 +86,12 @@ describe( 'Shopper Multi-Currency checkout', () => {
 		await shopperWCP.emptyCart();
 		await shopper.logout();
 
-		// Disable multi-currency
-		await merchant.login();
-		await merchantWCP.deactivateMulticurrency();
-		await merchant.logout();
+		// Disable multi-currency if it was not initially enabled.
+		if ( ! wasMulticurrencyEnabled ) {
+			await merchant.login();
+			await merchantWCP.deactivateMulticurrency();
+			await merchant.logout();
+		}
 	} );
 
 	describe.each( Object.keys( currenciesOrders ) )(
