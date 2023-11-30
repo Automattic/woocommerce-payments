@@ -551,7 +551,11 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	if ( getConfig( 'isWooPayEnabled' ) && ! isPreviewing() ) {
+	if (
+		getConfig( 'isWooPayEnabled' ) &&
+		getConfig( 'isWooPayEmailInputEnabled' ) &&
+		! isPreviewing()
+	) {
 		handleWooPayEmailInput( '#billing_email', api );
 	}
 } );
