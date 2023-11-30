@@ -27,32 +27,38 @@ import classNames from 'classnames';
 /**
  * Internal dependencies.
  */
-import { useDeposit } from 'wcpay/data';
-import { displayStatus } from '../strings';
+import type { CachedDeposit } from 'types/deposits';
+import { useDeposit } from 'data';
 import TransactionsList from 'transactions/list';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice } from 'components/test-mode-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import { displayStatus } from '../strings';
 import './style.scss';
-import { CachedDeposit } from 'wcpay/types/deposits';
 
-const Status = ( { status }: { status: string } ): JSX.Element => (
-	// Re-purpose order status indicator for deposit status.
+/**
+ * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
+ */
+const Status: React.FC< { status: string } > = ( { status } ) => (
 	<OrderStatus order={ { status } } orderStatusMap={ displayStatus } />
 );
 
-// Custom SummaryNumber with custom value className reusing @woocommerce/components styles.
-const SummaryItem = ( {
-	label,
-	value,
-	valueClass,
-	detail,
-}: {
+interface SummaryItemProps {
 	label: string;
 	value: string | JSX.Element;
 	valueClass?: string | false;
 	detail?: string;
+}
+
+/**
+ * A custom SummaryNumber with custom value className, reusing @woocommerce/components styles.
+ */
+const SummaryItem: React.FC< SummaryItemProps > = ( {
+	label,
+	value,
+	valueClass,
+	detail,
 } ) => (
 	<li className="woocommerce-summary__item-container">
 		<div className="woocommerce-summary__item">
@@ -181,7 +187,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 
 	return (
 		<Page>
-			<TestModeNotice topic={ topics.depositDetails } />
+			<TestModeNotice currentPage="deposits" isDetailsView={ true } />
 			<ErrorBoundary>
 				{ isLoading ? (
 					<SummaryListPlaceholder numberOfItems={ 2 } />
