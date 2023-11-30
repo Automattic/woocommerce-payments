@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Use order id from metadata to generate hashed data for customer.
+Fix subscription renewal when using the order items threshold rule from fraud protection.
