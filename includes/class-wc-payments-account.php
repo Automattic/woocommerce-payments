@@ -1007,7 +1007,7 @@ class WC_Payments_Account {
 
 			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
-			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
+			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page || ! empty( $incentive ) ) ) {
 				// Redirect non-onboarded account to the onboarding flow, otherwise to payments overview page.
 				if ( ! $this->is_stripe_connected() ) {
 					$this->redirect_to_onboarding_flow_page();
