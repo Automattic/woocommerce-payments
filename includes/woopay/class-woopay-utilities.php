@@ -97,7 +97,7 @@ class WooPay_Utilities {
 	 * @return bool
 	 */
 	public function is_woopay_email_input_enabled() {
-		return apply_filters( 'wcpay_woopay_email_input_enabled', true );
+		return apply_filters( 'wcpay_is_woopay_email_input_enabled', true );
 	}
 
 	/**
