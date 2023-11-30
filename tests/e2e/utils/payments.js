@@ -244,7 +244,7 @@ export async function confirmCardAuthentication(
  *
  * @param {any} billingDetails Values to be entered into the 'Billing details' form in the Checkout page
  * @param {any} lineItems A 2D array of line items where each line item is an array
- * @param {string} currency The currency to use for the checkout. If not specified, the default currency is used.
+ * @param {string|null} currency The currency to use for the checkout. If not specified, the default currency is used.
  * that contains the product title as the first element, and the quantity as the second.
  * For example, if you want to checkout the products x2 "Hoodie" and x3 "Belt" then you can set this `lineItems` parameter like this:
  *
