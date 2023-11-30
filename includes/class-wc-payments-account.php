@@ -1005,9 +1005,10 @@ class WC_Payments_Account {
 
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
-			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
-			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
-			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
+			$from_wc_admin_task           = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
+			$from_wc_admin_incentive_page = false !== strpos( wp_get_referer(), 'path=%2Fwc-pay-welcome-page' );
+			$from_wc_pay_connect_page     = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
+			if ( $from_wc_admin_task || $from_wc_pay_connect_page || $from_wc_admin_incentive_page ) {
 				// Redirect non-onboarded account to the onboarding flow, otherwise to payments overview page.
 				if ( ! $this->is_stripe_connected() ) {
 					$this->redirect_to_onboarding_flow_page();
@@ -1017,11 +1018,16 @@ class WC_Payments_Account {
 				}
 			}
 
+			// Handle the flow for a builder moving from test to live.
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
-				// Delete the account if the dev mode is enabled otherwise it'll cause issues to onboard again.
-				if ( WC_Payments::mode()->is_dev() ) {
-					$this->payments_api_client->delete_account();
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+
+				// Delete the account if the test mode is enabled otherwise it'll cause issues to onboard again.
+				if ( $test_mode ) {
+					$this->payments_api_client->delete_account( $test_mode );
 				}
+
+				// Set the test mode to false now that we are handling a real onboarding.
 				WC_Payments_Onboarding_Service::set_test_mode( false );
 				$this->redirect_to_onboarding_flow_page();
 				return;
