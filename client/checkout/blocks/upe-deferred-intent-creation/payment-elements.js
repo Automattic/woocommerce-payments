@@ -1,6 +1,7 @@
 /**
  * Internal dependencies
  */
+import '../style.scss';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { useFingerprint } from '../hooks';

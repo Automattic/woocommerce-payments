@@ -11,10 +11,7 @@ module.exports = {
 		{
 			index: './client/index.js',
 			settings: './client/settings/index.js',
-			'blocks-checkout': './client/checkout/blocks/index.js',
-			'upe-blocks-checkout': './client/checkout/blocks/upe.js',
-			'upe-split-blocks-checkout':
-				'./client/checkout/blocks/upe-split.js',
+			'blocks-checkout': './client/checkout/blocks/upe-split.js',
 			woopay: './client/checkout/woopay/index.js',
 			'woopay-express-button':
 				'./client/checkout/woopay/express-button/index.js',

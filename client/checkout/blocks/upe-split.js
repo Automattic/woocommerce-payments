@@ -32,8 +32,10 @@ import {
 	PAYMENT_METHOD_NAME_AFTERPAY,
 	PAYMENT_METHOD_NAME_KLARNA,
 } from '../constants.js';
-import { getSplitUPEFields } from './upe-split-fields';
 import { getDeferredIntentCreationUPEFields } from './upe-deferred-intent-creation/payment-elements';
+import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
+import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
+import { isPreviewing } from '../preview';
 
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,
@@ -67,9 +69,7 @@ const api = new WCPayAPI(
 	},
 	request
 );
-const getUPEFields = getUPEConfig( 'isUPEDeferredEnabled' )
-	? getDeferredIntentCreationUPEFields
-	: getSplitUPEFields;
+const getUPEFields = getDeferredIntentCreationUPEFields;
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
@@ -116,6 +116,20 @@ Object.entries( enabledPaymentMethodsConfig )
 			},
 		} );
 	} );
+
+// Call handleWooPayEmailInput if woopay is enabled and this is the checkout page.
+if ( getUPEConfig( 'isWooPayEnabled' ) ) {
+	if (
+		document.querySelector( '[data-block-name="woocommerce/checkout"]' ) &&
+		! isPreviewing()
+	) {
+		handleWooPayEmailInput( '#email', api, true );
+	}
+
+	if ( getUPEConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
+		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
+	}
+}
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 window.addEventListener( 'load', () => {
