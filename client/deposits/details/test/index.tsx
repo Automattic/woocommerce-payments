@@ -9,8 +9,8 @@ import React from 'react';
 /**
  * Internal dependencies
  */
+import type { CachedDeposit } from 'types/deposits';
 import { DepositOverview } from '../';
-import { CachedDeposit } from 'wcpay/types/deposits';
 
 const mockDeposit = {
 	id: 'po_mock',
