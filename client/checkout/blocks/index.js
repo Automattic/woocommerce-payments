@@ -70,6 +70,7 @@ registerPaymentMethod( {
 if ( getConfig( 'isWooPayEnabled' ) ) {
 	if (
 		document.querySelector( '[data-block-name="woocommerce/checkout"]' ) &&
+		getConfig( 'isWooPayEmailInputEnabled' ) &&
 		! isPreviewing()
 	) {
 		handleWooPayEmailInput( '#email', api, true );

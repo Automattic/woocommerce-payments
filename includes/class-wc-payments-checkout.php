@@ -193,6 +193,7 @@ class WC_Payments_Checkout {
 			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_cart_or_checkout(),
 			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isWoopayFirstPartyAuthEnabled'  => $this->woopay_util->is_woopay_first_party_auth_enabled(),
+			'isWooPayEmailInputEnabled'      => $this->woopay_util->is_woopay_email_input_enabled(),
 			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
 			'woopayHost'                     => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
