@@ -16,7 +16,7 @@ import { useEffect, useRef } from 'react';
 /**
  * Internal dependencies
  */
-import { usePaymentCompleteHandler } from '../hooks';
+import { usePaymentCompleteHandler } from './hooks';
 import {
 	getStripeElementOptions,
 	useCustomerData,
@@ -30,7 +30,7 @@ import { validateElements } from 'wcpay/checkout/classic/payment-processing';
 import {
 	BLOCKS_SHIPPING_ADDRESS_FIELDS,
 	BLOCKS_BILLING_ADDRESS_FIELDS,
-} from '../../constants';
+} from '../constants';
 
 const getBillingDetails = ( billingData ) => {
 	return {

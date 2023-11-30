@@ -32,7 +32,7 @@ import {
 	PAYMENT_METHOD_NAME_AFTERPAY,
 	PAYMENT_METHOD_NAME_KLARNA,
 } from '../constants.js';
-import { getDeferredIntentCreationUPEFields } from './upe-deferred-intent-creation/payment-elements';
+import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';

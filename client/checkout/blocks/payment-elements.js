@@ -1,10 +1,10 @@
 /**
  * Internal dependencies
  */
-import '../style.scss';
+import './style.scss';
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { useFingerprint } from '../hooks';
+import { useFingerprint } from './hooks';
 import { LoadableBlock } from 'wcpay/components/loadable';
 import { Elements } from '@stripe/react-stripe-js';
 import { useEffect, useState } from 'react';
