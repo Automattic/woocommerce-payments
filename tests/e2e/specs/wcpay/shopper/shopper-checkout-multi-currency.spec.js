@@ -100,7 +100,6 @@ describe( 'Shopper Multi-Currency checkout', () => {
 			} );
 
 			it( 'should display the correct currency on the order received page', async () => {
-				// should show correct currency in order received page
 				expect(
 					await page.$eval(
 						ORDER_RECEIVED_ORDER_TOTAL_SELECTOR,
