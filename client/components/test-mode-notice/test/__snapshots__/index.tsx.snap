@@ -1,0 +1,160 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test mode notification Returns empty div if not in test mode 1`] = `<div />`;
+
+exports[`Test mode notification Returns empty div if not in test mode 2`] = `<div />`;
+
+exports[`Test mode notification Returns empty div if not in test mode 3`] = `<div />`;
+
+exports[`Test mode notification Returns empty div if not in test mode 4`] = `<div />`;
+
+exports[`Test mode notification Returns empty div if not in test mode 5`] = `<div />`;
+
+exports[`Test mode notification Returns empty div if not in test mode 6`] = `<div />`;
+
+exports[`Test mode notification Returns empty div if not in test mode 7`] = `<div />`;
+
+exports[`Test mode notification Returns valid component for deposits page 1`] = `
+<div>
+  <div
+    class="wcpay-banner-notice is-warning"
+  >
+    <div
+      class="wcpay-banner-notice__content"
+    >
+      Viewing test deposits. To view live deposits, disable test mode in 
+      <a
+        href="https://example.com/"
+      >
+        WooPayments settings
+      </a>
+      .
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Returns valid component for disputes page 1`] = `
+<div>
+  <div
+    class="wcpay-banner-notice is-warning"
+  >
+    <div
+      class="wcpay-banner-notice__content"
+    >
+      Viewing test disputes. To view live disputes, disable test mode in 
+      <a
+        href="https://example.com/"
+      >
+        WooPayments settings
+      </a>
+      .
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Returns valid component for documents page 1`] = `
+<div>
+  <div
+    class="wcpay-banner-notice is-warning"
+  >
+    <div
+      class="wcpay-banner-notice__content"
+    >
+      Viewing test documents. To view live documents, disable test mode in 
+      <a
+        href="https://example.com/"
+      >
+        WooPayments settings
+      </a>
+      .
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Returns valid component for loans page 1`] = `
+<div>
+  <div
+    class="wcpay-banner-notice is-warning"
+  >
+    <div
+      class="wcpay-banner-notice__content"
+    >
+      Viewing test loans. To view live loans, disable test mode in 
+      <a
+        href="https://example.com/"
+      >
+        WooPayments settings
+      </a>
+      .
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Returns valid component for overview page 1`] = `
+<div>
+  <div
+    class="wcpay-banner-notice is-warning"
+  >
+    <div
+      class="wcpay-banner-notice__content"
+    >
+      <strong>
+        WooPayments is in test mode.
+      </strong>
+       All transactions will be simulated. 
+      <a
+        data-link-type="wc-admin"
+        href="https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/"
+        rel="noreferrer"
+        target="_blank"
+      >
+        Learn more
+      </a>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Returns valid component for payments page 1`] = `
+<div>
+  <div
+    class="wcpay-banner-notice is-warning"
+  >
+    <div
+      class="wcpay-banner-notice__content"
+    >
+      Viewing test payments. To view live payments, disable test mode in 
+      <a
+        href="https://example.com/"
+      >
+        WooPayments settings
+      </a>
+      .
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Returns valid component for transactions page 1`] = `
+<div>
+  <div
+    class="wcpay-banner-notice is-warning"
+  >
+    <div
+      class="wcpay-banner-notice__content"
+    >
+      Viewing test transactions. To view live transactions, disable test mode in 
+      <a
+        href="https://example.com/"
+      >
+        WooPayments settings
+      </a>
+      .
+    </div>
+  </div>
+</div>
+`;

@@ -295,32 +295,6 @@ describe( 'Overview page', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'displays SetupRealPayments if onboardingTestMode is true', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			onboardingTestMode: true,
-		};
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.getByText( 'Set up real payments on your store' )
-		).toBeInTheDocument();
-	} );
-
-	it( 'does not displays SetupRealPayments if onboardingTestMode is false', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			onboardingTestMode: false,
-		};
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( 'Set up real payments on your store' )
-		).not.toBeInTheDocument();
-	} );
-
 	it( 'displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is true', () => {
 		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
 
