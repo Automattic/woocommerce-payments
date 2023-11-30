@@ -63,4 +63,30 @@ class Buyer_Fingerprinting_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( $order_hashes, $expected_hashed_array );
 	}
+
+	public function test_it_hashes_order_info_with_order_id_parameter() {
+		$fingerprint = 'abc123';
+		$ip_country  = 'GB';
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() use ( $ip_country ) {
+				return $ip_country;
+			}
+		);
+
+		$current_order    = WC_Helper_Order::create_order();
+		$current_order_id = $current_order->get_id();
+
+		$order_hashes          = $this->buyer_fingerprinting_service->get_hashed_data_for_customer( $fingerprint, $current_order_id );
+		$expected_hashed_array = [
+			'fraud_prevention_data_shopper_ip_hash' => hash( 'sha512', '127.0.0.1', false ),
+			'fraud_prevention_data_shopper_ua_hash' => $fingerprint,
+			'fraud_prevention_data_ip_country'      => $ip_country,
+			'fraud_prevention_data_cart_contents'   => 4,
+		];
+
+		$this->assertSame( $order_hashes, $expected_hashed_array );
+	}
+
+
 }

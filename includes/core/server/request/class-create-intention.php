@@ -155,7 +155,8 @@ class Create_Intention extends Request {
 	 */
 	public function set_fingerprint( string $fingerprint = '' ) {
 		$metadata = $this->get_param( 'metadata' );
-		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
+		$order_id = $metadata['order_id'] ?? null;
+		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint, $order_id ) );
 		$this->set_param( 'metadata', $metadata );
 	}
 

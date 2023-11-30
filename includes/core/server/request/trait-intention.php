@@ -17,11 +17,12 @@ trait Intention {
 	 * Returns a list of fingerprinting metadata to attach to order.
 	 *
 	 * @param string $fingerprint Fingerprint data.
+	 * @param int    $order_id    Order ID. Defaults to null.
 	 *
 	 * @return array List of fingerprinting metadata.
 	 */
-	private function get_fingerprint_metadata( $fingerprint = '' ): array {
-		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer( $fingerprint );
+	private function get_fingerprint_metadata( $fingerprint = '', $order_id = null ): array {
+		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer( $fingerprint, $order_id );
 		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
 
 		return $customer_fingerprint_metadata;
