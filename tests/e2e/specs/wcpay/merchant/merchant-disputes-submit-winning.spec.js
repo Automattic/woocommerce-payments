@@ -127,7 +127,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 		// Confirm dispute status is Won.
 		await page.waitForSelector( 'li.woocommerce-timeline-item' );
 		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Dispute won! The bank ruled in your favor.',
+			text: 'Good news! You won this dispute',
 		} );
 	} );
 } );
