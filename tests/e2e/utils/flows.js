@@ -12,6 +12,7 @@ const {
 	uiUnblocked,
 	clearAndFillInput,
 	setCheckbox,
+	SHOP_PAGE,
 } = require( '@woocommerce/e2e-utils' );
 const {
 	fillCardDetails,
@@ -62,6 +63,12 @@ export const RUN_WC_BLOCKS_TESTS = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
 export const shopperWCP = {
 	goToPaymentMethods: async () => {
 		await page.goto( MY_ACCOUNT_PAYMENT_METHODS, {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	goToShopWithCurrency: async ( currency ) => {
+		await page.goto( SHOP_PAGE + `/?currency=${ currency }`, {
 			waitUntil: 'networkidle0',
 		} );
 	},

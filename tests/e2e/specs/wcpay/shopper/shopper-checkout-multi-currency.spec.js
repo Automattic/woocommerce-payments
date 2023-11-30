@@ -21,6 +21,7 @@ const ORDER_DETAILS_ORDER_TOTAL_SELECTOR =
 
 const placeOrderWithCurrency = async ( currency ) => {
 	try {
+		await shopperWCP.goToShopWithCurrency( currency );
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' ),
 			[ [ config.get( 'products.simple.name' ), 1 ] ],
