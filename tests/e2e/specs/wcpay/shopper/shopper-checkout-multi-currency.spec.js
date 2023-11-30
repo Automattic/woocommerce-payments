@@ -2,13 +2,10 @@
  * External dependencies
  */
 import config from 'config';
-
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
-
 /**
  * Internal dependencies
  */
-
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 import { merchantWCP, shopperWCP } from '../../../utils';
 
