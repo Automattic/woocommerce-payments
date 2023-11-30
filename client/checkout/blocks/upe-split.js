@@ -69,19 +69,18 @@ const api = new WCPayAPI(
 	},
 	request
 );
-const getUPEFields = getDeferredIntentCreationUPEFields;
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
 		registerPaymentMethod( {
 			name: upeMethods[ upeName ],
-			content: getUPEFields(
+			content: getDeferredIntentCreationUPEFields(
 				upeName,
 				upeMethods,
 				api,
 				upeConfig.testingInstructions
 			),
-			edit: getUPEFields(
+			edit: getDeferredIntentCreationUPEFields(
 				upeName,
 				upeMethods,
 				api,
