@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import Page from 'components/page';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import Welcome from 'components/welcome';
 import AccountBalances from 'components/account-balances';
@@ -23,12 +23,13 @@ import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
 import ConnectionSuccessNotice from './connection-sucess-notice';
-import SetupRealPayments from './setup-real-payments';
 import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import { useDisputes, useGetSettings, useSettings } from 'wcpay/data';
+import strings from './strings';
 import './style.scss';
+import SetupLivePaymentsModal from './modal/setup-live-payments';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -60,7 +61,11 @@ const OverviewPage = () => {
 		enabledPaymentMethods,
 	} = wcpaySettings;
 
+	const isDevMode = wcpaySettings.devMode;
 	const { isLoading: settingsIsLoading } = useSettings();
+	const [ livePaymentsModalVisible, setLivePaymentsModalVisible ] = useState(
+		false
+	);
 	const settings = useGetSettings();
 
 	const { disputes: activeDisputes } = useDisputes( {
@@ -116,9 +121,7 @@ const OverviewPage = () => {
 	return (
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
-
 			<JetpackIdcNotice />
-
 			{ showLoanOfferError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(
@@ -127,7 +130,6 @@ const OverviewPage = () => {
 					) }
 				</Notice>
 			) }
-
 			{ showServerLinkError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(
@@ -136,15 +138,31 @@ const OverviewPage = () => {
 					) }
 				</Notice>
 			) }
-
-			<TestModeNotice topic={ topics.overview } />
-
+			<TestModeNotice
+				currentPage="overview"
+				isDevMode={ isDevMode }
+				actions={
+					isDevMode
+						? [
+								{
+									label: strings.notice.actions.setUpPayments,
+									onClick: () =>
+										setLivePaymentsModalVisible( true ),
+								},
+								{
+									label: strings.notice.actions.learnMore,
+									url:
+										'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/',
+									urlTarget: '_blank',
+								},
+						  ]
+						: []
+				}
+			/>
 			<ErrorBoundary>
 				<FRTDiscoverabilityBanner />
 			</ErrorBoundary>
-
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
-
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					<>
@@ -176,35 +194,34 @@ const OverviewPage = () => {
 					</>
 				</ErrorBoundary>
 			) }
-
-			{ wcpaySettings.onboardingTestMode && (
-				<ErrorBoundary>
-					<SetupRealPayments />
-				</ErrorBoundary>
-			) }
-
 			<ErrorBoundary>
 				<AccountStatus
 					accountStatus={ wcpaySettings.accountStatus }
 					accountFees={ activeAccountFees }
 				/>
 			</ErrorBoundary>
-
 			{ wcpaySettings.accountLoans.has_active_loan && (
 				<ErrorBoundary>
 					<ActiveLoanSummary />
 				</ErrorBoundary>
 			) }
-
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					<InboxNotifications />
 				</ErrorBoundary>
 			) }
-
 			{ showProgressiveOnboardingEligibilityModal && (
 				<ErrorBoundary>
 					<ProgressiveOnboardingEligibilityModal />
+				</ErrorBoundary>
+			) }
+			{ livePaymentsModalVisible && (
+				<ErrorBoundary>
+					<SetupLivePaymentsModal
+						closeModal={ () =>
+							setLivePaymentsModalVisible( false )
+						}
+					/>
 				</ErrorBoundary>
 			) }
 		</Page>
