@@ -857,7 +857,13 @@ export const merchantWCP = {
 			);
 			searchInput.type( 'switcher', { delay: 20 } );
 
+			await page.waitForSelector(
+				'button.components-button[role="option"]'
+			);
 			await page.click( 'button.components-button[role="option"]' );
+			await new Promise( ( resolve ) => {
+				setTimeout( resolve, 2000 );
+			} );
 			await page.waitForSelector(
 				'.edit-widgets-header .edit-widgets-header__actions button.is-primary'
 			);
@@ -868,6 +874,7 @@ export const merchantWCP = {
 				text: 'Widgets saved.',
 				timeout: 15000,
 			} );
+			await new Promise( ( resolve ) => setTimeout( resolve, 1000 ) );
 		}
 	},
 };
