@@ -41,6 +41,8 @@ describe( 'Admin Multi-Currency', () => {
 			'input.components-search-control__input'
 		);
 		searchInput.type( 'switcher', { delay: 20 } );
+
+		await page.waitForSelector( 'button[role="option"]' );
 		await expect( page ).toMatchElement( 'button[role="option"]', {
 			text: 'Currency Switcher Block',
 		} );
