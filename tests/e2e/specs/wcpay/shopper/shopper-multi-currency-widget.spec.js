@@ -130,4 +130,15 @@ describe( 'Shopper Multi-Currency widget', () => {
 		await expect( page ).toMatch( `${ orderTotal.toFixed( 2 ) } USD` );
 		await shopper.logout();
 	} );
+
+	it( 'should not display currency switcher on pay for order page', async () => {
+		await merchant.login();
+		await merchantWCP.createPayForOrder();
+		await page.click( '.wc-order-status a' );
+
+		const currencySwitcher = await page.$(
+			'.widget select[name=currency]'
+		);
+		expect( currencySwitcher ).toBeNull();
+	} );
 } );
