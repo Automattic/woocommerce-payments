@@ -48,6 +48,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 	it( 'should display currency switcher widget if multi-currency is enabled', async () => {
 		await merchant.login();
 		await merchantWCP.addMulticurrencyWidget();
+		await merchantWCP.addCurrency( 'EUR' );
 		await shopper.goToShop();
 		await page.waitForSelector( '.widget select[name=currency]', {
 			visible: true,
