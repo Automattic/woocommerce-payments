@@ -63,7 +63,7 @@ import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import ErrorBoundary from 'components/error-boundary';
 import { moreVertical } from '@wordpress/icons';
-import RefundModal from 'wcpay/payment-details/summary/RefundModal';
+import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 
 declare const window: any;
 
