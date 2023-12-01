@@ -86,15 +86,13 @@ const getFeeDescriptionString = (
 		);
 	} else if ( fee.fixed_rate ) {
 		return sprintf(
-			'%2$s',
-			formatFee( fee.percentage_rate * discountRate ),
+			'%1$s',
 			formatCurrency( fee.fixed_rate * discountRate, fee.currency )
 		);
 	} else if ( fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%%',
-			formatFee( fee.percentage_rate * discountRate ),
-			formatCurrency( fee.fixed_rate * discountRate, fee.currency )
+			formatFee( fee.percentage_rate * discountRate )
 		);
 	}
 	return '';
