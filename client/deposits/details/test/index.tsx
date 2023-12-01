@@ -32,6 +32,7 @@ declare const global: {
 			country: string;
 		};
 	};
+	wcSettings: { countries: Record< string, string > };
 };
 
 describe( 'Deposit overview', () => {
