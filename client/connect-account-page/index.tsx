@@ -23,6 +23,7 @@ import scheduled from 'gridicons/dist/scheduled';
  */
 import wcpayTracks from 'tracks';
 import Page from 'components/page';
+import BannerNotice from 'components/banner-notice';
 import PaymentMethods from './payment-methods';
 import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
@@ -45,6 +46,8 @@ const ConnectAccountPage: React.FC = () => {
 		connectUrl,
 		connect: { availableCountries, country },
 	} = wcpaySettings;
+
+	const isCountrySupported = !! availableCountries[ country ];
 
 	useEffect( () => {
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_VIEW, {
@@ -125,7 +128,7 @@ const ConnectAccountPage: React.FC = () => {
 		}
 
 		// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
-		if ( ! availableCountries[ country ] ) {
+		if ( ! isCountrySupported ) {
 			return handleLocationCheck();
 		}
 
@@ -149,6 +152,11 @@ const ConnectAccountPage: React.FC = () => {
 				</Card>
 			) : (
 				<>
+					{ ! isCountrySupported && (
+						<BannerNotice status="error" isDismissible={ false }>
+							{ strings.nonSupportedCountry }
+						</BannerNotice>
+					) }
 					<Card>
 						<div className="connect-account-page__heading">
 							<img src={ LogoImg } alt="logo" />
