@@ -111,7 +111,7 @@ export const formatMethodFeesTooltip = (
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
 
-	const discountFeeRate: number =
+	const discountAdjustedFeeRate: number =
 		accountFees.discount.length && accountFees.discount[ 0 ].discount
 			? 1 - accountFees.discount[ 0 ].discount
 			: 1;
@@ -139,7 +139,7 @@ export const formatMethodFeesTooltip = (
 				<div>
 					{ getFeeDescriptionString(
 						accountFees.base,
-						discountFeeRate
+						discountAdjustedFeeRate
 					) }
 				</div>
 			</div>
@@ -149,7 +149,7 @@ export const formatMethodFeesTooltip = (
 					<div>
 						{ getFeeDescriptionString(
 							accountFees.additional,
-							discountFeeRate
+							discountAdjustedFeeRate
 						) }
 					</div>
 				</div>
@@ -162,7 +162,7 @@ export const formatMethodFeesTooltip = (
 					<div>
 						{ getFeeDescriptionString(
 							accountFees.fx,
-							discountFeeRate
+							discountAdjustedFeeRate
 						) }
 					</div>
 				</div>
@@ -172,7 +172,10 @@ export const formatMethodFeesTooltip = (
 			<div>
 				<div>Total per transaction</div>
 				<div className={ 'wcpay-fees-tooltip__bold' }>
-					{ getFeeDescriptionString( total, discountFeeRate ) }
+					{ getFeeDescriptionString(
+						total,
+						discountAdjustedFeeRate
+					) }
 				</div>
 			</div>
 			{ wcpaySettings &&
