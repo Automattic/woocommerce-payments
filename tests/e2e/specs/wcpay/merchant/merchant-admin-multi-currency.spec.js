@@ -46,5 +46,6 @@ describe( 'Admin Multi-Currency', () => {
 		await expect( page ).toMatchElement( 'button[role="option"]', {
 			text: 'Currency Switcher Block',
 		} );
+		await page.waitFor( 1000 );
 	} );
 } );
