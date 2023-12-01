@@ -286,9 +286,13 @@ export default {
 		),
 	},
 	nonSupportedCountry: createInterpolateElement(
-		__(
-			'<b>WooPayments is not currently available in your location</b>. To be eligible for WooPayments, your business address must be in one of the following <a>supported countries</a>.',
-			'woocommerce-payments'
+		sprintf(
+			/* translators: %1$s: WooPayments */
+			__(
+				'<b>%1$s is not currently available in your location</b>. To be eligible for %1$s, your business address must be in one of the following <a>supported countries</a>.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
 		),
 		{
 			b: <b />,
