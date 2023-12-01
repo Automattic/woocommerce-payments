@@ -861,9 +861,7 @@ export const merchantWCP = {
 				'button.components-button[role="option"]'
 			);
 			await page.click( 'button.components-button[role="option"]' );
-			await new Promise( ( resolve ) => {
-				setTimeout( resolve, 2000 );
-			} );
+			await page.waitFor( 2000 );
 			await page.waitForSelector(
 				'.edit-widgets-header .edit-widgets-header__actions button.is-primary'
 			);
@@ -874,7 +872,26 @@ export const merchantWCP = {
 				text: 'Widgets saved.',
 				timeout: 15000,
 			} );
-			await new Promise( ( resolve ) => setTimeout( resolve, 1000 ) );
+			await page.waitFor( 1000 );
 		}
+	},
+	createPayForOrder: async () => {
+		await merchant.openNewOrder();
+		await page.click( 'button.add-line-item' );
+		await page.click( 'button.add-order-item' );
+		await page.click( 'select.wc-product-search' );
+		await page.type(
+			'.select2-search--dropdown > input',
+			config.get( 'products.simple.name' ),
+			{
+				delay: 20,
+			}
+		);
+		await page.waitFor( 2000 );
+		await page.click( '.select2-results .select2-results__option' );
+		await page.click( '#btn-ok' );
+		await page.waitFor( 2000 );
+		await page.click( 'button.save_order' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 	},
 };
