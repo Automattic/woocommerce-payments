@@ -120,6 +120,7 @@ Object.entries( enabledPaymentMethodsConfig )
 if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	if (
 		document.querySelector( '[data-block-name="woocommerce/checkout"]' ) &&
+		getUPEConfig( 'isWooPayEmailInputEnabled' ) &&
 		! isPreviewing()
 	) {
 		handleWooPayEmailInput( '#email', api, true );
