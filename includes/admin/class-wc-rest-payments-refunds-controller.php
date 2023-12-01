@@ -48,12 +48,14 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 		$reason    = $request->get_param( 'reason' );
 
 		if ( $order_id ) {
-			$gateway = WC_Payments::get_gateway();
-			$order   = wc_get_order( $order_id );
-			$result  = $gateway->process_refund(
-				$order_id,
-				WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() ),
-				$reason
+			$order  = wc_get_order( $order_id );
+			$result = wc_create_refund(
+				[
+					'amount'         => WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() ),
+					'reason'         => $reason,
+					'order_id'       => $order_id,
+					'refund_payment' => true,
+				]
 			);
 
 			return rest_ensure_response( $result );
