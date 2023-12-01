@@ -96,7 +96,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_wcpay_connect' ], 12 ); // Run this after the redirect to onboarding logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect_or_overview' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_flow_to_overview' ] );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 
@@ -834,15 +834,15 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects WooPayments settings to the connect page for partially
-	 * onboarded accounts.
+	 * Redirects WooPayments settings to the overview page for partially
+	 * onboarded accounts, and the connect page when there is no account.
 	 *
 	 * Every WooPayments page except connect are already hidden, but merchants can still access
 	 * it through WooCommerce settings.
 	 *
-	 * @return bool True if the redirection happened, false otherwise.
+	 * @return bool True if a redirection happened, false otherwise.
 	 */
-	public function maybe_redirect_settings_to_connect(): bool {
+	public function maybe_redirect_settings_to_connect_or_overview(): bool {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
@@ -858,22 +858,37 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Account not partially onboarded, don't redirect.
-		if ( ! $this->is_account_partially_onboarded() ) {
+		// Account fully onboarded, don't redirect.
+		if ( $this->is_account_fully_onboarded() ) {
 			return false;
 		}
 
-		$this->redirect_to(
-			admin_url(
-				add_query_arg(
-					[
-						'page' => 'wc-admin',
-						'path' => '/payments/connect',
-					],
-					'admin.php'
+		// Account partially onboarded, redirect to overview.
+		if ( $this->is_account_partially_onboarded() ) {
+			$this->redirect_to(
+				admin_url(
+					add_query_arg(
+						[
+							'page' => 'wc-admin',
+							'path' => '/payments/overview',
+						],
+						'admin.php'
+					)
 				)
-			)
-		);
+			);
+		} else {
+			$this->redirect_to(
+				admin_url(
+					add_query_arg(
+						[
+							'page' => 'wc-admin',
+							'path' => '/payments/connect',
+						],
+						'admin.php'
+					)
+				)
+			);
+		}
 
 		return true;
 	}
