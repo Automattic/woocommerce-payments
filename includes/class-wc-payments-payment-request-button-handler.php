@@ -1517,7 +1517,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return boolean
 	 */
 	private function prices_includes_tax() {
-		return wc_tax_enabled() && 'incl' === get_option( 'woocommerce_tax_display_cart' );
+		return ! wc_tax_enabled() || 'incl' === get_option( 'woocommerce_tax_display_cart' );
 	}
 
 	/**
