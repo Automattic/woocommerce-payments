@@ -47,9 +47,14 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 					}
 				>
 					{ __(
-						'This transaction is not connected to order. Investigate this purchase and refund the transaction as needed.',
+						'This transaction is not connected to order.',
 						'woocommerce-payments'
 					) }
+					{ ! charge.refunded &&
+						__(
+							'Investigate this purchase and refund the transaction as needed.',
+							'woocommerce-payments'
+						) }
 				</CardNotice>
 			</Loadable>
 		</>
