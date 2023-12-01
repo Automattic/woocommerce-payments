@@ -153,11 +153,7 @@ const AdvancedDescription = () => {
 
 const SettingsManager = () => {
 	const {
-		featureFlags: {
-			upeSettingsPreview: isUPESettingsPreviewEnabled,
-			upe: isUpeEnabled,
-			upeType,
-		},
+		featureFlags: { upeSettingsPreview: isUPESettingsPreviewEnabled },
 	} = useContext( WCPaySettingsContext );
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
@@ -212,10 +208,7 @@ const SettingsManager = () => {
 				>
 					<LoadableSettingsSection numLines={ 60 }>
 						<ErrorBoundary>
-							<WcPayUpeContextProvider
-								defaultIsUpeEnabled={ isUpeEnabled }
-								defaultUpeType={ upeType }
-							>
+							<WcPayUpeContextProvider>
 								<PaymentMethods />
 							</WcPayUpeContextProvider>
 						</ErrorBoundary>
@@ -238,9 +231,7 @@ const SettingsManager = () => {
 			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<WcPayUpeContextProvider
-							defaultIsUpeEnabled={ isUpeEnabled }
-						>
+						<WcPayUpeContextProvider>
 							<Transactions
 								setTransactionInputsValid={
 									setTransactionInputsValid

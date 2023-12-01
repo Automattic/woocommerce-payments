@@ -101,7 +101,7 @@ describe( 'PaymentMethods', () => {
 		] );
 
 		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+			<WcPayUpeContextProvider>
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
 		);
@@ -210,7 +210,7 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+			<WcPayUpeContextProvider>
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
 		);
@@ -236,7 +236,7 @@ describe( 'PaymentMethods', () => {
 		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
 
 		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+			<WcPayUpeContextProvider>
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
 		);
@@ -287,7 +287,7 @@ describe( 'PaymentMethods', () => {
 
 		const renderPaymentElements = () => {
 			render(
-				<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<WcPayUpeContextProvider>
 					<PaymentMethods />
 				</WcPayUpeContextProvider>
 			);
@@ -317,8 +317,6 @@ describe( 'PaymentMethods', () => {
 				featureFlags: { upeSettingsPreview, upe },
 			};
 			const upeContext = {
-				isUpeEnabled: upe,
-				setIsUpeEnabled: () => null,
 				status: 'resolved',
 			};
 
@@ -338,45 +336,27 @@ describe( 'PaymentMethods', () => {
 		}
 	);
 
-	test( 'renders the feedback elements when UPE is enabled', () => {
+	test( 'renders the payment methods component and feedback button', () => {
 		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+			<WcPayUpeContextProvider>
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
 		);
-		const disableUPEButton = screen.queryByRole( 'button', {
-			name: 'Add feedback or disable',
+
+		const feedbackButton = screen.queryByRole( 'button', {
+			name: 'Add feedback',
 		} );
 
-		expect( disableUPEButton ).toBeInTheDocument();
+		expect( feedbackButton ).toBeInTheDocument();
+		expect( screen.queryByText( 'Payment methods' ) ).toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Payment methods' ).parentElement
 		).toHaveTextContent( 'Payment methods' );
 	} );
 
-	test( 'Does not render the feedback elements when UPE is disabled', () => {
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ false }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-
-		const disableUPEButton = screen.queryByRole( 'button', {
-			name: 'Add feedback or disable',
-		} );
-
-		expect( disableUPEButton ).not.toBeInTheDocument();
-		expect(
-			screen.queryByText( 'Payment methods' )
-		).not.toBeInTheDocument();
-	} );
-
 	it( 'should only be able to leave feedback', () => {
 		render(
-			<WcPayUpeContextProvider
-				defaultIsUpeEnabled={ true }
-				defaultUpeType={ 'deferred_intent' }
-			>
+			<WcPayUpeContextProvider>
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
 		);
@@ -403,7 +383,7 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+			<WcPayUpeContextProvider>
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
 		);
@@ -449,7 +429,7 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+			<WcPayUpeContextProvider>
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
 		);
@@ -493,7 +473,7 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		const { container } = render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+			<WcPayUpeContextProvider>
 				<PaymentMethods />
 			</WcPayUpeContextProvider>
 		);
