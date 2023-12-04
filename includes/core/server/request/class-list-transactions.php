@@ -83,6 +83,12 @@ class List_Transactions extends Paginated {
 			'type_is_not'              => $request->get_param( 'type_is_not' ),
 			'source_device_is'         => $request->get_param( 'source_device_is' ),
 			'source_device_is_not'     => $request->get_param( 'source_device_is_not' ),
+			'channel_is'               => $request->get_param( 'channel_is' ),
+			'channel_is_not'           => $request->get_param( 'channel_is_not' ),
+			'customer_country_is'      => $request->get_param( 'customer_country_is' ),
+			'customer_country_is_not'  => $request->get_param( 'customer_country_is_not' ),
+			'risk_level_is'            => $request->get_param( 'risk_level_is' ),
+			'risk_level_is_not'        => $request->get_param( 'risk_level_is_not' ),
 			'store_currency_is'        => $request->get_param( 'store_currency_is' ),
 			'customer_currency_is'     => $request->get_param( 'customer_currency_is' ),
 			'customer_currency_is_not' => $request->get_param( 'customer_currency_is_not' ),
@@ -205,6 +211,72 @@ class List_Transactions extends Paginated {
 	 */
 	public function set_source_device_is_not( string $source_device_is_not ) {
 		$this->set_param( 'source_device_is_not', $source_device_is_not );
+	}
+
+	/**
+	 * Set Channel type is.
+	 *
+	 * @param string $channel_is Channel type is.
+	 *
+	 * @return void
+	 */
+	public function set_channel_is( string $channel_is ) {
+		$this->set_param( 'channel_is', $channel_is );
+	}
+
+	/**
+	 * Set Channel type is not.
+	 *
+	 * @param string $channel_is_not Channel type is not.
+	 *
+	 * @return void
+	 */
+	public function set_channel_is_not( string $channel_is_not ) {
+		$this->set_param( 'channel_is_not', $channel_is_not );
+	}
+
+	/**
+	 * Set Customer country is.
+	 *
+	 * @param string $customer_country_is Customer country is.
+	 *
+	 * @return void
+	 */
+	public function set_customer_country_is( string $customer_country_is ) {
+		$this->set_param( 'customer_country_is', $customer_country_is );
+	}
+
+	/**
+	 * Set Customer country is not.
+	 *
+	 * @param string $customer_country_is_not Customer country is not.
+	 *
+	 * @return void
+	 */
+	public function set_customer_country_is_not( string $customer_country_is_not ) {
+		$this->set_param( 'customer_country_is_not', $customer_country_is_not );
+	}
+
+	/**
+	 * Set Risk level is.
+	 *
+	 * @param string $risk_level_is Risk level is.
+	 *
+	 * @return void
+	 */
+	public function set_risk_level_is( string $risk_level_is ) {
+		$this->set_param( 'risk_level_is', $risk_level_is );
+	}
+
+	/**
+	 * Set Risk level is not.
+	 *
+	 * @param string $risk_level_is_not Risk level is not.
+	 *
+	 * @return void
+	 */
+	public function set_risk_level_is_not( string $risk_level_is_not ) {
+		$this->set_param( 'risk_level_is_not', $risk_level_is_not );
 	}
 
 	/**

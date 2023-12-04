@@ -543,6 +543,12 @@ export const TransactionsList = (
 				type_is_not: typeIsNot,
 				source_device_is: sourceDeviceIs,
 				source_device_is_not: sourceDeviceIsNot,
+				channel_is: channelIs,
+				channel_is_not: channelIsNot,
+				customer_country_is: customerCountryIs,
+				customer_country_is_not: customerCountryIsNot,
+				risk_level_is: riskLevelIs,
+				risk_level_is_not: riskLevelIsNot,
 				customer_currency_is: customerCurrencyIs,
 				customer_currency_is_not: customerCurrencyIsNot,
 			} = params;
@@ -555,6 +561,13 @@ export const TransactionsList = (
 				!! search ||
 				!! typeIs ||
 				!! typeIsNot ||
+				!! channelIs ||
+				!! channelIsNot ||
+				!! customerCountryIs ||
+				!! customerCountryIsNot ||
+				!! riskLevelIs ||
+				!! riskLevelIsNot ||
+				!! sourceDeviceIs ||
 				!! sourceDeviceIsNot;
 
 			const confirmThreshold = 10000;
@@ -588,6 +601,12 @@ export const TransactionsList = (
 							sourceDeviceIsNot,
 							customerCurrencyIs,
 							customerCurrencyIsNot,
+							channelIs,
+							channelIsNot,
+							customerCountryIs,
+							customerCountryIsNot,
+							riskLevelIs,
+							riskLevelIsNot,
 							depositId,
 						} ),
 						method: 'POST',
