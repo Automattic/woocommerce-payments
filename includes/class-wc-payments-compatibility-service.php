@@ -35,7 +35,7 @@ class WC_Payments_Compatibility_Service {
 	 * @return void
 	 */
 	public function init_hooks() {
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'update_compatibility_data' ] );
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'update_compatibility_data' ], 404 );
 	}
 
 	/**

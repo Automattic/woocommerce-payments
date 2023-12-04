@@ -38,6 +38,9 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 1 );
 		WC_Payments::mode()->test();
 
+		// Hack to get tests to process due to issues with WC_Payments_Http not able to be mocked.
+		remove_all_actions( 'woocommerce_payments_account_refreshed', 404 );
+
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->controller      = new WC_REST_Payments_Accounts_Controller( $this->mock_api_client );
 
