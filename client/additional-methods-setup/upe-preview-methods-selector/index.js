@@ -18,12 +18,7 @@ const UpePreviewMethodsSelector = () => {
 	return (
 		<Card className="upe-preview-methods-selector">
 			<CardBody>
-				<Wizard
-					defaultActiveTask={ 'add-payment-methods' }
-					defaultCompletedTasks={ {
-						'enable-upe-preview': true,
-					} }
-				>
+				<Wizard defaultActiveTask={ 'add-payment-methods' }>
 					<WizardTaskList>
 						<WizardTask id="add-payment-methods">
 							<AddPaymentMethodsTask />
