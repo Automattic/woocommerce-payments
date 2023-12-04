@@ -728,16 +728,16 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Helper function to check whether the user is either in the PO experiment, or has manually enabled PO via the dev tools.
+	 * Helper function to check whether to show default new onboarding flow or as an exception disable it (if specific constant is set) .
 	 *
 	 * @return boolean
 	 */
-	public static function should_use_progressive_onboarding_flow(): bool {
-		if ( self::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
-			return true;
+	public static function should_use_new_onboarding_flow(): bool {
+		if ( defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) {
+			return false;
 		}
 
-		return false;
+		return true;
 	}
 
 	/**
@@ -747,25 +747,6 @@ class WC_Payments_Utils {
 	 */
 	public static function force_disconnected_enabled(): bool {
 		return '1' === get_option( self::FORCE_DISCONNECTED_FLAG_NAME, '0' );
-	}
-
-	/**
-	 * Check to see if the current user is in progressive onboarding experiment treatment mode.
-	 *
-	 * @return bool
-	 */
-	public static function is_in_progressive_onboarding_treatment_mode(): bool {
-		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
-			return false;
-		}
-
-		$abtest = new \WCPay\Experimental_Abtest(
-			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
-			'woocommerce',
-			'yes' === get_option( 'woocommerce_allow_tracking' )
-		);
-
-		return 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v3' );
 	}
 
 	/**

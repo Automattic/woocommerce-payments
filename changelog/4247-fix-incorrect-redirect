@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fixes a redirect to show the new onboarding when coming from WC Core.

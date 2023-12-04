@@ -9,15 +9,8 @@ import React from 'react';
 /**
  * Internal dependencies
  */
+import type { CachedDeposit } from 'types/deposits';
 import { DepositOverview } from '../';
-import { useDeposit } from 'wcpay/data';
-import { CachedDeposit } from 'wcpay/types/deposits';
-
-jest.mock( 'wcpay/data', () => ( {
-	useDeposit: jest.fn(),
-} ) );
-
-const mockUseDeposit = useDeposit as jest.MockedFunction< typeof useDeposit >;
 
 const mockDeposit = {
 	id: 'po_mock',
@@ -39,6 +32,7 @@ declare const global: {
 			country: string;
 		};
 	};
+	wcSettings: { countries: Record< string, string > };
 };
 
 describe( 'Deposit overview', () => {
@@ -63,25 +57,15 @@ describe( 'Deposit overview', () => {
 	} );
 
 	test( 'renders automatic deposit correctly', () => {
-		mockUseDeposit.mockReturnValue( {
-			deposit: mockDeposit,
-			isLoading: false,
-		} );
-
 		const { container: overview } = render(
-			<DepositOverview depositId="po_mock" />
+			<DepositOverview deposit={ mockDeposit } />
 		);
 		expect( overview ).toMatchSnapshot();
 	} );
 
 	test( 'renders instant deposit correctly', () => {
-		mockUseDeposit.mockReturnValue( {
-			deposit: { ...mockDeposit, automatic: false },
-			isLoading: false,
-		} );
-
 		const { container: overview } = render(
-			<DepositOverview depositId="po_mock" />
+			<DepositOverview deposit={ { ...mockDeposit, automatic: false } } />
 		);
 		expect( overview ).toMatchSnapshot();
 	} );

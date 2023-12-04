@@ -12,6 +12,7 @@ const {
 	uiUnblocked,
 	clearAndFillInput,
 	setCheckbox,
+	SHOP_PAGE,
 } = require( '@woocommerce/e2e-utils' );
 const {
 	fillCardDetails,
@@ -66,8 +67,20 @@ export const shopperWCP = {
 		} );
 	},
 
+	goToShopWithCurrency: async ( currency ) => {
+		await page.goto( SHOP_PAGE + `/?currency=${ currency }`, {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
 	goToOrders: async () => {
 		await page.goto( MY_ACCOUNT_ORDERS, {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	goToOrder: async ( orderId ) => {
+		await page.goto( SHOP_MY_ACCOUNT_PAGE + `view-order/${ orderId }`, {
 			waitUntil: 'networkidle0',
 		} );
 	},
@@ -462,46 +475,6 @@ export const merchantWCP = {
 		} );
 	},
 
-	enableProgressiveOnboarding: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if (
-			! ( await page.$(
-				'#_wcpay_feature_progressive_onboarding:checked'
-			) )
-		) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_progressive_onboarding"]'
-			);
-		}
-
-		await expect( page ).toClick( 'input#submit' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	disableProgressiveOnboarding: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if (
-			await page.$( '#_wcpay_feature_progressive_onboarding:checked' )
-		) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_progressive_onboarding"]'
-			);
-		}
-
-		await expect( page ).toClick( 'input#submit' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
 	enableActAsDisconnectedFromWCPay: async () => {
 		await page.goto( WCPAY_DEV_TOOLS, {
 			waitUntil: 'networkidle0',
@@ -651,6 +624,37 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 		await uiLoaded();
+	},
+
+	addCurrency: async ( currencyCode ) => {
+		if ( currencyCode === 'USD' ) {
+			return;
+		}
+		await merchantWCP.openMultiCurrency();
+		await page.click( '[data-testid="enabled-currencies-add-button"]' );
+
+		await page.evaluate( ( code ) => {
+			const inputs = Array.from(
+				document.querySelectorAll( 'input[type="checkbox"]' )
+			);
+			const targetInput = inputs.find(
+				( input ) => input.getAttribute( 'code' ) === code
+			);
+			if ( targetInput && ! targetInput.checked ) {
+				targetInput.click();
+			}
+		}, currencyCode );
+
+		await page.click(
+			'div.wcpay-confirmation-modal__footer button.components-button.is-primary',
+			{ text: 'Update selected' }
+		);
+
+		const selector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
+		await page.waitForSelector( selector );
+		const element = await page.$( selector );
+
+		expect( element ).not.toBeNull();
 	},
 
 	openConnectPage: async () => {
@@ -816,7 +820,16 @@ export const merchantWCP = {
 
 	activateMulticurrency: async () => {
 		await merchantWCP.openWCPSettings();
-		await merchantWCP.setCheckboxByTestId( 'multi-currency-toggle' );
-		await merchantWCP.wcpSettingsSaveChanges();
+		const wasInitiallyEnabled = await page.evaluate( () => {
+			const checkbox = document.querySelector(
+				"[data-testid='multi-currency-toggle']"
+			);
+			return checkbox ? checkbox.checked : false;
+		} );
+		if ( ! wasInitiallyEnabled ) {
+			await merchantWCP.setCheckboxByTestId( 'multi-currency-toggle' );
+			await merchantWCP.wcpSettingsSaveChanges();
+		}
+		return wasInitiallyEnabled;
 	},
 };
