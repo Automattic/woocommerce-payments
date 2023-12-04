@@ -49,29 +49,8 @@ describe( 'WcPayUpeContextProvider', () => {
 		);
 
 		expect( childrenMock ).toHaveBeenCalledWith( {
-			isUpeEnabled: false,
-			setIsUpeEnabled: expect.any( Function ),
 			status: 'resolved',
-			upeType: '',
 		} );
-		expect( apiFetch ).not.toHaveBeenCalled();
-	} );
-
-	it( 'should render the initial state given a default value for isUpeEnabled', () => {
-		const childrenMock = jest.fn().mockReturnValue( null );
-		render(
-			<WcPayUpeContextProvider>
-				<WcPayUpeContext.Consumer>
-					{ childrenMock }
-				</WcPayUpeContext.Consumer>
-			</WcPayUpeContextProvider>
-		);
-
-		expect( childrenMock ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				isUpeEnabled: true,
-			} )
-		);
 		expect( apiFetch ).not.toHaveBeenCalled();
 	} );
 } );

@@ -41,18 +41,6 @@ describe( 'SetupComplete', () => {
 		] );
 	} );
 
-	it( 'sets isUpeEnabled if isActive', () => {
-		render(
-			<WizardTaskContext.Provider value={ { isActive: true } }>
-				<SetupComplete />
-			</WizardTaskContext.Provider>
-		);
-
-		expect(
-			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled
-		).toBeTruthy();
-	} );
-
 	it( 'does not set isUpeEnabled if not isActive', () => {
 		render(
 			<WizardTaskContext.Provider value={ { isActive: false } }>
