@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
@@ -19,7 +19,6 @@ import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
 import Deposits from '../deposits';
-import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
 import { useDepositDelayDays, useSettings } from '../../data';
@@ -151,9 +150,6 @@ const AdvancedDescription = () => {
 };
 
 const SettingsManager = () => {
-	const {
-		featureFlags: { upeSettingsPreview: isUPESettingsPreviewEnabled },
-	} = useContext( WCPaySettingsContext );
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
@@ -200,18 +196,16 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			{ isUPESettingsPreviewEnabled && (
-				<SettingsSection
-					description={ PaymentMethodsDescription }
-					id="payment-methods"
-				>
-					<LoadableSettingsSection numLines={ 60 }>
-						<ErrorBoundary>
-							<PaymentMethods />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
+			<SettingsSection
+				description={ PaymentMethodsDescription }
+				id="payment-methods"
+			>
+				<LoadableSettingsSection numLines={ 60 }>
+					<ErrorBoundary>
+						<PaymentMethods />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
 			<SettingsSection
 				id="express-checkouts"
 				description={ ExpressCheckoutDescription }

@@ -21,7 +21,6 @@ import {
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
 } from 'wcpay/data';
-import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 jest.mock( '@woocommerce/components', () => {
@@ -287,31 +286,6 @@ describe( 'PaymentMethods', () => {
 		expect( affirm ).toBeChecked();
 		expect( afterpay ).toBeChecked();
 	} );
-
-	test.each( [
-		[ false, false ],
-		[ false, true ],
-		[ true, true ],
-	] )(
-		'express payments should not rendered when UPE preview = %s and UPE = %s',
-		( upeSettingsPreview, upe ) => {
-			const featureFlagContext = {
-				featureFlags: { upeSettingsPreview, upe },
-			};
-
-			render(
-				<WCPaySettingsContext.Provider value={ featureFlagContext }>
-					<PaymentMethods />
-				</WCPaySettingsContext.Provider>
-			);
-
-			const enableWooCommercePaymentText = screen.queryByText(
-				'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
-			);
-
-			expect( enableWooCommercePaymentText ).toBeNull();
-		}
-	);
 
 	test( 'renders the payment methods component and feedback button', () => {
 		render( <PaymentMethods /> );

@@ -401,7 +401,6 @@ class WC_Payments_Features {
 				'upe'                            => self::is_upe_enabled(),
 				'upeSplit'                       => false,
 				'upeDeferred'                    => true,
-				'upeSettingsPreview'             => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),
 				'woopay'                         => self::is_woopay_eligible(),
 				'documents'                      => self::is_documents_section_enabled(),
