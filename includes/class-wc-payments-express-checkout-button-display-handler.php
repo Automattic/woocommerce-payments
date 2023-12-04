@@ -151,7 +151,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 
 					// Silence the filter_input warning because we are sanitizing the input with sanitize_email().
 					// nosemgrep: audit.php.lang.misc.filter-input-no-filter
-					$user_email = sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email' ) ) ) ?? $session_email;
+					$user_email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email' ) ) ) : $session_email;
 
 					$js_config['order_id']      = $order->get_id();
 					$js_config['pay_for_order'] = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );

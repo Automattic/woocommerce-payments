@@ -8,12 +8,12 @@ import React from 'react';
  */
 import Page from 'components/page';
 import DocumentsList from './list';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice } from 'components/test-mode-notice';
 
 export const DocumentsPage = (): JSX.Element => {
 	return (
 		<Page>
-			<TestModeNotice topic={ topics.documents } />
+			<TestModeNotice currentPage="documents" />
 			<DocumentsList />
 		</Page>
 	);
