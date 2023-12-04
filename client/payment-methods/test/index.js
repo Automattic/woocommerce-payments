@@ -485,7 +485,7 @@ describe( 'PaymentMethods', () => {
 
 		const svgIcon = container.querySelectorAll(
 			'.gridicons-notice-outline'
-		)[ 1 ];
+		)[ 0 ];
 
 		expect( svgIcon ).toBeInTheDocument();
 
