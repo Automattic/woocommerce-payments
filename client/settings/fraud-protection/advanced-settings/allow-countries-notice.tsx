@@ -57,16 +57,16 @@ const AllowedCountriesNotice: React.FC< AllowedCountriesNoticeProps > = ( {
 	const supportedCountriesType = getSupportedCountriesType();
 	const settingCountries = getSettingCountries();
 
-	if ( 'all' === supportedCountriesType ) {
-		return (
-			<FraudProtectionRuleCardNotice type={ 'warning' }>
-				{ __(
-					'Enabling this filter will not have any effect because you are selling to all countries.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleCardNotice>
-		);
-	}
+	// if ( 'all' === supportedCountriesType ) {
+	// 	return (
+	// 		<FraudProtectionRuleCardNotice type={ 'warning' }>
+	// 			{ __(
+	// 				'Enabling this filter will not have any effect because you are selling to all countries.',
+	// 				'woocommerce-payments'
+	// 			) }
+	// 		</FraudProtectionRuleCardNotice>
+	// 	);
+	// }
 	return (
 		<FraudProtectionRuleCardNotice type={ 'info' }>
 			{ getNoticeText( supportedCountriesType, isBlocking ) }
