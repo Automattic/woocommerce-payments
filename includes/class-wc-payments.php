@@ -1042,10 +1042,6 @@ class WC_Payments {
 		$customer_controller->register_routes();
 
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
-			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
-			$upe_flag_toggle_controller->register_routes();
-
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
 			$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
 			$survey_controller->register_routes();
