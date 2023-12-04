@@ -21,7 +21,6 @@ import Transactions from '../transactions';
 import Deposits from '../deposits';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
-import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
 import { useDepositDelayDays, useSettings } from '../../data';
 import FraudProtection from '../fraud-protection';
@@ -208,9 +207,7 @@ const SettingsManager = () => {
 				>
 					<LoadableSettingsSection numLines={ 60 }>
 						<ErrorBoundary>
-							<WcPayUpeContextProvider>
-								<PaymentMethods />
-							</WcPayUpeContextProvider>
+							<PaymentMethods />
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</SettingsSection>
@@ -231,13 +228,11 @@ const SettingsManager = () => {
 			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<WcPayUpeContextProvider>
-							<Transactions
-								setTransactionInputsValid={
-									setTransactionInputsValid
-								}
-							/>
-						</WcPayUpeContextProvider>
+						<Transactions
+							setTransactionInputsValid={
+								setTransactionInputsValid
+							}
+						/>
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>

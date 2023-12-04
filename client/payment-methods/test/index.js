@@ -22,8 +22,6 @@ import {
 	useUnselectedPaymentMethod,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
-import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
-import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
 jest.mock( '@woocommerce/components', () => {
@@ -100,11 +98,7 @@ describe( 'PaymentMethods', () => {
 			[ 'card', 'sepa_debit' ],
 		] );
 
-		render(
-			<WcPayUpeContextProvider>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		const cc = screen.getByRole( 'checkbox', {
 			name: 'Credit / Debit card',
@@ -209,11 +203,7 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		render(
-			<WcPayUpeContextProvider>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
 	} );
@@ -235,11 +225,7 @@ describe( 'PaymentMethods', () => {
 
 		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
 
-		render(
-			<WcPayUpeContextProvider>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
 		const afterpay = screen.getByRole( 'checkbox', {
@@ -286,11 +272,7 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		const renderPaymentElements = () => {
-			render(
-				<WcPayUpeContextProvider>
-					<PaymentMethods />
-				</WcPayUpeContextProvider>
-			);
+			render( <PaymentMethods /> );
 		};
 
 		renderPaymentElements();
@@ -316,15 +298,10 @@ describe( 'PaymentMethods', () => {
 			const featureFlagContext = {
 				featureFlags: { upeSettingsPreview, upe },
 			};
-			const upeContext = {
-				status: 'resolved',
-			};
 
 			render(
 				<WCPaySettingsContext.Provider value={ featureFlagContext }>
-					<WcPayUpeContext.Provider value={ upeContext }>
-						<PaymentMethods />
-					</WcPayUpeContext.Provider>
+					<PaymentMethods />
 				</WCPaySettingsContext.Provider>
 			);
 
@@ -337,11 +314,7 @@ describe( 'PaymentMethods', () => {
 	);
 
 	test( 'renders the payment methods component and feedback button', () => {
-		render(
-			<WcPayUpeContextProvider>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		const feedbackButton = screen.queryByRole( 'button', {
 			name: 'Add feedback',
@@ -355,11 +328,7 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	it( 'should only be able to leave feedback', () => {
-		render(
-			<WcPayUpeContextProvider>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 		const kebabMenuWithFeedbackOnly = screen.queryByRole( 'button', {
 			name: 'Add feedback',
 		} );
@@ -382,11 +351,7 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		render(
-			<WcPayUpeContextProvider>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Bancontact/ } )
@@ -428,11 +393,7 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		render(
-			<WcPayUpeContextProvider>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
 
@@ -472,11 +433,7 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		const { container } = render(
-			<WcPayUpeContextProvider>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		const { container } = render( <PaymentMethods /> );
 
 		// Checkbox shouldn't be rendered.
 		expect(

@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardHeader, DropdownMenu } from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
@@ -21,8 +21,6 @@ import {
 	useUnselectedPaymentMethod,
 	useAccountDomesticCurrency,
 } from 'wcpay/data';
-
-import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
 import PAYMENT_METHOD_IDS from './constants';
 
 // Survey modal imports.
@@ -153,7 +151,6 @@ const PaymentMethods = () => {
 		}
 	};
 
-	const { status } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
 
 	return (
@@ -168,11 +165,7 @@ const PaymentMethods = () => {
 				</WcPaySurveyContextProvider>
 			) : null }
 
-			<Card
-				className={ classNames( 'payment-methods', {
-					'is-loading': status === 'pending',
-				} ) }
-			>
+			<Card className={ classNames( 'payment-methods' ) }>
 				<CardHeader className="payment-methods__header">
 					<h4 className="payment-methods__heading">
 						<span>
