@@ -1,5 +1,40 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Transactions filters when filtering by channel should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="online"
+  >
+    Online
+  </option>,
+  <option
+    value="in_person"
+  >
+    In-Person
+  </option>,
+]
+`;
+
+exports[`Transactions filters when filtering by customer country should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="US"
+  >
+    United States of America
+  </option>,
+  <option
+    value="CA"
+  >
+    Canada
+  </option>,
+  <option
+    value="UK"
+  >
+    United Kingdom
+  </option>,
+]
+`;
+
 exports[`Transactions filters when filtering by customer currency should render all types 1`] = `
 HTMLOptionsCollection [
   <option
@@ -16,6 +51,26 @@ HTMLOptionsCollection [
     value="gbp"
   >
     Pound sterling
+  </option>,
+]
+`;
+
+exports[`Transactions filters when filtering by risk level should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="0"
+  >
+    Normal
+  </option>,
+  <option
+    value="1"
+  >
+    Elevated
+  </option>,
+  <option
+    value="2"
+  >
+    Highest
   </option>,
 ]
 `;
