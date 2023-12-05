@@ -62,7 +62,6 @@ const api = new WCPayAPI(
 		accountId: getUPEConfig( 'accountId' ),
 		forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 		locale: getUPEConfig( 'locale' ),
-		isUPESplitEnabled: getUPEConfig( 'isUPESplitEnabled' ),
 		isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		isStripeLinkEnabled,
 	},

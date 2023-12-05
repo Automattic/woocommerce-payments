@@ -338,14 +338,11 @@ export default class WCPayAPI {
 	/**
 	 * Creates a setup intent without confirming it.
 	 *
-	 * @param {string} paymentMethodType Stripe payment method type ID.
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	initSetupIntent( paymentMethodType = '' ) {
-		let path = 'init_setup_intent';
-		if ( this.options.isUPESplitEnabled && paymentMethodType ) {
-			path += `_${ paymentMethodType }`;
-		}
+	initSetupIntent() {
+		const path = 'init_setup_intent';
+
 		return this.request( buildAjaxURL( getConfig( 'wcAjaxUrl' ), path ), {
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
 		} ).then( ( response ) => {
@@ -400,16 +397,13 @@ export default class WCPayAPI {
 	 * @return {Promise} The final promise for the request to the server.
 	 */
 	createIntent( options ) {
-		const { fingerprint, paymentMethodType, orderId } = options;
-		let path = 'create_payment_intent';
+		const { fingerprint, orderId } = options;
+		const path = 'create_payment_intent';
 		const params = {
 			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
 			'wcpay-fingerprint': fingerprint,
 		};
 
-		if ( this.options.isUPESplitEnabled && paymentMethodType ) {
-			path += `_${ paymentMethodType }`;
-		}
 		if ( orderId ) {
 			params.wcpay_order_id = orderId;
 		}
@@ -454,10 +448,8 @@ export default class WCPayAPI {
 		paymentCountry,
 		fingerprint
 	) {
-		let path = 'update_payment_intent';
-		if ( this.options.isUPESplitEnabled ) {
-			path += `_${ selectedUPEPaymentType }`;
-		}
+		const path = 'update_payment_intent';
+
 		return this.request( buildAjaxURL( getConfig( 'wcAjaxUrl' ), path ), {
 			wcpay_order_id: orderId,
 			wc_payment_intent_id: paymentIntentId,
