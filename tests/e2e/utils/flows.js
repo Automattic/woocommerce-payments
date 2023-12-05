@@ -835,8 +835,6 @@ export const merchantWCP = {
 	},
 
 	addMulticurrencyWidget: async () => {
-		await merchantWCP.openWCPSettings();
-		await merchantWCP.activateMulticurrency();
 		await page.goto( `${ WP_ADMIN_DASHBOARD }widgets.php`, {
 			waitUntil: 'networkidle0',
 		} );

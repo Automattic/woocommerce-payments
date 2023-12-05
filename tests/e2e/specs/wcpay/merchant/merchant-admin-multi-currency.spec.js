@@ -9,8 +9,18 @@ const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
 import { merchantWCP, takeScreenshot, uiLoaded } from '../../../utils';
 
 describe( 'Admin Multi-Currency', () => {
+	let wasMulticurrencyEnabled;
+
 	beforeAll( async () => {
 		await merchant.login();
+		wasMulticurrencyEnabled = await merchantWCP.activateMulticurrency();
+	} );
+
+	afterAll( async () => {
+		if ( ! wasMulticurrencyEnabled ) {
+			await merchantWCP.deactivateMulticurrency();
+		}
+		await merchant.logout();
 	} );
 
 	it( 'page should load without any errors', async () => {

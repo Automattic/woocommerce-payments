@@ -46,10 +46,24 @@ const pagesTable = [
 ];
 
 describe( 'Shopper Multi-Currency widget', () => {
-	it( 'should display currency switcher widget if multi-currency is enabled', async () => {
+	let wasMulticurrencyEnabled;
+
+	beforeAll( async () => {
 		await merchant.login();
-		await merchantWCP.addMulticurrencyWidget();
+		wasMulticurrencyEnabled = await merchantWCP.activateMulticurrency();
 		await merchantWCP.addCurrency( 'EUR' );
+	} );
+
+	afterAll( async () => {
+		if ( ! wasMulticurrencyEnabled ) {
+			await merchant.login();
+			await merchantWCP.deactivateMulticurrency();
+			await merchant.logout();
+		}
+	} );
+
+	it( 'should display currency switcher widget if multi-currency is enabled', async () => {
+		await merchantWCP.addMulticurrencyWidget();
 		await shopper.goToShop();
 		await page.waitForSelector( '.widget select[name=currency]', {
 			visible: true,
