@@ -398,7 +398,6 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'upe'                            => self::is_upe_enabled(),
 				'upeSplit'                       => false,
 				'upeDeferred'                    => true,
 				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),
