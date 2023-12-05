@@ -19,7 +19,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	protected $mock_cache;
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_upe'                      => 'upe',
 		'_wcpay_feature_customer_multi_currency'  => 'multiCurrency',
 		'_wcpay_feature_documents'                => 'documents',
 		'_wcpay_feature_auth_and_capture'         => 'isAuthAndCaptureEnabled',
@@ -61,7 +60,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function enabled_flags_provider() {
 		return [
-			'no flags'  => [ [ '_wcpay_feature_upe', 'is_deferred_intent_creation_upe_enabled' ] ],
+			'no flags'  => [ [ 'is_deferred_intent_creation_upe_enabled' ] ],
 			'all flags' => [ array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) ],
 		];
 	}
