@@ -13,6 +13,7 @@ const {
 	clearAndFillInput,
 	setCheckbox,
 	SHOP_PAGE,
+	WP_ADMIN_DASHBOARD,
 } = require( '@woocommerce/e2e-utils' );
 const {
 	fillCardDetails,
@@ -836,7 +837,7 @@ export const merchantWCP = {
 	addMulticurrencyWidget: async () => {
 		await merchantWCP.openWCPSettings();
 		await merchantWCP.activateMulticurrency();
-		await page.goto( `${ config.get( 'url' ) }wp-admin/widgets.php`, {
+		await page.goto( `${ WP_ADMIN_DASHBOARD }widgets.php`, {
 			waitUntil: 'networkidle0',
 		} );
 		await uiLoaded();

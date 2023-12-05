@@ -1,12 +1,11 @@
 /**
  * External dependencies
  */
-const { merchant } = require( '@woocommerce/e2e-utils' );
+const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
  */
-import config from 'config';
 import { merchantWCP, takeScreenshot, uiLoaded } from '../../../utils';
 
 describe( 'Admin Multi-Currency', () => {
@@ -27,7 +26,7 @@ describe( 'Admin Multi-Currency', () => {
 	} );
 
 	it( 'should be possible to add the currency switcher to a post/page', async () => {
-		await page.goto( `${ config.get( 'url' ) }wp-admin/post-new.php` );
+		await page.goto( `${ WP_ADMIN_DASHBOARD }post-new.php` );
 		await uiLoaded();
 
 		const closeWelcomeModal = await page.$( 'button[aria-label="Close"]' );
