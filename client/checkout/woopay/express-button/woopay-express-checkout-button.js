@@ -41,7 +41,6 @@ export const WoopayExpressCheckoutButton = ( {
 		narrow: 'narrow',
 		wide: 'wide',
 	};
-	const sessionDataPromiseRef = useRef( null );
 	const initWoopayRef = useRef( null );
 	const buttonRef = useRef( null );
 	const initialOnClickEventRef = useRef( null );
@@ -305,9 +304,16 @@ export const WoopayExpressCheckoutButton = ( {
 							} );
 					} );
 				} else {
-					// Non-product pages already have pre-fetched session data.
-					sessionDataPromiseRef.current
-						?.then( ( response ) => {
+					request(
+						buildAjaxURL(
+							getConfig( 'wcAjaxUrl' ),
+							'get_woopay_session'
+						),
+						{
+							_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+						}
+					)
+						.then( ( response ) => {
 							iframe.contentWindow.postMessage(
 								{
 									action: 'setPreemptiveSessionData',
@@ -347,16 +353,6 @@ export const WoopayExpressCheckoutButton = ( {
 	useEffect( () => {
 		if ( isPreview || ! getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			return;
-		}
-
-		if ( ! isProductPage ) {
-			// Start to pre-fetch session data for non-product pages.
-			sessionDataPromiseRef.current = request(
-				buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
-				{
-					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-				}
-			).then( ( response ) => response );
 		}
 
 		buttonRef.current.parentElement.style.position = 'relative';
