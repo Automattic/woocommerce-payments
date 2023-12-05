@@ -1,4 +1,4 @@
 Significance: minor
 Type: add
 
-Introduce Customer currency, Deposit currency, Customer Currency and Deposit ID columns to the Transaction list UI and CSV export
+Introduce Customer currency, Deposit currency, Amount in Customer Currency and Deposit ID columns to the Transaction list UI and CSV export
