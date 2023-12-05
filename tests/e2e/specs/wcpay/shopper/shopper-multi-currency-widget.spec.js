@@ -113,15 +113,6 @@ describe( 'Shopper Multi-Currency widget', () => {
 			)
 		);
 
-		// Assert prices aren't affected in the order received page as well.
-		await page.select( '.widget select[name=currency]', 'EUR' );
-		await page.waitForSelector(
-			'.widget select[name=currency] option[value=EUR][selected]'
-		);
-		await expect( page ).toMatch( `${ orderId }` );
-		await expect( page ).toMatch( `${ orderTotal.toFixed( 2 ) } USD` );
-		await page.select( '.widget select[name=currency]', 'USD' );
-
 		await shopperWCP.goToOrders();
 		await page.select( '.widget select[name=currency]', 'EUR' );
 		await page.waitForSelector(
@@ -129,6 +120,35 @@ describe( 'Shopper Multi-Currency widget', () => {
 		);
 		await expect( page ).toMatch( `#${ orderId }` );
 		await expect( page ).toMatch( `${ orderTotal.toFixed( 2 ) } USD` );
+	} );
+
+	it( 'should not affect prices when currency switching at the order received page', async () => {
+		await page.select( '.widget select[name=currency]', 'USD' );
+		await setupProductCheckout(
+			config.get( 'addresses.customer.billing' )
+		);
+		await fillCardDetails( page, config.get( 'cards.basic' ) );
+		await shopper.placeOrder();
+		await expect( page ).toMatch( 'Order received' );
+
+		const orderId = await page.evaluate(
+			() => document.querySelector( 'li.order strong' ).innerText
+		);
+		const orderTotal = Number(
+			await page.evaluate( () =>
+				document
+					.querySelector( 'li.total strong' )
+					.innerText.replace( /[^\d.]/g, '' )
+			)
+		);
+
+		await page.select( '.widget select[name=currency]', 'EUR' );
+		await page.waitForSelector(
+			'.widget select[name=currency] option[value=EUR][selected]'
+		);
+		await expect( page ).toMatch( `${ orderId }` );
+		await expect( page ).toMatch( `${ orderTotal.toFixed( 2 ) } USD` );
+		await page.select( '.widget select[name=currency]', 'USD' );
 		await shopper.logout();
 	} );
 
