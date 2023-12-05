@@ -1,18 +1,21 @@
 <?php
 /**
- * WC_Payments_Compatibility_Service class
+ * Compatibility_Service class
  *
  * @package WooCommerce\Payments
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+namespace WCPay;
+
+use WC_Payments_API_Client;
+use WCPay\Exceptions\API_Exception;
+
+defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
  * Class to send compatibility data to the server.
  */
-class WC_Payments_Compatibility_Service {
+class Compatibility_Service {
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -21,7 +24,7 @@ class WC_Payments_Compatibility_Service {
 	private $payments_api_client;
 
 	/**
-	 * Constructor for WC_Payments_Compatibility_Service.
+	 * Constructor for Compatibility_Service.
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client WooCommerce Payments API client.
 	 */
@@ -35,7 +38,7 @@ class WC_Payments_Compatibility_Service {
 	 * @return void
 	 */
 	public function init_hooks() {
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'update_compatibility_data' ], 404 );
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'update_compatibility_data' ] );
 	}
 
 	/**
@@ -44,10 +47,14 @@ class WC_Payments_Compatibility_Service {
 	 * @return void
 	 */
 	public function update_compatibility_data() {
-		$this->payments_api_client->update_compatibility_data(
-			[
-				'woocommerce_core_version' => defined( 'WC_VERSION' ) ? WC_VERSION : 'WooCommerce core version constant not defined.',
-			]
-		);
+		try {
+			$this->payments_api_client->update_compatibility_data(
+				[
+					'woocommerce_core_version' => defined( 'WC_VERSION' ) ? WC_VERSION : 'WooCommerce core version constant not defined.',
+				]
+			);
+		} catch ( API_Exception $e ) {
+			Logger::error( 'Unable to update compatibility data due to error: ' . $e->getMessage() . ' | ' . $e->get_error_code() );
+		}
 	}
 }
