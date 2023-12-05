@@ -873,7 +873,6 @@ export const merchantWCP = {
 				text: 'Widgets saved.',
 				timeout: 15000,
 			} );
-			await page.waitFor( 1000 );
 		}
 	},
 	createPayForOrder: async () => {
