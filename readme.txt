@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.9.0 - 2023-12-06 =
+= 6.9.0-test-3 - unreleased =
 * Add - Added cleanup code after Payment Processing - RPP
 * Add - Adds new option to track dismissal of PO eligibility modal.
 * Add - Display an error banner on the connect page when the WooCommerce country is not supported.
