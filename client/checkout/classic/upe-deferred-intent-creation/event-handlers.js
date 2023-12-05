@@ -107,7 +107,11 @@ jQuery( function ( $ ) {
 		return processPaymentIfNotUsingSavedMethod( $( 'form#order_review' ) );
 	} );
 
-	if ( getUPEConfig( 'isWooPayEnabled' ) && ! isPreviewing() ) {
+	if (
+		getUPEConfig( 'isWooPayEnabled' ) &&
+		getUPEConfig( 'isWooPayEmailInputEnabled' ) &&
+		! isPreviewing()
+	) {
 		handleWooPayEmailInput( '#billing_email', api );
 	}
 

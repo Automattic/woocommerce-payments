@@ -118,6 +118,26 @@ describe( 'ConnectAccountPage', () => {
 		).toBeInTheDocument();
 	} );
 
+	test( 'should display non supported country banner', () => {
+		global.wcpaySettings = {
+			connectUrl: '/wcpay-connect-url',
+			connect: {
+				country: 'CA',
+				availableCountries: {
+					GB: 'United Kingdom (UK)',
+					US: 'United States (US)',
+				},
+			},
+		};
+		render( <ConnectAccountPage /> );
+
+		expect(
+			screen.queryAllByText(
+				/woopayments is not currently available in your location/i
+			)[ 0 ]
+		).toBeInTheDocument();
+	} );
+
 	test( 'should prompt unsupported countries', () => {
 		global.wcpaySettings = {
 			connectUrl: '/wcpay-connect-url',
