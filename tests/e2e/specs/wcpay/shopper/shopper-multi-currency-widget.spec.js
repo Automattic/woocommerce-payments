@@ -10,6 +10,7 @@ import config from 'config';
 import { merchantWCP, shopperWCP } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
+const PAY_FOR_ORDER_LINK_SELECTOR = '.wc-order-status a';
 const pagesTable = [
 	[
 		'home page',
@@ -155,7 +156,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 	it( 'should not display currency switcher on pay for order page', async () => {
 		await merchant.login();
 		await merchantWCP.createPayForOrder();
-		await page.click( '.wc-order-status a' );
+		await page.click( PAY_FOR_ORDER_LINK_SELECTOR );
 
 		const currencySwitcher = await page.$(
 			'.widget select[name=currency]'
