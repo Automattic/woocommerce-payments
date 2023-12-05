@@ -45,7 +45,6 @@ jQuery( function ( $ ) {
 			isStripeLinkEnabled: isLinkEnabled(
 				getUPEConfig( 'paymentMethodsConfig' )
 			),
-			isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		},
 		apiRequest
 	);
