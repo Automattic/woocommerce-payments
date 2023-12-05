@@ -18,8 +18,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import { getSupportedCountriesType } from '../utils';
 
 const InternationalIPAddressRuleCard: React.FC = () => {
-	const supportedCountriesType = getSupportedCountriesType();
-	const supportsAllCountries = 'all' === supportedCountriesType;
+	const supportsAllCountries = 'all' === getSupportedCountriesType();
 
 	return (
 		<FraudProtectionRuleCard
