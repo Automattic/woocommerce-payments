@@ -36,7 +36,7 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
     -   `default_currency` _string_ - The default currency for the account.
 
 ```shell
-curl -X POST https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
+curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 	-u consumer_key:consumer_secret
 ```
 
@@ -185,7 +185,7 @@ Fetch an overview of account deposits for a single deposit currency. This includ
 -   `default_currency` _string_ - The default currency for the account.
 
 ```shell
-curl -X POST https://example.com/wp-json/wc/v3/payments/deposits/overview \
+curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 	-u consumer_key:consumer_secret
 ```
 
@@ -298,7 +298,7 @@ Fetch a list of deposits.
 -   `total_count` _int_ - The total number of deposits matching the query.
 
 ```shell
-curl -X POST https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
+curl -X GET https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
 	-u consumer_key:consumer_secret
 ```
 
