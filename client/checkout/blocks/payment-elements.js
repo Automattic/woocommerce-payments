@@ -1,9 +1,10 @@
 /**
  * Internal dependencies
  */
-import { getAppearance } from 'wcpay/checkout/upe-styles';
+import './style.scss';
+import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { useFingerprint } from '../hooks';
+import { useFingerprint } from './hooks';
 import { LoadableBlock } from 'wcpay/components/loadable';
 import { Elements } from '@stripe/react-stripe-js';
 import { useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ const PaymentElements = ( { api, ...props } ) => {
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )
 	);
+	const [ fontRules ] = useState( getFontRulesFromPage() );
 	const [ fingerprint, fingerprintErrorMessage ] = useFingerprint();
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const currency = getUPEConfig( 'currency' ).toLowerCase();
@@ -55,6 +57,7 @@ const PaymentElements = ( { api, ...props } ) => {
 					paymentMethodCreation: 'manual',
 					paymentMethodTypes: paymentMethodTypes,
 					appearance: appearance,
+					fonts: fontRules,
 				} }
 			>
 				<PaymentProcessor
