@@ -22,8 +22,8 @@
 							printf(
 								// Translators: placeholders are opening and closing strong HTML tags. %6$s: WooPayments, %7$s: Woo Subscriptions.
 								esc_html__( 'Your store has subscriptions using %6$s Stripe Billing functionality for payment processing. Due to the %1$soff-site billing engine%3$s these subscriptions use,%4$s they will continue to renew even after you deactivate %6$s%5$s.', 'woocommerce-payments' ),
-								'<a href="https://woo.com/document/woopayments/built-in-subscriptions/comparison/#billing-engine" target="_blank">',
-								'<a href="https://woo.com/document/woopayments/built-in-subscriptions/deactivate/#existing-subscriptions" target="_blank">',
+								'<a href="https://woo.com/document/woopayments/subscriptions/stripe-billing/#billing-engines" target="_blank">',
+								'<a href="https://woo.com/document/woopayments/subscriptions/stripe-billing/#deactivate-woopayments-plugin" target="_blank">',
 								'</a>',
 								'<strong>',
 								'</strong>',

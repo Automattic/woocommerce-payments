@@ -2097,6 +2097,8 @@ class WC_Payments_API_Client {
 			'number'              => $order->get_order_number(),
 			'url'                 => $order->get_edit_order_url(),
 			'customer_url'        => $this->get_customer_url( $order ),
+			'customer_name'       => trim( $order->get_formatted_billing_full_name() ),
+			'customer_email'      => $order->get_billing_email(),
 			'fraud_meta_box_type' => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
 		];
 
@@ -2396,13 +2398,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Delete account.
 	 *
+	 * @param bool $test_mode Whether we are in test mode or not.
+	 *
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function delete_account() {
+	public function delete_account( bool $test_mode = false ) {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
+				'test_mode' => $test_mode,
 			],
 			self::ACCOUNTS_API . '/delete',
 			self::POST,

@@ -125,9 +125,12 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
 		// Confirm dispute status is Won.
-		await page.waitForSelector( 'li.woocommerce-timeline-item' );
-		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Dispute won! The bank ruled in your favor.',
-		} );
+		await page.waitForSelector( '.transaction-details-dispute-footer' );
+		await expect( page ).toMatchElement(
+			'.transaction-details-dispute-footer',
+			{
+				text: 'Good news! You won this dispute',
+			}
+		);
 	} );
 } );

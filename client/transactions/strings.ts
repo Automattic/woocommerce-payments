@@ -28,3 +28,16 @@ export const sourceDevice = {
 	android: __( 'Android', 'woocommerce-payments' ),
 	ios: __( 'iPhone', 'woocommerce-payments' ),
 };
+
+// Mapping of transaction channel type string.
+export const channel = {
+	online: __( 'Online', 'woocommerce-payments' ),
+	in_person: __( 'In-Person', 'woocommerce-payments' ),
+};
+
+// Mapping of transaction risk level string.
+export const riskLevel = {
+	'0': __( 'Normal', 'woocommerce-payments' ),
+	'1': __( 'Elevated', 'woocommerce-payments' ),
+	'2': __( 'Highest', 'woocommerce-payments' ),
+};

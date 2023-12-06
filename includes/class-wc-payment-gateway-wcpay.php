@@ -374,12 +374,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
 				'type'        => 'select',
 				'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
-				'default'     => 'default',
+				'default'     => 'medium',
 				'desc_tip'    => true,
 				'options'     => [
-					'default' => __( 'Default', 'woocommerce-payments' ),
-					'medium'  => __( 'Medium', 'woocommerce-payments' ),
-					'large'   => __( 'Large', 'woocommerce-payments' ),
+					'small'  => __( 'Small', 'woocommerce-payments' ),
+					'medium' => __( 'Medium', 'woocommerce-payments' ),
+					'large'  => __( 'Large', 'woocommerce-payments' ),
 				],
 			],
 			'platform_checkout_button_locations' => [
@@ -711,7 +711,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			WC_Payments_Features::is_woopay_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
-			! $this->is_upe_incompatible_with_woopay() &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
 			WC()->cart instanceof WC_Cart &&
@@ -722,16 +721,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
-	}
-
-	/**
-	 * The legacy UPE is incompatible with WooPay, whereas split UPE and deferred intent UPE are compatible.
-	 * This method checks if there's incompatibility between WooPay and currently enabled UPE settings, applying the rule above.
-	 *
-	 * $return bool - true if UPE is incompatible with WooPay, false otherwise.
-	 */
-	private function is_upe_incompatible_with_woopay() {
-		return WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_deferred_intent_enabled();
 	}
 
 	/**
@@ -946,10 +935,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
-			if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
-			}
-
 			$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 			if ( is_array( $check_session_order ) ) {
 				return $check_session_order;
@@ -1048,10 +1033,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order )
 				);
 				$order->add_order_note( $note );
-			}
-
-			if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 			}
 
 			// Re-throw the exception after setting everything up.
@@ -1345,8 +1326,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				// For Stripe Link & SEPA with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
-				if ( WC_Payments_Features::is_upe_deferred_intent_enabled() && $this->is_mandate_data_required() ) {
+				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
+				if ( $this->is_mandate_data_required() ) {
 					$request->set_mandate_data( $this->get_mandate_data() );
 				}
 
@@ -1420,7 +1401,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_hook_args( $payment_information, false, $save_user_in_woopay );
 
 				if (
-					WC_Payments_Features::is_upe_deferred_intent_enabled() &&
 					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
 					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
 					) {
@@ -1578,10 +1558,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string|null Payment method to use for the intent.
 	 */
 	public function get_payment_method_to_use_for_intent() {
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-			return $this->get_payment_methods_from_gateway_id( $requested_payment_method )[0];
-		}
+		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		return $this->get_payment_methods_from_gateway_id( $requested_payment_method )[0];
 	}
 
 	/**
@@ -1627,20 +1605,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			// If split or deferred intent UPE is enabled and $gateway_id is `woocommerce_payments`, this must be the CC gateway.
-			// We only need to return single `card` payment method, adding `link` since deferred intent UPE gateway is compatible with Link.
-			$payment_methods = [ Payment_Method::CARD ];
-			if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
-				$payment_methods[] = Payment_Method::LINK;
-			}
-
-			return $payment_methods;
+		// If $gateway_id is `woocommerce_payments`, this must be the CC gateway.
+		// We only need to return single `card` payment method, adding `link` since Stripe Link is also supported.
+		$payment_methods = [ Payment_Method::CARD ];
+		if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
+			$payment_methods[] = Payment_Method::LINK;
 		}
 
-		// $gateway_id must be `woocommerce_payments` and gateway is either legacy UPE or legacy card.
-		// Find the relevant gateway and return all available payment methods.
-		return $eligible_payment_methods;
+		return $payment_methods;
 	}
 
 	/**
@@ -2106,13 +2078,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( ! $is_woopay_enabled ) {
 				WooPay_Order_Status_Sync::remove_webhook();
-			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
-				update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
-
-				if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-					wc_admin_record_tracks_event( 'wcpay_deferred_intent_upe_enabled' );
-				}
 			}
 		}
 	}

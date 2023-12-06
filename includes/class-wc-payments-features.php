@@ -21,9 +21,7 @@ class WC_Payments_Features {
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME = '_wcpay_feature_woopay_first_party_auth';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
-	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
 	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
-	const DEFERRED_UPE_SERVER_FLAG_NAME     = 'is_deferred_intent_creation_upe_enabled';
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
 	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
 
@@ -33,7 +31,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_enabled() {
-		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled();
+		return true;
 	}
 
 	/**
@@ -42,55 +40,7 @@ class WC_Payments_Features {
 	 * @return string
 	 */
 	public static function get_enabled_upe_type() {
-		if ( self::is_upe_deferred_intent_enabled() ) {
-			return 'deferred_intent';
-		}
-
-		if ( self::is_upe_split_enabled() ) {
-			return 'split';
-		}
-
-		if ( self::is_upe_legacy_enabled() ) {
-			return 'legacy';
-		}
-
-		return '';
-	}
-
-	/**
-	 * Checks whether the legacy UPE gateway is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_upe_legacy_enabled() {
-		return '1' === get_option( self::UPE_FLAG_NAME, '0' );
-	}
-
-	/**
-	 * Checks whether the Split-UPE gateway is enabled
-	 */
-	public static function is_upe_split_enabled() {
-		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
-	}
-
-	/**
-	 * Checks whether the Split UPE with deferred intent creation is enabled
-	 */
-	public static function is_upe_deferred_intent_enabled() {
-		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		return is_array( $account ) && ( $account[ self::DEFERRED_UPE_SERVER_FLAG_NAME ] ?? false );
-	}
-
-	/**
-	 * Checks for the requirements to have the split-UPE enabled.
-	 */
-	private static function is_upe_split_eligible() {
-		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		if ( empty( $account['capabilities']['sepa_debit_payments'] ) ) {
-			return true;
-		}
-
-		return 'active' !== $account['capabilities']['sepa_debit_payments'];
+		return 'deferred_intent';
 	}
 
 	/**
@@ -352,15 +302,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Progressive Onboarding is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_progressive_onboarding_enabled(): bool {
-		return '1' === get_option( self::PROGRESSIVE_ONBOARDING_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Checks whether the Fraud and Risk Tools feature flag is enabled.
 	 *
 	 * @return  bool
@@ -458,8 +399,8 @@ class WC_Payments_Features {
 		return array_filter(
 			[
 				'upe'                            => self::is_upe_enabled(),
-				'upeSplit'                       => self::is_upe_split_enabled(),
-				'upeDeferred'                    => self::is_upe_deferred_intent_enabled(),
+				'upeSplit'                       => false,
+				'upeDeferred'                    => true,
 				'upeSettingsPreview'             => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),
 				'woopay'                         => self::is_woopay_eligible(),
@@ -467,7 +408,6 @@ class WC_Payments_Features {
 				'clientSecretEncryption'         => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
-				'progressiveOnboarding'          => self::is_progressive_onboarding_enabled(),
 				'isPayForOrderFlowEnabled'       => self::is_pay_for_order_flow_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 				'isRefundControlsEnabled'        => self::is_streamline_refunds_enabled(),

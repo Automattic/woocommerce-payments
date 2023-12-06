@@ -96,7 +96,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_wcpay_connect' ], 12 ); // Run this after the redirect to onboarding logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect_or_overview' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_flow_to_overview' ] );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 
@@ -236,6 +236,21 @@ class WC_Payments_Account {
 
 		$account = $this->get_cached_account_data();
 		return false === $account['details_submitted'];
+	}
+
+	/**
+	 * Checks if the account has completed onboarding/KYC.
+	 * Returns true if the onboarding/KYC is completed.
+	 *
+	 * @return bool True if the account is connected and details are submitted, false otherwise.
+	 */
+	public function is_account_fully_onboarded(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return true === $account['details_submitted'];
 	}
 
 	/**
@@ -517,9 +532,10 @@ class WC_Payments_Account {
 	public function get_progressive_onboarding_details(): array {
 		$account = $this->get_cached_account_data();
 		return [
-			'isEnabled'        => $account['progressive_onboarding']['is_enabled'] ?? false,
-			'isComplete'       => $account['progressive_onboarding']['is_complete'] ?? false,
-			'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+			'isEnabled'                   => $account['progressive_onboarding']['is_enabled'] ?? false,
+			'isComplete'                  => $account['progressive_onboarding']['is_complete'] ?? false,
+			'isNewFlowEnabled'            => WC_Payments_Utils::should_use_new_onboarding_flow(),
+			'isEligibilityModalDismissed' => get_option( WC_Payments_Onboarding_Service::ONBOARDING_ELIGIBILITY_MODAL_OPTION, false ),
 		];
 	}
 
@@ -741,7 +757,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Redirect directly to onboarding page if come from WC Admin task and are in treatment mode.
+		// Redirect directly to onboarding page if come from WC Admin task.
 		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
 		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
 			$this->redirect_to_onboarding_flow_page();
@@ -818,15 +834,15 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects WooPayments settings to the connect page for partially
-	 * onboarded accounts.
+	 * Redirects WooPayments settings to the overview page for partially
+	 * onboarded accounts, and the connect page when there is no account.
 	 *
 	 * Every WooPayments page except connect are already hidden, but merchants can still access
 	 * it through WooCommerce settings.
 	 *
-	 * @return bool True if the redirection happened, false otherwise.
+	 * @return bool True if a redirection happened, false otherwise.
 	 */
-	public function maybe_redirect_settings_to_connect(): bool {
+	public function maybe_redirect_settings_to_connect_or_overview(): bool {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
@@ -842,22 +858,37 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Account not partially onboarded, don't redirect.
-		if ( ! $this->is_account_partially_onboarded() ) {
+		// Account fully onboarded, don't redirect.
+		if ( $this->is_account_fully_onboarded() ) {
 			return false;
 		}
 
-		$this->redirect_to(
-			admin_url(
-				add_query_arg(
-					[
-						'page' => 'wc-admin',
-						'path' => '/payments/connect',
-					],
-					'admin.php'
+		// Account partially onboarded, redirect to overview.
+		if ( $this->is_account_partially_onboarded() ) {
+			$this->redirect_to(
+				admin_url(
+					add_query_arg(
+						[
+							'page' => 'wc-admin',
+							'path' => '/payments/overview',
+						],
+						'admin.php'
+					)
 				)
-			)
-		);
+			);
+		} else {
+			$this->redirect_to(
+				admin_url(
+					add_query_arg(
+						[
+							'page' => 'wc-admin',
+							'path' => '/payments/connect',
+						],
+						'admin.php'
+					)
+				)
+			);
+		}
 
 		return true;
 	}
@@ -883,6 +914,14 @@ class WC_Payments_Account {
 		// We're not in the onboarding flow page, don't redirect.
 		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			return false;
+		}
+
+		// We check it here after refreshing the cache, because merchant might have clicked back in browser (after Stripe KYC).
+		// That will mean that no redirect from Stripe happened and user might be able to go through onboarding again if no webhook processed yet.
+		// That might cause issues if user selects dev onboarding after live one.
+		// Shouldn't be called with force disconnected option enabled, otherwise we'll get current account data.
+		if ( ! WC_Payments_Utils::force_disconnected_enabled() ) {
+			$this->refresh_account_data();
 		}
 
 		// Don't redirect merchants that have no Stripe account connected.
@@ -930,6 +969,12 @@ class WC_Payments_Account {
 				if ( $this->is_account_partially_onboarded() ) {
 					$args         = $_GET;
 					$args['type'] = 'complete_kyc_link';
+
+					// Allow progressive onboarding accounts to continue onboarding without payout collection.
+					if ( $this->is_progressive_onboarding_in_progress() ) {
+						$args['is_progressive_onboarding'] = $this->is_progressive_onboarding_in_progress() ?? false;
+					}
+
 					$this->redirect_to_account_link( $args );
 				}
 
@@ -975,9 +1020,10 @@ class WC_Payments_Account {
 
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
-			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
-			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
-			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
+			$from_wc_admin_task           = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
+			$from_wc_admin_incentive_page = false !== strpos( wp_get_referer(), 'path=%2Fwc-pay-welcome-page' );
+			$from_wc_pay_connect_page     = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
+			if ( $from_wc_admin_task || $from_wc_pay_connect_page || $from_wc_admin_incentive_page ) {
 				// Redirect non-onboarded account to the onboarding flow, otherwise to payments overview page.
 				if ( ! $this->is_stripe_connected() ) {
 					$this->redirect_to_onboarding_flow_page();
@@ -987,11 +1033,16 @@ class WC_Payments_Account {
 				}
 			}
 
+			// Handle the flow for a builder moving from test to live.
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
-				// Delete the account if the dev mode is enabled otherwise it'll cause issues to onboard again.
-				if ( WC_Payments::mode()->is_dev() ) {
-					$this->payments_api_client->delete_account();
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+
+				// Delete the account if the test mode is enabled otherwise it'll cause issues to onboard again.
+				if ( $test_mode ) {
+					$this->payments_api_client->delete_account( $test_mode );
 				}
+
+				// Set the test mode to false now that we are handling a real onboarding.
 				WC_Payments_Onboarding_Service::set_test_mode( false );
 				$this->redirect_to_onboarding_flow_page();
 				return;
@@ -1275,8 +1326,13 @@ class WC_Payments_Account {
 		// Clear account transient when generating Stripe's oauth data.
 		$this->clear_cache();
 
+		// Flags to enable progressive onboarding and collect payout requirements.
+		$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+		$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
+
 		// Enable dev mode if the test_mode query param is set.
 		$test_mode = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
+
 		if ( $test_mode ) {
 			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
@@ -1284,14 +1340,19 @@ class WC_Payments_Account {
 		// Clear persisted onboarding flow state.
 		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
 
+		if ( ! $collect_payout_requirements ) {
+			// Clear onboarding related account options if this is an initial onboarding attempt.
+			WC_Payments_Onboarding_Service::clear_account_options();
+		} else {
+			// Since we assume user has already either gotten here from the eligibility modal,
+			// or has already dismissed it, we should set the modal as dismissed so it doesn't display again.
+			WC_Payments_Onboarding_Service::set_onboarding_eligibility_modal_dismissed();
+		}
+
 		$return_url = $this->get_onboarding_return_url( $wcpay_connect_from );
 		if ( ! empty( $additional_args ) ) {
 			$return_url = add_query_arg( $additional_args, $return_url );
 		}
-
-		// Flags to enable progressive onboarding and collect payout requirements.
-		$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
-		$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
 		// Onboarding self-assessment data.
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
@@ -1329,26 +1390,7 @@ class WC_Payments_Account {
 			}
 			$account_data = [
 				'setup_mode'    => 'test',
-				'country'       => 'US',
 				'business_type' => 'individual',
-				'individual'    => [
-					'first_name' => 'John',
-					'last_name'  => 'Woolliams',
-					'address'    => [
-						'country'     => 'US',
-						'state'       => 'California',
-						'city'        => 'South San Francisco',
-						'line1'       => '1040 Grand Ave',
-						'postal_code' => '94080',
-					],
-					'ssn_last_4' => '0000',
-					'phone'      => '+10000000000',
-					'dob'        => [
-						'day'   => '1',
-						'month' => '1',
-						'year'  => '1980',
-					],
-				],
 				'mcc'           => '5734',
 				'url'           => $url,
 				'business_name' => get_bloginfo( 'name' ),
@@ -1870,13 +1912,13 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects to the onboarding flow page if the Progressive Onboarding feature flag is enabled or in the experiment treatment mode.
+	 * Redirects to the onboarding flow page.
 	 * Also checks if the server is connected and try to connect it otherwise.
 	 *
 	 * @return void
 	 */
 	private function redirect_to_onboarding_flow_page() {
-		if ( ! WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
+		if ( ! WC_Payments_Utils::should_use_new_onboarding_flow() ) {
 			return;
 		}
 

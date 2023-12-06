@@ -19,13 +19,12 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	protected $mock_cache;
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_upe'                     => 'upe',
-		'_wcpay_feature_upe_split'               => 'upeSplit',
-		'_wcpay_feature_upe_settings_preview'    => 'upeSettingsPreview',
-		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
-		'_wcpay_feature_documents'               => 'documents',
-		'_wcpay_feature_auth_and_capture'        => 'isAuthAndCaptureEnabled',
-		'_wcpay_feature_progressive_onboarding'  => 'progressiveOnboarding',
+		'_wcpay_feature_upe'                      => 'upe',
+		'_wcpay_feature_upe_settings_preview'     => 'upeSettingsPreview',
+		'_wcpay_feature_customer_multi_currency'  => 'multiCurrency',
+		'_wcpay_feature_documents'                => 'documents',
+		'_wcpay_feature_auth_and_capture'         => 'isAuthAndCaptureEnabled',
+		'is_deferred_intent_creation_upe_enabled' => 'upeDeferred',
 	];
 
 	public function set_up() {
@@ -63,7 +62,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function enabled_flags_provider() {
 		return [
-			'no flags'  => [ [] ],
+			'no flags'  => [ [ '_wcpay_feature_upe', 'is_deferred_intent_creation_upe_enabled' ] ],
 			'all flags' => [ array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) ],
 		];
 	}
@@ -232,7 +231,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_woopay_express_checkout_enabled_returns_false_when_woopay_eligible_is_false() {
 		add_filter(
-			'pre_option_' . WC_Payments_Features::PROGRESSIVE_ONBOARDING_FLAG_NAME,
+			'pre_option_' . WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME,
 			function ( $pre_option, $option, $default ) {
 				return '1';
 			},
@@ -241,81 +240,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		);
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
 		$this->assertFalse( WC_Payments_Features::is_woopay_express_checkout_enabled() );
-	}
-
-	public function test_is_progressive_onboarding_enabled_returns_true() {
-		add_filter(
-			'pre_option_' . WC_Payments_Features::PROGRESSIVE_ONBOARDING_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '1';
-			},
-			10,
-			3
-		);
-		$this->assertTrue( WC_Payments_Features::is_progressive_onboarding_enabled() );
-	}
-
-	public function test_is_progressive_onboarding_enabled_returns_false_when_flag_is_false() {
-		add_filter(
-			'pre_option_' . WC_Payments_Features::PROGRESSIVE_ONBOARDING_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '0';
-			},
-			10,
-			3
-		);
-		$this->assertFalse( WC_Payments_Features::is_progressive_onboarding_enabled() );
-		$this->assertArrayNotHasKey( 'progressiveOnboarding', WC_Payments_Features::to_array() );
-	}
-
-	public function test_is_progressive_onboarding_enabled_returns_false_when_flag_is_not_set() {
-		$this->assertFalse( WC_Payments_Features::is_progressive_onboarding_enabled() );
-	}
-
-	public function test_split_upe_disabled_with_ineligible_merchant() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'capabilities' => [ 'sepa_debit_payments' => 'active' ] ] );
-		add_filter(
-			'pre_option_' . WC_Payments_Features::UPE_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '0';
-			},
-			10,
-			3
-		);
-		add_filter(
-			'pre_option_' . WC_Payments_Features::UPE_SPLIT_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '0';
-			},
-			10,
-			3
-		);
-		add_filter(
-			'pre_option_' . WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '0';
-			},
-			10,
-			3
-		);
-
-		$this->assertFalse( WC_Payments_Features::is_upe_enabled() );
-		$this->assertFalse( WC_Payments_Features::is_upe_legacy_enabled() );
-		$this->assertFalse( WC_Payments_Features::is_upe_split_enabled() );
-		$this->assertFalse( WC_Payments_Features::is_upe_deferred_intent_enabled() );
-	}
-
-	public function test_deferred_upe_enabled_with_sepa() {
-		$this->mock_cache->method( 'get' )->willReturn(
-			[
-				'capabilities'                            => [ 'sepa_debit_payments' => 'active' ],
-				'is_deferred_intent_creation_upe_enabled' => true,
-			]
-		);
-
-		$this->assertTrue( WC_Payments_Features::is_upe_enabled() );
-		$this->assertFalse( WC_Payments_Features::is_upe_legacy_enabled() );
-		$this->assertTrue( WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
 	public function test_is_wcpay_frt_review_feature_active_returns_true() {

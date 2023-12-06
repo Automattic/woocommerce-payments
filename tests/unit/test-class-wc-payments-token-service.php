@@ -114,7 +114,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
 
-		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 'woocommerce_payments_sepa_debit', $token->get_gateway_id() );
 		$this->assertEquals( 1, $token->get_user_id() );
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
@@ -643,6 +643,26 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
+	}
+
+	/**
+	 * @dataProvider valid_and_invalid_payment_methods_for_comparison_provider
+	 */
+	public function test_is_valid_payment_method_type_for_gateway( $payment_method_type, $gateway_id, $expected_result ) {
+		$this->assertEquals(
+			$expected_result,
+			$this->token_service->is_valid_payment_method_type_for_gateway( $payment_method_type, $gateway_id )
+		);
+	}
+
+	public function valid_and_invalid_payment_methods_for_comparison_provider() {
+		return [
+			[ 'card', 'woocommerce_payments', true ],
+			[ 'sepa_debit', 'woocommerce_payments_sepa_debit', true ],
+			[ 'link', 'woocommerce_payments', true ],
+			[ 'card', 'card', false ],
+			[ 'card', 'woocommerce_payments_bancontact', false ],
+		];
 	}
 
 	private function generate_card_pm_response( $stripe_id ) {
