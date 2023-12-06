@@ -13,6 +13,7 @@ const {
 	clearAndFillInput,
 	setCheckbox,
 	SHOP_PAGE,
+	WP_ADMIN_DASHBOARD,
 } = require( '@woocommerce/e2e-utils' );
 const {
 	fillCardDetails,
@@ -831,5 +832,64 @@ export const merchantWCP = {
 			await merchantWCP.wcpSettingsSaveChanges();
 		}
 		return wasInitiallyEnabled;
+	},
+
+	addMulticurrencyWidget: async () => {
+		await page.goto( `${ WP_ADMIN_DASHBOARD }widgets.php`, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+
+		const closeWelcomeModal = await page.$( 'button[aria-label="Close"]' );
+		if ( closeWelcomeModal ) {
+			await closeWelcomeModal.click();
+		}
+
+		const isWidgetAdded = await page.$(
+			'.wp-block iframe[srcdoc*=\'name="currency"\']'
+		);
+		if ( ! isWidgetAdded ) {
+			await page.click( 'button[aria-label="Add block"]' );
+
+			const searchInput = await page.waitForSelector(
+				'input.components-search-control__input'
+			);
+			searchInput.type( 'switcher', { delay: 20 } );
+
+			await page.waitForSelector(
+				'button.components-button[role="option"]'
+			);
+			await page.click( 'button.components-button[role="option"]' );
+			await page.waitFor( 2000 );
+			await page.waitForSelector(
+				'.edit-widgets-header .edit-widgets-header__actions button.is-primary'
+			);
+			await page.click(
+				'.edit-widgets-header .edit-widgets-header__actions button.is-primary'
+			);
+			await expect( page ).toMatchElement( '.components-snackbar', {
+				text: 'Widgets saved.',
+				timeout: 15000,
+			} );
+		}
+	},
+	createPayForOrder: async () => {
+		await merchant.openNewOrder();
+		await page.click( 'button.add-line-item' );
+		await page.click( 'button.add-order-item' );
+		await page.click( 'select.wc-product-search' );
+		await page.type(
+			'.select2-search--dropdown > input',
+			config.get( 'products.simple.name' ),
+			{
+				delay: 20,
+			}
+		);
+		await page.waitFor( 2000 );
+		await page.click( '.select2-results .select2-results__option' );
+		await page.click( '#btn-ok' );
+		await page.waitFor( 2000 );
+		await page.click( 'button.save_order' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 	},
 };
