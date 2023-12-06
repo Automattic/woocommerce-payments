@@ -1159,6 +1159,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Updates a charge.
+	 *
+	 * @param string $charge_id ID of the charge to update.
+	 * @param array  $data arameters to send to the transaction endpoint. Optional. Default is an empty array.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function update_charge( string $charge_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::CHARGES_API . '/' . $charge_id,
+			self::POST
+		);
+	}
+
+	/**
 	 * Fetch a WCPay subscription.
 	 *
 	 * @param string $wcpay_subscription_id Data used to create subscription.
