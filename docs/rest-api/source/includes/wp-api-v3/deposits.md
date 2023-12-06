@@ -350,7 +350,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
 }
 ```
 
-## List deposits summary
+## Get deposits summary
 
 Fetches a summary of deposits matching the query. This includes the total number of deposits matching the query and a list of deposits.
 
@@ -395,5 +395,55 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/summary \
 	"store_currencies": [ "chf", "eur", "gbp", "nok", "sek", "usd", "dkk" ],
 	"total": 5744395,
 	"currency": "eur"
+}
+```
+
+## Get deposit
+
+Fetches a deposit by ID.
+
+### HTTP request
+
+<div class="api-endpoint">
+	<div class="endpoint-data">
+		<i class="label label-get">GET</i>
+		<h6>/wp-json/wc/v3/payments/deposits/{deposit_id}</h6>
+	</div>
+</div>
+
+### Returns
+
+-   `id` _string_ - The deposit ID.
+-   `date` _int_ - The date the deposit was paid in unix timestamp format.
+-   `type` _string_ - The type of deposit. `deposit` `withdrawal`
+-   `amount` _int_ - The amount of the deposit.
+-   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `bankAccount` _string_ - The bank account the deposit was paid to.
+-   `currency` _string_ - The currency of the deposit. E.g. `eur`
+-   `automatic` _bool_ - Whether the deposit was paid automatically.
+-   `fee` _int_ - The fee amount of the deposit.
+-   `fee_percentage` _int_ - The fee percentage of the deposit.
+-   `created` _int_ - The date the deposit was created in unix timestamp format.
+
+```shell
+curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
+	-u consumer_key:consumer_secret
+```
+
+> JSON response example:
+
+```json
+{
+	"id": "po_1OGAFOCBu6Jj8nBruJbMbGqD",
+	"date": 1701043200000,
+	"type": "deposit",
+	"amount": 114696,
+	"status": "paid",
+	"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
+	"currency": "eur",
+	"automatic": true,
+	"fee": 0,
+	"fee_percentage": 0,
+	"created": 1701043200
 }
 ```
