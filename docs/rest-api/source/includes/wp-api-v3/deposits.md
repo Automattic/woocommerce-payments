@@ -249,3 +249,106 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/deposits/overview \
 	}
 }
 ```
+
+## List deposits
+
+Fetch a list of deposits.
+
+### HTTP request
+
+<div class="api-endpoint">
+	<div class="endpoint-data">
+		<i class="label label-get">GET</i>
+		<h6>/wp-json/wc/v3/payments/deposits</h6>
+	</div>
+</div>
+
+### Required parameters
+
+-   `sort` _string_ - Field on which to sort, e.g. `date`
+
+### Optional parameters
+
+-   `match` _string_
+-   `store_currency_is` _string_
+-   `date_before` _string_
+-   `date_after` _string_
+-   `date_between` _array_
+-   `status_is` _string_
+-   `status_is_not` _string_
+-   `sort` _string_
+-   `direction` _string_
+-   `page` _integer_
+-   `pagesize` _integer_
+
+### Returns
+
+-   `data` _array_ - List of deposit objects.
+    -   `id` _string_ - The deposit ID.
+    -   `date` _int_ - The date the deposit was paid in unix timestamp format.
+    -   `type` _string_ - The type of deposit. `deposit` `withdrawal`
+    -   `amount` _int_ - The amount of the deposit.
+    -   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+    -   `bankAccount` _string_ - The bank account the deposit was paid to.
+    -   `currency` _string_ - The currency of the deposit. E.g. `eur`
+    -   `automatic` _bool_ - Whether the deposit was paid automatically.
+    -   `fee` _int_ - The fee amount of the deposit.
+    -   `fee_percentage` _int_ - The fee percentage of the deposit.
+    -   `created` _int_ - The date the deposit was created in unix timestamp format.
+-   `total_count` _int_ - The total number of deposits matching the query.
+
+```shell
+curl -X POST https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
+	-u consumer_key:consumer_secret
+```
+
+> JSON response example:
+
+```json
+{
+	"data": [
+		{
+			"id": "wcpay_estimated_weekly_eur_1702598400",
+			"date": 1702598400000,
+			"type": "deposit",
+			"amount": 458784,
+			"status": "estimated",
+			"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
+			"currency": "eur",
+			"automatic": true,
+			"fee": 0,
+			"fee_percentage": 0,
+			"created": 1702598400
+		},
+		{
+			"id": "po_1OJ466CBu6Jj8nBr38JRxdNE",
+			"date": 1701648000000,
+			"type": "deposit",
+			"amount": 802872,
+			"status": "paid",
+			"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
+			"currency": "eur",
+			"automatic": true,
+			"fee": 0,
+			"fee_percentage": 0,
+			"created": 1701648000
+		},
+		{
+			"id": "po_1OHylNCBu6Jj8nBr95tE8scS",
+			"date": 1701302400000,
+			"type": "deposit",
+			"amount": 471784,
+			"status": "paid",
+			"bankAccount": "STRIPE TEST BANK •••• 6789 (USD)",
+			"currency": "usd",
+			"automatic": true,
+			"fee": 0,
+			"fee_percentage": 0,
+			"created": 1701302400
+		}
+	],
+	"total_count": 3
+}
+```
+
+/wp-json/wc/v3/payments/deposits/overview-all
