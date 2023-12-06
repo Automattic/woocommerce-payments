@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improved error message for invalid payment method
