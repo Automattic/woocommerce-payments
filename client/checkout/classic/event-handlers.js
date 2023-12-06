@@ -26,6 +26,7 @@ import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
+import wcpayTracks from 'tracks';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -58,6 +59,18 @@ jQuery( function ( $ ) {
 
 	$( 'form.checkout' ).on( generateCheckoutEventNames(), function () {
 		return processPaymentIfNotUsingSavedMethod( $( this ) );
+	} );
+
+	$( 'form.checkout' ).on( 'submit', function () {
+		const isWCPay = document.getElementById(
+			'payment_method_woocommerce_payments'
+		).checked;
+
+		if ( ! isWCPay ) {
+			return;
+		}
+
+		wcpayTracks.recordUserEvent( wcpayTracks.events.PLACE_ORDER_CLICK );
 	} );
 
 	window.addEventListener( 'hashchange', () => {

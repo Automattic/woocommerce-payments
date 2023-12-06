@@ -90,6 +90,7 @@ const events = {
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
 	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',
+	PLACE_ORDER_CLICK: 'checkout_place_order_button_click',
 	// WCPay Subscriptions empty state - prompts to connect to WCPay or create product.
 	SUBSCRIPTIONS_EMPTY_STATE_VIEW: 'wcpay_subscriptions_empty_state_view',
 	SUBSCRIPTIONS_EMPTY_STATE_FINISH_SETUP:
