@@ -7,14 +7,14 @@ import {
 	processPayment,
 	renderTerms,
 } from '../payment-processing';
-import { getAppearance } from '../../../upe-styles';
+import { getAppearance } from '../../upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getFingerprint } from 'wcpay/checkout/utils/fingerprint';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import { waitFor } from '@testing-library/react';
 import { getSelectedUPEGatewayPaymentMethod } from 'wcpay/checkout/utils/upe';
 
-jest.mock( '../../../upe-styles' );
+jest.mock( '../../upe-styles' );
 
 jest.mock( 'wcpay/checkout/utils/upe' );
 

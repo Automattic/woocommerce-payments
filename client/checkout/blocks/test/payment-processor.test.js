@@ -9,17 +9,14 @@ import { useEffect } from 'react';
 import PaymentProcessor from '../payment-processor';
 import { PaymentElement } from '@stripe/react-stripe-js';
 
-jest.mock(
-	'wcpay/checkout/classic/upe-deferred-intent-creation/payment-processing',
-	() => ( {
-		validateElements: jest.fn().mockResolvedValue(),
-	} )
-);
+jest.mock( 'wcpay/checkout/classic/payment-processing', () => ( {
+	validateElements: jest.fn().mockResolvedValue(),
+} ) );
 jest.mock( 'wcpay/checkout/utils/upe', () => ( {
 	...jest.requireActual( 'wcpay/checkout/utils/upe' ),
 	useCustomerData: jest.fn().mockReturnValue( { billingAddress: {} } ),
 } ) );
-jest.mock( '../../hooks', () => ( {
+jest.mock( '../hooks', () => ( {
 	usePaymentCompleteHandler: () => null,
 } ) );
 jest.mock( '@woocommerce/blocks-registry', () => ( {
