@@ -129,7 +129,12 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	public function get_all_deposits_overviews() {
 		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API . '/overview-all' );
 		$request->assign_hook( 'wcpay_get_all_deposits_overviews' );
-		return $request->handle_rest_request();
+
+		$response = $request->handle_rest_request();
+		if ( $response['deposit']['next_scheduled'] !== null ) {
+			$response['deposit']['next_scheduled'] = [];
+		}
+		return $response;
 	}
 
 	/**
