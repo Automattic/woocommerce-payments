@@ -23,6 +23,15 @@ class WC_Payments_Features {
 	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
 
 	/**
+	 * Checks whether any UPE gateway is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_upe_enabled() {
+		return true;
+	}
+
+	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
 	 *
 	 * @return bool True if account can accept card payments, false otherwise.
