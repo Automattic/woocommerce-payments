@@ -141,7 +141,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_SEPA::class, $token );
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '0' );
 
 	}
 
@@ -165,7 +164,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_SEPA::class, $token );
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
 
 	}
 
@@ -195,7 +193,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 * Test add Link token to user with split UPE.
 	 */
 	public function test_add_token_to_user_for_link_split_upe() {
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
 		$mock_payment_method = [
 			'id'   => 'pm_mock',
 			'link' => [
@@ -212,14 +209,12 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'test@test.com', $token->get_email() );
 		$this->assertSame( '***test@test.com', $token->get_redacted_email() );
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_Link::class, $token );
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '0' );
 	}
 
 	/**
 	 * Test add Link token to user with deferred intent UPE.
 	 */
 	public function test_add_token_to_user_for_link_deferred_upe() {
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
 		$mock_payment_method = [
 			'id'   => 'pm_mock',
 			'link' => [
@@ -236,7 +231,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'test@test.com', $token->get_email() );
 		$this->assertSame( '***test@test.com', $token->get_redacted_email() );
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_Link::class, $token );
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
 	}
 
 	public function test_add_payment_method_to_user() {
