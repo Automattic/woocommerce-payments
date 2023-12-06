@@ -274,9 +274,8 @@ Fetch a list of deposits.
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_
--   `status_is_not` _string_
--   `sort` _string_
+-   `status_is` _string_ `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status_is_not` _string_ `paid` `pending` `in_transit` `canceled` `failed` `estimated`
 -   `direction` _string_
 -   `page` _integer_
 -   `pagesize` _integer_
@@ -351,4 +350,50 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
 }
 ```
 
-/wp-json/wc/v3/payments/deposits/overview-all
+## List deposits summary
+
+Fetches a summary of deposits matching the query. This includes the total number of deposits matching the query and a list of deposits.
+
+Useful in combination with the **List deposits** endpoint to get a summary of deposits matching the query without having to fetch the full list of deposits.
+
+### HTTP request
+
+<div class="api-endpoint">
+	<div class="endpoint-data">
+		<i class="label label-get">GET</i>
+		<h6>/wp-json/wc/v3/payments/deposits/summary</h6>
+	</div>
+</div>
+
+### Optional parameters
+
+-   `match` _string_
+-   `store_currency_is` _string_
+-   `date_before` _string_
+-   `date_after` _string_
+-   `date_between` _array_
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+
+### Returns
+
+-   `count` _int_ - The total number of deposits matching the query.
+-   `store_currencies` _array_ - The currencies of the deposits matching the query.
+-   `total` _int_ - The total amount of the deposits matching the query.
+-   `currency` _string_ - The currency as provided by `store_currency_is` or the default currency of the account.
+
+```shell
+curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/summary \
+	-u consumer_key:consumer_secret
+```
+
+> JSON response example:
+
+```json
+{
+	"count": 42,
+	"store_currencies": [ "chf", "eur", "gbp", "nok", "sek", "usd", "dkk" ],
+	"total": 5744395,
+	"currency": "eur"
+}
+```
