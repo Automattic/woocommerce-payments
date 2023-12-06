@@ -30,7 +30,7 @@ import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import Page from 'components/page';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
@@ -508,7 +508,7 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
-			<TestModeNotice topic={ topics.disputes } />
+			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
 				className="wcpay-disputes-list"

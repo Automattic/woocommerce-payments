@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getAppearance, getFontRulesFromPage } from '../../upe-styles';
+import { getAppearance, getFontRulesFromPage } from '../upe-styles';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
 	appendFingerprintInputToForm,
@@ -20,7 +20,7 @@ import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import {
 	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
-} from '../../constants';
+} from '../constants';
 
 // It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};

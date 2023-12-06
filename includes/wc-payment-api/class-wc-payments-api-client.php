@@ -2431,13 +2431,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Delete account.
 	 *
+	 * @param bool $test_mode Whether we are in test mode or not.
+	 *
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function delete_account() {
+	public function delete_account( bool $test_mode = false ) {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
+				'test_mode' => $test_mode,
 			],
 			self::ACCOUNTS_API . '/delete',
 			self::POST,
