@@ -447,3 +447,33 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
 	"created": 1701043200
 }
 ```
+
+## Submit an instant deposit
+
+Submit an instant deposit for a list of transactions. Only for eligible accounts. See [Instant Deposits with WooPayments](https://woo.com/document/woopayments/deposits/instant-deposits/) for more information.
+
+### HTTP request
+
+<div class="api-endpoint">
+	<div class="endpoint-data">
+		<i class="label label-post">POST</i>
+		<h6>/wp-json/wc/v3/payments/deposits</h6>
+	</div>
+</div>
+
+### Required body properties
+
+-   `type`: _string_ - The type of deposit. `instant`
+-   `transaction_ids`: _array_ - The list of transaction IDs to deposit.
+
+```shell
+curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
+  -u consumer_key:consumer_secret
+  --data '{
+      "type": "instant",
+      "transaction_ids": [
+          "txn_3OHyIxCIHGKp1UAi0aVyDQ5D",
+          "txn_3OJSuOCIHGKp1UAi1mRA2lL5"
+      ]
+    }'
+```
