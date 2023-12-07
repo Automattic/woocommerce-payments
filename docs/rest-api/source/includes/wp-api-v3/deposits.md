@@ -257,6 +257,8 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 
 Fetch a list of deposits.
 
+_Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter._
+
 ### HTTP request
 
 <div class="api-endpoint">
@@ -277,8 +279,8 @@ Fetch a list of deposits.
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ `paid` `pending` `in_transit` `canceled` `failed` `estimated`
--   `status_is_not` _string_ `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status_is` _string_ `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`.**)
+-   `status_is_not` _string_ `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`.**)
 -   `direction` _string_
 -   `page` _integer_
 -   `pagesize` _integer_
@@ -290,7 +292,7 @@ Fetch a list of deposits.
     -   `date` _int_ - The date the deposit was paid in unix timestamp format.
     -   `type` _string_ - The type of deposit. `deposit` `withdrawal`
     -   `amount` _int_ - The amount of the deposit.
-    -   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+    -   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`.**)
     -   `bankAccount` _string_ - The bank account the deposit was paid to.
     -   `currency` _string_ - The currency of the deposit. E.g. `eur`
     -   `automatic` _bool_ - Whether the deposit was paid automatically.
@@ -309,19 +311,6 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
 ```json
 {
 	"data": [
-		{
-			"id": "wcpay_estimated_weekly_eur_1702598400",
-			"date": 1702598400000,
-			"type": "deposit",
-			"amount": 458784,
-			"status": "estimated",
-			"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
-			"currency": "eur",
-			"automatic": true,
-			"fee": 0,
-			"fee_percentage": 0,
-			"created": 1702598400
-		},
 		{
 			"id": "po_1OJ466CBu6Jj8nBr38JRxdNE",
 			"date": 1701648000000,
@@ -349,7 +338,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
 			"created": 1701302400
 		}
 	],
-	"total_count": 3
+	"total_count": 2
 }
 ```
 
@@ -358,6 +347,8 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
 Fetches a summary of deposits matching the query. This includes the total number of deposits matching the query and a list of deposits.
 
 Useful in combination with the **List deposits** endpoint to get a summary of deposits matching the query without having to fetch the full list of deposits.
+
+_Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter._
 
 ### HTTP request
 
@@ -375,8 +366,8 @@ Useful in combination with the **List deposits** endpoint to get a summary of de
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
--   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`.**)
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`.**)
 
 ### Returns
 
