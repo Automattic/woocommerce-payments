@@ -8,7 +8,11 @@ import { useState, useEffect, useRef } from 'react';
 /**
  * Internal dependencies
  */
-import { useAccountBusinessSupportPhone, useGetSavingError } from 'wcpay/data';
+import {
+	useAccountBusinessSupportPhone,
+	useGetSavingError,
+	useDevMode,
+} from 'wcpay/data';
 import PhoneNumberInput from 'wcpay/settings/phone-input';
 
 const SupportPhoneInput = ( { setInputVallid } ) => {
@@ -19,9 +23,10 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 
 	const currentPhone = useRef( supportPhone ).current;
 	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';
+	const isDevModeEnabled = useDevMode();
 
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
-	if ( ! isPhoneValid && ! isEmptyPhoneValid ) {
+	if ( ! isPhoneValid && ! isEmptyPhoneValid && ! isDevModeEnabled ) {
 		supportPhoneError = __(
 			'Please enter a valid phone number.',
 			'woocommerce-payments'
