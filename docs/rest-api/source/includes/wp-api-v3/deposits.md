@@ -197,8 +197,21 @@ Fetch an overview of account deposits for a single deposit currency. This includ
 -   `next_deposit` _object_|_null_ - The next scheduled deposit for the deposit currency.
 -   `balance` _object_
     -   `pending` _object_ - The pending balance for the deposit currency.
+        -   `amount` _int_ - The amount of the balance.
+        -   `currency` _string_ - The currency of the balance. E.g. `usd`.
+        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
+        -   `deposits_count` _int_ - The number of deposits that make up the balance.
     -   `available` _object_ - The available balance for the deposit currency.
+        -   `amount` _int_ - The amount of the balance.
+        -   `currency` _string_ - The currency of the balance. E.g. `usd`.
+        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
 -   `instant_balance` _object_|_null_ - The instant balance for the deposit currency.
+    -   `amount` _int_ - The amount of the balance.
+    -   `currency` _string_ - The currency of the balance. E.g. `usd`.
+    -   `fee` _int_ - The fee amount of the balance.
+    -   `fee_percentage` _int_ - The fee percentage of the balance.
+    -   `net` _int_ - The net amount of the balance.
+    -   `transaction_ids` _array_ - The list of transaction IDs that make up the balance.
 -   `account` _object_
     -   `deposits_disabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -261,7 +274,14 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 			"deposits_count": 1
 		}
 	},
-	"instant_balance": null,
+	"instant_balance": {
+		"amount": 0,
+		"currency": "usd",
+		"fee": 0,
+		"fee_percentage": 1.5,
+		"net": 0,
+		"transaction_ids": []
+	},
 	"account": {
 		"deposits_disabled": false,
 		"deposits_blocked": false,
