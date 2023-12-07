@@ -458,6 +458,10 @@ Fetches a deposit by ID.
 
 ### Returns
 
+If no deposit is found for the provided ID, the response will be an empty array.
+
+If a deposit is found for the provided ID, the response will include the following properties:
+
 -   `id` _string_ - The deposit ID.
 -   `date` _int_ - The date the deposit was paid in unix timestamp format.
 -   `type` _string_ - The type of deposit. `deposit` `withdrawal`
