@@ -19,7 +19,7 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
 
 -   `deposit` _object_
     -   `last_paid` _array_ - The last deposit that has been paid for each deposit currency.
-    -   `next_scheduled` _array_ - The next scheduled deposit for each deposit currency.
+    -   ~~`next_scheduled`~~ _array_ &#9888;️ - **Deprecated since `7.0.0`, now returns an empty array.** The next scheduled deposit for each deposit currency.
     -   `last_manual_deposits` _array_ - Manual deposits that have been paid in the last 24 hours.
 -   `balance` _object_
     -   `pending` _array_ - The pending balance for each deposit currency.
@@ -37,7 +37,7 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
         -   `fee` _int_ - The fee amount of the balance.
         -   `fee_percentage` _int_ - The fee percentage of the balance.
         -   `net` _int_ - The net amount of the balance.
-        -   `transaction_ids` _array_ - The list of transaction IDs that make up the balance.
+        -   ~~`transaction_ids`~~ _array_ - **Deprecated since `7.0.0`, now returns an empty array.** The list of transaction IDs that make up the balance.
 -   `account` _object_
     -   `deposits_enabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -86,34 +86,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 				"created": 1701302400
 			}
 		],
-		"next_scheduled": [
-			{
-				"id": "wcpay_estimated_weekly_eur_1702598400",
-				"date": 1702598400000,
-				"type": "deposit",
-				"amount": 458784,
-				"status": "estimated",
-				"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
-				"currency": "eur",
-				"automatic": true,
-				"fee": 0,
-				"fee_percentage": 0,
-				"created": 1702598400
-			},
-			{
-				"id": "wcpay_estimated_weekly_usd_1701993600",
-				"date": 1701993600000,
-				"type": "deposit",
-				"amount": 823789,
-				"status": "estimated",
-				"bankAccount": "STRIPE TEST BANK •••• 6789 (USD)",
-				"currency": "usd",
-				"automatic": true,
-				"fee": 0,
-				"fee_percentage": 0,
-				"created": 1701993600
-			}
-		],
+		"next_scheduled": [],
 		"last_manual_deposits": []
 	},
 	"balance": {
@@ -158,10 +131,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 				"fee": 185,
 				"fee_percentage": 1.5,
 				"net": 0,
-				"transaction_ids": [
-					"txn_3OHyIxCIHGKp1UAi0aVyDQ5D",
-					"txn_3OJSuOCIHGKp1UAi1mRA2lL5"
-				]
+				"transaction_ids": []
 			}
 		]
 	},
