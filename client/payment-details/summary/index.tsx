@@ -15,6 +15,7 @@ import {
 	MenuGroup,
 	MenuItem,
 } from '@wordpress/components';
+import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
 import React, { useContext, useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
@@ -62,7 +63,6 @@ import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-noti
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import ErrorBoundary from 'components/error-boundary';
-import { moreVertical } from '@wordpress/icons';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 
 declare const window: any;

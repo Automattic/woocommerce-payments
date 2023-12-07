@@ -4,8 +4,6 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
-import { Charge } from 'wcpay/types/charges';
-import { STORE_NAME } from 'wcpay/data/constants';
 import { controls } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -19,6 +17,8 @@ import {
 	UpdateErrorForPaymentIntentAction,
 	UpdatePaymentIntentAction,
 } from './types';
+import { Charge } from 'wcpay/types/charges';
+import { STORE_NAME } from 'wcpay/data/constants';
 
 export function updatePaymentIntent(
 	id: string,
