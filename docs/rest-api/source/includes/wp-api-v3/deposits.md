@@ -477,3 +477,50 @@ curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
       ]
     }'
 ```
+
+## Request a CSV export of deposits
+
+Request a CSV export of deposits matching the query. A link to the exported CSV will be emailed to the provided email address or the account's primary email address if no email address is provided.
+
+### HTTP request
+
+<div class="api-endpoint">
+	<div class="endpoint-data">
+		<i class="label label-post">POST</i>
+		<h6>/wp-json/wc/v3/payments/deposits/download</h6>
+	</div>
+</div>
+
+### Optional body properties
+
+-   `user_email`: _string_ - The email address to send the CSV export link to. If not provided, the account's primary email address will be used.
+
+### Optional parameters
+
+-   `match` _string_
+-   `store_currency_is` _string_
+-   `date_before` _string_
+-   `date_after` _string_
+-   `date_between` _array_
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+
+### Returns
+
+-   `exported_deposits` _int_ - The number of deposits exported.
+
+```shell
+curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits/download?status_is=paid' \
+  -u consumer_key:consumer_secret
+  --data '{
+      "user_email": "name@example.woo.com",
+    }'
+```
+
+> JSON response example:
+
+```json
+{
+	"exported_deposits": 42
+}
+```
