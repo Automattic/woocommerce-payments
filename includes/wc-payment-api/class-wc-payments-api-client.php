@@ -1175,6 +1175,39 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch a charge by id.
+	 *
+	 * @param string $charge_id Charge id.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_charge( string $charge_id ) {
+		return $this->request(
+			[],
+			self::CHARGES_API . '/' . $charge_id,
+			self::GET
+		);
+	}
+
+	/**
+	 * Updates a transaction.
+	 *
+	 * @param string $transaction_id Transaction id.
+	 * @param array  $data Data to be updated.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function update_transaction( string $transaction_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::TRANSACTIONS_API . '/' . $transaction_id,
+			self::POST
+		);
+	}
+
+	/**
 	 * Fetch a WCPay subscription.
 	 *
 	 * @param string $wcpay_subscription_id Data used to create subscription.
