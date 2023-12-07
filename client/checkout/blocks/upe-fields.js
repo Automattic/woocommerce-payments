@@ -35,7 +35,7 @@ import {
 	BLOCKS_SHIPPING_ADDRESS_FIELDS,
 	BLOCKS_BILLING_ADDRESS_FIELDS,
 } from '../constants';
-
+console.log('blabla');
 const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
@@ -72,6 +72,7 @@ const WCPayUPEFields = ( {
 
 	useEffect( () => {
 		if ( isLinkEnabled( paymentMethodsConfig ) ) {
+console.log('qqq3');
 			enableStripeLinkPaymentMethod( {
 				api: api,
 				elements: elements,

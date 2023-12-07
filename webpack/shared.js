@@ -20,6 +20,7 @@ module.exports = {
 				'./client/checkout/woopay/express-button/index.js',
 			checkout: './client/checkout/classic/index.js',
 			upe_checkout: './client/checkout/classic/upe.js',
+			gform: './client/checkout/gform/index.js',
 			upe_split_checkout: './client/checkout/classic/upe-split.js',
 			upe_with_deferred_intent_creation_checkout:
 				'./client/checkout/classic/upe-deferred-intent-creation/event-handlers.js',

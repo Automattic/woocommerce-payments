@@ -109,6 +109,7 @@ export const autofill = ( event, options ) => {
 };
 
 const enableStripeLinkPaymentMethod = ( options ) => {
+	console.log('zzzzzzz')
 	if ( ! document.getElementById( options.emailId ) ) {
 		return;
 	}

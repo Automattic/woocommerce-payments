@@ -270,7 +270,6 @@ addFilter(
 		return pages;
 	}
 );
-
 /**
  * Get menu settings based on the top level link being connect or overview
  *

@@ -36,10 +36,10 @@ import {
 	appendFingerprintInputToForm,
 } from '../utils/fingerprint';
 import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
-
+console.log('test123333333')
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
-
+	console.log('test123333333')
 	const publishableKey = getConfig( 'publishableKey' );
 	const isChangingPayment = getConfig( 'isChangingPayment' );
 	const isUPEEnabled = getConfig( 'isUPEEnabled' );
@@ -53,7 +53,7 @@ jQuery( function ( $ ) {
 		// If no configuration is present, probably this is not the checkout page.
 		return;
 	}
-
+	console.log('test123333333')
 	// Create an API object, which will be used throughout the checkout.
 	const api = new WCPayAPI(
 		{
@@ -256,6 +256,7 @@ jQuery( function ( $ ) {
 		} );
 
 		if ( isStripeLinkEnabled ) {
+			console.log('qqq6');
 			enableStripeLinkPaymentMethod( {
 				api: api,
 				elements: elements,

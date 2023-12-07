@@ -79,6 +79,7 @@ const PaymentProcessor = ( {
 
 	useEffect( () => {
 		if ( isLinkEnabled( paymentMethodsConfig ) ) {
+console.log('qqq2');
 			enableStripeLinkPaymentMethod( {
 				api: api,
 				elements: elements,

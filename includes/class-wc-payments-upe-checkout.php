@@ -135,6 +135,9 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$script = 'dist/upe_with_deferred_intent_creation_checkout';
 
 		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
+
+
+
 	}
 
 	/**

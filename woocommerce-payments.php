@@ -29,6 +29,79 @@ require_once __DIR__ . '/includes/class-wc-payments-features.php';
 require_once __DIR__ . '/includes/woopay-user/class-woopay-extension.php';
 require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
 
+require_once __DIR__ . '/includes/class-gf-field-payment.php';
+
+
+add_action( 'gform_field_advanced_settings', 'my_advanced_settings', 10, 2 );
+function my_advanced_settings( $position, $form_id ) {
+	//create settings on position 50 (right after Admin Label)
+	if ( $position == 50 ) {
+		?>
+        <li class="encrypt_setting field_setting">
+            <label for="field_encrypt_value" style="display:inline;">
+				<?php _e("Email field", "your_text_domain"); ?>
+				<?php gform_tooltip("form_field_encrypt_value") ?>
+            </label>
+            <select id="encrypt_setting" onchange="SetEncryptFieldProperty('productField', jQuery(this).val());">
+                <!-- will be populated when field is selected (js.php) -->
+            </select>
+        </li>
+		<?php
+	}
+}
+//Action to inject supporting script to the form editor page
+add_action( 'gform_editor_js', 'editor_script' );
+function editor_script(){
+	?>
+    <script type='text/javascript'>
+        var emailFields = new Array();
+
+        for (var i = 0; i < form["fields"].length; i++) {
+            if (form["fields"][i]["type"] == "email")
+                emailFields.push(form["fields"][i]);
+        }
+        var checkout_email_field = jQuery("#encrypt_setting");
+        checkout_email_field.show();
+        checkout_email_field.html("");
+        for (var i = 0; i < emailFields.length; i++) {
+            checkout_email_field.append("<option value='" + emailFields[i]["id"] + "' >" + GetLabel(emailFields[i]) + "</option>");
+        }
+
+console.log('encrypt field:')
+console.log(encrypt_field.data())
+
+    </script>
+	<?php
+}
+//Filter to add a new tooltip
+add_filter( 'gform_tooltips', 'add_encryption_tooltips' );
+function add_encryption_tooltips( $tooltips ) {
+	$tooltips['form_field_encrypt_value'] = "<strong>Checkout</strong>Select checkout email field";
+	return $tooltips;
+}
+
+
+
+//add_filter( 'gform_pre_render', 'enqueue_assets_script', 10, 2 );
+add_filter( 'gform_pre_render', 'enqueue_assets_script', 10 );
+
+function enqueue_assets_script( $form ) {
+//		wp_enqueue_script( 'load-test-scripts', plugins_url( 'index.js', WCPAY_PLUGIN_FILE ));
+//	wp_enqueue_script( 'load-test-scripts', plugins_url( 'client/checkout/gform/index.js', WCPAY_PLUGIN_FILE ));
+	wp_enqueue_script( 'load-test-scripts', plugins_url( 'dist/gform.js', WCPAY_PLUGIN_FILE ));
+		wp_localize_script(
+			'load-test-scripts',
+			'wcpayAssets',
+			[
+				'url' => plugins_url( '/dist/', WCPAY_PLUGIN_FILE ),
+			]
+		);
+
+	wp_localize_script( 'load-test-scripts', 'wcpayConfig', WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
+
+	return $form;
+}
+
 /**
  * Plugin activation hook.
  */
