@@ -2,7 +2,7 @@
 
 The Deposits API endpoints provide access to an account's deposits data, including an overview of account balances, deposit schedule and deposit history.
 
-## Deposit overview for all account deposit currencies
+## Get deposits overview for all account deposit currencies
 
 Fetch an overview of account deposits for all deposit currencies. This includes details for the last paid deposit, next scheduled deposit, and last manual deposits.
 
@@ -153,7 +153,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 }
 ```
 
-## Deposit overview for single account deposit currency
+## Get deposits overview for single account deposit currency
 
 Fetch an overview of account deposits for a single deposit currency. This includes details for the last paid deposit, next scheduled deposit, and last manual deposits.
 
