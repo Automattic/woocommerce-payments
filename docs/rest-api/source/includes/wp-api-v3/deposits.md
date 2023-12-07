@@ -476,6 +476,8 @@ curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
 
 Request a CSV export of deposits matching the query. A link to the exported CSV will be emailed to the provided email address or the account's primary email address if no email address is provided.
 
+_Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter._
+
 ### HTTP request
 
 <div class="api-endpoint">
@@ -496,8 +498,8 @@ Request a CSV export of deposits matching the query. A link to the exported CSV 
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
--   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`**)
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`**)
 
 ### Returns
 
@@ -507,7 +509,7 @@ Request a CSV export of deposits matching the query. A link to the exported CSV 
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits/download?status_is=paid' \
   -u consumer_key:consumer_secret
   --data '{
-      "user_email": "name@example.woo.com",
+      "user_email": "name@example.woo.com"
     }'
 ```
 
