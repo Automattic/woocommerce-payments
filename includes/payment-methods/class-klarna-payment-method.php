@@ -40,7 +40,7 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 				],
 			],
 			'GBP' => [
-				'UK' => [
+				'GB' => [
 					'min' => 0,
 					'max' => 1150000,
 				],
