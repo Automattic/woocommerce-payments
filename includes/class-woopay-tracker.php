@@ -462,7 +462,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	}
 
 	/**
-	 * Record a Tracks event that Thank you page was viewed for WCPay orders.
+	 * Record a Tracks event that Thank you page was viewed for a WCPay order.
 	 *
 	 * @param int $order_id The ID of the order.
 	 * @return void
