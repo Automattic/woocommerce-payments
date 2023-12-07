@@ -64,7 +64,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 						onClick={ handleRefund }
 						isPrimary
 						isBusy={ isRefundInProgress }
-						disabled={ isRefundInProgress || reason === null }
+						disabled={ isRefundInProgress }
 					>
 						{ __( 'Refund transaction', 'woocommerce-payments' ) }
 					</Button>
