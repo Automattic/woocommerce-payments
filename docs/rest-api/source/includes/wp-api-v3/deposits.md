@@ -396,6 +396,8 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/summary \
 
 Fetches a deposit by ID.
 
+_Since `7.0.0`, `estimated` deposits are no longer returned._
+
 ### HTTP request
 
 <div class="api-endpoint">
@@ -411,7 +413,7 @@ Fetches a deposit by ID.
 -   `date` _int_ - The date the deposit was paid in unix timestamp format.
 -   `type` _string_ - The type of deposit. `deposit` `withdrawal`
 -   `amount` _int_ - The amount of the deposit.
--   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`.**)
 -   `bankAccount` _string_ - The bank account the deposit was paid to.
 -   `currency` _string_ - The currency of the deposit. E.g. `eur`
 -   `automatic` _bool_ - Whether the deposit was paid automatically.
