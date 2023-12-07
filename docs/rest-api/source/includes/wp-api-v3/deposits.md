@@ -476,7 +476,7 @@ curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
 
 Request a CSV export of deposits matching the query. A link to the exported CSV will be emailed to the provided email address or the account's primary email address if no email address is provided.
 
-Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter.
+Since `7.0.0`, `estimated` deposits are no longer included in the CSV export or accepted as a filter parameter.
 
 ### HTTP request
 
