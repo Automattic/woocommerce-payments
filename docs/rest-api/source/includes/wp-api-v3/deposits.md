@@ -257,7 +257,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 
 Fetch a list of deposits.
 
-_Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter._
+Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter.
 
 ### HTTP request
 
@@ -279,8 +279,8 @@ _Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a fil
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`**)
--   `status_is_not` _string_ `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`**)
+-   `status_is` _string_ `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
+-   `status_is_not` _string_ `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
 -   `direction` _string_
 -   `page` _integer_
 -   `pagesize` _integer_
@@ -292,7 +292,7 @@ _Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a fil
     -   `date` _int_ - The date the deposit was paid in unix timestamp format.
     -   `type` _string_ - The type of deposit. `deposit` `withdrawal`
     -   `amount` _int_ - The amount of the deposit.
-    -   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`**)
+    -   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
     -   `bankAccount` _string_ - The bank account the deposit was paid to.
     -   `currency` _string_ - The currency of the deposit. E.g. `eur`
     -   `automatic` _bool_ - Whether the deposit was paid automatically.
@@ -348,7 +348,7 @@ Fetches a summary of deposits matching the query. This includes the total number
 
 Useful in combination with the **List deposits** endpoint to get a summary of deposits matching the query without having to fetch the full list of deposits.
 
-_Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter._
+Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter.
 
 ### HTTP request
 
@@ -366,8 +366,8 @@ _Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a fil
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`**)
--   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`**)
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
 
 ### Returns
 
@@ -413,7 +413,7 @@ _Since `7.0.0`, `estimated` deposits are no longer returned._
 -   `date` _int_ - The date the deposit was paid in unix timestamp format.
 -   `type` _string_ - The type of deposit. `deposit` `withdrawal`
 -   `amount` _int_ - The amount of the deposit.
--   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`**)
+-   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
 -   `bankAccount` _string_ - The bank account the deposit was paid to.
 -   `currency` _string_ - The currency of the deposit. E.g. `eur`
 -   `automatic` _bool_ - Whether the deposit was paid automatically.
@@ -476,7 +476,7 @@ curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
 
 Request a CSV export of deposits matching the query. A link to the exported CSV will be emailed to the provided email address or the account's primary email address if no email address is provided.
 
-_Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter._
+Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter.
 
 ### HTTP request
 
@@ -498,8 +498,8 @@ _Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a fil
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`**)
--   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ **deprecated since `7.0.0`**)
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
 
 ### Returns
 
