@@ -76,23 +76,29 @@ const getStripeFeeSectionUrl = ( country: string ): string => {
 
 const getFeeDescriptionString = (
 	fee: BaseFee,
-	discountRate: number
+	discountBasedMultiplier: number
 ): string => {
 	if ( fee.fixed_rate && fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%% + %2$s',
-			formatFee( fee.percentage_rate * discountRate ),
-			formatCurrency( fee.fixed_rate * discountRate, fee.currency )
+			formatFee( fee.percentage_rate * discountBasedMultiplier ),
+			formatCurrency(
+				fee.fixed_rate * discountBasedMultiplier,
+				fee.currency
+			)
 		);
 	} else if ( fee.fixed_rate ) {
 		return sprintf(
 			'%1$s',
-			formatCurrency( fee.fixed_rate * discountRate, fee.currency )
+			formatCurrency(
+				fee.fixed_rate * discountBasedMultiplier,
+				fee.currency
+			)
 		);
 	} else if ( fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%%',
-			formatFee( fee.percentage_rate * discountRate )
+			formatFee( fee.percentage_rate * discountBasedMultiplier )
 		);
 	}
 	return '';
