@@ -37,7 +37,7 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
         -   `fee` _int_ - The fee amount of the balance.
         -   `fee_percentage` _int_ - The fee percentage of the balance.
         -   `net` _int_ - The net amount of the balance.
-        -   ~~`transaction_ids`~~ _array_ - **Deprecated since `7.0.0`, now returns an empty array.** The list of transaction IDs that make up the balance.
+        -   ~~`transaction_ids`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
 -   `account` _object_
     -   `deposits_enabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -130,8 +130,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 				"currency": "usd",
 				"fee": 185,
 				"fee_percentage": 1.5,
-				"net": 0,
-				"transaction_ids": []
+				"net": 0
 			}
 		]
 	},
@@ -181,7 +180,7 @@ Fetch an overview of account deposits for a single deposit currency. This includ
     -   `fee` _int_ - The fee amount of the balance.
     -   `fee_percentage` _int_ - The fee percentage of the balance.
     -   `net` _int_ - The net amount of the balance.
-    -   ~~`transaction_ids`~~ _array_ - **Deprecated since `7.0.0`, now returns an empty array.** The list of transaction IDs that make up the balance.
+    -   ~~`transaction_ids`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
 -   `account` _object_
     -   `deposits_disabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -237,8 +236,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 		"currency": "usd",
 		"fee": 0,
 		"fee_percentage": 1.5,
-		"net": 0,
-		"transaction_ids": []
+		"net": 0
 	},
 	"account": {
 		"deposits_disabled": false,
