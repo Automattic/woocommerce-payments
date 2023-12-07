@@ -23,8 +23,21 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
     -   `last_manual_deposits` _array_ - Manual deposits that have been paid in the last 24 hours.
 -   `balance` _object_
     -   `pending` _array_ - The pending balance for each deposit currency.
+        -   `amount` _int_ - The amount of the balance.
+        -   `currency` _string_ - The currency of the balance. E.g. `usd`.
+        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
+        -   `deposits_count` _int_ - The number of deposits that make up the balance.
     -   `available` _array_ - The available balance for each deposit currency.
+        -   `amount` _int_ - The amount of the balance.
+        -   `currency` _string_ - The currency of the balance. E.g. `usd`.
+        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
     -   `instant` _array_ - The instant balance for each deposit currency.
+        -   `amount` _int_ - The amount of the balance.
+        -   `currency` _string_ - The currency of the balance. E.g. `usd`.
+        -   `fee` _int_ - The fee amount of the balance.
+        -   `fee_percentage` _int_ - The fee percentage of the balance.
+        -   `net` _int_ - The net amount of the balance.
+        -   `transaction_ids` _array_ - The list of transaction IDs that make up the balance.
 -   `account` _object_
     -   `deposits_enabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -138,7 +151,19 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 				}
 			}
 		],
-		"instant": []
+		"instant": [
+			{
+				"amount": 12345,
+				"currency": "usd",
+				"fee": 185,
+				"fee_percentage": 1.5,
+				"net": 0,
+				"transaction_ids": [
+					"txn_3OHyIxCIHGKp1UAi0aVyDQ5D",
+					"txn_3OJSuOCIHGKp1UAi1mRA2lL5"
+				]
+			}
+		]
 	},
 	"account": {
 		"deposits_enabled": true,
