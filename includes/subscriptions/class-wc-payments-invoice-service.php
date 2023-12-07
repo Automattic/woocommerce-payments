@@ -316,6 +316,7 @@ class WC_Payments_Invoice_Service {
 	 * @param string $invoice_id The subscription invoice ID.
 	 *
 	 * @return array
+	 * @throws API_Exception
 	 */
 	public function record_subscription_payment_context( string $invoice_id ) {
 		return $this->payments_api_client->update_invoice(
@@ -355,6 +356,27 @@ class WC_Payments_Invoice_Service {
 			]
 		);
 
+	}
+
+	/**
+	 * Update a charge with the order id from invoice.
+	 *
+	 * @param array $invoice
+	 * @param int   $order_id
+	 *
+	 * @return void
+	 * @throws API_Exception
+	 */
+	public function update_charge_details( array $invoice, int $order_id ) {
+		if ( ! isset( $invoice['charge'] ) ) {
+			return;
+		}
+		$this->payments_api_client->update_charge(
+			$invoice['charge'],
+			[
+				'metadata' => ['order_id' => $order_id ],
+			]
+		);
 	}
 
 	/**
