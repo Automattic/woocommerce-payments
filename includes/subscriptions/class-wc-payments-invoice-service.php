@@ -328,6 +328,37 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
+	 * Sends a request to server to update transaction details.
+	 *
+	 * @param array    $invoice Invoice details.
+	 * @param WC_Order $order Order details.
+	 *
+	 * @return void
+	 * @throws API_Exception
+	 */
+	public function update_transaction_details( array $invoice, WC_Order $order ) {
+		if ( ! isset( $invoice['charge'] ) ) {
+			return;
+		}
+
+		$charge = $this->payments_api_client->get_charge( $invoice['charge'] );
+		if ( !isset( $charge['balance_transaction'] ) || !isset( $charge['balance_transaction']['id'] ) ) {
+			return;
+		}
+
+		$this->payments_api_client->update_transaction(
+			$charge['balance_transaction']['id'],
+			[
+				'customer_first_name' => $order->get_billing_first_name(),
+				'customer_last_name'  => $order->get_billing_last_name(),
+				'customer_email'      => $order->get_billing_email(),
+				'customer_country'    => $order->get_billing_country(),
+			]
+		);
+
+	}
+
+	/**
 	 * Update a charge with the order id from invoice.
 	 *
 	 * @param array $invoice
