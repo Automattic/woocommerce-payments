@@ -314,12 +314,36 @@ class WC_Payments_Invoice_Service {
 	 * Sends a request to server to record the store's context for an invoice payment.
 	 *
 	 * @param string $invoice_id The subscription invoice ID.
+	 *
+	 * @return array
+	 * @throws API_Exception
 	 */
 	public function record_subscription_payment_context( string $invoice_id ) {
-		$this->payments_api_client->update_invoice(
+		return $this->payments_api_client->update_invoice(
 			$invoice_id,
 			[
 				'subscription_context' => class_exists( 'WC_Subscriptions' ) && WC_Payments_Features::is_stripe_billing_enabled() ? 'stripe_billing' : 'legacy_wcpay_subscription',
+			]
+		);
+	}
+
+	/**
+	 * Update a charge with the order id from invoice.
+	 *
+	 * @param array $invoice
+	 * @param int   $order_id
+	 *
+	 * @return void
+	 * @throws API_Exception
+	 */
+	public function update_charge_details( array $invoice, int $order_id ) {
+		if ( ! isset( $invoice['charge'] ) ) {
+			return;
+		}
+		$this->payments_api_client->update_charge(
+			$invoice['charge'],
+			[
+				'metadata' => ['order_id' => $order_id ],
 			]
 		);
 	}

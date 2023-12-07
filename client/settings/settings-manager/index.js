@@ -126,7 +126,7 @@ const FraudProtectionDescription = () => {
 			</p>
 			<ExternalLink href="https://woo.com/document/woopayments/fraud-and-disputes/fraud-protection/">
 				{ __(
-					'Learn more about risk filtering',
+					'Learn more about fraud protection',
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
