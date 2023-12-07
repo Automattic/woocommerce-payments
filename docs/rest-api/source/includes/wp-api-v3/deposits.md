@@ -44,8 +44,8 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
     -   `deposits_schedule` _object_
         -   `delay_days` _int_ - The number of days after a charge is created that the payment is paid out.
         -   `interval` _string_ - The interval at which payments are paid out. `manual` `daily` `weekly` `monthly`
-        -   `weekly_anchor` _string_ - The day of the week that payments are paid out, e.g. `monday`.
-        -   `monthly_anchor` _int_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
+        -   `weekly_anchor` _string_ | _undefined_ - The day of the week that payments are paid out, e.g. `monday`.
+        -   `monthly_anchor` _int_ | _undefined_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
     -   `default_currency` _string_ - The default currency for the account.
 
 ```shell
@@ -193,8 +193,8 @@ Fetch an overview of account deposits for a single deposit currency. This includ
 
 ### Returns
 
--   `last_deposit` _object_|_null_- The last deposit that has been paid for the deposit currency.
--   `next_deposit` _object_|_null_ - The next scheduled deposit for the deposit currency.
+-   `last_deposit` _object_ | _null_- The last deposit that has been paid for the deposit currency.
+-   `next_deposit` _object_ | _null_ - The next scheduled deposit for the deposit currency.
 -   `balance` _object_
     -   `pending` _object_ - The pending balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
@@ -205,7 +205,7 @@ Fetch an overview of account deposits for a single deposit currency. This includ
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
--   `instant_balance` _object_|_null_ - The instant balance for the deposit currency.
+-   `instant_balance` _object_ | _null_ - The instant balance for the deposit currency.
     -   `amount` _int_ - The amount of the balance.
     -   `currency` _string_ - The currency of the balance. E.g. `usd`.
     -   `fee` _int_ - The fee amount of the balance.
@@ -218,8 +218,8 @@ Fetch an overview of account deposits for a single deposit currency. This includ
     -   `deposits_schedule` _object_
         -   `delay_days` _int_ - The number of days after a charge is created that the payment is paid out.
         -   `interval` _string_ - The interval at which payments are paid out. `manual` `daily` `weekly` `monthly`
-        -   `weekly_anchor` _string_ - The day of the week that payments are paid out, e.g. `monday`.
-        -   `monthly_anchor` _int_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
+        -   `weekly_anchor` _string_ | _undefined_ - The day of the week that payments are paid out, e.g. `monday`.
+        -   `monthly_anchor` _int_ | _undefined_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
 -   `default_currency` _string_ - The default currency for the account.
 
 ```shell
