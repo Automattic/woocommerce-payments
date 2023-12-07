@@ -220,7 +220,7 @@ Fetch an overview of account deposits for a single deposit currency. This includ
         -   `interval` _string_ - The interval at which payments are paid out. `manual` `daily` `weekly` `monthly`
         -   `weekly_anchor` _string_ | _undefined_ - The day of the week that payments are paid out, e.g. `monday`.
         -   `monthly_anchor` _int_ | _undefined_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
--   `default_currency` _string_ - The default currency for the account.
+    -   `default_currency` _string_ - The default currency for the account.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
