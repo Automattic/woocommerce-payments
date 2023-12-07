@@ -460,17 +460,15 @@ Submit an instant deposit for a list of transactions. Only for eligible accounts
 ### Required body properties
 
 -   `type`: _string_ - The type of deposit. `instant`
--   `transaction_ids`: _array_ - The list of transaction IDs to deposit.
+-   `currency`: _string_ - The currency of the balance to deposit. E.g. `usd`
+-   ~~`transaction_ids`~~: _array_ - **Deprecated since `7.0.0`, use `currency` instead.** The list of transaction IDs to deposit.
 
 ```shell
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
   -u consumer_key:consumer_secret
   --data '{
       "type": "instant",
-      "transaction_ids": [
-          "txn_3OHyIxCIHGKp1UAi0aVyDQ5D",
-          "txn_3OJSuOCIHGKp1UAi1mRA2lL5"
-      ]
+      "currency": "usd"
     }'
 ```
 
