@@ -2,6 +2,22 @@
 
 The Deposits API endpoints provide access to an account's deposits data, including an overview of account balances, deposit schedule and deposit history.
 
+## Deposit object
+
+### Properties
+
+-   `id` _string_ - The deposit ID.
+-   `date` _int_ - The arrival date of the deposit in unix timestamp milliseconds.
+-   `type` _string_ - The type of deposit. `deposit` `withdrawal`
+-   `amount` _int_ - The amount of the deposit.
+-   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `bankAccount` _string_ - The bank account the deposit was/will be paid to.
+-   `currency` _string_ - The currency of the deposit. E.g. `eur`
+-   `automatic` _bool_ - Returns `true` if the payout is created by an automated schedule and `false` if it’s requested manually.
+-   `fee` _int_ - The fee amount of the deposit.
+-   `fee_percentage` _int_ - The fee percentage of the deposit.
+-   `created` _int_ - The arrival date of the deposit in unix timestamp seconds.
+
 ## Get deposits overview for all account deposit currencies
 
 Fetch an overview of account deposits for all deposit currencies. This includes details for the last paid deposit, next scheduled deposit, and last manual deposits.
@@ -18,9 +34,9 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
 ### Returns
 
 -   `deposit` _object_
-    -   `last_paid` _array_ - The last deposit that has been paid for each deposit currency.
-    -   `next_scheduled` _array_ - The next scheduled deposit for each deposit currency.
-    -   `last_manual_deposits` _array_ - Manual deposits that have been paid in the last 24 hours.
+    -   `last_paid` _array_ of [**Deposit**](#deposit-object) - The last deposit that has been paid for each deposit currency.
+    -   `next_scheduled` _array_ of [**Deposit**](#deposit-object) - The next scheduled deposit for each deposit currency.
+    -   `last_manual_deposits` _array_ of [**Deposit**](#deposit-object) - Manual deposits that have been paid in the last 24 hours.
 -   `balance` _object_
     -   `pending` _array_ - The pending balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
