@@ -134,7 +134,12 @@ const composePaymentSummaryItems = ( {
 		},
 		{
 			title: __( 'Customer', 'woocommerce-payments' ),
-			content: <CustomerLink customer={ charge.billing_details } />,
+			content: (
+				<CustomerLink
+					billing_details={ charge.billing_details }
+					order_details={ charge.order }
+				/>
+			),
 		},
 		{
 			title: __( 'Order', 'woocommerce-payments' ),

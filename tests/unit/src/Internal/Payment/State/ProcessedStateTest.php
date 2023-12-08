@@ -15,6 +15,9 @@ use WCPay\Internal\Payment\State\ProcessedState;
 use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\OrderService;
+use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPAY_UnitTestCase;
 
 /**
@@ -49,6 +52,11 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 	private $mock_context;
 
 	/**
+	 * @var LegacyProxy|MockObject
+	 */
+	private $mock_legacy_proxy;
+
+	/**
 	 * Set up the test.
 	 */
 	protected function setUp(): void {
@@ -58,11 +66,13 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 		$this->mock_order_service = $this->createMock( OrderService::class );
 		$this->mock_dpps          = $this->createMock( DuplicatePaymentPreventionService::class );
 		$this->mock_context       = $this->createMock( PaymentContext::class );
+		$this->mock_legacy_proxy  = $this->createMock( LegacyProxy::class );
 
 		$this->sut = new ProcessedState(
 			$this->mock_state_factory,
 			$this->mock_order_service,
-			$this->mock_dpps
+			$this->mock_dpps,
+			$this->mock_legacy_proxy
 		);
 		$this->sut->set_context( $this->mock_context );
 	}
@@ -93,8 +103,77 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 			->with( CompletedState::class, $this->mock_context )
 			->willReturn( $mock_completed_state );
 
+		$this->mock_legacy_proxy
+			->expects( $this->exactly( 2 ) )
+			->method( 'call_function' )
+			->withConsecutive( [ 'wc_reduce_stock_levels', 1 ], [ 'wc' ] )
+			->willReturnCallback(
+				function ( $arg ) {
+					if ( 'wc' === $arg ) {
+						$mock_cart = $this->getMockBuilder( \stdClass::class )
+							->addMethods( [ 'empty_cart' ] )
+							->getMock();
+							return (object) [
+								'cart' => $mock_cart,
+							];
+					}
+				}
+			);
+
 		$result = $this->sut->complete_processing();
 
 		$this->assertSame( $mock_completed_state, $result );
 	}
+
+	public function test_clean_up_functions() {
+
+		// setup.
+		$intent = WC_Helper_Intention::create_intention();
+
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $intent );
+
+		$this->mock_context->expects( $this->once() )
+			->method( 'get_order_id' )
+			->willReturn( 1 );
+
+		$mock_completed_state = $this->createMock( CompletedState::class );
+		$this->mock_state_factory->expects( $this->once() )
+			->method( 'create_state' )
+			->with( CompletedState::class, $this->mock_context )
+			->willReturn( $mock_completed_state );
+
+		$mock_cart = $this->getMockBuilder( \stdClass::class )
+			->addMethods( [ 'empty_cart' ] )
+			->getMock();
+
+		// Test that 'wc_reduce_stock_levels' is called.
+		$this->mock_legacy_proxy
+			->expects( $this->exactly( 2 ) )
+			->method( 'call_function' )
+			->withConsecutive( [ 'wc_reduce_stock_levels', 1 ], [ 'wc' ] )
+			->willReturnCallback(
+				function ( $arg ) use ( $mock_cart ) {
+					if ( 'wc' === $arg ) {
+							return (object) [
+								'cart' => $mock_cart,
+							];
+					}
+				}
+			);
+
+		// Test the 'empty_cart' is called.
+		$mock_cart->expects( $this->once() )
+			->method( 'empty_cart' );
+
+		// Test methods to remove upe payment intent are called.
+		$this->mock_legacy_proxy
+			->expects( $this->exactly( 2 ) )
+			->method( 'call_static' )
+			->withConsecutive( [ UPE_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' ], [ UPE_Split_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' ] );
+
+		$this->sut->complete_processing();
+	}
+
 }

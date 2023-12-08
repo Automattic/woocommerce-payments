@@ -212,6 +212,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 				variant="secondary"
 				className={ className }
 				onClick={ handleEnabledCurrenciesAddButtonClick }
+				data-testid="enabled-currencies-add-button"
 			>
 				{ __( 'Add/remove currencies', 'woocommerce-payments' ) }
 			</Button>

@@ -343,6 +343,12 @@ class WC_Payments_Admin {
 		}
 		global $submenu;
 
+		// If the user is redirected to the page after Stripe KYC with an error, refresh the account data.
+		// The GET parameter accessed here comes from server and is just to indicate that some error occured. For this reason we're not using a nonce.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['wcpay-connection-error'] ) ) {
+			$this->account->refresh_account_data();
+		}
 		try {
 			// Render full payments menu with sub-items only if the merchant completed the KYC (details_submitted = true).
 			$should_render_full_menu = $this->account->is_account_fully_onboarded();
@@ -379,7 +385,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! $this->account->is_stripe_connected() ) {
-			if ( WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
+			if ( WC_Payments_Utils::should_use_new_onboarding_flow() ) {
 				wc_admin_register_page(
 					[
 						'id'         => 'wc-payments-onboarding',

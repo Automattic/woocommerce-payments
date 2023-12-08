@@ -53,25 +53,31 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_list_transactions_request_will_be_date() {
-		$page          = 2;
-		$page_size     = 50;
-		$direction     = 'asc';
-		$sort          = 'date';
-		$filters       = [
+		$page              = 2;
+		$page_size         = 50;
+		$direction         = 'asc';
+		$sort              = 'date';
+		$filters           = [
 			'key' => 'value',
 		];
-		$date_after    = '2022-01-01 00:00:00';
-		$date_before   = '2022-02-01 00:00:00';
-		$date_between  = [ $date_after, $date_before ];
-		$match         = 'match';
-		$type          = 'bill';
-		$type_is_not   = 'passport';
-		$device        = 'ios';
-		$device_is_not = 'android';
-		$search        = [ 'search' ];
-		$currency      = 'usd';
-		$cs_currency   = 'eur';
-		$loan_id       = 'loan_id';
+		$date_after        = '2022-01-01 00:00:00';
+		$date_before       = '2022-02-01 00:00:00';
+		$date_between      = [ $date_after, $date_before ];
+		$match             = 'match';
+		$type              = 'bill';
+		$type_is_not       = 'passport';
+		$device            = 'ios';
+		$device_is_not     = 'android';
+		$channel           = 'online';
+		$channel_is_not    = 'in_person';
+		$country           = 'US';
+		$country_is_not    = 'CA';
+		$risk_level        = '0';
+		$risk_level_is_not = '1';
+		$search            = [ 'search' ];
+		$currency          = 'usd';
+		$cs_currency       = 'eur';
+		$loan_id           = 'loan_id';
 
 		$request = new List_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_page( $page );
@@ -86,6 +92,12 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$request->set_type_is_not( $type_is_not );
 		$request->set_source_device_is( $device );
 		$request->set_source_device_is_not( $device_is_not );
+		$request->set_channel_is( $channel );
+		$request->set_channel_is_not( $channel_is_not );
+		$request->set_customer_country_is( $country );
+		$request->set_customer_country_is_not( $country_is_not );
+		$request->set_risk_level_is( $risk_level );
+		$request->set_risk_level_is_not( $risk_level_is_not );
 		$request->set_search( $search );
 		$request->set_store_currency_is( $currency );
 		$request->set_customer_currency_is_not( $currency );
@@ -108,6 +120,12 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $type_is_not, $params['type_is_not'] );
 		$this->assertSame( $device, $params['source_device_is'] );
 		$this->assertSame( $device_is_not, $params['source_device_is_not'] );
+		$this->assertSame( $channel, $params['channel_is'] );
+		$this->assertSame( $channel_is_not, $params['channel_is_not'] );
+		$this->assertSame( $country, $params['customer_country_is'] );
+		$this->assertSame( $country_is_not, $params['customer_country_is_not'] );
+		$this->assertSame( $risk_level, $params['risk_level_is'] );
+		$this->assertSame( $risk_level_is_not, $params['risk_level_is_not'] );
 		$this->assertSame( $search, $params['search'] );
 		$this->assertSame( $loan_id, $params['loan_id_is'] );
 		$this->assertSame( $currency, $params['customer_currency_is_not'] );
@@ -119,22 +137,28 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 
 	}
 	public function test_list_transactions_request_will_be_date_using_from_rest_request_function() {
-		$page          = 2;
-		$page_size     = 50;
-		$direction     = 'asc';
-		$sort          = 'date';
-		$date_after    = '2022-01-01 00:00:00';
-		$date_before   = '2022-02-01 00:00:00';
-		$date_between  = [ $date_after, $date_before ];
-		$match         = 'match';
-		$type          = 'bill';
-		$type_is_not   = 'passport';
-		$device        = 'ios';
-		$device_is_not = 'android';
-		$search        = [ 'search' ];
-		$currency      = 'usd';
-		$cs_currency   = 'eur';
-		$loan_id       = 'loan_id';
+		$page              = 2;
+		$page_size         = 50;
+		$direction         = 'asc';
+		$sort              = 'date';
+		$date_after        = '2022-01-01 00:00:00';
+		$date_before       = '2022-02-01 00:00:00';
+		$date_between      = [ $date_after, $date_before ];
+		$match             = 'match';
+		$type              = 'bill';
+		$type_is_not       = 'passport';
+		$device            = 'ios';
+		$device_is_not     = 'android';
+		$channel           = 'online';
+		$channel_is_not    = 'in_person';
+		$country           = 'US';
+		$country_is_not    = 'CA';
+		$risk_level        = '0';
+		$risk_level_is_not = '1';
+		$search            = [ 'search' ];
+		$currency          = 'usd';
+		$cs_currency       = 'eur';
+		$loan_id           = 'loan_id';
 
 		$rest_request = new WP_REST_Request( 'GET' );
 		$rest_request->set_param( 'page', $page );
@@ -149,6 +173,12 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$rest_request->set_param( 'type_is_not', $type_is_not );
 		$rest_request->set_param( 'source_device_is', $device );
 		$rest_request->set_param( 'source_device_is_not', $device_is_not );
+		$rest_request->set_param( 'channel_is', $channel );
+		$rest_request->set_param( 'channel_is_not', $channel_is_not );
+		$rest_request->set_param( 'customer_country_is', $country );
+		$rest_request->set_param( 'customer_country_is_not', $country_is_not );
+		$rest_request->set_param( 'risk_level_is', $risk_level );
+		$rest_request->set_param( 'risk_level_is_not', $risk_level_is_not );
 		$rest_request->set_param( 'loan_id_is', $loan_id );
 		$rest_request->set_param( 'search', $search );
 		$rest_request->set_param( 'store_currency_is', $currency );
@@ -172,6 +202,12 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $type_is_not, $params['type_is_not'] );
 		$this->assertSame( $device, $params['source_device_is'] );
 		$this->assertSame( $device_is_not, $params['source_device_is_not'] );
+		$this->assertSame( $channel, $params['channel_is'] );
+		$this->assertSame( $channel_is_not, $params['channel_is_not'] );
+		$this->assertSame( $country, $params['customer_country_is'] );
+		$this->assertSame( $country_is_not, $params['customer_country_is_not'] );
+		$this->assertSame( $risk_level, $params['risk_level_is'] );
+		$this->assertSame( $risk_level_is_not, $params['risk_level_is_not'] );
 		$this->assertSame( $search, $params['search'] );
 		$this->assertSame( $loan_id, $params['loan_id_is'] );
 		$this->assertSame( $currency, $params['customer_currency_is_not'] );

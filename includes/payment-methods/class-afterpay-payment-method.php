@@ -50,7 +50,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 				], // Represents NZD 1 - 2,000 NZD.
 			],
 			'GBP' => [
-				'UK' => [
+				'GB' => [
 					'min' => 100,
 					'max' => 120000,
 				], // Represents GBP 1 - 1,200 GBP.

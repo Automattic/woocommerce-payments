@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Pass the pay-for-order params to get the pre-fetch session data
