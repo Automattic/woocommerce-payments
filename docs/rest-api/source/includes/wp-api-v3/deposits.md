@@ -19,7 +19,7 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
 
 -   `deposit` _object_
     -   `last_paid` _array_ - The last deposit that has been paid for each deposit currency.
-    -   ~~`next_scheduled`~~ _array_ - **Deprecated since `7.0.0`, now returns an empty array.** The next scheduled deposit for each deposit currency.
+    -   ~~`next_scheduled`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
     -   `last_manual_deposits` _array_ - Manual deposits that have been paid in the last 24 hours.
 -   `balance` _object_
     -   `pending` _array_ - The pending balance for each deposit currency.
@@ -86,7 +86,6 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 				"created": 1701302400
 			}
 		],
-		"next_scheduled": [],
 		"last_manual_deposits": []
 	},
 	"balance": {
