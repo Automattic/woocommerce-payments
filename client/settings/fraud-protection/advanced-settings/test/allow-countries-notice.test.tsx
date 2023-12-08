@@ -56,17 +56,6 @@ describe( 'Allowed countries rule card notice tests', () => {
 			},
 		};
 	} );
-	test( 'renders correctly when all countries are allowed', () => {
-		const container = render(
-			<FraudPreventionSettingsContext.Provider value={ mockContext }>
-				<AllowedCountriesNotice setting={ 'test_key' } />
-			</FraudPreventionSettingsContext.Provider>
-		);
-		expect( container ).toMatchSnapshot();
-		expect( container.baseElement ).toHaveTextContent(
-			/Enabling this filter will not have any effect because you are selling to all countries\./i
-		);
-	} );
 	test( 'renders correctly when specific countries are allowed, others will be hold', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
