@@ -115,7 +115,7 @@ export function* submitInstantDeposit( transactionIds ) {
 
 		yield updateInstantDeposit( deposit );
 
-		// Invalidate deposits and deposits overview queries to ensure that UI is updated with fresh data.
+		// Invalidate deposits and deposits overview queries to ensure that the UI is updated with fresh data.
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDeposits'
 		);
