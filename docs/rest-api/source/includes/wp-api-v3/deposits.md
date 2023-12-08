@@ -58,7 +58,7 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-        -   `deposits_count` _int_ - The number of deposits that make up the balance.
+        -   ~~`deposits_count`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
     -   `available` _array_ - The available balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -127,16 +127,14 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 				"currency": "eur",
 				"source_types": {
 					"card": -114696
-				},
-				"deposits_count": 1
+				}
 			},
 			{
 				"amount": 707676,
 				"currency": "usd",
 				"source_types": {
 					"card": 707676
-				},
-				"deposits_count": 2
+				}
 			}
 		],
 		"available": [
@@ -200,7 +198,7 @@ Fetch an overview of account deposits for a single deposit currency. This includ
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-        -   `deposits_count` _int_ - The number of deposits that make up the balance.
+        -   ~~`deposits_count`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
     -   `available` _object_ - The available balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -257,8 +255,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 			"currency": "eur",
 			"source_types": {
 				"card": -114696
-			},
-			"deposits_count": 1
+			}
 		}
 	},
 	"instant_balance": {
