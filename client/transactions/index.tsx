@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { Experiment } from '@woocommerce/explat';
 import { TabPanel } from '@wordpress/components';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
@@ -14,7 +13,7 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import Page from 'components/page';
 import TransactionsList from './list';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice } from 'components/test-mode-notice';
 import Authorizations from './uncaptured';
 import './style.scss';
 import {
@@ -51,25 +50,25 @@ export const TransactionsPage: React.FC = () => {
 	const tabsComponentMap = {
 		'transactions-page': (
 			<>
-				<TestModeNotice topic={ topics.transactions } />
+				<TestModeNotice currentPage="transactions" />
 				<TransactionsList />
 			</>
 		),
 		'uncaptured-page': (
 			<>
-				<TestModeNotice topic={ topics.authorizations } />
+				<TestModeNotice currentPage="transactions" />
 				<Authorizations />
 			</>
 		),
 		'review-page': (
 			<>
-				<TestModeNotice topic={ topics.riskReviewTransactions } />
+				<TestModeNotice currentPage="transactions" />
 				<RiskReviewList />
 			</>
 		),
 		'blocked-page': (
 			<>
-				<TestModeNotice topic={ topics.blockedTransactions } />
+				<TestModeNotice currentPage="transactions" />
 				<BlockedList />
 			</>
 		),

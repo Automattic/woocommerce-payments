@@ -645,6 +645,26 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
 	}
 
+	/**
+	 * @dataProvider valid_and_invalid_payment_methods_for_comparison_provider
+	 */
+	public function test_is_valid_payment_method_type_for_gateway( $payment_method_type, $gateway_id, $expected_result ) {
+		$this->assertEquals(
+			$expected_result,
+			$this->token_service->is_valid_payment_method_type_for_gateway( $payment_method_type, $gateway_id )
+		);
+	}
+
+	public function valid_and_invalid_payment_methods_for_comparison_provider() {
+		return [
+			[ 'card', 'woocommerce_payments', true ],
+			[ 'sepa_debit', 'woocommerce_payments_sepa_debit', true ],
+			[ 'link', 'woocommerce_payments', true ],
+			[ 'card', 'card', false ],
+			[ 'card', 'woocommerce_payments_bancontact', false ],
+		];
+	}
+
 	private function generate_card_pm_response( $stripe_id ) {
 		return [
 			'type' => Payment_Method::CARD,

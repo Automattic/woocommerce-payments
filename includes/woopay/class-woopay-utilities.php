@@ -87,6 +87,19 @@ class WooPay_Utilities {
 	public function is_woopay_first_party_auth_enabled() {
 		return WC_Payments_Features::is_woopay_first_party_auth_enabled() && $this->is_country_available( WC_Payments::get_gateway() ); // Feature flag.
 	}
+
+	/**
+	 * Determines if the WooPay email input hooks should be enabled.
+	 *
+	 * This function doesn't affect the appearance of the email input,
+	 * only whether or not the email exists check or auto-redirection should be enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_woopay_email_input_enabled() {
+		return apply_filters( 'wcpay_is_woopay_email_input_enabled', true );
+	}
+
 	/**
 	 * Generates a hash based on the store's blog token, merchant ID, and the time step window.
 	 *

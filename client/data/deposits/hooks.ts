@@ -24,11 +24,15 @@ export const useDeposit = (
 ): { deposit: CachedDeposit; isLoading: boolean } =>
 	useSelect(
 		( select ) => {
-			const { getDeposit, isResolving } = select( STORE_NAME );
+			const { getDeposit, isResolving, hasFinishedResolution } = select(
+				STORE_NAME
+			);
 
 			return {
 				deposit: getDeposit( id ),
-				isLoading: isResolving( 'getDeposit', [ id ] ),
+				isLoading:
+					! hasFinishedResolution( 'getDeposit', [ id ] ) ||
+					isResolving( 'getDeposit', [ id ] ),
 			};
 		},
 		[ id ]
