@@ -4,6 +4,22 @@ The Deposits API endpoints provide access to an account's deposits data, includi
 
 ## Deposit object
 
+```json
+{
+	"id": "po_1OJ466CBu6Jj8nBr38JRxdNE",
+	"date": 1701648000000,
+	"type": "deposit",
+	"amount": 802872,
+	"status": "paid",
+	"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
+	"currency": "eur",
+	"automatic": true,
+	"fee": 0,
+	"fee_percentage": 0,
+	"created": 1701648000
+}
+```
+
 ### Properties
 
 -   `id` _string_ - The deposit ID.
