@@ -53,8 +53,8 @@ class Compatibility_Service {
 					'woocommerce_core_version' => defined( 'WC_VERSION' ) ? WC_VERSION : 'undefined',
 				]
 			);
-		} catch ( API_Exception $e ) {
-			Logger::error( 'Unable to update compatibility data due to error: ' . $e->getMessage() . ' | ' . $e->get_error_code() );
+		} catch ( API_Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+			// The exception is already logged if logging is on, nothing else needed.
 		}
 	}
 }
