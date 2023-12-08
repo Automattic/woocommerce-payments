@@ -479,21 +479,9 @@ Fetches a deposit by ID.
 
 ### Returns
 
+If a deposit is found for the provided ID, the response will return a [**Deposit**](#deposit-object) object.
+
 If no deposit is found for the provided ID, the response will be an empty array.
-
-If a deposit is found for the provided ID, the response will include the following properties:
-
--   `id` _string_ - The deposit ID.
--   `date` _int_ - The date the deposit was paid in unix timestamp format.
--   `type` _string_ - The type of deposit. `deposit` `withdrawal`
--   `amount` _int_ - The amount of the deposit.
--   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` `estimated`
--   `bankAccount` _string_ - The bank account the deposit was paid to.
--   `currency` _string_ - The currency of the deposit. E.g. `eur`
--   `automatic` _bool_ - Whether the deposit was paid automatically.
--   `fee` _int_ - The fee amount of the deposit.
--   `fee_percentage` _int_ - The fee percentage of the deposit.
--   `created` _int_ - The date the deposit was created in unix timestamp format.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
