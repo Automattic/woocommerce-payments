@@ -51,14 +51,14 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
 
 -   `deposit` _object_
     -   `last_paid` _array_ of [**Deposit**](#deposit-object) - The last deposit that has been paid for each deposit currency.
-    -   ~~`next_scheduled`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
+    -   ~~`next_scheduled`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
     -   `last_manual_deposits` _array_ of [**Deposit**](#deposit-object) - Manual deposits that have been paid in the last 24 hours.
 -   `balance` _object_
     -   `pending` _array_ - The pending balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-        -   ~~`deposits_count`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
+        -   ~~`deposits_count`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
     -   `available` _array_ - The available balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -69,7 +69,7 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
         -   `fee` _int_ - The fee amount of the balance.
         -   `fee_percentage` _int_ - The fee percentage of the balance.
         -   `net` _int_ - The net amount of the balance.
-        -   ~~`transaction_ids`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
+        -   ~~`transaction_ids`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
 -   `account` _object_
     -   `deposits_enabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -192,13 +192,13 @@ Fetch an overview of account deposits for a single deposit currency. This includ
 ### Returns
 
 -   `last_deposit` _object_ [**Deposit**](#deposit-object) | _null_- The last deposit that has been paid for the deposit currency.
--   ~~`next_deposit`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
+-   ~~`next_deposit`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
 -   `balance` _object_
     -   `pending` _object_ - The pending balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-        -   ~~`deposits_count`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
+        -   ~~`deposits_count`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
     -   `available` _object_ - The available balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -209,7 +209,7 @@ Fetch an overview of account deposits for a single deposit currency. This includ
     -   `fee` _int_ - The fee amount of the balance.
     -   `fee_percentage` _int_ - The fee percentage of the balance.
     -   `net` _int_ - The net amount of the balance.
-    -   ~~`transaction_ids`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
+    -   ~~`transaction_ids`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
 -   `account` _object_
     -   `deposits_disabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -467,7 +467,7 @@ Submit an instant deposit for a list of transactions. Only for eligible accounts
 
 -   `type`: _string_ - The type of deposit. `instant`
 -   `currency`: _string_ - The currency of the balance to deposit. E.g. `usd`
--   ~~`transaction_ids`~~: _array_ - **Deprecated since `7.0.0`, use `currency` instead.** The list of transaction IDs to deposit.
+-   ~~`transaction_ids`~~: _array_ - Deprecated since `7.0.0`, use `currency` instead. The list of transaction IDs to deposit.
 
 ```shell
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
