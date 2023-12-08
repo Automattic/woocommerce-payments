@@ -50,7 +50,8 @@ class Compatibility_Service {
 		try {
 			$this->payments_api_client->update_compatibility_data(
 				[
-					'woocommerce_core_version' => defined( 'WC_VERSION' ) ? WC_VERSION : 'undefined',
+					'woopayments_version' => WCPAY_VERSION_NUMBER,
+					'woocommerce_version' => WC_VERSION,
 				]
 			);
 		} catch ( API_Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
