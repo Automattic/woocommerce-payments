@@ -162,7 +162,7 @@ Fetch an overview of account deposits for a single deposit currency. This includ
 ### Returns
 
 -   `last_deposit` _object_ | _null_- The last deposit that has been paid for the deposit currency.
--   ~~`next_deposit`~~ _object_ | _null_ - **Deprecated since `7.0.0`, now returns _null_** - The next scheduled deposit for the deposit currency.
+-   ~~`next_deposit`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
 -   `balance` _object_
     -   `pending` _object_ - The pending balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
@@ -212,7 +212,6 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 		"fee_percentage": 0,
 		"created": 1701648000
 	},
-	"next_deposit": null,
 	"balance": {
 		"available": {
 			"amount": 573480,
