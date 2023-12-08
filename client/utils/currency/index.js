@@ -82,6 +82,24 @@ export const isZeroDecimalCurrency = ( currencyCode ) => {
 };
 
 /**
+ * Formats the amount for CSV export, considering zero-decimal currencies
+ *
+ * @param {number} amount       Amount
+ * @param {string} currencyCode Currency code
+ *
+ * @return {number} Export amount
+ */
+export const formatExportAmount = ( amount, currencyCode ) => {
+	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
+
+	if ( ! isZeroDecimal ) {
+		amount /= 100;
+	}
+
+	return amount;
+};
+
+/**
  * Formats amount according to the given currency.
  *
  * @param {number} amount       Amount
