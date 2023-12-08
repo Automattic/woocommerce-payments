@@ -392,7 +392,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/summary \
 
 Fetches a deposit by ID.
 
-_Since `7.0.0`, `estimated` deposits are no longer returned._
+_Since `7.0.0`, `estimated` deposits are no longer returned and will return a `404` status code._
 
 ### HTTP request
 
@@ -405,7 +405,7 @@ _Since `7.0.0`, `estimated` deposits are no longer returned._
 
 ### Returns
 
-If no deposit is found for the provided ID, the response will be an empty array.
+If no deposit is found for the provided ID, the response will return a `404` status code.
 
 If a deposit is found for the provided ID, the response will include the following properties:
 
