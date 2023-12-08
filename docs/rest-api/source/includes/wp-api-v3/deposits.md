@@ -57,12 +57,12 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
     -   `pending` _array_ - The pending balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
+        -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
         -   `deposits_count` _int_ - The number of deposits that make up the balance.
     -   `available` _array_ - The available balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
+        -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
     -   `instant` _array_ - The instant balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -231,12 +231,12 @@ Fetch an overview of account deposits for a single deposit currency. This includ
     -   `pending` _object_ - The pending balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
+        -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
         -   `deposits_count` _int_ - The number of deposits that make up the balance.
     -   `available` _object_ - The available balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
+        -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
 -   `instant_balance` _object_ | _null_ - The instant balance for the deposit currency.
     -   `amount` _int_ - The amount of the balance.
     -   `currency` _string_ - The currency of the balance. E.g. `usd`.
