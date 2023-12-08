@@ -2,6 +2,38 @@
 
 The Deposits API endpoints provide access to an account's deposits data, including an overview of account balances, deposit schedule and deposit history.
 
+## Deposit object
+
+```json
+{
+	"id": "po_1OJ466CBu6Jj8nBr38JRxdNE",
+	"date": 1701648000000,
+	"type": "deposit",
+	"amount": 802872,
+	"status": "paid",
+	"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
+	"currency": "eur",
+	"automatic": true,
+	"fee": 0,
+	"fee_percentage": 0,
+	"created": 1701648000
+}
+```
+
+### Properties
+
+-   `id` _string_ - The deposit ID.
+-   `date` _int_ - The arrival date of the deposit in unix timestamp milliseconds.
+-   `type` _string_ - The type of deposit. `deposit` `withdrawal`
+-   `amount` _int_ - The amount of the deposit.
+-   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `bankAccount` _string_ - The bank account the deposit was/will be paid to.
+-   `currency` _string_ - The currency of the deposit. E.g. `eur`
+-   `automatic` _bool_ - Returns `true` if the payout is created by an automated schedule and `false` if it’s requested manually.
+-   `fee` _int_ - The fee amount of the deposit.
+-   `fee_percentage` _int_ - The fee percentage of the deposit.
+-   `created` _int_ - The arrival date of the deposit in unix timestamp seconds.
+
 ## Get deposits overview for all account deposit currencies
 
 Fetch an overview of account deposits for all deposit currencies. This includes details for the last paid deposit, next scheduled deposit, and last manual deposits.
@@ -18,19 +50,19 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
 ### Returns
 
 -   `deposit` _object_
-    -   `last_paid` _array_ - The last deposit that has been paid for each deposit currency.
+    -   `last_paid` _array_ of [**Deposit**](#deposit-object) - The last deposit that has been paid for each deposit currency.
     -   ~~`next_scheduled`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
-    -   `last_manual_deposits` _array_ - Manual deposits that have been paid in the last 24 hours.
+    -   `last_manual_deposits` _array_ of [**Deposit**](#deposit-object) - Manual deposits that have been paid in the last 24 hours.
 -   `balance` _object_
     -   `pending` _array_ - The pending balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
+        -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
         -   `deposits_count` _int_ - The number of deposits that make up the balance.
     -   `available` _array_ - The available balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
+        -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
     -   `instant` _array_ - The instant balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -161,18 +193,18 @@ Fetch an overview of account deposits for a single deposit currency. This includ
 
 ### Returns
 
--   `last_deposit` _object_ | _null_- The last deposit that has been paid for the deposit currency.
+-   `last_deposit` _object_ [**Deposit**](#deposit-object) | _null_- The last deposit that has been paid for the deposit currency.
 -   ~~`next_deposit`~~ _undefined_ - **Deprecated since `7.0.0`, no longer included in response.**
 -   `balance` _object_
     -   `pending` _object_ - The pending balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
+        -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
         -   `deposits_count` _int_ - The number of deposits that make up the balance.
     -   `available` _object_ - The available balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-        -   `source_types` _object_ - The amount of the balance from each source type, e.g. `card` or `financing`.
+        -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
 -   `instant_balance` _object_ | _null_ - The instant balance for the deposit currency.
     -   `amount` _int_ - The amount of the balance.
     -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -283,18 +315,7 @@ Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filt
 
 ### Returns
 
--   `data` _array_ - List of deposit objects.
-    -   `id` _string_ - The deposit ID.
-    -   `date` _int_ - The date the deposit was paid in unix timestamp format.
-    -   `type` _string_ - The type of deposit. `deposit` `withdrawal`
-    -   `amount` _int_ - The amount of the deposit.
-    -   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
-    -   `bankAccount` _string_ - The bank account the deposit was paid to.
-    -   `currency` _string_ - The currency of the deposit. E.g. `eur`
-    -   `automatic` _bool_ - Whether the deposit was paid automatically.
-    -   `fee` _int_ - The fee amount of the deposit.
-    -   `fee_percentage` _int_ - The fee percentage of the deposit.
-    -   `created` _int_ - The date the deposit was created in unix timestamp format.
+-   `data` _array_ of [**Deposit**](#deposit-object) - The list of deposits matching the query.
 -   `total_count` _int_ - The total number of deposits matching the query.
 
 ```shell
@@ -405,21 +426,9 @@ _Since `7.0.0`, `estimated` deposits are no longer returned and will return a `4
 
 ### Returns
 
+If a deposit is found for the provided ID, the response will return a [**Deposit**](#deposit-object) object.
+
 If no deposit is found for the provided ID, the response will return a `404` status code.
-
-If a deposit is found for the provided ID, the response will include the following properties:
-
--   `id` _string_ - The deposit ID.
--   `date` _int_ - The date the deposit was paid in unix timestamp format.
--   `type` _string_ - The type of deposit. `deposit` `withdrawal`
--   `amount` _int_ - The amount of the deposit.
--   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
--   `bankAccount` _string_ - The bank account the deposit was paid to.
--   `currency` _string_ - The currency of the deposit. E.g. `eur`
--   `automatic` _bool_ - Whether the deposit was paid automatically.
--   `fee` _int_ - The fee amount of the deposit.
--   `fee_percentage` _int_ - The fee percentage of the deposit.
--   `created` _int_ - The date the deposit was created in unix timestamp format.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
