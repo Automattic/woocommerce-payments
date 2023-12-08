@@ -209,8 +209,8 @@ Fetch an overview of account deposits for a single deposit currency. This includ
 
 ### Returns
 
--   `last_deposit` _object_ | _null_- The last deposit that has been paid for the deposit currency.
--   `next_deposit` _object_ | _null_ - The next scheduled deposit for the deposit currency.
+-   `last_deposit` _object_ [**Deposit**](#deposit-object) | _null_- The last deposit that has been paid for the deposit currency.
+-   `next_deposit` _object_ [**Deposit**](#deposit-object) | _null_ - The next scheduled deposit for the deposit currency.
 -   `balance` _object_
     -   `pending` _object_ - The pending balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
