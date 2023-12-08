@@ -26,7 +26,7 @@ The Deposits API endpoints provide access to an account's deposits data, includi
 -   `date` _int_ - The arrival date of the deposit in unix timestamp milliseconds.
 -   `type` _string_ - The type of deposit. `deposit` `withdrawal`
 -   `amount` _int_ - The amount of the deposit.
--   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
 -   `bankAccount` _string_ - The bank account the deposit was/will be paid to.
 -   `currency` _string_ - The currency of the deposit. E.g. `eur`
 -   `automatic` _bool_ - Returns `true` if the payout is created by an automated schedule and `false` if it’s requested manually.
