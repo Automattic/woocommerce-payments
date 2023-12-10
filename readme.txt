@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 6.8.0
+Stable tag: 6.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,59 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 6.9.1 - 2023-12-07 =
+* Fix - Display Klarna & Afterpay on the checkout for UK based stores
+
+
+= 6.9.0 - 2023-12-06 =
+* Add - Added cleanup code after Payment Processing - RPP.
+* Add - Adds new option to track dismissal of PO eligibility modal.
+* Add - Display an error banner on the connect page when the WooCommerce country is not supported.
+* Add - Filter to disable WooPay checkout auto-redirect and email input hooks.
+* Add - Handle failed transaction rate limiter in RPP.
+* Add - Handle fraud prevention service in InitialState (project RPP).
+* Add - Handle mimium amount in InitialState (project RPP).
+* Add - Introduce filters for channel, customer country, and risk level on the transactions list page.
+* Add - Store the working mode of the gateway (RPP).
+* Fix - Add AutomateWoo - Refer A Friend Add-On support on WooPay.
+* Fix - Add date_between filter for Authorization Reporting API.
+* Fix - Add invalid product id error check.
+* Fix - Allow Gradual signup accounts to continue with the Gradual KYC after abandoning it.
+* Fix - Allow requests with item IDs to be extended without exceptions.
+* Fix - Check that the email is set in the post global.
+* Fix - Display notice when clicking the WooPay button if variable product selection is incomplete.
+* Fix - Do not show the WooPay button on the product page when WC Bookings require confirmation.
+* Fix - Enable deferred intent creation when initialization process encounters cache unavailability.
+* Fix - Ensure express payment methods (Google and Apple Pay) correctly reflect eligible shipping methods after closing and reattempting payment.
+* Fix - Fixes a redirect to show the new onboarding when coming from WC Core.
+* Fix - Fix saved card payments not working on block checkout while card testing prevention is active.
+* Fix - Pass the pay-for-order params to the first-party auth flow.
+* Fix - Prevent merchants to access onboarding again after starting it in new flow.
+* Fix - Remove unsupported EUR currency from Afterpay payment method.
+* Fix - Show Payments menu sub-items only for merchants that completed KYC.
+* Fix - Support 'variation' product type when re-adding items to a cart.
+* Fix - When rendering customer reference in transaction details, fallback to order data.
+* Fix - When rendering customer reference on transaction details page, handle case with name being not provided in the order.
+* Update - Change PRB default height for new installations.
+* Update - Cleanup the deprecated payment gateway processing - part I.
+* Update - Correct some links that now lead to better documentation.
+* Update - Enable the new onboarding flow as default for all users.
+* Update - Exclude estimated deposits from the deposits list screen.
+* Update - Improvements to the dev mode and test mode indicators.
+* Update - Remove estimated status option from the advanced filters on the deposits list screen.
+* Update - Replace the deposit overview transactions list with a "transaction history is unavailable for instant deposits" message.
+* Update - Update Payments Overview deposits UI to simplify how we communicate upcoming deposits.
+* Update - Update to the new onboarding builder flow to not prefill country/address to US.
+* Dev - Add client user-agent value to Tracks event props.
+* Dev - Add E2E tests for Affirm and Afterpay checkouts.
+* Dev - Add E2E tests for checking out with Giropay.
+* Dev - Added customer details management within the re-engineered payment process.
+* Dev - Adds WCPay options to Woo Core option allow list to avoid 403 responses from Options API when getting and updating options in non-prod env.
+* Dev - Bump WC tested up to version to 8.3.1.
+* Dev - Fix a bug in WooPay button update Tracks.
+* Dev - Introduce filter `wcpay_payment_request_is_cart_supported`.  Allow plugins to conditionally disable payment request buttons on cart and checkout pages containing products that do not support them.
+* Dev - Upgrade the csv-export JS package to the latest version.
 
 = 6.8.0 - 2023-11-16 =
 * Add - Added mechanism to track and log changes to the payment context (reengineering payment process)

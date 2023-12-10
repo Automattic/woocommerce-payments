@@ -238,6 +238,11 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 			->with( $mock_renewal_order, $wcpay_intent_id )
 			->willReturn( null );
 
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'record_subscription_payment_context' )
+			->with( $wcpay_invoiceid )
+			->willReturn( [ 'charge' => 'ch_testxxx' ] );
+
 		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
 	}
 
