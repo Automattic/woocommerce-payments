@@ -68,7 +68,7 @@ class Checkout_Service {
 			return false;
 		}
 
-		$should_use_stripe_platform = WC_Payments_Features::is_upe_deferred_intent_enabled() ? \WC_Payments::get_payment_gateway_by_id( $payment_information->get_payment_method_stripe_id() )->should_use_stripe_platform_on_checkout_page() : \WC_Payments::get_gateway()->should_use_stripe_platform_on_checkout_page();
+		$should_use_stripe_platform = \WC_Payments::get_payment_gateway_by_id( $payment_information->get_payment_method_stripe_id() )->should_use_stripe_platform_on_checkout_page();
 
 		// Make sure the payment method being charged was created in the platform.
 		if (

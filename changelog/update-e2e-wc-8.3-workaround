@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Comment: E2E - Enable WC beta tests & add workaround to revert to classic checkout for WC 8.3.0 & above

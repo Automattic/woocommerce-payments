@@ -93,3 +93,6 @@ tests/e2e/reports
 tests/e2e-pw/.auth/
 tests/e2e-pw/test-results/
 tests/e2e-pw/playwright/.cache/
+
+# Slate docs
+docs/rest-api/build/*

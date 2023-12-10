@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Redact Stripe support contact prompt from error message when capturing amounts greater than authorized.

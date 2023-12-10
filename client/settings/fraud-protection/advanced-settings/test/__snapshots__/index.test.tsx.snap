@@ -302,7 +302,7 @@ Object {
                     </p>
                   </div>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                    class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
                   >
                     <div
                       class="components-notice__content"
@@ -313,30 +313,32 @@ Object {
                         data-wp-component="Flex"
                       >
                         <div
-                          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
                           <svg
-                            class="gridicon gridicons-notice-outline"
+                            aria-hidden="true"
+                            focusable="false"
                             height="24"
+                            size="24"
                             viewBox="0 0 24 24"
                             width="24"
-                            xmlns="http://www.w3.org/2000/svg"
                           >
-                            <g>
-                              <path
-                                d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                              />
-                            </g>
+                            <path
+                              d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+                            />
                           </svg>
                         </div>
                         <div
-                          class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          Enabling this filter will not have any effect because you are selling to all countries.
+                          Orders from outside of the following countries will be blocked by the filter: 
+                          <strong>
+                            Canada, United States
+                          </strong>
                         </div>
                       </div>
                       <div
@@ -1300,7 +1302,7 @@ Object {
                   </p>
                 </div>
                 <div
-                  class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                  class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
                 >
                   <div
                     class="components-notice__content"
@@ -1311,30 +1313,32 @@ Object {
                       data-wp-component="Flex"
                     >
                       <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
                         <svg
-                          class="gridicon gridicons-notice-outline"
+                          aria-hidden="true"
+                          focusable="false"
                           height="24"
+                          size="24"
                           viewBox="0 0 24 24"
                           width="24"
-                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
+                          <path
+                            d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+                          />
                         </svg>
                       </div>
                       <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Enabling this filter will not have any effect because you are selling to all countries.
+                        Orders from outside of the following countries will be blocked by the filter: 
+                        <strong>
+                          Canada, United States
+                        </strong>
                       </div>
                     </div>
                     <div
@@ -2105,7 +2109,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
+              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
     </div>
     <div>
       <div>
@@ -2363,7 +2367,7 @@ Object {
                     </p>
                   </div>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                    class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
                   >
                     <div
                       class="components-notice__content"
@@ -2374,30 +2378,32 @@ Object {
                         data-wp-component="Flex"
                       >
                         <div
-                          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
                           <svg
-                            class="gridicon gridicons-notice-outline"
+                            aria-hidden="true"
+                            focusable="false"
                             height="24"
+                            size="24"
                             viewBox="0 0 24 24"
                             width="24"
-                            xmlns="http://www.w3.org/2000/svg"
                           >
-                            <g>
-                              <path
-                                d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                              />
-                            </g>
+                            <path
+                              d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+                            />
                           </svg>
                         </div>
                         <div
-                          class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          Enabling this filter will not have any effect because you are selling to all countries.
+                          Orders from outside of the following countries will be blocked by the filter: 
+                          <strong>
+                            Canada, United States
+                          </strong>
                         </div>
                       </div>
                       <div
@@ -3218,7 +3224,7 @@ Object {
                   </p>
                 </div>
                 <div
-                  class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                  class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
                 >
                   <div
                     class="components-notice__content"
@@ -3229,30 +3235,32 @@ Object {
                       data-wp-component="Flex"
                     >
                       <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
                         <svg
-                          class="gridicon gridicons-notice-outline"
+                          aria-hidden="true"
+                          focusable="false"
                           height="24"
+                          size="24"
                           viewBox="0 0 24 24"
                           width="24"
-                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
+                          <path
+                            d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+                          />
                         </svg>
                       </div>
                       <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Enabling this filter will not have any effect because you are selling to all countries.
+                        Orders from outside of the following countries will be blocked by the filter: 
+                        <strong>
+                          Canada, United States
+                        </strong>
                       </div>
                     </div>
                     <div
@@ -3897,7 +3905,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
+              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
     </div>
     <div>
       <div
@@ -4120,7 +4128,7 @@ Object {
                   </p>
                 </div>
                 <div
-                  class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                  class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
                 >
                   <div
                     class="components-notice__content"
@@ -4131,30 +4139,32 @@ Object {
                       data-wp-component="Flex"
                     >
                       <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
                         <svg
-                          class="gridicon gridicons-notice-outline"
+                          aria-hidden="true"
+                          focusable="false"
                           height="24"
+                          size="24"
                           viewBox="0 0 24 24"
                           width="24"
-                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
+                          <path
+                            d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+                          />
                         </svg>
                       </div>
                       <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Enabling this filter will not have any effect because you are selling to all countries.
+                        Orders from outside of the following countries will be blocked by the filter: 
+                        <strong>
+                          Canada, United States
+                        </strong>
                       </div>
                     </div>
                     <div
@@ -4938,7 +4948,7 @@ Object {
                 </p>
               </div>
               <div
-                class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
               >
                 <div
                   class="components-notice__content"
@@ -4949,30 +4959,32 @@ Object {
                     data-wp-component="Flex"
                   >
                     <div
-                      class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                      class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
                       data-wp-c16t="true"
                       data-wp-component="FlexItem"
                     >
                       <svg
-                        class="gridicon gridicons-notice-outline"
+                        aria-hidden="true"
+                        focusable="false"
                         height="24"
+                        size="24"
                         viewBox="0 0 24 24"
                         width="24"
-                        xmlns="http://www.w3.org/2000/svg"
                       >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
+                        <path
+                          d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+                        />
                       </svg>
                     </div>
                     <div
-                      class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                      class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
                       data-wp-c16t="true"
                       data-wp-component="FlexItem"
                     >
-                      Enabling this filter will not have any effect because you are selling to all countries.
+                      Orders from outside of the following countries will be blocked by the filter: 
+                      <strong>
+                        Canada, United States
+                      </strong>
                     </div>
                   </div>
                   <div
@@ -5615,7 +5627,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
+              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
     </div>
     <div>
       <div>
@@ -5856,7 +5868,7 @@ Object {
                     </p>
                   </div>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                    class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
                   >
                     <div
                       class="components-notice__content"
@@ -5867,30 +5879,32 @@ Object {
                         data-wp-component="Flex"
                       >
                         <div
-                          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
                           <svg
-                            class="gridicon gridicons-notice-outline"
+                            aria-hidden="true"
+                            focusable="false"
                             height="24"
+                            size="24"
                             viewBox="0 0 24 24"
                             width="24"
-                            xmlns="http://www.w3.org/2000/svg"
                           >
-                            <g>
-                              <path
-                                d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                              />
-                            </g>
+                            <path
+                              d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+                            />
                           </svg>
                         </div>
                         <div
-                          class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          Enabling this filter will not have any effect because you are selling to all countries.
+                          Orders from outside of the following countries will be blocked by the filter: 
+                          <strong>
+                            Canada, United States
+                          </strong>
                         </div>
                       </div>
                       <div
@@ -6774,7 +6788,7 @@ Object {
                   </p>
                 </div>
                 <div
-                  class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                  class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
                 >
                   <div
                     class="components-notice__content"
@@ -6785,30 +6799,32 @@ Object {
                       data-wp-component="Flex"
                     >
                       <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
                         <svg
-                          class="gridicon gridicons-notice-outline"
+                          aria-hidden="true"
+                          focusable="false"
                           height="24"
+                          size="24"
                           viewBox="0 0 24 24"
                           width="24"
-                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
+                          <path
+                            d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+                          />
                         </svg>
                       </div>
                       <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Enabling this filter will not have any effect because you are selling to all countries.
+                        Orders from outside of the following countries will be blocked by the filter: 
+                        <strong>
+                          Canada, United States
+                        </strong>
                       </div>
                     </div>
                     <div
