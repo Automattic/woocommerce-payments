@@ -40,7 +40,11 @@ import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { displayStatus as displayDepositStatus } from 'deposits/strings';
 import { formatStringValue } from 'utils';
-import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import {
+	formatCurrency,
+	formatExplicitCurrency,
+	formatExportAmount,
+} from 'utils/currency';
 import { getChargeChannel } from 'utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
@@ -343,7 +347,7 @@ export const TransactionsList = (
 			const fromAmount = txn.customer_amount ? txn.customer_amount : 0;
 
 			return {
-				value: amount / 100,
+				value: formatExportAmount( amount, currency ),
 				display: clickable(
 					<ConvertedAmount
 						amount={ amount }
@@ -357,8 +361,10 @@ export const TransactionsList = (
 		const formatFees = () => {
 			const isCardReader =
 				txn.metadata && txn.metadata.charge_type === 'card_reader_fee';
-			const feeAmount =
-				( isCardReader ? txn.amount : txn.fees * -1 ) / 100;
+			const feeAmount = formatExportAmount(
+				isCardReader ? txn.amount : txn.fees * -1,
+				currency
+			);
 			return {
 				value: feeAmount,
 				display: clickable(
@@ -461,7 +467,7 @@ export const TransactionsList = (
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
 			fees: formatFees(),
 			net: {
-				value: txn.net / 100,
+				value: formatExportAmount( txn.net, currency ),
 				display: clickable(
 					formatExplicitCurrency( txn.net, currency )
 				),
