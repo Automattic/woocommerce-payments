@@ -28,6 +28,15 @@ const CancelAuthorizationConfirmationModal: React.FunctionComponent< CancelAutho
 		setIsCancelAuthorizationConfirmationModalOpen( false );
 	};
 
+	const handleCancelOrder = (): void => {
+		const orderEditForm: HTMLFormElement | null = document.querySelector(
+			'#post'
+		);
+		if ( null !== orderEditForm ) {
+			orderEditForm.submit();
+		}
+	};
+
 	const doNotCancel = (): void => {
 		const orderStatusElement: HTMLInputElement | null = document.querySelector(
 			'#order_status'
@@ -40,6 +49,7 @@ const CancelAuthorizationConfirmationModal: React.FunctionComponent< CancelAutho
 	};
 
 	const cancelOrder = (): void => {
+		handleCancelOrder();
 		closeModal();
 	};
 
