@@ -115,12 +115,15 @@ export function* submitInstantDeposit( transactionIds ) {
 
 		yield updateInstantDeposit( deposit );
 
-		// Need to invalidate the resolution so that the components will render again.
+		// Invalidate deposits and deposits overview queries to ensure that the UI is updated with fresh data.
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDeposits'
 		);
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDepositsOverview'
+		);
+		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
+			'getAllDepositsOverviews'
 		);
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(

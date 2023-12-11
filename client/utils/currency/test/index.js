@@ -109,4 +109,11 @@ describe( 'Currency utilities', () => {
 
 		expect( utils.formatCurrency( 100000, 'EUR' ) ).toEqual( '€1,000.00' );
 	} );
+
+	test( 'format export amounts', () => {
+		expect( utils.formatExportAmount( 1000, 'USD' ) ).toEqual( 10 );
+		expect( utils.formatExportAmount( 1250, 'USD' ) ).toEqual( 12.5 );
+		expect( utils.formatExportAmount( 1000, 'JPY' ) ).toEqual( 1000 );
+		expect( utils.formatExportAmount( 3450, 'JPY' ) ).toEqual( 3450 );
+	} );
 } );
