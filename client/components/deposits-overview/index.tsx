@@ -45,9 +45,8 @@ const DepositsOverview: React.FC = () => {
 
 	const availableFunds = overview?.available?.amount ?? 0;
 
-	// If the account has deposits blocked, there is no available balance or it is negative, there is no future deposit expected.
-	const isNextDepositExpected =
-		! account?.deposits_blocked && availableFunds > 0;
+	// If the account has deposits blocked, there is no future deposit expected.
+	const isNextDepositExpected = ! account?.deposits_blocked;
 	// If the available balance is negative, deposits may be paused.
 	const isNegativeBalanceDepositsPaused = availableFunds < 0;
 	const hasCompletedWaitingPeriod =
