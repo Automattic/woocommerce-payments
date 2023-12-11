@@ -35,7 +35,7 @@ const Deposit = ( { depositId, dateAvailable }: DepositProps ): JSX.Element => {
 		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
 	}
 
-	return <></>;
+	return <>Future deposit</>;
 };
 
 export default Deposit;
