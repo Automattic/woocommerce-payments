@@ -53,7 +53,7 @@ import DownloadButton from 'components/download-button';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { applyThousandSeparator } from '../../utils/index.js';
-import { HoverTooltip } from 'components/tooltip';
+import { TableLabelTooltip, HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'payment-methods/constants';
 
 interface TransactionsListProps {
@@ -79,6 +79,7 @@ interface Column extends TableCardColumn {
 		| 'deposit';
 	visible?: boolean;
 	cellClassName?: string;
+	value?: string;
 }
 
 const getPaymentSourceDetails = ( txn: Transaction ) => {
@@ -124,6 +125,19 @@ const getSourceDeviceIcon = ( txn: Transaction ) => {
 		<HoverTooltip isVisible={ false } content={ tooltipDescription }>
 			<span className="woocommerce-taptopay__icon"></span>
 		</HoverTooltip>
+	);
+};
+
+const getColumnLabelWithTooltip = ( label: string, tooltip: string ) => {
+	return (
+		<TableLabelTooltip
+			isVisible={ false }
+			content={ tooltip }
+			buttonIcon={ 'info-outline' }
+			buttonSize={ 12 }
+		>
+			<span>{ label }</span>
+		</TableLabelTooltip>
 	);
 };
 
@@ -196,9 +210,13 @@ const getColumns = (
 		},
 		{
 			key: 'amount',
-			label: __( 'Amount', 'woocommerce-payments' ),
+			value: __( 'Amount', 'woocommerce-payments' ),
+			label: getColumnLabelWithTooltip(
+				__( 'Amount', 'woocommerce-payments' ),
+				__( 'Amount in Deposit Currency', 'woocommerce-payments' )
+			),
 			screenReaderLabel: __(
-				'Amount in Deposit Curency',
+				'Amount in Deposit Currency',
 				'woocommerce-payments'
 			),
 			isNumeric: true,
@@ -206,14 +224,22 @@ const getColumns = (
 		},
 		{
 			key: 'fees',
-			label: __( 'Fees', 'woocommerce-payments' ),
+			value: __( 'Fees', 'woocommerce-payments' ),
+			label: getColumnLabelWithTooltip(
+				__( 'Fees', 'woocommerce-payments' ),
+				__( 'Fees in Deposit Currency', 'woocommerce-payments' )
+			),
 			screenReaderLabel: __( 'Fees', 'woocommerce-payments' ),
 			isNumeric: true,
 			isSortable: true,
 		},
 		{
 			key: 'net',
-			label: __( 'Net', 'woocommerce-payments' ),
+			value: __( 'Net', 'woocommerce-payments' ),
+			label: getColumnLabelWithTooltip(
+				__( 'Net', 'woocommerce-payments' ),
+				__( 'Net in Deposit Currency', 'woocommerce-payments' )
+			),
 			screenReaderLabel: __( 'Net', 'woocommerce-payments' ),
 			isNumeric: true,
 			required: true,
@@ -595,6 +621,20 @@ export const TransactionsList = (
 			}
 		);
 
+		// Whenever the `value` prop is presented we should utilize it over the label
+		// With the possibility of HTML markup rendered in label it may result in incorrectly rendering it in CSV exports.
+		const formatTableLabelsForExport = ( columns: Column[] ) => {
+			return columns.map( ( column ) => {
+				column.label =
+					typeof column.value !== 'undefined' &&
+					column.value.length !== 0
+						? column.value
+						: column.label;
+
+				return column;
+			} );
+		};
+
 		if ( 'endpoint' === downloadType ) {
 			const {
 				date_after: dateAfter,
@@ -698,7 +738,10 @@ export const TransactionsList = (
 		} else {
 			downloadCSVFile(
 				generateCSVFileName( title, params ),
-				generateCSVDataFromTable( columnsToDisplay, rows )
+				generateCSVDataFromTable(
+					formatTableLabelsForExport( columnsToDisplay ),
+					rows
+				)
 			);
 		}
 

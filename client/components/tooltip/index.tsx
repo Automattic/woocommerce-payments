@@ -100,6 +100,74 @@ export const HoverTooltip: React.FC< TooltipProps > = ( {
 };
 
 /**
+ * Tooltip that shows on both hover and click.
+ * To be used when the tooltip content is not interactive.
+ *
+ * @param {TooltipProps} props Component props.
+ * @return {JSX.Element} Tooltip component.
+ */
+export const TableLabelTooltip: React.FC< TooltipProps > = ( {
+	isVisible,
+	onHide = noop,
+	children,
+	buttonIcon,
+	buttonLabel,
+	buttonSize = 16,
+	...props
+} ) => {
+	const [ isHovered, setIsHovered ] = useState( false );
+	const [ isClicked, setIsClicked ] = useState( false );
+
+	const handleMouseEnter = () => {
+		setIsHovered( true );
+	};
+	const handleMouseLeave = () => {
+		setIsHovered( false );
+		onHide();
+	};
+	const handleMouseClick = () => {
+		setIsClicked( ( val ) => ! val );
+		if ( isClicked ) {
+			onHide();
+		}
+	};
+	const handleHide = () => {
+		setIsHovered( false );
+		setIsClicked( false );
+		onHide();
+	};
+
+	return (
+		<span
+			className="wcpay-tooltip__content-table-label"
+			onMouseEnter={ handleMouseEnter }
+			onMouseLeave={ handleMouseLeave }
+			onKeyPress={ handleMouseLeave }
+			onFocus={ handleMouseEnter }
+			onBlur={ handleMouseLeave }
+			onClick={ handleMouseClick }
+			tabIndex={ 0 }
+			role={ 'button' }
+		>
+			<TooltipBase
+				{ ...props }
+				onHide={ handleHide }
+				isVisible={ isVisible || isHovered || isClicked }
+			>
+				{ children }
+				{ buttonIcon && (
+					<Icon
+						icon={ buttonIcon }
+						size={ buttonSize }
+						aria-label={ buttonLabel }
+					/>
+				) }
+			</TooltipBase>
+		</span>
+	);
+};
+
+/**
  * Tooltip that shows only on click events.
  * To be used when the tooltip content is interactive (e.g. links to documentation).
  *

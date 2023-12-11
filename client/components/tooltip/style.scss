@@ -28,6 +28,18 @@
 		}
 	}
 
+	&__content-table-label {
+		line-height: 20px;
+
+		.dashicon {
+			font-size: 16px;
+			position: relative;
+			margin-left: 3px;
+			top: 3px;
+			transition: inherit;
+		}
+	}
+
 	&__tooltip-wrapper {
 		visibility: hidden;
 		position: fixed;
