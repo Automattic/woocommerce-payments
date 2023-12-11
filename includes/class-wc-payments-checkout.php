@@ -73,14 +73,6 @@ class WC_Payments_Checkout {
 	}
 
 	/**
-	 * Enqueues and localizes WCPay's checkout scripts.
-	 */
-	public function enqueue_payment_scripts() {
-		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayConfig', WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
-		wp_enqueue_script( 'WCPAY_CHECKOUT' );
-	}
-
-	/**
 	 * Generates the configuration values, needed for payment fields.
 	 *
 	 * Isolated as a separate method in order to be available both
@@ -147,8 +139,6 @@ class WC_Payments_Checkout {
 	public function payment_fields() {
 		try {
 			$display_tokenization = $this->gateway->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
-
-			add_action( 'wp_footer', [ $this, 'enqueue_payment_scripts' ] );
 
 			$prepared_customer_data = $this->customer_service->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
