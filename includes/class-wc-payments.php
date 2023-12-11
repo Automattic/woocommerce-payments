@@ -591,15 +591,13 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
+		require_once __DIR__ . '/migrations/class-additional-payment-methods-admin-notes-removal.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Additional_Payment_Methods_Admin_Notes_Removal(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
-
-		// Delete UPE admin notes as UPE is the default now. This is part of the migration and should be removed in the future.
-		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
-		WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
