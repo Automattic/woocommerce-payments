@@ -499,20 +499,37 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								{ () => (
 									<MenuGroup>
 										<MenuItem
-											onClick={ () =>
-												setIsRefundModalOpen( true )
-											}
+											onClick={ () => {
+												setIsRefundModalOpen( true );
+												wcpayTracks.recordEvent(
+													'payments_transactions_details_refund_model_open',
+													{
+														payment_intent_id:
+															charge.payment_intent,
+													}
+												);
+											} }
 										>
 											Refund in full
 										</MenuItem>
 										{ charge.order && (
 											<MenuItem
-												onClick={ () =>
-													( window.location =
+												onClick={ () => {
+													wcpayTracks.recordEvent(
+														'payments_transactions_details_partial_refund',
+														{
+															payment_intent_id:
+																charge.payment_intent,
+															order_id:
+																charge?.order
+																	?.number,
+														}
+													);
+													window.location =
 														// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 														// @ts-ignore
-														charge.order.url )
-												}
+														charge.order.url;
+												} }
 											>
 												Partial refund
 											</MenuItem>
