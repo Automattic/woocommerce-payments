@@ -124,14 +124,13 @@ jQuery( function ( $ ) {
 			// If it is possible to refund an order, double check that
 			// merchants indeed wants to cancel, or if they just want to
 			// refund.
-			if ( ! canRefund || refundAmount <= 0 ) {
-				return;
+			if ( canRefund && refundAmount > 0 ) {
+				renderModal(
+					<CancelConfirmationModal
+						originalOrderStatus={ originalStatus }
+					/>
+				);
 			}
-			renderModal(
-				<CancelConfirmationModal
-					originalOrderStatus={ originalStatus }
-				/>
-			);
 		}
 	} );
 
