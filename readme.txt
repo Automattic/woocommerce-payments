@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 6.9.0
+Stable tag: 6.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,10 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 6.9.1 - 2023-12-07 =
+* Fix - Display Klarna & Afterpay on the checkout for UK based stores
+
 
 = 6.9.0 - 2023-12-06 =
 * Add - Added cleanup code after Payment Processing - RPP.
