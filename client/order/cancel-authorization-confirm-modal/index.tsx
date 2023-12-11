@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -11,24 +12,34 @@ import { useState } from '@wordpress/element';
  */
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 
-const CancelAuthorizationConfirmationModal = ( { originalOrderStatus } ) => {
+interface CancelAuthorizationConfirmationModalProps {
+	originalOrderStatus: string;
+}
+
+const CancelAuthorizationConfirmationModal: React.FunctionComponent< CancelAuthorizationConfirmationModalProps > = ( {
+	originalOrderStatus,
+} ) => {
 	const [
 		isCancelAuthorizationConfirmationModalOpen,
 		setIsCancelAuthorizationConfirmationModalOpen,
 	] = useState( true );
 
-	const closeModal = () => {
+	const closeModal = (): void => {
 		setIsCancelAuthorizationConfirmationModalOpen( false );
 	};
 
-	const doNotCancel = () => {
-		const orderStatusElement = document.querySelector( '#order_status' );
-		orderStatusElement.value = originalOrderStatus;
-		orderStatusElement.dispatchEvent( new Event( 'change' ) );
+	const doNotCancel = (): void => {
+		const orderStatusElement: HTMLInputElement | null = document.querySelector(
+			'#order_status'
+		);
+		if ( null !== orderStatusElement ) {
+			orderStatusElement.value = originalOrderStatus;
+			orderStatusElement.dispatchEvent( new Event( 'change' ) );
+		}
 		closeModal();
 	};
 
-	const cancelOrder = () => {
+	const cancelOrder = (): void => {
 		closeModal();
 	};
 
@@ -99,6 +110,9 @@ const CancelAuthorizationConfirmationModal = ( { originalOrderStatus } ) => {
 					isDismissible={ false }
 					className="cancel-authorization-confirmation-modal"
 					actions={ buttonContent }
+					onRequestClose={ () => {
+						return false;
+					} }
 				>
 					<p>{ confirmationMessage }</p>
 				</ConfirmationModal>
@@ -106,4 +120,5 @@ const CancelAuthorizationConfirmationModal = ( { originalOrderStatus } ) => {
 		</>
 	);
 };
+
 export default CancelAuthorizationConfirmationModal;
