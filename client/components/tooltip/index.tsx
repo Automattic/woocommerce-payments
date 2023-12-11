@@ -101,7 +101,7 @@ export const HoverTooltip: React.FC< TooltipProps > = ( {
 
 /**
  * Tooltip that shows on both hover and click.
- * To be used when the tooltip content is not interactive.
+ * To be used inside `button` components like the TableCard component where the sortable table labels are displayed as buttons.
  *
  * @param {TooltipProps} props Component props.
  * @return {JSX.Element} Tooltip component.

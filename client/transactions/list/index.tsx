@@ -447,7 +447,10 @@ export const TransactionsList = (
 		};
 		const formatCustomerAmount = () => {
 			return {
-				value: txn.customer_amount / 100,
+				value: formatExportAmount(
+					txn.customer_amount,
+					txn.customer_currency
+				),
 				display: clickable(
 					formatCurrency( txn.customer_amount, txn.customer_currency )
 				),
