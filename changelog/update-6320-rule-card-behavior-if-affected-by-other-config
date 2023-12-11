@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Updates the behavior and display of the international IP address rule card if the rule is being affected by the WooCommerce core selling locations general option.

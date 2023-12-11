@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Display an error banner on the connect page when the WooCommerce country is not supported.
