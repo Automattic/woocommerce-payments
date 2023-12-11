@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { dateI18n } from '@wordpress/date';
+import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { Link } from '@woocommerce/components';
 import React from 'react';
@@ -14,7 +15,7 @@ interface DepositProps {
 	dateAvailable?: string;
 }
 
-const Deposit = ( { depositId, dateAvailable }: DepositProps ): JSX.Element => {
+const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 	if (
 		depositId &&
 		dateAvailable &&
@@ -35,7 +36,7 @@ const Deposit = ( { depositId, dateAvailable }: DepositProps ): JSX.Element => {
 		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
 	}
 
-	return <>Future deposit</>;
+	return <>{ __( 'Future deposit', 'woocommerce-payments' ) }</>;
 };
 
 export default Deposit;
