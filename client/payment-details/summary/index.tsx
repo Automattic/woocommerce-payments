@@ -479,44 +479,49 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								{ charge.payment_intent
 									? charge.payment_intent
 									: charge.id }
-								{ ! charge?.refunded && (
-									<DropdownMenu
-										icon={ moreVertical }
-										label="more"
-										popoverProps={ {
-											position: 'bottom left',
-										} }
-									>
-										{ () => (
-											<MenuGroup>
-												<MenuItem
-													onClick={ () =>
-														setIsRefundModalOpen(
-															true
-														)
-													}
-												>
-													Refund in full
-												</MenuItem>
-												{ charge.order && (
-													<MenuItem
-														onClick={ () =>
-															( window.location =
-																// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-																// @ts-ignore
-																charge.order.url )
-														}
-													>
-														Partial refund
-													</MenuItem>
-												) }
-											</MenuGroup>
-										) }
-									</DropdownMenu>
-								) }
 							</Loadable>
 						</div>
 					</div>
+				</div>
+				<div className="payment-details__refund-controls">
+					{ ! charge?.refunded && (
+						<Loadable
+							isLoading={ isLoading }
+							placeholder={ moreVertical }
+						>
+							<DropdownMenu
+								icon={ moreVertical }
+								label="more"
+								popoverProps={ {
+									position: 'bottom left',
+								} }
+							>
+								{ () => (
+									<MenuGroup>
+										<MenuItem
+											onClick={ () =>
+												setIsRefundModalOpen( true )
+											}
+										>
+											Refund in full
+										</MenuItem>
+										{ charge.order && (
+											<MenuItem
+												onClick={ () =>
+													( window.location =
+														// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+														// @ts-ignore
+														charge.order.url )
+												}
+											>
+												Partial refund
+											</MenuItem>
+										) }
+									</MenuGroup>
+								) }
+							</DropdownMenu>
+						</Loadable>
+					) }
 				</div>
 			</CardBody>
 			<CardDivider />
