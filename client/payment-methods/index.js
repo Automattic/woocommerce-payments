@@ -7,7 +7,6 @@ import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardHeader, DropdownMenu } from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
-import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -165,7 +164,7 @@ const PaymentMethods = () => {
 				</WcPaySurveyContextProvider>
 			) : null }
 
-			<Card className={ classNames( 'payment-methods' ) }>
+			<Card className="payment-methods">
 				<CardHeader className="payment-methods__header">
 					<h4 className="payment-methods__heading">
 						<span>
