@@ -8,6 +8,9 @@
 namespace WCPay;
 
 use Exception;
+use Jetpack_Options;
+use WC_AJAX;
+use WC_Checkout;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
@@ -167,8 +170,54 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
+		// Needed to init the hooks.
+		WC_Checkout::instance();
 
-		$payment_fields                             = parent::get_payment_fields_js_config();
+		// The registered card gateway is more reliable than $this->gateway, but if it isn't available for any reason, fall back to the gateway provided to this checkout class.
+		$gateway = WC_Payments::get_registered_card_gateway() ?? $this->gateway;
+
+		$js_config = [
+			'publishableKey'                 => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+			'testMode'                       => WC_Payments::mode()->is_test(),
+			'accountId'                      => $this->account->get_stripe_account_id(),
+			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
+			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
+			'createPaymentIntentNonce'       => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
+			'updatePaymentIntentNonce'       => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
+			'logPaymentErrorNonce'           => wp_create_nonce( 'wcpay_log_payment_error_nonce' ),
+			'initWooPayNonce'                => wp_create_nonce( 'wcpay_init_woopay_nonce' ),
+			'saveUPEAppearanceNonce'         => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
+			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
+			'fraudServices'                  => $this->fraud_service->get_fraud_services_config(),
+			'features'                       => $this->gateway->supports,
+			'forceNetworkSavedCards'         => WC_Payments::is_network_saved_cards_enabled() || $gateway->should_use_stripe_platform_on_checkout_page(),
+			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			'isPreview'                      => is_preview(),
+			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
+			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_cart_or_checkout(),
+			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),
+			'isWoopayFirstPartyAuthEnabled'  => $this->woopay_util->is_woopay_first_party_auth_enabled(),
+			'isWooPayEmailInputEnabled'      => $this->woopay_util->is_woopay_email_input_enabled(),
+			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
+			'woopayHost'                     => WooPay_Utilities::get_woopay_url(),
+			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
+			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
+			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,
+			'woopaySignatureNonce'           => wp_create_nonce( 'woopay_signature_nonce' ),
+			'woopaySessionNonce'             => wp_create_nonce( 'woopay_session_nonce' ),
+			'woopayMerchantId'               => Jetpack_Options::get_option( 'id' ),
+			'icon'                           => $this->gateway->get_icon_url(),
+			'tracksUserIdentity'             => WC_Payments::woopay_tracker()->tracks_get_identity( get_current_user_id() ),
+		];
+
+		/**
+		 * Allows filtering of the JS config for the payment fields.
+		 *
+		 * @param array $js_config The JS config for the payment fields.
+		 */
+		$payment_fields = apply_filters( 'wcpay_payment_fields_js_config', $js_config );
+
 		$payment_fields['accountDescriptor']        = $this->gateway->get_account_statement_descriptor();
 		$payment_fields['addPaymentReturnURL']      = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']                = UPE_Payment_Gateway::GATEWAY_ID;
