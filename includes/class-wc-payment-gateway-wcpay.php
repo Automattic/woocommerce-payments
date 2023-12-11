@@ -1033,7 +1033,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
-			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+			$additional_data = method_exists( $e, 'getAdditionalData' ) ? $e->getAdditionalData() : [];
+			throw new Process_Payment_Exception( WC_Payments_Utils::get_filtered_error_message( $e ), 'process_payment_error', 0, null, $additional_data );
 		}
 	}
 
@@ -1272,7 +1273,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $intent_meta_order_id !== $order_id ) {
 					throw new Intent_Authentication_Exception(
 						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-						'order_id_mismatch'
+						'order_id_mismatch',
+						0,
+						null,
+						[
+							'intent_meta_data' => $intent->get_metadata(),
+							'order_id'         => $order_id,
+						]
 					);
 				}
 			}

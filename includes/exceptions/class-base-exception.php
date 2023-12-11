@@ -24,16 +24,25 @@ abstract class Base_Exception extends Exception {
 	private $error_code;
 
 	/**
+	 * Additional error data.
+	 *
+	 * @var array
+	 */
+	public $additional_data = [];
+
+	/**
 	 * Constructor, including the usual $message, $code, and $previous,
 	 * and a new parameter $error_code.
 	 *
-	 * @param string     $message    The Exception message to throw.
-	 * @param string     $error_code String error code.
-	 * @param int        $code       The Exception code.
-	 * @param \Throwable $previous   The previous exception used for the exception chaining.
+	 * @param string     $message         The Exception message to throw.
+	 * @param string     $error_code      String error code.
+	 * @param int        $code            The Exception code.
+	 * @param \Throwable $previous        The previous exception used for the exception chaining.
+	 * @param array      $additional_data The additional data.
 	 */
-	public function __construct( $message, $error_code, $code = 0, $previous = null ) {
-		$this->error_code = $error_code;
+	public function __construct( $message, $error_code, $code = 0, $previous = null, $additional_data = [] ) {
+		$this->error_code      = $error_code;
+		$this->additional_data = $additional_data;
 
 		parent::__construct( $message, $code, $previous );
 	}
@@ -45,5 +54,14 @@ abstract class Base_Exception extends Exception {
 	 */
 	public function get_error_code() {
 		return $this->error_code;
+	}
+
+	/**
+	 * Returns additional error data.
+	 *
+	 * @return array
+	 */
+	public function getAdditionalData() {
+		return $this->additional_data;
 	}
 }
