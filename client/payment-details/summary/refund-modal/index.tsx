@@ -96,7 +96,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 				options={ [
 					{
 						label: __( 'Duplicate order', 'woocommerce-payments' ),
-						value: 'duplicate_order',
+						value: 'duplicate',
 					},
 					{
 						label: __( 'Fraudulent', 'woocommerce-payments' ),
