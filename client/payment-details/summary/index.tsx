@@ -491,7 +491,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						>
 							<DropdownMenu
 								icon={ moreVertical }
-								label="more"
+								label="Transaction actions"
 								popoverProps={ {
 									position: 'bottom left',
 								} }
