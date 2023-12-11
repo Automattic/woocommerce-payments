@@ -10,7 +10,6 @@ namespace WCPay;
 use Jetpack_Options;
 use WC_AJAX;
 use WC_Checkout;
-use WC_Payment_Gateway_WCPay;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
@@ -25,14 +24,6 @@ use WCPay\WooPay\WooPay_Utilities;
  * WC_Payments_Checkout
  */
 class WC_Payments_Checkout {
-
-	/**
-	 * WC Payments Gateway.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	protected $gateway;
-
 	/**
 	 * WooPay Utilities.
 	 *
@@ -64,20 +55,17 @@ class WC_Payments_Checkout {
 	/**
 	 * Construct.
 	 *
-	 * @param WC_Payment_Gateway_WCPay     $gateway                WC Payment Gateway.
 	 * @param WooPay_Utilities             $woopay_util            WooPay Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
 	 * @param WC_Payments_Fraud_Service    $fraud_service          Fraud service instance.
 	 */
 	public function __construct(
-		WC_Payment_Gateway_WCPay $gateway,
 		WooPay_Utilities $woopay_util,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service,
 		WC_Payments_Fraud_Service $fraud_service
 	) {
-		$this->gateway          = $gateway;
 		$this->woopay_util      = $woopay_util;
 		$this->account          = $account;
 		$this->customer_service = $customer_service;
