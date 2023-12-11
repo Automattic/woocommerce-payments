@@ -658,6 +658,11 @@ export const merchantWCP = {
 		expect( element ).not.toBeNull();
 	},
 
+	removeCurrency: async ( currencyCode ) => {
+		// TODO: implement
+		console.warn( 'removeCurrency: method not implemented' );
+	},
+
 	openConnectPage: async () => {
 		await page.goto( WCPAY_CONNECT, {
 			waitUntil: 'networkidle0',
