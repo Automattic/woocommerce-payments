@@ -132,4 +132,24 @@ describe( 'Allowed countries rule card notice tests', () => {
 			/Orders from the following countries will be blocked by the filter: Canada, United States/i
 		);
 	} );
+	test( 'renders html entities correctly', () => {
+		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
+			'specific';
+		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries = [
+			'ST',
+		];
+		global.wcSettings.countries.ST =
+			'S&atilde;o Tom&eacute; and Pr&iacute;ncipe';
+		mockContext.protectionSettingsUI.test_key.block = true;
+
+		const container = render(
+			<FraudPreventionSettingsContext.Provider value={ mockContext }>
+				<AllowedCountriesNotice setting={ 'test_key' } />
+			</FraudPreventionSettingsContext.Provider>
+		);
+		expect( container ).toMatchSnapshot();
+		expect( container.baseElement ).toHaveTextContent(
+			/São Tomé and Príncipe/i
+		);
+	} );
 } );
