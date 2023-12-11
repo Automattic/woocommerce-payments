@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show deposit schedule message when available balance is zero or negative
