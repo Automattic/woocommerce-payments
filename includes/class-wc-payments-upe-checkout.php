@@ -138,6 +138,27 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	}
 
 	/**
+	 * Registers scripts necessary for the gateway, even when cart order total is 0.
+	 * This is done so that if the cart is modified via AJAX on checkout,
+	 * the scripts are still loaded.
+	 */
+	public function register_scripts_for_zero_order_total() {
+		if (
+			isset( WC()->cart ) &&
+			! WC()->cart->is_empty() &&
+			! WC()->cart->needs_payment() &&
+			is_checkout() &&
+			! has_block( 'woocommerce/checkout' )
+		) {
+			WC_Payments::get_gateway()->tokenization_script();
+			$script_handle = 'wcpay-upe-checkout';
+			$js_object     = 'wcpay_upe_config';
+			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
+			wp_enqueue_script( $script_handle );
+		}
+	}
+
+	/**
 	 * Generates the configuration values, needed for payment fields.
 	 *
 	 * Isolated as a separate method in order to be available both

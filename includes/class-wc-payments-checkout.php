@@ -73,42 +73,11 @@ class WC_Payments_Checkout {
 	}
 
 	/**
-	 * Initializes this class's WP hooks.
-	 *
-	 * @return void
-	 */
-	public function init_hooks() {
-		add_action( 'wc_payments_add_payment_fields', [ $this, 'payment_fields' ] );
-		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
-	}
-
-	/**
 	 * Enqueues and localizes WCPay's checkout scripts.
 	 */
 	public function enqueue_payment_scripts() {
 		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayConfig', WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
 		wp_enqueue_script( 'WCPAY_CHECKOUT' );
-	}
-
-	/**
-	 * Registers scripts necessary for the gateway, even when cart order total is 0.
-	 * This is done so that if the cart is modified via AJAX on checkout,
-	 * the scripts are still loaded.
-	 */
-	public function register_scripts_for_zero_order_total() {
-		if (
-			isset( WC()->cart ) &&
-			! WC()->cart->is_empty() &&
-			! WC()->cart->needs_payment() &&
-			is_checkout() &&
-			! has_block( 'woocommerce/checkout' )
-		) {
-			WC_Payments::get_gateway()->tokenization_script();
-			$script_handle = 'wcpay-upe-checkout';
-			$js_object     = 'wcpay_upe_config';
-			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
-			wp_enqueue_script( $script_handle );
-		}
 	}
 
 	/**
