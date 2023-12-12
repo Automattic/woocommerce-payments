@@ -46,6 +46,11 @@ $space-header-item: 12px;
 		top: 3px;
 		left: 8px;
 	}
+	.woocommerce-table__item {
+		.wcpay-tooltip__content-wrapper {
+			white-space: normal;
+		}
+	}
 }
 
 /**
