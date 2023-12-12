@@ -129,6 +129,11 @@ export const shopperWCP = {
 		await expect( page ).toClick( 'label', { text: label } );
 	},
 
+	setDefaultPaymentMethod: async () => {
+		await expect( page ).toClick( '.button.default' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+	},
+
 	toggleCreateAccount: async () => {
 		await expect( page ).toClick( '#createaccount' );
 	},
