@@ -309,7 +309,7 @@ class WC_Payments_WooPay_Button_Handler {
 
 				$product_name = $cart_item['data']->get_name();
 
-				$item_tax = $this->prices_includes_tax() ? ( $cart_item['line_subtotal_tax'] ?? 0 ) : 0;
+				$item_tax = $this->cart_prices_include_tax() ? ( $cart_item['line_subtotal_tax'] ?? 0 ) : 0;
 
 				$item = [
 					'label'  => $product_name . $quantity_label,
@@ -336,7 +336,7 @@ class WC_Payments_WooPay_Button_Handler {
 		$items_total = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
 		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( '' );
 
-		if ( ! $this->prices_includes_tax() ) {
+		if ( ! $this->cart_prices_include_tax() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Tax', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $tax, $currency ),
@@ -344,7 +344,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		if ( WC()->cart->needs_shipping() ) {
-			$shipping_tax = $this->prices_includes_tax() ? WC()->cart->shipping_tax_total : 0;
+			$shipping_tax = $this->cart_prices_include_tax() ? WC()->cart->shipping_tax_total : 0;
 			$items[]      = [
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $shipping + $shipping_tax, $currency ),
@@ -383,12 +383,12 @@ class WC_Payments_WooPay_Button_Handler {
 	}
 
 	/**
-	 * Whether tax should be displayed on separate line.
-	 * returns true if tax is enabled & display of tax in checkout is set to inclusive.
+	 * Whether tax should be displayed on separate line in cart.
+	 * returns true if tax is disabled or display of tax in checkout is set to inclusive.
 	 *
 	 * @return boolean
 	 */
-	private function prices_includes_tax() {
+	private function cart_prices_include_tax() {
 		return ! wc_tax_enabled() || 'incl' === get_option( 'woocommerce_tax_display_cart' );
 	}
 
