@@ -332,8 +332,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$get_payment_gateway_by_id_return_value_map[] = [ $payment_method_id, $mock_gateway ];
 
 			WC_Helper_Site_Currency::$mock_site_currency = '';
-
-			update_option( '_wcpay_feature_upe_split', '1' );
 		}
 
 		foreach ( $this->mock_payment_gateways as $id => $mock_gateway ) {
@@ -367,8 +365,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Payments::set_database_cache( $this->_cache );
-		update_option( '_wcpay_feature_upe_split', '0' );
-		update_option( '_wcpay_feature_upe_deferred_intent', '0' );
 		wcpay_get_test_container()->reset_all_replacements();
 	}
 
