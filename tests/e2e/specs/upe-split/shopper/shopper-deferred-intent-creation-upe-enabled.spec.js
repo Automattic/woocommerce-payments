@@ -132,7 +132,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 	describe( 'My Account', () => {
 		let timeAdded;
 
-		it( 'should add the card as a new payment method', async () => {
+		it( 'should add the card as a new payment method and set it as default payment method', async () => {
 			await shopperWCP.goToPaymentMethods();
 			await shopperWCP.addNewPaymentMethod( 'basic', card );
 
@@ -146,6 +146,11 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).toMatch( 'Payment method successfully added' );
 			await expect( page ).toMatch(
 				`${ card.expires.month }/${ card.expires.year }`
+			);
+			await shopperWCP.setDefaultPaymentMethod( card.label );
+			// Verify that the card was set as default
+			await expect( page ).toMatch(
+				'This payment method was successfully set as your default.'
 			);
 		} );
 
