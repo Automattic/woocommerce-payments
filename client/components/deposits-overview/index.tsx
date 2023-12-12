@@ -24,6 +24,7 @@ import {
 	DepositTransitDaysNotice,
 	NegativeBalanceDepositsPausedNotice,
 	NewAccountWaitingPeriodNotice,
+	NoFundsAvailableForDepositNotice,
 	SuspendedDepositNotice,
 } from './deposit-notices';
 import useRecentDeposits from './hooks';
@@ -47,9 +48,12 @@ const DepositsOverview: React.FC = () => {
 	const isLoading = isLoadingOverview || isLoadingDeposits;
 
 	const availableFunds = overview?.available?.amount ?? 0;
+	const pendingFunds = overview?.pending?.amount ?? 0;
 
 	// If the available balance is negative, deposits may be paused.
 	const isNegativeBalanceDepositsPaused = availableFunds < 0;
+	// When there are funds pending but no available funds, deposits are paused.
+	const isFundsAvailableForDeposit = availableFunds === 0 && pendingFunds > 0;
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
@@ -84,7 +88,7 @@ const DepositsOverview: React.FC = () => {
 	}
 
 	// This card isn't shown if there are no deposits, so we can bail early.
-	if ( ! isLoading && availableFunds === 0 && deposits.length === 0 ) {
+	if ( ! isLoading && deposits.length === 0 ) {
 		return null;
 	}
 
@@ -109,11 +113,15 @@ const DepositsOverview: React.FC = () => {
 					<SuspendedDepositNotice />
 				) : (
 					<>
-						{ isDepositsUnrestricted && (
-							<DepositTransitDaysNotice />
-						) }
+						{ isDepositsUnrestricted &&
+							! isFundsAvailableForDeposit && (
+								<DepositTransitDaysNotice />
+							) }
 						{ ! hasCompletedWaitingPeriod && (
 							<NewAccountWaitingPeriodNotice />
+						) }
+						{ isFundsAvailableForDeposit && (
+							<NoFundsAvailableForDepositNotice />
 						) }
 						{ isNegativeBalanceDepositsPaused && (
 							<NegativeBalanceDepositsPausedNotice />

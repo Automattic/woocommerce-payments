@@ -150,3 +150,37 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
 		} ) }
 	</InlineNotice>
 );
+
+/**
+ * Renders a notice informing the user that deposits only occur when there are funds available.
+ */
+export const NoFundsAvailableForDepositNotice: React.FC = () => (
+	<InlineNotice
+		status="warning"
+		icon
+		className="no-funds-available-for-deposit-notice"
+		isDismissible={ false }
+	>
+		{ interpolateComponents( {
+			mixedString: sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					'You have no funds available to deposit. {{whyLink}}Why?{{/whyLink}}',
+					'woocommerce-payments'
+				),
+				'WooPayments'
+			),
+			components: {
+				whyLink: (
+					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						target="_blank"
+						rel="noopener noreferrer"
+						href="https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-funds"
+					/>
+				),
+			},
+		} ) }
+	</InlineNotice>
+);
