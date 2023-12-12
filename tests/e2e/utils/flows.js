@@ -651,6 +651,12 @@ export const merchantWCP = {
 			{ text: 'Update selected' }
 		);
 
+		const snackbar = '.components-snackbar';
+		await expect( page ).toMatchElement( snackbar, {
+			text: 'Enabled currencies updated.',
+			timeout: 60000,
+		} );
+
 		const selector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
 		await page.waitForSelector( selector );
 		const element = await page.$( selector );
@@ -659,8 +665,22 @@ export const merchantWCP = {
 	},
 
 	removeCurrency: async ( currencyCode ) => {
-		// TODO: implement
-		console.warn( 'removeCurrency: method not implemented' );
+		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
+		await page.waitForSelector( currencyItemSelector );
+		await page.click(
+			`${ currencyItemSelector } .enabled-currency__action.delete`
+		);
+
+		const snackbar = '.components-snackbar';
+		await expect( page ).toMatchElement( snackbar, {
+			text: 'Enabled currencies updated.',
+			timeout: 60000,
+		} );
+
+		await page.waitForSelector( currencyItemSelector, {
+			hidden: true,
+			timeout: 15000,
+		} );
 	},
 
 	openConnectPage: async () => {

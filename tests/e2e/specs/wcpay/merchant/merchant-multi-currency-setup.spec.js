@@ -53,7 +53,7 @@ describe( 'Merchant Multi-Currency Settings', () => {
 			// Add assertions to verify the currency is added
 		} );
 
-		it.skip( 'can remove a currency', async () => {
+		it( 'can remove a currency', async () => {
 			await merchantWCP.removeCurrency( testCurrency );
 			// Add assertions to verify the currency is removed
 		} );
