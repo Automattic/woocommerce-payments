@@ -92,7 +92,7 @@ const PaymentMethods = () => {
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
 
-	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
+	const stripeAccountDomesticCurrency = useAccountDomesticCurrency();
 
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );
