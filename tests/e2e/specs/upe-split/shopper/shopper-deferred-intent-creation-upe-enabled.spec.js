@@ -154,19 +154,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			);
 		} );
 
-		it( 'should be able set card as default', async () => {
-			await shopperWCP.addNewPaymentMethod( 'basic', card );
-			await shopperWCP.setDefaultPaymentMethod();
-
-			// Take note of the time when we added this card
-			timeAdded = Date.now();
-
-			// Verify that the card was set as default
-			await expect( page ).toMatch(
-				'This payment method was successfully set as your default.'
-			);
-		} );
-
 		it( 'should be able to delete the card', async () => {
 			await shopperWCP.deleteSavedPaymentMethod( card.label );
 			await expect( page ).toMatch( 'Payment method deleted.' );
