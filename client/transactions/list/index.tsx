@@ -333,9 +333,13 @@ export const TransactionsList = (
 			txn.customer_email
 		);
 
-		const deposit = (
+		const isFinancingType =
+			-1 !==
+			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
+
+		const deposit = ! isFinancingType && (
 			<Deposit
-				depositId={ txn.deposit_id ?? '' }
+				depositId={ txn.deposit_id }
 				dateAvailable={ txn.available_on }
 			/>
 		);
@@ -381,10 +385,6 @@ export const TransactionsList = (
 		const depositStatus = txn.deposit_status
 			? displayDepositStatus[ txn.deposit_status ]
 			: '';
-
-		const isFinancingType =
-			-1 !==
-			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
 
 		// Map transaction into table row.
 		const data = {
