@@ -125,15 +125,12 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).not.toMatchElement(
 				'input#wc-woocommerce_payments-new-payment-method'
 			);
+			await shopper.login();
 		} );
 	} );
 
 	describe( 'My Account', () => {
 		let timeAdded;
-
-		beforeAll( async () => {
-			await shopper.login();
-		} );
 
 		it( 'should add the card as a new payment method', async () => {
 			await shopperWCP.goToPaymentMethods();
