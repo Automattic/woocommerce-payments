@@ -3,12 +3,18 @@
 /**
  * External dependencies
  */
+import React from 'react';
+import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
-import moment from 'moment';
 import { Link } from '@woocommerce/components';
-import React from 'react';
-import { getAdminUrl } from 'wcpay/utils';
+import InfoOutlineIcon from 'gridicons/dist/info-outline';
+
+/**
+ * Internal dependencies
+ */
+import { getAdminUrl } from 'utils';
+import { ClickTooltip } from 'components/tooltip';
 
 interface DepositProps {
 	depositId?: string;
@@ -36,7 +42,16 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
 	}
 
-	return <>{ __( 'Future deposit', 'woocommerce-payments' ) }</>;
+	// Show an icon with a tooltip to communicate that the deposit will be available in the future.
+	return (
+		<ClickTooltip
+			content={ __(
+				'This transaction will be included in a future deposit. Once created, the estimated deposit date will be shown here.',
+				'woocommerce-payments'
+			) }
+			buttonIcon={ <InfoOutlineIcon /> }
+		/>
+	);
 };
 
 export default Deposit;
