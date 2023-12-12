@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: account currency hook return value
