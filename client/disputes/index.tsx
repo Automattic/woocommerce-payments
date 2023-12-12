@@ -33,7 +33,7 @@ import Page from 'components/page';
 import { TestModeNotice } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
-import { formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency, formatExportAmount } from 'utils/currency';
 import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
@@ -232,7 +232,7 @@ export const DisputesList = (): JSX.Element => {
 			};
 		} = {
 			amount: {
-				value: dispute.amount / 100,
+				value: formatExportAmount( dispute.amount, dispute.currency ),
 				display: clickable(
 					formatExplicitCurrency( dispute.amount, dispute.currency )
 				),

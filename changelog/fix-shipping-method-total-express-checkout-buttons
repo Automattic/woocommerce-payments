@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Ensure express payment methods (Google and Apple Pay) correctly reflect eligible shipping methods after closing and reattempting payment.

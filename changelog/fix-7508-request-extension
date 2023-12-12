@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Allow requests with item IDs to be extended without exceptions.
