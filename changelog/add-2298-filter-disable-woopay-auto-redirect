@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Filter to disable WooPay checkout auto-redirect and email input hooks.

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { useEffect, useContext } from '@wordpress/element';
+import { useContext } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
@@ -11,7 +11,6 @@ import { Button } from '@wordpress/components';
  */
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
-import WizardTaskContext from '../wizard/task/context';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { useEnabledPaymentMethodIds } from '../../data';
 import WizardContext from '../wizard/wrapper/context';
@@ -70,18 +69,9 @@ const EnabledMethodsList = () => {
 };
 
 const SetupComplete = () => {
-	const { isActive } = useContext( WizardTaskContext );
 	const {
 		featureFlags: { multiCurrency },
 	} = useContext( WCPaySettingsContext );
-
-	useEffect( () => {
-		if ( ! isActive ) {
-			return;
-		}
-
-		window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = true;
-	}, [ isActive ] );
 
 	return (
 		<WizardTaskItem

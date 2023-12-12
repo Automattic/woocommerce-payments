@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix saved card payments not working on block checkout while card testing prevention is active
