@@ -610,7 +610,9 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </td>
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
-                  />
+                  >
+                    Future deposit
+                  </td>
                 </tr>
                 <tr>
                   <th
@@ -910,7 +912,9 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </td>
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
-                  />
+                  >
+                    Future deposit
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -1541,7 +1545,9 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </td>
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
-                  />
+                  >
+                    Future deposit
+                  </td>
                 </tr>
                 <tr>
                   <th
@@ -1841,7 +1847,9 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </td>
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
-                  />
+                  >
+                    Future deposit
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -3172,7 +3180,9 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </td>
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
-                  />
+                  >
+                    Future deposit
+                  </td>
                 </tr>
                 <tr>
                   <th
@@ -3478,7 +3488,9 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </td>
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
-                  />
+                  >
+                    Future deposit
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -4151,7 +4163,9 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </td>
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
-                  />
+                  >
+                    Future deposit
+                  </td>
                 </tr>
                 <tr>
                   <th
@@ -4451,7 +4465,9 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </td>
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
-                  />
+                  >
+                    Future deposit
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -5124,7 +5140,9 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </td>
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
-                  />
+                  >
+                    Future deposit
+                  </td>
                 </tr>
                 <tr>
                   <th
@@ -5424,7 +5442,9 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </td>
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
-                  />
+                  >
+                    Future deposit
+                  </td>
                 </tr>
               </tbody>
             </table>
