@@ -691,7 +691,7 @@ export const merchantWCP = {
 		await merchant.openNewOrder();
 		await page.click( 'button.add-line-item' );
 		await page.click( 'button.add-order-item' );
-		await page.click( 'select.wc-product-search' );
+		await page.click( 'select[name="item_id"]' );
 		await page.type(
 			'.select2-search--dropdown > input',
 			config.get( 'products.simple.name' ),
