@@ -64,6 +64,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 
 	it( 'should display currency switcher widget if multi-currency is enabled', async () => {
 		await merchantWCP.addMulticurrencyWidget();
+		await merchant.logout();
 		await shopper.goToShop();
 		await page.waitForSelector( '.widget select[name=currency]', {
 			visible: true,
@@ -72,6 +73,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 	} );
 
 	it( 'should not display currency switcher widget if multi-currency is disabled', async () => {
+		await merchant.login();
 		await merchantWCP.openWCPSettings();
 		await merchantWCP.deactivateMulticurrency();
 		await shopper.goToShop();
