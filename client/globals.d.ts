@@ -30,7 +30,7 @@ declare global {
 			country?: string;
 			paymentsEnabled?: boolean;
 			deposits?: {
-				status;
+				status: string;
 				restrictions:
 					| 'deposits_unrestricted'
 					| 'deposits_blocked'
