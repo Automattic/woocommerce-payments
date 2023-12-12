@@ -25,6 +25,7 @@ const UPE_METHOD_CHECKBOXES = [
 	'#inspector-checkbox-control-9', // sofort
 ];
 const card = config.get( 'cards.basic' );
+const card2 = config.get( 'cards.basic2' );
 const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
 
 describe( 'Enabled UPE with deferred intent creation', () => {
@@ -152,7 +153,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 
 		it( 'should be able to set payment method as default', async () => {
 			await shopperWCP.goToPaymentMethods();
-			await shopperWCP.addNewPaymentMethod( 'basic', card );
+			await shopperWCP.addNewPaymentMethod( 'basic2', card2 );
 			// Take note of the time when we added this card
 			timeAdded = Date.now();
 
@@ -162,9 +163,9 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			);
 			await expect( page ).toMatch( 'Payment method successfully added' );
 			await expect( page ).toMatch(
-				`${ card.expires.month }/${ card.expires.year }`
+				`${ card2.expires.month }/${ card2.expires.year }`
 			);
-			await shopperWCP.setDefaultPaymentMethod( card.label );
+			await shopperWCP.setDefaultPaymentMethod( card2.label );
 			// Verify that the card was set as default
 			await expect( page ).toMatch(
 				'This payment method was successfully set as your default.'
