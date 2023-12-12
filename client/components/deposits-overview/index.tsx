@@ -54,10 +54,7 @@ const DepositsOverview: React.FC = () => {
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
 	const showRecentDeposits =
-		! isLoading &&
-		deposits?.length > 0 &&
-		!! account &&
-		isDepositsUnrestricted;
+		! isLoading && deposits?.length > 0 && !! account;
 
 	// Show a loading state if the page is still loading.
 	if ( isLoading ) {
