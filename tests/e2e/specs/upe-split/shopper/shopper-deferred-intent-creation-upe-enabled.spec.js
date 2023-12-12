@@ -115,10 +115,26 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await shopperWCP.deleteSavedPaymentMethod( card.label );
 			await expect( page ).toMatch( 'Payment method deleted' );
 		} );
+
+		it( 'should not allow guest user to save the card', async () => {
+			await shopperWCP.logout();
+			await setupProductCheckout(
+				config.get( 'addresses.customer.billing' )
+			);
+
+			await expect( page ).not.toMatchElement(
+				'input#wc-woocommerce_payments-new-payment-method'
+			);
+		} );
 	} );
 
 	describe( 'My Account', () => {
 		let timeAdded;
+
+		beforeAll( async () => {
+			await shopper.login();
+		} );
+
 		it( 'should add the card as a new payment method', async () => {
 			await shopperWCP.goToPaymentMethods();
 			await shopperWCP.addNewPaymentMethod( 'basic', card );
@@ -133,6 +149,19 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).toMatch( 'Payment method successfully added' );
 			await expect( page ).toMatch(
 				`${ card.expires.month }/${ card.expires.year }`
+			);
+		} );
+
+		it( 'should be able set card as default', async () => {
+			await shopperWCP.addNewPaymentMethod( 'basic', card );
+			await shopperWCP.setDefaultPaymentMethod();
+
+			// Take note of the time when we added this card
+			timeAdded = Date.now();
+
+			// Verify that the card was set as default
+			await expect( page ).toMatch(
+				'This payment method was successfully set as your default.'
 			);
 		} );
 
