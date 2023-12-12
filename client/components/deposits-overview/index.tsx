@@ -53,7 +53,8 @@ const DepositsOverview: React.FC = () => {
 	// If the available balance is negative, deposits may be paused.
 	const isNegativeBalanceDepositsPaused = availableFunds < 0;
 	// When there are funds pending but no available funds, deposits are paused.
-	const isFundsAvailableForDeposit = availableFunds === 0 && pendingFunds > 0;
+	const isDepositAwaitingPendingFunds =
+		availableFunds === 0 && pendingFunds > 0;
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
@@ -115,13 +116,13 @@ const DepositsOverview: React.FC = () => {
 				) : (
 					<>
 						{ isDepositsUnrestricted &&
-							! isFundsAvailableForDeposit && (
+							! isDepositAwaitingPendingFunds && (
 								<DepositTransitDaysNotice />
 							) }
 						{ ! hasCompletedWaitingPeriod && (
 							<NewAccountWaitingPeriodNotice />
 						) }
-						{ isFundsAvailableForDeposit && (
+						{ isDepositAwaitingPendingFunds && (
 							<NoFundsAvailableForDepositNotice />
 						) }
 						{ isNegativeBalanceDepositsPaused && (

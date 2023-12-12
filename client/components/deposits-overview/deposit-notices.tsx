@@ -155,20 +155,11 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
  * Renders a notice informing the user that deposits only occur when there are funds available.
  */
 export const NoFundsAvailableForDepositNotice: React.FC = () => (
-	<InlineNotice
-		status="warning"
-		icon
-		className="no-funds-available-for-deposit-notice"
-		isDismissible={ false }
-	>
+	<InlineNotice status="warning" icon isDismissible={ false }>
 		{ interpolateComponents( {
-			mixedString: sprintf(
-				/* translators: %s: WooPayments */
-				__(
-					'You have no funds available to deposit. {{whyLink}}Why?{{/whyLink}}',
-					'woocommerce-payments'
-				),
-				'WooPayments'
+			mixedString: __(
+				'You have no funds available to deposit. {{whyLink}}Why?{{/whyLink}}',
+				'woocommerce-payments'
 			),
 			components: {
 				whyLink: (
