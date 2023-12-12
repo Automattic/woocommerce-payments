@@ -12,14 +12,39 @@ import { mocked } from 'ts-jest/utils';
 import BusinessDetails from '../business-details';
 import { OnboardingContextProvider } from '../../context';
 import strings from '../../strings';
-import { getBusinessTypes, getMccsFlatList } from 'onboarding/utils';
+import {
+	getAvailableCountries,
+	getBusinessTypes,
+	getMccsFlatList,
+} from 'onboarding/utils';
 
 jest.mock( 'onboarding/utils', () => ( {
+	getAvailableCountries: jest.fn(),
 	getBusinessTypes: jest.fn(),
 	getMccsFlatList: jest.fn(),
 } ) );
 
 const countries = [
+	{
+		key: 'ES',
+		name: 'Spain',
+		types: [],
+	},
+	{
+		key: 'US',
+		name: 'United States',
+		types: [],
+	},
+	{
+		key: 'FR',
+		name: 'France',
+		types: [],
+	},
+];
+
+mocked( getAvailableCountries ).mockReturnValue( countries );
+
+const businessTypes = [
 	{
 		key: 'US',
 		name: 'United States',
@@ -73,7 +98,7 @@ const countries = [
 	},
 ];
 
-mocked( getBusinessTypes ).mockReturnValue( countries );
+mocked( getBusinessTypes ).mockReturnValue( businessTypes );
 
 const mccsFlatList = [
 	{
@@ -167,6 +192,13 @@ describe( 'BusinessDetails', () => {
 		).not.toBeInTheDocument();
 		expect(
 			screen.queryByText( strings.placeholders[ 'company.structure' ] )
+		).not.toBeInTheDocument();
+
+		user.click( countryField );
+		user.click( screen.getByText( 'Spain' ) );
+
+		expect(
+			screen.queryByText( strings.placeholders.business_type )
 		).not.toBeInTheDocument();
 
 		user.click( countryField );

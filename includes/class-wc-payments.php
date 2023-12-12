@@ -523,40 +523,27 @@ class WC_Payments {
 			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
 		];
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$payment_methods = [];
-			foreach ( $payment_method_classes as $payment_method_class ) {
-				$payment_method                               = new $payment_method_class( self::$token_service );
-				$payment_methods[ $payment_method->get_id() ] = $payment_method;
-			}
-			foreach ( $payment_methods as $payment_method ) {
-				self::$upe_payment_method_map[ $payment_method->get_id() ] = $payment_method;
 
-				$split_gateway = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
-
-				// Card gateway hooks are registered once below.
-				if ( 'card' !== $payment_method->get_id() ) {
-					$split_gateway->init_hooks();
-				}
-
-				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
-			}
-
-			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
-			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
-		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-			$payment_methods = [];
-			foreach ( $payment_method_classes as $payment_method_class ) {
-				$payment_method                               = new $payment_method_class( self::$token_service );
-				$payment_methods[ $payment_method->get_id() ] = $payment_method;
-			}
-
-			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
-			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
-		} else {
-			self::$card_gateway         = self::$legacy_card_gateway;
-			self::$wc_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
+		$payment_methods = [];
+		foreach ( $payment_method_classes as $payment_method_class ) {
+			$payment_method                               = new $payment_method_class( self::$token_service );
+			$payment_methods[ $payment_method->get_id() ] = $payment_method;
 		}
+		foreach ( $payment_methods as $payment_method ) {
+			self::$upe_payment_method_map[ $payment_method->get_id() ] = $payment_method;
+
+			$split_gateway = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
+
+			// Card gateway hooks are registered once below.
+			if ( 'card' !== $payment_method->get_id() ) {
+				$split_gateway->init_hooks();
+			}
+
+			self::$upe_payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
+		}
+
+		self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
+		self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
 
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
@@ -604,12 +591,12 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
-		require_once __DIR__ . '/migrations/class-track-upe-status.php';
+		require_once __DIR__ . '/migrations/class-additional-payment-methods-admin-notes-removal.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Track_Upe_Status', 'maybe_track' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Additional_Payment_Methods_Admin_Notes_Removal(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
@@ -751,49 +738,41 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooPayments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+		$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
 
-			$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
+		$key = array_search( 'link', $payment_methods, true );
 
-			$key = array_search( 'link', $payment_methods, true );
+		if ( false !== $key && WC_Payments_Features::is_woopay_enabled() ) {
+			unset( $payment_methods[ $key ] );
 
-			if ( false !== $key && WC_Payments_Features::is_woopay_enabled() ) {
-				unset( $payment_methods[ $key ] );
-
-				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
-			}
-
-			self::$registered_card_gateway = self::$card_gateway;
-
-			$gateways[]       = self::$registered_card_gateway;
-			$all_upe_gateways = [];
-			$reusable_methods = [];
-			foreach ( $payment_methods as $payment_method_id ) {
-				if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
-					continue;
-				}
-				$upe_gateway        = self::get_payment_gateway_by_id( $payment_method_id );
-				$upe_payment_method = self::get_payment_method_by_id( $payment_method_id );
-
-				if ( $upe_payment_method->is_reusable() ) {
-					$reusable_methods[] = $upe_gateway;
-				}
-
-				$all_upe_gateways[] = $upe_gateway;
-
-			}
-
-			if ( is_add_payment_method_page() ) {
-				return array_merge( $gateways, $reusable_methods );
-			}
-
-			return array_merge( $gateways, $all_upe_gateways );
-		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
-			self::$registered_card_gateway = self::$card_gateway;
-		} else {
-			self::$registered_card_gateway = self::$legacy_card_gateway;
+			self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
 		}
-		return array_merge( $gateways, [ self::$registered_card_gateway ] );
+
+		self::$registered_card_gateway = self::$card_gateway;
+
+		$gateways[]       = self::$registered_card_gateway;
+		$all_upe_gateways = [];
+		$reusable_methods = [];
+		foreach ( $payment_methods as $payment_method_id ) {
+			if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
+				continue;
+			}
+			$upe_gateway        = self::get_payment_gateway_by_id( $payment_method_id );
+			$upe_payment_method = self::get_payment_method_by_id( $payment_method_id );
+
+			if ( $upe_payment_method->is_reusable() ) {
+				$reusable_methods[] = $upe_gateway;
+			}
+
+			$all_upe_gateways[] = $upe_gateway;
+
+		}
+
+		if ( is_add_payment_method_page() ) {
+			return array_merge( $gateways, $reusable_methods );
+		}
+
+		return array_merge( $gateways, $all_upe_gateways );
 	}
 
 	/**
@@ -1062,15 +1041,9 @@ class WC_Payments {
 		$customer_controller = new WC_REST_Payments_Customer_Controller( self::$api_client, self::$customer_service );
 		$customer_controller->register_routes();
 
-		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
-			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
-			$upe_flag_toggle_controller->register_routes();
-
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
-			$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
-			$survey_controller->register_routes();
-		}
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+		$survey_controller->register_routes();
 
 		if ( WC_Payments_Features::is_documents_section_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
@@ -1343,16 +1316,8 @@ class WC_Payments {
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			require_once __DIR__ . '/class-wc-payments-upe-split-blocks-payment-method.php';
-			$payment_method_registry->register( new WC_Payments_UPE_Split_Blocks_Payment_Method() );
-		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-			require_once __DIR__ . '/class-wc-payments-upe-blocks-payment-method.php';
-			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Payment_Method() );
-		} else {
-			$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
-		}
-
+		require_once __DIR__ . '/class-wc-payments-upe-split-blocks-payment-method.php';
+		$payment_method_registry->register( new WC_Payments_UPE_Split_Blocks_Payment_Method() );
 	}
 
 	/**
@@ -1391,18 +1356,11 @@ class WC_Payments {
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
 			WC_Payments_Notes_Qualitative_Feedback::possibly_add_note();
-			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_add_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
-
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
-			WC_Payments_Notes_Additional_Payment_Methods::set_account( self::get_account_service() );
-			WC_Payments_Notes_Additional_Payment_Methods::possibly_add_note();
-			WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
 			WC_Payments_Notes_Set_Up_StripeLink::set_gateway( self::get_gateway() );
@@ -1447,19 +1405,14 @@ class WC_Payments {
 	public static function remove_woo_admin_notes() {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			self::$remote_note_service->delete_notes();
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
 			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
-			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 			WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
-
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
-			WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_delete_note();

@@ -285,4 +285,25 @@ export default {
 			'woocommerce-payments'
 		),
 	},
+	nonSupportedCountry: createInterpolateElement(
+		sprintf(
+			/* translators: %1$s: WooPayments */
+			__(
+				'<b>%1$s is not currently available in your location</b>. To be eligible for %1$s, your business address must be in one of the following <a>supported countries</a>.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
+		),
+		{
+			b: <b />,
+			a: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href="https://woo.com/document/woopayments/compatibility/countries/"
+					target="_blank"
+					rel="noopener noreferrer"
+				/>
+			),
+		}
+	),
 };

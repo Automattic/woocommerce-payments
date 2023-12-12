@@ -30,7 +30,6 @@ const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
 describe( 'Enabled UPE with deferred intent creation', () => {
 	beforeAll( async () => {
 		await merchant.login();
-		await merchantWCP.activateUPEWithDefferedIntentCreation();
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
@@ -42,7 +41,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		await shopperWCP.logout();
 		await merchant.login();
 		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
-		await merchantWCP.deactivateUPEWithDefferedIntentCreation();
 		await merchant.logout();
 	} );
 
