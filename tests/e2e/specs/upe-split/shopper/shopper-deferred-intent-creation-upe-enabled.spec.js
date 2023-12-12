@@ -147,6 +147,23 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).toMatch(
 				`${ card.expires.month }/${ card.expires.year }`
 			);
+			await waitTwentySecondsSinceLastCardAdded();
+		} );
+
+		it( 'should be able to set payment method as default', async () => {
+			await shopperWCP.goToPaymentMethods();
+			await shopperWCP.addNewPaymentMethod( 'basic', card );
+			// Take note of the time when we added this card
+			timeAdded = Date.now();
+
+			// Verify that the card was added
+			await expect( page ).not.toMatch(
+				'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+			);
+			await expect( page ).toMatch( 'Payment method successfully added' );
+			await expect( page ).toMatch(
+				`${ card.expires.month }/${ card.expires.year }`
+			);
 			await shopperWCP.setDefaultPaymentMethod( card.label );
 			// Verify that the card was set as default
 			await expect( page ).toMatch(
@@ -160,6 +177,10 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		} );
 
 		afterAll( async () => {
+			await waitTwentySecondsSinceLastCardAdded();
+		} );
+
+		async function waitTwentySecondsSinceLastCardAdded() {
 			// Make sure that at least 20s had already elapsed since the last card was added.
 			// Otherwise, you will get the error message,
 			// "You cannot add a new payment method so soon after the previous one."
@@ -171,6 +192,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 					: 0;
 
 			await new Promise( ( r ) => setTimeout( r, remainingWaitTime ) );
-		} );
+		}
 	} );
 } );
