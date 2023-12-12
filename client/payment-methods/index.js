@@ -3,11 +3,10 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardHeader, DropdownMenu } from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
-import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -21,14 +20,11 @@ import {
 	useUnselectedPaymentMethod,
 	useAccountDomesticCurrency,
 } from 'wcpay/data';
-
-import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
 import PAYMENT_METHOD_IDS from './constants';
 
 // Survey modal imports.
 import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
 import SurveyModal from '../settings/survey-modal';
-import DisableUPEModal from '../settings/disable-upe-modal';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import methodsConfiguration from '../payment-methods-map';
@@ -38,35 +34,19 @@ import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import CapabilityRequestNotice from './capability-request';
-import InlineNotice from 'wcpay/components/inline-notice';
 import { BuildMissingCurrenciesTooltipMessage } from 'wcpay/components/currency-information-for-methods';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
-	const { isUpeEnabled, upeType } = useContext( WcPayUpeContext );
-	const isDisablePossible = isUpeEnabled && upeType !== 'deferred_intent';
-	const label = isDisablePossible
-		? __( 'Add feedback or disable', 'woocommerce-payments' )
-		: __( 'Add feedback', 'woocommerce-payments' );
-
-	const buttons = [
-		{
-			title: __( 'Provide feedback', 'woocommerce-payments' ),
-			onClick: () => setOpenModal( 'survey' ),
-		},
-	];
-
-	if ( isDisablePossible ) {
-		buttons.push( {
-			title: 'Disable',
-			onClick: () => setOpenModal( 'disable' ),
-		} );
-	}
-
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
-			label={ label }
-			controls={ buttons }
+			label={ __( 'Add feedback', 'woocommerce-payments' ) }
+			controls={ [
+				{
+					title: __( 'Provide feedback', 'woocommerce-payments' ),
+					onClick: () => setOpenModal( 'survey' ),
+				},
+			] }
 		/>
 	);
 };
@@ -112,7 +92,7 @@ const PaymentMethods = () => {
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
 
-	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
+	const stripeAccountDomesticCurrency = useAccountDomesticCurrency();
 
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );
@@ -170,28 +150,10 @@ const PaymentMethods = () => {
 		}
 	};
 
-	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
-	const rollbackNoticeForLegacyUPE = __(
-		// eslint-disable-next-line max-len
-		'You have been switched from the new checkout to your previous checkout experience. We will keep you posted on the new checkout availability.',
-		'woocommerce-payments'
-	);
-	const rollbackNoticeForLegacyCard = __(
-		// eslint-disable-next-line max-len
-		'You have been switched from the new checkout to your previous card experience. We will keep you posted on the new checkout availability.'
-	);
 
 	return (
 		<>
-			{ openModalIdentifier === 'disable' ? (
-				<DisableUPEModal
-					setOpenModal={ setOpenModalIdentifier }
-					triggerAfterDisable={ () =>
-						setOpenModalIdentifier( 'survey' )
-					}
-				/>
-			) : null }
 			{ openModalIdentifier === 'survey' ? (
 				<WcPaySurveyContextProvider>
 					<SurveyModal
@@ -202,50 +164,17 @@ const PaymentMethods = () => {
 				</WcPaySurveyContextProvider>
 			) : null }
 
-			<Card
-				className={ classNames( 'payment-methods', {
-					'is-loading': status === 'pending',
-				} ) }
-			>
-				{ isUpeEnabled && (
-					<CardHeader className="payment-methods__header">
-						<h4 className="payment-methods__heading">
-							<span>
-								{ __(
-									'Payment methods',
-									'woocommerce-payments'
-								) }
-							</span>
-						</h4>
-						<PaymentMethodsDropdownMenu
-							setOpenModal={ setOpenModalIdentifier }
-						/>
-					</CardHeader>
-				) }
-
-				{ isUpeEnabled && upeType === 'legacy' && (
-					<CardHeader className="payment-methods__header">
-						<InlineNotice
-							icon
-							status="warning"
-							isDismissible={ false }
-						>
-							{ rollbackNoticeForLegacyUPE }
-						</InlineNotice>
-					</CardHeader>
-				) }
-
-				{ ! isUpeEnabled && (
-					<CardHeader className="payment-methods__header">
-						<InlineNotice
-							icon
-							status="warning"
-							isDismissible={ false }
-						>
-							{ rollbackNoticeForLegacyCard }
-						</InlineNotice>
-					</CardHeader>
-				) }
+			<Card className="payment-methods">
+				<CardHeader className="payment-methods__header">
+					<h4 className="payment-methods__heading">
+						<span>
+							{ __( 'Payment methods', 'woocommerce-payments' ) }
+						</span>
+					</h4>
+					<PaymentMethodsDropdownMenu
+						setOpenModal={ setOpenModalIdentifier }
+					/>
+				</CardHeader>
 
 				<CardBody size={ null }>
 					<CapabilityRequestNotice />
@@ -292,13 +221,11 @@ const PaymentMethods = () => {
 										}
 										// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
 										required={
-											PAYMENT_METHOD_IDS.CARD === id &&
-											isUpeEnabled
+											PAYMENT_METHOD_IDS.CARD === id
 										}
 										locked={
 											PAYMENT_METHOD_IDS.CARD === id &&
-											isCreditCardEnabled &&
-											isUpeEnabled
+											isCreditCardEnabled
 										}
 										Icon={ Icon }
 										status={

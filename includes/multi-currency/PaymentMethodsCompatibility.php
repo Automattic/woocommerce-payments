@@ -61,11 +61,6 @@ class PaymentMethodsCompatibility {
 	 * @return  array  The currencies keyed with the related payment method
 	 */
 	public function get_enabled_payment_method_currencies() {
-
-		if ( ! WC_Payments_Features::is_upe_enabled() ) {
-			return [];
-		}
-
 		$enabled_payment_method_ids       = $this->gateway->get_upe_enabled_payment_method_ids();
 		$payment_methods_needing_currency = array_reduce(
 			$enabled_payment_method_ids,
