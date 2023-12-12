@@ -212,7 +212,7 @@ function appendSetupIntentToForm( form, confirmedIntent ) {
  */
 export function maybeEnableStripeLink( api ) {
 	if ( isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) ) ) {
-console.log('qqq1');
+
 		enableStripeLinkPaymentMethod( {
 			api: api,
 			elements: gatewayUPEComponents.card.elements,

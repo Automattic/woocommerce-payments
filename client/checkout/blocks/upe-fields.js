@@ -35,7 +35,7 @@ import {
 	BLOCKS_SHIPPING_ADDRESS_FIELDS,
 	BLOCKS_BILLING_ADDRESS_FIELDS,
 } from '../constants';
-console.log('blabla');
+
 const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,

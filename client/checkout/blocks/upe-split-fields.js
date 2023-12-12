@@ -74,7 +74,7 @@ const WCPayUPEFields = ( {
 
 	useEffect( () => {
 		if ( isLinkEnabled( paymentMethodsConfig ) ) {
-console.log('qqq4');
+
 			enableStripeLinkPaymentMethod( {
 				api: api,
 				elements: elements,

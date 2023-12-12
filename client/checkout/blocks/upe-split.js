@@ -34,7 +34,7 @@ import {
 } from '../constants.js';
 import { getSplitUPEFields } from './upe-split-fields';
 import { getDeferredIntentCreationUPEFields } from './upe-deferred-intent-creation/payment-elements';
-console.log('blabla');
+
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,
 	bancontact: PAYMENT_METHOD_NAME_BANCONTACT,

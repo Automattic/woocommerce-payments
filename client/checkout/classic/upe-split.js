@@ -1,4 +1,4 @@
-console.log('test123333333')/* global jQuery */
+/* global jQuery */
 
 /**
  * External dependencies
@@ -48,7 +48,7 @@ import {
 	appendFingerprintInputToForm,
 } from '../utils/fingerprint';
 import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
-console.log('test123333333')
+
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 
@@ -223,7 +223,7 @@ jQuery( function ( $ ) {
 		gatewayUPEComponents[ paymentMethodType ].elements = elements;
 
 		if ( isStripeLinkEnabled ) {
-console.log('qqq5');
+
 			enableStripeLinkPaymentMethod( {
 				api: api,
 				elements: elements,

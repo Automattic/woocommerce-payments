@@ -23,7 +23,7 @@ import { isLinkEnabled } from '../utils/upe.js';
 
 const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 const isStripeLinkEnabled = isLinkEnabled( paymentMethodsConfig );
-console.log('blabla');
+
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
 	{

@@ -24,7 +24,7 @@ import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
-console.log('blabla');
+
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
 	{
