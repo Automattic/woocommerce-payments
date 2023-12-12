@@ -156,6 +156,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		remove_filter( 'pre_option_woocommerce_prices_include_tax', [ $this, '__return_no' ] );
 		remove_filter( 'wc_tax_enabled', '__return_true' );
 		remove_filter( 'wc_tax_enabled', '__return_false' );
+		remove_filter( 'wc_shipping_enabled', '__return_false' );
 	}
 
 	public function __return_yes() {
@@ -492,5 +493,47 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			->willReturn( $type );
 
 		return $mock_product;
+	}
+
+	/**
+	 * @dataProvider provide_get_product_tax_tests
+	 */
+	public function test_get_product_data_returns_the_same_as_build_display_items_without_shipping( $tax_enabled, $prices_include_tax, $tax_display_shop, $tax_display_cart, $_product_price, $_expected_price ) {
+		add_filter( 'wc_tax_enabled', $tax_enabled ? '__return_true' : '__return_false' ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_prices_include_tax', [ $this, "__return_$prices_include_tax" ] ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_tax_display_shop', [ $this, "__return_$tax_display_shop" ] ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, "__return_$tax_display_cart" ] ); // reset in tear_down.
+		add_filter( 'wc_shipping_enabled', '__return_false' ); // reset in tear_down.
+		WC()->cart->calculate_totals();
+		$build_display_items_result = $this->pr->build_display_items( true );
+
+		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway ] )
+			->setMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+
+		$mock_pr->method( 'is_product' )
+			->willReturn( true );
+		$mock_pr->method( 'get_product' )
+			->willReturn( $this->simple_product );
+
+		$get_product_data_result = $mock_pr->get_product_data();
+
+		foreach ( $get_product_data_result['displayItems'] as $key => $display_item ) {
+			if ( isset( $display_item['pending'] ) ) {
+				unset( $get_product_data_result['displayItems'][ $key ]['pending'] );
+			}
+		}
+
+		$this->assertEquals(
+			$get_product_data_result['displayItems'],
+			$build_display_items_result['displayItems'],
+			'Failed asserting displayItems are the same for get_product_data and build_display_items'
+		);
+		$this->assertEquals(
+			$get_product_data_result['total']['amount'],
+			$build_display_items_result['total']['amount'],
+			'Failed asserting total amount are the same for get_product_data and build_display_items'
+		);
 	}
 }

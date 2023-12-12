@@ -1549,7 +1549,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
 	 */
-	protected function build_display_items( $itemized_display_items = false ) {
+	public function build_display_items( $itemized_display_items = false ) {
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
 		}
