@@ -30,7 +30,11 @@ declare global {
 			country?: string;
 			paymentsEnabled?: boolean;
 			deposits?: {
-				status: string;
+				status;
+				restrictions:
+					| 'deposits_unrestricted'
+					| 'deposits_blocked'
+					| 'schedule_restricted';
 				interval: string;
 				weekly_anchor: string;
 				monthly_anchor: null | number;
