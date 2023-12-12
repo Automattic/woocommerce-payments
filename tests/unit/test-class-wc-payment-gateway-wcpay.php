@@ -34,6 +34,7 @@ use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_Checkout;
+use WCPay\WC_Payments_UPE_Checkout;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -49,7 +50,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *
-	 * @var WC_Payment_Gateway_WCPay
+	 * @var UPE_Split_Payment_Gateway
 	 */
 	private $wcpay_gateway;
 
@@ -110,8 +111,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $woopay_utilities;
 
 	/**
-	 * WC_Payments_Checkout instance.
-	 * @var WC_Payments_Checkout
+	 * WC_Payments_UPE_Checkout instance.
+	 * @var WC_Payments_UPE_Checkout
 	 */
 	private $payments_checkout;
 
@@ -192,29 +193,31 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
 
-		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
+		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service ] )
+			->setMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
+			->getMock();
+
+		$this->wcpay_gateway = new UPE_Split_Payment_Gateway(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
+			$mock_payment_method,
+			[ $mock_payment_method ],
 			$this->mock_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
 			$this->mock_fraud_service
 		);
+
 		WC_Payments::set_gateway( $this->wcpay_gateway );
 
 		$this->woopay_utilities = new WooPay_Utilities();
 
-		$this->payments_checkout = new WC_Payments_Checkout(
-			$this->wcpay_gateway,
-			$this->woopay_utilities,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_fraud_service
-		);
+		$this->payments_checkout = new WC_Payments_UPE_Checkout( $this->wcpay_gateway, $this->woopay_utilities, $this->mock_wcpay_account, $this->mock_customer_service, $this->mock_fraud_service );
 
 		// Mock the level3 service to always return an empty array.
 		$mock_level3_service = $this->createMock( Level3Service::class );
@@ -1887,7 +1890,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_is_woopay_enabled_returns_true() {
+	public function test_timur_testing() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		wp_set_current_user( 1 );
@@ -2404,13 +2407,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		remove_all_actions( 'wc_payments_add_payment_fields' );
 
 		$this->payments_checkout = new WC_Payments_Checkout(
-			$this->wcpay_gateway,
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
 			$this->mock_fraud_service
 		);
-
-		$this->payments_checkout->init_hooks();
 	}
 }
