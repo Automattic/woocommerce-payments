@@ -38,8 +38,27 @@ class WC_Payments_Notes_Qualitative_Feedback {
 		}
 
 		// We should have at least one transaction.
-		$token_count = $wpdb->get_var( "select count(*) from {$wpdb->prefix}woocommerce_payment_tokens" );
-		if ( 0 === (int) $token_count ) {
+		if ( WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
+			$result = $wpdb->get_var(
+				"SELECT EXISTS(
+					SELECT 1
+					FROM {$wpdb->prefix}wc_orders_meta
+					WHERE meta_key = '_wcpay_transaction_fee'
+					LIMIT 1)
+				AS count;"
+			);
+		} else {
+			$result = $wpdb->get_var(
+				"SELECT EXISTS(
+					SELECT 1
+					FROM {$wpdb->postmeta}
+					WHERE meta_key = '_wcpay_transaction_fee'
+					LIMIT 1)
+				AS count;"
+			);
+		}
+
+		if ( 1 !== intval( $result ) ) {
 			return;
 		}
 
