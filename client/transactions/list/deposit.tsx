@@ -49,7 +49,7 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 		<ClickTooltip
 			content={ interpolateComponents( {
 				mixedString: __(
-					'This transaction will be included in a future deposit. Once created, the estimated deposit date will be shown here. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+					'This transaction will be included in an upcoming automated deposit. The date of the deposit will be displayed here once it is scheduled. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 					'woocommerce-payments'
 				),
 				components: {
