@@ -52,7 +52,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 				waitUntil: 'networkidle0',
 			} );
 			await expect( page ).toMatch( 'Order received' );
-			console.log( 'DONE should successfully place order with Giropay' );
 		} );
 
 		it( 'should successfully place order with the default card', async () => {
@@ -62,9 +61,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
-			console.log(
-				'DONE should successfully place order with the default card'
-			);
 		} );
 
 		it( 'should process a payment with authentication for the 3DS card', async () => {
@@ -79,9 +75,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 				waitUntil: 'networkidle0',
 			} );
 			await expect( page ).toMatch( 'Order received' );
-			console.log(
-				'DONE should process a payment with authentication for the 3DS card'
-			);
 		} );
 
 		it( 'should successfully save the card', async () => {
@@ -99,7 +92,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).toMatch(
 				`${ card.expires.month }/${ card.expires.year }`
 			);
-			console.log( 'DONE should successfully save the card' );
 		} );
 
 		it( 'should process a payment with the saved card', async () => {
@@ -113,14 +105,12 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			);
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
-			console.log( 'DONE should process a payment with the saved card' );
 		} );
 
 		it( 'should delete the card', async () => {
 			await shopperWCP.goToPaymentMethods();
 			await shopperWCP.deleteSavedPaymentMethod( card.label );
 			await expect( page ).toMatch( 'Payment method deleted' );
-			console.log( 'DONE should delete the card' );
 		} );
 
 		it( 'should not allow guest user to save the card', async () => {
@@ -133,7 +123,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 				'input#wc-woocommerce_payments-new-payment-method'
 			);
 			await shopper.login();
-			console.log( 'DONE should not allow guest user to save the card' );
 		} );
 	} );
 
@@ -156,9 +145,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 				`${ card.expires.month }/${ card.expires.year }`
 			);
 			await waitTwentySecondsSinceLastCardAdded();
-			console.log(
-				'DONE should add the card as a new payment method and set it as default payment method'
-			);
 		} );
 
 		it( 'should be able to set payment method as default', async () => {
@@ -180,9 +166,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			await expect( page ).toMatch(
 				'This payment method was successfully set as your default.'
 			);
-			console.log(
-				'DONE should be able to set payment method as default'
-			);
 		} );
 
 		it( 'should be able to delete cards', async () => {
@@ -191,7 +174,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 
 			await shopperWCP.deleteSavedPaymentMethod( card2.label );
 			await expect( page ).toMatch( 'Payment method deleted.' );
-			console.log( 'DONE should be able to delete the card' );
 		} );
 
 		afterAll( async () => {
