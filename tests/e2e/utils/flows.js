@@ -666,7 +666,7 @@ export const merchantWCP = {
 
 	removeCurrency: async ( currencyCode ) => {
 		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
-		await page.waitForSelector( currencyItemSelector );
+		await page.waitForSelector( currencyItemSelector, { timeout: 10000 } );
 		await page.click(
 			`${ currencyItemSelector } .enabled-currency__action.delete`
 		);
@@ -857,6 +857,54 @@ export const merchantWCP = {
 			await merchantWCP.wcpSettingsSaveChanges();
 		}
 		return wasInitiallyEnabled;
+	},
+
+	editCurrency: async ( currencyCode ) => {
+		await merchantWCP.openMultiCurrency();
+
+		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
+		await page.waitForSelector( currencyItemSelector, { timeout: 10000 } );
+		await page.click(
+			`${ currencyItemSelector } .enabled-currency__action.edit`
+		);
+	},
+
+	saveCurrencySettings: async () => {
+		await page.click(
+			'.single-currency-settings-save-settings-section button'
+		);
+		await page.waitForSelector( '.components-snackbar', {
+			text: 'Currency settings updated.',
+			timeout: 15000,
+		} );
+	},
+
+	setCurrencyRate: async ( currencyCode, rate ) => {
+		await merchantWCP.editCurrency( currencyCode );
+
+		await setCheckbox( '#wc-woocommerce_payments-payment-token-new' );
+		await page.waitForSelector( '[data-testid="manual_rate_input"]' );
+		await page.type( '[data-testid="manual_rate_input"]', rate.toString() );
+
+		await merchantWCP.saveCurrencySettings();
+	},
+
+	setCurrencyPriceRounding: async ( currencyCode, rounding ) => {
+		await merchantWCP.editCurrency( currencyCode );
+
+		await page.waitForSelector( '[data-testid="price-rounding"]' );
+		await page.select( '[data-testid="price-rounding"]', rounding );
+
+		await merchantWCP.saveCurrencySettings();
+	},
+
+	setCurrencyCharmPricing: async ( currencyCode, charmPricing ) => {
+		await merchantWCP.editCurrency( currencyCode );
+
+		await page.waitForSelector( '[data-testid="price_charm"]' );
+		await page.select( '[data-testid="price_charm"]', charmPricing );
+
+		await merchantWCP.saveCurrencySettings();
 	},
 
 	addMulticurrencyWidget: async () => {
