@@ -24,7 +24,7 @@ const NextDepositNotice: React.FC = () => {
 		wcpaySettings.accountStatus.deposits?.restrictions ===
 		'deposits_unrestricted';
 
-	if ( ! isDepositsUnrestricted ) {
+	if ( ! isDepositsUnrestricted || ! account ) {
 		return null;
 	}
 
