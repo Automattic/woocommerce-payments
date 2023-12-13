@@ -310,10 +310,10 @@ describe( 'Transactions list', () => {
 		} );
 
 		test( 'sorts by amount', () => {
-			sortBy( 'Amount in Deposit Currency' );
+			sortBy( 'Amount in Deposit Curency' );
 			expectSortingToBe( 'amount', 'desc' );
 
-			sortBy( 'Amount in Deposit Currency' );
+			sortBy( 'Amount in Deposit Curency' );
 			expectSortingToBe( 'amount', 'asc' );
 		} );
 
