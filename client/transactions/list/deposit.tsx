@@ -46,20 +46,23 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 
 	// Show an icon with a tooltip to communicate that the deposit will be available in the future.
 	return (
-		<ClickTooltip
-			content={ interpolateComponents( {
-				mixedString: __(
-					'This transaction will be included in an upcoming automated deposit. The date of the deposit will be displayed here once it is scheduled. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-					'woocommerce-payments'
-				),
-				components: {
-					learnMoreLink: (
-						<ExternalLink href="https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-funds" />
+		<>
+			{ __( 'Future deposit', 'woocommerce-payments' ) }
+			<ClickTooltip
+				content={ interpolateComponents( {
+					mixedString: __(
+						'This transaction will be included in an upcoming automated deposit. The date of the deposit will be displayed here once it is scheduled. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'woocommerce-payments'
 					),
-				},
-			} ) }
-			buttonIcon={ <InfoOutlineIcon /> }
-		/>
+					components: {
+						learnMoreLink: (
+							<ExternalLink href="https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-funds" />
+						),
+					},
+				} ) }
+				buttonIcon={ <InfoOutlineIcon /> }
+			/>
+		</>
 	);
 };
 

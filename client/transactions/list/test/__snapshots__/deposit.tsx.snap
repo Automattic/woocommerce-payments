@@ -13,6 +13,7 @@ exports[`Deposit renders with date and deposit available 1`] = `
 
 exports[`Deposit renders with date available but no deposit 1`] = `
 <div>
+  Future deposit
   <button
     class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
     type="button"
@@ -45,6 +46,7 @@ exports[`Deposit renders with date available but no deposit 1`] = `
 
 exports[`Deposit renders with deposit but no date available 1`] = `
 <div>
+  Future deposit
   <button
     class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
     type="button"
@@ -77,6 +79,7 @@ exports[`Deposit renders with deposit but no date available 1`] = `
 
 exports[`Deposit renders with no date or deposit available 1`] = `
 <div>
+  Future deposit
   <button
     class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
     type="button"

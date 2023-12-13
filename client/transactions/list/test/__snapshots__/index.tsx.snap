@@ -611,6 +611,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
                   >
+                    Future deposit
                     <button
                       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                       type="button"
@@ -939,6 +940,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
                   >
+                    Future deposit
                     <button
                       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                       type="button"
@@ -1598,6 +1600,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
                   >
+                    Future deposit
                     <button
                       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                       type="button"
@@ -1926,6 +1929,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
                   >
+                    Future deposit
                     <button
                       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                       type="button"
@@ -3285,6 +3289,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
                   >
+                    Future deposit
                     <button
                       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                       type="button"
@@ -3619,6 +3624,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
                   >
+                    Future deposit
                     <button
                       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                       type="button"
@@ -4320,6 +4326,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
                   >
+                    Future deposit
                     <button
                       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                       type="button"
@@ -4648,6 +4655,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
                   >
+                    Future deposit
                     <button
                       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                       type="button"
@@ -5349,6 +5357,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
                   >
+                    Future deposit
                     <button
                       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                       type="button"
@@ -5677,6 +5686,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <td
                     class="woocommerce-table__item deposit is-left-aligned"
                   >
+                    Future deposit
                     <button
                       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                       type="button"
