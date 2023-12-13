@@ -106,6 +106,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 				);
 				// Change it back to USD for the other tests.
 				await page.select( '.widget select[name=currency]', 'USD' );
+				await page.reload( { waitUntil: 'networkidle0' } );
 			} );
 		}
 	);
