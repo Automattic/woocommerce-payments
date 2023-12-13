@@ -34,11 +34,9 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
-		await shopperWCP.changeAccountCurrencyTo( 'EUR' );
 	} );
 
 	afterAll( async () => {
-		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 		await shopperWCP.logout();
 		await merchant.login();
 		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
@@ -47,6 +45,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 
 	describe( 'Enabled UPE with deferred intent creation', () => {
 		it( 'should successfully place order with Giropay', async () => {
+			await shopperWCP.goToShopWithCurrency( 'EUR' );
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
