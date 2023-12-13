@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 6.9.2 - 2023-12-14 =
+
 = 6.9.1 - 2023-12-07 =
 * Fix - Display Klarna & Afterpay on the checkout for UK based stores
 
