@@ -172,7 +172,7 @@ const getColumns = (
 		},
 		{
 			key: 'customer_currency',
-			label: __( 'Customer Currency', 'woocommerce-payments' ),
+			label: __( 'Paid Currency', 'woocommerce-payments' ),
 			screenReaderLabel: __(
 				'Customer Currency',
 				'woocommerce-payments'
@@ -182,7 +182,7 @@ const getColumns = (
 		},
 		{
 			key: 'customer_amount',
-			label: __( 'Customer Amount', 'woocommerce-payments' ),
+			label: __( 'Amount Paid', 'woocommerce-payments' ),
 			screenReaderLabel: __(
 				'Amount in Customer Currency',
 				'woocommerce-payments'
