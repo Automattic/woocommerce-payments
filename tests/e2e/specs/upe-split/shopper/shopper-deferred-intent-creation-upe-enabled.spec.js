@@ -18,10 +18,7 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 const UPE_METHOD_CHECKBOXES = [
-	'#inspector-checkbox-control-2', // bancontact
-	'#inspector-checkbox-control-3', // eps
 	'#inspector-checkbox-control-4', // giropay
-	'#inspector-checkbox-control-5', // ideal
 ];
 const card = config.get( 'cards.basic' );
 const card2 = config.get( 'cards.basic2' );
@@ -33,11 +30,9 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
-		await shopperWCP.changeAccountCurrencyTo( 'EUR' );
 	} );
 
 	afterAll( async () => {
-		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 		await shopperWCP.logout();
 		await merchant.login();
 		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
@@ -46,6 +41,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 
 	describe( 'Enabled UPE with deferred intent creation', () => {
 		it( 'should successfully place order with Giropay', async () => {
+			await shopperWCP.goToShopWithCurrency( 'EUR' );
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
@@ -72,6 +68,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		} );
 
 		it( 'should process a payment with authentication for the 3DS card', async () => {
+			await shopperWCP.goToShopWithCurrency( 'EUR' );
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
@@ -188,7 +185,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 			);
 		} );
 
-		it( 'should be able to delete the card', async () => {
+		it( 'should be able to delete cards', async () => {
 			await shopperWCP.deleteSavedPaymentMethod( card.label );
 			await expect( page ).toMatch( 'Payment method deleted.' );
 
