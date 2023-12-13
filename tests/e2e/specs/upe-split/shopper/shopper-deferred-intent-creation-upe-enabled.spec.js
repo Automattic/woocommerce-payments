@@ -64,7 +64,6 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 		} );
 
 		it( 'should process a payment with authentication for the 3DS card', async () => {
-			await shopperWCP.goToShopWithCurrency( 'EUR' );
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
@@ -129,7 +128,7 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 	describe( 'My Account', () => {
 		let timeAdded;
 
-		it( 'should add the card as a new payment method and set it as default payment method', async () => {
+		it( 'should add the card as a new payment method', async () => {
 			await shopperWCP.goToPaymentMethods();
 			await shopperWCP.addNewPaymentMethod( 'basic', card );
 

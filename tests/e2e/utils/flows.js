@@ -153,7 +153,6 @@ export const shopperWCP = {
 		} );
 
 		await page.select( '#wcpay_selected_currency', currencyToSet );
-		await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
 		await expect( page ).toClick( 'button', {
 			text: 'Save changes',
 		} );
