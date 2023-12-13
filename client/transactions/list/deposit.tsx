@@ -15,6 +15,8 @@ import InfoOutlineIcon from 'gridicons/dist/info-outline';
  */
 import { getAdminUrl } from 'utils';
 import { ClickTooltip } from 'components/tooltip';
+import interpolateComponents from '@automattic/interpolate-components';
+import { ExternalLink } from '@wordpress/components';
 
 interface DepositProps {
 	depositId?: string;
@@ -45,10 +47,17 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 	// Show an icon with a tooltip to communicate that the deposit will be available in the future.
 	return (
 		<ClickTooltip
-			content={ __(
-				'This transaction will be included in a future deposit. Once created, the estimated deposit date will be shown here.',
-				'woocommerce-payments'
-			) }
+			content={ interpolateComponents( {
+				mixedString: __(
+					'This transaction will be included in a future deposit. Once created, the estimated deposit date will be shown here. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+					'woocommerce-payments'
+				),
+				components: {
+					learnMoreLink: (
+						<ExternalLink href="https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-funds" />
+					),
+				},
+			} ) }
 			buttonIcon={ <InfoOutlineIcon /> }
 		/>
 	);
