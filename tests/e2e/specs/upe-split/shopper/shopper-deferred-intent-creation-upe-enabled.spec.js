@@ -18,11 +18,11 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 const UPE_METHOD_CHECKBOXES = [
-	'#inspector-checkbox-control-5', // bancontact
-	'#inspector-checkbox-control-6', // eps
-	'#inspector-checkbox-control-7', // giropay
-	'#inspector-checkbox-control-8', // ideal
-	'#inspector-checkbox-control-9', // sofort
+	'#inspector-checkbox-control-2', // bancontact
+	'#inspector-checkbox-control-3', // eps
+	'#inspector-checkbox-control-4', // giropay
+	'#inspector-checkbox-control-5', // ideal
+	'#inspector-checkbox-control-6', // sofort
 ];
 const card = config.get( 'cards.basic' );
 const card2 = config.get( 'cards.basic2' );
