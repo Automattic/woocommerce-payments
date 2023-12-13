@@ -329,16 +329,6 @@ export const TransactionsList = (
 			txn.customer_email
 		);
 
-		const isFinancingType =
-			-1 !==
-			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
-
-		const deposit = ! isFinancingType && (
-			<Deposit
-				depositId={ txn.deposit_id }
-				dateAvailable={ txn.available_on }
-			/>
-		);
 		const currency = txn.currency.toUpperCase();
 
 		const dataType = txn.metadata ? txn.metadata.charge_type : txn.type;
@@ -375,6 +365,17 @@ export const TransactionsList = (
 				),
 			};
 		};
+
+		const isFinancingType =
+			-1 !==
+			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
+
+		const deposit = ! isFinancingType && (
+			<Deposit
+				depositId={ txn.deposit_id }
+				dateAvailable={ txn.available_on }
+			/>
+		);
 
 		const depositStatus = txn.deposit_status
 			? displayDepositStatus[ txn.deposit_status ]
