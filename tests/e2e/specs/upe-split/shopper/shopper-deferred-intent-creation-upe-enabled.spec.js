@@ -18,7 +18,7 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 const UPE_METHOD_CHECKBOXES = [
-	'#inspector-checkbox-control-4', // giropay
+	'#inspector-checkbox-control-7', // giropay
 ];
 const card = config.get( 'cards.basic' );
 const card2 = config.get( 'cards.basic2' );
