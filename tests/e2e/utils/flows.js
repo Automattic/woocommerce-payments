@@ -671,7 +671,11 @@ export const merchantWCP = {
 			searchInput.type( 'switcher', { delay: 20 } );
 
 			await page.waitForSelector(
-				'button.components-button[role="option"]'
+				'button.components-button[role="option"]',
+				{
+					visible: true,
+					timeout: 5000,
+				}
 			);
 			await page.click( 'button.components-button[role="option"]' );
 			await page.waitFor( 2000 );

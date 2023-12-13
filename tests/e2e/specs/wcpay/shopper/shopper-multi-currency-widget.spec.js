@@ -95,6 +95,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 				await setupTest();
 				await page.waitForSelector( '.widget select[name=currency]', {
 					visible: true,
+					timeout: 5000,
 				} );
 				await page.select( '.widget select[name=currency]', 'EUR' );
 				await expect( page.url() ).toContain(
