@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Pass additional data to the intent authentication exception
