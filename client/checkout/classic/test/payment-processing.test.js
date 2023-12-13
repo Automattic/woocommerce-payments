@@ -236,15 +236,10 @@ describe( 'Stripe Payment Element mounting', () => {
 			if ( argument === 'currency' ) {
 				return 'eur';
 			}
-
-			if ( argument === 'isUPEEnabled' ) {
-				return true;
-			}
 		} );
 
 		getSelectedUPEGatewayPaymentMethod.mockReturnValue( 'card' );
 		renderTerms( event );
-		expect( getUPEConfig ).toHaveBeenCalledWith( 'isUPEEnabled' );
 		expect( mockUpdateFunction ).toHaveBeenCalled();
 	} );
 
@@ -256,7 +251,6 @@ describe( 'Stripe Payment Element mounting', () => {
 		};
 		getSelectedUPEGatewayPaymentMethod.mockReturnValue( null );
 		renderTerms( event );
-		expect( getUPEConfig ).not.toHaveBeenCalledWith( 'isUPEEnabled' );
 		expect( mockUpdateFunction ).not.toHaveBeenCalled();
 	} );
 

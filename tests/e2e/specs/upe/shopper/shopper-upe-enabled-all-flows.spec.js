@@ -18,7 +18,6 @@ const card = config.get( 'cards.basic' );
 describe( 'Enabled UPE', () => {
 	beforeAll( async () => {
 		await merchant.login();
-		await merchantWCP.activateUpe();
 		// enable SEPA
 		await merchantWCP.enablePaymentMethod( [ sepaPaymentMethod ] );
 		await merchant.logout();
@@ -32,7 +31,6 @@ describe( 'Enabled UPE', () => {
 		await merchant.login();
 		//disable SEPA
 		await merchantWCP.disablePaymentMethod( [ sepaPaymentMethod ] );
-		await merchantWCP.deactivateUpe();
 		await merchant.logout();
 	} );
 
