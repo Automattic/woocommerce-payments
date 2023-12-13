@@ -180,5 +180,6 @@ describe( 'Shopper Multi-Currency widget', () => {
 			'.widget select[name=currency]'
 		);
 		expect( currencySwitcher ).toBeNull();
+		await merchant.logout();
 	} );
 } );
