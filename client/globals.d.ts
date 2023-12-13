@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import {
+import type {
 	MccsDisplayTreeItem,
 	Country,
 	OnboardingFields,
@@ -120,6 +120,7 @@ declare global {
 		isStripeBillingEligible: boolean;
 		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
+		isNextDepositNoticeDismissed: boolean;
 	};
 
 	const wcTracks: any;
