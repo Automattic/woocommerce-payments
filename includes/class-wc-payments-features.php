@@ -391,6 +391,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
+	 *
+	 * @return bool
+	 */
+	public static function is_next_deposit_notice_dismissed(): bool {
+		return '1' === get_option( 'wcpay_next_deposit_notice_dismissed', '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
