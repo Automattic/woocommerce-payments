@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -9,7 +10,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import InlineNotice from 'wcpay/components/inline-notice';
 
-const TestModeNotice = () => {
+const TestModeNotice = (): JSX.Element => {
 	return (
 		<InlineNotice icon={ true } status="warning" isDismissible={ false }>
 			{ interpolateComponents( {
