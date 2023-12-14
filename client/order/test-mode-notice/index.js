@@ -16,19 +16,21 @@ const TestModeNotice = () => {
 				'WooPayments was in test mode when this order was placed.',
 				'woocommerce-payments'
 			) }
-			{ createInterpolateElement(
-				__(
-					' <a>Learn more about test mode</a>',
-					'woocommerce-payments'
-				),
-				{
-					a: (
-						// createInterpolateElement is incompatible with this eslint rule as the <a> is decoupled from content.
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/" />
+
+			{ ' ' +
+				createInterpolateElement(
+					__(
+						'<a>Learn more about test mode</a>',
+						'woocommerce-payments'
 					),
-				}
-			) }
+					{
+						a: (
+							// createInterpolateElement is incompatible with this eslint rule as the <a> is decoupled from content.
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/" />
+						),
+					}
+				) }
 		</InlineNotice>
 	);
 };

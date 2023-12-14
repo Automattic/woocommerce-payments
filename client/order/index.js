@@ -12,8 +12,8 @@ import { getConfig } from 'utils/order';
 import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
+import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
-import TestModeNotice from 'wcpay/order/test-mode-notice';
 
 function disableWooOrderRefundButton( disputeStatus ) {
 	const refundButton = document.querySelector( 'button.refund-items' );
@@ -160,7 +160,7 @@ jQuery( function ( $ ) {
 			'#wcpay-order-payment-details-container'
 		);
 
-		// If the orderDetailContainer doesn't exist (WC < 7.9), or the charge ID isn't present, don't render the notice.
+		// If the container doesn't exist (WC < 7.9), or the charge ID isn't present, don't render the notice.
 		if ( ! container ) {
 			return;
 		}
