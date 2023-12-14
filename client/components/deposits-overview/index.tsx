@@ -122,9 +122,10 @@ const DepositsOverview: React.FC = () => {
 						{ ! hasCompletedWaitingPeriod && (
 							<NewAccountWaitingPeriodNotice />
 						) }
-						{ isDepositAwaitingPendingFunds && (
-							<NoFundsAvailableForDepositNotice />
-						) }
+						{ hasCompletedWaitingPeriod &&
+							isDepositAwaitingPendingFunds && (
+								<NoFundsAvailableForDepositNotice />
+							) }
 						{ isNegativeBalanceDepositsPaused && (
 							<NegativeBalanceDepositsPausedNotice />
 						) }
