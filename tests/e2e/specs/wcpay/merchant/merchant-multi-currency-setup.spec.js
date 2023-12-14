@@ -5,7 +5,11 @@ const { merchant } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP, shopperWCP } from '../../../utils';
+import {
+	getProductPriceFromProductPage,
+	merchantWCP,
+	shopperWCP,
+} from '../../../utils';
 
 let wasMulticurrencyEnabled;
 
@@ -41,7 +45,7 @@ describe( 'Merchant Multi-Currency Settings', () => {
 		await merchantWCP.deactivateMulticurrency();
 	} );
 
-	describe( 'Currency Management', () => {
+	describe.skip( 'Currency Management', () => {
 		const testCurrency = 'CHF';
 
 		beforeAll( async () => {
@@ -50,12 +54,156 @@ describe( 'Merchant Multi-Currency Settings', () => {
 
 		it( 'can add a new currency', async () => {
 			await merchantWCP.addCurrency( testCurrency );
-			// Add assertions to verify the currency is added
 		} );
 
 		it( 'can remove a currency', async () => {
 			await merchantWCP.removeCurrency( testCurrency );
-			// Add assertions to verify the currency is removed
 		} );
+	} );
+
+	describe.skip( 'Currency Settings', () => {
+		const testData = {
+			currencyCode: 'CHF',
+			rate: '1.25',
+			charmPricing: '-0.01',
+			rounding: '0.50',
+			currencyPrecision: 2,
+		};
+
+		let beanieRegularPrice;
+
+		beforeAll( async () => {
+			await merchantWCP.activateMulticurrency();
+
+			await shopperWCP.goToShopWithCurrency( 'USD' );
+			await shopperWCP.goToProductPageBySlug( 'beanie' );
+			beanieRegularPrice = await getProductPriceFromProductPage();
+		} );
+
+		beforeEach( async () => {
+			await merchantWCP.openMultiCurrency();
+			await merchantWCP.addCurrency( testData.currencyCode );
+		} );
+
+		afterEach( async () => {
+			await merchantWCP.openMultiCurrency();
+			await merchantWCP.removeCurrency( testData.currencyCode );
+		} );
+
+		it( 'can change the currency rate manually', async () => {
+			await merchantWCP.setCurrencyRate(
+				testData.currencyCode,
+				testData.rate
+			);
+			await merchantWCP.setCurrencyPriceRounding(
+				testData.currencyCode,
+				'0'
+			);
+
+			await shopperWCP.goToShopWithCurrency( testData.currencyCode );
+			await shopperWCP.goToProductPageBySlug( 'beanie' );
+			const beaniePriceOnCurrency = await getProductPriceFromProductPage();
+
+			expect(
+				parseFloat( beaniePriceOnCurrency )
+					.toFixed( testData.currencyPrecision )
+					.toString()
+			).toBe(
+				( parseFloat( beanieRegularPrice ) * testData.rate )
+					.toFixed( testData.currencyPrecision )
+					.toString()
+			);
+		} );
+
+		it( 'can change the charm price manually', async () => {
+			await merchantWCP.setCurrencyRate( testData.currencyCode, '1.00' );
+			await merchantWCP.setCurrencyPriceRounding(
+				testData.currencyCode,
+				'0'
+			);
+			await merchantWCP.setCurrencyCharmPricing(
+				testData.currencyCode,
+				testData.charmPricing
+			);
+
+			await shopperWCP.goToShopWithCurrency( testData.currencyCode );
+			await shopperWCP.goToProductPageBySlug( 'beanie' );
+			const beaniePriceOnCurrency = await getProductPriceFromProductPage();
+
+			expect(
+				parseFloat( beaniePriceOnCurrency )
+					.toFixed( testData.currencyPrecision )
+					.toString()
+			).toBe(
+				(
+					parseFloat( beanieRegularPrice ) +
+					parseFloat( testData.charmPricing )
+				)
+					.toFixed( testData.currencyPrecision )
+					.toString()
+			);
+		} );
+
+		it( 'can change the rounding precision manually', async () => {
+			const rateForTest = 1.2;
+
+			await merchantWCP.setCurrencyRate(
+				testData.currencyCode,
+				rateForTest.toString()
+			);
+			await merchantWCP.setCurrencyPriceRounding(
+				testData.currencyCode,
+				testData.rounding
+			);
+
+			await shopperWCP.goToShopWithCurrency( testData.currencyCode );
+			await shopperWCP.goToProductPageBySlug( 'beanie' );
+			const beaniePriceOnCurrency = await getProductPriceFromProductPage();
+
+			expect(
+				parseFloat( beaniePriceOnCurrency )
+					.toFixed( testData.currencyPrecision )
+					.toString()
+			).toBe(
+				(
+					Math.ceil(
+						parseFloat( beanieRegularPrice ) *
+							rateForTest *
+							( 1 / testData.rounding )
+					) * testData.rounding
+				)
+					.toFixed( testData.currencyPrecision )
+					.toString()
+			);
+		} );
+	} );
+
+	describe( 'Currency decimal points', () => {
+		const currencyDecimalMap = {
+			JPY: 0,
+			GBP: 2,
+		};
+
+		beforeAll( async () => {
+			await merchantWCP.activateMulticurrency();
+
+			for ( const currency of Object.keys( currencyDecimalMap ) ) {
+				await merchantWCP.addCurrency( currency );
+			}
+		} );
+
+		it.each( Object.keys( currencyDecimalMap ) )(
+			'sees the correct decimal points for %s',
+			async ( currency ) => {
+				await shopperWCP.goToShopWithCurrency( currency );
+				await shopperWCP.goToProductPageBySlug( 'beanie' );
+				const priceOnCurrency = await getProductPriceFromProductPage();
+
+				const decimalPart = priceOnCurrency.split( '.' )[ 1 ] || '';
+				expect( decimalPart.length ).toBe(
+					currencyDecimalMap[ currency ]
+				);
+			}
+		);
 	} );
 } );

@@ -279,10 +279,14 @@ export const shopperWCP = {
 		} );
 	},
 
-	addToCartBySlug: async ( productSlug ) => {
+	goToProductPageBySlug: async ( productSlug ) => {
 		await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 			waitUntil: 'networkidle0',
 		} );
+	},
+
+	addToCartBySlug: async ( productSlug ) => {
+		await shopperWCP.goToProductPageBySlug( productSlug );
 		await shopper.addToCart();
 	},
 };
@@ -882,9 +886,18 @@ export const merchantWCP = {
 	setCurrencyRate: async ( currencyCode, rate ) => {
 		await merchantWCP.editCurrency( currencyCode );
 
-		await setCheckbox( '#wc-woocommerce_payments-payment-token-new' );
-		await page.waitForSelector( '[data-testid="manual_rate_input"]' );
-		await page.type( '[data-testid="manual_rate_input"]', rate.toString() );
+		await page.waitForSelector(
+			'#single-currency-settings__manual_rate_radio'
+		);
+		await page.click( '#single-currency-settings__manual_rate_radio' );
+
+		await page.waitForSelector( '[data-testid="manual_rate_input"]', {
+			timeout: 5000,
+		} );
+		await clearAndFillInput(
+			'[data-testid="manual_rate_input"]',
+			rate.toString()
+		);
 
 		await merchantWCP.saveCurrencySettings();
 	},
@@ -892,8 +905,14 @@ export const merchantWCP = {
 	setCurrencyPriceRounding: async ( currencyCode, rounding ) => {
 		await merchantWCP.editCurrency( currencyCode );
 
-		await page.waitForSelector( '[data-testid="price-rounding"]' );
-		await page.select( '[data-testid="price-rounding"]', rounding );
+		console.log( `setCurrencyPriceRounding :: start` );
+
+		await page.waitForSelector( '[data-testid="price_rounding"]', {
+			timeout: 5000,
+		} );
+		await page.select( '[data-testid="price_rounding"]', rounding );
+
+		console.log( `setCurrencyPriceRounding :: finish` );
 
 		await merchantWCP.saveCurrencySettings();
 	},
@@ -901,7 +920,9 @@ export const merchantWCP = {
 	setCurrencyCharmPricing: async ( currencyCode, charmPricing ) => {
 		await merchantWCP.editCurrency( currencyCode );
 
-		await page.waitForSelector( '[data-testid="price_charm"]' );
+		await page.waitForSelector( '[data-testid="price_charm"]', {
+			timeout: 5000,
+		} );
 		await page.select( '[data-testid="price_charm"]', charmPricing );
 
 		await merchantWCP.saveCurrencySettings();
