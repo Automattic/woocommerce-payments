@@ -304,7 +304,7 @@ export function renderTerms( event ) {
 		return;
 	}
 	const upeElement = gatewayUPEComponents[ paymentMethodType ].upeElement;
-	if ( getUPEConfig( 'isUPEEnabled' ) && upeElement ) {
+	if ( upeElement ) {
 		upeElement.update( {
 			terms: getTerms( getUPEConfig( 'paymentMethodsConfig' ), value ),
 		} );

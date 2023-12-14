@@ -42,11 +42,9 @@ jQuery( function ( $ ) {
 			accountId: getUPEConfig( 'accountId' ),
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
-			isUPEEnabled: getUPEConfig( 'isUPEEnabled' ),
 			isStripeLinkEnabled: isLinkEnabled(
 				getUPEConfig( 'paymentMethodsConfig' )
 			),
-			isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		},
 		apiRequest
 	);
@@ -79,9 +77,7 @@ jQuery( function ( $ ) {
 		$( 'form#add_payment_method' ).length ||
 		$( 'form#order_review' ).length
 	) {
-		if ( getUPEConfig( 'isUPEEnabled' ) ) {
-			maybeMountStripePaymentElement();
-		}
+		maybeMountStripePaymentElement();
 	}
 
 	$( 'form#add_payment_method' ).on( 'submit', function () {

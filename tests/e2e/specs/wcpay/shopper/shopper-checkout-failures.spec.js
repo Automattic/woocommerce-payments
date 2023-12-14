@@ -9,7 +9,6 @@ import { shopperWCP } from '../../../utils';
 
 import {
 	clearCardDetails,
-	confirmCardAuthentication,
 	fillCardDetails,
 	setupProductCheckout,
 } from '../../../utils/payments';
@@ -145,7 +144,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		const declinedCard = config.get( 'cards.declined-3ds' );
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
-		await confirmCardAuthentication( page, '3DS' );
 		await page.waitForSelector( 'ul.woocommerce-error' );
 		const declined3dsCardError = await page.$eval(
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error',

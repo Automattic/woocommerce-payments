@@ -1,5 +1,11 @@
 *** WooPayments Changelog ***
 
+= 6.9.2 - 2023-12-14 =
+* Add - Notice is added when merchant has funds that are not yet available for deposit.
+* Add - Show a deposit schedule notice on the deposits list page to indicate that future deposits can be expected.
+* Fix - Show deposit schedule message when deposits are unrestricted
+* Fix - Transactions List - indicate when a transaction is expected to be included in a future deposit
+
 = 6.9.1 - 2023-12-07 =
 * Fix - Display Klarna & Afterpay on the checkout for UK based stores
 
