@@ -1,35 +1,30 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import { Button, Modal } from '@wordpress/components';
+import React from 'react';
+import { Button, CardDivider, Modal } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { trackAccountReset } from 'onboarding/tracking';
 import './style.scss';
 import strings from './strings';
 
-const ResetAccountModal: React.FC = () => {
-	const [ modalVisible, setModalVisible ] = useState( true );
+interface Props {
+	isVisible: boolean;
+	onSubmit: () => void;
+	onDismiss: () => void;
+}
 
-	const handleReset = () => {
-		trackAccountReset();
-
-		// // Note: we don't need to update the option here because it will be handled upon redirect to the connect URL.
-		// window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-		// 	collect_payout_requirements: true,
-		// } );
-	};
-
-	if ( ! modalVisible ) return null;
+const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
+	const { isVisible, onDismiss, onSubmit } = props;
+	if ( ! isVisible ) return null;
 
 	return (
 		<Modal
 			title={ 'Reset account' }
 			className="wcpay-reset-account-modal"
-			onRequestClose={ () => setModalVisible( false ) }
+			onRequestClose={ onDismiss }
 		>
 			<div className="wcpay-reset-account-modal__content">
 				<p>{ strings.description }</p>
@@ -38,22 +33,26 @@ const ResetAccountModal: React.FC = () => {
 				</p>
 				<ol>
 					<li>{ strings.step1 }</li>
+				</ol>
+				<CardDivider />
+				<ol start={ 2 }>
 					<li>{ strings.step2 }</li>
+				</ol>
+				<CardDivider />
+				<ol start={ 3 }>
 					<li>{ strings.step3 }</li>
 				</ol>
+				<CardDivider />
 				<p>{ strings.confirmation }</p>
 			</div>
 			<div className="wcpay-reset-account-modal__footer">
-				<Button
-					variant={ 'secondary' }
-					onClick={ () => setModalVisible( false ) }
-				>
+				<Button variant={ 'secondary' } onClick={ onDismiss }>
 					{ strings.cancel }
 				</Button>
 				<Button
 					variant={ 'primary' }
 					isDestructive={ true }
-					onClick={ handleReset }
+					onClick={ onSubmit }
 				>
 					{ strings.reset }
 				</Button>
