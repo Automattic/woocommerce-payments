@@ -49,8 +49,12 @@ const NextDepositNotice: React.FC = () => {
 		wcpaySettings.accountStatus.deposits?.restrictions ===
 		'deposits_unrestricted';
 
+	const hasCompletedWaitingPeriod =
+		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
+
 	if (
 		! isDepositsUnrestricted ||
+		! hasCompletedWaitingPeriod ||
 		! account ||
 		isNextDepositNoticeDismissed
 	) {
