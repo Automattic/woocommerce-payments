@@ -18,10 +18,64 @@ exports[`Deposits Overview information Component Renders 1`] = `
         Deposits
       </div>
       <div
+        class="components-card__body components-card-body wcpay-deposits-overview__schedule__container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        Available funds are automatically dispatched 
+        <strong>
+          every Monday
+        </strong>
+        .
+      </div>
+      <div
         class="components-card__body components-card-body wcpay-deposits-overview__notices__container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
-      />
+      >
+        <div
+          class="wcpay-inline-notice wcpay-inline-undefined-notice wcpay-deposit-transit-days-notice components-notice is-info"
+        >
+          <div
+            class="components-notice__content"
+          >
+            <div
+              class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="Flex"
+            >
+              <div
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-undefined-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                data-wp-c16t="true"
+                data-wp-component="FlexItem"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8 6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+                  />
+                </svg>
+              </div>
+              <div
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-undefined-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                data-wp-c16t="true"
+                data-wp-component="FlexItem"
+              >
+                It may take 1-3 business days for deposits to reach your bank account.
+              </div>
+            </div>
+            <div
+              class="components-notice__actions"
+            />
+          </div>
+        </div>
+      </div>
       <div
         class="components-card__body components-card-body wcpay-deposits-overview__heading css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"

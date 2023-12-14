@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 6.9.1
+Stable tag: 6.9.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,13 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 6.9.2 - 2023-12-14 =
+* Add - Notice is added when merchant has funds that are not yet available for deposit.
+* Add - Show a deposit schedule notice on the deposits list page to indicate that future deposits can be expected.
+* Fix - Show deposit schedule message when deposits are unrestricted
+* Fix - Transactions List - indicate when a transaction is expected to be included in a future deposit
+
 
 = 6.9.1 - 2023-12-07 =
 * Fix - Display Klarna & Afterpay on the checkout for UK based stores
