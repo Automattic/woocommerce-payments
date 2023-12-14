@@ -100,7 +100,7 @@ describe( 'SupportPhoneInput', () => {
 
 	it( 'in dev mode, allow all 0s number', async () => {
 		useAccountBusinessSupportPhone.mockReturnValue( [
-			'+1000000', // invalid phone number.
+			'+10000000000', // test phone number.
 			jest.fn(),
 		] );
 		useDevMode.mockReturnValue( true );

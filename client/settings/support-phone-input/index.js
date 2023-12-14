@@ -24,9 +24,13 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 	const currentPhone = useRef( supportPhone ).current;
 	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';
 	const isDevModeEnabled = useDevMode();
+	const isTestPhoneValid =
+		isDevModeEnabled &&
+		( supportPhone === '+1000-000-0000' ||
+			supportPhone === '+10000000000' );
 
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
-	if ( ! isPhoneValid && ! isEmptyPhoneValid && ! isDevModeEnabled ) {
+	if ( ! isTestPhoneValid && ! isPhoneValid && ! isEmptyPhoneValid ) {
 		supportPhoneError = __(
 			'Please enter a valid phone number.',
 			'woocommerce-payments'

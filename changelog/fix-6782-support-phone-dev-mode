@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Skip support phone validation in dev mode
+Allow test support phone in dev mode
