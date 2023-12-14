@@ -1,0 +1,33 @@
+.wcpay-reset-account-modal {
+	// fix for the modal being too short on smaller screens
+	@media ( max-height: 880px ) {
+		max-height: 100% !important;
+	}
+
+	.components-modal__content {
+		box-sizing: border-box;
+		max-width: 700px;
+		margin: 0 auto;
+		padding: $gap-larger;
+	}
+
+	// &__heading {
+	// 	@include wp-title-large;
+	// 	text-align: left;
+	// 	margin-bottom: 0;
+	// }
+
+	&__footer {
+		text-align: right;
+		margin-top: $gap-large;
+
+		& :first-child {
+			margin-right: $gap-smaller;
+		}
+
+		button {
+			margin-top: $gap;
+			padding: $gap-smaller $gap;
+		}
+	}
+}

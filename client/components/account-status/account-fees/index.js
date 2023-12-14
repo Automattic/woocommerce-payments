@@ -16,6 +16,8 @@ import {
 	getCurrentBaseFee,
 	getTransactionsPaymentMethodName,
 } from 'utils/account-fees';
+import { CardDivider } from '@wordpress/components';
+import './styles.scss';
 
 const AccountFee = ( props ) => {
 	const { accountFee, paymentMethod } = props;
@@ -59,7 +61,12 @@ const AccountFees = ( props ) => {
 	return (
 		<>
 			{ haveDiscounts && (
-				<h4>{ __( 'Active discounts', 'woocommerce-payments' ) }</h4>
+				<div className="account-fees">
+					<CardDivider />
+					<h4>
+						{ __( 'Active discounts', 'woocommerce-payments' ) }
+					</h4>
+				</div>
 			) }
 			{ activeDiscounts }
 		</>

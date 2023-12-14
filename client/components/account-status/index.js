@@ -7,7 +7,6 @@ import {
 	Button,
 	Card,
 	CardBody,
-	CardDivider,
 	CardHeader,
 	FlexBlock,
 	FlexItem,
@@ -24,7 +23,7 @@ import PaymentsStatus from 'components/payments-status';
 import StatusChip from './status-chip';
 import './style.scss';
 import './shared.scss';
-import { isInTestOrDevMode } from 'wcpay/utils';
+import { AccountTools } from './account-tools';
 
 const AccountStatusCard = ( props ) => {
 	const { title, children, value } = props;
@@ -104,11 +103,11 @@ const AccountStatusDetails = ( props ) => {
 					}
 				/>
 			</AccountStatusItem>
-			{ ! accountStatus.detailsSubmitted &&
-				! isInTestOrDevMode()( <CardDivider /> ) }
+			{ ! accountStatus.detailsSubmitted && (
+				<AccountTools accountLink={ accountStatus.accountLink } />
+			) }
 			{ accountFees.length > 0 && (
 				<>
-					<CardDivider />
 					<AccountFees accountFees={ accountFees } />
 				</>
 			) }
