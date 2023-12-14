@@ -107,9 +107,7 @@ const AccountStatusDetails = ( props ) => {
 				<AccountTools accountLink={ accountStatus.accountLink } />
 			) }
 			{ accountFees.length > 0 && (
-				<>
-					<AccountFees accountFees={ accountFees } />
-				</>
+				<AccountFees accountFees={ accountFees } />
 			) }
 		</AccountStatusCard>
 	);
