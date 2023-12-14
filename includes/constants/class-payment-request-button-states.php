@@ -47,7 +47,7 @@ class Payment_Request_Button_States {
 	// phpcs:disable
 	const STATES = [
 		// Afghanistan.
-		'AF' => [],
+		Country_Codes::AFGHANISTAN => [],
 		// Angola.
 		'AO' => [],
 		// Argentina.

@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use WCPay\Constants\Country_Codes;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -17,7 +19,7 @@ class CountryFlags {
 	const EMOJI_COUNTRIES_FLAGS = [
 		'AD' => '🇦🇩',
 		'AE' => '🇦🇪',
-		'AF' => '🇦🇫',
+		Country_Codes::AFGHANISTAN => '🇦🇫',
 		'AG' => '🇦🇬',
 		'AI' => '🇦🇮',
 		'AL' => '🇦🇱',
