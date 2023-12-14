@@ -50,6 +50,13 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 		}
 	}, [ supportPhoneError, setInputVallid ] );
 
+	let labelText = __( 'Support phone number', 'woocommerce-payments' );
+	if ( isDevModeEnabled ) {
+		labelText += __(
+			' ( Use +1 000-000-0000 in test mode. )',
+			'woocommerce-payments'
+		);
+	}
 	return (
 		<>
 			{ supportPhoneError && (
@@ -63,7 +70,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 					'This may be visible on receipts, invoices, and automated emails from your store.',
 					'woocommerce-payments'
 				) }
-				label={ __( 'Support phone number', 'woocommerce-payments' ) }
+				label={ labelText }
 				id="account-business-support-phone-input"
 			>
 				<PhoneNumberInput
@@ -71,10 +78,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 					value={ supportPhone }
 					onValidationChange={ setPhoneValidity }
 					inputProps={ {
-						ariaLabel: __(
-							'Support phone number',
-							'woocommerce-payments'
-						),
+						ariaLabel: labelText,
 					} }
 				/>
 			</BaseControl>
