@@ -1327,8 +1327,7 @@ class WC_Payments {
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
-		require_once __DIR__ . '/class-wc-payments-upe-split-blocks-payment-method.php';
-		$payment_method_registry->register( new WC_Payments_UPE_Split_Blocks_Payment_Method() );
+		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 	}
 
 	/**
@@ -1656,6 +1655,7 @@ class WC_Payments {
 				'wcpay_fraud_protection_welcome_tour_dismissed',
 				'wcpay_capability_request_dismissed_notices',
 				'wcpay_onboarding_eligibility_modal_dismissed',
+				'wcpay_next_deposit_notice_dismissed',
 			],
 			true
 		);
