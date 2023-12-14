@@ -811,10 +811,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP();
 		}
 
-		if ( $this instanceof UPE_Split_Payment_Gateway ) {
-			$factors[] = Factor::DEFERRED_INTENT_SPLIT_UPE();
-		}
-
 		if ( defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) && WCPAY_PAYMENT_REQUEST_CHECKOUT ) {
 			$factors[] = Factor::PAYMENT_REQUEST();
 		}

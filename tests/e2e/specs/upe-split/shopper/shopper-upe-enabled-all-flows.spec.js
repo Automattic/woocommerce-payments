@@ -23,7 +23,6 @@ const card = config.get( 'cards.basic' );
 describe( 'Enabled Split UPE', () => {
 	beforeAll( async () => {
 		await merchant.login();
-		await merchantWCP.activateSplitUpe();
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
@@ -35,7 +34,6 @@ describe( 'Enabled Split UPE', () => {
 		await shopperWCP.logout();
 		await merchant.login();
 		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
-		await merchantWCP.deactivateSplitUpe();
 		await merchant.logout();
 	} );
 
