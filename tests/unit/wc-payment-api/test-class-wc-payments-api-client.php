@@ -907,7 +907,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
 	}
 
-	public function get_onboarding_po_eligible() {
+	public function test_get_onboarding_po_eligible() {
 		$this->set_http_mock_response(
 			200,
 			[
@@ -1203,6 +1203,33 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			[ [], 'intentions', 'GET' ]
 		);
 	}
+
+	public function test_update_compatibility_data() {
+		// Arrange: Set expectation and return for remote_request.
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		// Act: Get the result of updating the data.
+		$result = $this->payments_api_client->update_compatibility_data(
+			[
+				'woocommerce_core_version' => WC_VERSION,
+			]
+		);
+
+		// Assert: Confirm we get the expected response.
+		$this->assertSame( 'success', $result['result'] );
+	}
+
 	/**
 	 * Set up http mock response.
 	 *
