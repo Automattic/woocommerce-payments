@@ -32,7 +32,7 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/klarna.svg', WCPAY_PLUGIN_FILE );
 		$this->currencies                   = [ 'USD', 'GBP', 'EUR', 'DKK', 'NOK', 'SEK' ];
 		$this->accept_only_domestic_payment = true;
-		$this->countries                    = [ 'US', 'GB', Country_Codes::AUSTRIA, 'DE', 'NL', Country_Codes::BELGIUM, 'ES', 'IT', 'IE', Country_Codes::DENMARK, Country_Codes::FINLAND, 'NO', 'SE' ];
+		$this->countries                    = [ 'US', 'GB', Country_Codes::AUSTRIA, Country_Codes::GERMANY, 'NL', Country_Codes::BELGIUM, 'ES', 'IT', 'IE', Country_Codes::DENMARK, Country_Codes::FINLAND, 'NO', 'SE' ];
 		$this->limits_per_currency          = [
 			'USD' => [
 				'US' => [
@@ -55,7 +55,7 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 					'min' => 1,
 					'max' => 1000000,
 				],
-				'DE' => [
+				Country_Codes::GERMANY => [
 					'min' => 1,
 					'max' => 1000000,
 				],

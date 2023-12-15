@@ -195,7 +195,7 @@ class Payment_Request_Button_States {
 		// Czech Republic.
 		Country_Codes::CZECHIA => [],
 		// Germany.
-		'DE' => [],
+		Country_Codes::GERMANY => [],
 		// Denmark.
 		Country_Codes::DENMARK => [],
 		// Dominican Republic.
@@ -296,13 +296,13 @@ class Payment_Request_Button_States {
 		// French Guiana.
 		'GF' => [],
 		// Ghana.
-		'GH' => [],
+		Country_Codes::GHANA => [],
 		// Guadeloupe.
 		'GP' => [],
 		// Greece.
-		'GR' => [],
+		Country_Codes::GREECE => [],
 		// Guatemala.
-		'GT' => [],
+		Country_Codes::GUATEMALA => [],
 		// Hong Kong.
 		'HK' => [
 			'HONG KONG'       => [ 'Hong Kong Island', 'Hong Kong Island', '香港島' ],
@@ -310,7 +310,7 @@ class Payment_Request_Button_States {
 			'NEW TERRITORIES' => [ 'New Territories', 'New Territories', '新界' ],
 		],
 		// Hungary.
-		'HU' => [],
+		Country_Codes::HUNGARY => [],
 		// Indonesia.
 		'ID' => [
 			'AC' => [ 'Aceh', 'Aceh', NULL ],
