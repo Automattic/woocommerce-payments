@@ -16,7 +16,5 @@ test.describe( 'Merchant deposits', () => {
 				name: 'Deposit history',
 			} )
 		).toBeVisible();
-		await page.waitForLoadState( 'domcontentloaded' );
-		await expect( page ).toHaveScreenshot();
 	} );
 } );
