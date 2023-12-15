@@ -179,6 +179,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client->expects( $this->any() )->method( 'get_blog_id' )->willReturn( 1234567 );
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_fees' )
+			->willReturn(
+				[
+					'card' => [
+						'base' => 0.1,
+					],
+				]
+			);
 
 		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();
@@ -198,11 +208,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
-		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_localization_service->expects( $this->any() )
+			->method( 'get_country_locale_data' )
+			->willReturn(
+				[
+					'currency_code' => 'usd',
+				]
+			);
+		$this->mock_fraud_service = $this->createMock( WC_Payments_Fraud_Service::class );
 
 		$this->mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
 			->setConstructorArgs( [ $this->mock_token_service ] )
-			->setMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
+			->setMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 
 		$this->wcpay_gateway = new UPE_Split_Payment_Gateway(
@@ -212,7 +229,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_payment_method,
-			[ $this->mock_payment_method ],
+			[ 'card' => $this->mock_payment_method ],
 			$this->mock_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
@@ -225,7 +242,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->woopay_utilities = new WooPay_Utilities();
 
 		$this->payments_checkout = new WC_Payments_UPE_Checkout( $this->wcpay_gateway, $this->woopay_utilities, $this->mock_wcpay_account, $this->mock_customer_service, $this->mock_fraud_service );
-		$this->payments_checkout->init_hooks();
 
 		// Mock the level3 service to always return an empty array.
 		$mock_level3_service = $this->createMock( Level3Service::class );
@@ -477,7 +493,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
+			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
@@ -532,7 +548,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
+			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention( [ 'currency' => 'eur' ] ) );
@@ -584,7 +600,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
+			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
@@ -639,7 +655,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
+			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
@@ -696,7 +712,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
+			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -758,7 +774,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
+			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -816,7 +832,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
+			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -874,7 +890,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
+			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
@@ -923,7 +939,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
+			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
@@ -1586,6 +1602,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				);
 
 		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
+		$this->wcpay_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
 	}
 
 	public function test_process_payment_for_order_cc_payment_method() {
@@ -1676,7 +1693,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
+			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1895,13 +1912,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'should_use_stripe_platform_on_checkout_page' )
 			->willReturn( true );
 
-		$payments_checkout = new WC_Payments_Checkout(
-			$mock_wcpay_gateway,
-			$this->woopay_utilities,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_fraud_service
-		);
+		$payments_checkout = new WC_Payments_UPE_Checkout( $mock_wcpay_gateway, $this->woopay_utilities, $this->mock_wcpay_account, $this->mock_customer_service, $this->mock_fraud_service );
 
 		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 	}
@@ -1917,13 +1928,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$registered_card_gateway = WC_Payments::get_registered_card_gateway();
 		WC_Payments::set_registered_card_gateway( $mock_wcpay_gateway );
 
-		$payments_checkout = new WC_Payments_Checkout(
-			$mock_wcpay_gateway,
-			$this->woopay_utilities,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_fraud_service
-		);
+		$payments_checkout = new WC_Payments_UPE_Checkout( $mock_wcpay_gateway, $this->woopay_utilities, $this->mock_wcpay_account, $this->mock_customer_service, $this->mock_fraud_service );
 
 		$this->assertFalse( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 		WC_Payments::set_registered_card_gateway( $registered_card_gateway );
@@ -1939,7 +1944,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
 	}
 
-	public function test_return_icon_url() {
+	public function test_timur_testing() {
 		$returned_icon = $this->payments_checkout->get_payment_fields_js_config()['icon'];
 		$this->assertNotNull( $returned_icon );
 		$this->assertStringContainsString( 'assets/images/payment-methods/cc.svg', $returned_icon );
