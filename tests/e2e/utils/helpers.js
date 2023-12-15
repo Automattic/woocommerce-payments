@@ -47,6 +47,9 @@ export const checkPageExists = async ( slug ) => {
  *                          with an error message indicating that the price element was not found.
  */
 export const getProductPriceFromProductPage = async () => {
+	await page.waitForSelector( '.woocommerce-Price-amount.amount', {
+		timeout: 5000,
+	} );
 	const price = await page.evaluate( () => {
 		let priceElement = document.querySelector(
 			'ins .woocommerce-Price-amount.amount'
