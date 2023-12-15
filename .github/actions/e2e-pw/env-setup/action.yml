@@ -76,3 +76,10 @@ runs:
               echo "::group::Setup E2E test environment"
               npm run test:e2e-setup
               echo "::endgroup::"
+
+        - name: Install Playwright
+          shell: bash
+          run: |
+              echo "::group::Install Playwright"
+              npx playwright install
+              echo "::endgroup::"
