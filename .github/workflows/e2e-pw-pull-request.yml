@@ -5,6 +5,7 @@ on:
         branches:
             - develop
             - trunk
+            - try/playwright-e2e-tests
     workflow_dispatch:
     workflow_call:
         inputs:
