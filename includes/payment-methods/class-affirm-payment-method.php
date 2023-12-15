@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
 use WC_Payments_Utils;
+use WCPay\Constants\Country_Codes;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -33,7 +34,7 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 		$this->accept_only_domestic_payment = true;
 		$this->limits_per_currency          = [
 			'CAD' => [
-				'CA' => [
+				Country_Codes::CANADA => [
 					'min' => 5000,
 					'max' => 3000000,
 				], // Represents CAD 50 - 30,000 CAD.
@@ -45,7 +46,7 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 				], // Represents USD 50 - 30,000 USD.
 			],
 		];
-		$this->countries                    = [ 'US', 'CA' ];
+		$this->countries                    = [ 'US', Country_Codes::CANADA ];
 	}
 
 	/**

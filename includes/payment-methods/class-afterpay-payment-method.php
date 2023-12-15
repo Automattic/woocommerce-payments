@@ -39,7 +39,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 				], // Represents AUD 1 - 2,000 AUD.
 			],
 			'CAD' => [
-				'CA' => [
+				Country_Codes::CANADA => [
 					'min' => 100,
 					'max' => 200000,
 				], // Represents CAD 1 - 2,000 CAD.

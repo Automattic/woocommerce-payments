@@ -138,7 +138,7 @@ class Payment_Request_Button_States {
 			'TO' => [ 'TO', 'Tocantins', NULL ],
 		],
 		// Canada.
-		'CA' => [
+		Country_Codes::CANADA => [
 			'AB' => [ 'AB', 'Alberta', 'Alberta' ],
 			'BC' => [ 'BC', 'British Columbia', 'Colombie-Britannique' ],
 			'MB' => [ 'MB', 'Manitoba', 'Manitoba' ],
@@ -156,7 +156,7 @@ class Payment_Request_Button_States {
 		// Switzerland.
 		'CH' => [],
 		// China.
-		'CN' => [
+		Country_Codes::CHINA => [
 			'CN1'  => [ 'Yunnan Sheng', 'Yunnan Sheng', '云南省' ],
 			'CN2'  => [ 'Beijing Shi', 'Beijing Shi', '北京市' ],
 			'CN3'  => [ 'Tianjin Shi', 'Tianjin Shi', '天津市' ],
