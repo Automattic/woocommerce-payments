@@ -9,15 +9,20 @@ import fs from 'fs';
  * Internal dependencies
  */
 import { config } from '../config/default';
+import { merchantStorageFile, customerStorageFile } from '../utils/helpers';
 
 // See https://playwright.dev/docs/auth#multiple-signed-in-roles
 const {
 	users: { admin, customer },
 } = config;
-process.env.MERCHANT_STATE = `tests/e2e-pw/.auth/merchant.json`;
-process.env.CUSTOMER_STATE = `tests/e2e-pw/.auth/customer.json`;
 
 const isAuthStateStale = ( authStateFile: string ) => {
+	const authFileExists = fs.existsSync( authStateFile );
+
+	if ( ! authFileExists ) {
+		return true;
+	}
+
 	const authStateMtimeMs = fs.statSync( authStateFile ).mtimeMs;
 	const dayInMs = 1000 * 60 * 60 * 24;
 	const isStale = Date.now() - authStateMtimeMs > dayInMs;
@@ -25,11 +30,9 @@ const isAuthStateStale = ( authStateFile: string ) => {
 };
 
 setup( 'authenticate as admin', async ( { page } ) => {
-	const merchantFile = process.env.MERCHANT_STATE;
-
 	// For local development, use existing state if it exists and isn't stale.
 	if ( ! process.env.CI ) {
-		if ( merchantFile && ! isAuthStateStale( merchantFile ) ) {
+		if ( ! isAuthStateStale( merchantStorageFile ) ) {
 			console.log( 'Using existing merchant state.' );
 			return;
 		}
@@ -45,7 +48,7 @@ setup( 'authenticate as admin', async ( { page } ) => {
 			await page.locator( 'input[name="log"]' ).fill( admin.username );
 			await page.locator( 'input[name="pwd"]' ).fill( admin.password );
 			await page.locator( 'text=Log In' ).click();
-			await page.waitForLoadState( 'networkidle' );
+			await page.waitForLoadState( 'domcontentloaded' );
 			await page.goto( `/wp-admin` );
 			await page.waitForLoadState( 'domcontentloaded' );
 
@@ -72,15 +75,13 @@ setup( 'authenticate as admin', async ( { page } ) => {
 
 	// End of authentication steps.
 
-	await page.context().storageState( { path: merchantFile } );
+	await page.context().storageState( { path: merchantStorageFile } );
 } );
 
 setup( 'authenticate as customer', async ( { page } ) => {
-	const customerFile = process.env.CUSTOMER_STATE;
-
 	// For local development, use existing state if it exists and isn't stale.
 	if ( ! process.env.CI ) {
-		if ( customerFile && ! isAuthStateStale( customerFile ) ) {
+		if ( ! isAuthStateStale( customerStorageFile ) ) {
 			console.log( 'Using existing customer state.' );
 			return;
 		}
@@ -125,5 +126,5 @@ setup( 'authenticate as customer', async ( { page } ) => {
 	}
 	// End of authentication steps.
 
-	await page.context().storageState( { path: customerFile } );
+	await page.context().storageState( { path: customerStorageFile } );
 } );

@@ -1,14 +1,25 @@
 /**
  * External dependencies
  */
+import path from 'path';
 import { test } from '@playwright/test';
+
+export const merchantStorageFile = path.resolve(
+	__dirname,
+	'../.auth/merchant.json'
+);
+
+export const customerStorageFile = path.resolve(
+	__dirname,
+	'../.auth/customer.json'
+);
 
 /**
  * Sets the shopper as the authenticated user for a test or test suite.
  */
 export const useShopper = (): void => {
 	test.use( {
-		storageState: process.env.CUSTOMER_STATE,
+		storageState: customerStorageFile,
 	} );
 };
 
@@ -17,6 +28,6 @@ export const useShopper = (): void => {
  */
 export const useMerchant = (): void => {
 	test.use( {
-		storageState: process.env.MERCHANT_STATE,
+		storageState: merchantStorageFile,
 	} );
 };
