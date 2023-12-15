@@ -3,6 +3,7 @@
  * External dependencies
  */
 import { test as setup, expect } from '@playwright/test';
+import fs from 'fs';
 
 /**
  * Internal dependencies
@@ -16,8 +17,24 @@ const {
 process.env.MERCHANT_STATE = `tests/e2e-pw/.auth/merchant.json`;
 process.env.CUSTOMER_STATE = `tests/e2e-pw/.auth/customer.json`;
 
+const isAuthStateStale = ( authStateFile: string ) => {
+	const authStateMtimeMs = fs.statSync( authStateFile ).mtimeMs;
+	const dayInMs = 1000 * 60 * 60 * 24;
+	const isStale = Date.now() - authStateMtimeMs > dayInMs;
+	return isStale;
+};
+
 setup( 'authenticate as admin', async ( { page } ) => {
 	const merchantFile = process.env.MERCHANT_STATE;
+
+	// For local development, use existing state if it exists and isn't stale.
+	if ( ! process.env.CI ) {
+		if ( merchantFile && ! isAuthStateStale( merchantFile ) ) {
+			console.log( 'Using existing merchant state.' );
+			return;
+		}
+	}
+
 	// Sign in as admin user and save state
 	let adminLoggedIn = false;
 	const adminRetries = 5;
@@ -60,6 +77,14 @@ setup( 'authenticate as admin', async ( { page } ) => {
 
 setup( 'authenticate as customer', async ( { page } ) => {
 	const customerFile = process.env.CUSTOMER_STATE;
+
+	// For local development, use existing state if it exists and isn't stale.
+	if ( ! process.env.CI ) {
+		if ( customerFile && ! isAuthStateStale( customerFile ) ) {
+			console.log( 'Using existing customer state.' );
+			return;
+		}
+	}
 
 	// Sign in as customer user and save state
 	let customerLoggedIn = false;
