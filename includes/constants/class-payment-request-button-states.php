@@ -637,21 +637,21 @@ class Payment_Request_Button_States {
 			'JP47' => [ 'Okinawa', 'Okinawa', '沖縄県' ],
 		],
 		// Kenya.
-		'KE' => [],
+		Country_Codes::KENYA => [],
 		// South Korea.
 		'KR' => [],
 		// Kuwait.
-		'KW' => [],
+		Country_Codes::KUWAIT => [],
 		// Laos.
-		'LA' => [],
+		Country_Codes::LAOS => [],
 		// Lebanon.
-		'LB' => [],
+		Country_Codes::LEBANON => [],
 		// Sri Lanka.
 		'LK' => [],
 		// Liberia.
-		'LR' => [],
+		Country_Codes::LIBERIA => [],
 		// Luxembourg.
-		'LU' => [],
+		Country_Codes::LUXEMBOURG => [],
 		// Moldova.
 		'MD' => [],
 		// Martinique.
