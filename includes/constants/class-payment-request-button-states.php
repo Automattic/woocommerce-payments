@@ -193,13 +193,13 @@ class Payment_Request_Button_States {
 			// [ 'Hong Kong', 'Hong Kong', '香港' ],
 		],
 		// Czech Republic.
-		'CZ' => [],
+		Country_Codes::CZECHIA => [],
 		// Germany.
 		'DE' => [],
 		// Denmark.
-		'DK' => [],
+		Country_Codes::DENMARK => [],
 		// Dominican Republic.
-		'DO' => [],
+		Country_Codes::DOMINICAN_REPUBLIC => [],
 		// Algeria.
 		Country_Codes::ALGERIA => [],
 		// Estonia.
