@@ -64,6 +64,13 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	private $mock_woopay_utilities;
 
 	/**
+	 * Express Checkout Utilities instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Utils
+	 */
+	private $express_checkout_utils;
+
+	/**
 	 * Sets up things all tests need.
 	 */
 	public function set_up() {
@@ -103,11 +110,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			)
 			->getMock();
 
+		$this->express_checkout_utils = new WC_Payments_Express_Checkout_Button_Utils( $this->mock_wcpay_account );
+
 		$this->mock_payment_request_button_handler = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
 			->setConstructorArgs(
 				[
 					$this->mock_wcpay_account,
 					$this->mock_wcpay_gateway,
+					$this->express_checkout_utils,
 				]
 			)
 			->setMethods(
@@ -118,7 +128,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			)
 			->getMock();
 
-			$this->express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( $this->mock_wcpay_gateway, $this->mock_payment_request_button_handler, $this->mock_woopay_button_handler );
+			$this->express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( $this->mock_wcpay_gateway, $this->mock_payment_request_button_handler, $this->mock_woopay_button_handler, $this->express_checkout_utils );
 
 		add_filter(
 			'woocommerce_available_payment_gateways',

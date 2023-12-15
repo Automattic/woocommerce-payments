@@ -48,6 +48,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @param WC_Payment_Gateway_WCPay                   $gateway WCPay gateway.
 	 * @param WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler Payment request button handler.
 	 * @param WC_Payments_WooPay_Button_Handler          $platform_checkout_button_handler Platform checkout button handler.
+	 * @param WC_Payments_Express_Checkout_Button_Utils  $express_checkout_utils Express checkout utils.
 	 */
 	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler, WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler, WC_Payments_Express_Checkout_Button_Utils $express_checkout_utils ) {
 		$this->gateway                          = $gateway;
