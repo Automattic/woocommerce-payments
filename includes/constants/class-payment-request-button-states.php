@@ -1150,13 +1150,13 @@ class Payment_Request_Button_States {
 			//[ 'VI', 'Virgin Islands', NULL ],
 		],
 		// Vietnam.
-		'VN' => [],
+		Country_Codes::VIETNAM => [],
 		// Mayotte.
 		'YT' => [],
 		// South Africa.
 		Country_Codes::SOUTH_AFRICA => [],
 		// Zambia.
-		'ZM' => [],
+		Country_Codes::ZAMBIA => [],
 	];
 	// phpcs:enable
 }
