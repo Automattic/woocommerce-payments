@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
 use WC_Payments_Utils;
+use WCPay\Constants\Country_Codes;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -31,7 +32,7 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/klarna.svg', WCPAY_PLUGIN_FILE );
 		$this->currencies                   = [ 'USD', 'GBP', 'EUR', 'DKK', 'NOK', 'SEK' ];
 		$this->accept_only_domestic_payment = true;
-		$this->countries                    = [ 'US', 'GB', 'AT', 'DE', 'NL', 'BE', 'ES', 'IT', 'IE', 'DK', 'FI', 'NO', 'SE' ];
+		$this->countries                    = [ 'US', 'GB', Country_Codes::AUSTRIA, 'DE', 'NL', Country_Codes::BELGIUM, 'ES', 'IT', 'IE', 'DK', 'FI', 'NO', 'SE' ];
 		$this->limits_per_currency          = [
 			'USD' => [
 				'US' => [
@@ -46,11 +47,11 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 				],
 			],
 			'EUR' => [
-				'AT' => [
+				Country_Codes::AUSTRIA => [
 					'min' => 1,
 					'max' => 1000000,
 				],
-				'BE' => [
+				Country_Codes::BELGIUM => [
 					'min' => 1,
 					'max' => 1000000,
 				],

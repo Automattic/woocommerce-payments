@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Exceptions\{ Amount_Too_Small_Exception, API_Exception, Connection_Exception };
+use WCPay\Constants\Country_Codes;
 
 /**
  * WC Payments Utils class
@@ -224,10 +225,10 @@ class WC_Payments_Utils {
 	public static function supported_countries(): array {
 		return [
 			'AE' => __( 'United Arab Emirates', 'woocommerce-payments' ),
-			'AT' => __( 'Austria', 'woocommerce-payments' ),
-			'AU' => __( 'Australia', 'woocommerce-payments' ),
-			'BE' => __( 'Belgium', 'woocommerce-payments' ),
-			'BG' => __( 'Bulgaria', 'woocommerce-payments' ),
+			Country_Codes::AUSTRIA => __( 'Austria', 'woocommerce-payments' ),
+			Country_Codes::AUSTRALIA => __( 'Australia', 'woocommerce-payments' ),
+			Country_Codes::BELGIUM => __( 'Belgium', 'woocommerce-payments' ),
+			Country_Codes::BULGARIA => __( 'Bulgaria', 'woocommerce-payments' ),
 			'CA' => __( 'Canada', 'woocommerce-payments' ),
 			'CH' => __( 'Switzerland', 'woocommerce-payments' ),
 			'CY' => __( 'Cyprus', 'woocommerce-payments' ),

@@ -49,9 +49,9 @@ class Payment_Request_Button_States {
 		// Afghanistan.
 		Country_Codes::AFGHANISTAN => [],
 		// Angola.
-		'AO' => [],
+		Country_Codes::ANDORRA => [],
 		// Argentina.
-		'AR' => [
+		Country_Codes::ARGENTINA => [
 			'C' => [ 'Ciudad Autónoma de Buenos Aires', 'Ciudad Autónoma de Buenos Aires', NULL ],
 			'B' => [ 'Buenos Aires', 'Buenos Aires', NULL ],
 			'K' => [ 'Catamarca', 'Catamarca', NULL ],
@@ -78,9 +78,9 @@ class Payment_Request_Button_States {
 			'T' => [ 'Tucumán', 'Tucumán', NULL ],
 		],
 		// Austria.
-		'AT' => [],
+		Country_Codes::AUSTRIA => [],
 		// Australia.
-		'AU' =>[
+		Country_Codes::AUSTRALIA =>[
 			'ACT' => [ 'ACT', 'Australian Capital Territory', NULL ],
 			'NSW' => [ 'NSW', 'New South Wales', NULL ],
 			'NT'  => [ 'NT', 'Northern Territory', NULL ],
@@ -94,21 +94,21 @@ class Payment_Request_Button_States {
 		// Aland Islands.
 		'AX' => [],
 		// Bangladesh.
-		'BD' => [],
+		Country_Codes::BANGLADESH => [],
 		// Belgium.
-		'BE' => [],
+		Country_Codes::BELGIUM => [],
 		// Bulgaria.
-		'BG' => [],
+		Country_Codes::BULGARIA => [],
 		// Bahrain.
-		'BH' => [],
+		Country_Codes::BAHRAIN => [],
 		// Burundi.
-		'BI' => [],
+		Country_Codes::BURUNDI => [],
 		// Benin.
-		'BJ' => [],
+		Country_Codes::BENIN => [],
 		// Bolivia.
-		'BO' => [],
+		Country_Codes::BOLIVIA => [],
 		// Brazil.
-		'BR' => [
+		Country_Codes::BRAZIL => [
 			'AC' => [ 'AC', 'Acre', NULL ],
 			'AL' => [ 'AL', 'Alagoas', NULL ],
 			'AP' => [ 'AP', 'Amapá', NULL ],
@@ -201,7 +201,7 @@ class Payment_Request_Button_States {
 		// Dominican Republic.
 		'DO' => [],
 		// Algeria.
-		'DZ' => [],
+		Country_Codes::ALGERIA => [],
 		// Estonia.
 		'EE' => [],
 		// Egypt.

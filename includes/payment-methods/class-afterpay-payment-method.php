@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
 use WC_Payments_Utils;
+use WCPay\Constants\Country_Codes;
 
 /**
  * Afterpay Payment Method class extending UPE base class
@@ -32,7 +33,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$this->accept_only_domestic_payment = true;
 		$this->limits_per_currency          = [
 			'AUD' => [
-				'AU' => [
+				Country_Codes::AUSTRALIA => [
 					'min' => 100,
 					'max' => 200000,
 				], // Represents AUD 1 - 2,000 AUD.
