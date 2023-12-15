@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { test, expect } from '@playwright/test';
+import { useMerchant, useShopper } from '../utils/helpers';
 
 test.describe(
 	'A basic set of tests to ensure WP, wp-admin and my-account load',
@@ -16,9 +17,7 @@ test.describe(
 		} );
 
 		test.describe( 'Sign in as admin', () => {
-			test.use( {
-				storageState: process.env.ADMINSTATE,
-			} );
+			useMerchant();
 			test( 'Load Payments Overview', async ( { page } ) => {
 				await page.goto(
 					'/wp-admin/admin.php?page=wc-admin&path=/payments/overview'
@@ -30,9 +29,7 @@ test.describe(
 		} );
 
 		test.describe( 'Sign in as customer', () => {
-			test.use( {
-				storageState: process.env.CUSTOMERSTATE,
-			} );
+			useShopper();
 			test( 'Load customer my account page', async ( { page } ) => {
 				await page.goto( '/my-account' );
 				const title = page.locator( 'h1.entry-title' );

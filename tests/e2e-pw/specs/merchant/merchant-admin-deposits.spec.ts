@@ -2,11 +2,10 @@
  * External dependencies
  */
 import { test, expect } from '@playwright/test';
+import { useMerchant } from '../../utils/helpers';
 
 test.describe( 'Merchant deposits', () => {
-	test.use( {
-		storageState: process.env.ADMINSTATE,
-	} );
+	useMerchant();
 
 	test( 'Load the deposits list page', async ( { page } ) => {
 		await page.goto(

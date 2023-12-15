@@ -13,11 +13,11 @@ import { config } from '../config/default';
 const {
 	users: { admin, customer },
 } = config;
-process.env.ADMINSTATE = `tests/e2e-pw/.auth/admin.json`;
-process.env.CUSTOMERSTATE = `tests/e2e-pw/.auth/customer.json`;
+process.env.MERCHANT_STATE = `tests/e2e-pw/.auth/merchant.json`;
+process.env.CUSTOMER_STATE = `tests/e2e-pw/.auth/customer.json`;
 
 setup( 'authenticate as admin', async ( { page } ) => {
-	const adminFile = process.env.ADMINSTATE;
+	const merchantFile = process.env.MERCHANT_STATE;
 	// Sign in as admin user and save state
 	let adminLoggedIn = false;
 	const adminRetries = 5;
@@ -55,11 +55,11 @@ setup( 'authenticate as admin', async ( { page } ) => {
 
 	// End of authentication steps.
 
-	await page.context().storageState( { path: adminFile } );
+	await page.context().storageState( { path: merchantFile } );
 } );
 
 setup( 'authenticate as customer', async ( { page } ) => {
-	const customerFile = process.env.CUSTOMERSTATE;
+	const customerFile = process.env.CUSTOMER_STATE;
 
 	// Sign in as customer user and save state
 	let customerLoggedIn = false;
