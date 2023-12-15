@@ -21,7 +21,7 @@ test.describe(
 				await page.goto(
 					'/wp-admin/admin.php?page=wc-admin&path=/payments/overview'
 				);
-				await page.waitForLoadState( 'networkidle' );
+				await page.waitForLoadState( 'domcontentloaded' );
 				const logo = page.getByAltText( 'WooPayments logo' );
 				await expect( logo ).toBeVisible();
 			} );
