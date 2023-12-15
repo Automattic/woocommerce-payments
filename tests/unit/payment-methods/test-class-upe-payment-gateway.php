@@ -312,9 +312,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( $this->mock_payment_result )
 			);
 
-		update_option( '_wcpay_feature_upe', '1' );
-		update_option( '_wcpay_feature_upe_split', '0' );
-
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
@@ -345,8 +342,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Payments::set_database_cache( $this->_cache );
-		update_option( '_wcpay_feature_upe', '0' );
-		update_option( '_wcpay_feature_upe_split', '0' );
 		wcpay_get_test_container()->reset_all_replacements();
 	}
 

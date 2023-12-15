@@ -129,6 +129,14 @@ export const shopperWCP = {
 		await expect( page ).toClick( 'label', { text: label } );
 	},
 
+	setDefaultPaymentMethod: async ( label ) => {
+		const [ paymentMethodRow ] = await page.$x(
+			`//tr[contains(., '${ label }')]`
+		);
+		await expect( paymentMethodRow ).toClick( '.button.default' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+	},
+
 	toggleCreateAccount: async () => {
 		await expect( page ).toClick( '#createaccount' );
 	},
@@ -290,192 +298,6 @@ export const shopperWCP = {
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 export const merchantWCP = {
-	activateUpe: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if ( ! ( await page.$( '#_wcpay_feature_upe:checked' ) ) ) {
-			await expect( page ).toClick( 'label[for="_wcpay_feature_upe"]' );
-		}
-
-		const isSplitUPEEnabled = await page.$(
-			'#_wcpay_feature_upe_split:checked'
-		);
-
-		if ( isSplitUPEEnabled ) {
-			// Deactivate the Split UPE checkout.
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_upe_split"]'
-			);
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
-		);
-
-		if ( ! isAdditionalPaymentsActive ) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_upe_additional_payment_methods"]'
-			);
-		}
-
-		await expect( page ).toClick( 'input#submit' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	activateSplitUpe: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if ( ! ( await page.$( '#_wcpay_feature_upe_split:checked' ) ) ) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_upe_split"]'
-			);
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
-		);
-
-		if ( ! isAdditionalPaymentsActive ) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_upe_additional_payment_methods"]'
-			);
-		}
-
-		await expect( page ).toClick( 'input#submit' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	activateUPEWithDefferedIntentCreation: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		// uncheck UPE
-		if ( await page.$( '#_wcpay_feature_upe:checked' ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout (legacy)',
-			} );
-		}
-
-		// uncheck split UPE
-		if ( await page.$( '#_wcpay_feature_upe_split:checked' ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable Split UPE checkout',
-			} );
-		}
-
-		// check enhanced UPE
-		if (
-			! ( await page.$( '#_wcpay_feature_upe_deferred_intent:checked' ) )
-		) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable Split UPE checkout with deferred intent creation',
-			} );
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
-		);
-
-		if ( ! isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	deactivateUPEWithDefferedIntentCreation: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if ( await page.$( '#_wcpay_feature_upe_deferred_intent:checked' ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable Split UPE checkout with deferred intent creation',
-			} );
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
-		);
-
-		if ( isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	deactivateUpe: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if ( await page.$( '#_wcpay_feature_upe:checked' ) ) {
-			await expect( page ).toClick( 'label[for="_wcpay_feature_upe"]' );
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
-		);
-
-		if ( isAdditionalPaymentsActive ) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_upe_additional_payment_methods"]'
-			);
-		}
-
-		await expect( page ).toClick( 'input#submit' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	deactivateSplitUpe: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if ( await page.$( '#_wcpay_feature_upe_split:checked' ) ) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_upe_split"]'
-			);
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
-		);
-
-		if ( isAdditionalPaymentsActive ) {
-			await expect( page ).toClick(
-				'label[for="_wcpay_feature_upe_additional_payment_methods"]'
-			);
-		}
-
-		await expect( page ).toClick( 'input#submit' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
 	enableActAsDisconnectedFromWCPay: async () => {
 		await page.goto( WCPAY_DEV_TOOLS, {
 			waitUntil: 'networkidle0',
