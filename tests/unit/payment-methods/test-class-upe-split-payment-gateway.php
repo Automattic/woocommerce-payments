@@ -1727,7 +1727,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_no_save_option_for_non_sepa_upe() {
+	public function test_timka_testing() {
 		$payment_methods_with_no_save_option = [
 			Payment_Method::BANCONTACT,
 			Payment_Method::EPS,

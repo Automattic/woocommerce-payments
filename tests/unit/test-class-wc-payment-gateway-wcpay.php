@@ -97,6 +97,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $mock_rate_limiter;
 
 	/**
+	 * UPE_Payment_Method instance.
+	 *
+	 * @var UPE_Payment_Method|MockObject
+	 */
+	private $mock_payment_method;
+
+	/**
 	 * WC_Payments_Order_Service instance.
 	 *
 	 * @var WC_Payments_Order_Service
@@ -193,7 +200,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
 
-		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
+		$this->mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
 			->setConstructorArgs( [ $this->mock_token_service ] )
 			->setMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
 			->getMock();
@@ -204,8 +211,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_customer_service,
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
-			$mock_payment_method,
-			[ $mock_payment_method ],
+			$this->mock_payment_method,
+			[ $this->mock_payment_method ],
 			$this->mock_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
@@ -218,6 +225,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->woopay_utilities = new WooPay_Utilities();
 
 		$this->payments_checkout = new WC_Payments_UPE_Checkout( $this->wcpay_gateway, $this->woopay_utilities, $this->mock_wcpay_account, $this->mock_customer_service, $this->mock_fraud_service );
+		$this->payments_checkout->init_hooks();
 
 		// Mock the level3 service to always return an empty array.
 		$mock_level3_service = $this->createMock( Level3Service::class );
@@ -1142,7 +1150,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'error', $result['result'] );
 	}
 
-	public function test_add_payment_method_canceled_intent() {
+	public function test_add_payment_method_cancelled_intent() {
 		$_POST = [ 'wcpay-setup-intent' => 'sti_mock' ];
 
 		$this->mock_customer_service
@@ -1434,22 +1442,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_mandate_data_not_added_to_payment_intent_if_not_required() {
-		// Mandate data is required for SEPA and Stripe Link only, hence initializing the gateway with a CC payment method should not add mandate data.
-		$gateway = new UPE_Split_Payment_Gateway(
-			$this->mock_api_client,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_token_service,
-			$this->mock_action_scheduler_service,
-			new CC_Payment_Method( $this->mock_token_service ),
-			[],
-			$this->mock_rate_limiter,
-			$this->order_service,
-			$this->mock_dpps,
-			$this->mock_localization_service,
-			$this->mock_fraud_service
-		);
-		WC_Payments::set_gateway( $gateway );
 		$payment_method = 'woocommerce_payments_sepa_debit';
 		$order          = WC_Helper_Order::create_order();
 		$order->set_currency( 'USD' );
@@ -1467,27 +1459,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->never() )
 			->method( 'set_mandate_data' );
 
-		$gateway->process_payment_for_order( WC()->cart, $pi );
-		WC_Payments::set_gateway( $this->wcpay_gateway );
+		// Mandate data is required for SEPA and Stripe Link only, $this->wcpay_gateway is created with card hence mandate data should not be added.
+		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
 	public function test_mandate_data_added_to_payment_intent_if_required() {
-		// Mandate data is required for SEPA and Stripe Link, hence initializing the gateway with a SEPA payment method should add mandate data.
-		$gateway = new UPE_Split_Payment_Gateway(
-			$this->mock_api_client,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_token_service,
-			$this->mock_action_scheduler_service,
-			new Sepa_Payment_Method( $this->mock_token_service ),
-			[],
-			$this->mock_rate_limiter,
-			$this->order_service,
-			$this->mock_dpps,
-			$this->mock_localization_service,
-			$this->mock_fraud_service
-		);
-		WC_Payments::set_gateway( $gateway );
+		// Mandate data is required for SEPA and Stripe Link, hence creating the gateway with a SEPA payment method should add mandate data.
+		$gateway        = $this->create_gateway_with( new Sepa_Payment_Method( $this->mock_token_service ) );
 		$payment_method = 'woocommerce_payments_sepa_debit';
 		$order          = WC_Helper_Order::create_order();
 		$order->set_currency( 'USD' );
@@ -1517,26 +1495,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			);
 
 		$gateway->process_payment_for_order( WC()->cart, $pi );
-		WC_Payments::set_gateway( $this->wcpay_gateway );
 	}
 
 	public function test_mandate_data_not_added_to_setup_intent_request_when_link_is_disabled() {
-		$gateway = new UPE_Split_Payment_Gateway(
-			$this->mock_api_client,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_token_service,
-			$this->mock_action_scheduler_service,
-			new CC_Payment_Method( $this->mock_token_service ),
-			[],
-			$this->mock_rate_limiter,
-			$this->order_service,
-			$this->mock_dpps,
-			$this->mock_localization_service,
-			$this->mock_fraud_service
-		);
-		WC_Payments::set_gateway( $gateway );
-		$gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+		// Disabled link is reflected in upe_enabled_payment_method_ids: when link is disabled, the array contains only card.
+		$this->wcpay_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
 
 		$payment_method = 'woocommerce_payments';
 		$order          = WC_Helper_Order::create_order();
@@ -1572,27 +1535,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$request->expects( $this->never() )
 				->method( 'set_mandate_data' );
 
-		$gateway->process_payment_for_order( WC()->cart, $pi );
-		WC_Payments::set_gateway( $this->wcpay_gateway );
+		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
 	public function test_mandate_data_added_to_setup_intent_request_when_link_is_enabled() {
-		$gateway = new UPE_Split_Payment_Gateway(
-			$this->mock_api_client,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_token_service,
-			$this->mock_action_scheduler_service,
-			new CC_Payment_Method( $this->mock_token_service ),
-			[],
-			$this->mock_rate_limiter,
-			$this->order_service,
-			$this->mock_dpps,
-			$this->mock_localization_service,
-			$this->mock_fraud_service
-		);
-		WC_Payments::set_gateway( $gateway );
-		$gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+		$this->wcpay_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
 
 		$payment_method = 'woocommerce_payments';
 		$order          = WC_Helper_Order::create_order();
@@ -1638,8 +1585,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					)
 				);
 
-		$gateway->process_payment_for_order( WC()->cart, $pi );
-		WC_Payments::set_gateway( $this->wcpay_gateway );
+		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
 	public function test_process_payment_for_order_cc_payment_method() {
@@ -1890,7 +1836,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_timur_testing() {
+	public function test_is_woopay_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		wp_set_current_user( 1 );
@@ -1925,13 +1871,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$registered_card_gateway = WC_Payments::get_registered_card_gateway();
 		WC_Payments::set_registered_card_gateway( $mock_wcpay_gateway );
 
-		$payments_checkout = new WC_Payments_Checkout(
+		$payments_checkout = new WC_Payments_UPE_Checkout(
 			$mock_wcpay_gateway,
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
 			$this->mock_fraud_service
 		);
+		$payments_checkout->init_hooks();
 
 		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 		WC_Payments::set_registered_card_gateway( $registered_card_gateway );
@@ -2049,7 +1996,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * @return MockObject|WC_Payment_Gateway_WCPay
 	 */
 	private function get_partial_mock_for_gateway( array $methods = [] ) {
-		return $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+		return $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -2057,6 +2004,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
+					$this->mock_payment_method,
+					[ $this->mock_payment_method ],
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
@@ -2410,6 +2359,23 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
+			$this->mock_fraud_service
+		);
+	}
+
+	private function create_gateway_with( $payment_method ) {
+		return new UPE_Split_Payment_Gateway(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			$payment_method,
+			[ $payment_method ],
+			$this->mock_rate_limiter,
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
 			$this->mock_fraud_service
 		);
 	}
