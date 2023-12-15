@@ -602,6 +602,9 @@ export const merchantWCP = {
 	},
 
 	setCheckboxByTestId: async ( testId ) => {
+		await page.waitForSelector( `[data-testid="${ testId }"]`, {
+			timeout: 5000,
+		} );
 		const checkbox = await page.$( `[data-testid="${ testId }"]` );
 		const checkboxStatus = await (
 			await checkbox.getProperty( 'checked' )
@@ -612,6 +615,9 @@ export const merchantWCP = {
 	},
 
 	unsetCheckboxByTestId: async ( testId ) => {
+		await page.waitForSelector( `[data-testid="${ testId }"]`, {
+			timeout: 5000,
+		} );
 		const checkbox = await page.$( `[data-testid="${ testId }"]` );
 		const checkboxStatus = await (
 			await checkbox.getProperty( 'checked' )
