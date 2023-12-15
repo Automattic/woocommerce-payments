@@ -733,14 +733,10 @@ export const merchantWCP = {
 	setCurrencyPriceRounding: async ( currencyCode, rounding ) => {
 		await merchantWCP.editCurrency( currencyCode );
 
-		console.log( `setCurrencyPriceRounding :: start` );
-
 		await page.waitForSelector( '[data-testid="price_rounding"]', {
 			timeout: 5000,
 		} );
 		await page.select( '[data-testid="price_rounding"]', rounding );
-
-		console.log( `setCurrencyPriceRounding :: finish` );
 
 		await merchantWCP.saveCurrencySettings();
 	},
