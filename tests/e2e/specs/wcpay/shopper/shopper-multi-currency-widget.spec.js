@@ -95,6 +95,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 				await setupTest();
 				await page.waitForSelector( '.widget select[name=currency]', {
 					visible: true,
+					timeout: 5000,
 				} );
 				await page.select( '.widget select[name=currency]', 'EUR' );
 				await expect( page.url() ).toContain(
@@ -105,6 +106,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 				);
 				// Change it back to USD for the other tests.
 				await page.select( '.widget select[name=currency]', 'USD' );
+				await page.reload( { waitUntil: 'networkidle0' } );
 			} );
 		}
 	);
@@ -178,5 +180,6 @@ describe( 'Shopper Multi-Currency widget', () => {
 			'.widget select[name=currency]'
 		);
 		expect( currencySwitcher ).toBeNull();
+		await merchant.logout();
 	} );
 } );
