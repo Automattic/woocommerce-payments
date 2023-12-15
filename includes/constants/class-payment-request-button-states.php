@@ -154,7 +154,7 @@ class Payment_Request_Button_States {
 			'YT' => [ 'YT', 'Yukon', 'Yukon' ],
 		],
 		// Switzerland.
-		'CH' => [],
+		Country_Codes::SWITZERLAND => [],
 		// China.
 		Country_Codes::CHINA => [
 			'CN1'  => [ 'Yunnan Sheng', 'Yunnan Sheng', '云南省' ],
@@ -235,7 +235,7 @@ class Payment_Request_Button_States {
 			'EGWAD' => [ 'New Valley Governorate', 'New Valley Governorate', 'الوادي الجديد' ],
 		],
 		// Spain.
-		'ES' => [
+		Country_Codes::SPAIN => [
 			'C'  => [ 'A Coruña', 'A Coruña', NULL ],
 			'VI' => [ 'Álava', 'Álava', NULL ],
 			'AB' => [ 'Albacete', 'Albacete', NULL ],
@@ -639,7 +639,7 @@ class Payment_Request_Button_States {
 		// Kenya.
 		Country_Codes::KENYA => [],
 		// South Korea.
-		'KR' => [],
+		Country_Codes::SOUTH_KOREA => [],
 		// Kuwait.
 		Country_Codes::KUWAIT => [],
 		// Laos.
@@ -903,17 +903,17 @@ class Payment_Request_Button_States {
 		// Reunion.
 		'RE' => [],
 		// Romania.
-		'RO' => [],
+		Country_Codes::ROMANIA => [],
 		// Serbia.
-		'RS' => [],
+		Country_Codes::SERBIA => [],
 		// Sweden.
-		'SE' => [],
+		Country_Codes::SWEDEN => [],
 		// Singapore.
-		'SG' => [],
+		Country_Codes::SINGAPORE => [],
 		// Slovenia.
-		'SI' => [],
+		Country_Codes::SLOVENIA => [],
 		// Slovakia.
-		'SK' => [],
+		Country_Codes::SLOVAKIA => [],
 		// Thailand.
 		'TH' => [
 			'TH-37' => [ 'Amnat Charoen', 'Amnat Charoen', 'อำนาจเจริญ' ],
@@ -1154,7 +1154,7 @@ class Payment_Request_Button_States {
 		// Mayotte.
 		'YT' => [],
 		// South Africa.
-		'ZA' => [],
+		Country_Codes::SOUTH_AFRICA => [],
 		// Zambia.
 		'ZM' => [],
 	];
