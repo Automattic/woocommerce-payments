@@ -222,7 +222,7 @@ const isBaseFeeOnly = ( event ) => {
 const formatNetString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
 		return formatExplicitCurrency(
-			event.amount - event.fee,
+			event.amount_captured - event.fee,
 			event.currency
 		);
 	}
@@ -681,7 +681,7 @@ const mapEventToTimelineItems = ( event ) => {
 							'A payment of %s was successfully charged.',
 							'woocommerce-payments'
 						),
-						event.amount,
+						event.amount_captured,
 						true
 					),
 					<CheckmarkIcon className="is-success" />,
