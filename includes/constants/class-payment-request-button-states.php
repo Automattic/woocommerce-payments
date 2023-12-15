@@ -915,7 +915,7 @@ class Payment_Request_Button_States {
 		// Slovakia.
 		Country_Codes::SLOVAKIA => [],
 		// Thailand.
-		'TH' => [
+		Country_Codes::THAILAND => [
 			'TH-37' => [ 'Amnat Charoen', 'Amnat Charoen', 'อำนาจเจริญ' ],
 			'TH-15' => [ 'Ang Thong', 'Ang Thong', 'อ่างทอง' ],
 			'TH-14' => [ 'Phra Nakhon Si Ayutthaya', 'Phra Nakhon Si Ayutthaya', 'พระนครศรีอยุธยา' ],
@@ -995,7 +995,7 @@ class Payment_Request_Button_States {
 			'TH-35' => [ 'Yasothon', 'Yasothon', 'ยโสธร' ],
 		],
 		// Turkey.
-		'TR' => [
+		Country_Codes::TURKEY => [
 			'TR01' => [ 'Adana', 'Adana', NULL ],
 			'TR02' => [ 'Adıyaman', 'Adıyaman', NULL ],
 			'TR03' => [ 'Afyon', 'Afyon', NULL ],
@@ -1079,13 +1079,13 @@ class Payment_Request_Button_States {
 			'TR81' => [ 'Düzce', 'Düzce', NULL ],
 		],
 		// Tanzania.
-		'TZ' => [],
+		Country_Codes::TANZANIA => [],
 		// Uganda.
-		'UG' => [],
+		Country_Codes::UGANDA => [],
 		// United States Minor Outlying Islands.
 		'UM' => [],
 		// United States.
-		'US' => [
+		Country_Codes::UNITED_STATES => [
 			'AL' => [ 'AL', 'Alabama', NULL ],
 			'AK' => [ 'AK', 'Alaska', NULL ],
 			'AZ' => [ 'AZ', 'Arizona', NULL ],

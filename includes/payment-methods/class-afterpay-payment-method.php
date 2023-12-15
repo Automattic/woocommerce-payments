@@ -51,13 +51,13 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 				], // Represents NZD 1 - 2,000 NZD.
 			],
 			'GBP' => [
-				'GB' => [
+				Country_Codes::UNITED_KINGDOM => [
 					'min' => 100,
 					'max' => 120000,
 				], // Represents GBP 1 - 1,200 GBP.
 			],
 			'USD' => [
-				'US' => [
+				Country_Codes::UNITED_STATES => [
 					'min' => 100,
 					'max' => 400000,
 				], // Represents USD 1 - 4,000 USD.

@@ -224,7 +224,7 @@ class WC_Payments_Utils {
 	 */
 	public static function supported_countries(): array {
 		return [
-			'AE'                     => __( 'United Arab Emirates', 'woocommerce-payments' ),
+			Country_Codes::UNITED_ARAB_EMIRATES                     => __( 'United Arab Emirates', 'woocommerce-payments' ),
 			Country_Codes::AUSTRIA   => __( 'Austria', 'woocommerce-payments' ),
 			Country_Codes::AUSTRALIA => __( 'Australia', 'woocommerce-payments' ),
 			Country_Codes::BELGIUM   => __( 'Belgium', 'woocommerce-payments' ),
@@ -242,7 +242,7 @@ class WC_Payments_Utils {
 			Country_Codes::CROATIA   => __( 'Croatia', 'woocommerce-payments' ),
 			Country_Codes::JAPAN                     => __( 'Japan', 'woocommerce-payments' ),
 			Country_Codes::LUXEMBOURG                     => __( 'Luxembourg', 'woocommerce-payments' ),
-			'GB'                     => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
+			Country_Codes::UNITED_KINGDOM                     => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
 			Country_Codes::GREECE                     => __( 'Greece', 'woocommerce-payments' ),
 			'HK'                     => __( 'Hong Kong', 'woocommerce-payments' ),
 			Country_Codes::HUNGARY                     => __( 'Hungary', 'woocommerce-payments' ),
@@ -261,7 +261,7 @@ class WC_Payments_Utils {
 			Country_Codes::SLOVENIA                     => __( 'Slovenia', 'woocommerce-payments' ),
 			Country_Codes::SLOVAKIA                     => __( 'Slovakia', 'woocommerce-payments' ),
 			Country_Codes::SINGAPORE                     => __( 'Singapore', 'woocommerce-payments' ),
-			'US'                     => __( 'United States (US)', 'woocommerce-payments' ),
+			Country_Codes::UNITED_STATES                     => __( 'United States (US)', 'woocommerce-payments' ),
 		];
 	}
 

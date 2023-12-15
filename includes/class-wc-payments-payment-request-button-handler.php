@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WCPay\Constants\Country_Codes;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
@@ -444,7 +445,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
 		 * the postal code and not calculate shipping zones correctly.
 		 */
-		if ( 'GB' === $country ) {
+		if ( Country_Codes::UNITED_KINGDOM === $country ) {
 			// Replaces a redacted string with something like LN10***.
 			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '*' );
 		}

@@ -40,13 +40,13 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 				], // Represents CAD 50 - 30,000 CAD.
 			],
 			'USD' => [
-				'US' => [
+				Country_Codes::UNITED_STATES => [
 					'min' => 5000,
 					'max' => 3000000,
 				], // Represents USD 50 - 30,000 USD.
 			],
 		];
-		$this->countries                    = [ 'US', Country_Codes::CANADA ];
+		$this->countries                    = [ Country_Codes::UNITED_STATES, Country_Codes::CANADA ];
 	}
 
 	/**
