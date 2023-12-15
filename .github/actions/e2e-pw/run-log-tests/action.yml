@@ -8,7 +8,7 @@ runs:
           id: first_run_e2e_pw_tests
           # Use +e to trap errors when running E2E tests.
           shell: /bin/bash +e {0}
-          run: npx playwright test
+          run: npm run test:e2e-pw
         - uses: actions/upload-artifact@v3
           if: always()
           with:
