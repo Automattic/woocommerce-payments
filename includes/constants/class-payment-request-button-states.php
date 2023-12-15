@@ -203,9 +203,9 @@ class Payment_Request_Button_States {
 		// Algeria.
 		Country_Codes::ALGERIA => [],
 		// Estonia.
-		'EE' => [],
+		Country_Codes::ESTONIA => [],
 		// Egypt.
-		'EG' => [
+		Country_Codes::EGYPT => [
 			'EGALX' => [ 'Alexandria Governorate', 'Alexandria Governorate', 'الإسكندرية' ],
 			'EGASN' => [ 'Aswan Governorate', 'Aswan Governorate', 'أسوان' ],
 			'EGAST' => [ 'Asyut Governorate', 'Asyut Governorate', 'أسيوط' ],
@@ -290,9 +290,9 @@ class Payment_Request_Button_States {
 			'Z'  => [ 'Zaragoza', 'Zaragoza', NULL ],
 		],
 		// Finland.
-		'FI' => [],
+		Country_Codes::FINLAND => [],
 		// France.
-		'FR' => [],
+		Country_Codes::FRANCE => [],
 		// French Guiana.
 		'GF' => [],
 		// Ghana.
