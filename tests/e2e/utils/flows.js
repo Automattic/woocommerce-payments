@@ -779,7 +779,11 @@ export const merchantWCP = {
 			searchInput.type( 'switcher', { delay: 20 } );
 
 			await page.waitForSelector(
-				'button.components-button[role="option"]'
+				'button.components-button[role="option"]',
+				{
+					visible: true,
+					timeout: 5000,
+				}
 			);
 			await page.click( 'button.components-button[role="option"]' );
 			await page.waitFor( 2000 );
@@ -799,7 +803,7 @@ export const merchantWCP = {
 		await merchant.openNewOrder();
 		await page.click( 'button.add-line-item' );
 		await page.click( 'button.add-order-item' );
-		await page.click( 'select.wc-product-search' );
+		await page.click( 'select[name="item_id"]' );
 		await page.type(
 			'.select2-search--dropdown > input',
 			config.get( 'products.simple.name' ),
