@@ -653,13 +653,13 @@ class Payment_Request_Button_States {
 		// Luxembourg.
 		Country_Codes::LUXEMBOURG => [],
 		// Moldova.
-		'MD' => [],
+		Country_Codes::MOLDOVA => [],
 		// Martinique.
 		'MQ' => [],
 		// Malta.
-		'MT' => [],
+		Country_Codes::MALTA => [],
 		// Mexico.
-		'MX' => [
+		Country_Codes::MEXICO => [
 			'DF' => [ 'CDMX', 'Ciudad de México', NULL ],
 			'JA' => [ 'Jal.', 'Jalisco', NULL ],
 			'NL' => [ 'N.L.', 'Nuevo León', NULL ],
@@ -694,7 +694,7 @@ class Payment_Request_Button_States {
 			'ZA' => [ 'Zac.', 'Zacatecas', NULL ],
 		],
 		// Malaysia.
-		'MY' => [
+		Country_Codes::MALAYSIA => [
 			'JHR' => [ 'Johor', 'Johor', NULL ],
 			'KDH' => [ 'Kedah', 'Kedah', NULL ],
 			'KTN' => [ 'Kelantan', 'Kelantan', NULL ],
@@ -713,7 +713,7 @@ class Payment_Request_Button_States {
 			'KUL' => [ 'Kuala Lumpur', 'Kuala Lumpur', NULL ],
 		],
 		// Mozambique.
-		'MZ' => [
+		Country_Codes::MOZAMBIQUE => [
 			'MZP'   => [ 'Cabo Delgado', 'Cabo Delgado', NULL ],
 			'MZG'   => [ 'Gaza', 'Gaza', NULL ],
 			'MZI'   => [ 'Inhambane', 'Inhambane', NULL ],
@@ -727,9 +727,9 @@ class Payment_Request_Button_States {
 			'MZQ'   => [ 'Zambezia', 'Zambezia', NULL ],
 		],
 		// Namibia.
-		'NA' => [],
+		Country_Codes::NAMIBIA => [],
 		// Nigeria.
-		'NG' => [
+		Country_Codes::NIGERIA => [
 			'AB' => [ 'Abia', 'Abia', NULL ],
 			'FC' => [ 'Federal Capital Territory', 'Federal Capital Territory', NULL ],
 			'AD' => [ 'Adamawa', 'Adamawa', NULL ],
@@ -769,13 +769,13 @@ class Payment_Request_Button_States {
 			'ZA' => [ 'Zamfara', 'Zamfara', NULL ],
 		],
 		// Netherlands.
-		'NL' => [],
+		Country_Codes::NETHERLANDS => [],
 		// Norway.
-		'NO' => [],
+		Country_Codes::NORWAY => [],
 		// Nepal.
-		'NP' => [],
+		Country_Codes::NEPAL => [],
 		// New Zealand.
-		'NZ' => [],
+		Country_Codes::NEW_ZEALAND => [],
 		// Peru.
 		'PE' => [
 			'CAL' => [ 'Callao', 'Callao', NULL ],

@@ -45,7 +45,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 				], // Represents CAD 1 - 2,000 CAD.
 			],
 			'NZD' => [
-				'NZ' => [
+				Country_Codes::NEW_ZEALAND => [
 					'min' => 100,
 					'max' => 200000,
 				], // Represents NZD 1 - 2,000 NZD.
