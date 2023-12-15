@@ -36,16 +36,24 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	private $platform_checkout_button_handler;
 
 	/**
+	 * Express Checkout Utilities instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Utils
+	 */
+	private $express_checkout_utils;
+
+	/**
 	 * Initialize class actions.
 	 *
 	 * @param WC_Payment_Gateway_WCPay                   $gateway WCPay gateway.
 	 * @param WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler Payment request button handler.
 	 * @param WC_Payments_WooPay_Button_Handler          $platform_checkout_button_handler Platform checkout button handler.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler, WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler ) {
+	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler, WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler, WC_Payments_Express_Checkout_Button_Utils $express_checkout_utils ) {
 		$this->gateway                          = $gateway;
 		$this->payment_request_button_handler   = $payment_request_button_handler;
 		$this->platform_checkout_button_handler = $platform_checkout_button_handler;
+		$this->express_checkout_utils           = $express_checkout_utils;
 
 		$this->platform_checkout_button_handler->init();
 		$this->payment_request_button_handler->init();
@@ -54,6 +62,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$is_payment_request_enabled = 'yes' === $this->gateway->get_option( 'payment_request' );
 
 		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
+			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_utils, 'ajax_add_to_cart' ] );
+
 			add_action( 'woocommerce_after_add_to_cart_form', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 21 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_express_checkout_buttons' ], 1 );
