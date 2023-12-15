@@ -18,6 +18,7 @@ describe( 'Merchant Multi-Currency Settings', () => {
 		await merchant.login();
 		// Get initial multi-currency feature status.
 		await merchantWCP.openWCPSettings();
+		await page.waitForSelector( "[data-testid='multi-currency-toggle']" );
 		wasMulticurrencyEnabled = await page.evaluate( () => {
 			const checkbox = document.querySelector(
 				"[data-testid='multi-currency-toggle']"
