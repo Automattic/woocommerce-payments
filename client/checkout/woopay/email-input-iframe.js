@@ -265,7 +265,7 @@ export const handleWooPayEmailInput = async (
 		urlParams.append( 'is_blocks', isBlocksCheckout ? 'true' : 'false' );
 		urlParams.append(
 			'source_url',
-			wcSettings.storePages.checkout.permalink
+			wcSettings?.storePages?.checkout?.permalink
 		);
 		urlParams.append(
 			'viewport',
