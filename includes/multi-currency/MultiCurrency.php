@@ -1393,8 +1393,8 @@ class MultiCurrency {
 		$countries = WC_Payments_Utils::supported_countries();
 
 		$predefined_simulation_currencies = [
-			'USD' => $countries[Country_Codes::UNITED_STATES],
-			'GBP' => $countries[Country_Codes::UNITED_KINGDOM],
+			'USD' => $countries[ Country_Codes::UNITED_STATES ],
+			'GBP' => $countries[ Country_Codes::UNITED_KINGDOM ],
 		];
 
 		$simulation_currency      = 'USD' === get_option( 'woocommerce_currency', 'USD' ) ? 'GBP' : 'USD';

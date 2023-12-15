@@ -18,13 +18,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Country_Codes extends Base_Constant {
 	const AFGHANISTAN                      = 'AF';
+	const ALAND_ISLANDS                    = 'AX';
 	const ALBANIA                          = 'AL';
 	const ALGERIA                          = 'DZ';
+	const AMERICAN_SAMOA                   = 'AS';
 	const ANDORRA                          = 'AD';
 	const ANGOLA                           = 'AO';
+	const ANGUILLA                         = 'AI';
+	const ANTARCTICA                       = 'AQ';
 	const ANTIGUA_AND_BARBUDA              = 'AG';
 	const ARGENTINA                        = 'AR';
 	const ARMENIA                          = 'AM';
+	const ARUBA                            = 'AW';
 	const AUSTRALIA                        = 'AU';
 	const AUSTRIA                          = 'AT';
 	const AZERBAIJAN                       = 'AZ';
@@ -36,11 +41,14 @@ class Country_Codes extends Base_Constant {
 	const BELGIUM                          = 'BE';
 	const BELIZE                           = 'BZ';
 	const BENIN                            = 'BJ';
+	const BERMUDA                          = 'BM';
 	const BHUTAN                           = 'BT';
 	const BOLIVIA                          = 'BO';
 	const BOSNIA_AND_HERZEGOVINA           = 'BA';
 	const BOTSWANA                         = 'BW';
+	const BOUVET_ISLAND                    = 'BV';
 	const BRAZIL                           = 'BR';
+	const BRITISH_INDIAN_OCEAN_TERRITORY   = 'IO';
 	const BRUNEI                           = 'BN';
 	const BULGARIA                         = 'BG';
 	const BURKINA_FASO                     = 'BF';
@@ -49,11 +57,14 @@ class Country_Codes extends Base_Constant {
 	const CAMBODIA                         = 'KH';
 	const CAMEROON                         = 'CM';
 	const CANADA                           = 'CA';
+	const CARIBBEAN_NETHERLANDS            = 'BQ';
 	const CENTRAL_AFRICAN_REPUBLIC         = 'CF';
 	const CHAD                             = 'TD';
 	const CHILE                            = 'CL';
 	const CHINA                            = 'CN';
+	const COCOS_KEELING_ISLANDS            = 'CC';
 	const COLOMBIA                         = 'CO';
+	const COOK_ISLANDS                     = 'CK';
 	const COMOROS                          = 'KM';
 	const CONGO                            = 'CG';
 	const COSTA_RICA                       = 'CR';
@@ -91,6 +102,7 @@ class Country_Codes extends Base_Constant {
 	const GUYANA                           = 'GY';
 	const HAITI                            = 'HT';
 	const HONDURAS                         = 'HN';
+	const HONG_KONG                        = 'HK';
 	const HUNGARY                          = 'HU';
 	const ICELAND                          = 'IS';
 	const INDIA                            = 'IN';
@@ -163,6 +175,7 @@ class Country_Codes extends Base_Constant {
 	const ROMANIA                          = 'RO';
 	const RUSSIA                           = 'RU';
 	const RWANDA                           = 'RW';
+	const SAINT_BARTHELEMY                 = 'BL';
 	const SAINT_KITTS_AND_NEVIS            = 'KN';
 	const SAINT_LUCIA                      = 'LC';
 	const SAINT_VINCENT_AND_THE_GRENADINES = 'VC';

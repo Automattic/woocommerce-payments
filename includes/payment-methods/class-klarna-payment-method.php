@@ -47,15 +47,15 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 				],
 			],
 			'EUR' => [
-				Country_Codes::AUSTRIA => [
+				Country_Codes::AUSTRIA     => [
 					'min' => 1,
 					'max' => 1000000,
 				],
-				Country_Codes::BELGIUM => [
+				Country_Codes::BELGIUM     => [
 					'min' => 1,
 					'max' => 1000000,
 				],
-				Country_Codes::GERMANY => [
+				Country_Codes::GERMANY     => [
 					'min' => 1,
 					'max' => 1000000,
 				],
@@ -63,19 +63,19 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 					'min' => 1,
 					'max' => 1500000,
 				],
-				Country_Codes::FINLAND => [
+				Country_Codes::FINLAND     => [
 					'min' => 0,
 					'max' => 1000000,
 				],
-				Country_Codes::SPAIN => [
+				Country_Codes::SPAIN       => [
 					'min' => 0,
 					'max' => 1000000,
 				],
-				Country_Codes::IRELAND => [
+				Country_Codes::IRELAND     => [
 					'min' => 0,
 					'max' => 400000,
 				],
-				Country_Codes::ITALY => [
+				Country_Codes::ITALY       => [
 					'min' => 0,
 					'max' => 1000000,
 				],
