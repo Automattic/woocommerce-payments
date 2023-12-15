@@ -73,9 +73,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				? {}
 				: {
 						save_user_in_woopay: isSaveDetailsChecked,
-						woopay_source_url: window.location.href.split(
-							'?'
-						)[ 0 ],
+						woopay_source_url:
+							wcSettings.storePages.checkout.permalink,
 						woopay_is_blocks: true,
 						woopay_viewport: `${ viewportWidth }x${ viewportHeight }`,
 						woopay_user_phone_field: {
@@ -293,7 +292,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						<input
 							type="hidden"
 							name="woopay_source_url"
-							value={ window.location.href.split( '?' )[ 0 ] }
+							value={ wcSettings.storePages.checkout.permalink }
 						/>
 						<input
 							type="hidden"
