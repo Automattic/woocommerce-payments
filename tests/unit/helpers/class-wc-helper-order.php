@@ -5,6 +5,7 @@
  * @package WooCommerce/Tests
  */
 
+use WCPay\Constants\Country_Codes;
 use WCPay\Constants\Order_Status;
 
 /**
@@ -96,7 +97,7 @@ class WC_Helper_Order {
 		$order->set_billing_city( 'WooCity' );
 		$order->set_billing_state( 'NY' );
 		$order->set_billing_postcode( '12345' );
-		$order->set_billing_country( 'US' );
+		$order->set_billing_country( Country_Codes::UNITED_STATES );
 		$order->set_billing_email( 'admin@example.org' );
 		$order->set_billing_phone( '555-32123' );
 

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Codes;
 use WCPay\MultiCurrency\CountryFlags;
 
 /**
@@ -12,7 +13,7 @@ use WCPay\MultiCurrency\CountryFlags;
  */
 class Country_Flags_Test extends WCPAY_UnitTestCase {
 	public function test_get_by_country_returns_emoji_flag() {
-		$this->assertEquals( CountryFlags::get_by_country( 'US' ), '🇺🇸' );
+		$this->assertEquals( CountryFlags::get_by_country( Country_Codes::UNITED_STATES ), '🇺🇸' );
 	}
 
 	public function test_get_by_country_returns_empty_string() {

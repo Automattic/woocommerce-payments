@@ -261,7 +261,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			'tc_url'      => 'incentive_tc_url',
 		],
 		// This is the hash of the test store context:
-		// 'country' => 'US',
+		// 'country' => Country_Codes::UNITED_STATES,
 		// 'locale' => 'en_US',
 		// 'has_orders' => false,
 		// 'has_payments' => false,
