@@ -312,7 +312,7 @@ class Payment_Request_Button_States {
 		// Hungary.
 		Country_Codes::HUNGARY => [],
 		// Indonesia.
-		'ID' => [
+		Country_Codes::INDONESIA => [
 			'AC' => [ 'Aceh', 'Aceh', NULL ],
 			'SU' => [ 'Sumatera Utara', 'Sumatera Utara', NULL ],
 			'SB' => [ 'Sumatera Barat', 'Sumatera Barat', NULL ],
@@ -351,7 +351,7 @@ class Payment_Request_Button_States {
 			// [ 'Kalimantan Timur', 'Kalimantan Timur', NULL ],
 		],
 		// Ireland.
-		'IE' => [
+		Country_Codes::IRELAND => [
 			'CW' => [ 'Co. Carlow', 'Co. Carlow', NULL ],
 			'CN' => [ 'Co. Cavan', 'Co. Cavan', NULL ],
 			'CE' => [ 'Co. Clare', 'Co. Clare', NULL ],
@@ -380,11 +380,11 @@ class Payment_Request_Button_States {
 			'WW' => [ 'Co. Wicklow', 'Co. Wicklow', NULL ],
 		],
 		// Israel.
-		'IL' => [],
+		Country_Codes::ISRAEL => [],
 		// Isle of Man.
 		'IM' => [],
 		// India.
-		'IN' => [
+		Country_Codes::INDIA => [
 			'AP' => [ 'Andhra Pradesh', 'Andhra Pradesh', NULL ],
 			'AR' => [ 'Arunachal Pradesh', 'Arunachal Pradesh', NULL ],
 			'AS' => [ 'Assam', 'Assam', NULL ],
@@ -424,7 +424,7 @@ class Payment_Request_Button_States {
 			'PY' => [ 'Puducherry', 'Puducherry', NULL ],
 		],
 		// Iran.
-		'IR' => [
+		Country_Codes::IRAN => [
 			'KHZ' => [ 'Khuzestan Province', 'Khuzestan Province', 'استان خوزستان' ],
 			'THR' => [ 'Tehran Province', 'Tehran Province', 'استان تهران' ],
 			'ILM' => [ 'Ilam Province', 'Ilam Province', 'استان ایلام' ],
@@ -458,9 +458,9 @@ class Payment_Request_Button_States {
 			'SBN' => [ 'Sistan and Baluchestan Province', 'Sistan and Baluchestan Province', 'استان سیستان و بلوچستان' ],
 		],
 		// Iceland.
-		'IS' => [],
+		Country_Codes::ICELAND => [],
 		// Italy.
-		'IT' => [
+		Country_Codes::ITALY => [
 			'AG' => [ 'AG', 'Agrigento', NULL ],
 			'AL' => [ 'AL', 'Alessandria', NULL ],
 			'AN' => [ 'AN', 'Ancona', NULL ],
@@ -570,7 +570,7 @@ class Payment_Request_Button_States {
 			'VT' => [ 'VT', 'Viterbo', NULL ],
 		],
 		// Jamaica.
-		'JM' => [
+		Country_Codes::JAMAICA => [
 			'JM-01' => [ 'Kingston', 'Kingston', NULL ],
 			'JM-02' => [ 'St. Andrew', 'St. Andrew', NULL ],
 			'JM-03' => [ 'St. Thomas', 'St. Thomas', NULL ],
@@ -587,7 +587,7 @@ class Payment_Request_Button_States {
 			'JM-14' => [ 'St. Catherine', 'St. Catherine', NULL ],
 		],
 		// Japan.
-		'JP' => [
+		Country_Codes::JAPAN => [
 			'JP01' => [ 'Hokkaido', 'Hokkaido', '北海道' ],
 			'JP02' => [ 'Aomori', 'Aomori', '青森県' ],
 			'JP03' => [ 'Iwate', 'Iwate', '岩手県' ],
