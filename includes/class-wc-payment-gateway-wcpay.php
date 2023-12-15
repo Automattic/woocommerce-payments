@@ -945,7 +945,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-			// error_log(print_r($e,true));
 			// We set this variable to be used in following checks.
 			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
 
@@ -1278,9 +1277,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						0,
 						null,
 						[
-							'error_code'       => 'order_id_mismatch',
-							'intent_meta_data' => $intent->get_metadata(),
-							'order_id'         => $order_id,
+							'error_code'           => 'order_id_mismatch',
+							'intent_meta_order_id' => $intent_meta_order_id,
+							'order_id'             => $order_id,
 						]
 					);
 				}
