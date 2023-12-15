@@ -28,7 +28,7 @@ abstract class Base_Exception extends Exception {
 	 *
 	 * @var array
 	 */
-	public $additional_data = [];
+	private $additional_data = [];
 
 	/**
 	 * Constructor, including the usual $message, $code, and $previous,
@@ -53,6 +53,15 @@ abstract class Base_Exception extends Exception {
 	 * @return string Error code, for example 'order_not_found'.
 	 */
 	public function get_error_code() {
+		return $this->error_code;
+	}
+
+	/**
+	 * Returns the error code.
+	 *
+	 * @return string Error code, for example 'order_not_found'.
+	 */
+	public function getErrorCode() {
 		return $this->error_code;
 	}
 
