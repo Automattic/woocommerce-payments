@@ -777,7 +777,7 @@ class Payment_Request_Button_States {
 		// New Zealand.
 		Country_Codes::NEW_ZEALAND => [],
 		// Peru.
-		'PE' => [
+		Country_Codes::PERU => [
 			'CAL' => [ 'Callao', 'Callao', NULL ],
 			'LMA' => [ 'Municipalidad Metropolitana de Lima', 'Municipalidad Metropolitana de Lima', NULL ],
 			'AMA' => [ 'Amazonas', 'Amazonas', NULL ],
@@ -806,7 +806,7 @@ class Payment_Request_Button_States {
 			'UCA' => [ 'Ucayali', 'Ucayali', NULL ],
 		],
 		// Philippines.
-		'PH' => [
+		Country_Codes::PHILIPPINES => [
 			'ABR' => [ 'Abra', 'Abra', NULL ],
 			'AGN' => [ 'Agusan del Norte', 'Agusan del Norte', NULL ],
 			'AGS' => [ 'Agusan del Sur', 'Agusan del Sur', NULL ],
@@ -891,15 +891,15 @@ class Payment_Request_Button_States {
 			'00'  => [ 'Metro Manila', 'Metro Manila', NULL ],
 		],
 		// Pakistan.
-		'PK' => [],
+		Country_Codes::PAKISTAN => [],
 		// Poland.
-		'PL' => [],
+		Country_Codes::POLAND => [],
 		// Puerto Rico.
 		'PR' => [],
 		// Portugal.
-		'PT' => [],
+		Country_Codes::PORTUGAL => [],
 		// Paraguay.
-		'PY' => [],
+		Country_Codes::PARAGUAY => [],
 		// Reunion.
 		'RE' => [],
 		// Romania.
