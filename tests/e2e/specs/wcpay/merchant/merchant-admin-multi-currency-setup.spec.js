@@ -46,7 +46,7 @@ describe( 'Merchant Multi-Currency Settings', () => {
 		await merchantWCP.deactivateMulticurrency();
 	} );
 
-	describe.skip( 'Currency Management', () => {
+	describe( 'Currency Management', () => {
 		const testCurrency = 'CHF';
 
 		beforeAll( async () => {
@@ -62,7 +62,7 @@ describe( 'Merchant Multi-Currency Settings', () => {
 		} );
 	} );
 
-	describe.skip( 'Currency Settings', () => {
+	describe( 'Currency Settings', () => {
 		const testData = {
 			currencyCode: 'CHF',
 			rate: '1.25',
