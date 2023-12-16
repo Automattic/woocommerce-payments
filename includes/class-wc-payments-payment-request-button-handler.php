@@ -211,10 +211,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function get_product_price( $product ) {
 		// If prices should include tax, using tax inclusive price.
-		if ( ! $this->prices_exclude_tax() ) {
+		if ( $this->cart_prices_include_tax() ) {
 			$base_price = wc_get_price_including_tax( $product );
 		} else {
-			$base_price = $product->get_price();
+			$base_price = wc_get_price_excluding_tax( $product );
 		}
 
 		// Add subscription sign-up fees to product price.
@@ -292,7 +292,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		];
 
 		$total_tax = 0;
-		foreach ( $this->get_taxes( $product, $price ) as $tax ) {
+		foreach ( $this->get_taxes_like_cart( $product, $price ) as $tax ) {
 			$total_tax += $tax;
 
 			$items[] = [
@@ -1094,7 +1094,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			];
 
 			$total_tax = 0;
-			foreach ( $this->get_taxes( $product, $price ) as $tax ) {
+			foreach ( $this->get_taxes_like_cart( $product, $price ) as $tax ) {
 				$total_tax += $tax;
 
 				$items[] = [
@@ -1511,13 +1511,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Whether tax should be displayed on seperate line.
-	 * returns true if tax is enabled & display of tax in checkout is set to exclusive.
+	 * Whether tax should be displayed on separate line in cart.
+	 * returns true if tax is disabled or display of tax in checkout is set to inclusive.
 	 *
 	 * @return boolean
 	 */
-	private function prices_exclude_tax() {
-		return wc_tax_enabled() && 'incl' !== get_option( 'woocommerce_tax_display_cart' );
+	private function cart_prices_include_tax() {
+		return ! wc_tax_enabled() || 'incl' === get_option( 'woocommerce_tax_display_cart' );
 	}
 
 	/**
@@ -1549,7 +1549,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
 	 */
-	protected function build_display_items( $itemized_display_items = false ) {
+	public function build_display_items( $itemized_display_items = false ) {
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
 		}
@@ -1568,7 +1568,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 				$product_name = $cart_item['data']->get_name();
 
-				$item_tax = $this->prices_exclude_tax() ? 0 : ( $cart_item['line_subtotal_tax'] ?? 0 );
+				$item_tax = $this->cart_prices_include_tax() ? ( $cart_item['line_subtotal_tax'] ?? 0 ) : 0;
 
 				$item = [
 					'label'  => $product_name . $quantity_label,
@@ -1595,7 +1595,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$items_total = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
 		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( '' );
 
-		if ( $this->prices_exclude_tax() ) {
+		if ( ! $this->cart_prices_include_tax() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Tax', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $tax, $currency ),
@@ -1603,7 +1603,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		if ( WC()->cart->needs_shipping() ) {
-			$shipping_tax = $this->prices_exclude_tax() ? 0 : WC()->cart->shipping_tax_total;
+			$shipping_tax = $this->cart_prices_include_tax() ? WC()->cart->shipping_tax_total : 0;
 			$items[]      = [
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $shipping + $shipping_tax, $currency ),
@@ -1708,14 +1708,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Calculates taxes, based on a product and a particular price.
+	 * Calculates taxes as displayed on cart, based on a product and a particular price.
 	 *
 	 * @param WC_Product $product The product, for retrieval of tax classes.
 	 * @param float      $price   The price, which to calculate taxes for.
 	 * @return array              An array of final taxes.
 	 */
-	private function get_taxes( $product, $price ) {
-		if ( ! wc_tax_enabled() || ! $this->prices_exclude_tax() ) {
+	private function get_taxes_like_cart( $product, $price ) {
+		if ( ! wc_tax_enabled() || $this->cart_prices_include_tax() ) {
 			// Only proceed when taxes are enabled, but not included.
 			return [];
 		}
