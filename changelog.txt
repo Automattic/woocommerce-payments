@@ -1,5 +1,37 @@
 *** WooPayments Changelog ***
 
+= 7.0.0-test-1 - 2023-xx-xx =
+* Add - Adding Compatibility Service to assist with flagging possible compatibility issues in the future.
+* Add - Introduce Customer currency, Deposit currency, Amount in Customer Currency and Deposit ID columns to the Transaction list UI and CSV export
+* Fix - Allow test phone number as Support Phone in Dev mode
+* Fix - Avoid using the removed deferred UPE flag
+* Fix - fix: account currency hook return value
+* Fix - Fix country names with accents not showing correctly on international country fraud filter
+* Fix - Fixed Apple Pay Double Tax Calculation Issue
+* Fix - Fixed broken styles in authorization capture notifications
+* Fix - Fix incorrect amounts caused by zero-decimal currencies on Transactions, Deposits and Deposits CSV export
+* Fix - Fix missing customer data from transactions report
+* Fix - Fix missing order number in transaction reports CSV
+* Fix - Improved error message for invalid payment method
+* Fix - Include discount fee in fees tooltip
+* Fix - Pass the pay-for-order params to get the pre-fetch session data
+* Fix - Revemoved pre-fretch session for button to prevent draft order creation
+* Fix - Update account balances on the Payments Overview screen when an instant deposit is requested
+* Fix - Update Qualitative Feedback note to have more efficient sql query.
+* Update - Actualized cards-related assets for settings and transactions pages.
+* Update - Cleanup the deprecated payment gateway processing - part II
+* Update - Cleanup the deprecated payment gateway processing - part III
+* Update - Updates the anchor text for the fraud and risk tools documentation link on the Payments Settings page.
+* Update - Updates the behavior and display of the international IP address rule card if the rule is being affected by the WooCommerce core selling locations general option.
+* Dev - Add e2e tests for the currency switcher widget.
+* Dev - Added documentation for deposits REST API endpoints.
+* Dev - Cleanup enqueueing of the scripts which were removed
+* Dev - Comment: Fix declined 3DS card E2E test.
+* Dev - Improve E2E checkout tests
+* Dev - Remove "Set-up refund policy" Inbox note as superfluous.
+* Dev - remove unused factor flag for deferred UPE
+* Dev - Thank you page Tracks event
+
 = 6.9.2 - 2023-12-14 =
 * Add - Notice is added when merchant has funds that are not yet available for deposit.
 * Add - Show a deposit schedule notice on the deposits list page to indicate that future deposits can be expected.
