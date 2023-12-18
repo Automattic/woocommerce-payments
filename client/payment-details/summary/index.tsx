@@ -580,7 +580,15 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				<RefundModal
 					charge={ charge }
 					formattedAmount={ formattedAmount }
-					onModalClose={ () => setIsRefundModalOpen( false ) }
+					onModalClose={ () => {
+						setIsRefundModalOpen( false );
+						wcpayTracks.recordEvent(
+							'payments_transactions_details_refund_modal_close',
+							{
+								payment_intent_id: charge.payment_intent,
+							}
+						);
+					} }
 				/>
 			) }
 			{ ! _.isEmpty( charge ) && ! charge.order && ! isLoading && (
