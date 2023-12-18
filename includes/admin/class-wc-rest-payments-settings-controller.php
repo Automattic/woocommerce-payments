@@ -500,7 +500,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_type'         => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
 				'payment_request_button_theme'        => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 				'is_saved_cards_enabled'              => $this->wcpay_gateway->is_saved_cards_enabled(),
-				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible(),
+				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
 				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'show_woopay_incompatibility_notice'  => get_option( 'woopay_invalid_extension_found', false ),
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
@@ -773,6 +773,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			$updated_fields['deposit_schedule_interval'] = $this->wcpay_gateway->get_option( 'deposit_schedule_interval' );
 		}
 
+		// If we are updating any deposit schedule values, we should invalidate the next deposit notice dismissed notice option.
+		if ( preg_grep( '/^deposit_schedule_/', array_keys( $updated_fields ) ) ) {
+			delete_option( 'wcpay_next_deposit_notice_dismissed' );
+		}
+
 		return $this->wcpay_gateway->update_account_settings( $updated_fields );
 	}
 
@@ -868,6 +873,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$woopay_custom_message = $request->get_param( 'woopay_custom_message' );
+		$woopay_custom_message = str_replace( '[terms_of_service_link]', '[terms]', $woopay_custom_message );
+		$woopay_custom_message = str_replace( '[privacy_policy_link]', '[privacy_policy]', $woopay_custom_message );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_custom_message', $woopay_custom_message );
 	}

@@ -14,7 +14,6 @@ import type { DepositStatus } from 'wcpay/types/deposits';
  * Maps a DepositStatus to a ChipType.
  */
 const mappings: Record< DepositStatus, ChipType > = {
-	estimated: 'light',
 	pending: 'warning',
 	in_transit: 'success',
 	paid: 'success',

@@ -57,11 +57,11 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			add_action( 'woocommerce_after_add_to_cart_form', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 21 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_express_checkout_buttons' ], 1 );
+			add_action( 'woocommerce_pay_order_before_payment', [ $this, 'display_express_checkout_buttons' ], 1 );
 		}
 
-		if ( WC_Payments_Features::is_pay_for_order_flow_enabled() && class_exists( '\Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '11.1.0', '>=' ) ) {
+		if ( $this->is_pay_for_order_flow_supported() ) {
 			add_action( 'wp_enqueue_scripts', [ $this, 'add_pay_for_order_params_to_js_config' ], 5 );
-			add_action( 'woocommerce_pay_order_before_payment', [ $this, 'display_express_checkout_buttons' ], 1 );
 		}
 	}
 
@@ -94,7 +94,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			?>
 			<div class='wcpay-payment-request-wrapper' >
 			<?php
-				$this->platform_checkout_button_handler->display_woopay_button_html();
+				if ( ! $this->payment_request_button_handler->is_pay_for_order_page() || $this->is_pay_for_order_flow_supported() ) {
+					$this->platform_checkout_button_handler->display_woopay_button_html();
+				}
 				$this->payment_request_button_handler->display_payment_request_button_html();
 			?>
 			</div >
@@ -104,7 +106,16 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	}
 
 	/**
-	 * Check if WooPay is enabled
+	 * Check if the pay-for-order flow is supported.
+	 *
+	 * @return bool
+	 */
+	private function is_pay_for_order_flow_supported() {
+		return ( WC_Payments_Features::is_pay_for_order_flow_enabled() && class_exists( '\Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '11.1.0', '>=' ) );
+	}
+
+	/**
+	 * Check if WooPay is enabled.
 	 *
 	 * @return bool
 	 */
@@ -116,18 +127,39 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * Add the Pay for order params to the JS config.
 	 */
 	public function add_pay_for_order_params_to_js_config() {
+		global $wp;
+		$order_id = $wp->query_vars['order-pay'] ?? null;
+
+		if ( ! $order_id ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) ) {
-			global $wp;
-			$order_id = $wp->query_vars['order-pay'];
-			$order    = wc_get_order( $order_id );
+		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && current_user_can( 'pay_for_order', $order_id ) ) {
 			add_filter(
 				'wcpay_payment_fields_js_config',
 				function( $js_config ) use ( $order ) {
+					$session       = wc()->session;
+					$session_email = '';
+
+					if ( is_a( $session, WC_Session::class ) ) {
+						$customer      = $session->get( 'customer' );
+						$session_email = is_array( $customer ) && isset( $customer['email'] ) ? $customer['email'] : '';
+					}
+
+					// Silence the filter_input warning because we are sanitizing the input with sanitize_email().
+					// nosemgrep: audit.php.lang.misc.filter-input-no-filter
+					$user_email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email' ) ) ) : $session_email;
+
 					$js_config['order_id']      = $order->get_id();
 					$js_config['pay_for_order'] = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
 					$js_config['key']           = sanitize_text_field( wp_unslash( $_GET['key'] ) );
-					$js_config['billing_email'] = $order->get_billing_email();
+					$js_config['billing_email'] = current_user_can( 'read_private_shop_orders' ) ||
+						( get_current_user_id() !== 0 && $order->get_customer_id() === get_current_user_id() )
+						? $order->get_billing_email()
+						: $user_email;
 
 					return $js_config;
 				}

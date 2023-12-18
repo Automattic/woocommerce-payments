@@ -76,6 +76,7 @@ class WC_Payments_API_Client {
 	const FRAUD_SERVICES_API           = 'accounts/fraud_services';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
+	const COMPATIBILITY_API            = 'compatibility';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1158,6 +1159,56 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Updates a charge.
+	 *
+	 * @param string $charge_id ID of the charge to update.
+	 * @param array  $data arameters to send to the transaction endpoint. Optional. Default is an empty array.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function update_charge( string $charge_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::CHARGES_API . '/' . $charge_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Fetch a charge by id.
+	 *
+	 * @param string $charge_id Charge id.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_charge( string $charge_id ) {
+		return $this->request(
+			[],
+			self::CHARGES_API . '/' . $charge_id,
+			self::GET
+		);
+	}
+
+	/**
+	 * Updates a transaction.
+	 *
+	 * @param string $transaction_id Transaction id.
+	 * @param array  $data Data to be updated.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function update_transaction( string $transaction_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::TRANSACTIONS_API . '/' . $transaction_id,
+			self::POST
+		);
+	}
+
+	/**
 	 * Fetch a WCPay subscription.
 	 *
 	 * @param string $wcpay_subscription_id Data used to create subscription.
@@ -1654,6 +1705,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Sends the compatibility data to the server to be saved to the account.
+	 *
+	 * @param array $compatibility_data The array containing the data.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function update_compatibility_data( $compatibility_data ) {
+		$response = $this->request(
+			[
+				'compatibility_data' => $compatibility_data,
+			],
+			self::COMPATIBILITY_API,
+			self::POST
+		);
+
+		return $response;
+	}
+
+	/**
 	 * Sends a request object.
 	 *
 	 * @param  Request $request The request to send.
@@ -2097,6 +2169,8 @@ class WC_Payments_API_Client {
 			'number'              => $order->get_order_number(),
 			'url'                 => $order->get_edit_order_url(),
 			'customer_url'        => $this->get_customer_url( $order ),
+			'customer_name'       => trim( $order->get_formatted_billing_full_name() ),
+			'customer_email'      => $order->get_billing_email(),
 			'fraud_meta_box_type' => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
 		];
 
@@ -2396,13 +2470,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Delete account.
 	 *
+	 * @param bool $test_mode Whether we are in test mode or not.
+	 *
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function delete_account() {
+	public function delete_account( bool $test_mode = false ) {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
+				'test_mode' => $test_mode,
 			],
 			self::ACCOUNTS_API . '/delete',
 			self::POST,

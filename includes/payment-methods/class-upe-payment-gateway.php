@@ -122,19 +122,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Initializes this class's WP hooks.
-	 *
-	 * @return void
-	 */
-	public function init_hooks() {
-		// Initializing a hook within this function increases the probability of multiple calls for each split UPE gateway. Consider adding the hook in the parent hook initialization.
-		if ( ! is_admin() ) {
-			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
-		}
-		parent::init_hooks();
-	}
-
-	/**
 	 * Displays HTML tags for WC payment gateway radio button.
 	 */
 	public function display_gateway_html() {
@@ -271,52 +258,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		return [
 			'success' => true,
 		];
-	}
-
-	/**
-	 * Handle AJAX request for creating a payment intent for Stripe UPE.
-	 *
-	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
-	 */
-	public function create_payment_intent_ajax() {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Process_Payment_Exception(
-					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-					'wcpay_upe_intent_error'
-				);
-			}
-
-			// If paying from order, we need to get the total from the order instead of the cart.
-			$order_id    = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
-			$fingerprint = isset( $_POST['wcpay-fingerprint'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fingerprint'] ) ) : '';
-
-			$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id, true );
-
-			$response = $this->create_payment_intent( $enabled_payment_methods, $order_id, $fingerprint );
-
-			// Encrypt client secret before exposing it to the browser.
-			if ( $response['client_secret'] ) {
-				$response['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $response['client_secret'] );
-			}
-
-			if ( strpos( $response['id'], 'pi_' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
-				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'] );
-			}
-
-			wp_send_json_success( $response, 200 );
-		} catch ( Exception $e ) {
-			// Send back error so it can be displayed to the customer.
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
-					],
-				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
-			);
-		}
 	}
 
 	/**
@@ -1012,7 +953,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;
@@ -1130,58 +1071,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function clear_upe_appearance_transient() {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
-	}
-
-	/**
-	 * Sets the title on checkout correctly before the title is displayed.
-	 *
-	 * @param string $title The title of the gateway being filtered.
-	 * @param string $id    The id of the gateway being filtered.
-	 *
-	 * @return string Filtered gateway title.
-	 */
-	public function maybe_filter_gateway_title( $title, $id ) {
-		if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() && self::GATEWAY_ID === $id && $this->title === $title ) {
-			$title                   = $this->checkout_title;
-			$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout();
-
-			if ( 1 === count( $enabled_payment_methods ) ) {
-				$title = $this->payment_methods[ $enabled_payment_methods[0] ]->get_title();
-			}
-
-			if ( 0 === count( $enabled_payment_methods ) ) {
-				$title = $this->payment_methods['card']->get_title();
-			}
-		}
-		return $title;
-	}
-
-	/**
-	 * Sets the payment method title on the order for emails.
-	 *
-	 * @param WC_Order $order   WC Order object.
-	 *
-	 * @return void
-	 */
-	public function set_payment_method_title_for_email( $order ) {
-		$payment_gateway = wc_get_payment_gateway_by_order( $order );
-
-		if ( ! empty( $payment_gateway ) && self::GATEWAY_ID !== $payment_gateway->id || ! WC_Payments_Features::is_upe_legacy_enabled() ) {
-			return;
-		}
-
-		$payment_method_id = $this->order_service->get_payment_method_id_for_order( $order );
-
-		if ( ! $payment_method_id ) {
-			$order->set_payment_method_title( $this->title );
-			$order->save();
-
-			return;
-		}
-
-		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
-		$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
-		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 	}
 
 	/**

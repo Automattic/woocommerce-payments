@@ -41,8 +41,6 @@ use WCPay\Database_Cache;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 
-require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
-
 /**
  * UPE_Payment_Gateway unit tests
  */
@@ -314,9 +312,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( $this->mock_payment_result )
 			);
 
-		update_option( '_wcpay_feature_upe', '1' );
-		update_option( '_wcpay_feature_upe_split', '0' );
-
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
@@ -347,8 +342,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Payments::set_database_cache( $this->_cache );
-		update_option( '_wcpay_feature_upe', '0' );
-		update_option( '_wcpay_feature_upe_split', '0' );
 		wcpay_get_test_container()->reset_all_replacements();
 	}
 
@@ -1365,89 +1358,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_set_payment_method_title_for_email_updates_title() {
-		$mock_visa_details = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'visa',
-				'funding' => 'debit',
-			],
-		];
-
-		$this->mock_order_service
-			->expects( $this->once() )
-			->method( 'get_payment_method_id_for_order' )
-			->will(
-				$this->returnValue( 'pm_XXXXXXX' )
-			);
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_payment_method' )
-			->will(
-				$this->returnValue( $mock_visa_details )
-			);
-
-		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method( 'woocommerce_payments' );
-		$order->set_payment_method_title( 'Popular Payment Methods' );
-
-		$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
-		$this->assertEquals( 'Visa debit card', $order->get_payment_method_title() );
-	}
-
-	public function test_correct_payment_method_title_for_order_when_set_for_email() {
-		$payment_methods = [
-			'cheque' => 'Check payments',
-			'cod'    => 'Cash on delivery',
-			'bacs'   => 'Direct bank transfer',
-		];
-
-		// Emulates order creation which sets the payment method and title.
-		$order = WC_Helper_Order::create_order();
-
-		foreach ( $payment_methods as $method => $title ) {
-			$order->set_payment_method( $method );
-			$order->set_payment_method_title( $title );
-
-			$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
-			$this->assertEquals( $title, $order->get_payment_method_title() );
-		}
-	}
-
-	public function test_set_payment_method_title_for_email_fallback() {
-		$this->mock_order_service
-			->expects( $this->once() )
-			->method( 'get_payment_method_id_for_order' )
-			->will(
-				$this->returnValue( '' )
-			);
-
-			$order = WC_Helper_Order::create_order();
-			$order->set_payment_method( 'woocommerce_payments' );
-			$order->set_payment_method_title( 'Popular Payment Methods' );
-
-			$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
-			$this->assertEquals( 'WooPayments', $order->get_payment_method_title() );
-	}
-
-	public function test_set_payment_method_title_for_email_only_runs_for_legacy_upe() {
-		update_option( '_wcpay_feature_upe', '0' );
-		update_option( '_wcpay_feature_upe_split', '1' );
-
-		// set_payment_method_title_for_email should return before this functions runs.
-		$this->mock_order_service
-			->expects( $this->never() )
-			->method( 'get_payment_method_id_for_order' );
-
-		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method( 'woocommerce_payments' );
-		$order->set_payment_method_title( 'Credit / Debit Card' );
-
-		$this->mock_upe_gateway->set_payment_method_title_for_email( $order );
-		$this->assertEquals( 'Credit / Debit Card', $order->get_payment_method_title() );
-	}
-
 	public function test_payment_methods_show_correct_default_outputs() {
 		$mock_token = WC_Helper_Token::create_token( 'pm_mock' );
 		$this->mock_token_service->expects( $this->any() )
@@ -1521,68 +1431,68 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Credit card / debit card', $card_method->get_title() );
 		$this->assertEquals( 'Visa debit card', $card_method->get_title( $mock_visa_details ) );
 		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( $mock_mastercard_details ) );
-		$this->assertTrue( $card_method->is_enabled_at_checkout() );
+		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertTrue( $card_method->is_reusable() );
 		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
 
 		$this->assertEquals( 'giropay', $giropay_method->get_id() );
 		$this->assertEquals( 'giropay', $giropay_method->get_title() );
 		$this->assertEquals( 'giropay', $giropay_method->get_title( $mock_giropay_details ) );
-		$this->assertTrue( $giropay_method->is_enabled_at_checkout() );
+		$this->assertTrue( $giropay_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $giropay_method->is_reusable() );
 
 		$this->assertEquals( 'p24', $p24_method->get_id() );
 		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title() );
 		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( $mock_p24_details ) );
-		$this->assertTrue( $p24_method->is_enabled_at_checkout() );
+		$this->assertTrue( $p24_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $p24_method->is_reusable() );
 
 		$this->assertEquals( 'sofort', $sofort_method->get_id() );
 		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
 		$this->assertEquals( 'Sofort', $sofort_method->get_title( $mock_sofort_details ) );
-		$this->assertTrue( $sofort_method->is_enabled_at_checkout() );
+		$this->assertTrue( $sofort_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $sofort_method->is_reusable() );
 
 		$this->assertEquals( 'bancontact', $bancontact_method->get_id() );
 		$this->assertEquals( 'Bancontact', $bancontact_method->get_title() );
 		$this->assertEquals( 'Bancontact', $bancontact_method->get_title( $mock_bancontact_details ) );
-		$this->assertTrue( $bancontact_method->is_enabled_at_checkout() );
+		$this->assertTrue( $bancontact_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $bancontact_method->is_reusable() );
 
 		$this->assertEquals( 'eps', $eps_method->get_id() );
 		$this->assertEquals( 'EPS', $eps_method->get_title() );
 		$this->assertEquals( 'EPS', $eps_method->get_title( $mock_eps_details ) );
-		$this->assertTrue( $eps_method->is_enabled_at_checkout() );
+		$this->assertTrue( $eps_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $eps_method->is_reusable() );
 
 		$this->assertEquals( 'sepa_debit', $sepa_method->get_id() );
 		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title() );
 		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( $mock_sepa_details ) );
-		$this->assertTrue( $sepa_method->is_enabled_at_checkout() );
+		$this->assertTrue( $sepa_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $sepa_method->is_reusable() );
 
 		$this->assertEquals( 'ideal', $ideal_method->get_id() );
 		$this->assertEquals( 'iDEAL', $ideal_method->get_title() );
 		$this->assertEquals( 'iDEAL', $ideal_method->get_title( $mock_ideal_details ) );
-		$this->assertTrue( $ideal_method->is_enabled_at_checkout() );
+		$this->assertTrue( $ideal_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $ideal_method->is_reusable() );
 
 		$this->assertEquals( 'au_becs_debit', $becs_method->get_id() );
 		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title() );
 		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title( $mock_becs_details ) );
-		$this->assertTrue( $becs_method->is_enabled_at_checkout() );
+		$this->assertTrue( $becs_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $becs_method->is_reusable() );
 
 		$this->assertSame( 'affirm', $affirm_method->get_id() );
 		$this->assertSame( 'Affirm', $affirm_method->get_title() );
 		$this->assertSame( 'Affirm', $affirm_method->get_title( $mock_affirm_details ) );
-		$this->assertTrue( $affirm_method->is_enabled_at_checkout() );
+		$this->assertTrue( $affirm_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $affirm_method->is_reusable() );
 
 		$this->assertSame( 'afterpay_clearpay', $afterpay_method->get_id() );
 		$this->assertSame( 'Afterpay', $afterpay_method->get_title() );
 		$this->assertSame( 'Afterpay', $afterpay_method->get_title( $mock_afterpay_details ) );
-		$this->assertTrue( $afterpay_method->is_enabled_at_checkout() );
+		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $afterpay_method->is_reusable() );
 	}
 
@@ -1601,17 +1511,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$affirm_method     = $this->mock_payment_methods['affirm'];
 		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
-		$this->assertTrue( $card_method->is_enabled_at_checkout() );
-		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
-		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
-		$this->assertFalse( $bancontact_method->is_enabled_at_checkout() );
-		$this->assertFalse( $eps_method->is_enabled_at_checkout() );
-		$this->assertFalse( $sepa_method->is_enabled_at_checkout() );
-		$this->assertFalse( $p24_method->is_enabled_at_checkout() );
-		$this->assertFalse( $ideal_method->is_enabled_at_checkout() );
-		$this->assertFalse( $becs_method->is_enabled_at_checkout() );
-		$this->assertFalse( $affirm_method->is_enabled_at_checkout() );
-		$this->assertFalse( $afterpay_method->is_enabled_at_checkout() );
+		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $giropay_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $sofort_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $bancontact_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $eps_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $sepa_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $p24_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $ideal_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $becs_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $affirm_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 	}
 
 	public function test_only_valid_payment_methods_returned_for_currency() {
@@ -1888,81 +1798,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	/**
-	 * @dataProvider maybe_filter_gateway_title_data_provider
-	 */
-	public function test_maybe_filter_gateway_title_with_no_additional_feature_flags_enabled( $data ) {
-		$data           = $data[0];
-		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
-		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
-		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
-		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
-	}
-
-	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_split_upe() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
-
-		$data = [
-			'methods'  => [
-				'card',
-				'bancontact',
-			],
-			'statuses' => [
-				'card_payments'       => [
-					'status' => 'active',
-				],
-				'bancontact_payments' => [
-					'status' => 'active',
-				],
-			],
-			'currency' => 'EUR',
-			'title'    => 'WooPayments',
-			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => 'WooPayments',
-		];
-
-		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
-
-		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
-		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
-		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
-	}
-
-	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_upe_with_deferred_intent_creation() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
-
-		$data = [
-			'methods'  => [
-				'card',
-				'bancontact',
-			],
-			'statuses' => [
-				'card_payments'       => [
-					'status' => 'active',
-				],
-				'bancontact_payments' => [
-					'status' => 'active',
-				],
-			],
-			'currency' => 'EUR',
-			'title'    => 'WooPayments',
-			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => 'WooPayments',
-		];
-
-		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
-
-		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
-		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
-		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
-		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
-	}
-
 	public function test_remove_link_payment_method_if_card_disabled() {
 
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
@@ -2080,140 +1915,80 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'],
 			[
 				'card' => [
-					'isReusable'     => true,
-					'title'          => 'Credit card / debit card',
-					'icon'           => $this->icon_url,
-					'showSaveOption' => true,
-					'countries'      => [],
+					'isReusable'             => true,
+					'title'                  => 'Credit card / debit card',
+					'icon'                   => $this->icon_url,
+					'showSaveOption'         => true,
+					'countries'              => [],
+					'upePaymentIntentData'   => null,
+					'upeSetupIntentData'     => null,
+					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
+					'forceNetworkSavedCards' => false,
 				],
 				'link' => [
-					'isReusable'     => true,
-					'title'          => 'Link',
-					'icon'           => $this->icon_url,
-					'showSaveOption' => true,
-					'countries'      => [],
+					'isReusable'             => true,
+					'title'                  => 'Link',
+					'icon'                   => $this->icon_url,
+					'showSaveOption'         => true,
+					'countries'              => [],
+					'upePaymentIntentData'   => null,
+					'upeSetupIntentData'     => null,
+					'testingInstructions'    => '',
+					'forceNetworkSavedCards' => false,
 				],
 			]
 		);
 	}
 
-	public function maybe_filter_gateway_title_data_provider() {
-		$method_title   = 'WooPayments';
-		$checkout_title = 'Popular payment methods';
-		$card_title     = 'Credit card / debit card';
+	/**
+	 * @dataProvider available_payment_methods_provider
+	 */
+	public function test_get_upe_available_payment_methods( $payment_methods, $expected_result ) {
+		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_fees' )
+			->willReturn( $payment_methods );
 
-		$data_set[] = [ // Allows for $checkout_title due to UPE method and EUR.
-			'methods'  => [
-				'card',
-				'bancontact',
+		$gateway = new UPE_Payment_Gateway(
+			$this->mock_api_client,
+			$mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			$this->mock_payment_methods,
+			$this->mock_rate_limiter,
+			$this->mock_order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service
+		);
+
+		$this->assertEquals( $expected_result, $gateway->get_upe_available_payment_methods() );
+	}
+
+	public function available_payment_methods_provider() {
+		return [
+			'card only'                  => [
+				[ 'card' => [ 'base' => 0.1 ] ],
+				[ 'card' ],
 			],
-			'statuses' => [
-				'card_payments'       => [
-					'status' => 'active',
-				],
-				'bancontact_payments' => [
-					'status' => 'active',
-				],
+			'no match with fees'         => [
+				[ 'some_other_payment_method' => [ 'base' => 0.1 ] ],
+				[],
 			],
-			'currency' => 'EUR',
-			'title'    => $method_title,
-			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => $checkout_title,
+			'multiple matches with fees' => [
+				[
+					'card'       => [ 'base' => 0.1 ],
+					'bancontact' => [ 'base' => 0.2 ],
+				],
+				[ 'card', 'bancontact' ],
+			],
+			'no fees no methods'         => [
+				[],
+				[],
+			],
 		];
-		$data_set[] = [ // No UPE method, only card, so $card_title is expected.
-			'methods'  => [
-				'card',
-			],
-			'statuses' => [
-				'card_payments' => [
-					'status' => 'active',
-				],
-			],
-			'currency' => 'EUR',
-			'title'    => $method_title,
-			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => $card_title,
-		];
-		$data_set[] = [ // Only UPE method, so UPE method title is expected.
-			'methods'  => [
-				'bancontact',
-			],
-			'statuses' => [
-				'bancontact_payments' => [
-					'status' => 'active',
-				],
-			],
-			'currency' => 'EUR',
-			'title'    => $method_title,
-			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => 'Bancontact',
-		];
-		$data_set[] = [ // Card and UPE enabled, but USD, $card_title expected.
-			'methods'  => [
-				'card',
-				'bancontact',
-			],
-			'statuses' => [
-				'card_payments'       => [
-					'status' => 'active',
-				],
-				'bancontact_payments' => [
-					'status' => 'active',
-				],
-			],
-			'currency' => 'USD',
-			'title'    => $method_title,
-			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => $card_title,
-		];
-		$data_set[] = [ // Card and UPE enabled, but not our title, other title expected.
-			'methods'  => [
-				'card',
-				'bancontact',
-			],
-			'statuses' => [
-				'card_payments'       => [
-					'status' => 'active',
-				],
-				'bancontact_payments' => [
-					'status' => 'active',
-				],
-			],
-			'currency' => 'EUR',
-			'title'    => 'Some other title',
-			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => 'Some other title',
-		];
-		$data_set[] = [ // Card and UPE enabled, but not our id, $method_title expected.
-			'methods'  => [
-				'card',
-				'bancontact',
-			],
-			'statuses' => [
-				'card_payments'       => [
-					'status' => 'active',
-				],
-				'bancontact_payments' => [
-					'status' => 'active',
-				],
-			],
-			'currency' => 'USD',
-			'title'    => $method_title,
-			'id'       => 'some_other_id',
-			'expected' => $method_title,
-		];
-		$data_set[] = [ // No methods at all, so defaults to card, so $card_title is expected.
-			'methods'  => [],
-			'statuses' => [],
-			'currency' => 'EUR',
-			'title'    => $method_title,
-			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => $card_title,
-		];
-		foreach ( $data_set as $data ) {
-			$return_data[] = [ [ $data ] ];
-		}
-		return $return_data;
 	}
 
 	/**

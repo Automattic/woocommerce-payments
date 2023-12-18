@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
@@ -19,9 +19,7 @@ import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
 import Deposits from '../deposits';
-import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
-import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
 import { useDepositDelayDays, useSettings } from '../../data';
 import FraudProtection from '../fraud-protection';
@@ -52,7 +50,7 @@ const ExpressCheckoutDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#express-checkouts">
+		<ExternalLink href="https://woo.com/document/woopayments/settings-guide/#express-checkouts">
 			{ __( 'Learn more', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
@@ -83,7 +81,7 @@ const TransactionsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/woopayments/">
+		<ExternalLink href="https://woo.com/document/woopayments/">
 			{ __( 'View our documentation', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
@@ -104,7 +102,7 @@ const DepositsDescription = () => {
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/">
+			<ExternalLink href="https://woo.com/document/woopayments/deposits/deposit-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'
@@ -124,9 +122,9 @@ const FraudProtectionDescription = () => {
 					'woocommerce-payments'
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/">
+			<ExternalLink href="https://woo.com/document/woopayments/fraud-and-disputes/fraud-protection/">
 				{ __(
-					'Learn more about risk filtering',
+					'Learn more about fraud protection',
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
@@ -144,7 +142,7 @@ const AdvancedDescription = () => {
 					'woocommerce-payments'
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#advanced-settings">
+			<ExternalLink href="https://woo.com/document/woopayments/settings-guide/#advanced-settings">
 				{ __( 'View our documentation', 'woocommerce-payments' ) }
 			</ExternalLink>
 		</>
@@ -152,13 +150,6 @@ const AdvancedDescription = () => {
 };
 
 const SettingsManager = () => {
-	const {
-		featureFlags: {
-			upeSettingsPreview: isUPESettingsPreviewEnabled,
-			upe: isUpeEnabled,
-			upeType,
-		},
-	} = useContext( WCPaySettingsContext );
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
@@ -205,23 +196,16 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			{ isUPESettingsPreviewEnabled && (
-				<SettingsSection
-					description={ PaymentMethodsDescription }
-					id="payment-methods"
-				>
-					<LoadableSettingsSection numLines={ 60 }>
-						<ErrorBoundary>
-							<WcPayUpeContextProvider
-								defaultIsUpeEnabled={ isUpeEnabled }
-								defaultUpeType={ upeType }
-							>
-								<PaymentMethods />
-							</WcPayUpeContextProvider>
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
+			<SettingsSection
+				description={ PaymentMethodsDescription }
+				id="payment-methods"
+			>
+				<LoadableSettingsSection numLines={ 60 }>
+					<ErrorBoundary>
+						<PaymentMethods />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
 			<SettingsSection
 				id="express-checkouts"
 				description={ ExpressCheckoutDescription }
@@ -238,15 +222,11 @@ const SettingsManager = () => {
 			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<WcPayUpeContextProvider
-							defaultIsUpeEnabled={ isUpeEnabled }
-						>
-							<Transactions
-								setTransactionInputsValid={
-									setTransactionInputsValid
-								}
-							/>
-						</WcPayUpeContextProvider>
+						<Transactions
+							setTransactionInputsValid={
+								setTransactionInputsValid
+							}
+						/>
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>

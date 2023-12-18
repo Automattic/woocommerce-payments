@@ -27,6 +27,11 @@ class WC_Payments_Utils {
 	const ORDER_INTENT_CURRENCY_META_KEY = '_wcpay_intent_currency';
 
 	/**
+	 * Force disconnected flag name.
+	 */
+	const FORCE_DISCONNECTED_FLAG_NAME = 'wcpaydev_force_disconnected';
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
@@ -202,7 +207,6 @@ class WC_Payments_Utils {
 			'mga', // Malagasy Ariary.
 			'pyg', // Paraguayan Guaraní.
 			'rwf', // Rwandan Franc.
-			'ugx', // Ugandan Shilling.
 			'vnd', // Vietnamese Đồng.
 			'vuv', // Vanuatu Vatu.
 			'xaf', // Central African Cfa Franc.
@@ -213,7 +217,7 @@ class WC_Payments_Utils {
 
 	/**
 	 * List of countries enabled for Stripe platform account. See also this URL:
-	 * https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries
+	 * https://woo.com/document/woopayments/compatibility/countries/#supported-countries
 	 *
 	 * @return string[]
 	 */
@@ -724,35 +728,25 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Helper function to check whether the user is either in the PO experiment, or has manually enabled PO via the dev tools.
+	 * Helper function to check whether to show default new onboarding flow or as an exception disable it (if specific constant is set) .
 	 *
 	 * @return boolean
 	 */
-	public static function should_use_progressive_onboarding_flow(): bool {
-		if ( self::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Check to see if the current user is in progressive onboarding experiment treatment mode.
-	 *
-	 * @return bool
-	 */
-	public static function is_in_progressive_onboarding_treatment_mode(): bool {
-		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+	public static function should_use_new_onboarding_flow(): bool {
+		if ( defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) {
 			return false;
 		}
 
-		$abtest = new \WCPay\Experimental_Abtest(
-			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
-			'woocommerce',
-			'yes' === get_option( 'woocommerce_allow_tracking' )
-		);
+		return true;
+	}
 
-		return 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v3' );
+	/**
+	 * Checks whether the Force disconnected option is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function force_disconnected_enabled(): bool {
+		return '1' === get_option( self::FORCE_DISCONNECTED_FLAG_NAME, '0' );
 	}
 
 	/**

@@ -62,14 +62,20 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 		$wcpay_request = List_Authorizations::from_rest_request( $request );
 		$wcpay_request->set_page_size( $request->get_param( 'per_page' ) ?? 25 );
 
-		$date_between_filter = $request->get_param( 'date_between' );
-		$user_timezone       = $request->get_param( 'user_timezone' );
-		$filters             = [
+		$user_timezone = $request->get_param( 'user_timezone' );
+		$filters       = [
 			'match'             => $request->get_param( 'match' ),
 			'order_id_is'       => $request->get_param( 'order_id' ),
 			'customer_email_is' => $request->get_param( 'customer_email' ),
 			'source_is'         => $request->get_param( 'payment_method_type' ),
 		];
+
+		if ( $request->get_param( 'date_between' ) ) {
+			$date_between_filter  = $request->get_param( 'date_between' );
+			$filters['from_date'] = strtotime( Request_Utils::format_transaction_date_by_timezone( $date_between_filter[0], $user_timezone ) );
+			$filters['to_date']   = strtotime( Request_Utils::format_transaction_date_by_timezone( $date_between_filter[1], $user_timezone ) );
+		}
+
 		if ( $request->get_param( 'date_before' ) ) {
 			$filters['from_date'] = strtotime( Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone ) );
 		}
@@ -238,7 +244,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 				'description' => __( 'Field on which to sort.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'required'    => false,
-				'default'     => 'date',
+				'default'     => 'created',
 			],
 			'direction'           => [
 				'description' => __( 'Direction on which to sort.', 'woocommerce-payments' ),

@@ -71,6 +71,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
+		add_action( 'woocommerce_thankyou', [ $this, 'thank_you_page_view' ] );
 	}
 
 	/**
@@ -278,8 +279,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$identity = $this->tracks_get_identity( $user->ID );
 		$site_url = get_option( 'siteurl' );
 
-		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ): '';
 		$properties['blog_url']  = $site_url;
 		$properties['blog_id']   = \Jetpack_Options::get_option( 'id' );
 		$properties['user_lang'] = $user->get( 'WPLANG' );
@@ -287,6 +287,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		// Add event property for test mode vs. live mode events.
 		$properties['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
 		$properties['wcpay_version'] = WCPAY_VERSION_NUMBER;
+
+		// Add client's user agent to the event properties.
+		if ( !empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
+			$properties['_via_ua'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
+		}
 
 		$blog_details = [
 			'blog_lang' => isset( $properties['blog_lang'] ) ? $properties['blog_lang'] : get_bloginfo( 'language' ),
@@ -454,6 +459,22 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 				'source' => 'checkout',
 			]
 		);
+	}
+
+	/**
+	 * Record a Tracks event that Thank you page was viewed for a WCPay order.
+	 *
+	 * @param int $order_id The ID of the order.
+	 * @return void
+	 */
+	public function thank_you_page_view($order_id) {
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order || 'woocommerce_payments' !== $order->get_payment_method() ) {
+			return;
+		}
+
+		$this->maybe_record_wcpay_shopper_event( 'order_success_page_view' );
 	}
 
 	/**

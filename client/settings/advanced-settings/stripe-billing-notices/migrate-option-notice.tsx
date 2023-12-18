@@ -134,7 +134,7 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://woocommerce.com/document/woopayments/built-in-subscriptions/comparison/" />
+						<ExternalLink href="https://woo.com/document/woopayments/subscriptions/comparison/#migrating-subscribers" />
 					),
 				},
 			} ) }

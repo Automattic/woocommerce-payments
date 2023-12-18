@@ -33,13 +33,17 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 		$this->accept_only_domestic_payment = true;
 		$this->limits_per_currency          = [
 			'CAD' => [
-				'min' => 5000,
-				'max' => 3000000,
-			], // Represents CAD 50 - 30,000 CAD.
+				'CA' => [
+					'min' => 5000,
+					'max' => 3000000,
+				], // Represents CAD 50 - 30,000 CAD.
+			],
 			'USD' => [
-				'min' => 5000,
-				'max' => 3000000,
-			], // Represents USD 50 - 30,000 USD.
+				'US' => [
+					'min' => 5000,
+					'max' => 3000000,
+				], // Represents USD 50 - 30,000 USD.
+			],
 		];
 		$this->countries                    = [ 'US', 'CA' ];
 	}

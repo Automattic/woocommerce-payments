@@ -118,7 +118,7 @@ class WC_Payments_WooPay_Button_Handler {
 
 			$this->gateway->update_option( 'platform_checkout_button_locations', array_keys( $all_locations ) );
 
-			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $all_locations );
+			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, array_keys( $all_locations ) );
 		}
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
@@ -226,9 +226,23 @@ class WC_Payments_WooPay_Button_Handler {
 
 		WC()->shipping->reset_shipping();
 
-		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
-		$quantity     = ! isset( $_POST['quantity'] ) ? 1 : absint( $_POST['quantity'] );
-		$product      = wc_get_product( $product_id );
+		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+		$quantity   = ! isset( $_POST['quantity'] ) ? 1 : absint( $_POST['quantity'] );
+		$product    = wc_get_product( $product_id );
+
+		if ( ! $product ) {
+			wp_send_json(
+				[
+					'error' => [
+						'code'    => 'invalid_product_id',
+						'message' => __( 'Invalid product id', 'woocommerce-payments' ),
+					],
+				],
+				404
+			);
+			return;
+		}
+
 		$product_type = $product->get_type();
 
 		// First empty the cart to prevent wrong calculation.
@@ -295,7 +309,7 @@ class WC_Payments_WooPay_Button_Handler {
 
 				$product_name = $cart_item['data']->get_name();
 
-				$item_tax = $this->prices_exclude_tax() ? 0 : ( $cart_item['line_subtotal_tax'] ?? 0 );
+				$item_tax = $this->cart_prices_include_tax() ? ( $cart_item['line_subtotal_tax'] ?? 0 ) : 0;
 
 				$item = [
 					'label'  => $product_name . $quantity_label,
@@ -322,7 +336,7 @@ class WC_Payments_WooPay_Button_Handler {
 		$items_total = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
 		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( '' );
 
-		if ( $this->prices_exclude_tax() ) {
+		if ( ! $this->cart_prices_include_tax() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Tax', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $tax, $currency ),
@@ -330,7 +344,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		if ( WC()->cart->needs_shipping() ) {
-			$shipping_tax = $this->prices_exclude_tax() ? 0 : WC()->cart->shipping_tax_total;
+			$shipping_tax = $this->cart_prices_include_tax() ? WC()->cart->shipping_tax_total : 0;
 			$items[]      = [
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $shipping + $shipping_tax, $currency ),
@@ -369,13 +383,13 @@ class WC_Payments_WooPay_Button_Handler {
 	}
 
 	/**
-	 * Whether tax should be displayed on seperate line.
-	 * returns true if tax is enabled & display of tax in checkout is set to exclusive.
+	 * Whether tax should be displayed on separate line in cart.
+	 * returns true if tax is disabled or display of tax in checkout is set to inclusive.
 	 *
 	 * @return boolean
 	 */
-	private function prices_exclude_tax() {
-		return wc_tax_enabled() && 'incl' !== get_option( 'woocommerce_tax_display_cart' );
+	private function cart_prices_include_tax() {
+		return ! wc_tax_enabled() || 'incl' === get_option( 'woocommerce_tax_display_cart' );
 	}
 
 	/**
@@ -634,6 +648,11 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
+		// WC Bookings require confirmation products are not supported.
+		if ( is_a( $product, 'WC_Product_Booking' ) && $product->get_requires_confirmation() ) {
+			$is_supported = false;
+		}
+
 		return apply_filters( 'wcpay_woopay_button_is_product_supported', $is_supported, $product );
 	}
 
@@ -647,14 +666,19 @@ class WC_Payments_WooPay_Button_Handler {
 	private function has_allowed_items_in_cart() {
 		$is_supported = true;
 
+		/**
+		 * Psalm throws an error here even though we check the class existence.
+		 *
+		 * @psalm-suppress UndefinedClass
+		 */
 		// We don't support pre-order products to be paid upon release.
-		if (
-			class_exists( 'WC_Pre_Orders_Cart' ) &&
-			WC_Pre_Orders_Cart::cart_contains_pre_order() &&
-			class_exists( 'WC_Pre_Orders_Product' ) &&
-			WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() )
-		) {
-			$is_supported = false;
+		if ( class_exists( 'WC_Pre_Orders_Cart' ) && class_exists( 'WC_Pre_Orders_Product' ) ) {
+			if (
+				WC_Pre_Orders_Cart::cart_contains_pre_order() &&
+				WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() )
+			) {
+				$is_supported = false;
+			}
 		}
 
 		return apply_filters( 'wcpay_platform_checkout_button_are_cart_items_supported', $is_supported );

@@ -34,29 +34,69 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		$this->countries                    = [ 'US', 'GB', 'AT', 'DE', 'NL', 'BE', 'ES', 'IT', 'IE', 'DK', 'FI', 'NO', 'SE' ];
 		$this->limits_per_currency          = [
 			'USD' => [
-				'min' => 1000,
-				'max' => 500000,
-			], // Represents USD 10 - 5,000.
+				'US' => [
+					'min' => 0,
+					'max' => 1000000,
+				],
+			],
 			'GBP' => [
-				'min' => 1000,
-				'max' => 500000,
-			], // Represents GBP 10 - 5,000.
+				'GB' => [
+					'min' => 0,
+					'max' => 1150000,
+				],
+			],
 			'EUR' => [
-				'min' => 1000,
-				'max' => 500000,
-			], // Represents EUR 10 - 5,000.
+				'AT' => [
+					'min' => 1,
+					'max' => 1000000,
+				],
+				'BE' => [
+					'min' => 1,
+					'max' => 1000000,
+				],
+				'DE' => [
+					'min' => 1,
+					'max' => 1000000,
+				],
+				'NL' => [
+					'min' => 1,
+					'max' => 1500000,
+				],
+				'FI' => [
+					'min' => 0,
+					'max' => 1000000,
+				],
+				'ES' => [
+					'min' => 0,
+					'max' => 1000000,
+				],
+				'IE' => [
+					'min' => 0,
+					'max' => 400000,
+				],
+				'IT' => [
+					'min' => 0,
+					'max' => 1000000,
+				],
+			],
 			'DKK' => [
-				'min' => 1000,
-				'max' => 500000,
-			], // Represents DKK 10 - 5,000.
+				'DK' => [
+					'min' => 100,
+					'max' => 100000000,
+				],
+			],
 			'NOK' => [
-				'min' => 1000,
-				'max' => 500000,
-			], // Represents NOK 10 - 5,000.
+				'NO' => [
+					'min' => 0,
+					'max' => 100000000,
+				],
+			],
 			'SEK' => [
-				'min' => 1000,
-				'max' => 500000,
-			], // Represents SEK 10 - 5,000.
+				'SE' => [
+					'min' => 0,
+					'max' => 15000000,
+				],
+			],
 		];
 	}
 

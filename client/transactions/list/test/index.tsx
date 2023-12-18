@@ -102,6 +102,8 @@ const getMockTransactions: () => Transaction[] = () => [
 			url: 'https://example.com/order/123',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
+			customer_name: '',
+			customer_email: '',
 		},
 		channel: 'online',
 		source_identifier: '1234',
@@ -131,6 +133,8 @@ const getMockTransactions: () => Transaction[] = () => [
 			url: 'https://example.com/order/125',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
+			customer_name: '',
+			customer_email: '',
 		},
 		channel: 'online',
 		source_identifier: '1234',
@@ -160,6 +164,8 @@ const getMockTransactions: () => Transaction[] = () => [
 			url: 'https://example.com/order/335',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
+			customer_name: '',
+			customer_email: '',
 		},
 		channel: 'in_person',
 		source_identifier: '1234',
@@ -296,18 +302,18 @@ describe( 'Transactions list', () => {
 		} );
 
 		test( 'sorts by default field date', () => {
-			sortBy( 'Date and time' );
+			sortBy( 'Date and time in UTC' );
 			expectSortingToBe( 'date', 'asc' );
 
-			sortBy( 'Date and time' );
+			sortBy( 'Date and time in UTC' );
 			expectSortingToBe( 'date', 'desc' );
 		} );
 
 		test( 'sorts by amount', () => {
-			sortBy( 'Amount' );
+			sortBy( 'Amount in Deposit Curency' );
 			expectSortingToBe( 'amount', 'desc' );
 
-			sortBy( 'Amount' );
+			sortBy( 'Amount in Deposit Curency' );
 			expectSortingToBe( 'amount', 'asc' );
 		} );
 
@@ -603,18 +609,22 @@ describe( 'Transactions list', () => {
 
 			const expected = [
 				'"Transaction Id"',
-				'"Date / Time"',
+				'"Date / Time (UTC)"',
 				'Type',
 				'Channel',
+				'"Paid Currency"',
+				'"Amount Paid"',
+				'"Deposit Currency"',
 				'Amount',
 				'Fees',
 				'Net',
 				'"Order #"',
-				'Source',
+				'"Payment Method"',
 				'Customer',
 				'Email',
 				'Country',
 				'"Risk level"',
+				'"Deposit ID"',
 				'"Deposit date"',
 				'"Deposit status"',
 			];
@@ -669,26 +679,26 @@ describe( 'Transactions list', () => {
 			); // channel
 			expect(
 				getUnformattedAmount( displayFirstTransaction[ 3 ] ).indexOf(
-					csvFirstTransaction[ 4 ]
+					csvFirstTransaction[ 7 ]
 				)
 			).not.toBe( -1 ); // amount
 			expect(
 				-Number( getUnformattedAmount( displayFirstTransaction[ 4 ] ) )
 			).toEqual(
 				Number(
-					csvFirstTransaction[ 5 ].replace( /['"]+/g, '' ) // strip extra quotes
+					csvFirstTransaction[ 8 ].replace( /['"]+/g, '' ) // strip extra quotes
 				)
 			); // fees
 			expect(
 				getUnformattedAmount( displayFirstTransaction[ 5 ] ).indexOf(
-					csvFirstTransaction[ 6 ]
+					csvFirstTransaction[ 9 ]
 				)
 			).not.toBe( -1 ); // net
 			expect( displayFirstTransaction[ 6 ] ).toBe(
-				csvFirstTransaction[ 7 ]
+				csvFirstTransaction[ 10 ]
 			); // order number
 			expect( displayFirstTransaction[ 8 ] ).toBe(
-				csvFirstTransaction[ 9 ].replace( /['"]+/g, '' ) // strip extra quotes
+				csvFirstTransaction[ 12 ].replace( /['"]+/g, '' ) // strip extra quotes
 			); // customer
 		} );
 	} );

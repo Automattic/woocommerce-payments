@@ -104,10 +104,6 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @return void
 	 */
 	public function init_hooks() {
-		if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
-			add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
-		}
 		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
 
 		parent::init_hooks();
@@ -154,7 +150,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 */
 	public function is_available() {
 		$processing_payment_method = $this->payment_methods[ $this->payment_method->get_id() ];
-		if ( ! $processing_payment_method->is_enabled_at_checkout() ) {
+		if ( ! $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) ) {
 			return false;
 		}
 		return parent::is_available();
@@ -216,64 +212,6 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
 
 			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country, $fingerprint ), 200 );
-		} catch ( Exception $e ) {
-			// Send back error so it can be displayed to the customer.
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
-					],
-				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
-			);
-		}
-	}
-
-	/**
-	 * Handle AJAX request for creating a payment intent for Stripe UPE.
-	 *
-	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
-	 */
-	public function create_payment_intent_ajax() {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Process_Payment_Exception(
-					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-					'wcpay_upe_intent_error'
-				);
-			}
-
-			// If paying from order, we need to get the total from the order instead of the cart.
-			$order_id    = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
-			$fingerprint = isset( $_POST['wcpay-fingerprint'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fingerprint'] ) ) : '';
-
-			$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id, true );
-			if ( ! in_array( $this->payment_method->get_id(), $enabled_payment_methods, true ) ) {
-				throw new Process_Payment_Exception(
-					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-					'wcpay_upe_intent_error'
-				);
-			}
-			$displayed_payment_methods = [ $this->payment_method->get_id() ];
-			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $this->payment_method->get_id() ) {
-				if ( in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) ) {
-					$displayed_payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-				}
-			}
-
-			$response = $this->create_payment_intent( $displayed_payment_methods, $order_id, $fingerprint );
-
-			// Encrypt client secret before exposing it to the browser.
-			if ( $response['client_secret'] ) {
-				$response['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $response['client_secret'] );
-			}
-
-			if ( strpos( $response['id'], 'pi_' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
-				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'] );
-			}
-
-			wp_send_json_success( $response, 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(

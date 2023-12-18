@@ -246,7 +246,7 @@ exports[`StatusChip renders pending verification status 1`] = `
 </div>
 `;
 
-exports[`StatusChip renders pending verification status for po 1`] = `
+exports[`StatusChip renders pending verification status for progressive onboarding 1`] = `
 <div>
   <button
     class="wcpay-tooltip__content-wrapper"
