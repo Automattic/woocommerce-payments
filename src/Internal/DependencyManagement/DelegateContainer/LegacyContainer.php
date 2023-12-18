@@ -89,11 +89,11 @@ class LegacyContainer implements ContainerInterface {
 	}
 
 	/**
-	 * Returns the WC_Payments_Checkout instance.
+	 * Returns the WC_Payments_UPE_Checkout instance.
 	 *
-	 * @return \WCPay\WC_Payments_Checkout
+	 * @return \WCPay\WC_Payments_UPE_Checkout
 	 */
-	private function get_wcpay_wc_payments_checkout_instance() {
+	private function get_wcpay_wc_payments_upe_checkout_instance() {
 		return WC_Payments::get_wc_payments_checkout();
 	}
 

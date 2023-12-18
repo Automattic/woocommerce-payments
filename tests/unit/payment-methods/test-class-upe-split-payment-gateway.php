@@ -34,7 +34,6 @@ use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
-use WCPay\WC_Payments_Checkout;
 use WCPay\Payment_Information;
 use WC_Payments;
 use WC_Payments_Localization_Service;
@@ -101,13 +100,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @var array
 	 */
 	private $mock_payment_gateways;
-
-	/**
-	 * WC_Payments_Checkout
-	 *
-	 * @var WC_Payments_Checkout|MockObject
-	 */
-	private $mock_legacy_checkout;
 
 	/**
 	 * WC_Payments_Account instance.
@@ -250,10 +242,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		// Arrange: Mock WC_Payments_Action_Scheduler_Service so its methods aren't called directly.
 		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$this->mock_legacy_checkout = $this->getMockBuilder( WC_Payments_Checkout::class )
 			->disableOriginalConstructor()
 			->getMock();
 

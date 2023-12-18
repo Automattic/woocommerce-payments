@@ -3614,12 +3614,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Isolated as a separate method in order to be available both
 	 * during the classic checkout, as well as the checkout block.
 	 *
-	 * @deprecated use WC_Payments_Checkout::get_payment_fields_js_config instead.
+	 * @deprecated use WC_Payments_UPE_Checkout::get_payment_fields_js_config instead.
 	 *
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Checkout::get_payment_fields_js_config' );
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_UPE_Checkout::get_payment_fields_js_config' );
 		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
 	}
 

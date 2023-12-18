@@ -33,7 +33,6 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
-use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
 
 // Need to use WC_Mock_Data_Store.
@@ -2360,12 +2359,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private function refresh_payments_checkout() {
 		remove_all_actions( 'wc_payments_add_payment_fields' );
 
-		$this->payments_checkout = new WC_Payments_Checkout(
-			$this->woopay_utilities,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_fraud_service
-		);
+		$this->payments_checkout = new WC_Payments_UPE_Checkout( $this->wcpay_gateway, $this->woopay_utilities, $this->mock_wcpay_account, $this->mock_customer_service, $this->mock_fraud_service );
 	}
 
 	private function create_gateway_with( $payment_method ) {

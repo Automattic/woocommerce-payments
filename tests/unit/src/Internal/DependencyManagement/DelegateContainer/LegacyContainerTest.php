@@ -40,7 +40,7 @@ class LegacyContainerTest extends WCPAY_UnitTestCase {
 			[ \WCPay\Core\Mode::class ],
 			[ \WC_Payment_Gateway_WCPay::class ],
 			[ \WCPay\WooPay_Tracker::class ],
-			[ \WCPay\WC_Payments_Checkout::class ],
+			[ \WCPay\WC_Payments_UPE_Checkout::class ],
 			[ \WCPay\Database_Cache::class ],
 			[ \WC_Payments_Account::class ],
 			[ \WC_Payments_API_Client::class ],
