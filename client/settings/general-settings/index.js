@@ -13,12 +13,17 @@ import { useDevMode, useIsWCPayEnabled, useTestMode } from 'wcpay/data';
 import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/overview/modal/setup-live-payments';
+import DevModeConfirmationModal from './dev-mode-confirm-modal';
 
 const GeneralSettings = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
 	const [ modalVisible, setModalVisible ] = useState( false );
 	const isDevModeEnabled = useDevMode();
+	const [
+		devConfirmationModalVisible,
+		setDevConfirmationModalVisible,
+	] = useState( false );
 
 	return (
 		<>
@@ -48,7 +53,12 @@ const GeneralSettings = () => {
 							</h4>
 							<CheckboxControl
 								checked={ isEnabled }
-								onChange={ updateIsTestModeEnabled }
+								onChange={ ( enableTestMode ) => {
+									updateIsTestModeEnabled( enableTestMode );
+									if ( enableTestMode ) {
+										setDevConfirmationModalVisible( true );
+									}
+								} }
 								label={ __(
 									'Enable test mode',
 									'woocommerce-payments'
@@ -131,6 +141,17 @@ const GeneralSettings = () => {
 			{ modalVisible && (
 				<SetupLivePaymentsModal
 					closeModal={ () => setModalVisible( false ) }
+				/>
+			) }
+			{ devConfirmationModalVisible && (
+				<DevModeConfirmationModal
+					onClose={ () => {
+						updateIsTestModeEnabled( false );
+						setDevConfirmationModalVisible( false );
+					} }
+					onConfirm={ () => {
+						setDevConfirmationModalVisible( false );
+					} }
 				/>
 			) }
 		</>
