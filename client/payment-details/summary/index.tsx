@@ -491,7 +491,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						>
 							<DropdownMenu
 								icon={ moreVertical }
-								label="Transaction actions"
+								label={ __(
+									'Translation actions',
+									'woocommerce-payments'
+								) }
 								popoverProps={ {
 									position: 'bottom left',
 								} }
@@ -510,7 +513,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 												);
 											} }
 										>
-											Refund in full
+											{ __(
+												'Refund in full',
+												'woocommerce-payments'
+											) }
 										</MenuItem>
 										{ charge.order && (
 											<MenuItem
@@ -531,7 +537,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 														charge.order.url;
 												} }
 											>
-												Partial refund
+												{ __(
+													'Partial refund',
+													'woocommerce-payments'
+												) }
 											</MenuItem>
 										) }
 									</MenuGroup>
