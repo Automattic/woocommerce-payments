@@ -71,6 +71,21 @@ class Refund_Charge extends Request {
 	}
 
 	/**
+	 * Sets the source for the refund.
+	 *
+	 * @param string $source The reason for the refund.
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_source( string $source ) {
+		$this->set_param(
+			'metadata',
+			[
+				'refund_source' => $source,
+			]
+		);
+	}
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string

@@ -66,6 +66,7 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 				$refund_request->set_charge( $charge_id );
 				$refund_request->set_amount( $amount );
 				$refund_request->set_reason( $reason );
+				$refund_request->set_source( 'transaction_details_no_order' );
 				$response = $refund_request->send();
 
 				return rest_ensure_response( $response );
