@@ -499,7 +499,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									position: 'bottom left',
 								} }
 							>
-								{ () => (
+								{ ( { onClose } ) => (
 									<MenuGroup>
 										<MenuItem
 											onClick={ () => {
@@ -511,6 +511,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 															charge.payment_intent,
 													}
 												);
+												onClose();
 											} }
 										>
 											{ __(
