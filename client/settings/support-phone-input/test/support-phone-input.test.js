@@ -7,11 +7,16 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import SupportPhoneInput from '..';
-import { useGetSavingError, useAccountBusinessSupportPhone } from 'wcpay/data';
+import {
+	useGetSavingError,
+	useAccountBusinessSupportPhone,
+	useDevMode,
+} from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountBusinessSupportPhone: jest.fn(),
 	useGetSavingError: jest.fn(),
+	useDevMode: jest.fn(),
 } ) );
 
 describe( 'SupportPhoneInput', () => {
@@ -91,5 +96,18 @@ describe( 'SupportPhoneInput', () => {
 		expect(
 			container.querySelector( '.components-notice.is-error' ).textContent
 		).toEqual( 'Please enter a valid phone number.' );
+	} );
+
+	it( 'in dev mode, allow all 0s number', async () => {
+		useAccountBusinessSupportPhone.mockReturnValue( [
+			'+10000000000', // test phone number.
+			jest.fn(),
+		] );
+		useDevMode.mockReturnValue( true );
+
+		const { container } = render( <SupportPhoneInput /> );
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
 	} );
 } );
