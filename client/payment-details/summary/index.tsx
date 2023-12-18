@@ -484,7 +484,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					</div>
 				</div>
 				<div className="payment-details__refund-controls">
-					{ ! charge?.refunded && (
+					{ ! charge?.refunded && charge?.captured && (
 						<Loadable
 							isLoading={ isLoading }
 							placeholder={ moreVertical }
