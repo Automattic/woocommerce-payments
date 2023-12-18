@@ -10,6 +10,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Link_Payment_Method;
 
 /**
  * Class WC_Payments_UPE_Checkout_Test
@@ -73,7 +75,7 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 
 		// Setup the gateway mock.
 		$this->mock_wcpay_gateway     = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
-			->onlyMethods( [ 'get_payment_method_ids_enabled_at_checkout', 'should_use_stripe_platform_on_checkout_page', 'should_support_saved_payments', 'is_saved_cards_enabled', 'save_payment_method_checkbox', 'get_account_statement_descriptor', 'get_icon_url', 'get_payment_method_ids_enabled_at_checkout_filtered_by_fees' ] )
+			->onlyMethods( [ 'get_payment_method_ids_enabled_at_checkout', 'should_use_stripe_platform_on_checkout_page', 'should_support_saved_payments', 'is_saved_cards_enabled', 'save_payment_method_checkbox', 'get_account_statement_descriptor', 'get_icon_url', 'get_payment_method_ids_enabled_at_checkout_filtered_by_fees', 'is_subscription_item_in_cart', 'wc_payments_get_payment_method_by_id' ] )
 			->disableOriginalConstructor()
 			->getMock();
 		$this->mock_wcpay_gateway->id = 'woocommerce_payments';
@@ -90,11 +92,6 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 		$this->mock_wcpay_gateway
 			->method( 'get_account_statement_descriptor' )
 			->willReturn( 'localhost' );
-
-		$this->mock_wcpay_gateway
-			->expects( $this->any() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
-			->willReturn( [] );
 
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
@@ -138,6 +135,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 
 		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
 
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
 		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
 		$this->setOutputCallback(
 			function ( $output ) use ( $token_value ) {
@@ -163,6 +165,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 
 		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
 
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
 		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
 		$this->setOutputCallback(
 			function ( $output ) use ( $token_value ) {
@@ -180,6 +187,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 		wp_set_current_user( 1 );
 
 		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway
 			->method( 'is_saved_cards_enabled' )
 			->willReturn( false );
 
@@ -194,6 +206,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 	public function test_save_payment_method_checkbox_not_called_for_non_logged_in_user() {
 		// given: prepare the dependencies.
 		wp_set_current_user( 0 );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
 
 		$this->mock_wcpay_gateway
 			->method( 'is_saved_cards_enabled' )
@@ -217,6 +234,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 		wp_set_current_user( 1 );
 
 		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway
 			->method( 'is_saved_cards_enabled' )
 			->willReturn( true );
 
@@ -234,6 +256,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_woopay_enabled_when_should_enable_woopay_and_enable_it_on_cart_or_checkout() {
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
 		$this->mock_woopay_utilities->method( 'should_enable_woopay' )->willReturn( true );
 		$this->mock_woopay_utilities->method( 'should_enable_woopay_on_cart_or_checkout' )->willReturn( true );
 
@@ -242,6 +269,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_woopay_enabled_false_when_should_not_enable_woopay() {
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
 		$this->mock_woopay_utilities->method( 'should_enable_woopay' )->willReturn( false );
 		$this->mock_woopay_utilities->method( 'should_enable_woopay_on_cart_or_checkout' )->willReturn( true );
 
@@ -250,6 +282,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_woopay_enabled_false_when_should_enable_woopay_but_not_enable_it_on_cart_or_checkout() {
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
 		$this->mock_woopay_utilities->method( 'should_enable_woopay' )->willReturn( true );
 		$this->mock_woopay_utilities->method( 'should_enable_woopay_on_cart_or_checkout' )->willReturn( false );
 
@@ -258,6 +295,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	public function test_return_icon_url() {
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
 		$this->mock_wcpay_gateway
 			->method( 'get_icon_url' )
 			->willReturn( 'assets/images/payment-methods/cc.svg' );
@@ -270,6 +312,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 
 	public function test_force_network_saved_cards_enabled_when_should_use_stripe_platform() {
 		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway
 			->method( 'should_use_stripe_platform_on_checkout_page' )
 			->willReturn( true );
 
@@ -279,6 +326,11 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 
 	public function test_force_network_saved_cards_disabled_when_should_not_use_stripe_platform() {
 		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway
 			->method( 'should_use_stripe_platform_on_checkout_page' )
 			->willReturn( false );
 
@@ -286,4 +338,88 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 		$this->assertFalse( $force_network_saved_cards );
 	}
 
+	public function test_link_payment_method_provided_when_card_enabled() {
+		$icon_url = 'test-icon-url';
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ 'card', 'link' ] );
+
+		$this->mock_wcpay_gateway
+			->method( 'is_saved_cards_enabled' )
+			->willReturn( true );
+
+		$this->mock_wcpay_gateway
+			->method( 'is_subscription_item_in_cart' )
+			->willReturn( false );
+
+		$payment_methods = [
+			'card' => [ 'base' => 0.1 ],
+			'link' => [
+				'base' => 0.1,
+			],
+		];
+
+		$mock_token_service = $this->createMock( WC_Payments_Token_Service::class );
+
+		$card_pm = $this->getMockBuilder( CC_Payment_Method::class )
+			->setConstructorArgs( [ $mock_token_service ] )
+			->onlyMethods( [ 'get_icon' ] )
+			->getMock();
+
+		$link_pm = $this->getMockBuilder( Link_Payment_Method::class )
+			->setConstructorArgs( [ $mock_token_service ] )
+			->onlyMethods( [ 'get_icon' ] )
+			->getMock();
+
+		$card_pm->expects( $this->any() )
+			->method( 'get_icon' )
+			->will(
+				$this->returnValue( $icon_url )
+			);
+
+		$link_pm->expects( $this->any() )
+			->method( 'get_icon' )
+			->will(
+				$this->returnValue( $icon_url )
+			);
+
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->withConsecutive( [ 'card' ], [ 'link' ] )
+			->willReturnOnConsecutiveCalls( $card_pm, $link_pm );
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_fees' )
+			->willReturn( $payment_methods );
+
+		$this->assertSame(
+			$this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig'],
+			[
+				'card' => [
+					'isReusable'             => true,
+					'title'                  => 'Credit card / debit card',
+					'icon'                   => $icon_url,
+					'showSaveOption'         => true,
+					'countries'              => [],
+					'upePaymentIntentData'   => null,
+					'upeSetupIntentData'     => null,
+					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
+					'forceNetworkSavedCards' => false,
+				],
+				'link' => [
+					'isReusable'             => true,
+					'title'                  => 'Link',
+					'icon'                   => $icon_url,
+					'showSaveOption'         => true,
+					'countries'              => [],
+					'upePaymentIntentData'   => null,
+					'upeSetupIntentData'     => null,
+					'testingInstructions'    => '',
+					'forceNetworkSavedCards' => false,
+				],
+			]
+		);
+	}
 }
