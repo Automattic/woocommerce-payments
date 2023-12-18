@@ -106,13 +106,13 @@ describe( 'Merchant Multi-Currency Settings', () => {
 			const beaniePriceOnCurrency = await getProductPriceFromProductPage();
 
 			expect(
-				parseFloat( beaniePriceOnCurrency )
-					.toFixed( testData.currencyPrecision )
-					.toString()
+				parseFloat( beaniePriceOnCurrency ).toFixed(
+					testData.currencyPrecision
+				)
 			).toBe(
-				( parseFloat( beanieRegularPrice ) * testData.rate )
-					.toFixed( testData.currencyPrecision )
-					.toString()
+				( parseFloat( beanieRegularPrice ) * testData.rate ).toFixed(
+					testData.currencyPrecision
+				)
 			);
 		} );
 
@@ -132,16 +132,14 @@ describe( 'Merchant Multi-Currency Settings', () => {
 			const beaniePriceOnCurrency = await getProductPriceFromProductPage();
 
 			expect(
-				parseFloat( beaniePriceOnCurrency )
-					.toFixed( testData.currencyPrecision )
-					.toString()
+				parseFloat( beaniePriceOnCurrency ).toFixed(
+					testData.currencyPrecision
+				)
 			).toBe(
 				(
 					parseFloat( beanieRegularPrice ) +
 					parseFloat( testData.charmPricing )
-				)
-					.toFixed( testData.currencyPrecision )
-					.toString()
+				).toFixed( testData.currencyPrecision )
 			);
 		} );
 
@@ -162,9 +160,9 @@ describe( 'Merchant Multi-Currency Settings', () => {
 			const beaniePriceOnCurrency = await getProductPriceFromProductPage();
 
 			expect(
-				parseFloat( beaniePriceOnCurrency )
-					.toFixed( testData.currencyPrecision )
-					.toString()
+				parseFloat( beaniePriceOnCurrency ).toFixed(
+					testData.currencyPrecision
+				)
 			).toBe(
 				(
 					Math.ceil(
@@ -172,9 +170,7 @@ describe( 'Merchant Multi-Currency Settings', () => {
 							rateForTest *
 							( 1 / testData.rounding )
 					) * testData.rounding
-				)
-					.toFixed( testData.currencyPrecision )
-					.toString()
+				).toFixed( testData.currencyPrecision )
 			);
 		} );
 	} );
