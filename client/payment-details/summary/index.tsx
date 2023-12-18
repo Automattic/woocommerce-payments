@@ -505,7 +505,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											onClick={ () => {
 												setIsRefundModalOpen( true );
 												wcpayTracks.recordEvent(
-													'payments_transactions_details_refund_model_open',
+													'payments_transactions_details_refund_modal_open',
 													{
 														payment_intent_id:
 															charge.payment_intent,
