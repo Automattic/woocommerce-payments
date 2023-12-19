@@ -47,11 +47,6 @@ describe( 'Checkout page performance', () => {
 
 	describe( 'UPE', () => {
 		beforeEach( async () => {
-			// Activate UPE
-			await merchant.login();
-			await merchantWCP.activateUpe();
-			await merchant.logout();
-
 			// Setup cart
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
@@ -61,11 +56,6 @@ describe( 'Checkout page performance', () => {
 		afterEach( async () => {
 			// Clear the cart at the end so it's ready for another test
 			await shopperWCP.emptyCart();
-
-			// Deactivate UPE
-			await merchant.login();
-			await merchantWCP.deactivateUpe();
-			await merchant.logout();
 		} );
 
 		it( 'measures averaged page load metrics', async () => {

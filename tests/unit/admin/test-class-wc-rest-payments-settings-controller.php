@@ -240,9 +240,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		parent::tear_down();
-		update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '0' );
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 	}
 
