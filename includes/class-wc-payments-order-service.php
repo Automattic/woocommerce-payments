@@ -84,6 +84,13 @@ class WC_Payments_Order_Service {
 	const WCPAY_REFUND_ID_META_KEY = '_wcpay_refund_id';
 
 	/**
+	 * Meta key used to store WCPay refund transaction id.
+	 *
+	 * @const string
+	 */
+	const WCPAY_TRANSACTION_ID_META_KEY = '_refund_transaction_id';
+
+	/**
 	 * Meta key used to store WCPay refund status.
 	 *
 	 * @const string
@@ -624,6 +631,20 @@ class WC_Payments_Order_Service {
 	public function set_wcpay_refund_id_for_order( $order, $wcpay_refund_id ) {
 		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_REFUND_ID_META_KEY, $wcpay_refund_id );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Set the payment metadata for refund transaction id.
+	 *
+	 * @param  mixed  $order The order.
+	 * @param  string $wcpay_transaction_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_wcpay_transaction_id_for_order( $order, $wcpay_transaction_id ) {
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::WCPAY_TRANSACTION_ID_META_KEY, $wcpay_transaction_id );
 		$order->save_meta_data();
 	}
 

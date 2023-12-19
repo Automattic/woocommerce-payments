@@ -1871,6 +1871,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$wc_last_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order_id );
 		if ( $wc_last_refund ) {
 			$this->order_service->set_wcpay_refund_id_for_order( $wc_last_refund, $refund['id'] );
+			$this->order_service->set_wcpay_transaction_id_for_order( $wc_last_refund, $refund['balance_transaction'] );
 			$wc_last_refund->save_meta_data();
 		}
 
