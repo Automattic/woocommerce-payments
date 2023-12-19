@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
 
 import CapabilityRequestList from './capability-request-map';
 import CapabilityNotice from './capability-request-notice';
