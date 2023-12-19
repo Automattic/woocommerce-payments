@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`AccountTools should render 1`] = `
+exports[`AccountTools should render in live mode 1`] = `
 <div>
   <div
     class="account-tools"
