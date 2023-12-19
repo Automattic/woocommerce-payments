@@ -75,7 +75,7 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 
 		// Setup the gateway mock.
 		$this->mock_wcpay_gateway     = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
-			->onlyMethods( [ 'get_payment_method_ids_enabled_at_checkout', 'should_use_stripe_platform_on_checkout_page', 'should_support_saved_payments', 'is_saved_cards_enabled', 'save_payment_method_checkbox', 'get_account_statement_descriptor', 'get_icon_url', 'get_payment_method_ids_enabled_at_checkout_filtered_by_fees', 'is_subscription_item_in_cart', 'wc_payments_get_payment_method_by_id' ] )
+			->onlyMethods( [ 'get_payment_method_ids_enabled_at_checkout', 'should_use_stripe_platform_on_checkout_page', 'should_support_saved_payments', 'is_saved_cards_enabled', 'save_payment_method_checkbox', 'get_account_statement_descriptor', 'get_icon_url', 'get_payment_method_ids_enabled_at_checkout_filtered_by_fees', 'is_subscription_item_in_cart', 'wc_payments_get_payment_method_by_id', 'display_gateway_html' ] )
 			->disableOriginalConstructor()
 			->getMock();
 		$this->mock_wcpay_gateway->id = 'woocommerce_payments';
@@ -251,6 +251,19 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 		$this->mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'save_payment_method_checkbox' );
+
+		$this->system_under_test->payment_fields();
+	}
+
+	public function test_display_gateway_html_called() {
+			$this->mock_wcpay_gateway
+				->expects( $this->any() )
+				->method( 'get_payment_method_ids_enabled_at_checkout' )
+				->willReturn( [] );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'display_gateway_html' );
 
 		$this->system_under_test->payment_fields();
 	}

@@ -21,7 +21,6 @@ use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
-use WCPay\WC_Payments_UPE_Checkout;
 use WCPAY_UnitTestCase;
 use WC_Helper_Order;
 use WC_Helper_Intention;
@@ -345,23 +344,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		wcpay_get_test_container()->reset_all_replacements();
 	}
 
-	public function test_payment_fields_outputs_fields() {
-		$this->set_cart_contains_subscription_items( false );
-		$this->set_get_upe_enabled_payment_method_statuses_return_value();
-
-		// Add the UPE Checkout action.
-		$checkout = new WC_Payments_UPE_Checkout(
-			$this->mock_upe_gateway,
-			$this->mock_woopay_utilities,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_fraud_service
-		);
-		$checkout->init_hooks();
-
-		$this->mock_upe_gateway->payment_fields();
-
+	public function test_display_gateway_html() {
 		$this->expectOutputRegex( '/<div id="wcpay-upe-element" class="wcpay-upe-element"><\/div>/' );
+		$this->mock_upe_gateway->display_gateway_html();
 	}
 
 	public function test_update_payment_intent_adds_customer_save_payment_and_level3_data() {
@@ -1799,53 +1784,16 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {
+		$this->mock_upe_gateway->settings['upe_enabled_payment_method_ids'] = [ 'link' ];
 
-		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
-			->setConstructorArgs(
-				[
-					$this->mock_api_client,
-					$this->mock_wcpay_account,
-					$this->mock_customer_service,
-					$this->mock_token_service,
-					$this->mock_action_scheduler_service,
-					$this->mock_payment_methods,
-					$this->mock_rate_limiter,
-					$this->mock_order_service,
-					$this->mock_dpps,
-					$this->mock_localization_service,
-					$this->mock_fraud_service,
-				]
-			)
-			->setMethods(
-				[
-					'get_upe_enabled_payment_method_statuses',
-					'get_upe_enabled_payment_method_ids',
-				]
-			)
-			->getMock();
-
-		$mock_upe_gateway
-			->expects( $this->once() )
-			->method( 'get_upe_enabled_payment_method_ids' )
-			->will(
-				$this->returnValue( [ 'link' ] )
-			);
-		$mock_upe_gateway
+		$this->mock_upe_gateway
 			->expects( $this->once() )
 			->method( 'get_upe_enabled_payment_method_statuses' )
 			->will(
 				$this->returnValue( [ 'link_payments' => [ 'status' => 'active' ] ] )
 			);
 
-		$upe_checkout = new WC_Payments_UPE_Checkout(
-			$mock_upe_gateway,
-			$this->mock_woopay_utilities,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_fraud_service
-		);
-
-		$this->assertSame( $upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'], [] );
+		$this->assertSame( $this->mock_upe_gateway->get_payment_method_ids_enabled_at_checkout(), [] );
 	}
 
 	/**
