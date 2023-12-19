@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Reset Account Modal modal is open when is visible is true 1`] = `
+<div
+  aria-hidden="true"
+/>
+`;
