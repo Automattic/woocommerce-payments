@@ -29,9 +29,9 @@ const CancelAuthorizationConfirmationModal: React.FunctionComponent< CancelAutho
 	};
 
 	const handleCancelOrder = (): void => {
-		const orderEditForm: HTMLFormElement | null = document.querySelector(
-			'#post'
-		);
+		const orderEditForm: HTMLFormElement | null =
+			document.querySelector( '#order_status' )?.closest( 'form' ) ||
+			null;
 		if ( null !== orderEditForm ) {
 			orderEditForm.submit();
 		}
