@@ -451,6 +451,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
+			add_action( 'woocommerce_order_status_cancelled', [ $this, 'cancel_authorizations_on_order_cancel' ] );
 
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
@@ -2870,6 +2871,52 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'message'   => $error_message,
 			'http_code' => $http_code,
 		];
+	}
+
+	/**
+	 * Cancels uncaptured authorizations on order cancel.
+	 *
+	 * @param int $order_id - Order ID.
+	 */
+	public function cancel_authorizations_on_order_cancel( $order_id ) {
+		$order = new WC_Order( $order_id );
+		if ( null !== $order ) {
+			$intent_id = $this->order_service->get_intent_id_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id ) {
+				try {
+					$request = Get_Intention::create( $intent_id );
+					$request->set_hook_args( $order );
+					$intent = $request->send();
+					$charge = $intent->get_charge();
+
+					/**
+					 * Successful but not captured Charge is an authorization
+					 * that needs to be cancelled.
+					 */
+					if ( null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+					) {
+							$request = Cancel_Intention::create( $intent_id );
+							$request->set_hook_args( $order );
+							$intent = $request->send();
+
+							$this->order_service->post_unique_capture_cancelled_note( $order );
+					}
+
+					$this->order_service->set_intention_status_for_order( $order, $intent->get_status() );
+					$order->save();
+				} catch ( \Exception $e ) {
+					$order->add_order_note(
+						WC_Payments_Utils::esc_interpolated_html(
+							__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+							[ 'strong' => '<strong>' ]
+						)
+					);
+				}
+			}
+		}
 	}
 
 	/**

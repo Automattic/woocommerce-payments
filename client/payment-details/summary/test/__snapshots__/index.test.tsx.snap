@@ -244,15 +244,15 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer payment-details-capture-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
         <div
-          class="payment-details-capture-notice__section"
+          class="card-notice__section"
         >
           <div
-            class="payment-details-capture-notice__text"
+            class="card-notice__text"
           >
             You must 
             <a
@@ -273,7 +273,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             </abbr>
           </div>
           <div
-            class="payment-details-capture-notice__button"
+            class="card-notice__button"
           >
             <button
               class="components-button is-primary"
@@ -561,15 +561,15 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer payment-details-capture-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
         <div
-          class="payment-details-capture-notice__section"
+          class="card-notice__section"
         >
           <div
-            class="payment-details-capture-notice__text"
+            class="card-notice__text"
           >
             You must 
             <a
@@ -590,6 +590,9 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             </abbr>
             . Approving this transaction will capture the charge.
           </div>
+          <div
+            class="card-notice__button"
+          />
         </div>
       </div>
     </div>
