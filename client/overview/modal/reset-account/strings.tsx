@@ -23,7 +23,10 @@ export default {
 		'You will have to re-confirm your business and banking details.',
 		'woocommerce-payments'
 	),
-	step3: __( 'This action cannnot be undone.', 'woocommerce-payments' ),
+	step3: __(
+		'Once confirmed, this cannot be undone.',
+		'woocommerce-payments'
+	),
 	confirmation: __(
 		'Are you sure you want to continue?',
 		'woocommerce-payments'
