@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Expose WooCommerce transaction id for a refund on refund API endpoint
