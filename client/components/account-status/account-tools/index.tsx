@@ -8,7 +8,7 @@ import { render } from '@wordpress/element';
  * Internal dependencies
  */
 import strings from './strings';
-import { isInTestOrDevMode } from 'utils';
+import { isInDevMode } from 'utils';
 import { Button, CardDivider } from '@wordpress/components';
 import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
@@ -32,7 +32,7 @@ export const AccountTools: React.FC< Props > = ( props: Props ) => {
 	const accountLink = props.accountLink;
 	const [ modalVisible, setModalVisible ] = useState( false );
 
-	// if ( isInTestOrDevMode() ) return null;
+	if ( isInDevMode() ) return null;
 
 	return (
 		<>

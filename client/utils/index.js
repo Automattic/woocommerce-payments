@@ -23,14 +23,17 @@ export const isInTestMode = ( fallback = false ) => {
 };
 
 /**
- * Returns true if WooPayments is in test or dev mode, false otherwise.
+ * Returns true if WooPayments is in dev mode, false otherwise.
  *
- * @param {boolean} fallback Fallback in case test/dev mode value can't be found (for example if the wcpaySettings are undefined).
+ * @param {boolean} fallback Fallback in case dev mode value can't be found (for example if the wcpaySettings are undefined).
  *
- * @return {boolean} True if in test or dev mode, false otherwise. Fallback value if test/dev mode value can't be found.
+ * @return {boolean} True if in dev mode, false otherwise. Fallback value if test/dev mode value can't be found.
  */
-export const isInTestOrDevMode = ( fallback = false ) => {
-	return isInTestMode() || wcpaySettings.devMode === '1' || fallback;
+export const isInDevMode = ( fallback = false ) => {
+	if ( typeof wcpaySettings === 'undefined' ) {
+		return fallback;
+	}
+	return wcpaySettings.devMode === '1' || fallback;
 };
 
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
