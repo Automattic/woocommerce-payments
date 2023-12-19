@@ -6,11 +6,10 @@ import config from 'config';
  * Internal dependencies
  */
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
-import { merchantWCP, shopperWCP } from '../../../utils';
+import { shopperWCP } from '../../../utils';
 
 const {
 	shopper,
-	merchant,
 	clearAndFillInput,
 	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
@@ -59,12 +58,6 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 	} );
 
 	describe( 'UPE', () => {
-		beforeAll( async () => {
-			await merchant.login();
-			await merchantWCP.activateSplitUpe();
-			await merchant.logout();
-		} );
-
 		beforeEach( async () => {
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
@@ -82,12 +75,6 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
-		} );
-
-		afterAll( async () => {
-			await merchant.login();
-			await merchantWCP.deactivateSplitUpe();
-			await merchant.logout();
 		} );
 	} );
 } );
