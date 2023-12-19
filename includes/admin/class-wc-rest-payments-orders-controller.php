@@ -289,7 +289,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			$this->add_fraud_outcome_manual_entry( $order, 'approve' );
 
-			$result = $this->gateway->capture_charge( $order, false, $intent_metadata );
+			$result = $this->gateway->capture_charge( $order, true, $intent_metadata );
 
 			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
 				return new WP_Error(

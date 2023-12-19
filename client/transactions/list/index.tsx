@@ -658,9 +658,7 @@ export const TransactionsList = (
 				window.confirm( confirmMessage )
 			) {
 				try {
-					const {
-						exported_transactions: exportedTransactions,
-					} = await apiFetch( {
+					await apiFetch( {
 						path: getTransactionsCSV( {
 							userEmail,
 							dateAfter,
