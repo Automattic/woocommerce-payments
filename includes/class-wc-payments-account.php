@@ -1048,8 +1048,9 @@ class WC_Payments_Account {
 				return;
 			}
 
-			// TODO: The server has protection against completed accounts being deleted, but should we have something here?
 			if ( isset( $_GET['wcpay-reset-account'] ) ) {
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+
 				// Delete the account.
 				$this->payments_api_client->delete_account( $test_mode );
 				$this->redirect_to_onboarding_flow_page();
