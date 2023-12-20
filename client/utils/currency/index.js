@@ -121,11 +121,12 @@ export const formatCurrency = (
 
 	const isNegative = amount < 0;
 	const positiveAmount = isNegative ? -1 * amount : amount;
+	const prefix = isNegative ? '-' : '';
 	const currency = getCurrency( currencyCode, baseCurrencyCode );
 
 	if ( currency === null ) {
 		return (
-			( isNegative ? '-' : '' ) +
+			prefix +
 			composeFallbackCurrency(
 				positiveAmount,
 				currencyCode,
@@ -136,14 +137,14 @@ export const formatCurrency = (
 
 	try {
 		return (
-			( isNegative ? '-' : '' ) +
+			prefix +
 			( typeof currency.formatAmount === 'function'
 				? htmlDecode( currency.formatAmount( positiveAmount ) )
 				: htmlDecode( currency.formatCurrency( positiveAmount ) ) )
 		);
 	} catch ( err ) {
 		return (
-			( isNegative ? '-' : '' ) +
+			prefix +
 			htmlDecode(
 				composeFallbackCurrency(
 					positiveAmount,
