@@ -119,19 +119,38 @@ export const formatCurrency = (
 		amount /= 100;
 	}
 
+	const isNegative = amount < 0;
+	const positiveAmount = isNegative ? -1 * amount : amount;
 	const currency = getCurrency( currencyCode, baseCurrencyCode );
 
 	if ( currency === null ) {
-		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
+		return (
+			( isNegative ? '-' : '' ) +
+			composeFallbackCurrency(
+				positiveAmount,
+				currencyCode,
+				isZeroDecimal
+			)
+		);
 	}
 
 	try {
-		return typeof currency.formatAmount === 'function'
-			? htmlDecode( currency.formatAmount( amount ) )
-			: htmlDecode( currency.formatCurrency( amount ) );
+		return (
+			( isNegative ? '-' : '' ) +
+			( typeof currency.formatAmount === 'function'
+				? htmlDecode( currency.formatAmount( positiveAmount ) )
+				: htmlDecode( currency.formatCurrency( positiveAmount ) ) )
+		);
 	} catch ( err ) {
-		return htmlDecode(
-			composeFallbackCurrency( amount, currencyCode, isZeroDecimal )
+		return (
+			( isNegative ? '-' : '' ) +
+			htmlDecode(
+				composeFallbackCurrency(
+					positiveAmount,
+					currencyCode,
+					isZeroDecimal
+				)
+			)
 		);
 	}
 };
