@@ -49,7 +49,7 @@
   },
   "expectation": {
     "fxString": "1.00 CAD → 0.774692 USD: $100.71 USD",
-    "feeString": "Fee (4.9% + $0.30): $-5.24",
+    "feeString": "Fee (4.9% + $0.30): -$5.24",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-international": "International card fee: 1%",
