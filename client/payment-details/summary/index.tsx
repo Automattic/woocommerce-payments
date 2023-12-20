@@ -184,10 +184,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
 
-	// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// // @ts-ignore
-	// delete charge?.order;
-	//
 	const {
 		featureFlags: { isAuthAndCaptureEnabled },
 	} = useContext( WCPaySettingsContext );
@@ -528,14 +524,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 															payment_intent_id:
 																charge.payment_intent,
 															order_id:
-																charge?.order
+																charge.order
 																	?.number,
 														}
 													);
 													window.location =
-														// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-														// @ts-ignore
-														charge.order.url;
+														charge.order?.url;
 												} }
 											>
 												{ __(
