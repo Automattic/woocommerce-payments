@@ -776,8 +776,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[1]->content );
-		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[0]->content );
+		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $notes[1]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
