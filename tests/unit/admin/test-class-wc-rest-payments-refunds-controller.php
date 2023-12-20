@@ -8,9 +8,6 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Refund_Charge;
 
-// TODO: for some reason the class is not found without this line.
-require_once 'includes/admin/class-wc-rest-payments-refunds-controller.php';
-
 /**
  * WC_REST_Payments_Refunds_Controller_Test unit tests.
  */
