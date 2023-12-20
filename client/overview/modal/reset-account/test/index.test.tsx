@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -18,7 +18,7 @@ const onDismiss = jest.fn();
 
 describe( 'Reset Account Modal', () => {
 	it( 'modal is open when is visible is true', () => {
-		const { container } = render(
+		render(
 			<ResetAccountModal
 				isVisible={ true }
 				onSubmit={ onSubmit }
@@ -26,6 +26,10 @@ describe( 'Reset Account Modal', () => {
 			/>
 		);
 
-		expect( container ).toMatchSnapshot();
+		expect(
+			screen.queryByText(
+				'If you are experiencing problems completing account setup, or need to change the email/country associated with your account, you can reset your account and start from the beginning.'
+			)
+		).toBeInTheDocument();
 	} );
 } );
