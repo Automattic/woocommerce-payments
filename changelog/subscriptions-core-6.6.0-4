@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Ensure proper backfilling of subscription metadata (i.e. dates and cache) to the postmeta table when HPOS is enabled and compatibility mode (data syncing) is turned on.
