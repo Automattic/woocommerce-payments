@@ -451,6 +451,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
+			add_action( 'woocommerce_order_status_cancelled', [ $this, 'cancel_authorizations_on_order_cancel' ] );
 
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
@@ -711,7 +712,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			WC_Payments_Features::is_woopay_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
-			! $this->is_upe_incompatible_with_woopay() &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
 			WC()->cart instanceof WC_Cart &&
@@ -722,16 +722,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
-	}
-
-	/**
-	 * The legacy UPE is incompatible with WooPay, whereas split UPE and deferred intent UPE are compatible.
-	 * This method checks if there's incompatibility between WooPay and currently enabled UPE settings, applying the rule above.
-	 *
-	 * $return bool - true if UPE is incompatible with WooPay, false otherwise.
-	 */
-	private function is_upe_incompatible_with_woopay() {
-		return WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_deferred_intent_enabled();
 	}
 
 	/**
@@ -820,10 +810,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			&& WC_Payments_Features::should_use_stripe_billing()
 		) {
 			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP();
-		}
-
-		if ( $this instanceof UPE_Split_Payment_Gateway ) {
-			$factors[] = Factor::DEFERRED_INTENT_SPLIT_UPE();
 		}
 
 		if ( defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) && WCPAY_PAYMENT_REQUEST_CHECKOUT ) {
@@ -946,10 +932,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
-			if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
-			}
-
 			$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 			if ( is_array( $check_session_order ) ) {
 				return $check_session_order;
@@ -1048,10 +1030,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order )
 				);
 				$order->add_order_note( $note );
-			}
-
-			if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 			}
 
 			// Re-throw the exception after setting everything up.
@@ -1345,8 +1323,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				// For Stripe Link & SEPA with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
-				if ( WC_Payments_Features::is_upe_deferred_intent_enabled() && $this->is_mandate_data_required() ) {
+				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
+				if ( $this->is_mandate_data_required() ) {
 					$request->set_mandate_data( $this->get_mandate_data() );
 				}
 
@@ -1420,7 +1398,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_hook_args( $payment_information, false, $save_user_in_woopay );
 
 				if (
-					WC_Payments_Features::is_upe_deferred_intent_enabled() &&
 					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
 					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
 					) {
@@ -1578,10 +1555,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string|null Payment method to use for the intent.
 	 */
 	public function get_payment_method_to_use_for_intent() {
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-			return $this->get_payment_methods_from_gateway_id( $requested_payment_method )[0];
-		}
+		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		return $this->get_payment_methods_from_gateway_id( $requested_payment_method )[0];
 	}
 
 	/**
@@ -1627,20 +1602,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			// If split or deferred intent UPE is enabled and $gateway_id is `woocommerce_payments`, this must be the CC gateway.
-			// We only need to return single `card` payment method, adding `link` since deferred intent UPE gateway is compatible with Link.
-			$payment_methods = [ Payment_Method::CARD ];
-			if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
-				$payment_methods[] = Payment_Method::LINK;
-			}
-
-			return $payment_methods;
+		// If $gateway_id is `woocommerce_payments`, this must be the CC gateway.
+		// We only need to return single `card` payment method, adding `link` since Stripe Link is also supported.
+		$payment_methods = [ Payment_Method::CARD ];
+		if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
+			$payment_methods[] = Payment_Method::LINK;
 		}
 
-		// $gateway_id must be `woocommerce_payments` and gateway is either legacy UPE or legacy card.
-		// Find the relevant gateway and return all available payment methods.
-		return $eligible_payment_methods;
+		return $payment_methods;
 	}
 
 	/**
@@ -2106,13 +2075,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( ! $is_woopay_enabled ) {
 				WooPay_Order_Status_Sync::remove_webhook();
-			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
-				update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
-
-				if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-					wc_admin_record_tracks_event( 'wcpay_deferred_intent_upe_enabled' );
-				}
 			}
 		}
 	}
@@ -2909,6 +2871,52 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'message'   => $error_message,
 			'http_code' => $http_code,
 		];
+	}
+
+	/**
+	 * Cancels uncaptured authorizations on order cancel.
+	 *
+	 * @param int $order_id - Order ID.
+	 */
+	public function cancel_authorizations_on_order_cancel( $order_id ) {
+		$order = new WC_Order( $order_id );
+		if ( null !== $order ) {
+			$intent_id = $this->order_service->get_intent_id_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id ) {
+				try {
+					$request = Get_Intention::create( $intent_id );
+					$request->set_hook_args( $order );
+					$intent = $request->send();
+					$charge = $intent->get_charge();
+
+					/**
+					 * Successful but not captured Charge is an authorization
+					 * that needs to be cancelled.
+					 */
+					if ( null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+					) {
+							$request = Cancel_Intention::create( $intent_id );
+							$request->set_hook_args( $order );
+							$intent = $request->send();
+
+							$this->order_service->post_unique_capture_cancelled_note( $order );
+					}
+
+					$this->order_service->set_intention_status_for_order( $order, $intent->get_status() );
+					$order->save();
+				} catch ( \Exception $e ) {
+					$order->add_order_note(
+						WC_Payments_Utils::esc_interpolated_html(
+							__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+							[ 'strong' => '<strong>' ]
+						)
+					);
+				}
+			}
+		}
 	}
 
 	/**

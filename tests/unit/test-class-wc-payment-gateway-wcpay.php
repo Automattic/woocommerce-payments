@@ -28,6 +28,9 @@ use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Payment_Information;
+use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Sepa_Payment_Method;
+use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_Checkout;
@@ -944,6 +947,151 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( Order_Status::PROCESSING, $order->get_status() );
 	}
 
+	public function test_capture_cancelling_order_cancels_authorization() {
+		$intent_id = uniqid( 'pi_' );
+		$charge_id = uniqid( 'ch_' );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
+		$order->update_status( Order_Status::ON_HOLD );
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => $intent_id,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+				'charge' => [
+					'amount_captured' => 0,
+					'status'          => Intent_Status::SUCCEEDED,
+					'id'              => $charge_id,
+				],
+			]
+		);
+
+		$mock_canceled_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => $intent_id,
+				'status' => Intent_Status::CANCELED,
+				'charge' => [
+					'status' => Intent_Status::CANCELED,
+					'id'     => $charge_id,
+				],
+			]
+		);
+
+		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$get_intent_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		$cancel_intent_request = $this->mock_wcpay_request( Cancel_Intention::class, 1, $intent_id );
+		$cancel_intent_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_canceled_intent );
+
+		$order->set_status( Order_Status::CANCELLED );
+		$order->save();
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( Intent_Status::CANCELED, $order->get_meta( '_intention_status', true ) );
+		$this->assertSame( Order_Status::CANCELLED, $order->get_status() );
+	}
+
+	/**
+	 * Test for various scenarios where we don't want to cancel existing
+	 * payment intent.
+	 *
+	 * @dataProvider provider_capture_cancelling_order_does_not_cancel_captured_authorization
+	 */
+	public function test_capture_cancelling_order_does_not_cancel_captured_authorization( WC_Payments_API_Payment_Intention $intent ) {
+		$intent_id = $intent->get_id();
+		$charge    = $intent->get_charge();
+		$charge_id = null !== $charge ? $charge->get_id() : null;
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		if ( null !== $charge_id ) {
+			$order->update_meta_data( '_charge_id', $charge_id );
+		}
+		$order->update_meta_data( '_intention_status', $intent->get_status() );
+		$order->update_status( Order_Status::PROCESSING );
+
+		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$get_intent_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+
+		$this->mock_wcpay_request( Cancel_Intention::class, 0, $intent_id );
+
+		$order->set_status( Order_Status::CANCELLED );
+		$order->save();
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( $intent->get_status(), $order->get_meta( '_intention_status', true ), 'Intent status is not modified' );
+		$this->assertSame( Order_Status::CANCELLED, $order->get_status(), 'Order should become cancelled' );
+	}
+
+	/**
+	 * Provider for test_capture_cancelling_order_does_not_cancel_captured_authorization.
+	 *
+	 * @return array
+	 */
+	public function provider_capture_cancelling_order_does_not_cancel_captured_authorization() {
+		return [
+			'Captured intent'                     => [
+				WC_Helper_Intention::create_intention(
+					[
+						'id'     => uniqid( 'pi_' ),
+						'status' => Intent_Status::SUCCEEDED,
+						'charge' => [
+							'status' => Intent_Status::SUCCEEDED,
+							'id'     => uniqid( 'ch_' ),
+						],
+					]
+				),
+			],
+			'Intent without charge'               => [
+				WC_Helper_Intention::create_intention(
+					[
+						'id'     => uniqid( 'pi_' ),
+						'status' => Intent_Status::SUCCEEDED,
+					],
+					false
+				),
+			],
+			'Canceled intent'                     => [
+				WC_Helper_Intention::create_intention(
+					[
+						'id'     => uniqid( 'pi_' ),
+						'status' => Intent_Status::CANCELED,
+						'charge' => [
+							'status' => Intent_Status::SUCCEEDED,
+							'id'     => uniqid( 'ch_' ),
+						],
+					]
+				),
+			],
+			'Captured charge, intent out of sync' => [
+				WC_Helper_Intention::create_intention(
+					[
+						'id'     => uniqid( 'pi_' ),
+						'status' => Intent_Status::REQUIRES_CAPTURE,
+						'charge' => [
+							'status'   => Intent_Status::SUCCEEDED,
+							'id'       => uniqid( 'ch_' ),
+							'captured' => true,
+						],
+					]
+				),
+			],
+		];
+	}
+
 	public function test_cancel_authorization_handles_api_exception_when_canceling() {
 		$intent_id = 'pi_mock';
 		$charge_id = 'ch_mock';
@@ -974,7 +1122,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			]
 		)[0];
 
-		$this->assertStringContainsString( 'cancelled', $note->content );
+		$this->assertStringContainsString( 'cancelled', strtolower( $note->content ) );
 		$this->assertEquals( Order_Status::CANCELLED, $order->get_status() );
 	}
 
@@ -1425,6 +1573,215 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'The selected payment method requires a total amount of at least $0.50.' );
 		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function test_mandate_data_not_added_to_payment_intent_if_not_required() {
+		// Mandate data is required for SEPA and Stripe Link only, hence initializing the gateway with a CC payment method should not add mandate data.
+		$gateway = new UPE_Split_Payment_Gateway(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			new CC_Payment_Method( $this->mock_token_service ),
+			[],
+			$this->mock_rate_limiter,
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service
+		);
+		WC_Payments::set_gateway( $gateway );
+		$payment_method = 'woocommerce_payments_sepa_debit';
+		$order          = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+		$request->expects( $this->never() )
+			->method( 'set_mandate_data' );
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+		WC_Payments::set_gateway( $this->wcpay_gateway );
+	}
+
+	public function test_mandate_data_added_to_payment_intent_if_required() {
+		// Mandate data is required for SEPA and Stripe Link, hence initializing the gateway with a SEPA payment method should add mandate data.
+		$gateway = new UPE_Split_Payment_Gateway(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			new Sepa_Payment_Method( $this->mock_token_service ),
+			[],
+			$this->mock_rate_limiter,
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service
+		);
+		WC_Payments::set_gateway( $gateway );
+		$payment_method = 'woocommerce_payments_sepa_debit';
+		$order          = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+								return isset( $data['customer_acceptance']['type'] ) &&
+								'online' === $data['customer_acceptance']['type'] &&
+								isset( $data['customer_acceptance']['online'] ) &&
+								is_array( $data['customer_acceptance']['online'] );
+					}
+				)
+			);
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+		WC_Payments::set_gateway( $this->wcpay_gateway );
+	}
+
+	public function test_mandate_data_not_added_to_setup_intent_request_when_link_is_disabled() {
+		$gateway = new UPE_Split_Payment_Gateway(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			new CC_Payment_Method( $this->mock_token_service ),
+			[],
+			$this->mock_rate_limiter,
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service
+		);
+		WC_Payments::set_gateway( $gateway );
+		$gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+
+		$payment_method = 'woocommerce_payments';
+		$order          = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 0 );
+		$order->save();
+		$customer = 'cus_12345';
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( $customer ) );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi->must_save_payment_method_to_store();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( new WC_Payment_Token_CC() );
+
+			$request->expects( $this->never() )
+				->method( 'set_mandate_data' );
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+		WC_Payments::set_gateway( $this->wcpay_gateway );
+	}
+
+	public function test_mandate_data_added_to_setup_intent_request_when_link_is_enabled() {
+		$gateway = new UPE_Split_Payment_Gateway(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			new CC_Payment_Method( $this->mock_token_service ),
+			[],
+			$this->mock_rate_limiter,
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service
+		);
+		WC_Payments::set_gateway( $gateway );
+		$gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$payment_method = 'woocommerce_payments';
+		$order          = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 0 );
+		$order->save();
+		$customer = 'cus_12345';
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( $customer ) );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi->must_save_payment_method_to_store();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( new WC_Payment_Token_CC() );
+
+			$request->expects( $this->once() )
+				->method( 'set_mandate_data' )
+				->with(
+					$this->callback(
+						function ( $data ) {
+									return isset( $data['customer_acceptance']['type'] ) &&
+									'online' === $data['customer_acceptance']['type'] &&
+									isset( $data['customer_acceptance']['online'] ) &&
+									is_array( $data['customer_acceptance']['online'] );
+						}
+					)
+				);
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+		WC_Payments::set_gateway( $this->wcpay_gateway );
 	}
 
 	public function test_process_payment_for_order_cc_payment_method() {

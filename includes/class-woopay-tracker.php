@@ -71,6 +71,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
+		add_action( 'woocommerce_thankyou', [ $this, 'thank_you_page_view' ] );
 	}
 
 	/**
@@ -458,6 +459,22 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 				'source' => 'checkout',
 			]
 		);
+	}
+
+	/**
+	 * Record a Tracks event that Thank you page was viewed for a WCPay order.
+	 *
+	 * @param int $order_id The ID of the order.
+	 * @return void
+	 */
+	public function thank_you_page_view($order_id) {
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order || 'woocommerce_payments' !== $order->get_payment_method() ) {
+			return;
+		}
+
+		$this->maybe_record_wcpay_shopper_event( 'order_success_page_view' );
 	}
 
 	/**

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix incorrect amounts caused by zero-decimal currencies on Transactions, Deposits and Deposits CSV export

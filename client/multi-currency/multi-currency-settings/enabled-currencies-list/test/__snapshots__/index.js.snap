@@ -260,6 +260,7 @@ exports[`Multi-Currency enabled currencies list Enabled currencies list renders 
           >
             <button
               class="components-button wcpay-multi-currency__available-currencies-modal is-secondary"
+              data-testid="enabled-currencies-add-button"
               type="button"
             >
               Add/remove currencies
