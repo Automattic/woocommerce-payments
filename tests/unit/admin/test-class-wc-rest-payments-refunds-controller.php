@@ -35,7 +35,7 @@ class WC_REST_Payments_Refunds_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_process_refund_without_order_id() {
+	public function test_process_refund_without_order_id(): void {
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
@@ -67,7 +67,7 @@ class WC_REST_Payments_Refunds_Controller_Test extends WCPAY_UnitTestCase {
 			->willReturn( $refund_response );
 
 		$response = $this->controller->process_refund( $request );
-		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( $refund_response, $response->get_data() );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( $refund_response, $response->get_data() );
 	}
 }
