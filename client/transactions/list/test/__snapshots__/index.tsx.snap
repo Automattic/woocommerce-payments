@@ -542,7 +542,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -723,7 +723,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -871,7 +871,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.75
+                      -$0.75
                     </a>
                   </td>
                   <td
@@ -1531,7 +1531,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -1712,7 +1712,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -1860,7 +1860,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.75
+                      -$0.75
                     </a>
                   </td>
                   <td
@@ -2524,7 +2524,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -3210,7 +3210,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -3401,7 +3401,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -3552,7 +3552,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.75
+                      -$0.75
                     </a>
                   </td>
                   <td
@@ -4257,7 +4257,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -4438,7 +4438,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -4586,7 +4586,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.75
+                      -$0.75
                     </a>
                   </td>
                   <td
@@ -5288,7 +5288,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -5469,7 +5469,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.50
+                      -$0.50
                     </a>
                   </td>
                   <td
@@ -5617,7 +5617,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                       tabindex="-1"
                     >
-                      $-0.75
+                      -$0.75
                     </a>
                   </td>
                   <td
