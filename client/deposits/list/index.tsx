@@ -25,7 +25,7 @@ import { useDispatch } from '@wordpress/data';
  */
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { displayType, displayStatus } from '../strings';
-import { formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency, formatExportAmount } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import Page from '../../components/page';
@@ -143,7 +143,7 @@ export const DepositsList = (): JSX.Element => {
 				display: clickable( displayType[ deposit.type ] ),
 			},
 			amount: {
-				value: deposit.amount / 100,
+				value: formatExportAmount( deposit.amount, deposit.currency ),
 				display: clickable(
 					formatExplicitCurrency( deposit.amount, deposit.currency )
 				),

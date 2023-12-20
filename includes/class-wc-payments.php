@@ -44,6 +44,7 @@ use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\WooPay\WooPay_Scheduler;
 use WCPay\WooPay\WooPay_Session;
+use WCPay\Compatibility_Service;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -296,6 +297,13 @@ class WC_Payments {
 	private static $incentives_service;
 
 	/**
+	 * Instance of Compatibility_Service, created in init function
+	 *
+	 * @var Compatibility_Service
+	 */
+	private static $compatibility_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -463,6 +471,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
+		include_once __DIR__ . '/class-compatibility-service.php';
 		include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 
 		self::$woopay_checkout_service = new Checkout_Service();
@@ -497,6 +506,7 @@ class WC_Payments {
 		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
 		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
+		self::$compatibility_service                = new Compatibility_Service( self::$api_client );
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
@@ -505,6 +515,7 @@ class WC_Payments {
 		self::$fraud_service->init_hooks();
 		self::$onboarding_service->init_hooks();
 		self::$incentives_service->init_hooks();
+		self::$compatibility_service->init_hooks();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
 
@@ -591,12 +602,12 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
-		require_once __DIR__ . '/migrations/class-track-upe-status.php';
+		require_once __DIR__ . '/migrations/class-additional-payment-methods-admin-notes-removal.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Track_Upe_Status', 'maybe_track' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Additional_Payment_Methods_Admin_Notes_Removal(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
@@ -1045,15 +1056,9 @@ class WC_Payments {
 		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
 		$refunds_controller->register_routes();
 
-		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
-			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
-			$upe_flag_toggle_controller->register_routes();
-
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
-			$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
-			$survey_controller->register_routes();
-		}
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+		$survey_controller->register_routes();
 
 		if ( WC_Payments_Features::is_documents_section_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
@@ -1326,8 +1331,7 @@ class WC_Payments {
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
-		require_once __DIR__ . '/class-wc-payments-upe-split-blocks-payment-method.php';
-		$payment_method_registry->register( new WC_Payments_UPE_Split_Blocks_Payment_Method() );
+		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 	}
 
 	/**
@@ -1366,18 +1370,11 @@ class WC_Payments {
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
 			WC_Payments_Notes_Qualitative_Feedback::possibly_add_note();
-			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_add_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
-
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
-			WC_Payments_Notes_Additional_Payment_Methods::set_account( self::get_account_service() );
-			WC_Payments_Notes_Additional_Payment_Methods::possibly_add_note();
-			WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
 			WC_Payments_Notes_Set_Up_StripeLink::set_gateway( self::get_gateway() );
@@ -1422,19 +1419,14 @@ class WC_Payments {
 	public static function remove_woo_admin_notes() {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			self::$remote_note_service->delete_notes();
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
 			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
-			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 			WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
-
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
-			WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_delete_note();
@@ -1667,6 +1659,7 @@ class WC_Payments {
 				'wcpay_fraud_protection_welcome_tour_dismissed',
 				'wcpay_capability_request_dismissed_notices',
 				'wcpay_onboarding_eligibility_modal_dismissed',
+				'wcpay_next_deposit_notice_dismissed',
 			],
 			true
 		);
