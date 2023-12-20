@@ -7,7 +7,7 @@
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\WC_Payments_UPE_Checkout;
+use WCPay\WC_Payments_Checkout;
 use WCPay\WooPay\WooPay_Utilities;
 
 /**
@@ -24,7 +24,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	/**
 	 * WC Payments Checkout
 	 *
-	 * @var WC_Payments_UPE_Checkout
+	 * @var WC_Payments_Checkout
 	 */
 	private $wc_payments_checkout;
 

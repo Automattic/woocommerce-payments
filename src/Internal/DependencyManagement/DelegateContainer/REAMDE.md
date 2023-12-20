@@ -41,7 +41,7 @@ This is a list of the currently supported legacy classes by the container.
 - `WCPay\Core\Mode`
 - `WC_Payment_Gateway_WCPay`
 - `WCPay\WooPay_Tracker`
-- `WCPay\WC_Payments_UPE_Checkout`
+- `WCPay\WC_Payments_Checkout`
 - `WCPay\Database_Cache`
 - `WC_Payments_Account`
 - `WC_Payments_API_Client`

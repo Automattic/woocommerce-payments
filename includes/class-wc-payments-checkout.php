@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_UPE_Checkout
+ * Class WC_Payments_Checkout
  *
  * @package WooCommerce\Payments
  */
@@ -25,9 +25,9 @@ use WCPay\Payment_Methods\UPE_Payment_Method;
 
 
 /**
- * WC_Payments_UPE_Checkout
+ * WC_Payments_Checkout
  */
-class WC_Payments_UPE_Checkout {
+class WC_Payments_Checkout {
 
 	/**
 	 * WC Payments Gateway.

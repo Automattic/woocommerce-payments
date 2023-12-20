@@ -1,11 +1,11 @@
 <?php
 /**
- * Class WC_Payments_UPE_Checkout_Test
+ * Class WC_Payments_Checkout_Test
  *
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\WC_Payments_UPE_Checkout;
+use WCPay\WC_Payments_Checkout;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Method;
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
@@ -22,16 +22,16 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 
 /**
- * Class WC_Payments_UPE_Checkout_Test
+ * Class WC_Payments_Checkout_Test
  *
  * @package WooCommerce\Payments\Tests
  */
-class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
+class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 	/**
 	 * Holds the object, which will be tested.
 	 *
-	 * @var WC_Payments_UPE_Checkout
+	 * @var WC_Payments_Checkout
 	 */
 	private $system_under_test;
 
@@ -130,7 +130,7 @@ class WC_Payments_UPE_Checkout_Test extends WP_UnitTestCase {
 			}
 		);
 
-		$this->system_under_test = new WC_Payments_UPE_Checkout( $this->mock_wcpay_gateway, $this->mock_woopay_utilities, $this->mock_wcpay_account, $this->mock_customer_service, $this->mock_fraud_service );
+		$this->system_under_test = new WC_Payments_Checkout( $this->mock_wcpay_gateway, $this->mock_woopay_utilities, $this->mock_wcpay_account, $this->mock_customer_service, $this->mock_fraud_service );
 	}
 
 	public function tear_down() {
