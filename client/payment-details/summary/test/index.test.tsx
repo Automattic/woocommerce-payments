@@ -251,7 +251,7 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 
 		const container = renderCharge( charge );
-		screen.getByText( /Refunded: \$-20.00/i );
+		screen.getByText( /Refunded: -\$20.00/i );
 		expect( container ).toMatchSnapshot();
 	} );
 
