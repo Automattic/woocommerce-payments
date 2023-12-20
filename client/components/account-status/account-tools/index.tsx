@@ -2,18 +2,17 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { render } from '@wordpress/element';
+import { Button, CardDivider } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
 import strings from './strings';
 import { isInDevMode } from 'utils';
-import { Button, CardDivider } from '@wordpress/components';
 import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { trackAccountReset } from 'wcpay/onboarding/tracking';
-import { addQueryArgs } from '@wordpress/url';
 
 interface Props {
 	accountLink: string;
