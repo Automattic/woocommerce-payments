@@ -8,8 +8,14 @@
 	margin-bottom: 24px;
 }
 
+.components-card__body:first-of-type {
+	display: flex;
+	flex-direction: row;
+}
+
 .payment-details-summary {
 	display: flex;
+	flex: 1;
 	@include breakpoint( '<660px' ) {
 		flex-direction: column;
 	}
@@ -92,4 +98,8 @@
 
 .woocommerce-list--horizontal {
 	margin-top: 0 !important;
+}
+
+.payment-details__refund-controls {
+	flex: 0 0 auto;
 }
