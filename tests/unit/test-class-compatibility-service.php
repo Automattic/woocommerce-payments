@@ -47,10 +47,26 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$expected = [
 			'woopayments_version' => WCPAY_VERSION_NUMBER,
 			'woocommerce_version' => WC_VERSION,
-			'active_plugins'      => [],
+			'active_plugins'      => [
+				'woocommerce/woocommerce.php',
+				'woocommerce-payments/woocommerce-payments.php',
+			],
 		];
 
 		// Arrange/Assert: Set the expectations for update_compatibility_data.
+		$mock_compatibility_service = $this->get_partial_mock_for_compatibility_service( [ 'get_option' ] );
+
+		$mock_compatibility_service
+			->expects( $this->once() )
+			->method( 'get_option' )
+			->with( 'active_plugins' )
+			->willReturn(
+				[
+					'woocommerce/woocommerce.php',
+					'woocommerce-payments/woocommerce-payments.php',
+				]
+			);
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'update_compatibility_data' )
@@ -58,5 +74,47 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 
 		// Act: Call the method we're testing.
 		$this->compatibility_service->update_compatibility_data();
+	}
+
+	public function test_get_option() {
+		// Arrange: Set the expectations for get_option.
+		$mock_compatibility_service = $this->get_partial_mock_for_compatibility_service();
+
+		$mock_compatibility_service
+			->expects( $this->once() )
+			->method( 'get_option' )
+			->with( 'active_plugins' )
+			->willReturn(
+				[
+					'woocommerce/woocommerce.php',
+					'woocommerce-payments/woocommerce-payments.php',
+				]
+			);
+
+		// Act: Call the method we're testing.
+		$actual = $this->compatibility_service->get_option( 'active_plugins' );
+
+		// Assert: Verify that the method returned the expected value.
+		$this->assertEquals(
+			[
+				'woocommerce/woocommerce.php',
+				'woocommerce-payments/woocommerce-payments.php',
+			],
+			$actual
+		);
+	}
+
+	/**
+	 * Create a partial mock for Compatibility_Service.
+	 *
+	 * @param array $methods Method names that need to be mocked.
+	 *
+	 * @return MockObject|Compatibility_Service
+	 */
+	private function get_partial_mock_for_compatibility_service( array $methods = [] ) {
+		return $this->getMockBuilder( Compatibility_Service::class )
+			->setConstructorArgs( [ $this->mock_api_client ] )
+			->setMethods( $methods )
+			->getMock();
 	}
 }
