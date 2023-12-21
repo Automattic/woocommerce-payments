@@ -13,17 +13,14 @@ import { useDevMode, useIsWCPayEnabled, useTestMode } from 'wcpay/data';
 import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/overview/modal/setup-live-payments';
-import DevModeConfirmationModal from './dev-mode-confirm-modal';
+import TestModeConfirmationModal from './test-mode-confirm-modal';
 
 const GeneralSettings = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
 	const [ modalVisible, setModalVisible ] = useState( false );
 	const isDevModeEnabled = useDevMode();
-	const [
-		devConfirmationModalVisible,
-		setDevConfirmationModalVisible,
-	] = useState( false );
+	const [ testModeModalVisible, setTestModeModalVisible ] = useState( false );
 
 	return (
 		<>
@@ -56,7 +53,7 @@ const GeneralSettings = () => {
 								onChange={ ( enableTestMode ) => {
 									updateIsTestModeEnabled( enableTestMode );
 									if ( enableTestMode ) {
-										setDevConfirmationModalVisible( true );
+										setTestModeModalVisible( true );
 									}
 								} }
 								label={ __(
@@ -143,14 +140,14 @@ const GeneralSettings = () => {
 					closeModal={ () => setModalVisible( false ) }
 				/>
 			) }
-			{ devConfirmationModalVisible && (
-				<DevModeConfirmationModal
+			{ testModeModalVisible && (
+				<TestModeConfirmationModal
 					onClose={ () => {
 						updateIsTestModeEnabled( false );
-						setDevConfirmationModalVisible( false );
+						setTestModeModalVisible( false );
 					} }
 					onConfirm={ () => {
-						setDevConfirmationModalVisible( false );
+						setTestModeModalVisible( false );
 					} }
 				/>
 			) }

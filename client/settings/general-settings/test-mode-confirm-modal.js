@@ -10,18 +10,18 @@ import { __ } from '@wordpress/i18n';
  */
 import ConfirmationModal from '../../components/confirmation-modal';
 
-function DevModeConfirmationModal( { onClose, onConfirm } ) {
+function TestModeConfirmationModal( { onClose, onConfirm } ) {
 	return (
 		<ConfirmationModal
 			title={ __( 'Enable test mode', 'woocommerce-payments' ) }
 			onRequestClose={ onClose }
 			actions={
 				<>
-					<Button onClick={ onClose } isSecondary>
-						Cancel
+					<Button onClick={ onClose } variant="secondary">
+						{ __( 'Cancel', 'woocommerce-payments' ) }
 					</Button>
-					<Button onClick={ onConfirm } isPrimary>
-						Enable
+					<Button onClick={ onConfirm } variant="primary">
+						{ __( 'Enable', 'woocommerce-payments' ) }
 					</Button>
 				</>
 			}
@@ -50,4 +50,4 @@ function DevModeConfirmationModal( { onClose, onConfirm } ) {
 	);
 }
 
-export default DevModeConfirmationModal;
+export default TestModeConfirmationModal;

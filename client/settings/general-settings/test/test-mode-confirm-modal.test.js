@@ -10,15 +10,15 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import DevModeConfirmationModal from '../dev-mode-confirm-modal';
+import TestModeConfirmationModal from '../test-mode-confirm-modal';
 
 const mockOnClose = jest.fn();
 const mockOnConfirm = jest.fn();
 
 describe( 'Dev Mode Confirmation Modal', () => {
-	const renderDevModeConfirmationModal = () => {
+	const renderTestModeConfirmationModal = () => {
 		return render(
-			<DevModeConfirmationModal
+			<TestModeConfirmationModal
 				onClose={ mockOnClose }
 				onConfirm={ mockOnConfirm }
 			/>
@@ -26,14 +26,14 @@ describe( 'Dev Mode Confirmation Modal', () => {
 	};
 
 	it( 'Dev mode confirmation modal asks confirmation', () => {
-		renderDevModeConfirmationModal();
+		renderTestModeConfirmationModal();
 		expect(
 			screen.queryByText( 'Are you sure you want to enable test mode?' )
 		).toBeInTheDocument();
 	} );
 
 	it( 'triggers the onClose function on close button click', () => {
-		renderDevModeConfirmationModal();
+		renderTestModeConfirmationModal();
 		const closeButton = screen.queryByRole( 'button', { name: 'Cancel' } );
 		expect( mockOnClose ).not.toBeCalled();
 		user.click( closeButton );
@@ -41,7 +41,7 @@ describe( 'Dev Mode Confirmation Modal', () => {
 	} );
 
 	it( 'triggers the onConfirm function on Enable button click', () => {
-		renderDevModeConfirmationModal();
+		renderTestModeConfirmationModal();
 		const enableButton = screen.queryByRole( 'button', { name: 'Enable' } );
 		expect( mockOnConfirm ).not.toBeCalled();
 		user.click( enableButton );
