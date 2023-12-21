@@ -29,7 +29,7 @@ exports[`AccountTools should render in live mode 1`] = `
         Finish setup
       </a>
       <button
-        class="components-button is-link"
+        class="components-button is-tertiary"
         type="button"
       >
         Reset account

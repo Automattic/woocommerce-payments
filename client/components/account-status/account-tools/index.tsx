@@ -49,7 +49,7 @@ export const AccountTools: React.FC< Props > = ( props: Props ) => {
 						{ strings.finish }
 					</Button>
 					<Button
-						variant={ 'link' }
+						variant={ 'tertiary' }
 						onClick={ () => setModalVisible( true ) }
 					>
 						{ strings.reset }

@@ -192,7 +192,7 @@ exports[`AccountStatus renders normal status 1`] = `
               Finish setup
             </button>
             <button
-              class="components-button is-link"
+              class="components-button is-tertiary"
               type="button"
             >
               Reset account
