@@ -1,3 +1,5 @@
+/** @format **/
+
 /**
  * External dependencies
  */
@@ -10,7 +12,15 @@ import { __ } from '@wordpress/i18n';
  */
 import ConfirmationModal from '../../components/confirmation-modal';
 
-function TestModeConfirmationModal( { onClose, onConfirm } ) {
+interface TestModeConfirmationModalProps {
+	onClose: () => void;
+	onConfirm: () => void;
+}
+
+const TestModeConfirmationModal: React.FC< TestModeConfirmationModalProps > = ( {
+	onClose,
+	onConfirm,
+} ) => {
 	return (
 		<ConfirmationModal
 			title={ __( 'Enable test mode', 'woocommerce-payments' ) }
@@ -48,6 +58,6 @@ function TestModeConfirmationModal( { onClose, onConfirm } ) {
 			</ExternalLink>
 		</ConfirmationModal>
 	);
-}
+};
 
 export default TestModeConfirmationModal;
