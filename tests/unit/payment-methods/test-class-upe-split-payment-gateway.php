@@ -1,6 +1,6 @@
 <?php
 /**
- * Class UPE_Split_Payment_Gateway_Test
+ * Class UPE_Payment_Gateway_Test
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -40,7 +40,7 @@ use WCPay\Database_Cache;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 /**
- * UPE_Split_Payment_Gateway unit tests
+ * UPE_Payment_Gateway unit tests
  */
 class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
@@ -256,7 +256,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
-			'payment_method'       => UPE_Split_Payment_Gateway::GATEWAY_ID,
+			'payment_method'       => UPE_Payment_Gateway::GATEWAY_ID,
 		];
 
 		$get_payment_gateway_by_id_return_value_map = [];
@@ -268,7 +268,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				->getMock();
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 
-			$mock_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
+			$mock_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
 				->setConstructorArgs(
 					[
 						$this->mock_api_client,
@@ -759,7 +759,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$mock_sepa_payment_gateway = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
 		$order                         = WC_Helper_Order::create_order();
-		$gateway_id                    = UPE_Split_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::SEPA;
+		$gateway_id                    = UPE_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::SEPA;
 		$save_payment_param            = "wc-$gateway_id-new-payment-method";
 		$_POST[ $save_payment_param ]  = 'yes';
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
@@ -1699,10 +1699,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 	public function test_remove_upe_setup_intent_from_session() {
 		// Two payment methods (SEPA and giropay) are enabled.
-		$sepa_setup_intent_key    = UPE_Split_Payment_Gateway::KEY_UPE_SETUP_INTENT . '_sepa_debit';
-		$giropay_setup_intent_key = UPE_Split_Payment_Gateway::KEY_UPE_SETUP_INTENT . '_giropay';
+		$sepa_setup_intent_key    = UPE_Payment_Gateway::KEY_UPE_SETUP_INTENT . '_sepa_debit';
+		$giropay_setup_intent_key = UPE_Payment_Gateway::KEY_UPE_SETUP_INTENT . '_giropay';
 
-		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
+		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -1753,7 +1753,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_get_payment_methods_with_request_context() {
-		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
+		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -1798,7 +1798,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_get_payment_methods_without_request_context() {
-		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
+		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -1842,7 +1842,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_get_payment_methods_without_request_context_or_token() {
-		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
+		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -1895,7 +1895,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_get_payment_methods_from_gateway_id_upe() {
 		WC_Helper_Order::create_order();
-		$mock_upe_gateway = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
+		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -1929,7 +1929,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ Payment_Method::CARD, Payment_Method::LINK ] )
 			);
 
-		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::BANCONTACT );
+		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::BANCONTACT );
 		$this->assertSame( [ Payment_Method::BANCONTACT ], $payment_methods );
 
 		$mock_upe_gateway->expects( $this->any() )
@@ -1941,10 +1941,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				)
 			);
 
-		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
+		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Payment_Gateway::GATEWAY_ID );
 		$this->assertSame( [ Payment_Method::CARD, Payment_Method::LINK ], $payment_methods );
 
-		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
+		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Payment_Gateway::GATEWAY_ID );
 		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
 
 		WC_Payments::set_gateway( $gateway );

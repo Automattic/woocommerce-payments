@@ -13,7 +13,6 @@ use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
@@ -76,7 +75,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * An array of mocked split UPE payment gateways mapped to payment method ID.
 	 *
-	 * @var UPE_Split_Payment_Gateway
+	 * @var UPE_Payment_Gateway
 	 */
 	private $mock_split_upe_payment_gateway;
 
@@ -191,6 +190,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$customer_service,
 			$token_service,
 			$action_scheduler_service,
+			$mock_payment_method,
 			$mock_payment_methods,
 			$mock_rate_limiter,
 			$order_service,
@@ -201,7 +201,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway, $this->mock_wcpay_account );
 
-		$this->mock_split_upe_payment_gateway = new UPE_Split_Payment_Gateway(
+		$this->mock_split_upe_payment_gateway = new UPE_Payment_Gateway(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$customer_service,
