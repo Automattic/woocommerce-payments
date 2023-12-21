@@ -594,6 +594,7 @@ export const TransactionsList = (
 		const { page, path, ...params } = getQuery();
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 		const userEmail = wcpaySettings.currentUserEmail;
+		const locale = wcpaySettings.locale;
 
 		wcpayTracks.recordEvent(
 			wcpayTracks.events.TRANSACTIONS_DOWNLOAD_CSV_CLICK,
@@ -661,6 +662,7 @@ export const TransactionsList = (
 					await apiFetch( {
 						path: getTransactionsCSV( {
 							userEmail,
+							locale,
 							dateAfter,
 							dateBefore,
 							dateBetween,
