@@ -81,6 +81,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	 */
 	public function set_up() {
 		parent::set_up();
+		add_filter( 'pre_option_woocommerce_tax_based_on', [ $this, '__return_base' ] );
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
@@ -109,6 +110,23 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$zone->set_zone_order( 1 );
 		$zone->save();
 
+		add_filter(
+			'woocommerce_find_rates',
+			function() {
+				return [
+					1 =>
+						[
+							'rate'     => 10.0,
+							'label'    => 'Tax',
+							'shipping' => 'yes',
+							'compound' => 'no',
+						],
+				];
+			},
+			50,
+			2
+		);
+
 		$this->flat_rate_id = $zone->add_shipping_method( 'flat_rate' );
 		self::set_shipping_method_cost( $this->flat_rate_id, '5' );
 
@@ -129,6 +147,36 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		WC()->session->cleanup_sessions();
 		$this->zone->delete();
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
+		remove_filter( 'pre_option_woocommerce_tax_based_on', [ $this, '__return_base' ] );
+		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_excl' ] );
+		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
+		remove_filter( 'pre_option_woocommerce_tax_display_shop', [ $this, '__return_excl' ] );
+		remove_filter( 'pre_option_woocommerce_tax_display_shop', [ $this, '__return_incl' ] );
+		remove_filter( 'pre_option_woocommerce_prices_include_tax', [ $this, '__return_yes' ] );
+		remove_filter( 'pre_option_woocommerce_prices_include_tax', [ $this, '__return_no' ] );
+		remove_filter( 'wc_tax_enabled', '__return_true' );
+		remove_filter( 'wc_tax_enabled', '__return_false' );
+		remove_filter( 'wc_shipping_enabled', '__return_false' );
+	}
+
+	public function __return_yes() {
+		return 'yes';
+	}
+
+	public function __return_no() {
+		return 'no';
+	}
+
+	public function __return_excl() {
+		return 'excl';
+	}
+
+	public function __return_incl() {
+		return 'incl';
+	}
+
+	public function __return_base() {
+		return 'base';
 	}
 
 	/**
@@ -284,6 +332,105 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		);
 	}
 
+	/**
+	 * @dataProvider provide_get_product_tax_tests
+	 */
+	public function test_get_product_price_returns_price_with_tax( $tax_enabled, $prices_include_tax, $tax_display_shop, $tax_display_cart, $product_price, $expected_price ) {
+		$this->simple_product->set_price( $product_price );
+		add_filter( 'wc_tax_enabled', $tax_enabled ? '__return_true' : '__return_false' ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_prices_include_tax', [ $this, "__return_$prices_include_tax" ] ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_tax_display_shop', [ $this, "__return_$tax_display_shop" ] ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, "__return_$tax_display_cart" ] ); // reset in tear_down.
+		WC()->cart->calculate_totals();
+		$this->assertEquals(
+			$expected_price,
+			$this->pr->get_product_price( $this->simple_product )
+		);
+	}
+
+	public function provide_get_product_tax_tests() {
+		yield 'Tax Disabled, Price Display Unaffected' => [
+			'tax_enabled'        => false,
+			'prices_include_tax' => 'no',
+			'tax_display_shop'   => 'excl',
+			'tax_display_cart'   => 'incl',
+			'product_price'      => 10,
+			'expected_price'     => 10,
+		];
+
+		// base prices DO NOT include tax.
+
+		yield 'Shop: Excl / Cart: Incl, Base Prices Don\'t Include Tax' => [
+			'tax_enabled'        => true,
+			'prices_include_tax' => 'no',
+			'tax_display_shop'   => 'excl',
+			'tax_display_cart'   => 'incl',
+			'product_price'      => 10,
+			'expected_price'     => 11,
+		];
+		yield 'Shop: Excl / Cart: Excl, Base Prices Don\'t Include Tax' => [
+			'tax_enabled'        => true,
+			'prices_include_tax' => 'no',
+			'tax_display_shop'   => 'excl',
+			'tax_display_cart'   => 'excl',
+			'product_price'      => 10,
+			'expected_price'     => 10,
+		];
+
+		yield 'Shop: Incl / Cart: Incl, Base Prices Don\'t Include Tax' => [
+			'tax_enabled'        => true,
+			'prices_include_tax' => 'no',
+			'tax_display_shop'   => 'incl',
+			'tax_display_cart'   => 'incl',
+			'product_price'      => 10,
+			'expected_price'     => 11,
+		];
+		yield 'Shop: Incl / Cart: Excl, Base Prices Don\'t Include Tax' => [
+			'tax_enabled'        => true,
+			'prices_include_tax' => 'no',
+			'tax_display_shop'   => 'incl',
+			'tax_display_cart'   => 'excl',
+			'product_price'      => 10,
+			'expected_price'     => 10,
+		];
+
+		// base prices include tax.
+
+		yield 'Shop: Excl / Cart: Incl, Base Prices Include Tax' => [
+			'tax_enabled'        => true,
+			'prices_include_tax' => 'yes',
+			'tax_display_shop'   => 'excl',
+			'tax_display_cart'   => 'incl',
+			'product_price'      => 10,
+			'expected_price'     => 10,
+		];
+		yield 'Shop: Excl / Cart: Excl, Base Prices Include Tax' => [
+			'tax_enabled'        => true,
+			'prices_include_tax' => 'yes',
+			'tax_display_shop'   => 'excl',
+			'tax_display_cart'   => 'excl',
+			'product_price'      => 10,
+			'expected_price'     => 9.090909,
+		];
+
+		yield 'Shop: Incl / Cart: Incl, Base Prices Include Tax' => [
+			'tax_enabled'        => true,
+			'prices_include_tax' => 'yes',
+			'tax_display_shop'   => 'incl',
+			'tax_display_cart'   => 'incl',
+			'product_price'      => 10,
+			'expected_price'     => 10,
+		];
+		yield 'Shop: Incl / Cart: Excl, Base Prices Include Tax' => [
+			'tax_enabled'        => true,
+			'prices_include_tax' => 'yes',
+			'tax_display_shop'   => 'incl',
+			'tax_display_cart'   => 'excl',
+			'product_price'      => 10,
+			'expected_price'     => 9.090909,
+		];
+	}
+
 	public function test_get_product_price_includes_subscription_sign_up_fee() {
 		$mock_product = $this->create_mock_subscription( 'subscription' );
 
@@ -346,5 +493,47 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			->willReturn( $type );
 
 		return $mock_product;
+	}
+
+	/**
+	 * @dataProvider provide_get_product_tax_tests
+	 */
+	public function test_get_product_data_returns_the_same_as_build_display_items_without_shipping( $tax_enabled, $prices_include_tax, $tax_display_shop, $tax_display_cart, $_product_price, $_expected_price ) {
+		add_filter( 'wc_tax_enabled', $tax_enabled ? '__return_true' : '__return_false' ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_prices_include_tax', [ $this, "__return_$prices_include_tax" ] ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_tax_display_shop', [ $this, "__return_$tax_display_shop" ] ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, "__return_$tax_display_cart" ] ); // reset in tear_down.
+		add_filter( 'wc_shipping_enabled', '__return_false' ); // reset in tear_down.
+		WC()->cart->calculate_totals();
+		$build_display_items_result = $this->pr->build_display_items( true );
+
+		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway ] )
+			->setMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+
+		$mock_pr->method( 'is_product' )
+			->willReturn( true );
+		$mock_pr->method( 'get_product' )
+			->willReturn( $this->simple_product );
+
+		$get_product_data_result = $mock_pr->get_product_data();
+
+		foreach ( $get_product_data_result['displayItems'] as $key => $display_item ) {
+			if ( isset( $display_item['pending'] ) ) {
+				unset( $get_product_data_result['displayItems'][ $key ]['pending'] );
+			}
+		}
+
+		$this->assertEquals(
+			$get_product_data_result['displayItems'],
+			$build_display_items_result['displayItems'],
+			'Failed asserting displayItems are the same for get_product_data and build_display_items'
+		);
+		$this->assertEquals(
+			$get_product_data_result['total']['amount'],
+			$build_display_items_result['total']['amount'],
+			'Failed asserting total amount are the same for get_product_data and build_display_items'
+		);
 	}
 }

@@ -144,8 +144,11 @@ const getColumns = (
 		},
 		{
 			key: 'date',
-			label: __( 'Date / Time', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
+			label: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
+			screenReaderLabel: __(
+				'Date and time in UTC',
+				'woocommerce-payments'
+			),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',
@@ -168,9 +171,40 @@ const getColumns = (
 			isLeftAligned: true,
 		},
 		{
+			key: 'customer_currency',
+			label: __( 'Paid Currency', 'woocommerce-payments' ),
+			screenReaderLabel: __(
+				'Customer Currency',
+				'woocommerce-payments'
+			),
+			isSortable: true,
+			visible: false,
+		},
+		{
+			key: 'customer_amount',
+			label: __( 'Amount Paid', 'woocommerce-payments' ),
+			screenReaderLabel: __(
+				'Amount in Customer Currency',
+				'woocommerce-payments'
+			),
+			isNumeric: true,
+			isSortable: true,
+			visible: false,
+		},
+		{
+			key: 'deposit_currency',
+			label: __( 'Deposit Currency', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Deposit Currency', 'woocommerce-payments' ),
+			isSortable: true,
+			visible: false,
+		},
+		{
 			key: 'amount',
 			label: __( 'Amount', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Amount', 'woocommerce-payments' ),
+			screenReaderLabel: __(
+				'Amount in Deposit Curency',
+				'woocommerce-payments'
+			),
 			isNumeric: true,
 			isSortable: true,
 		},
@@ -205,8 +239,8 @@ const getColumns = (
 		},
 		{
 			key: 'source',
-			label: __( 'Source', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Source', 'woocommerce-payments' ),
+			label: __( 'Payment Method', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Payment Method', 'woocommerce-payments' ),
 			cellClassName: 'is-center-aligned',
 		},
 		{
@@ -235,6 +269,14 @@ const getColumns = (
 			screenReaderLabel: __( 'Risk level', 'woocommerce-payments' ),
 			visible: false,
 			isLeftAligned: true,
+		},
+		includeDeposit && {
+			key: 'deposit_id',
+			label: __( 'Deposit ID', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Deposit ID', 'woocommerce-payments' ),
+			cellClassName: 'deposit',
+			isLeftAligned: true,
+			visible: false,
 		},
 		includeDeposit && {
 			key: 'deposit',
@@ -371,6 +413,17 @@ export const TransactionsList = (
 				),
 			};
 		};
+		const formatCustomerAmount = () => {
+			return {
+				value: formatExportAmount(
+					txn.customer_amount,
+					txn.customer_currency
+				),
+				display: clickable(
+					formatCurrency( txn.customer_amount, txn.customer_currency )
+				),
+			};
+		};
 
 		const isFinancingType =
 			-1 !==
@@ -464,6 +517,15 @@ export const TransactionsList = (
 				value: txn.customer_country,
 				display: clickable( txn.customer_country ),
 			},
+			customer_currency: {
+				value: txn.customer_currency.toUpperCase(),
+				display: clickable( txn.customer_currency.toUpperCase() ),
+			},
+			customer_amount: formatCustomerAmount(),
+			deposit_currency: {
+				value: txn.currency.toUpperCase(),
+				display: clickable( txn.currency.toUpperCase() ),
+			},
 			amount: formatAmount(),
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
 			fees: formatFees(),
@@ -476,6 +538,10 @@ export const TransactionsList = (
 			risk_level: {
 				value: calculateRiskMapping( txn.risk_level ),
 				display: clickable( riskLevel ),
+			},
+			deposit_id: {
+				value: txn.deposit_id,
+				display: txn.deposit_id,
 			},
 			deposit: { value: txn.available_on, display: deposit },
 			deposit_status: {
@@ -592,9 +658,7 @@ export const TransactionsList = (
 				window.confirm( confirmMessage )
 			) {
 				try {
-					const {
-						exported_transactions: exportedTransactions,
-					} = await apiFetch( {
+					await apiFetch( {
 						path: getTransactionsCSV( {
 							userEmail,
 							dateAfter,
