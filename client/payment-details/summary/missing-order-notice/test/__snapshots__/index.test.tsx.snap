@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MissingOrderNotice it renders correctly 1`] = `
+<div>
+  <div
+    class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="CardFooter"
+  >
+    <div
+      class="card-notice__section"
+    >
+      <div
+        class="card-notice__text"
+      >
+        This transaction is not connected to order. 
+        It has been refunded and is not a subject for disputes.
+      </div>
+      <div
+        class="card-notice__button"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`MissingOrderNotice renders loading state 1`] = `
+<div>
+  <span
+    aria-busy="true"
+    class="is-loadable-placeholder"
+  />
+</div>
+`;
