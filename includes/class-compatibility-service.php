@@ -47,7 +47,7 @@ class Compatibility_Service {
 	 * @return void
 	 */
 	public function update_compatibility_data() {
-		$active_plugins = $this->get_option( 'active_plugins' );
+		$active_plugins = get_option( 'active_plugins' );
 
 		try {
 			$this->payments_api_client->update_compatibility_data(
@@ -60,17 +60,5 @@ class Compatibility_Service {
 		} catch ( API_Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 			// The exception is already logged if logging is on, nothing else needed.
 		}
-	}
-
-	/**
-	 * Wrapper for the WordPress core get_option function. Retrieves an option value based on an option name.
-	 * The wrapper is used so we can mock this function in unit tests.
-	 *
-	 * @param string $option_name The name of the option to get.
-	 *
-	 * @return mixed The value of the option.
-	 */
-	public function get_option( string $option_name ) {
-		return get_option( $option_name );
 	}
 }
