@@ -73,6 +73,25 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
               </div>
             </div>
           </div>
+          <div
+            class="payment-details__refund-controls"
+          >
+            <span
+              aria-busy="true"
+              class="is-loadable-placeholder"
+            >
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                />
+              </svg>
+            </span>
+          </div>
         </div>
         <hr
           aria-orientation="horizontal"
@@ -504,6 +523,35 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               </div>
             </div>
           </div>
+          <div
+            class="payment-details__refund-controls"
+          >
+            <div
+              class="components-dropdown components-dropdown-menu"
+              tabindex="-1"
+            >
+              <button
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="Translation actions"
+                class="components-button components-dropdown-menu__toggle has-icon"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
         <hr
           aria-orientation="horizontal"
@@ -681,6 +729,32 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               </div>
             </li>
           </ul>
+        </div>
+        <div
+          class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardFooter"
+        >
+          <div
+            class="card-notice__section"
+          >
+            <div
+              class="card-notice__text"
+            >
+              This transaction is not connected to order. 
+              Investigate this purchase and refund the transaction as needed.
+            </div>
+            <div
+              class="card-notice__button"
+            >
+              <button
+                class="components-button is-primary"
+                type="button"
+              >
+                Refund
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       <div
