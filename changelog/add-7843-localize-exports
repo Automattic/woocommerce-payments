@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Apply localization to CSV exports sent via email.
