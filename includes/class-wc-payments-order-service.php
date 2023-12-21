@@ -105,6 +105,15 @@ class WC_Payments_Order_Service {
 	const WCPAY_TRANSACTION_FEE_META_KEY = '_wcpay_transaction_fee';
 
 	/**
+	 * Meta key used to store the mode, either 'test', or 'prod' of order.
+	 *
+	 * @see Order_Mode
+	 *
+	 * @const string
+	 */
+	const WCPAY_MODE_META_KEY = '_wcpay_mode';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
