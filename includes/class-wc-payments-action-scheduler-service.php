@@ -101,7 +101,7 @@ class WC_Payments_Action_Scheduler_Service {
 		if ( empty( $payment_method ) ) {
 			return false;
 		}
-		$order_mode = $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_KEY );
+		$order_mode = $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY );
 
 		if ( $order_mode ) {
 			$current_mode = WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION;

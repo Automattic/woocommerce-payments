@@ -104,7 +104,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @const string
 	 */
-	const WCPAY_MODE_KEY = '_wcpay_mode';
+	const WCPAY_MODE_META_KEY = '_wcpay_mode';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
