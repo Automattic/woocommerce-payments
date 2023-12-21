@@ -1817,6 +1817,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( null !== $amount ) {
 					$refund_request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 				}
+				// These are reasons supported by Stripe https://stripe.com/docs/api/refunds/create#create_refund-reason.
+				if ( in_array( $reason, [ 'duplicate', 'fraudulent', 'requested_by_customer' ], true ) ) {
+					$refund_request->set_reason( $reason );
+				}
 				$refund = $refund_request->send();
 			}
 			$currency = strtoupper( $refund['currency'] );
