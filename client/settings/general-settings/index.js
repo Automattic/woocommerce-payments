@@ -51,9 +51,12 @@ const GeneralSettings = () => {
 							<CheckboxControl
 								checked={ isEnabled }
 								onChange={ ( enableTestMode ) => {
-									updateIsTestModeEnabled( enableTestMode );
 									if ( enableTestMode ) {
 										setTestModeModalVisible( true );
+									} else {
+										updateIsTestModeEnabled(
+											enableTestMode
+										);
 									}
 								} }
 								label={ __(
@@ -143,10 +146,10 @@ const GeneralSettings = () => {
 			{ testModeModalVisible && (
 				<TestModeConfirmationModal
 					onClose={ () => {
-						updateIsTestModeEnabled( false );
 						setTestModeModalVisible( false );
 					} }
 					onConfirm={ () => {
+						updateIsTestModeEnabled( true );
 						setTestModeModalVisible( false );
 					} }
 				/>
