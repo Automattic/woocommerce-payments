@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Prevents a PHP fatal error that occurs when the cart contains a renewal order item that no longer exists.

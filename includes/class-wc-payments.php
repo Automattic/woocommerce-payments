@@ -436,6 +436,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-fraud-meta-box-type.php';
+		include_once __DIR__ . '/constants/class-order-mode.php';
 		include_once __DIR__ . '/constants/class-order-status.php';
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
@@ -1051,6 +1052,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-customer-controller.php';
 		$customer_controller = new WC_REST_Payments_Customer_Controller( self::$api_client, self::$customer_service );
 		$customer_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
+		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
+		$refunds_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
 		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );

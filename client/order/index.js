@@ -13,6 +13,7 @@ import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
 import CancelAuthorizationConfirmationModal from './cancel-authorization-confirm-modal';
+import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
 
 function disableWooOrderRefundButton( disputeStatus ) {
@@ -59,8 +60,9 @@ jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
 	const chargeId = getConfig( 'chargeId' );
+	const testMode = getConfig( 'testMode' );
 
-	maybeShowDisputeNotice();
+	maybeShowOrderNotices();
 
 	$( '#woocommerce-order-items' ).on(
 		'click',
@@ -168,21 +170,27 @@ jQuery( function ( $ ) {
 		ReactDOM.render( modalToRender, container );
 	}
 
-	function maybeShowDisputeNotice() {
+	function maybeShowOrderNotices() {
 		const container = document.querySelector(
 			'#wcpay-order-payment-details-container'
 		);
 
 		// If the container doesn't exist (WC < 7.9), or the charge ID isn't present, don't render the notice.
-		if ( ! container || ! chargeId ) {
+		if ( ! container ) {
 			return;
 		}
 
 		ReactDOM.render(
-			<DisputedOrderNoticeHandler
-				chargeId={ chargeId }
-				onDisableOrderRefund={ disableWooOrderRefundButton }
-			/>,
+			<>
+				{ testMode && <TestModeNotice /> }
+
+				{ chargeId && (
+					<DisputedOrderNoticeHandler
+						chargeId={ chargeId }
+						onDisableOrderRefund={ disableWooOrderRefundButton }
+					/>
+				) }
+			</>,
 			container
 		);
 	}

@@ -66,6 +66,9 @@ exports[`Order details page should match the snapshot - Charge without payment i
               </div>
             </div>
           </div>
+          <div
+            class="payment-details__refund-controls"
+          />
         </div>
         <hr
           aria-orientation="horizontal"
