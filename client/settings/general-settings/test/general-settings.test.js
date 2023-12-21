@@ -73,7 +73,7 @@ describe( 'GeneralSettings', () => {
 	);
 
 	it.each( [ [ true ], [ false ] ] )(
-		'displays Test Mode enabled = %s state from data store',
+		'display of CheckBox when initial Test Mode = %s',
 		( isEnabled ) => {
 			useTestMode.mockReturnValue( [ isEnabled, jest.fn() ] );
 			render( <GeneralSettings /> );
@@ -90,7 +90,7 @@ describe( 'GeneralSettings', () => {
 	);
 
 	it.each( [ [ true ], [ false ] ] )(
-		'Confirmation Modal display when Test Mode = %s',
+		'Checks Confirmation Modal display when initial Test Mode = %s',
 		( isEnabled ) => {
 			useTestMode.mockReturnValue( [ isEnabled, jest.fn() ] );
 			render( <GeneralSettings /> );
