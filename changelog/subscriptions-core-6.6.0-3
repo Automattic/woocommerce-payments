@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fetch and update the `_cancelled_email_sent` meta in a HPOS compatibile way.
