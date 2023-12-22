@@ -582,14 +582,18 @@ class WC_Payments_API_Client {
 	 *
 	 * @param array  $filters    The filters to be used in the query.
 	 * @param string $user_email The email to search for.
+	 * @param string $locale Site locale.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_disputes_export( $filters = [], $user_email = '' ) {
+	public function get_disputes_export( $filters = [], $user_email = '', $locale = null ) {
 		if ( ! empty( $user_email ) ) {
 			$filters['user_email'] = $user_email;
+		}
+		if ( ! empty( $locale ) ) {
+			$filters['locale'] = $locale;
 		}
 
 		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
@@ -600,14 +604,18 @@ class WC_Payments_API_Client {
 	 *
 	 * @param array  $filters    The filters to be used in the query.
 	 * @param string $user_email The email to send export to.
+	 * @param string $locale Site locale.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_deposits_export( $filters = [], $user_email = '' ) {
+	public function get_deposits_export( $filters = [], $user_email = '', $locale = null ) {
 		if ( ! empty( $user_email ) ) {
 			$filters['user_email'] = $user_email;
+		}
+		if ( ! empty( $locale ) ) {
+			$filters['locale'] = $locale;
 		}
 
 		return $this->request( $filters, self::DEPOSITS_API . '/download', self::POST );
