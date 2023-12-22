@@ -5,12 +5,25 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Card, CardBody, CardDivider, Flex } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardDivider,
+	Flex,
+	DropdownMenu,
+	MenuGroup,
+	MenuItem,
+} from '@wordpress/components';
+import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
+
+// This is a workaround for the position of the dropdown menu. At the same time underlines the need for a better solution.
+import '../../../node_modules/@wordpress/components/src/dropdown-menu/style.scss';
+import '../../../node_modules/@wordpress/components/src/popover/style.scss';
 
 /**
  * Internal dependencies.
@@ -49,6 +62,7 @@ import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-noti
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import ErrorBoundary from 'components/error-boundary';
+import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import CardNotice from 'wcpay/components/card-notice';
 
 declare const window: any;
@@ -171,7 +185,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.currency && balance.currency !== charge.currency;
 
 	const {
-		featureFlags: { isAuthAndCaptureEnabled, isRefundControlsEnabled },
+		featureFlags: { isAuthAndCaptureEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
@@ -225,6 +239,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		balance.currency
 	);
 
+	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
 	return (
 		<Card>
 			<CardBody>
@@ -464,6 +479,71 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						</div>
 					</div>
 				</div>
+				<div className="payment-details__refund-controls">
+					{ ! charge?.refunded && charge?.captured && (
+						<Loadable
+							isLoading={ isLoading }
+							placeholder={ moreVertical }
+						>
+							<DropdownMenu
+								icon={ moreVertical }
+								label={ __(
+									'Translation actions',
+									'woocommerce-payments'
+								) }
+								popoverProps={ {
+									position: 'bottom left',
+								} }
+							>
+								{ ( { onClose } ) => (
+									<MenuGroup>
+										<MenuItem
+											onClick={ () => {
+												setIsRefundModalOpen( true );
+												wcpayTracks.recordEvent(
+													'payments_transactions_details_refund_modal_open',
+													{
+														payment_intent_id:
+															charge.payment_intent,
+													}
+												);
+												onClose();
+											} }
+										>
+											{ __(
+												'Refund in full',
+												'woocommerce-payments'
+											) }
+										</MenuItem>
+										{ charge.order && (
+											<MenuItem
+												onClick={ () => {
+													wcpayTracks.recordEvent(
+														'payments_transactions_details_partial_refund',
+														{
+															payment_intent_id:
+																charge.payment_intent,
+															order_id:
+																charge.order
+																	?.number,
+														}
+													);
+													window.location =
+														charge.order?.url;
+												} }
+											>
+												{ __(
+													'Partial refund',
+													'woocommerce-payments'
+												) }
+											</MenuItem>
+										) }
+									</MenuGroup>
+								) }
+							</DropdownMenu>
+						</Loadable>
+					) }
+				</div>
 			</CardBody>
 			<CardDivider />
 			<CardBody>
@@ -491,14 +571,28 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					) }
 				</ErrorBoundary>
 			) }
-			{ isRefundControlsEnabled &&
-				! _.isEmpty( charge ) &&
-				! charge.order && (
-					<MissingOrderNotice
-						isLoading={ isLoading }
-						formattedAmount={ formattedAmount }
-					/>
-				) }
+			{ isRefundModalOpen && (
+				<RefundModal
+					charge={ charge }
+					formattedAmount={ formattedAmount }
+					onModalClose={ () => {
+						setIsRefundModalOpen( false );
+						wcpayTracks.recordEvent(
+							'payments_transactions_details_refund_modal_close',
+							{
+								payment_intent_id: charge.payment_intent,
+							}
+						);
+					} }
+				/>
+			) }
+			{ ! _.isEmpty( charge ) && ! charge.order && ! isLoading && (
+				<MissingOrderNotice
+					charge={ charge }
+					isLoading={ isLoading }
+					onButtonClick={ () => setIsRefundModalOpen( true ) }
+				/>
+			) }
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
