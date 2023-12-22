@@ -277,33 +277,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Creates setup intent without confirmation.
-	 *
-	 * @param array $displayed_payment_methods Array of enabled payment methods to display on element.
-	 * @return array
-	 */
-	public function create_setup_intent( $displayed_payment_methods ) {
-		// Determine the customer managing the payment methods, create one if we don't have one already.
-		$user        = wp_get_current_user();
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-		if ( null === $customer_id ) {
-			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new \WC_Customer( $user->ID ) );
-			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
-		}
-
-		$request = Create_Setup_Intention::create();
-		$request->set_customer( $customer_id );
-		$request->set_payment_method_types( array_values( $displayed_payment_methods ) );
-		/** @var WC_Payments_API_Setup_Intention $setup_intent */  // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-		$setup_intent = $request->send();
-
-		return [
-			'id'            => $setup_intent->get_id(),
-			'client_secret' => $setup_intent->get_client_secret(),
-		];
-	}
-
-	/**
 	 * Create and confirm payment intent. Function used to route any payments that do not use the UPE flow through the parent process payment.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
