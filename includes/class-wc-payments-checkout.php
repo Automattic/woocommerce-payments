@@ -182,7 +182,6 @@ class WC_Payments_Checkout {
 			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'updatePaymentIntentNonce'       => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
 			'logPaymentErrorNonce'           => wp_create_nonce( 'wcpay_log_payment_error_nonce' ),
 			'initWooPayNonce'                => wp_create_nonce( 'wcpay_init_woopay_nonce' ),
 			'saveUPEAppearanceNonce'         => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),

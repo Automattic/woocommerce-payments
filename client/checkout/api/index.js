@@ -372,53 +372,6 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Updates a payment intent with data from order: customer, level3 data and maybe sets the payment for future use.
-	 *
-	 * @param {string} paymentIntentId The id of the payment intent.
-	 * @param {int} orderId The id of the order.
-	 * @param {string} savePaymentMethod 'yes' if saving.
-	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type or empty string.
-	 * @param {string?} paymentCountry The payment two-letter iso country code or null.
-	 * @param {string?} fingerprint User fingerprint.
-	 *
-	 * @return {Promise} The final promise for the request to the server.
-	 */
-	updateIntent(
-		paymentIntentId,
-		orderId,
-		savePaymentMethod,
-		selectedUPEPaymentType,
-		paymentCountry,
-		fingerprint
-	) {
-		const path = 'update_payment_intent';
-
-		return this.request( buildAjaxURL( getConfig( 'wcAjaxUrl' ), path ), {
-			wcpay_order_id: orderId,
-			wc_payment_intent_id: paymentIntentId,
-			save_payment_method: savePaymentMethod,
-			wcpay_selected_upe_payment_type: selectedUPEPaymentType,
-			wcpay_payment_country: paymentCountry,
-			_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
-			'wcpay-fingerprint': fingerprint,
-		} )
-			.then( ( response ) => {
-				if ( response.result === 'failure' ) {
-					throw new Error( response.messages );
-				}
-				return response;
-			} )
-			.catch( ( error ) => {
-				if ( error.message ) {
-					throw error;
-				} else {
-					// Covers the case of error on the Ajaxrequest.
-					throw new Error( error.statusText );
-				}
-			} );
-	}
-
-	/**
 	 * Confirm Stripe payment with fallback for rate limit error.
 	 *
 	 * @param {Object|StripeElements} elements Stripe elements.
