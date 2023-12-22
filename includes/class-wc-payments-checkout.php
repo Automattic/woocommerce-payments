@@ -95,9 +95,6 @@ class WC_Payments_Checkout {
 	public function init_hooks() {
 		add_action( 'wc_payments_set_gateway', [ $this, 'set_gateway' ] );
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
-		add_action( 'woocommerce_after_account_payment_methods', [ $this->gateway, 'remove_upe_setup_intent_from_session' ], 10, 0 );
-		add_action( 'woocommerce_subscription_payment_method_updated', [ $this->gateway, 'remove_upe_setup_intent_from_session' ], 10, 0 );
-		add_action( 'woocommerce_order_payment_status_changed', [ get_class( $this->gateway ), 'remove_upe_payment_intent_from_session' ], 10, 0 );
 		add_action( 'wp', [ $this->gateway, 'maybe_process_upe_redirect' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 		add_action( 'wp_ajax_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
@@ -315,10 +312,8 @@ class WC_Payments_Checkout {
 				'countries'      => $payment_method->get_countries(),
 			];
 
-			$gateway_for_payment_method                             = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
-			$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
-			$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
-			$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
+			$gateway_for_payment_method                            = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+			$settings[ $payment_method_id ]['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
 				/* translators: link to Stripe testing page */
 				$payment_method->get_testing_instructions(),
 				[

@@ -166,12 +166,6 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 		$mock_cart->expects( $this->once() )
 			->method( 'empty_cart' );
 
-		// Test methods to remove upe payment intent are called.
-		$this->mock_legacy_proxy
-			->expects( $this->once() )
-			->method( 'call_static' )
-			->withConsecutive( [ UPE_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' ] );
-
 		$this->sut->complete_processing();
 	}
 

@@ -14,14 +14,11 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Payment_Type;
-use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
-use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
@@ -42,7 +39,6 @@ use WC_Payment_Token_CC;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
-use WC_Payments_Features;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 use WC_Payments_Localization_Service;
@@ -66,10 +62,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	const UPE_APPEARANCE_TRANSIENT = 'wcpay_upe_appearance';
 
 	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT = 'wcpay_wc_blocks_upe_appearance';
-
-	const KEY_UPE_PAYMENT_INTENT = 'wcpay_upe_payment_intent';
-
-	const KEY_UPE_SETUP_INTENT = 'wcpay_upe_setup_intent';
 
 	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE = 'upe_process_redirect_order_id_mismatched';
 
@@ -545,8 +537,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
-				static::remove_upe_payment_intent_from_session();
-
 				if ( Intent_Status::REQUIRES_ACTION === $status ) {
 					// I don't think this case should be possible, but just in case...
 					$next_action = $intent->get_next_action();
@@ -584,8 +574,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
 				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
 			}
-
-			static::remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 
@@ -1012,12 +1000,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $error_message );
 
-			static::remove_upe_payment_intent_from_session();
-
 			wp_send_json_success();
 		} catch ( Exception $e ) {
-			static::remove_upe_payment_intent_from_session();
-
 			wp_send_json_error(
 				[
 					'error' => [
@@ -1030,92 +1014,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Returns payment intent session data.
-	 *
-	 * @param false|string $payment_method Stripe payment method.
-	 * @return array|string value of session variable
-	 */
-	public function get_payment_intent_data_from_session( $payment_method = false ) {
-		return WC()->session->get( $this->get_payment_intent_session_key( $payment_method ) );
-	}
-
-	/**
-	 * Returns setup intent session data.
-	 *
-	 * @param false|string $payment_method Stripe payment method.
-	 * @return array|string value of session variable
-	 */
-	public function get_setup_intent_data_from_session( $payment_method = false ) {
-		return WC()->session->get( $this->get_setup_intent_session_key( $payment_method ) );
-	}
-
-	/**
-	 * Removes all UPE payment intents from WC session.
-	 */
-	public static function remove_upe_payment_intent_from_session() {
-		if ( isset( WC()->session ) ) {
-			foreach ( WC_Payments::get_payment_method_map() as $id => $payment_method ) {
-				WC()->session->__unset( self::KEY_UPE_PAYMENT_INTENT . '_' . $payment_method->get_id() );
-			}
-		}
-	}
-
-	/**
-	 * Adds the id and client secret of setup intent needed to mount the UPE element in frontend to WC session.
-	 *
-	 * @param string $intent_id     The setup intent id.
-	 * @param string $client_secret The setup intent client secret.
-	 */
-	private function add_upe_setup_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
-		$value = $intent_id . '-' . $client_secret;
-
-		WC()->session->set( $this->get_setup_intent_session_key(), $value );
-	}
-
-	/**
-	 * Returns session key for UPE SEPA setup intents.
-	 *
-	 * @param false|string $payment_method Stripe payment method.
-	 * @return string
-	 */
-	public function get_setup_intent_session_key( $payment_method = false ) {
-		if ( false === $payment_method ) {
-			$payment_method = $this->stripe_id;
-		}
-		return self::KEY_UPE_SETUP_INTENT . '_' . $payment_method;
-	}
-
-	/**
-	 * Removes all UPE setup intents from WC session.
-	 */
-	public function remove_upe_setup_intent_from_session() {
-		if ( isset( WC()->session ) ) {
-			foreach ( $this->wc_payments_get_payment_method_map() as $id => $payment_method ) {
-				WC()->session->__unset( $this->get_setup_intent_session_key( $payment_method->get_id() ) );
-			}
-		}
-	}
-
-	/**
 	 * This function wraps WC_Payments::get_payment_method_map, useful for unit testing.
 	 *
 	 * @return array Array of UPE_Payment_Method instances.
 	 */
 	public function wc_payments_get_payment_method_map() {
 		return WC_Payments::get_payment_method_map();
-	}
-
-	/**
-	 * Returns session key for UPE SEPA payment intents.
-	 *
-	 * @param false|string $payment_method Stripe payment method.
-	 * @return string
-	 */
-	public function get_payment_intent_session_key( $payment_method = false ) {
-		if ( false === $payment_method ) {
-			$payment_method = $this->stripe_id;
-		}
-		return self::KEY_UPE_PAYMENT_INTENT . '_' . $payment_method;
 	}
 
 	/**
