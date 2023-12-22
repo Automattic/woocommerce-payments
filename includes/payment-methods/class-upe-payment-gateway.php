@@ -149,17 +149,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Initializes this class's WP hooks.
-	 *
-	 * @return void
-	 */
-	public function init_hooks() {
-		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
-
-		parent::init_hooks();
-	}
-
-	/**
 	 * Displays HTML tags for WC payment gateway radio button content.
 	 */
 	public function display_gateway_html() {
@@ -352,53 +341,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			'id'            => $payment_intent->get_id(),
 			'client_secret' => $payment_intent->get_client_secret(),
 		];
-	}
-
-	/**
-	 * Handle AJAX request for creating a setup intent without confirmation for Stripe UPE.
-	 *
-	 * @throws Add_Payment_Method_Exception - If nonce or setup intent is invalid.
-	 */
-	public function init_setup_intent_ajax() {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Add_Payment_Method_Exception(
-					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
-					'invalid_referrer'
-				);
-			}
-
-			$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
-			if ( ! in_array( $this->payment_method->get_id(), $enabled_payment_methods, true ) ) {
-				throw new Process_Payment_Exception(
-					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-					'wcpay_upe_intent_error'
-				);
-			}
-			$displayed_payment_methods = [ $this->payment_method->get_id() ];
-
-			$response = $this->create_setup_intent( $displayed_payment_methods );
-
-			// Encrypt client secret before exposing it to the browser.
-			if ( $response['client_secret'] ) {
-				$response['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $response['client_secret'] );
-			}
-
-			$this->add_upe_setup_intent_to_session( $response['id'], $response['client_secret'] );
-
-			wp_send_json_success( $response, 200 );
-		} catch ( Exception $e ) {
-			// Send back error so it can be displayed to the customer.
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
-					],
-				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
-			);
-		}
 	}
 
 	/**
