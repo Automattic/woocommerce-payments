@@ -189,8 +189,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function process_payment( $order_id ) {
-		$_POST['wcpay_selected_upe_payment_type'] = $this->stripe_id;
-		$order                                    = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
 
 		if ( 20 < strlen( $order->get_billing_phone() ) ) {
 			throw new Process_Payment_Exception(
@@ -198,15 +197,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				'invalid_phone_number'
 			);
 		}
-		$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$amount                    = $order->get_total();
-		$currency                  = $order->get_currency();
-		$converted_amount          = WC_Payments_Utils::prepare_amount( $amount, $currency );
-		$payment_needed            = 0 < $converted_amount;
-		$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_type              = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
-		$save_payment_method       = $payment_type->equals( Payment_Type::RECURRING() ) || ! empty( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_intent_id   = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$amount              = $order->get_total();
+		$currency            = $order->get_currency();
+		$converted_amount    = WC_Payments_Utils::prepare_amount( $amount, $currency );
+		$payment_needed      = 0 < $converted_amount;
+		$payment_type        = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
+		$save_payment_method = $payment_type->equals( Payment_Type::RECURRING() ) || ! empty( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_country     = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
@@ -252,7 +250,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
 
 				try {
-					$payment_methods = $this->get_selected_upe_payment_methods( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
+					$payment_methods = $this->get_selected_upe_payment_methods( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
 
 					$request = Update_Intention::create( $payment_intent_id );
 					$request->set_currency_code( strtolower( $currency ) );
