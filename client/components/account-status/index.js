@@ -23,6 +23,7 @@ import PaymentsStatus from 'components/payments-status';
 import StatusChip from './status-chip';
 import './style.scss';
 import './shared.scss';
+import { AccountTools } from './account-tools';
 
 const AccountStatusCard = ( props ) => {
 	const { title, children, value } = props;
@@ -102,6 +103,9 @@ const AccountStatusDetails = ( props ) => {
 					}
 				/>
 			</AccountStatusItem>
+			{ ! accountStatus.detailsSubmitted && (
+				<AccountTools accountLink={ accountStatus.accountLink } />
+			) }
 			{ accountFees.length > 0 && (
 				<AccountFees accountFees={ accountFees } />
 			) }

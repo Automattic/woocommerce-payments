@@ -829,15 +829,7 @@ class WC_Payments_Utils {
 			)
 		);
 
-		if ( $amount >= 0 ) {
-			return $formatted;
-		}
-
-		// Handle the subtle display difference for the negative amount between PHP wc_price `-$0.74` vs JavaScript formatCurrency `$-0.74` for the same input.
-		// Remove the minus sign, and then move it right before the number.
-		$formatted = str_replace( '-', '', $formatted );
-
-		return preg_replace( '/([0-9,\.]+)/', '-$1', $formatted );
+		return $formatted;
 	}
 
 	/**

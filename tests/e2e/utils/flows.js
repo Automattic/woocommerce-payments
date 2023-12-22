@@ -287,10 +287,14 @@ export const shopperWCP = {
 		} );
 	},
 
-	addToCartBySlug: async ( productSlug ) => {
+	goToProductPageBySlug: async ( productSlug ) => {
 		await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 			waitUntil: 'networkidle0',
 		} );
+	},
+
+	addToCartBySlug: async ( productSlug ) => {
+		await shopperWCP.goToProductPageBySlug( productSlug );
 		await shopper.addToCart();
 	},
 };
@@ -473,11 +477,36 @@ export const merchantWCP = {
 			{ text: 'Update selected' }
 		);
 
+		const snackbar = '.components-snackbar';
+		await expect( page ).toMatchElement( snackbar, {
+			text: 'Enabled currencies updated.',
+			timeout: 60000,
+		} );
+
 		const selector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
 		await page.waitForSelector( selector );
 		const element = await page.$( selector );
 
 		expect( element ).not.toBeNull();
+	},
+
+	removeCurrency: async ( currencyCode ) => {
+		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
+		await page.waitForSelector( currencyItemSelector, { timeout: 10000 } );
+		await page.click(
+			`${ currencyItemSelector } .enabled-currency__action.delete`
+		);
+
+		const snackbar = '.components-snackbar';
+		await expect( page ).toMatchElement( snackbar, {
+			text: 'Enabled currencies updated.',
+			timeout: 60000,
+		} );
+
+		await page.waitForSelector( currencyItemSelector, {
+			hidden: true,
+			timeout: 15000,
+		} );
 	},
 
 	openConnectPage: async () => {
@@ -573,6 +602,9 @@ export const merchantWCP = {
 	},
 
 	setCheckboxByTestId: async ( testId ) => {
+		await page.waitForSelector( `[data-testid="${ testId }"]`, {
+			timeout: 5000,
+		} );
 		const checkbox = await page.$( `[data-testid="${ testId }"]` );
 		const checkboxStatus = await (
 			await checkbox.getProperty( 'checked' )
@@ -583,6 +615,9 @@ export const merchantWCP = {
 	},
 
 	unsetCheckboxByTestId: async ( testId ) => {
+		await page.waitForSelector( `[data-testid="${ testId }"]`, {
+			timeout: 5000,
+		} );
 		const checkbox = await page.$( `[data-testid="${ testId }"]` );
 		const checkboxStatus = await (
 			await checkbox.getProperty( 'checked' )
@@ -654,6 +689,67 @@ export const merchantWCP = {
 			await merchantWCP.wcpSettingsSaveChanges();
 		}
 		return wasInitiallyEnabled;
+	},
+
+	editCurrency: async ( currencyCode ) => {
+		await merchantWCP.openMultiCurrency();
+
+		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
+		await page.waitForSelector( currencyItemSelector, { timeout: 10000 } );
+		await page.click(
+			`${ currencyItemSelector } .enabled-currency__action.edit`
+		);
+	},
+
+	saveCurrencySettings: async () => {
+		await page.click(
+			'.single-currency-settings-save-settings-section button'
+		);
+		await page.waitForSelector( '.components-snackbar', {
+			text: 'Currency settings updated.',
+			timeout: 15000,
+		} );
+	},
+
+	setCurrencyRate: async ( currencyCode, rate ) => {
+		await merchantWCP.editCurrency( currencyCode );
+
+		await page.waitForSelector(
+			'#single-currency-settings__manual_rate_radio'
+		);
+		await page.click( '#single-currency-settings__manual_rate_radio' );
+
+		await page.waitForSelector( '[data-testid="manual_rate_input"]', {
+			timeout: 5000,
+		} );
+		await clearAndFillInput(
+			'[data-testid="manual_rate_input"]',
+			rate.toString()
+		);
+
+		await merchantWCP.saveCurrencySettings();
+	},
+
+	setCurrencyPriceRounding: async ( currencyCode, rounding ) => {
+		await merchantWCP.editCurrency( currencyCode );
+
+		await page.waitForSelector( '[data-testid="price_rounding"]', {
+			timeout: 5000,
+		} );
+		await page.select( '[data-testid="price_rounding"]', rounding );
+
+		await merchantWCP.saveCurrencySettings();
+	},
+
+	setCurrencyCharmPricing: async ( currencyCode, charmPricing ) => {
+		await merchantWCP.editCurrency( currencyCode );
+
+		await page.waitForSelector( '[data-testid="price_charm"]', {
+			timeout: 5000,
+		} );
+		await page.select( '[data-testid="price_charm"]', charmPricing );
+
+		await merchantWCP.saveCurrencySettings();
 	},
 
 	addMulticurrencyWidget: async () => {

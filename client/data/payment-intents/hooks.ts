@@ -2,19 +2,20 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { PaymentIntent } from '../../types/payment-intents';
 import { getChargeData } from '../charges';
 import { PaymentChargeDetailsResponse } from '../../payment-details/types';
 import { STORE_NAME } from '../constants';
+import { Charge } from 'wcpay/types/charges';
 
 export const getIsChargeId = ( id: string ): boolean =>
 	-1 !== id.indexOf( 'ch_' ) || -1 !== id.indexOf( 'py_' );
 
 export const usePaymentIntentWithChargeFallback = (
 	id: string
-): PaymentChargeDetailsResponse =>
-	useSelect(
+): PaymentChargeDetailsResponse => {
+	const { data, error, isLoading } = useSelect(
 		( select ) => {
 			const selectors = select( STORE_NAME );
 			const isChargeId = getIsChargeId( id );
@@ -52,3 +53,16 @@ export const usePaymentIntentWithChargeFallback = (
 		},
 		[ id ]
 	);
+
+	const { refundCharge } = useDispatch( STORE_NAME );
+
+	const doRefund = ( charge: Charge, reason: string | null ) =>
+		refundCharge( charge, reason );
+
+	return {
+		data,
+		error,
+		isLoading,
+		doRefund,
+	};
+};

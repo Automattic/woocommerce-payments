@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Constants\Fraud_Meta_Box_Type;
+use WCPay\Constants\Order_Mode;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Constants\Payment_Initiated_By;
@@ -451,6 +452,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
+			add_action( 'woocommerce_order_status_cancelled', [ $this, 'cancel_authorizations_on_order_cancel' ] );
 
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
@@ -721,15 +723,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Renders the credit card input fields needed to get the user's payment information on the checkout page.
-	 *
-	 * We also add the JavaScript which drives the UI.
-	 */
-	public function payment_fields() {
-		do_action( 'wc_payments_add_payment_fields' );
 	}
 
 	/**
@@ -1203,7 +1196,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_method = $payment_information->get_payment_method();
 		$this->order_service->set_payment_method_id_for_order( $order, $payment_method );
 		$this->order_service->set_customer_id_for_order( $order, $customer_id );
-		$order->update_meta_data( '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
@@ -1815,6 +1808,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$refund_request->set_charge( $charge_id );
 				if ( null !== $amount ) {
 					$refund_request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+				}
+				// These are reasons supported by Stripe https://stripe.com/docs/api/refunds/create#create_refund-reason.
+				if ( in_array( $reason, [ 'duplicate', 'fraudulent', 'requested_by_customer' ], true ) ) {
+					$refund_request->set_reason( $reason );
 				}
 				$refund = $refund_request->send();
 			}
@@ -2870,6 +2867,52 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'message'   => $error_message,
 			'http_code' => $http_code,
 		];
+	}
+
+	/**
+	 * Cancels uncaptured authorizations on order cancel.
+	 *
+	 * @param int $order_id - Order ID.
+	 */
+	public function cancel_authorizations_on_order_cancel( $order_id ) {
+		$order = new WC_Order( $order_id );
+		if ( null !== $order ) {
+			$intent_id = $this->order_service->get_intent_id_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id ) {
+				try {
+					$request = Get_Intention::create( $intent_id );
+					$request->set_hook_args( $order );
+					$intent = $request->send();
+					$charge = $intent->get_charge();
+
+					/**
+					 * Successful but not captured Charge is an authorization
+					 * that needs to be cancelled.
+					 */
+					if ( null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+					) {
+							$request = Cancel_Intention::create( $intent_id );
+							$request->set_hook_args( $order );
+							$intent = $request->send();
+
+							$this->order_service->post_unique_capture_cancelled_note( $order );
+					}
+
+					$this->order_service->set_intention_status_for_order( $order, $intent->get_status() );
+					$order->save();
+				} catch ( \Exception $e ) {
+					$order->add_order_note(
+						WC_Payments_Utils::esc_interpolated_html(
+							__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+							[ 'strong' => '<strong>' ]
+						)
+					);
+				}
+			}
+		}
 	}
 
 	/**

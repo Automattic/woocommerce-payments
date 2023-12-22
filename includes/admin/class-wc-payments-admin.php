@@ -734,6 +734,8 @@ class WC_Payments_Admin {
 						'refundedAmount'        => $order->get_total_refunded(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
 						'chargeId'              => $this->order_service->get_charge_id_for_order( $order ),
+						'hasOpenAuthorization'  => $this->order_service->has_open_authorization( $order ),
+						'testMode'              => \WCPay\Constants\Order_Mode::TEST === $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY ),
 					]
 				);
 				wp_localize_script(

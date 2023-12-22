@@ -35,7 +35,6 @@ use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
-use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Constants\Payment_Method;
@@ -264,7 +263,7 @@ class WC_Payments {
 	/**
 	 * WC Payments Checkout
 	 *
-	 * @var WC_Payments_Checkout|WC_Payments_UPE_Checkout
+	 * @var WC_Payments_Checkout
 	 */
 	private static $wc_payments_checkout;
 
@@ -406,7 +405,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
-		include_once __DIR__ . '/class-wc-payments-upe-checkout.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-split-payment-gateway.php';
@@ -444,6 +442,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-fraud-meta-box-type.php';
+		include_once __DIR__ . '/constants/class-order-mode.php';
 		include_once __DIR__ . '/constants/class-order-status.php';
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
@@ -563,7 +562,7 @@ class WC_Payments {
 		}
 
 		self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
-		self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
+		self::$wc_payments_checkout = new WC_Payments_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
 
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
@@ -1061,6 +1060,10 @@ class WC_Payments {
 		$customer_controller = new WC_REST_Payments_Customer_Controller( self::$api_client, self::$customer_service );
 		$customer_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
+		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
+		$refunds_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
 		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
 		$survey_controller->register_routes();
@@ -1195,7 +1198,7 @@ class WC_Payments {
 	/**
 	 * Returns the WC_Payments_Checkout instance
 	 *
-	 * @return WC_Payments_Checkout|WC_Payments_UPE_Checkout gateway instance
+	 * @return WC_Payments_Checkout gateway instance
 	 */
 	public static function get_wc_payments_checkout() {
 		return self::$wc_payments_checkout;
