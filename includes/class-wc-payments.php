@@ -296,11 +296,11 @@ class WC_Payments {
 	private static $incentives_service;
 
 	/**
-	 * Instance of WC_Payments_Express_Checkout_Button_Utils, created in init function.
+	 * Instance of WC_Payments_Express_Checkout_Button_Helper, created in init function.
 	 *
-	 * @var WC_Payments_Express_Checkout_Button_Utils
+	 * @var WC_Payments_Express_Checkout_Button_Helper
 	 */
-	private static $express_checkout_util;
+	private static $express_checkout_helper;
 
 	/**
 	 * Instance of Compatibility_Service, created in init function
@@ -422,7 +422,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-affirm-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-klarna-payment-method.php';
-		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-utils.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -509,7 +509,7 @@ class WC_Payments {
 		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
-		self::$express_checkout_util                = new WC_Payments_Express_Checkout_Button_Utils( self::$account );
+		self::$express_checkout_helper              = new WC_Payments_Express_Checkout_Button_Helper( self::$account );
 		self::$woopay_util                          = new WooPay_Utilities();
 		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
 		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
@@ -1513,9 +1513,9 @@ class WC_Payments {
 	 */
 	public static function maybe_display_express_checkout_buttons() {
 		if ( WC_Payments_Features::are_payments_enabled() ) {
-			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), self::$express_checkout_util );
+			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), self::$express_checkout_helper );
 			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
-			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, self::$express_checkout_util );
+			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, self::$express_checkout_helper );
 		}
 	}
 

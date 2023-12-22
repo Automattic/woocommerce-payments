@@ -37,23 +37,23 @@ class WC_Payments_Payment_Request_Button_Handler {
 	private $gateway;
 
 	/**
-	 * Express Checkout Utilities instance.
+	 * Express Checkout Helper instance.
 	 *
-	 * @var WC_Payments_Express_Checkout_Button_Utils
+	 * @var WC_Payments_Express_Checkout_Button_Helper
 	 */
-	private $express_checkout_utils;
+	private $express_checkout_helper;
 
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_Account                       $account Account information.
-	 * @param WC_Payment_Gateway_WCPay                  $gateway WCPay gateway.
-	 * @param WC_Payments_Express_Checkout_Button_Utils $express_checkout_utils Express checkout utils.
+	 * @param WC_Payments_Account                        $account Account information.
+	 * @param WC_Payment_Gateway_WCPay                   $gateway WCPay gateway.
+	 * @param WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper Express checkout helper.
 	 */
-	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Express_Checkout_Button_Utils $express_checkout_utils ) {
-		$this->account                = $account;
-		$this->gateway                = $gateway;
-		$this->express_checkout_utils = $express_checkout_utils;
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper ) {
+		$this->account                 = $account;
+		$this->gateway                 = $gateway;
+		$this->express_checkout_helper = $express_checkout_helper;
 	}
 
 	/**
@@ -208,7 +208,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function get_product_price( $product ) {
 		// If prices should include tax, using tax inclusive price.
-		if ( $this->express_checkout_utils->cart_prices_include_tax() ) {
+		if ( $this->express_checkout_helper->cart_prices_include_tax() ) {
 			$base_price = wc_get_price_including_tax( $product );
 		} else {
 			$base_price = wc_get_price_excluding_tax( $product );
@@ -316,7 +316,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$data['displayItems'] = $items;
 		$data['total']        = [
-			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->express_checkout_utils->get_total_label() ),
+			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->express_checkout_helper->get_total_label() ),
 			'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
 			'pending' => true,
 		];
@@ -379,7 +379,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems']   = $items;
 		$data['needs_shipping'] = false; // This should be already entered/prepared.
 		$data['total']          = [
-			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->express_checkout_utils->get_total_label() ),
+			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->express_checkout_helper->get_total_label() ),
 			'amount'  => WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ),
 			'pending' => true,
 		];
@@ -397,7 +397,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		return $this->express_checkout_utils->build_display_items();
+		return $this->express_checkout_helper->build_display_items();
 	}
 
 	/**
@@ -799,7 +799,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_pay_for_order'   => $this->is_pay_for_order_page(),
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->get_product_data(),
-			'total_label'        => $this->express_checkout_utils->get_total_label(),
+			'total_label'        => $this->express_checkout_helper->get_total_label(),
 		];
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/payment-request', [ 'jquery', 'stripe' ] );
@@ -887,7 +887,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC()->cart->calculate_totals();
 
-		wp_send_json( array_merge( $this->express_checkout_utils->build_display_items(), [ 'needs_shipping' => WC()->cart->needs_shipping() ] ) );
+		wp_send_json( array_merge( $this->express_checkout_helper->build_display_items(), [ 'needs_shipping' => WC()->cart->needs_shipping() ] ) );
 	}
 
 	/**
@@ -983,10 +983,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			WC()->cart->calculate_totals();
 
-			$data          += $this->express_checkout_utils->build_display_items( $itemized_display_items );
+			$data          += $this->express_checkout_helper->build_display_items( $itemized_display_items );
 			$data['result'] = 'success';
 		} catch ( Exception $e ) {
-			$data          += $this->express_checkout_utils->build_display_items( $itemized_display_items );
+			$data          += $this->express_checkout_helper->build_display_items( $itemized_display_items );
 			$data['result'] = 'invalid_shipping_address';
 		}
 
@@ -1012,7 +1012,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data           = [];
-		$data          += $this->express_checkout_utils->build_display_items( $should_show_itemized_view );
+		$data          += $this->express_checkout_helper->build_display_items( $should_show_itemized_view );
 		$data['result'] = 'success';
 
 		wp_send_json( $data );
@@ -1118,7 +1118,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			$data['displayItems'] = $items;
 			$data['total']        = [
-				'label'   => $this->express_checkout_utils->get_total_label(),
+				'label'   => $this->express_checkout_helper->get_total_label(),
 				'amount'  => WC_Payments_Utils::prepare_amount( $total + $total_tax, $currency ),
 				'pending' => true,
 			];
@@ -1549,7 +1549,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return array              An array of final taxes.
 	 */
 	private function get_taxes_like_cart( $product, $price ) {
-		if ( ! wc_tax_enabled() || $this->express_checkout_utils->cart_prices_include_tax() ) {
+		if ( ! wc_tax_enabled() || $this->express_checkout_helper->cart_prices_include_tax() ) {
 			// Only proceed when taxes are enabled, but not included.
 			return [];
 		}

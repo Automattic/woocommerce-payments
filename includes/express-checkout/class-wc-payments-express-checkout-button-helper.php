@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Express_Checkout_Button_Utils
+ * Class WC_Payments_Express_Checkout_Button_Helper
  *
  * @package WooCommerce\Payments
  */
@@ -8,9 +8,9 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Express Checkout Button Utils class.
+ * Express Checkout Button Helper class.
  */
-class WC_Payments_Express_Checkout_Button_Utils {
+class WC_Payments_Express_Checkout_Button_Helper {
 	/**
 	 * WC_Payments_Account instance to get information about the account
 	 *
