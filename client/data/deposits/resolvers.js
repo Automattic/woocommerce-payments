@@ -99,6 +99,7 @@ const formatQueryFilters = ( query ) => ( {
 	],
 	status_is: query.statusIs,
 	status_is_not: query.statusIsNot,
+	locale: query.locale,
 } );
 
 export function getDepositsCSV( query ) {

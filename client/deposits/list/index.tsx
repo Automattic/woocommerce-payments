@@ -213,6 +213,7 @@ export const DepositsList = (): JSX.Element => {
 		setIsDownloading( true );
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 		const userEmail = wcpaySettings.currentUserEmail;
+		const locale = wcpaySettings.locale;
 
 		if ( 'endpoint' === downloadType ) {
 			const {
@@ -253,6 +254,7 @@ export const DepositsList = (): JSX.Element => {
 					} = await apiFetch( {
 						path: getDepositsCSV( {
 							userEmail,
+							locale,
 							dateAfter,
 							dateBefore,
 							dateBetween,
