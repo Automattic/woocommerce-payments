@@ -77,6 +77,13 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	private $mock_wcpay_gateway;
 
 	/**
+	 * Express Checkout Helper instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Helper
+	 */
+	private $express_checkout_helper;
+
+	/**
 	 * Sets up things all tests need.
 	 */
 	public function set_up() {
@@ -100,7 +107,9 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
-		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+		$this->express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( $this->mock_wcpay_account );
+
+		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
 
 		$this->simple_product = WC_Helper_Product::create_simple_product();
 
@@ -294,7 +303,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_get_button_settings() {
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
-		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
 
 		$this->assertEquals(
 			[
@@ -320,7 +329,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			}
 		);
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
-		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
 
 		$this->assertFalse( $this->pr->has_allowed_items_in_cart() );
 	}
@@ -505,10 +514,10 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, "__return_$tax_display_cart" ] ); // reset in tear_down.
 		add_filter( 'wc_shipping_enabled', '__return_false' ); // reset in tear_down.
 		WC()->cart->calculate_totals();
-		$build_display_items_result = $this->pr->build_display_items( true );
+		$build_display_items_result = $this->express_checkout_helper->build_display_items( true );
 
 		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
-			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway ] )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
 			->setMethods( [ 'is_product', 'get_product' ] )
 			->getMock();
 
