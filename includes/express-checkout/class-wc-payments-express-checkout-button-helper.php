@@ -55,14 +55,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return;
 		}
 
-		// Payment Request Button sends the quantity as qty. WooPay sends it as quantity.
-		if ( isset( $_POST['quantity'] ) ) {
-			$quantity = absint( $_POST['quantity'] );
-		} elseif ( isset( $_POST['qty'] ) ) {
-			$quantity = absint( $_POST['qty'] );
-		} else {
-			$quantity = 1;
-		}
+		$quantity = $this->get_quantity();
 
 		$product_type = $product->get_type();
 
@@ -222,5 +215,21 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// Get statement descriptor from API/cached account data.
 		$statement_descriptor = $this->account->get_statement_descriptor();
 		return str_replace( "'", '', $statement_descriptor ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
+	}
+
+	/**
+	 * Gets quantity from request.
+	 *
+	 * @return int
+	 */
+	private function get_quantity() {
+		// Payment Request Button sends the quantity as qty. WooPay sends it as quantity.
+		if ( isset( $_POST['quantity'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return absint( $_POST['quantity'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		} elseif ( isset( $_POST['qty'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return absint( $_POST['qty'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		} else {
+			return 1;
+		}
 	}
 }
