@@ -101,7 +101,16 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	public function get_deposits( $request ) {
 		$wcpay_request = List_Deposits::from_rest_request( $request );
 
-		return $wcpay_request->handle_rest_request();
+		$response              = $wcpay_request->handle_rest_request();
+		$no_estimated_deposits = array_filter(
+			$response['data'],
+			function( $deposit ) {
+				return 'estimated' !== $deposit['status'];
+			}
+		);
+		$no_estimated_deposits = array_values( $no_estimated_deposits );
+		$response['data']      = $no_estimated_deposits;
+		return $response;
 	}
 
 	/**
@@ -120,7 +129,11 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	public function get_deposits_overview() {
 		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API . '/overview' );
 		$request->assign_hook( 'wcpay_get_deposits_overview' );
-		return $request->handle_rest_request();
+		$response = $request->handle_rest_request();
+		unset( $response['next_deposit'] );
+		unset( $response['balance']['pending']['deposits_count'] );
+		unset( $response['balance']['instant_balance']['transaction_ids'] );
+		return $response;
 	}
 
 	/**
@@ -129,7 +142,17 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	public function get_all_deposits_overviews() {
 		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API . '/overview-all' );
 		$request->assign_hook( 'wcpay_get_all_deposits_overviews' );
-		return $request->handle_rest_request();
+		$response = $request->handle_rest_request();
+		unset( $response['deposit']['next_scheduled'] );
+		$count = count( $response['balance']['instant'] );
+		for ( $i = 0; $i < $count; $i++ ) {
+			unset( $response['balance']['instant'][ $i ]['transaction_ids'] );
+		}
+		$count = count( $response['balance']['pending'] );
+		for ( $i = 0; $i < $count; $i++ ) {
+			unset( $response['balance']['pending'][ $i ]['deposits_count'] );
+		}
+		return $response;
 	}
 
 	/**
