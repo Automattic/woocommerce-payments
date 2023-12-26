@@ -319,10 +319,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->with( false );
 
 		$request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
-
-		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
 
@@ -479,9 +475,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->method( 'set_capture_method' )
 			->with( false );
 
-		$request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'legacy_card' ] );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );

@@ -1118,10 +1118,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->with( (int) ( $amount * 100 ) );
 
 		$request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
-
-		$request->expects( $this->once() )
 			->method( 'set_level3' )
 			->with(
 				$this->callback(

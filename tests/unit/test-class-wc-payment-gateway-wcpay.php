@@ -457,9 +457,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'set_amount_to_capture' )
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
-		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
 
@@ -512,9 +509,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'set_amount_to_capture' )
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
-		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention( [ 'currency' => 'eur' ] ) );
 
@@ -563,9 +557,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_amount_to_capture' )
 			->with( $mock_intent->get_amount() );
-		$capture_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
@@ -618,9 +609,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_amount_to_capture' )
 			->with( $mock_intent->get_amount() );
-		$capture_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
@@ -675,9 +663,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_amount_to_capture' )
 			->with( $mock_intent->get_amount() );
-		$capture_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -738,9 +723,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'set_amount_to_capture' )
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
-		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
 
@@ -795,9 +777,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_amount_to_capture' )
 			->with( $mock_intent->get_amount() );
-		$capture_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
@@ -854,9 +833,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'set_amount_to_capture' )
 			->with( $mock_intent->get_amount() );
 		$capture_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
-		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
 
@@ -902,9 +878,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_amount_to_capture' )
 			->with( $mock_intent->get_amount() );
-		$capture_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
@@ -1800,10 +1773,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'set_capture_method' )
 			->with( false );
-
-		$request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with( [ 'gateway_type' => 'split_upe_with_deferred_intent_creation' ] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )

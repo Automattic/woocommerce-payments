@@ -1643,19 +1643,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Array of keyed metadata values.
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
-		$service  = wcpay_get_container()->get( OrderService::class );
-		$metadata = $service->get_payment_metadata( $order->get_id(), $payment_type );
-
-		if ( $this instanceof UPE_Payment_Gateway ) {
-			$gateway_type = 'split_upe_with_deferred_intent_creation';
-		} elseif ( $this instanceof UPE_Payment_Gateway ) {
-			$gateway_type = 'legacy_upe';
-		} else {
-			$gateway_type = 'legacy_card';
-		}
-		$metadata['gateway_type'] = $gateway_type;
-
-		return $metadata;
+		$service = wcpay_get_container()->get( OrderService::class );
+		return $service->get_payment_metadata( $order->get_id(), $payment_type );
 	}
 
 	/**
