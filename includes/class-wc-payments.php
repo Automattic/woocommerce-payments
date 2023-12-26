@@ -21,7 +21,6 @@ use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
-use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
@@ -51,22 +50,15 @@ class WC_Payments {
 	/**
 	 * Main payment gateway controller instance, created in init function.
 	 *
-	 * @var WC_Payment_Gateway_WCPay|UPE_Payment_Gateway
+	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private static $card_gateway;
 
 	/**
-	 * Instance of WC_Payment_Gateway_WCPay to register as payment gateway.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private static $legacy_card_gateway;
-
-	/**
-	 * Copy of either $card_gateway or $legacy_card_gateway,
+	 * Copy of $card_gateway,
 	 * depending on which gateway is registered as main CC gateway.
 	 *
-	 * @var WC_Payment_Gateway_WCPay|UPE_Payment_Gateway
+	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private static $registered_card_gateway;
 
@@ -405,7 +397,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
-		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
@@ -523,8 +514,6 @@ class WC_Payments {
 		self::$incentives_service->init_hooks();
 		self::$compatibility_service->init_hooks();
 
-		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
-
 		$payment_method_classes = [
 			CC_Payment_Method::class,
 			Bancontact_Payment_Method::class,
@@ -549,7 +538,7 @@ class WC_Payments {
 		foreach ( $payment_methods as $payment_method ) {
 			self::$upe_payment_method_map[ $payment_method->get_id() ] = $payment_method;
 
-			$split_gateway = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
+			$split_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
 
 			// Card gateway hooks are registered once below.
 			if ( 'card' !== $payment_method->get_id() ) {
@@ -795,7 +784,7 @@ class WC_Payments {
 	/**
 	 * Returns main CC gateway registered for WCPay.
 	 *
-	 * @return WC_Payment_Gateway_WCPay|UPE_Payment_Gateway
+	 * @return WC_Payment_Gateway_WCPay
 	 */
 	public static function get_registered_card_gateway() {
 		return self::$registered_card_gateway;
@@ -804,7 +793,7 @@ class WC_Payments {
 	/**
 	 * Sets registered card gateway instance.
 	 *
-	 * @param WC_Payment_Gateway_WCPay|UPE_Payment_Gateway $gateway Gateway instance.
+	 * @param WC_Payment_Gateway_WCPay $gateway Gateway instance.
 	 */
 	public static function set_registered_card_gateway( $gateway ) {
 		self::$registered_card_gateway = $gateway;
@@ -1166,7 +1155,7 @@ class WC_Payments {
 	 * Returns payment gateway instance by Stripe ID.
 	 *
 	 * @param string $payment_method_id Stripe payment method type ID.
-	 * @return false|UPE_Payment_Gateway Matching UPE Payment Gateway instance.
+	 * @return false|WC_Payment_Gateway_WCPay Matching UPE Payment Gateway instance.
 	 */
 	public static function get_payment_gateway_by_id( $payment_method_id ) {
 		if ( ! isset( self::$upe_payment_gateway_map[ $payment_method_id ] ) ) {
@@ -1187,7 +1176,7 @@ class WC_Payments {
 	/**
 	 * Returns the WC_Payment_Gateway_WCPay instance
 	 *
-	 * @return WC_Payment_Gateway_WCPay|UPE_Payment_Gateway gateway instance
+	 * @return WC_Payment_Gateway_WCPay gateway instance
 	 */
 	public static function get_gateway() {
 		return self::$card_gateway;
@@ -1223,7 +1212,7 @@ class WC_Payments {
 	/**
 	 * Sets the card gateway instance.
 	 *
-	 * @param WC_Payment_Gateway_WCPay|UPE_Payment_Gateway $gateway The card gateway instance..
+	 * @param WC_Payment_Gateway_WCPay $gateway The card gateway instance..
 	 */
 	public static function set_gateway( $gateway ) {
 		self::$card_gateway = $gateway;

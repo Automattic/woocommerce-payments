@@ -144,20 +144,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
 
-		$this->gateway    = new WC_Payment_Gateway_WCPay(
-			$this->mock_api_client,
-			$this->mock_wcpay_account,
-			$customer_service,
-			$token_service,
-			$action_scheduler_service,
-			$mock_rate_limiter,
-			$order_service,
-			$mock_dpps,
-			$this->mock_localization_service,
-			$this->mock_fraud_service
-		);
-		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account );
-
 		$mock_payment_methods   = [];
 		$payment_method_classes = [
 			Becs_Payment_Method::class,
@@ -184,7 +170,23 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 		}
 
-		$this->mock_upe_payment_gateway = new UPE_Payment_Gateway(
+		$this->gateway    = new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$customer_service,
+			$token_service,
+			$action_scheduler_service,
+			$mock_payment_method,
+			$mock_payment_methods,
+			$mock_rate_limiter,
+			$order_service,
+			$mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service
+		);
+		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account );
+
+		$this->mock_upe_payment_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$customer_service,
@@ -201,7 +203,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway, $this->mock_wcpay_account );
 
-		$this->mock_split_upe_payment_gateway = new UPE_Payment_Gateway(
+		$this->mock_split_upe_payment_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$customer_service,
@@ -273,7 +275,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				'currency_code' => 'usd',
 			]
 		);
-		$response           = $this->upe_controller->get_settings();
+		$response           = $this->controller->get_settings();
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(

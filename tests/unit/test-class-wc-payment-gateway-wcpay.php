@@ -30,7 +30,6 @@ use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 
@@ -48,7 +47,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *
-	 * @var UPE_Payment_Gateway
+	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private $wcpay_gateway;
 
@@ -214,7 +213,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->setMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 
-		$this->wcpay_gateway = new UPE_Payment_Gateway(
+		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
@@ -2006,7 +2005,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * @return MockObject|WC_Payment_Gateway_WCPay
 	 */
 	private function get_partial_mock_for_gateway( array $methods = [] ) {
-		return $this->getMockBuilder( UPE_Payment_Gateway::class )
+		return $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -2363,7 +2362,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	private function create_gateway_with( $payment_method ) {
-		return new UPE_Payment_Gateway(
+		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,

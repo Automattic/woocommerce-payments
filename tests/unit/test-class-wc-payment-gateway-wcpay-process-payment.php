@@ -19,6 +19,8 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Constants\Payment_Method;
+use WCPay\Payment_Methods\CC_Payment_Method;
+
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 
@@ -149,7 +151,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
-		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$this->mock_dpps     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service ] )
+			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
+			->getMock();
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -161,6 +167,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
+					$mock_payment_method,
+					[ 'card' => $mock_payment_method ],
 					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$this->mock_dpps,
