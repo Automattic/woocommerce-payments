@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
+use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\WooPay\WooPay_Session;
 
 /**
@@ -81,7 +81,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	public function test_it_skips_stripe_link_gateway_registration() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 
-		$card_gateway_mock = $this->createMock( UPE_Split_Payment_Gateway::class );
+		$card_gateway_mock = $this->createMock( UPE_Payment_Gateway::class );
 		$card_gateway_mock
 			->expects( $this->once() )
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
@@ -100,10 +100,8 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$registered_gateways = WC_Payments::register_gateway( [] );
 
 		$this->assertCount( 1, $registered_gateways );
-		$this->assertInstanceOf( UPE_Split_Payment_Gateway::class, $registered_gateways[0] );
+		$this->assertInstanceOf( UPE_Payment_Gateway::class, $registered_gateways[0] );
 		$this->assertEquals( $registered_gateways[0]->get_stripe_id(), 'card' );
-
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
 	}
 
 	public function test_rest_endpoints_validate_nonce() {

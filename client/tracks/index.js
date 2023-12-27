@@ -125,6 +125,7 @@ const events = {
 	ONBOARDING_FLOW_HIDDEN: 'wcpay_onboarding_flow_hidden',
 	ONBOARDING_FLOW_EXITED: 'wcpay_onboarding_flow_exited',
 	ONBOARDING_FLOW_REDIRECTED: 'wcpay_onboarding_flow_redirected',
+	ONBOARDING_FLOW_RESET: 'wcpay_onboarding_flow_reset',
 	ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED:
 		'wcpay_onboarding_flow_eligibility_modal_closed',
 };

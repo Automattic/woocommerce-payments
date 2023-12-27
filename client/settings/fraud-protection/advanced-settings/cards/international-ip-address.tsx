@@ -11,11 +11,15 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
+import FraudProtectionRuleCardNotice from '../rule-card-notice';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import AllowedCountriesNotice from '../allow-countries-notice';
 import { getAdminUrl } from 'wcpay/utils';
+import { getSupportedCountriesType } from '../utils';
 
 const InternationalIPAddressRuleCard: React.FC = () => {
+	const supportsAllCountries = 'all' === getSupportedCountriesType();
+
 	return (
 		<FraudProtectionRuleCard
 			title={ __( 'International IP Address', 'woocommerce-payments' ) }
@@ -46,13 +50,23 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 			} ) }
 			id="international-ip-address-card"
 		>
-			<FraudProtectionRuleToggle
-				setting={ 'international_ip_address' }
-				label={ __(
-					'Block transactions for international IP addresses',
-					'woocommerce-payments'
-				) }
-			></FraudProtectionRuleToggle>
+			{ supportsAllCountries && (
+				<FraudProtectionRuleCardNotice type={ 'warning' }>
+					{ __(
+						"This filter is disabled because you're currently selling to all countries.",
+						'woocommerce-payments'
+					) }
+				</FraudProtectionRuleCardNotice>
+			) }
+			{ ! supportsAllCountries && (
+				<FraudProtectionRuleToggle
+					setting={ 'international_ip_address' }
+					label={ __(
+						'Block transactions for international IP addresses',
+						'woocommerce-payments'
+					) }
+				></FraudProtectionRuleToggle>
+			) }
 			<FraudProtectionRuleDescription>
 				{ __(
 					'You should be especially wary when a customer has an international IP address but uses domestic billing and ' +
@@ -60,7 +74,11 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 					'woocommerce-payments'
 				) }
 			</FraudProtectionRuleDescription>
-			<AllowedCountriesNotice setting={ 'international_ip_address' } />
+			{ ! supportsAllCountries && (
+				<AllowedCountriesNotice
+					setting={ 'international_ip_address' }
+				/>
+			) }
 		</FraudProtectionRuleCard>
 	);
 };

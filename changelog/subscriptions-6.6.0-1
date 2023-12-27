@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Deprecate the WC_Subscriptions_Synchroniser::add_to_recurring_cart_key(). Use WC_Subscriptions_Synchroniser::add_to_recurring_product_grouping_key() instead.

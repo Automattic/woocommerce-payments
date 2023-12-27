@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed a Level 3 error occurring during the capture of an authorization for amounts lower than the initial authorization amount.
