@@ -752,6 +752,34 @@ class WC_Payments_Order_Service {
 	/**
 	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added
 	 *
+	 * @param WC_Order                           $order The order.
+	 * @param WC_Payments_API_Abstract_Intention $intent The payment or setup intention object.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function attach_intent_info_to_order( WC_Order $order, WC_Payments_API_Abstract_Intention $intent ) {
+		// first, let's prepare all the metadata needed for refunds, required for status change etc.
+		$intent_id      = $intent->get_id();
+		$intent_status  = $intent->get_status();
+		$payment_method = $intent->get_payment_method_id();
+		$customer_id    = $intent->get_customer_id();
+		$currency       = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_currency() : $order->get_currency();
+		$charge         = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_charge() : null;
+		$charge_id      = $charge ? $charge->get_id() : null;
+		// next, save it in order meta.
+		$order->set_transaction_id( $intent_id );
+		$this->set_intent_id_for_order( $order, $intent_id );
+		$this->set_payment_method_id_for_order( $order, $payment_method );
+		$this->set_charge_id_for_order( $order, $charge_id );
+		$this->set_intention_status_for_order( $order, $intent_status );
+		$this->set_customer_id_for_order( $order, $customer_id );
+		$this->set_wcpay_intent_currency_for_order( $order, $currency );
+		$order->save();
+	}
+
+	/**
+	 * Legacy version of the attach_intent_info_to_order method.
+	 *
 	 * @param WC_Order $order The order.
 	 * @param string   $intent_id The intent ID.
 	 * @param string   $intent_status Intent status.
@@ -762,7 +790,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
+	public function attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
 		// first, let's save all the metadata that needed for refunds, required for status change etc.
 		$order->set_transaction_id( $intent_id );
 		$this->set_intent_id_for_order( $order, $intent_id );

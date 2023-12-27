@@ -1206,13 +1206,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_attach_intent_info_to_order() {
-		$intent_id      = 'pi_mock';
-		$intent_status  = 'succeeded';
-		$payment_method = 'woocommerce_payments';
-		$customer_id    = 'cus_12345';
-		$charge_id      = 'ch_mock';
-		$currency       = 'USD';
-		$this->order_service->attach_intent_info_to_order( $this->order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+		$intent_id = 'pi_mock';
+		$intent    = WC_Helper_Intention::create_intention( [ 'id' => $intent_id ] );
+		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
 
 		$this->assertEquals( $intent_id, $this->order->get_meta( '_intent_id', true ) );
 	}

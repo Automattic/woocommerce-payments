@@ -193,7 +193,7 @@ class OrderService {
 			$charge_id = $intent->get_charge()->get_id();
 		}
 
-		$this->legacy_service->attach_intent_info_to_order(
+		$this->legacy_service->attach_intent_info_to_order__legacy(
 			$order,
 			$intent->get_id(),
 			$intent->get_status(),
@@ -253,7 +253,7 @@ class OrderService {
 	) {
 		$order = $this->get_order( $order_id );
 
-		$this->legacy_service->attach_intent_info_to_order(
+		$this->legacy_service->attach_intent_info_to_order__legacy(
 			$order,
 			$intent->get_id(),
 			$intent->get_status(),

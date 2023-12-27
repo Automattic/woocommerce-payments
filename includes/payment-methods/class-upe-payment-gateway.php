@@ -245,13 +245,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			// Attach the intent and exchange info to the order before doing the redirect,
 			// so that when processing redirect, the up-to-date intent information is available.
-			$intent_id      = $updated_payment_intent->get_id();
-			$intent_status  = $updated_payment_intent->get_status();
-			$payment_method = $updated_payment_intent->get_payment_method_id();
-			$charge         = $updated_payment_intent->get_charge();
-			$charge_id      = $charge ? $charge->get_id() : null;
+			$charge    = $updated_payment_intent->get_charge();
+			$charge_id = $charge ? $charge->get_id() : null;
 
-			$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+			$this->order_service->attach_intent_info_to_order( $order, $updated_payment_intent );
 			$this->attach_exchange_info_to_order( $order, $charge_id );
 		}
 
@@ -519,9 +516,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw $e;
 				}
 
-				$intent_id              = $updated_payment_intent->get_id();
 				$intent_status          = $updated_payment_intent->get_status();
-				$payment_method         = $updated_payment_intent->get_payment_method_id();
 				$charge                 = $updated_payment_intent->get_charge();
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
@@ -532,7 +527,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				 * either does not complete properly, or the Stripe webhook which processes a successful order hits before
 				 * the redirect completes.
 				 */
-				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+				$this->order_service->attach_intent_info_to_order( $order, $updated_payment_intent );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				if ( Intent_Status::SUCCEEDED === $intent_status ) {
@@ -760,7 +755,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					}
 				}
 
-				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
+				$this->order_service->attach_intent_info_to_order( $order, $intent );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				if ( Intent_Status::SUCCEEDED === $status ) {
 					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
