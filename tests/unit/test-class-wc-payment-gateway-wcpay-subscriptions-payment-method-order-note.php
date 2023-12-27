@@ -6,7 +6,6 @@
  */
 
 use WCPay\Duplicate_Payment_Prevention_Service;
-use WCPay\Exceptions\API_Exception;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
@@ -143,7 +142,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			$this->createMock( WC_Payments_Fraud_Service::class )
 		);
 		$this->wcpay_gateway->init_hooks();
-		WC_Payments::set_gateway( $this->wcpay_gateway );
 
 		$this->renewal_order = WC_Helper_Order::create_order( self::USER_ID );
 

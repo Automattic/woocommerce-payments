@@ -11,18 +11,7 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
-use WCPay\Payment_Methods\Afterpay_Payment_Method;
-use WCPay\Payment_Methods\Bancontact_Payment_Method;
-use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
 /**

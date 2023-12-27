@@ -11,7 +11,6 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Methods\CC_Payment_Method;
 
 /**
@@ -135,10 +134,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
 		$mock_dpps           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
-			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
-			->getMock();
+		$mock_payment_method = $this->createMock( CC_Payment_Method::class );
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.

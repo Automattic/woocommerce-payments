@@ -6,14 +6,10 @@
  */
 
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
-use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
-use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
-use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
@@ -152,10 +148,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
 		$this->mock_dpps     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
-			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
-			->getMock();
+		$mock_payment_method = $this->createMock( CC_Payment_Method::class );
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.

@@ -90,10 +90,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$this->mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 		$mock_dpps                           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method                 = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
-			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
-			->getMock();
+		$mock_payment_method                 = $this->createMock( CC_Payment_Method::class );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

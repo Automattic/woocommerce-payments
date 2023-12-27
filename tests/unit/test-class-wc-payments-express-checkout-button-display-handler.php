@@ -149,10 +149,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		$mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 		$mock_dpps                     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method           = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $mock_token_service ] )
-			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
-			->getMock();
+		$mock_payment_method           = $this->createMock( CC_Payment_Method::class );
 
 		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

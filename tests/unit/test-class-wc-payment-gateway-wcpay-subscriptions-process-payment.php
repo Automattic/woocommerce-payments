@@ -7,7 +7,6 @@
 
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
-use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
@@ -143,12 +142,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
-		$mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-
-		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
-			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
-			->getMock();
+		$mock_dpps           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$mock_payment_method = $this->createMock( CC_Payment_Method::class );
 
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(
@@ -176,7 +171,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 				]
 			)
 			->getMock();
-			WC_Payments::set_gateway( $this->mock_wcpay_gateway );
 
 		$this->mock_customer_service
 			->expects( $this->once() )

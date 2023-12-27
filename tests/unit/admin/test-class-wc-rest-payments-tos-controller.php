@@ -64,10 +64,7 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 		$order_service            = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client, $order_service );
 		$mock_dpps                = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method      = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $token_service ] )
-			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
-			->getMock();
+		$mock_payment_method      = $this->createMock( CC_Payment_Method::class );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$mock_api_client,
