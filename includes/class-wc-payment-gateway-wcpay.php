@@ -37,7 +37,6 @@ use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
@@ -1644,19 +1643,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Array of keyed metadata values.
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
-		$service  = wcpay_get_container()->get( OrderService::class );
-		$metadata = $service->get_payment_metadata( $order->get_id(), $payment_type );
-
-		if ( $this instanceof UPE_Split_Payment_Gateway ) {
-			$gateway_type = 'split_upe_with_deferred_intent_creation';
-		} elseif ( $this instanceof UPE_Payment_Gateway ) {
-			$gateway_type = 'legacy_upe';
-		} else {
-			$gateway_type = 'legacy_card';
-		}
-		$metadata['gateway_type'] = $gateway_type;
-
-		return $metadata;
+		$service = wcpay_get_container()->get( OrderService::class );
+		return $service->get_payment_metadata( $order->get_id(), $payment_type );
 	}
 
 	/**
@@ -3729,7 +3717,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Modifies the create intent parameters when processing a payment.
 	 *
-	 * Currently used by child UPE_Split_Payment_Gateway to add required shipping information for Afterpay.
+	 * Currently used by child UPE_Payment_Gateway to add required shipping information for Afterpay.
 	 *
 	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
 	 * @param Payment_Information          $payment_information   The payment information object.

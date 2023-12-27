@@ -8,7 +8,7 @@
 use WCPay\WC_Payments_Checkout;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Method;
-use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
+use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
@@ -36,9 +36,9 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	private $system_under_test;
 
 	/**
-	 * UPE_Split_Payment_Gateway instance.
+	 * UPE_Payment_Gateway instance.
 	 *
-	 * @var UPE_Split_Payment_Gateway|MockObject
+	 * @var UPE_Payment_Gateway|MockObject
 	 */
 	private $mock_wcpay_gateway;
 
@@ -81,7 +81,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	/**
 	 * Default gateway.
 	 *
-	 * @var UPE_Split_Payment_Gateway
+	 * @var UPE_Payment_Gateway
 	 */
 	private $default_gateway;
 
@@ -89,7 +89,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		parent::set_up();
 
 		// Setup the gateway mock.
-		$this->mock_wcpay_gateway     = $this->getMockBuilder( UPE_Split_Payment_Gateway::class )
+		$this->mock_wcpay_gateway     = $this->getMockBuilder( UPE_Payment_Gateway::class )
 			->onlyMethods( [ 'get_account_domestic_currency', 'get_payment_method_ids_enabled_at_checkout', 'should_use_stripe_platform_on_checkout_page', 'should_support_saved_payments', 'is_saved_cards_enabled', 'save_payment_method_checkbox', 'get_account_statement_descriptor', 'get_icon_url', 'get_payment_method_ids_enabled_at_checkout_filtered_by_fees', 'is_subscription_item_in_cart', 'wc_payments_get_payment_method_by_id', 'display_gateway_html' ] )
 			->disableOriginalConstructor()
 			->getMock();
@@ -436,8 +436,6 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'icon'                   => $icon_url,
 					'showSaveOption'         => true,
 					'countries'              => [],
-					'upePaymentIntentData'   => null,
-					'upeSetupIntentData'     => null,
 					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
 					'forceNetworkSavedCards' => false,
 				],
@@ -447,8 +445,6 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'icon'                   => $icon_url,
 					'showSaveOption'         => true,
 					'countries'              => [],
-					'upePaymentIntentData'   => null,
-					'upeSetupIntentData'     => null,
 					'testingInstructions'    => '',
 					'forceNetworkSavedCards' => false,
 				],
