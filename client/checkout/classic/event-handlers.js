@@ -61,7 +61,7 @@ jQuery( function ( $ ) {
 		return processPaymentIfNotUsingSavedMethod( $( this ) );
 	} );
 
-	$( 'form.checkout' ).on( 'submit', function () {
+	$( 'form.checkout' ).on( 'click', '#place_order', function () {
 		const isWCPay = document.getElementById(
 			'payment_method_woocommerce_payments'
 		).checked;
