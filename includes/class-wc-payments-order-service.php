@@ -42,6 +42,13 @@ class WC_Payments_Order_Service {
 	const CHARGE_ID_META_KEY = '_charge_id';
 
 	/**
+	 * Meta key used to store payment transaction Id.
+	 *
+	 * @const string
+	 */
+	const PAYMENT_TRANSACTION_ID_META_KEY = '_payment_transaction_id';
+
+	/**
 	 * Meta key used to store intention status.
 	 *
 	 * @const string
@@ -525,6 +532,20 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Set the payment metadata for payment transaction id.
+	 *
+	 * @param  mixed  $order The order.
+	 * @param  string $payment_transaction_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_payment_transaction_id_for_order( $order, $payment_transaction_id ) {
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::PAYMENT_TRANSACTION_ID_META_KEY, $payment_transaction_id );
+		$order->save_meta_data();
+	}
+
+	/**
 	 * Get the payment metadata for charge id.
 	 *
 	 * @param  mixed $order The order Id or order object.
@@ -759,18 +780,21 @@ class WC_Payments_Order_Service {
 	 */
 	public function attach_intent_info_to_order( WC_Order $order, WC_Payments_API_Abstract_Intention $intent ) {
 		// first, let's prepare all the metadata needed for refunds, required for status change etc.
-		$intent_id      = $intent->get_id();
-		$intent_status  = $intent->get_status();
-		$payment_method = $intent->get_payment_method_id();
-		$customer_id    = $intent->get_customer_id();
-		$currency       = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_currency() : $order->get_currency();
-		$charge         = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_charge() : null;
-		$charge_id      = $charge ? $charge->get_id() : null;
+		$intent_id              = $intent->get_id();
+		$intent_status          = $intent->get_status();
+		$payment_method         = $intent->get_payment_method_id();
+		$customer_id            = $intent->get_customer_id();
+		$currency               = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_currency() : $order->get_currency();
+		$charge                 = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_charge() : null;
+		$charge_id              = $charge ? $charge->get_id() : null;
+		$payment_transaction    = $charge ? $charge->get_balance_transaction() : null;
+		$payment_transaction_id = $payment_transaction ? $payment_transaction['id'] : '';
 		// next, save it in order meta.
 		$order->set_transaction_id( $intent_id );
 		$this->set_intent_id_for_order( $order, $intent_id );
 		$this->set_payment_method_id_for_order( $order, $payment_method );
 		$this->set_charge_id_for_order( $order, $charge_id );
+		$this->set_payment_transaction_id_for_order( $order, $payment_transaction_id );
 		$this->set_intention_status_for_order( $order, $intent_status );
 		$this->set_customer_id_for_order( $order, $customer_id );
 		$this->set_wcpay_intent_currency_for_order( $order, $currency );
