@@ -12,7 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
-use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
@@ -195,25 +194,18 @@ class WC_Payments {
 	private static $webhook_processing_service;
 
 	/**
-	 * Maps all availabled Stripe payment method IDs to UPE Payment Method instances.
+	 * Maps all availabled Stripe payment method IDs to Payment Method instances.
 	 *
 	 * @var array
 	 */
-	private static $upe_payment_method_map = [];
+	private static $payment_method_map = [];
 
 	/**
-	 * Maps all availabled Stripe payment method IDs to UPE Payment Gateway instances.
+	 * Maps all availabled Stripe payment method IDs to Payment Gateway instances.
 	 *
 	 * @var array
 	 */
-	private static $upe_payment_gateway_map = [];
-
-	/**
-	 * Map to store all the available split upe checkouts
-	 *
-	 * @var array
-	 */
-	private static $upe_checkout_map = [];
+	private static $payment_gateway_map = [];
 
 	/**
 	 * Instance of WC_Payments_Webhook_Reliability_Service, created in init function
@@ -528,7 +520,7 @@ class WC_Payments {
 			$payment_methods[ $payment_method->get_id() ] = $payment_method;
 		}
 		foreach ( $payment_methods as $payment_method ) {
-			self::$upe_payment_method_map[ $payment_method->get_id() ] = $payment_method;
+			self::$payment_method_map[ $payment_method->get_id() ] = $payment_method;
 
 			$split_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
 
@@ -537,7 +529,7 @@ class WC_Payments {
 				$split_gateway->init_hooks();
 			}
 
-			self::$upe_payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
+			self::$payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 		}
 
 		self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
@@ -747,20 +739,20 @@ class WC_Payments {
 		}
 
 		$gateways[]       = self::$card_gateway;
-		$all_upe_gateways = [];
+		$all_gateways     = [];
 		$reusable_methods = [];
 		foreach ( $payment_methods as $payment_method_id ) {
 			if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
 				continue;
 			}
-			$upe_gateway        = self::get_payment_gateway_by_id( $payment_method_id );
-			$upe_payment_method = self::get_payment_method_by_id( $payment_method_id );
+			$gateway        = self::get_payment_gateway_by_id( $payment_method_id );
+			$payment_method = self::get_payment_method_by_id( $payment_method_id );
 
-			if ( $upe_payment_method->is_reusable() ) {
-				$reusable_methods[] = $upe_gateway;
+			if ( $payment_method->is_reusable() ) {
+				$reusable_methods[] = $gateway;
 			}
 
-			$all_upe_gateways[] = $upe_gateway;
+			$all_gateways[] = $gateway;
 
 		}
 
@@ -768,7 +760,7 @@ class WC_Payments {
 			return array_merge( $gateways, $reusable_methods );
 		}
 
-		return array_merge( $gateways, $all_upe_gateways );
+		return array_merge( $gateways, $all_gateways );
 	}
 
 	/**
@@ -1114,26 +1106,26 @@ class WC_Payments {
 	 * Returns payment method instance by Stripe ID.
 	 *
 	 * @param string $payment_method_id Stripe payment method type ID.
-	 * @return false|UPE_Payment_Method Matching UPE Payment Method instance.
+	 * @return false|UPE_Payment_Method Matching Payment Method instance.
 	 */
 	public static function get_payment_method_by_id( $payment_method_id ) {
-		if ( ! isset( self::$upe_payment_method_map[ $payment_method_id ] ) ) {
+		if ( ! isset( self::$payment_method_map[ $payment_method_id ] ) ) {
 			return false;
 		}
-		return self::$upe_payment_method_map[ $payment_method_id ];
+		return self::$payment_method_map[ $payment_method_id ];
 	}
 
 	/**
 	 * Returns payment gateway instance by Stripe ID.
 	 *
 	 * @param string $payment_method_id Stripe payment method type ID.
-	 * @return false|WC_Payment_Gateway_WCPay Matching UPE Payment Gateway instance.
+	 * @return false|WC_Payment_Gateway_WCPay Matching Payment Gateway instance.
 	 */
 	public static function get_payment_gateway_by_id( $payment_method_id ) {
-		if ( ! isset( self::$upe_payment_gateway_map[ $payment_method_id ] ) ) {
+		if ( ! isset( self::$payment_gateway_map[ $payment_method_id ] ) ) {
 			return false;
 		}
-		return self::$upe_payment_gateway_map[ $payment_method_id ];
+		return self::$payment_gateway_map[ $payment_method_id ];
 	}
 
 	/**
@@ -1142,7 +1134,7 @@ class WC_Payments {
 	 * @return array
 	 */
 	public static function get_payment_method_map() {
-		return self::$upe_payment_method_map;
+		return self::$payment_method_map;
 	}
 
 	/**
