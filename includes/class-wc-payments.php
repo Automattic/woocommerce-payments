@@ -55,14 +55,6 @@ class WC_Payments {
 	private static $card_gateway;
 
 	/**
-	 * Copy of $card_gateway,
-	 * depending on which gateway is registered as main CC gateway.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private static $registered_card_gateway;
-
-	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
 	 *
 	 * @var WC_Payments_API_Client
@@ -754,9 +746,7 @@ class WC_Payments {
 			self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
 		}
 
-		self::$registered_card_gateway = self::$card_gateway;
-
-		$gateways[]       = self::$registered_card_gateway;
+		$gateways[]       = self::$card_gateway;
 		$all_upe_gateways = [];
 		$reusable_methods = [];
 		foreach ( $payment_methods as $payment_method_id ) {
@@ -782,30 +772,12 @@ class WC_Payments {
 	}
 
 	/**
-	 * Returns main CC gateway registered for WCPay.
-	 *
-	 * @return WC_Payment_Gateway_WCPay
-	 */
-	public static function get_registered_card_gateway() {
-		return self::$registered_card_gateway;
-	}
-
-	/**
-	 * Sets registered card gateway instance.
-	 *
-	 * @param WC_Payment_Gateway_WCPay $gateway Gateway instance.
-	 */
-	public static function set_registered_card_gateway( $gateway ) {
-		self::$registered_card_gateway = $gateway;
-	}
-
-	/**
 	 * Called on Payments setting page.
 	 *
 	 * Remove all WCPay gateways except CC one.
 	 */
 	public static function hide_gateways_on_settings_page() {
-		$default_gateway = self::get_registered_card_gateway();
+		$default_gateway = self::get_gateway();
 		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
 			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== $default_gateway ) {
 				unset( WC()->payment_gateways->payment_gateways[ $index ] );

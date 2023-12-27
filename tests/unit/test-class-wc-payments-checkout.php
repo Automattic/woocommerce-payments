@@ -118,8 +118,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->mock_token_service = $this->createMock( WC_Payments_Token_Service::class );
 
 		// This is needed to ensure that only the mocked gateway is always used by the checkout class.
-		$this->default_gateway = WC_Payments::get_registered_card_gateway();
-		WC_Payments::set_registered_card_gateway( $this->mock_wcpay_gateway );
+		$this->default_gateway = WC_Payments::get_gateway();
 		WC_Payments::set_gateway( $this->mock_wcpay_gateway );
 
 		// Use a callback to suppresses the output buffering being printed to the CLI.
@@ -134,7 +133,6 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 	public function tear_down() {
 		parent::tear_down();
-		WC_Payments::set_registered_card_gateway( $this->default_gateway );
 		WC_Payments::set_gateway( $this->default_gateway );
 	}
 
