@@ -40,7 +40,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return string String where all of the html was escaped, except for the tags specified in element map.
 	 */
-	public static function esc_interpolated_html( $string, $element_map ) {
+	public static function esc_interpolated_html( $string, $element_map ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound -- ok to use string as a parameter name for generic method.
 		// Regex to match string expressions wrapped in angle brackets.
 		$tokenizer    = '/<(\/)?(\w+)\s*(\/)?>/';
 		$string_queue = [];
@@ -369,7 +369,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return string|array The redacted array.
 	 */
-	public static function redact_array( $array, array $keys_to_redact, int $level = 0 ) {
+	public static function redact_array( $array, array $keys_to_redact, int $level = 0 ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.arrayFound -- ok to use array as a parameter name for generic method.
 		if ( is_object( $array ) ) {
 			// TODO: if we ever want to log objects, they could implement a method returning an array or a string.
 			return get_class( $array ) . '()';
@@ -404,7 +404,7 @@ class WC_Payments_Utils {
 	 * @param callable $callback The callback to apply.
 	 * @return array The mapped array.
 	 */
-	public static function array_map_recursive( array $array, callable $callback ): array {
+	public static function array_map_recursive( array $array, callable $callback ): array { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.arrayFound -- ok to use array as a parameter name for generic method.
 		foreach ( $array as $key => $value ) {
 			if ( \is_array( $value ) ) {
 				$value = self::array_map_recursive( $value, $callback );
