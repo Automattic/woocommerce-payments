@@ -134,7 +134,11 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		WC_Payments::maybe_register_woopay_hooks();
 
-		// Trigger the addition of the disable nonce filter when appropriate.
+		/**
+		 * Triggers the addition of the disable nonce filter when appropriate.
+		 *
+		 * @since 4.4.0
+		 */
 		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
 	}
 
@@ -150,7 +154,11 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		WC_Payments::maybe_register_woopay_hooks();
 
-		// Trigger the addition of the disable nonce filter when appropriate.
+		/**
+		 * Trigger the addition of the disable nonce filter when appropriate.
+		 *
+		 * @since 4.4.0
+		 */
 		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
 	}
 }
