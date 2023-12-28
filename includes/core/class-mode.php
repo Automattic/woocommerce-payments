@@ -91,6 +91,8 @@ class Mode {
 		 *
 		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/
 		 * @param bool $dev_mode The pre-determined dev mode.
+		 *
+		 * @since 5.6.0
 		 */
 		$this->dev_mode = (bool) apply_filters( 'wcpay_dev_mode', $dev_mode );
 
@@ -102,6 +104,8 @@ class Mode {
 		 *
 		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
 		 * @param bool $test_mode The pre-determined test mode.
+		 *
+		 * @since 5.6.0
 		 */
 		$this->test_mode = (bool) apply_filters( 'wcpay_test_mode', $test_mode );
 	}
