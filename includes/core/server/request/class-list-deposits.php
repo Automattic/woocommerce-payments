@@ -62,7 +62,7 @@ class List_Deposits extends Paginated {
 	 *
 	 * @return void
 	 */
-	public function set_match( string $match ) {
+	public function set_match( string $match ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.matchFound -- Keep $match as a param name for consistency with existing filtering API.
 		$this->set_param( 'match', $match );
 	}
 
