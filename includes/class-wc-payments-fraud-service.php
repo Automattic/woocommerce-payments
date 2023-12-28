@@ -122,6 +122,15 @@ class WC_Payments_Fraud_Service {
 			// Apply our internal logic before allowing others to have a say through filters.
 			$config = $this->prepare_fraud_config( $config, $service_id );
 
+			/**
+			 * Triggers when preparing the fraud config for a service.
+			 *
+			 * @param array  $config     Existing fraud config data for the given fraud service.
+			 * @param string $service_id Identifier of the fraud service.
+			 * @return array|mixed Fraud service config is expected, but anything can be returned from the filter.
+			 *
+			 * @since 6.7.0
+			 */
 			$services_config[ $service_id ] = apply_filters( 'wcpay_prepare_fraud_config', $config, $service_id );
 		}
 
