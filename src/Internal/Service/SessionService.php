@@ -38,7 +38,7 @@ class SessionService {
 	 *
 	 * @return mixed
 	 */
-	public function get( string $key, $default = null ) {
+	public function get( string $key, $default = null ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- Keep $default as a param name to match WC_Session::get().
 		if ( $this->has_wc_session() ) {
 			return $this->get_wc_session()->get( $key, $default );
 		} else {
