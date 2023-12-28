@@ -67,7 +67,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_customer_multi_currency_is_enabled_by_default() {
 		add_filter(
 			'pre_option__wcpay_feature_customer_multi_currency',
-			function ( $pre_option, $option, $default ) {
+			function ( $pre_option, $option, $default ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- Ok to use for the mock.
 				return $default;
 			},
 			10,
@@ -80,7 +80,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_customer_multi_currency_can_be_disabled() {
 		add_filter(
 			'pre_option__wcpay_feature_customer_multi_currency',
-			function ( $pre_option, $option, $default ) {
+			function ( $pre_option, $option, $default ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed,Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- This is a mock.
 				return '0';
 			},
 			10,
@@ -147,7 +147,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_is_woopay_enabled_returns_true() {
 		add_filter(
 			'pre_option__wcpay_feature_woopay_express_checkout',
-			function ( $pre_option, $option, $default ) {
+			function ( $pre_option, $option, $default ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed,Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- This is a mock.
 				return '1';
 			},
 			10,
@@ -161,7 +161,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_is_woopay_enabled_returns_false_when_express_checkout_flag_is_false() {
 		add_filter(
 			'pre_option__wcpay_feature_woopay_express_checkout',
-			function ( $pre_option, $option, $default ) {
+			function ( $pre_option, $option, $default ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed,Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- This is a mock.
 				return '0';
 			},
 			10,
@@ -175,7 +175,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_is_woopay_enabled_returns_false_when_platform_checkout_flag_is_false() {
 		add_filter(
 			'pre_option__wcpay_feature_woopay_express_checkout',
-			function ( $pre_option, $option, $default ) {
+			function ( $pre_option, $option, $default ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed,Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- This is a mock.
 				return '1';
 			},
 			10,
@@ -189,7 +189,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_is_woopay_enabled_returns_false_when_ineligible() {
 		add_filter(
 			'pre_option__wcpay_feature_woopay_express_checkout',
-			function ( $pre_option, $option, $default ) {
+			function ( $pre_option, $option, $default ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed,Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- This is a mock.
 				return '1';
 			},
 			10,
@@ -203,7 +203,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_is_woopay_express_checkout_enabled_returns_true() {
 		add_filter(
 			'pre_option__wcpay_feature_woopay_express_checkout',
-			function ( $pre_option, $option, $default ) {
+			function ( $pre_option, $option, $default ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed,Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- This is a mock.
 				return '1';
 			},
 			10,
@@ -216,7 +216,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_is_woopay_express_checkout_enabled_returns_false_when_flag_is_false() {
 		add_filter(
 			'pre_option__wcpay_feature_woopay_express_checkout',
-			function ( $pre_option, $option, $default ) {
+			function ( $pre_option, $option, $default ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed,Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- This is a mock.
 				return '0';
 			},
 			10,
@@ -229,7 +229,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_is_woopay_express_checkout_enabled_returns_false_when_woopay_eligible_is_false() {
 		add_filter(
 			'pre_option_' . WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
+			function ( $pre_option, $option, $default ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed,Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- This is a mock.
 				return '1';
 			},
 			10,
@@ -242,7 +242,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_is_wcpay_frt_review_feature_active_returns_true() {
 		add_filter(
 			'pre_option_wcpay_frt_review_feature_active',
-			function ( $pre_option, $option, $default ) {
+			function ( $pre_option, $option, $default ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed,Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- This is a mock.
 				return '1';
 			},
 			10,
