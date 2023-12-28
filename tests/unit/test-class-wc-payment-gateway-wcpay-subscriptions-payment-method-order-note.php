@@ -305,7 +305,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		// Simulate is_changing_payment_method_for_subscription being true.
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $order ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a mock.
 				return true;
 			}
 		);
@@ -369,7 +369,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $subscriptions ) {
+			function ( $order ) use ( $subscriptions ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a mock.
 				return $subscriptions;
 			}
 		);
@@ -377,7 +377,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 	private function mock_wcs_is_subscription( $return_value ) {
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) use ( $return_value ) {
+			function ( $order ) use ( $return_value ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a mock.
 				return $return_value;
 			}
 		);
