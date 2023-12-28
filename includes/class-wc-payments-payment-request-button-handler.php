@@ -142,6 +142,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 	public function get_total_label() {
 		// Get statement descriptor from API/cached account data.
 		$statement_descriptor = $this->account->get_statement_descriptor();
+		/**
+		 * Allows customizing the total label suffix.
+		 *
+		 * @param string $suffix The default suffix.
+		 * @return string The suffix.
+		 *
+		 * @since 2.1.0
+		 */
 		return str_replace( "'", '', $statement_descriptor ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
 	}
 
@@ -232,8 +240,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			throw new Invalid_Price_Exception(
 				sprintf(
 					// Translators: %d is the numeric ID of the product without a price.
-					__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ),
-					$product->get_id()
+					__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Not used for the output here.
+					$product->get_id() // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Not used for the output here.
 				)
 			);
 		}
@@ -319,6 +327,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$data['displayItems'] = $items;
 		$data['total']        = [
+			/**
+			 * Allows customizing the total label for the Payment Request Button.
+			 *
+			 * @param string $label The default label.
+			 * @return string Customized total label.
+			 *
+			 * @since 2.1.0
+			 */
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
 			'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
 			'pending' => true,
@@ -328,6 +344,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
+		/**
+		 * Allows extending product data for Payment Request Button.
+		 *
+		 * @param array $data    The product data.
+		 * @param WC_Product $product The product object.
+		 * @return array The extended product data.
+		 *
+		 * @since 2.1.0
+		 */
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
 
@@ -382,6 +407,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems']   = $items;
 		$data['needs_shipping'] = false; // This should be already entered/prepared.
 		$data['total']          = [
+			/**
+			 * Allows customizing the total label for the Payment Request Button.
+			 *
+			 * @param string $label The default label.
+			 * @return string Customized total label.
+			 *
+			 * @since 4.6.0
+			 */
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
 			'amount'  => WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ),
 			'pending' => true,
@@ -477,6 +510,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'google_pay' => 'Google Pay',
 		];
 
+		/**
+		 * Allows customizing the payment method title suffix.
+		 *
+		 * @param string $suffix The default suffix 'WooPayments'.
+		 * @return string Customized payment method title suffix.
+		 *
+		 * @since 3.8.0
+		 */
 		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
 		if ( ! empty( $suffix ) ) {
 			$suffix = " ($suffix)";
@@ -561,6 +602,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  array
 	 */
 	public function supported_product_types() {
+		/**
+		 * Allows customizing the supported product types for Payment Request Button.
+		 *
+		 * @param array $types The default supported product types.
+		 * @return array The supported product types.
+		 *
+		 * @since 2.1.0
+		 */
 		return apply_filters(
 			'wcpay_payment_request_supported_types',
 			[
@@ -590,6 +639,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			/**
+			 * Retrieves product data in the same way as Woo core does.
+			 *
+			 * @param array $cart_item_data The cart item data.
+			 * @param array $cart_item The cart item.
+			 * @param string $cart_item_key The cart item key.
+			 *
+			 * @return mixed The product data.
+			 *
+			 * @since 2.1.0
+			 */
 			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
 			if ( ! in_array( $_product->get_type(), $this->supported_product_types(), true ) ) {
@@ -871,6 +931,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 		}
 
+		/**
+		 * Allows customizing Payment Request Button support on product page.
+		 *
+		 * @param boolean $is_supported Whether product supports Payment Request Button on product page.
+		 * @param WC_Product $product Product.
+		 * @return boolean Whether product supports Payment Request Button on product page.
+		 *
+		 * @since 3.4.0
+		 */
 		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
 	}
 
@@ -938,6 +1007,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			// Remember current shipping method before resetting.
 			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+
+			/**
+			 * Allows customizing shipping address for calculating shipping options.
+			 *
+			 * @param array $shipping_address The shipping address.
+			 * @return array The customized shipping address.
+			 *
+			 * @since 2.1.0
+			 */
 			$this->calculate_shipping( apply_filters( 'wcpay_payment_request_shipping_posted_values', $shipping_address ) );
 
 			$packages = WC()->shipping->get_packages();
@@ -1048,7 +1126,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 		check_ajax_referer( 'wcpay-get-selected-product-data', 'security' );
 
 		try {
-			$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+			$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+			/**
+			 * Allows customizing product quantity.
+			 *
+			 * @param int $qty The quantity specified in request param.
+			 * @param int|bool $product_id The product ID specifies in request param. False if not specified.
+			 * @return int The quantity to be used.
+			 *
+			 * @since 2.1.0
+			 */
 			$qty          = ! isset( $_POST['qty'] ) ? 1 : apply_filters( 'woocommerce_add_to_cart_quantity', absint( $_POST['qty'] ), $product_id );
 			$addon_value  = isset( $_POST['addon_value'] ) ? max( (float) $_POST['addon_value'], 0 ) : 0;
 			$product      = wc_get_product( $product_id );
@@ -1073,6 +1160,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			// Force quantity to 1 if sold individually and check for existing item in cart.
 			if ( $product->is_sold_individually() ) {
+				/**
+				 * Allows overriding enforcement of sold individually.
+				 *
+				 * @param int $forced_qty The quantity to be enforced.
+				 * @param int $qty The original quantity.
+				 * @param int|bool $product_id The product ID specifies in request param. False if not specified.
+				 * @param int|null $variation_id The variation ID based on $product_id and $attributes from request. Null if not specified.
+				 *
+				 * @since 2.1.0
+				 */
 				$qty = apply_filters( 'wcpay_payment_request_add_to_cart_sold_individually_quantity', 1, $qty, $product_id, $variation_id );
 			}
 
@@ -1250,6 +1347,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 			// Include the order ID in the result.
 			$result['order_id'] = $order_id;
 
+			/**
+			 * Allows customizing successful response on Pay for Order page.
+			 *
+			 * @param array $result The original response.
+			 * @param int $order_id The order ID.
+			 * @return array The customized response.
+			 *
+			 * @since 4.6.0
+			 */
 			$result = apply_filters( 'woocommerce_payment_successful_result', $result, $order_id );
 		} catch ( Exception $e ) {
 			$result = [
@@ -1301,7 +1407,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * @return string The sanitized string.
 	 */
-	public function sanitize_string( $string ) {
+	public function sanitize_string( $string ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound -- It's ok to use string as a parameter name for this generic method.
 		return trim( wc_strtolower( remove_accents( $string ) ) );
 	}
 
@@ -1506,6 +1612,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 		}
 
+		/**
+		 * Allows customizing shipping packages.
+		 *
+		 * @param $packages array Original shipping packages.
+		 * @return array The customized shipping packages.
+		 *
+		 * @since 2.1.0
+		 */
 		$packages = apply_filters( 'woocommerce_cart_shipping_packages', $packages );
 
 		WC()->shipping->calculate_shipping( $packages );
@@ -1561,6 +1675,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$currency  = get_woocommerce_currency();
 
 		// Default show only subtotal instead of itemization.
+		/**
+		 * Allows to control itemization display.
+		 *
+		 * @param boolean $hide_itemization Flag specifying if itemization should be hidden. Default value is true.
+		 * @return boolean Customized flag specifying if itemization should be hidden.
+		 *
+		 * @since 2.1.0
+		 */
 		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', true ) || $itemized_display_items ) {
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				$amount         = $cart_item['line_subtotal'];
@@ -1636,6 +1758,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'displayItems' => $items,
 			'total'        => [
 				'label'   => $this->get_total_label(),
+				/**
+				 * Allows customizing displayed total.
+				 *
+				 * @param int $total The original total amount in cents.
+				 * @param float|string $order_total The original order total amount.
+				 * @param WC_Cart $cart The cart object.
+				 * @return int The customized total amount in cents.
+				 *
+				 * @since 2.1.0
+				 */
 				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
 				'pending' => false,
 			],
@@ -1676,7 +1808,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'type'         => $button_type,
 			'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
 			'height'       => $this->get_button_height(),
-			// Default format is en_US.
+			/**
+			 * Allows customizing Payment Request Button locale. Default value is en_US.
+			 *
+			 * @param string $locale The original locale.
+			 * @return string The customized locale.
+			 *
+			 * @since 2.6.0
+			 */
 			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
 			'branded_type' => 'default' === $button_type ? 'short' : 'long',
 		];
