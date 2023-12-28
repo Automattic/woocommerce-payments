@@ -43,7 +43,7 @@ abstract class Base_Constant implements \JsonSerializable {
 		if ( $value instanceof static ) {
 			$value = $value->get_value();
 		} elseif ( ! defined( static::class . "::$value" ) ) {
-				throw new \InvalidArgumentException( "Constant with name '$value' does not exist." );
+				throw new \InvalidArgumentException( "Constant with name '$value' does not exist." ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No need to escape exception message.
 		}
 
 		$this->value = $value;
@@ -81,7 +81,7 @@ abstract class Base_Constant implements \JsonSerializable {
 		$class = new ReflectionClass( static::class );
 		$key   = array_search( $value, $class->getConstants(), true );
 		if ( false === $key ) {
-			throw new \InvalidArgumentException( "Constant with value '$value' does not exist." );
+			throw new \InvalidArgumentException( "Constant with value '$value' does not exist." ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No need to escape exception message.
 		}
 
 		return $key;
