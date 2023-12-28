@@ -72,6 +72,14 @@ class Router {
 			}
 		}
 
+		/**
+		 * Allows extending allowed factors for routing payment through the new payment flow.
+		 *
+		 * @param Factor[] $allowed Original allowed factors.
+		 * @return Factor[] Extended allowed factors.
+		 *
+		 * @since 6.5.0
+		 */
 		$allowed = apply_filters( 'wcpay_new_payment_process_enabled_factors', $allowed );
 		return $allowed;
 	}
