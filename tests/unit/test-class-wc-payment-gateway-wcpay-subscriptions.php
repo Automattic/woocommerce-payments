@@ -373,7 +373,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$mock_subscription = new WC_Subscription();
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $id ) use ( $mock_subscription ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a mock.
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -398,7 +398,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$mock_subscription = new WC_Subscription();
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $id ) use ( $mock_subscription ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a mock.
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -986,7 +986,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $subscriptions ) {
+			function ( $order ) use ( $subscriptions ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a mock.
 				return $subscriptions;
 			}
 		);
@@ -994,7 +994,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_is_subscription( $return_value ) {
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) use ( $return_value ) {
+			function ( $order ) use ( $return_value ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a mock.
 				return $return_value;
 			}
 		);
@@ -1002,7 +1002,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_get_subscriptions_for_renewal_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $order ) use ( $value ) {
+			function ( $order ) use ( $value ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a mock.
 				return $value;
 			}
 		);
