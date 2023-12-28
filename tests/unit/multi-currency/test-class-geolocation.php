@@ -36,7 +36,7 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 	public function test_get_country_by_customer_location_returns_geolocation_country() {
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function() {
+			function () {
 				return 'CA';
 			}
 		);
@@ -46,14 +46,14 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 	public function test_get_country_by_customer_location_returns_default_country_when_no_geolocation() {
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function() {
+			function () {
 				return '';
 			}
 		);
 
 		add_filter(
 			'woocommerce_customer_default_location',
-			function() {
+			function () {
 				return 'BR';
 			}
 		);
@@ -66,7 +66,7 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function() {
+			function () {
 				return 'CA';
 			}
 		);
@@ -79,13 +79,13 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function() {
+			function () {
 				return '';
 			}
 		);
 		add_filter(
 			'woocommerce_customer_default_location',
-			function() {
+			function () {
 				return 'BR';
 			}
 		);
@@ -96,13 +96,13 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 	public function test_get_currency_by_customer_location_returns_null() {
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function() {
+			function () {
 				return '';
 			}
 		);
 		add_filter(
 			'woocommerce_customer_default_location',
-			function() {
+			function () {
 				return '';
 			}
 		);

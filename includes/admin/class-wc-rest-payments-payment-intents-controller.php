@@ -51,5 +51,4 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 
 		return $this->forward_request( 'get_intent', [ $payment_intent_id ] );
 	}
-
 }

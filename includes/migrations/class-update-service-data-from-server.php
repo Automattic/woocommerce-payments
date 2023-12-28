@@ -62,5 +62,4 @@ class Update_Service_Data_From_Server {
 	private function migrate() {
 		$this->account->refresh_account_data();
 	}
-
 }

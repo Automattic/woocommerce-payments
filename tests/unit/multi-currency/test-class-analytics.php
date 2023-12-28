@@ -62,7 +62,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$this->set_is_rest_request( true );
 		add_filter(
 			'woocommerce_is_rest_api_request',
-			function() {
+			function () {
 				return true;
 			}
 		);
@@ -141,7 +141,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$result = $method->invoke( $this->analytics );
 
 		$this->assertTrue( $result );
-
 	}
 
 	public function test_register_customer_currencies_for_empty_customer_currencies() {
@@ -306,7 +305,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = array_reverse( $clauses );
 		add_filter(
 			'wcpay_multi_currency_filter_select_clauses',
-			function( $new_clauses ) use ( $clauses ) {
+			function ( $new_clauses ) use ( $clauses ) {
 				return array_reverse( $clauses );
 			}
 		);
@@ -494,7 +493,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = array_reverse( $clauses );
 		add_filter(
 			'wcpay_multi_currency_filter_join_clauses',
-			function( $new_clauses ) use ( $clauses ) {
+			function ( $new_clauses ) use ( $clauses ) {
 				return array_reverse( $clauses );
 			}
 		);
@@ -546,7 +545,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = array_reverse( $clauses );
 		add_filter(
 			'wcpay_multi_currency_filter_select_orders_clauses',
-			function( $new_clauses ) use ( $clauses ) {
+			function ( $new_clauses ) use ( $clauses ) {
 				return array_reverse( $clauses );
 			}
 		);

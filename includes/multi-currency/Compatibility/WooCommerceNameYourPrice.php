@@ -106,7 +106,6 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 		}
 
 		return $cart_item;
-
 	}
 
 	/**

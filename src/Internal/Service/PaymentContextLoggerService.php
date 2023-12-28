@@ -76,9 +76,9 @@ class PaymentContextLoggerService {
 	 *
 	 * @return string[]
 	 */
-	private function changes_to_str( $changes ) : array {
+	private function changes_to_str( $changes ): array {
 		$changes_string = array_map(
-			function( Change $change ) {
+			function ( Change $change ) {
 				if ( $change->get_old_value() ) {
 					$str = "\t\tChanged " . $change->get_key() . ' from ' . $this->value_to_string( $change->get_old_value() ) .
 							' to ' . $this->value_to_string( $change->get_new_value() );
@@ -113,7 +113,7 @@ class PaymentContextLoggerService {
 	 *
 	 * @return string
 	 */
-	private function json_encode_with_indent( $value ) : string {
+	private function json_encode_with_indent( $value ): string {
 		$str = wp_json_encode( $value, JSON_PRETTY_PRINT );
 		$str = preg_replace( '/\n/', "\n\t\t", $str );
 		return $str;

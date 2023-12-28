@@ -83,7 +83,8 @@ class WC_Payments_Status {
 	/**
 	 * Renders WCPay information on the status page.
 	 */
-	public function render_status_report_section() { ?>
+	public function render_status_report_section() {
+		?>
 	<table class="wc_status_table widefat" cellspacing="0">
 		<thead>
 			<tr>
@@ -201,7 +202,7 @@ class WC_Payments_Status {
 							$adv_fraud_settings = json_decode( wp_json_encode( $this->gateway->get_option( 'advanced_fraud_protection_settings' ) ), true );
 							$list               = array_filter(
 								array_map(
-									function( $rule ) {
+									function ( $rule ) {
 										if ( empty( $rule['key'] ) ) {
 											return null;
 										}

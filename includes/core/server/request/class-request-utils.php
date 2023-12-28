@@ -46,5 +46,4 @@ class Request_Utils {
 
 		return $formatted_date->format( 'Y-m-d H:i:s' );
 	}
-
 }

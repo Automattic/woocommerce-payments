@@ -32,4 +32,4 @@ class Experimental_Abtest_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( $result, 'control' );
 	}
-};
+}

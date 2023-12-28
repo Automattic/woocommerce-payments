@@ -41,7 +41,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() {
+			function () {
 				$this->fail( 'Should not call the generator.' );
 			},
 			'__return_true',
@@ -59,7 +59,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_true',
@@ -80,7 +80,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_false',
@@ -101,7 +101,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_true',
@@ -122,7 +122,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_true',
@@ -145,7 +145,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( &$called_generator ) {
+			function () use ( &$called_generator ) {
 				$called_generator = true;
 				throw new \Exception( 'test' );
 			},
@@ -167,7 +167,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( &$called_generator ) {
+			function () use ( &$called_generator ) {
 				$called_generator = true;
 				throw new \Exception( 'test' );
 			},
@@ -197,7 +197,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_true',
@@ -220,7 +220,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				$called_generator = true;
 				return $value;
 			},
@@ -246,7 +246,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_true',

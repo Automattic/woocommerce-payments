@@ -103,9 +103,8 @@ class ProcessedState extends AbstractPaymentState {
 	 * Remove UPE payment intents from session.
 	 * Using Legacy_Proxy temporarily to provide functionality until replaced by deferred intents.
 	 */
-	private function clear_upe_payment_intent_from_session() : void {
+	private function clear_upe_payment_intent_from_session(): void {
 		$this->legacy_proxy->call_static( UPE_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' );
 		$this->legacy_proxy->call_static( UPE_Split_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' );
 	}
-
 }

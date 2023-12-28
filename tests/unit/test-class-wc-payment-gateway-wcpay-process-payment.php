@@ -20,7 +20,7 @@ use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Constants\Payment_Method;
 // Need to use WC_Mock_Data_Store.
-require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
+require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.

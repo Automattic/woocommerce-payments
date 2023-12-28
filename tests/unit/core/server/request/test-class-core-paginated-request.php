@@ -70,7 +70,6 @@ class Paginated_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $direction, $params['direction'] );
 		$this->assertSame( $filters['key'], $params['key'] );
 		$this->assertSame( 'GET', $request->get_method() );
-
 	}
 
 	public function test_create_from_rest_request() {
@@ -101,6 +100,5 @@ class Paginated_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $page_size, $params['pagesize'] );
 		$this->assertSame( $sort, $params['sort'] );
 		$this->assertSame( $direction, $params['direction'] );
-
 	}
 }

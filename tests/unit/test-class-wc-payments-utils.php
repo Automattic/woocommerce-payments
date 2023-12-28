@@ -3,6 +3,7 @@
  * Class WC_Payments_Utils_Test
  *
  * @package WooCommerce\Payments\Tests
+ * @phpcs:disable Generic.CodeAnalysis.UnusedFunctionParameter
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
@@ -334,7 +335,6 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10000, WC_Payments_Utils::prepare_amount( 100, 'USD' ) );
 		$this->assertEquals( 100, WC_Payments_Utils::prepare_amount( 100, 'JPY' ) );
 		$this->assertEquals( 500, WC_Payments_Utils::prepare_amount( 500, 'jpy' ) );
-
 	}
 
 	public function test_interpret_stripe_amount() {

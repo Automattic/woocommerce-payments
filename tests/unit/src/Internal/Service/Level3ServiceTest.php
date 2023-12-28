@@ -119,13 +119,13 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 	}
 
 	protected function mock_level_3_order(
-			$shipping_postcode,
-			$with_fee = false,
-			$with_negative_price_product = false,
-			$quantity = 1,
-			$basket_size = 1,
-			$product_id = 30,
-			$variable = false
+		$shipping_postcode,
+		$with_fee = false,
+		$with_negative_price_product = false,
+		$quantity = 1,
+		$basket_size = 1,
+		$product_id = 30,
+		$variable = false
 	) {
 		$mock_items[] = $this->create_mock_item( 'Beanie with Logo', $quantity, 18, 2.7, $product_id, $variable );
 

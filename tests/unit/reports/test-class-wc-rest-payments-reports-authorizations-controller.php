@@ -327,5 +327,4 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 			],
 		];
 	}
-
 }

@@ -840,7 +840,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * Data provider for test_redacting_params
 	 */
 	public function redacting_params_data() {
-		$string_should_not_include_secret = function ( $string ) {
+		$string_should_not_include_secret = function ( $string ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound -- Ok to use for generic local utility function here.
 			return false === strpos( $string, 'some-secret' );
 		};
 
@@ -1286,6 +1286,5 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 70, $data['timeout'] );
 		$this->assertArrayHasKey( 'connect_timeout', $data );
 		$this->assertSame( 70, $data['connect_timeout'] );
-
 	}
 }

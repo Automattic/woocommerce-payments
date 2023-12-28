@@ -96,7 +96,7 @@ class WCPay_Core_Request_Test extends WCPAY_UnitTestCase {
 
 		add_filter(
 			$hook,
-			function( $request ) {
+			function ( $request ) {
 				$modified = WooPay_Request::extend( $request );
 				$modified->set_param_2( 2 );
 				return $modified;
@@ -105,7 +105,7 @@ class WCPay_Core_Request_Test extends WCPAY_UnitTestCase {
 
 		add_filter(
 			$hook,
-			function( $request ) {
+			function ( $request ) {
 				$modified = ThirdParty_Request::extend( $request );
 				$modified->set_param_3( 3 );
 				return $modified;
@@ -114,7 +114,7 @@ class WCPay_Core_Request_Test extends WCPAY_UnitTestCase {
 
 		add_filter(
 			$hook,
-			function( $request ) {
+			function ( $request ) {
 				$modified = Another_ThirdParty_Request::extend( $request );
 				$modified->set_param_4( 4 );
 				return $modified;
@@ -147,7 +147,7 @@ class WCPay_Core_Request_Test extends WCPAY_UnitTestCase {
 
 		add_filter(
 			$hook,
-			function( $base ) {
+			function ( $base ) {
 				return Request_With_Id::extend( $base );
 			}
 		);

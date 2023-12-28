@@ -134,7 +134,6 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 
 		$this->webhook_sync_mock->remove_webhook();
 		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
-
 	}
 
 	/**
@@ -158,5 +157,4 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		$webhook->set_status( 'active' );
 		$webhook->save();
 	}
-
 }

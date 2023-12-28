@@ -491,7 +491,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_disputes_summary( array $filters = [] ):array {
+	public function get_disputes_summary( array $filters = [] ): array {
 		return $this->request( [ $filters ], self::DISPUTES_API . '/summary', self::GET );
 	}
 
@@ -669,7 +669,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function get_file_contents( string $file_id, bool $as_account = true ) : array {
+	public function get_file_contents( string $file_id, bool $as_account = true ): array {
 		try {
 			return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id . '/contents', self::GET );
 		} catch ( API_Exception $e ) {
@@ -687,7 +687,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function get_file( string $file_id, bool $as_account = true ) : array {
+	public function get_file( string $file_id, bool $as_account = true ): array {
 		return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id, self::GET );
 	}
 
@@ -748,7 +748,7 @@ class WC_Payments_API_Client {
 				// Sort by date desc, then by type desc as specified in events_order.
 				usort(
 					$timeline['data'],
-					function( $a, $b ) {
+					function ( $a, $b ) {
 						$result = $b['datetime'] <=> $a['datetime'];
 						if ( 0 !== $result ) {
 							return $result;
@@ -1065,7 +1065,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception Error updating product.
 	 */
-	public function update_product( string $product_id, array $product_data = [] ) : array {
+	public function update_product( string $product_id, array $product_data = [] ): array {
 		if ( null === $product_id || '' === trim( $product_id ) ) {
 			throw new API_Exception(
 				__( 'Product ID is required', 'woocommerce-payments' ),
@@ -1881,7 +1881,7 @@ class WC_Payments_API_Client {
 
 			// Use exponential backoff to not overload backend.
 			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
-			$retries++;
+			++$retries;
 		}
 
 		// @todo We don't always return an array. `extract_response_body` can also return a string. We should standardize this!
@@ -2075,7 +2075,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 */
-	public function add_additional_info_to_charge( array $charge ) : array {
+	public function add_additional_info_to_charge( array $charge ): array {
 		$charge = $this->add_order_info_to_charge_object( $charge['id'], $charge );
 		$charge = $this->add_formatted_address_to_charge_object( $charge );
 
@@ -2089,7 +2089,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 */
-	public function add_formatted_address_to_charge_object( array $charge ) : array {
+	public function add_formatted_address_to_charge_object( array $charge ): array {
 		$has_billing_details = isset( $charge['billing_details'] );
 
 		if ( $has_billing_details ) {
@@ -2395,7 +2395,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array reader objects.
 	 */
-	public function get_readers_charge_summary( string $charge_date ) : array {
+	public function get_readers_charge_summary( string $charge_date ): array {
 		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 

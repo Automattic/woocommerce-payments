@@ -101,7 +101,6 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $filters['key'], $params['key'] );
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::DISPUTES_API, $request->get_api() );
-
 	}
 	public function test_list_disputes_request_will_be_created_using_from_rest_request_function() {
 		$page            = 2;
@@ -150,6 +149,5 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $search, $params['search'] );
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::DISPUTES_API, $request->get_api() );
-
 	}
 }

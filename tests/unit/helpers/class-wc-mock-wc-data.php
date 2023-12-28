@@ -7,7 +7,7 @@
  */
 
 // Need to use WC_Mock_Data_Store.
-require_once dirname( __FILE__ ) . '/class-wc-mock-wc-data-store.php';
+require_once __DIR__ . '/class-wc-mock-wc-data-store.php';
 
 /**
  * Used for exposing and testing the various Abstract WC_Data methods.

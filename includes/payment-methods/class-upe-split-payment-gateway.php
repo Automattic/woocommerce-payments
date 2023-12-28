@@ -505,7 +505,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @return void
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
-		$check_if_usable = function( array $address ): bool {
+		$check_if_usable = function ( array $address ): bool {
 			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
 		};
 

@@ -297,7 +297,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
-				function() use ( $payment_fields, $upe_object_name ) {
+				function () use ( $payment_fields, $upe_object_name ) {
 					wp_localize_script( 'wcpay-upe-checkout', $upe_object_name, $payment_fields );
 				}
 			);
@@ -395,5 +395,4 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			$this->gateway = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 		}
 	}
-
 }

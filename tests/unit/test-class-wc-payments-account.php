@@ -946,7 +946,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertTrue( $this->wcpay_account->is_account_partially_onboarded() );
-
 	}
 
 	public function test_is_account_partially_onboarded_returns_false() {
@@ -964,7 +963,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertFalse( $this->wcpay_account->is_account_partially_onboarded() );
-
 	}
 
 	public function test_is_account_partially_onboarded_returns_false_when_stripe_not_connected() {

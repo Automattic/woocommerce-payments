@@ -190,5 +190,4 @@ class WC_REST_Payments_Payment_Intents_Create_Controller_Test extends WCPAY_Unit
 		$this->assertSame( 500, $data['status'] );
 		$this->assertEquals( 'Test error.', $response->get_error_message() );
 	}
-
 }

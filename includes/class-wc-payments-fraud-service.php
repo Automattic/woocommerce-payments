@@ -256,7 +256,7 @@ class WC_Payments_Fraud_Service {
 				// This is OK to do since we are not accepting data entries with HTML.
 				return WC_Payments_Utils::array_map_recursive(
 					$fraud_services,
-					function( $value ) {
+					function ( $value ) {
 						// Only apply `sanitize_text_field()` to string values since this function will cast to string.
 						if ( is_string( $value ) ) {
 							return sanitize_text_field( $value );

@@ -163,5 +163,4 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'First_State', $this->sut->get_transitions()[1]->get_from_state() );
 		$this->assertNull( $this->sut->get_transitions()[1]->get_to_state() );
 	}
-
 }

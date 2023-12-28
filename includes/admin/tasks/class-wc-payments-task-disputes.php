@@ -207,7 +207,6 @@ class WC_Payments_Task_Disputes extends Task {
 			),
 			count( (array) $this->disputes_due_within_7d )
 		);
-
 	}
 
 	/**
@@ -325,7 +324,7 @@ class WC_Payments_Task_Disputes extends Task {
 	private function get_disputes_needing_response() {
 		return $this->database_cache->get_or_add(
 			Database_Cache::ACTIVE_DISPUTES_KEY,
-			function() {
+			function () {
 				$response = $this->api_client->get_disputes(
 					[
 						'pagesize' => 50,
@@ -338,7 +337,7 @@ class WC_Payments_Task_Disputes extends Task {
 				// sort by due_by date ascending.
 				usort(
 					$active_disputes,
-					function( $a, $b ) {
+					function ( $a, $b ) {
 						$a_due_by = new \DateTime( $a['due_by'] );
 						$b_due_by = new \DateTime( $b['due_by'] );
 

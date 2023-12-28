@@ -112,7 +112,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		add_filter(
 			'woocommerce_find_rates',
-			function() {
+			function () {
 				return [
 					1 =>
 						[
@@ -312,7 +312,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		// Add fake packages to the cart.
 		add_filter(
 			'woocommerce_cart_shipping_packages',
-			function() {
+			function () {
 				return [
 					'fake_package_1',
 					'fake_package_2',

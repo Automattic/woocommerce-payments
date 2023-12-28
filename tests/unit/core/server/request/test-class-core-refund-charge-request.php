@@ -51,7 +51,6 @@ class Refund_Charge_Test extends WCPAY_UnitTestCase {
 		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->get_params();
-
 	}
 
 	public function test_exception_will_throw_if_charge_id_is_invalid() {

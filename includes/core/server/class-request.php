@@ -608,7 +608,7 @@ abstract class Request {
 	 * @return array        The difference between the two arrays.
 	 */
 	private function array_diff( $array1, $array2 ) {
-		$arr_to_json = function( $item ) {
+		$arr_to_json = function ( $item ) {
 			return is_array( $item ) ? wp_json_encode( $item ) : $item;
 		};
 
@@ -728,7 +728,6 @@ abstract class Request {
 				'wcpay_core_extend_class_not_subclass'
 			);
 		}
-
 	}
 
 	/**
@@ -816,6 +815,5 @@ abstract class Request {
 			return;
 		}
 		throw new Invalid_Request_Parameter_Exception( 'Invalid request api route', 'wcpay_core_invalid_request_parameter_api_route_not_defined' );
-
 	}
 }

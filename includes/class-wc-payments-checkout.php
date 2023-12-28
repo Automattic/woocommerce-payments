@@ -273,5 +273,4 @@ class WC_Payments_Checkout {
 			<?php
 		}
 	}
-
 }

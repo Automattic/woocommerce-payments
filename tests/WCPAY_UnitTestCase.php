@@ -78,7 +78,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 			->with(
 				$this->callback(
 					// With filters there is a chance that mock will be changed. With this code we are sure that it belongs to same class.
-					function( $argument ) use ( $request_class, $request ) {
+					function ( $argument ) use ( $request_class, $request ) {
 						return get_class( $request ) === get_class( $argument ) || is_subclass_of( $argument, $request_class );
 					}
 				)
@@ -92,7 +92,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		}
 
 		// An anonymous callback, which will be used once and disposed.
-		$fn = function( $existing_request, $class_name ) use ( &$fn, $request ) {
+		$fn = function ( $existing_request, $class_name ) use ( &$fn, $request ) {
 			if ( ! is_null( $existing_request ) ) {
 				return $existing_request; // Another `mock_wcpay_request` in action.
 			}

@@ -63,7 +63,7 @@ class Transition {
 	 *
 	 * @return Change[] Changes made during the transition.
 	 */
-	public function get_changes() : array {
+	public function get_changes(): array {
 		return $this->changes;
 	}
 
@@ -72,7 +72,7 @@ class Transition {
 	 *
 	 * @param Change $change Change.
 	 */
-	public function add_change( Change $change ) : void {
+	public function add_change( Change $change ): void {
 		$this->changes[] = $change;
 	}
 
@@ -81,7 +81,7 @@ class Transition {
 	 *
 	 * @return string|null From state of the transition.
 	 */
-	public function get_from_state() : ?string {
+	public function get_from_state(): ?string {
 		return $this->from_state;
 	}
 
@@ -90,7 +90,7 @@ class Transition {
 	 *
 	 * @return string|null To state of the transition.
 	 */
-	public function get_to_state() : ?string {
+	public function get_to_state(): ?string {
 		return $this->to_state;
 	}
 
@@ -108,7 +108,7 @@ class Transition {
 	 *
 	 * @return int Timestamp.
 	 */
-	public function get_timestamp() : int {
+	public function get_timestamp(): int {
 		return $this->timestamp;
 	}
 }

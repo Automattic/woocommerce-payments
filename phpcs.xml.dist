@@ -32,6 +32,9 @@
 
 	<!-- Disallow long array syntax -->
 	<rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+	<rule ref="Universal.Arrays.DisallowShortArraySyntax">
+		<exclude-pattern>./*</exclude-pattern>
+	</rule>
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
@@ -42,6 +45,13 @@
 	<rule ref="WordPress.Security.EscapeOutput">
 		<properties>
 			<property name="customEscapingFunctions" type="array" value="WC_Payments_Utils,esc_interpolated_html" />
+		</properties>
+	</rule>
+
+	<!-- Allow checks for custom capabilities in user_can calls -->
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array" value="manage_woocommerce" />
 		</properties>
 	</rule>
 
@@ -56,6 +66,10 @@
 	</rule>
 
 	<rule ref="Generic.Commenting">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
+	<rule ref="WooCommerce.Commenting.CommentHooks.MissingHookComment">
 		<exclude-pattern>tests/</exclude-pattern>
 	</rule>
 

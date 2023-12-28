@@ -112,7 +112,7 @@ class Mode {
 	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
 	 */
-	public function is_live() : bool {
+	public function is_live(): bool {
 		$this->maybe_init();
 		return ! $this->test_mode && ! $this->dev_mode;
 	}
@@ -123,7 +123,7 @@ class Mode {
 	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
 	 */
-	public function is_test() : bool {
+	public function is_test(): bool {
 		$this->maybe_init();
 
 		return $this->test_mode;
@@ -135,7 +135,7 @@ class Mode {
 	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
 	 */
-	public function is_dev() : bool {
+	public function is_dev(): bool {
 		$this->maybe_init();
 		return $this->dev_mode;
 	}
@@ -175,7 +175,7 @@ class Mode {
 	 *
 	 * @return bool Whether `WCPAY_DEV_MODE` is defined and true.
 	 */
-	protected function is_wcpay_dev_mode_defined() : bool {
+	protected function is_wcpay_dev_mode_defined(): bool {
 		return(
 			defined( 'WCPAY_DEV_MODE' )
 			&& WCPAY_DEV_MODE

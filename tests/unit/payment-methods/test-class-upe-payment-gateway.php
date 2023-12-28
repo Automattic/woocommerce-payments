@@ -1775,7 +1775,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'set_level3' )
 			->with(
 				$this->callback(
-					function( $argument ) {
+					function ( $argument ) {
 						return is_array( $argument );
 					}
 				)

@@ -112,7 +112,7 @@ class WC_Payments_Incentives_Service {
 	 *
 	 * @return array|null List of incentives or null.
 	 */
-	public function get_cached_connect_incentive( bool $force_refresh = false ): ?array {
+	public function get_cached_connect_incentive( bool $force_refresh = false ): ?array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter -- TODO: Consider removing param.
 		// Return early if there is an account connected.
 		if ( WC_Payments::get_account_service()->is_stripe_connected() ) {
 			return null;
@@ -184,7 +184,7 @@ class WC_Payments_Incentives_Service {
 			if ( ! empty( $results ) ) {
 				$incentive = array_filter(
 					$results,
-					function( array $incentive ) {
+					function ( array $incentive ) {
 						return isset( $incentive['type'] ) && 'connect_page' === $incentive['type'];
 					}
 				)[0] ?? [];

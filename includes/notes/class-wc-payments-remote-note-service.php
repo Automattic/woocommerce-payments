@@ -41,7 +41,7 @@ class WC_Payments_Remote_Note_Service {
 	 *
 	 * @throws Rest_Request_Exception If note data is invalid.
 	 */
-	public function put_note( array $note_data ) : bool {
+	public function put_note( array $note_data ): bool {
 		$note = $this->create_note( $note_data );
 
 		if ( ! $this->can_note_be_added( $note->get_name() ) ) {
@@ -127,7 +127,7 @@ class WC_Payments_Remote_Note_Service {
 	 *
 	 * @return boolean True if the note can be added.
 	 */
-	private function can_note_be_added( string $note_name ) : bool {
+	private function can_note_be_added( string $note_name ): bool {
 		$note_ids = $this->note_data_store->get_notes_with_name( $note_name );
 		return empty( $note_ids );
 	}

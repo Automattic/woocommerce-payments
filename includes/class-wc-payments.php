@@ -942,6 +942,11 @@ class WC_Payments {
 
 		$http_class = self::get_wc_payments_http();
 
+		/**
+		 * Allows to replace default API client with a custom one.
+		 *
+		 * @since 2.4.0
+		 */
 		$api_client_class = apply_filters( 'wc_payments_api_client', WC_Payments_API_Client::class );
 		if ( ! class_exists( $api_client_class ) || ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
 			$api_client_class = WC_Payments_API_Client::class;
@@ -962,7 +967,11 @@ class WC_Payments {
 	private static function get_wc_payments_http() {
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
-
+		/**
+		 * Allows to replace HTTP interface with a custom one.
+		 *
+		 * @since 1.5.0
+		 */
 		$http_class = apply_filters( 'wc_payments_http', null );
 
 		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
@@ -1090,7 +1099,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
 		$reports_authorizations_controller->register_routes();
-
 	}
 
 	/**
@@ -1335,6 +1343,11 @@ class WC_Payments {
 	 */
 	public static function install_actions() {
 		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
+			/**
+			 * Fires when the newer version of the plugin is detected.
+			 *
+			 * @since 2.1.0
+			 */
 			do_action( 'woocommerce_woocommerce_payments_updated' );
 			self::update_plugin_version();
 		}
@@ -1386,7 +1399,7 @@ class WC_Payments {
 				<div class="notice wcpay-notice notice-error">
 					<p>
 					<?php
-					echo WC_Payments_Utils::esc_interpolated_html(
+					echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- HTML escaped in esc_interpolated_html.
 						sprintf(
 							/* translators: %1$s: WooCommerce, %2$s: WooPayments, a1: documentation URL */
 							__( 'The %1$s version you have installed is not compatible with %2$s for a Norwegian business. Please update %1$s to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
@@ -1394,7 +1407,7 @@ class WC_Payments {
 							'WooPayments'
 						),
 						[
-							'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+							'a1' => '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">',
 						]
 					)
 					?>
@@ -1433,11 +1446,15 @@ class WC_Payments {
 	 * Filter to check if WCPay should operate as usual (the customer can save payment methods at checkout and those payment methods
 	 * will only be used on this site), or if saved cards should be available for all the sites on the multisite network.
 	 *
-	 * NOTE: DON'T USE THIS FILTER. Everything will break. At this moment, it's only intended to be used internally by Automattic.
-	 *
 	 * @return bool Normal WCPay behavior (false, default) or TRUE if the site should only use network-wide saved payment methods.
 	 */
 	public static function is_network_saved_cards_enabled() {
+		/**
+		 * Allows to enable network-wide saved cards.
+		 * NOTE: DON'T USE THIS FILTER. Everything will break. At this moment, it's only intended to be used internally by Automattic.
+		 *
+		 * @since 2.3.0
+		 */
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
 
@@ -1575,7 +1592,7 @@ class WC_Payments {
 	 * @param string $value Field value.
 	 * @return string
 	 */
-	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $value ) {
+	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $value ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- We need to keep method signature to match Woo core expectations.
 		$class = $args['class'][0];
 		if ( false === strpos( $class, 'woopay-billing-email' ) && is_checkout() && ! is_checkout_pay_page() ) {
 			$field = '';
@@ -1685,6 +1702,7 @@ class WC_Payments {
 		 *
 		 * @param Request $request    Null, but if the filter returns a request, it will be used.
 		 * @param string  $class_name The name of the request class.
+		 * @since 5.6.0
 		 */
 		$request = apply_filters( 'wcpay_create_request', null, $class_name, $id );
 		if ( $request instanceof Request ) {
@@ -1696,7 +1714,7 @@ class WC_Payments {
 				sprintf(
 					'WC_Payments::create_request() requires a class, which extends %s, %s provided instead',
 					Request::class,
-					$class_name
+					$class_name // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped,WordPress.Security.EscapeOutput.ExceptionNotEscaped -- It's not used for output.
 				)
 			);
 		}
@@ -1755,15 +1773,15 @@ class WC_Payments {
 		<div class="notice wcpay-notice notice-error">
 			<p>
 			<?php
-			echo WC_Payments_Utils::esc_interpolated_html(
+			echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- HTML escaped in esc_interpolated_html.
 				sprintf(
 					$notice,
 					'WooCommerce',
 					'WooPayments',
-					WC_VERSION
+					WC_VERSION // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- esc_interpolated_html handles escaping.
 				),
 				[
-					'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+					'a1' => '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">',
 				]
 			)
 			?>
