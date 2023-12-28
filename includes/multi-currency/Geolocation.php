@@ -60,8 +60,16 @@ class Geolocation {
 
 		if ( ! $country ) {
 			$default_location = get_option( 'woocommerce_default_country', '' );
-			$location         = wc_format_country_state_string( apply_filters( 'woocommerce_customer_default_location', $default_location ) );
-			$country          = $location['country'];
+			/**
+			 * Allows overriding the default customer location.
+			 *
+			 * @param string $default_location Original default country option.
+			 * @return string Customized default location.
+			 *
+			 * @since 2.8.0
+			 */
+			$location = wc_format_country_state_string( apply_filters( 'woocommerce_customer_default_location', $default_location ) );
+			$country  = $location['country'];
 		}
 
 		return $country;
