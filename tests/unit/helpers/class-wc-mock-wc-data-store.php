@@ -57,7 +57,7 @@ class WC_Mock_WC_Data_Store extends WC_Data_Store_WP implements WC_Object_Data_S
 		$this->object_id_field_for_meta = $object_id_field;
 	}
 
-	public function create( &$object ) {
+	public function create( &$object ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.objectFound -- This is a mock class.
 		if ( 'user' === $this->meta_type ) {
 			$content_id = wc_create_new_customer( $object->get_content(), 'username-' . time(), 'hunter2' );
 		} else {
@@ -73,7 +73,7 @@ class WC_Mock_WC_Data_Store extends WC_Data_Store_WP implements WC_Object_Data_S
 	/**
 	 * Simple read.
 	 */
-	public function read( &$object ) {
+	public function read( &$object ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.objectFound -- This is a mock class.
 		$object->set_defaults();
 		$id = $object->get_id();
 
@@ -102,7 +102,7 @@ class WC_Mock_WC_Data_Store extends WC_Data_Store_WP implements WC_Object_Data_S
 	/**
 	 * Simple update.
 	 */
-	public function update( &$object ) {
+	public function update( &$object ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.objectFound -- This is a mock class.
 		global $wpdb;
 		$content_id = $object->get_id();
 
@@ -126,7 +126,7 @@ class WC_Mock_WC_Data_Store extends WC_Data_Store_WP implements WC_Object_Data_S
 	/**
 	 * Simple delete.
 	 */
-	public function delete( &$object, $args = [] ) {
+	public function delete( &$object, $args = [] ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.objectFound -- This is a mock class.
 		if ( 'user' === $this->meta_type ) {
 			wp_delete_user( $object->get_id() );
 		} else {
