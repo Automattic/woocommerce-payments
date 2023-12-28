@@ -51,8 +51,8 @@ class StateFactory {
 			throw new StateTransitionException(
 				sprintf(
 					// Translators: %1$s is the PHP class for a new payment state, %1$s is the state base class.
-					__( 'The class %1$s is not a subclass of %2$s', 'woocommerce-payments' ),
-					$state_class,
+					__( 'The class %1$s is not a subclass of %2$s', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No escaping needed for exception.
+					$state_class, // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No escaping needed for exception.
 					AbstractPaymentState::class
 				)
 			);
