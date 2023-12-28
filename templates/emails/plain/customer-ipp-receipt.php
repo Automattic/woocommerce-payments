@@ -25,26 +25,47 @@ echo sprintf( esc_html__( 'Hi %s,', 'woocommerce-payments' ), esc_html( $order->
 /* translators: %s: Order number */
 echo sprintf( esc_html__( 'This is the receipt for your order #%s:', 'woocommerce-payments' ), esc_html( $order->get_order_number() ) ) . "\n\n";
 
+/**
+ * Fires to output store details for the receipt.
+ *
+ * @hooked WC_Payments_Email_IPP_Receipt::store_details() Output the store details
+ *
+ * @since 4.0.0
+ */
 do_action( 'woocommerce_payments_email_ipp_receipt_store_details', $merchant_settings, $plain_text );
 
 echo "\n----------------------------------------\n\n";
 
-/*
+/**
+ * Fires to output the order details.
+ *
  * @hooked WC_Emails::order_details() Shows the order details table.
  * @hooked WC_Structured_Data::generate_order_data() Generates structured data.
  * @hooked WC_Structured_Data::output_structured_data() Outputs structured data.
+ *
  * @since 2.5.0
  */
 do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email );
 
 echo "\n----------------------------------------\n\n";
 
+/**
+ * Fires to output compliance details to the receipt.
+ *
+ * @hooked WC_Payments_Email_IPP_Receipt::compliance_details() Output receipt compliance details
+ *
+ * @since 4.0.0
+ */
 do_action( 'woocommerce_payments_email_ipp_receipt_compliance_details', $charge, $plain_text );
 
 echo "\n\n----------------------------------------\n\n";
 
-/*
+/**
+ * Fires to output the order meta.
+ *
  * @hooked WC_Emails::order_meta() Shows order meta data.
+ *
+ * @since 4.0.0
  */
 do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email );
 
@@ -56,4 +77,11 @@ if ( $additional_content ) {
 	echo "\n\n----------------------------------------\n\n";
 }
 
+/**
+ * Fires to output email footer.
+ *
+ * @hooked WC_Emails::email_footer() Output the email footer
+ *
+ * @since 4.0.0
+ */
 echo wp_kses_post( apply_filters( 'woocommerce_email_footer_text', get_option( 'woocommerce_email_footer_text' ) ) );
