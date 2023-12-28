@@ -15,8 +15,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/*
+/**
+ * Fires to output the email header.
+ *
  * @hooked WC_Emails::email_header() Output the email header
+ *
+ * @since 4.0.0
  */
 do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
@@ -25,26 +29,41 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 <?php /* translators: %s: Order number */ ?>
 <p><?php printf( esc_html__( 'This is the receipt for your order #%s:', 'woocommerce-payments' ), esc_html( $order->get_order_number() ) ); ?></p>
 <?php
-/*
+/**
+ * Fires to output store details for the receipt.
+ *
  * @hooked WC_Payments_Email_IPP_Receipt::store_details() Output the store details
+ *
+ * @since 4.0.0
  */
 do_action( 'woocommerce_payments_email_ipp_receipt_store_details', $merchant_settings, $plain_text );
 
-/*
+/**
+ * Fires to output the order details.
+ *
  * @hooked WC_Emails::order_details() Shows the order details table.
  * @hooked WC_Structured_Data::generate_order_data() Generates structured data.
  * @hooked WC_Structured_Data::output_structured_data() Outputs structured data.
+ *
  * @since 2.5.0
  */
 do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email );
 
-/*
+/**
+ * Fires to output compliance details to the receipt.
+ *
  * @hooked WC_Payments_Email_IPP_Receipt::compliance_details() Output receipt compliance details
+ *
+ * @since 4.0.0
  */
 do_action( 'woocommerce_payments_email_ipp_receipt_compliance_details', $charge, $plain_text );
 
-/*
+/**
+ * Fires to output the order meta.
+ *
  * @hooked WC_Emails::order_meta() Shows order meta data.
+ *
+ * @since 4.0.0
  */
 do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email );
 
@@ -55,7 +74,11 @@ if ( $additional_content ) {
 	echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) );
 }
 
-/*
+/**
+ * Fires to output email footer.
+ *
  * @hooked WC_Emails::email_footer() Output the email footer
+ *
+ * @since 4.0.0
  */
 do_action( 'woocommerce_email_footer', $email );
