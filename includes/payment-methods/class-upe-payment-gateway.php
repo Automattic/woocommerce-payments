@@ -410,6 +410,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
+		/**
+		 * Fires to render payment fields for UPE.
+		 *
+		 * @since 5.0.0
+		 */
 		do_action( 'wc_payments_add_upe_payment_fields' );
 	}
 
@@ -427,7 +432,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		if ( 20 < strlen( $order->get_billing_phone() ) ) {
 			throw new Process_Payment_Exception(
-				__( 'Invalid phone number.', 'woocommerce-payments' ),
+				__( 'Invalid phone number.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No escape needed for exception.
 				'invalid_phone_number'
 			);
 		}
@@ -451,7 +456,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
 						throw new Process_Payment_Exception(
-							__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+							__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No escape needed for exception.
 							'fraud_prevention_enabled'
 						);
 					}
@@ -460,14 +465,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
 					// Throwing an exception instead of adding an error notice
 					// makes the error notice show up both in the regular and block checkout.
-					throw new Exception( __( 'Your payment was not processed.', 'woocommerce-payments' ) );
+					throw new Exception( __( 'Your payment was not processed.', 'woocommerce-payments' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No escape needed for exception.
 				}
 
 				// Try catching the error without reaching the API.
 				$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
 				if ( $minimum_amount > $converted_amount ) {
 					$exception = new Amount_Too_Small_Exception( 'Amount too small', $minimum_amount, $currency, 400 );
-					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
+					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No escape needed for exception.
 				}
 
 				$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
@@ -511,7 +516,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					$updated_payment_intent = $request->send();
 				} catch ( Amount_Too_Small_Exception $e ) {
 					// This code would only be reached if the cache has already expired.
-					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No escape needed for exception.
 				} catch ( API_Exception $e ) {
 					if ( 'wcpay_blocked_by_fraud_rule' === $e->get_error_code() ) {
 						$this->order_service->mark_order_blocked_for_fraud( $order, $payment_intent_id, Intent_Status::CANCELED );
@@ -1017,6 +1022,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
+			/**
+			 * Allows to override the list of available payment methods for UPE.
+			 *
+			 * @param string[] $available_methods The list of available payment methods.
+			 * @return string[] The updated list of available payment methods.
+			 *
+			 * @since 2.7.0
+			 */
 			apply_filters(
 				'wcpay_upe_available_payment_methods',
 				$available_methods
@@ -1097,8 +1110,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			);
 
 			throw new Process_Payment_Exception(
-				__( "We're not able to process this payment due to the order ID mismatch. Please try again later.", 'woocommerce-payments' ),
-				self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE
+				__( "We're not able to process this payment due to the order ID mismatch. Please try again later.", 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No escape needed for exception.
+				self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No escape needed for exception.
 			);
 		}
 	}
