@@ -134,7 +134,7 @@ class Payment_Information {
 		if ( empty( $payment_method ) && empty( $token ) && ! \WC_Payments::is_network_saved_cards_enabled() ) {
 			// If network-wide cards are enabled, a payment method or token may not be specified and the platform default one will be used.
 			throw new Invalid_Payment_Method_Exception(
-				__( 'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.', 'woocommerce-payments' ),
+				__( 'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- No need to escape exception message.
 				'payment_method_not_provided'
 			);
 		}
