@@ -43,7 +43,7 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 *
 	 * @return array
 	 */
-	public function add_checkout_sections( array $default_sections ): array {
+	public function add_checkout_sections( array $default_sections ): array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Need to keep parameter for filter.
 		$sections_to_render                         = [];
 		$sections_to_render['woocommerce_payments'] = 'WooPayments';
 		$sections_to_render['']                     = __( 'All payment methods', 'woocommerce-payments' );
