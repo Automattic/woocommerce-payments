@@ -13,7 +13,7 @@ use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Proxy\LegacyProxy;
-use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WC_Payment_Gateway_WCPay;
 
 /**
  * This state is used when payment is completed on the server, and we need to update date on the plugin side.
