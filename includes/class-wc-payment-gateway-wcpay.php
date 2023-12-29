@@ -937,8 +937,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-			error_log('2. process payment catch exception');
-			error_log(print_r($e->getmessage(),true));
 			// We set this variable to be used in following checks.
 			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
 
@@ -1265,7 +1263,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 				if ( $intent_meta_order_id !== $order_id ) {
 					throw new Intent_Authentication_Exception(
-						__( "We're not able to process this payment. Please try again later." . " WooPayMeta: intent_meta_order_id: " . $intent_meta_order_id . ", order_id: " . $order_id, 'woocommerce-payments' ),
+						__( 'We\'re not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: ' . $intent_meta_order_id . ', order_id: ' . $order_id, 'woocommerce-payments' ),
 						'order_id_mismatch'
 					);
 				}
