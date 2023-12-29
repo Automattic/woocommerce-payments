@@ -19,7 +19,7 @@ use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WC_Payment_Gateway_WCPay;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 
@@ -32,7 +32,7 @@ class WC_Payments_Checkout {
 	/**
 	 * WC Payments Gateway.
 	 *
-	 * @var UPE_Payment_Gateway
+	 * @var WC_Payment_Gateway_WCPay
 	 */
 	protected $gateway;
 
@@ -67,14 +67,14 @@ class WC_Payments_Checkout {
 	/**
 	 * Construct.
 	 *
-	 * @param UPE_Payment_Gateway          $gateway          WC Payment Gateway.
+	 * @param WC_Payment_Gateway_WCPay     $gateway          WC Payment Gateway.
 	 * @param WooPay_Utilities             $woopay_util      WooPay Utilities.
 	 * @param WC_Payments_Account          $account          WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service WC Payments Customer Service.
 	 * @param WC_Payments_Fraud_Service    $fraud_service    Fraud service instance.
 	 */
 	public function __construct(
-		UPE_Payment_Gateway $gateway,
+		WC_Payment_Gateway_WCPay $gateway,
 		WooPay_Utilities $woopay_util,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service,
@@ -170,7 +170,7 @@ class WC_Payments_Checkout {
 		WC_Checkout::instance();
 
 		// The registered card gateway is more reliable than $this->gateway, but if it isn't available for any reason, fall back to the gateway provided to this checkout class.
-		$gateway = WC_Payments::get_registered_card_gateway() ?? $this->gateway;
+		$gateway = WC_Payments::get_gateway() ?? $this->gateway;
 
 		$js_config = [
 			'publishableKey'                 => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
@@ -214,12 +214,12 @@ class WC_Payments_Checkout {
 
 		$payment_fields['accountDescriptor']        = $this->gateway->get_account_statement_descriptor();
 		$payment_fields['addPaymentReturnURL']      = wc_get_account_endpoint_url( 'payment-methods' );
-		$payment_fields['gatewayId']                = UPE_Payment_Gateway::GATEWAY_ID;
+		$payment_fields['gatewayId']                = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$payment_fields['isCheckout']               = is_checkout();
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
 		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
-		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['upeAppearance']            = get_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['wcBlocksUPEAppearance']    = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
 		$payment_fields['currency']                 = get_woocommerce_currency();
 		$cart_total                                 = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
@@ -260,7 +260,7 @@ class WC_Payments_Checkout {
 				$payment_fields['orderReturnURL'] = esc_url_raw(
 					add_query_arg(
 						[
-							'wc_payment_method' => UPE_Payment_Gateway::GATEWAY_ID,
+							'wc_payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 							'_wpnonce'          => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
 						],
 						$this->gateway->get_return_url( $order )
