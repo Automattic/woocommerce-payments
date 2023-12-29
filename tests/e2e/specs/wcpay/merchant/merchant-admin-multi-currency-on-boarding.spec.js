@@ -1,11 +1,11 @@
 /**
  * External dependencies
  */
-const { merchant } = require( '@woocommerce/e2e-utils' );
+const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP, shopperWCP } from '../../../utils';
+import { merchantWCP, uiLoaded } from '../../../utils';
 
 let wasMulticurrencyEnabled;
 
@@ -33,23 +33,64 @@ describe( 'Merchant On-boarding', () => {
 	} );
 
 	describe( 'Currency Selection and Management', () => {
+		beforeAll( async () => {
+			await merchantWCP.disableAllEnabledCurrencies();
+		} );
+
+		beforeEach( async () => {
+			await page.goto(
+				`${ WP_ADMIN_DASHBOARD }admin.php?page=wc-admin&path=%2Fpayments%2Fmulti-currency-setup`,
+				{
+					waitUntil: 'networkidle0',
+				}
+			);
+			await uiLoaded();
+		} );
+
 		it( 'Should disable the submit button when no currencies are selected', async () => {
+			const checkboxes = await page.$$(
+				'.enabled-currency-checkbox .components-checkbox-control__input'
+			);
+
+			for ( const checkbox of checkboxes ) {
+				const isChecked = await (
+					await checkbox.getProperty( 'checked' )
+				 ).jsonValue();
+				if ( isChecked ) {
+					// Click the checkbox to uncheck it if it's checked
+					await checkbox.click();
+				}
+			}
+
+			await page.waitFor( 1000 );
+
+			const button = await page.$(
+				'.add-currencies-task.is-active .task-collapsible-body.is-active > button.is-primary'
+			);
+
+			expect( button ).not.toBeNull();
+
+			const isDisabled = await page.evaluate(
+				( btn ) => btn.disabled,
+				button
+			);
+
+			expect( isDisabled ).toBeTruthy();
+		} );
+
+		it.skip( 'Should allow multiple currencies to be selectable', async () => {
 			// Implement test
 		} );
 
-		it( 'Should allow multiple currencies to be selectable', async () => {
+		it.skip( 'Should exclude already enabled currencies from the currency screen', async () => {
 			// Implement test
 		} );
 
-		it( 'Should exclude already enabled currencies from the currency screen', async () => {
+		it.skip( 'Should display some suggested currencies at the beginning of the list', async () => {
 			// Implement test
 		} );
 
-		it( 'Should display some suggested currencies at the beginning of the list', async () => {
-			// Implement test
-		} );
-
-		it( 'Should ensure selected currencies are enabled after submitting the form', async () => {
+		it.skip( 'Should ensure selected currencies are enabled after submitting the form', async () => {
 			// Implement test
 		} );
 	} );
