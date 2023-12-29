@@ -353,63 +353,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		wcpay_get_test_container()->reset_all_replacements();
 	}
 
-	/**
-	 * Test the UI <div> container that will hold the payment method.
-	 *
-	 * @return void
-	 */
-	public function test_display_gateway_html_for_multiple_gateways() {
-		foreach ( $this->mock_payment_gateways as $payment_method_id => $mock_payment_gateway ) {
-			/**
-			* This tests each payment method output separately without concatenating the output
-			* into 1 single buffer. Each iteration has 1 assertion.
-			*/
-			ob_start();
-			$mock_payment_gateway->display_gateway_html();
-			$actual_output = ob_get_contents();
-			ob_end_clean();
-
-			$this->assertStringContainsString( '<div class="wcpay-upe-element" data-payment-method-type="' . $payment_method_id . '"></div>', $actual_output );
-		}
-	}
-
-	public function test_should_not_use_stripe_platform_on_checkout_page_for_upe() {
-		$payment_gateway = $this->mock_payment_gateways[ Payment_Method::SEPA ];
-		$this->assertFalse( $payment_gateway->should_use_stripe_platform_on_checkout_page() );
-	}
-
-	public function test_link_payment_method_requires_mandate_data() {
-		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
-
-		$mock_upe_gateway
-			->expects( $this->once() )
-			->method( 'get_upe_enabled_payment_method_ids' )
-			->will(
-				$this->returnValue( [ 'link' ] )
-			);
-
-		$this->assertTrue( $mock_upe_gateway->is_mandate_data_required() );
-	}
-
-	public function test_sepa_debit_payment_method_requires_mandate_data() {
-		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::SEPA ];
-		$this->assertTrue( $mock_upe_gateway->is_mandate_data_required() );
-	}
-
-	public function test_non_required_mandate_data() {
-		$mock_gateway_not_requiring_mandate_data = $this->mock_payment_gateways[ Payment_Method::GIROPAY ];
-		$this->assertFalse( $mock_gateway_not_requiring_mandate_data->is_mandate_data_required() );
-	}
-
-	public function test_non_reusable_payment_method_is_not_available_when_subscription_is_in_cart() {
-		$non_reusable_payment_method = Payment_Method::BANCONTACT;
-		$payment_gateway             = $this->mock_payment_gateways[ $non_reusable_payment_method ];
-
-		$this->set_cart_contains_subscription_items( true );
-
-		$this->assertFalse( $payment_gateway->is_available() );
-	}
-
 	public function test_process_payment_returns_correct_redirect_when_using_saved_payment() {
 		$mock_card_payment_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
 		$user                      = wp_get_current_user();
