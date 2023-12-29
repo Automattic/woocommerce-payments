@@ -16,7 +16,7 @@ use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Proxy\LegacyProxy;
-use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WC_Payment_Gateway_WCPay;
 use WCPAY_UnitTestCase;
 
 /**
