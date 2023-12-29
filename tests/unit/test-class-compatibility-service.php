@@ -43,10 +43,19 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_compatibility_data() {
+		$stylesheet = 'my_theme_name';
+		add_filter(
+			'stylesheet',
+			function( $theme ) use ( $stylesheet ) {
+				return $stylesheet;
+			}
+		);
+
 		// Arrange: Create the expected value to be passed to update_compatibility_data.
 		$expected = [
 			'woopayments_version' => WCPAY_VERSION_NUMBER,
 			'woocommerce_version' => WC_VERSION,
+			'blog_theme'          => $stylesheet,
 		];
 
 		// Arrange/Assert: Set the expectations for update_compatibility_data.

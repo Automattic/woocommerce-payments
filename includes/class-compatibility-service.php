@@ -52,6 +52,7 @@ class Compatibility_Service {
 				[
 					'woopayments_version' => WCPAY_VERSION_NUMBER,
 					'woocommerce_version' => WC_VERSION,
+					'blog_theme'          => get_stylesheet(),
 				]
 			);
 		} catch ( API_Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
