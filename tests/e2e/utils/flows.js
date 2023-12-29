@@ -691,6 +691,32 @@ export const merchantWCP = {
 		return wasInitiallyEnabled;
 	},
 
+	disableAllEnabledCurrencies: async () => {
+		await page.goto( WCPAY_MULTI_CURRENCY, { waitUntil: 'networkidle0' } );
+
+		await page.waitForSelector( '.enabled-currencies-list', {
+			visible: true,
+			timeout: 5000,
+		} );
+
+		// Select all delete buttons for enabled currencies.
+		const deleteButtons = await page.$$(
+			'.enabled-currency .enabled-currency__action.delete'
+		);
+
+		// Loop through each delete button and click it.
+		for ( const button of deleteButtons ) {
+			await button.click();
+
+			await page.waitForSelector( '.components-snackbar', {
+				text: 'Enabled currencies updated.',
+				timeout: 15000,
+			} );
+
+			await page.waitFor( 1000 );
+		}
+	},
+
 	editCurrency: async ( currencyCode ) => {
 		await merchantWCP.openMultiCurrency();
 
