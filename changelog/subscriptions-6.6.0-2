@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Introduce a new wcs_get_subscription_grouping_key() function to generate a unique key for a subscription based on its billing schedule. This function uses the existing recurring cart key concept.
