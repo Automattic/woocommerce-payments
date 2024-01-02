@@ -8,11 +8,6 @@
 	margin-bottom: 24px;
 }
 
-.components-card__body:first-of-type {
-	display: flex;
-	flex-direction: row;
-}
-
 .payment-details-summary {
 	display: flex;
 	flex: 1;
@@ -30,6 +25,7 @@
 		padding: 0;
 		margin: 0;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 
 		.payment-details-summary__amount-currency {
