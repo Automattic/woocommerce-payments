@@ -1879,7 +1879,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
+				$this->order_service->attach_intent_info_to_order( $order, $intent );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				if ( Intent_Status::SUCCEEDED === $status ) {
 					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
