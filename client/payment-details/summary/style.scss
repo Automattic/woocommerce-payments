@@ -25,6 +25,7 @@
 		padding: 0;
 		margin: 0;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 
 		.payment-details-summary__amount-currency {
