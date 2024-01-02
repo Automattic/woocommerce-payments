@@ -773,12 +773,12 @@ class WC_Payments_Order_Service {
 	/**
 	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added
 	 *
-	 * @param WC_Order                           $order The order.
-	 * @param WC_Payments_API_Abstract_Intention $intent The payment or setup intention object.
+	 * @param WC_Order                                                          $order The order.
+	 * @param WC_Payments_API_Payment_Intention|WC_Payments_API_Setup_Intention $intent The payment or setup intention object.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function attach_intent_info_to_order( WC_Order $order, WC_Payments_API_Abstract_Intention $intent ) {
+	public function attach_intent_info_to_order( WC_Order $order, $intent ) {
 		// first, let's prepare all the metadata needed for refunds, required for status change etc.
 		$intent_id              = $intent->get_id();
 		$intent_status          = $intent->get_status();
