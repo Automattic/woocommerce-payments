@@ -89,6 +89,11 @@ global.wcSettings = {
 		CA: 'Canada',
 		UK: 'United Kingdom',
 	},
+	storePages: {
+		checkout: {
+			permalink: 'http://localhost/',
+		},
+	},
 };
 
 global.wpApiSettings = {
