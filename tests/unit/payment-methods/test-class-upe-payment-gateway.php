@@ -354,55 +354,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		wcpay_get_test_container()->reset_all_replacements();
 	}
 
-	public function test_process_payment_returns_correct_redirect_when_using_saved_payment() {
-		$order  = WC_Helper_Order::create_order();
-		$_POST  = $this->setup_saved_payment_method();
-		$intent = WC_Helper_Intention::create_intention();
-
-		$this->mock_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
-			->will(
-				$this->returnValue( [ wp_get_current_user(), 'cus_123' ] )
-			);
-		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1, $intent->get_id() )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $intent );
-
-		$this->set_cart_contains_subscription_items( false );
-
-		$result = $this->mock_gateway->process_payment( $order->get_id() );
-
-		$this->assertEquals( 'success', $result['result'] );
-		$this->assertEquals( $this->return_url, $result['redirect'] );
-	}
-
-	public function test_process_payment_returns_correct_redirect_when_using_payment_request() {
-		$order                         = WC_Helper_Order::create_order();
-		$intent                        = WC_Helper_Intention::create_intention();
-		$_POST['payment_request_type'] = 'google_pay';
-
-		$this->mock_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
-			->will(
-				$this->returnValue( [ wp_get_current_user(), 'cus_123' ] )
-			);
-		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1, $intent->get_id() )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $intent );
-		$this->set_cart_contains_subscription_items( false );
-
-		$result = $this->mock_gateway->process_payment( $order->get_id() );
-
-		$this->assertEquals( 'success', $result['result'] );
-		$this->assertEquals( $this->return_url, $result['redirect'] );
-	}
-
-	public function is_proper_intent_used_with_order_returns_false() {
-		$this->assertFalse( $this->mock_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
-	}
-
 	public function test_process_redirect_payment_intent_processing() {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();

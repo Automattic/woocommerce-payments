@@ -353,38 +353,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		wcpay_get_test_container()->reset_all_replacements();
 	}
 
-	public function test_process_payment_returns_correct_redirect_when_using_saved_payment() {
-		$mock_card_payment_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
-		$user                      = wp_get_current_user();
-		$customer_id               = 'cus_mock';
-
-		$order = WC_Helper_Order::create_order();
-		$_POST = $this->setup_saved_payment_method();
-		$mock_card_payment_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
-			->will(
-				$this->returnValue( [ $user, $customer_id ] )
-			);
-		$mock_card_payment_gateway->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids' )
-			->will(
-				$this->returnValue( [ Payment_Method::CARD ] )
-			);
-		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1 )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn(
-				WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] )
-			);
-
-		$this->set_cart_contains_subscription_items( false );
-
-		$result = $mock_card_payment_gateway->process_payment( $order->get_id() );
-
-		$this->assertEquals( 'success', $result['result'] );
-		$this->assertEquals( $this->return_url, $result['redirect'] );
-	}
-
 	public function test_upe_process_payment_check_session_order_redirect_to_previous_order() {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
@@ -529,10 +497,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
 		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
 		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
-	}
-
-	public function is_proper_intent_used_with_order_returns_false() {
-		$this->assertFalse( $this->mock_upe_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
 	}
 
 	public function test_process_redirect_setup_intent_succeded() {

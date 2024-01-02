@@ -49,7 +49,7 @@ require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
-class Timur_Test extends WCPAY_UnitTestCase {
+class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	const NO_REQUIREMENTS      = false;
 	const PENDING_REQUIREMENTS = true;
@@ -2377,6 +2377,55 @@ class Timur_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_process_payment_returns_correct_redirect() {
+		$order = WC_Helper_Order::create_order();
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1 )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] )
+			);
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( new WC_Payment_Token_CC() );
+
+		$result = $this->card_gateway->process_payment( $order->get_id() );
+
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( $order->get_checkout_order_received_url(), $result['redirect'] );
+	}
+
+	public function test_process_payment_returns_correct_redirect_when_using_payment_request() {
+		$order                         = WC_Helper_Order::create_order();
+		$_POST['payment_request_type'] = 'google_pay';
+		$_POST                         = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1 )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] )
+			);
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( new WC_Payment_Token_CC() );
+
+		$result = $this->card_gateway->process_payment( $order->get_id() );
+
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( $order->get_checkout_order_received_url(), $result['redirect'] );
+	}
+
+	public function is_proper_intent_used_with_order_returns_false() {
+		$this->assertFalse( $this->card_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
+	}
+
 	/**
 	 * Sets up the expectation for a certain factor for the new payment
 	 * process to be either set or unset.
@@ -2495,18 +2544,5 @@ class Timur_Test extends WCPAY_UnitTestCase {
 				}
 			)
 		) )[0] ?? null;
-	}
-
-	/**
-	 * Helper function to mock subscriptions for internal UPE payment methods.
-	 */
-	private function set_cart_contains_subscription_items( $cart_contains_subscriptions ) {
-		foreach ( $this->mock_payment_methods as $mock_payment_method ) {
-			$mock_payment_method->expects( $this->any() )
-				->method( 'is_subscription_item_in_cart' )
-				->will(
-					$this->returnValue( $cart_contains_subscriptions )
-				);
-		}
 	}
 }
