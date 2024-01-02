@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Resolved an issue that would cause undefined $current_page, $max_num_pages, and $paginate variable errors when viewing a page with the subscriptions-shortcode.

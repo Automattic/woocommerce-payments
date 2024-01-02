@@ -336,24 +336,6 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Creates a setup intent without confirming it.
-	 *
-	 * @return {Promise} The final promise for the request to the server.
-	 */
-	initSetupIntent() {
-		const path = 'init_setup_intent';
-
-		return this.request( buildAjaxURL( getConfig( 'wcAjaxUrl' ), path ), {
-			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
-		} ).then( ( response ) => {
-			if ( ! response.success ) {
-				throw response.data.error;
-			}
-			return response.data;
-		} );
-	}
-
-	/**
 	 * Sets up an intent based on a payment method.
 	 *
 	 * @param {string} paymentMethodId The ID of the payment method.
@@ -387,92 +369,6 @@ export default class WCPayAPI {
 					return setupIntent;
 				} );
 		} );
-	}
-
-	/**
-	 * Creates an intent based on a payment method.
-	 *
-	 * @param {Object} options Object containing intent optional parameters (fingerprint, paymentMethodType, orderId)
-	 *
-	 * @return {Promise} The final promise for the request to the server.
-	 */
-	createIntent( options ) {
-		const { fingerprint, orderId } = options;
-		const path = 'create_payment_intent';
-		const params = {
-			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
-			'wcpay-fingerprint': fingerprint,
-		};
-
-		if ( orderId ) {
-			params.wcpay_order_id = orderId;
-		}
-
-		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), path ),
-			params
-		)
-			.then( ( response ) => {
-				if ( ! response.success ) {
-					throw response.data.error;
-				}
-				return response.data;
-			} )
-			.catch( ( error ) => {
-				if ( error.message ) {
-					throw error;
-				} else {
-					// Covers the case of error on the Ajax request.
-					throw new Error( error.statusText );
-				}
-			} );
-	}
-
-	/**
-	 * Updates a payment intent with data from order: customer, level3 data and maybe sets the payment for future use.
-	 *
-	 * @param {string} paymentIntentId The id of the payment intent.
-	 * @param {int} orderId The id of the order.
-	 * @param {string} savePaymentMethod 'yes' if saving.
-	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type or empty string.
-	 * @param {string?} paymentCountry The payment two-letter iso country code or null.
-	 * @param {string?} fingerprint User fingerprint.
-	 *
-	 * @return {Promise} The final promise for the request to the server.
-	 */
-	updateIntent(
-		paymentIntentId,
-		orderId,
-		savePaymentMethod,
-		selectedUPEPaymentType,
-		paymentCountry,
-		fingerprint
-	) {
-		const path = 'update_payment_intent';
-
-		return this.request( buildAjaxURL( getConfig( 'wcAjaxUrl' ), path ), {
-			wcpay_order_id: orderId,
-			wc_payment_intent_id: paymentIntentId,
-			save_payment_method: savePaymentMethod,
-			wcpay_selected_upe_payment_type: selectedUPEPaymentType,
-			wcpay_payment_country: paymentCountry,
-			_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
-			'wcpay-fingerprint': fingerprint,
-		} )
-			.then( ( response ) => {
-				if ( response.result === 'failure' ) {
-					throw new Error( response.messages );
-				}
-				return response;
-			} )
-			.catch( ( error ) => {
-				if ( error.message ) {
-					throw error;
-				} else {
-					// Covers the case of error on the Ajaxrequest.
-					throw new Error( error.statusText );
-				}
-			} );
 	}
 
 	/**
@@ -533,39 +429,6 @@ export default class WCPayAPI {
 			.then( ( response ) => {
 				// There is not any action to take or harm caused by a failed update, so just returning success status.
 				return response.success;
-			} )
-			.catch( ( error ) => {
-				if ( error.message ) {
-					throw error;
-				} else {
-					// Covers the case of error on the Ajaxrequest.
-					throw new Error( error.statusText );
-				}
-			} );
-	}
-
-	/**
-	 * Process checkout and update payment intent via AJAX.
-	 *
-	 * @param {string} paymentIntentId ID of payment intent to be updated.
-	 * @param {Object} fields Checkout fields.
-	 * @param {string} fingerprint User fingerprint.
-	 * @return {Promise} Promise containing redirect URL for UPE element.
-	 */
-	processCheckout( paymentIntentId, fields, fingerprint ) {
-		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'checkout', '' ),
-			{
-				...fields,
-				wc_payment_intent_id: paymentIntentId,
-				'wcpay-fingerprint': fingerprint,
-			}
-		)
-			.then( ( response ) => {
-				if ( response.result === 'failure' ) {
-					throw new Error( response.messages );
-				}
-				return response;
 			} )
 			.catch( ( error ) => {
 				if ( error.message ) {
