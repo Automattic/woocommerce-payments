@@ -57,6 +57,9 @@ export const trackRedirected = ( isEligible: boolean ): void => {
 	} );
 };
 
+export const trackAccountReset = (): void =>
+	wcpayTracks.recordEvent( wcpayTracks.events.ONBOARDING_FLOW_RESET, {} );
+
 export const trackEligibilityModalClosed = (
 	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only'
 ): void =>

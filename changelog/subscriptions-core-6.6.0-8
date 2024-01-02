@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+When using the checkout block to pay for renewal orders, ensure the order's cart hash is updated to make sure the existing order can be used.
