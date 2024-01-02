@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: This is the file revert to avoid failures on plugin update. This is a temporary solution. Both removal & revert happen on develop meaning there is no change to the outside world.
+
+

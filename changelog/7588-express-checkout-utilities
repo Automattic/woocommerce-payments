@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Introduce WC_Payments_Express_Checkout_Button_Utils class.

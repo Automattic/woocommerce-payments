@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+When HPOS is enabled and data compatibility mode is turned on, make sure subscription date changes made to postmeta are synced to orders_meta table.

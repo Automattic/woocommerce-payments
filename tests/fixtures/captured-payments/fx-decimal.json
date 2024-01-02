@@ -42,7 +42,7 @@
     },
   "expectation": {
     "fxString": "1.00 EUR → 1.0504 USD: $105.04 USD",
-    "feeString": "Fee (3.9% + $0.30): $-4.39",
+    "feeString": "Fee (3.9% + $0.30): -$4.39",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-fx": "Foreign exchange fee: 1%"

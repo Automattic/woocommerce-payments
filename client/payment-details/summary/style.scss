@@ -10,6 +10,7 @@
 
 .payment-details-summary {
 	display: flex;
+	flex: 1;
 	@include breakpoint( '<660px' ) {
 		flex-direction: column;
 	}
@@ -24,6 +25,7 @@
 		padding: 0;
 		margin: 0;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 
 		.payment-details-summary__amount-currency {
@@ -92,4 +94,8 @@
 
 .woocommerce-list--horizontal {
 	margin-top: 0 !important;
+}
+
+.payment-details__refund-controls {
+	flex: 0 0 auto;
 }
