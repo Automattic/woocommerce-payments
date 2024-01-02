@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 7.0.0-test-3 - 2024-xx-xx =
+
 = 7.0.0 - 2024-01-03 =
 * Add - Add Account Management tools with reset account functionality for partially onboarded accounts.
 * Add - Adding Compatibility Service to assist with flagging possible compatibility issues in the future.

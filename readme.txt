@@ -94,6 +94,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.0.0-test-3 - unreleased =
+
+
 = 7.0.0 - 2024-01-03 =
 * Add - Add Account Management tools with reset account functionality for partially onboarded accounts.
 * Add - Adding Compatibility Service to assist with flagging possible compatibility issues in the future.
