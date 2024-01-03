@@ -41,6 +41,7 @@ use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
+use WCPay\Payment_Methods\WC_Helper_Site_Currency;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 
@@ -202,16 +203,6 @@ class Timur_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client->expects( $this->any() )->method( 'get_blog_id' )->willReturn( 1234567 );
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		$this->mock_wcpay_account
-			->expects( $this->any() )
-			->method( 'get_fees' )
-			->willReturn(
-				[
-					'card' => [
-						'base' => 0.1,
-					],
-				]
-			);
 
 		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();
@@ -647,6 +638,236 @@ class Timur_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'Afterpay', $afterpay_method->get_title( $mock_afterpay_details ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $afterpay_method->is_reusable() );
+	}
+
+	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
+		// Simulate is_changing_payment_method_for_subscription being true.
+		$_GET['change_payment_method'] = 10;
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) {
+				return true;
+			}
+		);
+
+		$card_method       = $this->payment_methods['card'];
+		$giropay_method    = $this->payment_methods['giropay'];
+		$sofort_method     = $this->payment_methods['sofort'];
+		$bancontact_method = $this->payment_methods['bancontact'];
+		$eps_method        = $this->payment_methods['eps'];
+		$sepa_method       = $this->payment_methods['sepa_debit'];
+		$p24_method        = $this->payment_methods['p24'];
+		$ideal_method      = $this->payment_methods['ideal'];
+		$becs_method       = $this->payment_methods['au_becs_debit'];
+		$affirm_method     = $this->payment_methods['affirm'];
+		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
+
+		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $giropay_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $sofort_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $bancontact_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $eps_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $sepa_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $p24_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $ideal_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $becs_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $affirm_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $afterpay_method->is_enabled_at_checkout( 'US' ) );
+	}
+
+	public function test_only_valid_payment_methods_returned_for_currency() {
+		$card_method       = $this->payment_methods['card'];
+		$giropay_method    = $this->payment_methods['giropay'];
+		$sofort_method     = $this->payment_methods['sofort'];
+		$bancontact_method = $this->payment_methods['bancontact'];
+		$eps_method        = $this->payment_methods['eps'];
+		$sepa_method       = $this->payment_methods['sepa_debit'];
+		$p24_method        = $this->payment_methods['p24'];
+		$ideal_method      = $this->payment_methods['ideal'];
+		$becs_method       = $this->payment_methods['au_becs_debit'];
+		$affirm_method     = $this->payment_methods['affirm'];
+		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
+
+		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
+
+		$account_domestic_currency = 'USD';
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
+		// BNPLs can accept only domestic payments.
+		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
+
+		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
+
+		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
+		$this->assertTrue( $becs_method->is_currency_valid( $account_domestic_currency ) );
+
+		// BNPLs can accept only domestic payments.
+		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		$account_domestic_currency                   = 'CAD';
+		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
+
+		WC_Helper_Site_Currency::$mock_site_currency = '';
+	}
+
+	public function test_payment_method_compares_correct_currency() {
+		$card_method       = $this->payment_methods['card'];
+		$giropay_method    = $this->payment_methods['giropay'];
+		$sofort_method     = $this->payment_methods['sofort'];
+		$bancontact_method = $this->payment_methods['bancontact'];
+		$eps_method        = $this->payment_methods['eps'];
+		$sepa_method       = $this->payment_methods['sepa_debit'];
+		$p24_method        = $this->payment_methods['p24'];
+		$ideal_method      = $this->payment_methods['ideal'];
+		$becs_method       = $this->payment_methods['au_becs_debit'];
+		$affirm_method     = $this->payment_methods['affirm'];
+		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
+
+		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
+		$account_domestic_currency                   = 'USD';
+
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
+
+		global $wp;
+		$order          = WC_Helper_Order::create_order();
+		$order_id       = $order->get_id();
+		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
+		$order->set_currency( 'USD' );
+
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
+
+		$wp->query_vars = [];
+	}
+
+	public function test_create_token_from_setup_intent_adds_token() {
+		$mock_token           = WC_Helper_Token::create_token( 'pm_mock' );
+		$mock_setup_intent_id = 'si_mock';
+		$mock_user            = wp_get_current_user();
+
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $mock_setup_intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'             => $mock_setup_intent_id,
+						'payment_method' => 'pm_mock',
+					]
+				)
+			);
+
+		$this->mock_token_service->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->with( 'pm_mock', $mock_user )
+			->will(
+				$this->returnValue( $mock_token )
+			);
+
+		$this->assertEquals( $mock_token, $this->card_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
+	}
+
+	public function test_exception_will_be_thrown_if_phone_number_is_invalid() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_phone( '+1123456789123456789123' );
+		$order->save();
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid phone number.' );
+		$this->card_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_remove_link_payment_method_if_card_disabled() {
+			$link_gateway = $this->get_gateway( Payment_Method::LINK );
+			$link_gateway->settings['upe_enabled_payment_method_ids'] = [ 'link' ];
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => [
+						'link_payments' => 'active',
+					],
+					'capability_requirements' => [
+						'link_payments' => [],
+					],
+				]
+			);
+
+		$this->assertSame( $link_gateway->get_payment_method_ids_enabled_at_checkout(), [] );
+	}
+
+	/**
+	 * @dataProvider available_payment_methods_provider
+	 */
+	public function test_get_upe_available_payment_methods( $payment_methods, $expected_result ) {
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_fees' )
+			->willReturn( $payment_methods );
+
+		$this->assertEquals( $expected_result, $this->card_gateway->get_upe_available_payment_methods() );
+	}
+
+	public function available_payment_methods_provider() {
+		return [
+			'card only'                  => [
+				[ 'card' => [ 'base' => 0.1 ] ],
+				[ 'card' ],
+			],
+			'no match with fees'         => [
+				[ 'some_other_payment_method' => [ 'base' => 0.1 ] ],
+				[],
+			],
+			'multiple matches with fees' => [
+				[
+					'card'       => [ 'base' => 0.1 ],
+					'bancontact' => [ 'base' => 0.2 ],
+				],
+				[ 'card', 'bancontact' ],
+			],
+			'no fees no methods'         => [
+				[],
+				[],
+			],
+		];
 	}
 
 	public function test_display_gateway_html() {
