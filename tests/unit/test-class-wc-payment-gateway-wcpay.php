@@ -236,6 +236,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$this->init_gateways();
+
+		// Replace the main class's gateway for testing purposes.
+		$this->_gateway = WC_Payments::get_gateway();
 		WC_Payments::set_gateway( $this->card_gateway );
 
 		$this->woopay_utilities = new WooPay_Utilities();
@@ -265,6 +268,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+
+		// Restore the gateway in the main class.
+		WC_Payments::set_gateway( $this->_gateway );
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
