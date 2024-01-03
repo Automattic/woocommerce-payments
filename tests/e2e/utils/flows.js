@@ -447,9 +447,13 @@ export const merchantWCP = {
 	},
 
 	openMultiCurrency: async () => {
-		await page.goto( WCPAY_MULTI_CURRENCY, {
-			waitUntil: 'networkidle0',
-		} );
+		const currentUrl = await page.url();
+
+		if ( currentUrl !== WCPAY_MULTI_CURRENCY ) {
+			await page.goto( WCPAY_MULTI_CURRENCY, {
+				waitUntil: 'networkidle0',
+			} );
+		}
 		await uiLoaded();
 	},
 
@@ -472,6 +476,11 @@ export const merchantWCP = {
 			}
 		}, currencyCode );
 
+		await page.waitForSelector(
+			'div.wcpay-confirmation-modal__footer button.components-button.is-primary',
+			{ timeout: 3000 }
+		);
+
 		await page.click(
 			'div.wcpay-confirmation-modal__footer button.components-button.is-primary',
 			{ text: 'Update selected' }
@@ -491,6 +500,7 @@ export const merchantWCP = {
 	},
 
 	removeCurrency: async ( currencyCode ) => {
+		await merchantWCP.openMultiCurrency();
 		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
 		await page.waitForSelector( currencyItemSelector, { timeout: 10000 } );
 		await page.click(
