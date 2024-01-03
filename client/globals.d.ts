@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import {
+import type {
 	MccsDisplayTreeItem,
 	Country,
 	OnboardingFields,
@@ -31,6 +31,10 @@ declare global {
 			paymentsEnabled?: boolean;
 			deposits?: {
 				status: string;
+				restrictions:
+					| 'deposits_unrestricted'
+					| 'deposits_blocked'
+					| 'schedule_restricted';
 				interval: string;
 				weekly_anchor: string;
 				monthly_anchor: null | number;
@@ -116,6 +120,7 @@ declare global {
 		isStripeBillingEligible: boolean;
 		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
+		isNextDepositNoticeDismissed: boolean;
 	};
 
 	const wcTracks: any;

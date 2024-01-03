@@ -1048,6 +1048,15 @@ class WC_Payments_Account {
 				return;
 			}
 
+			if ( isset( $_GET['wcpay-reset-account'] ) ) {
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+
+				// Delete the account.
+				$this->payments_api_client->delete_account( $test_mode );
+				$this->redirect_to_onboarding_flow_page();
+				return;
+			}
+
 			// Hide menu notification badge upon starting setup.
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
@@ -1475,9 +1484,6 @@ class WC_Payments_Account {
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
-
-		// Automatically enable deferred intent UPE for new stores.
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
 
 		// Track account connection finish.
 		$incentive        = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';

@@ -20,57 +20,82 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
           data-wp-component="CardBody"
         >
           <div
-            class="payment-details-summary"
+            class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
           >
             <div
-              class="payment-details-summary__section"
+              class="payment-details-summary"
             >
-              <p
-                class="payment-details-summary__amount"
-              >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  Amount placeholder
-                </span>
-              </p>
               <div
-                class="payment-details-summary__breakdown"
+                class="payment-details-summary__section"
               >
-                
-                <p>
+                <p
+                  class="payment-details-summary__amount"
+                >
                   <span
                     aria-busy="true"
                     class="is-loadable-placeholder"
                   >
-                    Fee amount
+                    Amount placeholder
                   </span>
                 </p>
-                
-                <p>
+                <div
+                  class="payment-details-summary__breakdown"
+                >
+                  
+                  <p>
+                    <span
+                      aria-busy="true"
+                      class="is-loadable-placeholder"
+                    >
+                      Fee amount
+                    </span>
+                  </p>
+                  
+                  <p>
+                    <span
+                      aria-busy="true"
+                      class="is-loadable-placeholder"
+                    >
+                      Net amount
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div
+                class="payment-details-summary__section"
+              >
+                <div
+                  class="payment-details-summary__id"
+                >
                   <span
                     aria-busy="true"
                     class="is-loadable-placeholder"
                   >
-                    Net amount
+                    Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx
                   </span>
-                </p>
+                </div>
               </div>
             </div>
             <div
-              class="payment-details-summary__section"
+              class="payment-details__refund-controls"
             >
-              <div
-                class="payment-details-summary__id"
+              <span
+                aria-busy="true"
+                class="is-loadable-placeholder"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx
-                </span>
-              </div>
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </span>
             </div>
           </div>
         </div>
@@ -458,49 +483,84 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
           data-wp-component="CardBody"
         >
           <div
-            class="payment-details-summary"
+            class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
           >
             <div
-              class="payment-details-summary__section"
+              class="payment-details-summary"
             >
-              <p
-                class="payment-details-summary__amount"
-              >
-                $1,500.00
-                <span
-                  class="payment-details-summary__amount-currency"
-                >
-                  usd
-                </span>
-                <span
-                  class="chip chip-success"
-                >
-                  Paid
-                </span>
-              </p>
               <div
-                class="payment-details-summary__breakdown"
+                class="payment-details-summary__section"
               >
-                
-                <p>
-                  Fees: 
-                  -$74.00
+                <p
+                  class="payment-details-summary__amount"
+                >
+                  $1,500.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                  <span
+                    class="chip chip-success"
+                  >
+                    Paid
+                  </span>
                 </p>
-                
-                <p>
-                  Net: 
-                  $1,426.00
-                </p>
+                <div
+                  class="payment-details-summary__breakdown"
+                >
+                  
+                  <p>
+                    Fees: 
+                    -$74.00
+                  </p>
+                  
+                  <p>
+                    Net: 
+                    $1,426.00
+                  </p>
+                </div>
+              </div>
+              <div
+                class="payment-details-summary__section"
+              >
+                <div
+                  class="payment-details-summary__id"
+                >
+                  Payment ID: 
+                  pi_mock
+                </div>
               </div>
             </div>
             <div
-              class="payment-details-summary__section"
+              class="payment-details__refund-controls"
             >
               <div
-                class="payment-details-summary__id"
+                class="components-dropdown components-dropdown-menu"
+                tabindex="-1"
               >
-                Payment ID: 
-                pi_mock
+                <button
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                  aria-label="Translation actions"
+                  class="components-button components-dropdown-menu__toggle has-icon"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -681,6 +741,32 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               </div>
             </li>
           </ul>
+        </div>
+        <div
+          class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardFooter"
+        >
+          <div
+            class="card-notice__section"
+          >
+            <div
+              class="card-notice__text"
+            >
+              This transaction is not connected to order. 
+              Investigate this purchase and refund the transaction as needed.
+            </div>
+            <div
+              class="card-notice__button"
+            >
+              <button
+                class="components-button is-primary"
+                type="button"
+              >
+                Refund
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       <div

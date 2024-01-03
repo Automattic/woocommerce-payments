@@ -20,51 +20,60 @@ exports[`Order details page should match the snapshot - Charge without payment i
           data-wp-component="CardBody"
         >
           <div
-            class="payment-details-summary"
+            class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
           >
             <div
-              class="payment-details-summary__section"
+              class="payment-details-summary"
             >
-              <p
-                class="payment-details-summary__amount"
-              >
-                $15.00
-                <span
-                  class="payment-details-summary__amount-currency"
-                >
-                  USD
-                </span>
-                <span
-                  class="chip chip-light"
-                >
-                  Pending
-                </span>
-              </p>
               <div
-                class="payment-details-summary__breakdown"
+                class="payment-details-summary__section"
               >
-                
-                <p>
-                  Fees: 
-                  -$0.00
-                </p>
-                
-                <p>
-                  Net: 
+                <p
+                  class="payment-details-summary__amount"
+                >
                   $15.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    USD
+                  </span>
+                  <span
+                    class="chip chip-light"
+                  >
+                    Pending
+                  </span>
                 </p>
+                <div
+                  class="payment-details-summary__breakdown"
+                >
+                  
+                  <p>
+                    Fees: 
+                    -$0.00
+                  </p>
+                  
+                  <p>
+                    Net: 
+                    $15.00
+                  </p>
+                </div>
+              </div>
+              <div
+                class="payment-details-summary__section"
+              >
+                <div
+                  class="payment-details-summary__id"
+                >
+                  Payment ID: 
+                  776
+                </div>
               </div>
             </div>
             <div
-              class="payment-details-summary__section"
-            >
-              <div
-                class="payment-details-summary__id"
-              >
-                Payment ID: 
-                776
-              </div>
-            </div>
+              class="payment-details__refund-controls"
+            />
           </div>
         </div>
         <hr
