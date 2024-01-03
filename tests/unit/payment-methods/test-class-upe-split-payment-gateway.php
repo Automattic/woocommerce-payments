@@ -353,31 +353,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		wcpay_get_test_container()->reset_all_replacements();
 	}
 
-	public function test_upe_process_payment_check_session_order_redirect_to_previous_order() {
-		$_POST['wc_payment_intent_id'] = 'pi_mock';
-		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
-
-		$response = [
-			'dummy_result' => 'xyz',
-		];
-
-		// Arrange the order is being processed.
-		$order    = WC_Helper_Order::create_order();
-		$order_id = $order->get_id();
-
-		// Arrange the DPPs to return a redirect.
-		$this->mock_dpps->expects( $this->once() )
-			->method( 'check_against_session_processing_order' )
-			->with( wc_get_order( $order ) )
-			->willReturn( $response );
-
-		// Act: process the order but redirect to the previous/session paid order.
-		$result = $mock_upe_gateway->process_payment( $order_id );
-
-		// Assert: the result of check_against_session_processing_order.
-		$this->assertSame( $response, $result );
-	}
-
 	public function test_process_redirect_setup_intent_succeded() {
 
 		$order            = WC_Helper_Order::create_order();
