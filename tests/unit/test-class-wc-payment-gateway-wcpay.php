@@ -2175,7 +2175,7 @@ class Timur_Test extends WCPAY_UnitTestCase {
 
 	public function test_set_mandate_data_to_payment_intent_if_required() {
 		// Mandate data is required for SEPA and Stripe Link, hence creating the gateway with a SEPA payment method should add mandate data.
-		$gateway        = $this->create_gateway_with( new Sepa_Payment_Method( $this->mock_token_service ) );
+		$gateway        = $this->get_gateway( Payment_Method::SEPA );
 		$payment_method = 'woocommerce_payments_sepa_debit';
 		$order          = WC_Helper_Order::create_order();
 		$order->set_currency( 'USD' );
@@ -3050,23 +3050,6 @@ class Timur_Test extends WCPAY_UnitTestCase {
 		$created->setTimestamp( $this->mock_charge_created );
 
 		return new WC_Payments_API_Charge( $this->mock_charge_id, 1500, $created );
-	}
-
-	private function create_gateway_with( $payment_method ) {
-		return new WC_Payment_Gateway_WCPay(
-			$this->mock_api_client,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_token_service,
-			$this->mock_action_scheduler_service,
-			$payment_method,
-			[ $payment_method ],
-			$this->mock_rate_limiter,
-			$this->order_service,
-			$this->mock_dpps,
-			$this->mock_localization_service,
-			$this->mock_fraud_service
-		);
 	}
 
 	private function init_payment_methods() {
