@@ -440,6 +440,14 @@ jQuery( ( $ ) => {
 				wcpayPaymentRequest.addToCart();
 			} );
 
+			// WooCommerce Deposits support.
+			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
+			$( 'input[name=wc_deposit_option]' ).on( 'change', () => {
+				$( 'form:has(input[name=wc_deposit_option])' ).trigger(
+					'woocommerce_variation_has_changed'
+				);
+			} );
+
 			$( document.body ).on( 'woocommerce_variation_has_changed', () => {
 				wcpayPaymentRequest.blockPaymentRequestButton();
 
