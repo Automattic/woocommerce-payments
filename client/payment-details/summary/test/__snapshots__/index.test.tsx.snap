@@ -16,51 +16,60 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-primary"
-              >
-                Payment authorized
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              
-              <p>
-                Fees: 
-                $-0.70
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-primary"
+                >
+                  Payment authorized
+                </span>
               </p>
-              
-              <p>
-                Net: 
-                $19.30
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  $19.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                ch_38jdHA39KKA
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
-          >
-            <div
-              class="payment-details-summary__id"
-            >
-              Payment ID: 
-              ch_38jdHA39KKA
-            </div>
-          </div>
+            class="payment-details__refund-controls"
+          />
         </div>
       </div>
       <hr
@@ -244,15 +253,15 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer payment-details-capture-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
         <div
-          class="payment-details-capture-notice__section"
+          class="card-notice__section"
         >
           <div
-            class="payment-details-capture-notice__text"
+            class="card-notice__text"
           >
             You must 
             <a
@@ -273,7 +282,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             </abbr>
           </div>
           <div
-            class="payment-details-capture-notice__button"
+            class="card-notice__button"
           >
             <button
               class="components-button is-primary"
@@ -317,67 +326,76 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-warning"
-              >
-                Needs review
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              
-              <p>
-                Fees: 
-                $-0.70
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-warning"
+                >
+                  Needs review
+                </span>
               </p>
-              
-              <p>
-                Net: 
-                $19.30
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  $19.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__fraud-outcome-action"
+              >
+                <button
+                  class="components-button is-destructive"
+                  type="button"
+                >
+                  Block transaction
+                </button>
+                <button
+                  class="components-button is-primary"
+                  type="button"
+                >
+                  Approve Transaction
+                </button>
+              </div>
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                ch_38jdHA39KKA
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
-          >
-            <div
-              class="payment-details-summary__fraud-outcome-action"
-            >
-              <button
-                class="components-button is-destructive"
-                type="button"
-              >
-                Block transaction
-              </button>
-              <button
-                class="components-button is-primary"
-                type="button"
-              >
-                Approve Transaction
-              </button>
-            </div>
-            <div
-              class="payment-details-summary__id"
-            >
-              Payment ID: 
-              ch_38jdHA39KKA
-            </div>
-          </div>
+            class="payment-details__refund-controls"
+          />
         </div>
       </div>
       <hr
@@ -561,15 +579,15 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer payment-details-capture-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
         <div
-          class="payment-details-capture-notice__section"
+          class="card-notice__section"
         >
           <div
-            class="payment-details-capture-notice__text"
+            class="card-notice__text"
           >
             You must 
             <a
@@ -590,6 +608,9 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             </abbr>
             . Approving this transaction will capture the charge.
           </div>
+          <div
+            class="card-notice__button"
+          />
         </div>
       </div>
     </div>
@@ -625,49 +646,84 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-success"
-              >
-                Paid
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              
-              <p>
-                Fees: 
-                $-0.70
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-success"
+                >
+                  Paid
+                </span>
               </p>
-              
-              <p>
-                Net: 
-                $19.30
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  $19.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                ch_38jdHA39KKA
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
+            class="payment-details__refund-controls"
           >
             <div
-              class="payment-details-summary__id"
+              class="components-dropdown components-dropdown-menu"
+              tabindex="-1"
             >
-              Payment ID: 
-              ch_38jdHA39KKA
+              <button
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="Translation actions"
+                class="components-button components-dropdown-menu__toggle has-icon"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -885,49 +941,84 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-success"
-              >
-                Paid
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              
-              <p>
-                Fees: 
-                $-0.70
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-success"
+                >
+                  Paid
+                </span>
               </p>
-              
-              <p>
-                Net: 
-                $19.30
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  $19.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                ch_38jdHA39KKA
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
+            class="payment-details__refund-controls"
           >
             <div
-              class="payment-details-summary__id"
+              class="components-dropdown components-dropdown-menu"
+              tabindex="-1"
             >
-              Payment ID: 
-              ch_38jdHA39KKA
+              <button
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="Translation actions"
+                class="components-button components-dropdown-menu__toggle has-icon"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -1145,49 +1236,84 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-success"
-              >
-                Paid
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              
-              <p>
-                Fees: 
-                $-0.70
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-success"
+                >
+                  Paid
+                </span>
               </p>
-              
-              <p>
-                Net: 
-                $19.30
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  $19.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                ch_38jdHA39KKA
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
+            class="payment-details__refund-controls"
           >
             <div
-              class="payment-details-summary__id"
+              class="components-dropdown components-dropdown-menu"
+              tabindex="-1"
             >
-              Payment ID: 
-              ch_38jdHA39KKA
+              <button
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="Translation actions"
+                class="components-button components-dropdown-menu__toggle has-icon"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -1380,7 +1506,8 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
           <div
             class="card-notice__text"
           >
-            This transaction is not connected to order. Investigate this purchase and refund the transaction as needed.
+            This transaction is not connected to order. 
+            Investigate this purchase and refund the transaction as needed.
           </div>
           <div
             class="card-notice__button"
@@ -1427,49 +1554,84 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-success"
-              >
-                Paid
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              
-              <p>
-                Fees: 
-                $-0.70
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-success"
+                >
+                  Paid
+                </span>
               </p>
-              
-              <p>
-                Net: 
-                $19.30
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  $19.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                ch_38jdHA39KKA
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
+            class="payment-details__refund-controls"
           >
             <div
-              class="payment-details-summary__id"
+              class="components-dropdown components-dropdown-menu"
+              tabindex="-1"
             >
-              Payment ID: 
-              ch_38jdHA39KKA
+              <button
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="Translation actions"
+                class="components-button components-dropdown-menu__toggle has-icon"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -1714,54 +1876,63 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-light"
-              >
-                Refunded
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              <p>
-                Refunded: 
-                $-20.00
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-light"
+                >
+                  Refunded
+                </span>
               </p>
-              <p>
-                Fees: 
-                $-0.70
-              </p>
-              
-              <p>
-                Net: 
-                $-0.70
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                <p>
+                  Refunded: 
+                  -$20.00
+                </p>
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  -$0.70
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                ch_38jdHA39KKA
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
-          >
-            <div
-              class="payment-details-summary__id"
-            >
-              Payment ID: 
-              ch_38jdHA39KKA
-            </div>
-          </div>
+            class="payment-details__refund-controls"
+          />
         </div>
       </div>
       <hr
@@ -1977,48 +2148,57 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                USD
-              </span>
-              <span
-                class="chip chip-light"
-              />
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              
-              <p>
-                Fees: 
-                $0.00
+              <p
+                class="payment-details-summary__amount"
+              >
+                
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  USD
+                </span>
+                <span
+                  class="chip chip-light"
+                />
               </p>
-              
-              <p>
-                Net: 
-                $0.00
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fees: 
+                  $0.00
+                </p>
+                
+                <p>
+                  Net: 
+                  $0.00
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
-          >
-            <div
-              class="payment-details-summary__id"
-            >
-              Payment ID: 
-            </div>
-          </div>
+            class="payment-details__refund-controls"
+          />
         </div>
       </div>
       <hr
@@ -2210,52 +2390,87 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-light"
-              >
-                Partial refund
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              <p>
-                Refunded: 
-                $-12.00
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-light"
+                >
+                  Partial refund
+                </span>
               </p>
-              <p>
-                Fees: 
-                $-0.70
-              </p>
-              
-              <p>
-                Net: 
-                $7.30
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                <p>
+                  Refunded: 
+                  -$12.00
+                </p>
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  $7.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                ch_38jdHA39KKA
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
+            class="payment-details__refund-controls"
           >
             <div
-              class="payment-details-summary__id"
+              class="components-dropdown components-dropdown-menu"
+              tabindex="-1"
             >
-              Payment ID: 
-              ch_38jdHA39KKA
+              <button
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="Translation actions"
+                class="components-button components-dropdown-menu__toggle has-icon"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -2473,49 +2688,84 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-success"
-              >
-                Paid
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              
-              <p>
-                Fees: 
-                $-0.70
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-success"
+                >
+                  Paid
+                </span>
               </p>
-              
-              <p>
-                Net: 
-                $19.30
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  $19.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                ch_38jdHA39KKA
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
+            class="payment-details__refund-controls"
           >
             <div
-              class="payment-details-summary__id"
+              class="components-dropdown components-dropdown-menu"
+              tabindex="-1"
             >
-              Payment ID: 
-              ch_38jdHA39KKA
+              <button
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="Translation actions"
+                class="components-button components-dropdown-menu__toggle has-icon"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -2733,49 +2983,84 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
         data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary"
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $20.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                usd
-              </span>
-              <span
-                class="chip chip-success"
-              >
-                Disputed: Won
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              
-              <p>
-                Fees: 
-                $-0.70
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-success"
+                >
+                  Disputed: Won
+                </span>
               </p>
-              
-              <p>
-                Net: 
-                $19.30
-              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  $19.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                ch_38jdHA39KKA
+              </div>
             </div>
           </div>
           <div
-            class="payment-details-summary__section"
+            class="payment-details__refund-controls"
           >
             <div
-              class="payment-details-summary__id"
+              class="components-dropdown components-dropdown-menu"
+              tabindex="-1"
             >
-              Payment ID: 
-              ch_38jdHA39KKA
+              <button
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="Translation actions"
+                class="components-button components-dropdown-menu__toggle has-icon"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         </div>

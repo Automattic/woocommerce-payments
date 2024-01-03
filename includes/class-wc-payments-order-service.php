@@ -98,6 +98,15 @@ class WC_Payments_Order_Service {
 	const WCPAY_TRANSACTION_FEE_META_KEY = '_wcpay_transaction_fee';
 
 	/**
+	 * Meta key used to store the mode, either 'test', or 'prod' of order.
+	 *
+	 * @see Order_Mode
+	 *
+	 * @const string
+	 */
+	const WCPAY_MODE_META_KEY = '_wcpay_mode';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -558,6 +567,21 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Checks if order has an open (uncaptured) authorization.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 *
+	 * @return bool
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function has_open_authorization( $order ) : bool {
+		$order = $this->get_order( $order );
+		return Intent_Status::REQUIRES_CAPTURE === $order->get_meta( self::INTENTION_STATUS_META_KEY, true );
+	}
+
+
+	/**
 	 * Set the payment metadata for customer id.
 	 *
 	 * @param  mixed  $order The order.
@@ -807,6 +831,21 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Creates an "authorization cancelled" order note if not already present.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return boolean        True if the note was added, false otherwise.
+	 */
+	public function post_unique_capture_cancelled_note( $order ) {
+		$note = $this->generate_capture_cancelled_note();
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -815,8 +854,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_payment_capture_cancelled( $order, $intent_data ) {
-		$note = $this->generate_capture_cancelled_note();
-		if ( $this->order_note_exists( $order, $note ) ) {
+		if ( false === $this->post_unique_capture_cancelled_note( $order ) ) {
 			$this->complete_order_processing( $order );
 			return;
 		}
@@ -832,7 +870,6 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->update_order_status( $order, Order_Status::CANCELLED );
-		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_data['intent_status'] );
 	}
 

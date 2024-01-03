@@ -734,6 +734,8 @@ class WC_Payments_Admin {
 						'refundedAmount'        => $order->get_total_refunded(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
 						'chargeId'              => $this->order_service->get_charge_id_for_order( $order ),
+						'hasOpenAuthorization'  => $this->order_service->has_open_authorization( $order ),
+						'testMode'              => \WCPay\Constants\Order_Mode::TEST === $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY ),
 					]
 				);
 				wp_localize_script(
@@ -847,10 +849,6 @@ class WC_Payments_Admin {
 			'accountEmail'                  => $this->account->get_account_email(),
 			'showUpdateDetailsTask'         => $this->get_should_show_update_business_details_task( $account_status_data ),
 			'wpcomReconnectUrl'             => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
-			'additionalMethodsSetup'        => [
-				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
-				'upeType'      => WC_Payments_Features::get_enabled_upe_type(),
-			],
 			'multiCurrencySetup'            => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
@@ -922,7 +920,6 @@ class WC_Payments_Admin {
 			[
 				'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 				'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
-				'upeType'         => WC_Payments_Features::get_enabled_upe_type(),
 			],
 			WC_Payments_Features::to_array()
 		);

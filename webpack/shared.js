@@ -12,17 +12,10 @@ module.exports = {
 			index: './client/index.js',
 			settings: './client/settings/index.js',
 			'blocks-checkout': './client/checkout/blocks/index.js',
-			'upe-blocks-checkout': './client/checkout/blocks/upe.js',
-			'upe-split-blocks-checkout':
-				'./client/checkout/blocks/upe-split.js',
 			woopay: './client/checkout/woopay/index.js',
 			'woopay-express-button':
 				'./client/checkout/woopay/express-button/index.js',
-			checkout: './client/checkout/classic/index.js',
-			upe_checkout: './client/checkout/classic/upe.js',
-			upe_split_checkout: './client/checkout/classic/upe-split.js',
-			upe_with_deferred_intent_creation_checkout:
-				'./client/checkout/classic/upe-deferred-intent-creation/event-handlers.js',
+			checkout: './client/checkout/classic/event-handlers.js',
 			'payment-request': './client/payment-request/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
 			tos: './client/tos/index.js',

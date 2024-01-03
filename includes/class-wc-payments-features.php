@@ -13,9 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC Payments Features class
  */
 class WC_Payments_Features {
-	const UPE_FLAG_NAME                     = '_wcpay_feature_upe';
-	const UPE_SPLIT_FLAG_NAME               = '_wcpay_feature_upe_split';
-	const UPE_DEFERRED_INTENT_FLAG_NAME     = '_wcpay_feature_upe_deferred_intent';
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
 	const STRIPE_BILLING_FLAG_NAME          = '_wcpay_feature_stripe_billing';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
@@ -24,42 +21,6 @@ class WC_Payments_Features {
 	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
 	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
-
-	/**
-	 * Checks whether any UPE gateway is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_upe_enabled() {
-		return true;
-	}
-
-	/**
-	 * Returns the "type" of UPE that will be displayed at checkout.
-	 *
-	 * @return string
-	 */
-	public static function get_enabled_upe_type() {
-		return 'deferred_intent';
-	}
-
-	/**
-	 * Checks whether the UPE gateway is enabled
-	 *
-	 * @return bool
-	 */
-	public static function did_merchant_disable_upe() {
-		return 'disabled' === get_option( self::UPE_FLAG_NAME, '0' ) || 'disabled' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
-	}
-
-	/**
-	 * Checks whether the UPE settings redesign is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_upe_settings_preview_enabled() {
-		return '1' === get_option( '_wcpay_feature_upe_settings_preview', '1' );
-	}
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -407,10 +368,6 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'upe'                            => self::is_upe_enabled(),
-				'upeSplit'                       => false,
-				'upeDeferred'                    => true,
-				'upeSettingsPreview'             => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),
 				'woopay'                         => self::is_woopay_eligible(),
 				'documents'                      => self::is_documents_section_enabled(),

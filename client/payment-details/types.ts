@@ -9,6 +9,7 @@ export interface PaymentChargeDetailsResponse {
 	data: PaymentIntent | Charge;
 	error: ApiError;
 	isLoading: boolean;
+	doRefund: ( charge: Charge, reason: string | null ) => void;
 }
 
 export interface PaymentDetailsProps {

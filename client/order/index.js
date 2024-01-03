@@ -12,6 +12,8 @@ import { getConfig } from 'utils/order';
 import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
+import CancelAuthorizationConfirmationModal from './cancel-authorization-confirm-modal';
+import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
 
 function disableWooOrderRefundButton( disputeStatus ) {
@@ -58,8 +60,9 @@ jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
 	const chargeId = getConfig( 'chargeId' );
+	const testMode = getConfig( 'testMode' );
 
-	maybeShowDisputeNotice();
+	maybeShowOrderNotices();
 
 	$( '#woocommerce-order-items' ).on(
 		'click',
@@ -95,6 +98,7 @@ jQuery( function ( $ ) {
 
 		const canRefund = getConfig( 'canRefund' );
 		const refundAmount = getConfig( 'refundAmount' );
+		const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
 		if (
 			this.value === 'wc-refunded' &&
 			originalStatus !== 'wc-refunded'
@@ -108,14 +112,27 @@ jQuery( function ( $ ) {
 			this.value === 'wc-cancelled' &&
 			originalStatus !== 'wc-cancelled'
 		) {
-			if ( ! canRefund || refundAmount <= 0 ) {
+			// If order has an uncaptured authorization, confirm
+			// that merchant indeed wants to cancel both the order
+			// and the authorization.
+			if ( hasOpenAuthorization ) {
+				renderModal(
+					<CancelAuthorizationConfirmationModal
+						originalOrderStatus={ originalStatus }
+					/>
+				);
 				return;
 			}
-			renderModal(
-				<CancelConfirmationModal
-					originalOrderStatus={ originalStatus }
-				/>
-			);
+			// If it is possible to refund an order, double check that
+			// merchants indeed wants to cancel, or if they just want to
+			// refund.
+			if ( canRefund && refundAmount > 0 ) {
+				renderModal(
+					<CancelConfirmationModal
+						originalOrderStatus={ originalStatus }
+					/>
+				);
+			}
 		}
 	} );
 
@@ -153,21 +170,27 @@ jQuery( function ( $ ) {
 		ReactDOM.render( modalToRender, container );
 	}
 
-	function maybeShowDisputeNotice() {
+	function maybeShowOrderNotices() {
 		const container = document.querySelector(
 			'#wcpay-order-payment-details-container'
 		);
 
 		// If the container doesn't exist (WC < 7.9), or the charge ID isn't present, don't render the notice.
-		if ( ! container || ! chargeId ) {
+		if ( ! container ) {
 			return;
 		}
 
 		ReactDOM.render(
-			<DisputedOrderNoticeHandler
-				chargeId={ chargeId }
-				onDisableOrderRefund={ disableWooOrderRefundButton }
-			/>,
+			<>
+				{ testMode && <TestModeNotice /> }
+
+				{ chargeId && (
+					<DisputedOrderNoticeHandler
+						chargeId={ chargeId }
+						onDisableOrderRefund={ disableWooOrderRefundButton }
+					/>
+				) }
+			</>,
 			container
 		);
 	}
