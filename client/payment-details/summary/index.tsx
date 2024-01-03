@@ -209,12 +209,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const disputeFee =
 		charge.dispute && getDisputeFeeFormatted( charge.dispute );
 
-	// If this transaction is disputed, check if it is refundable.  If not, we should hide the refund menu.
+	// If this transaction is disputed, check if it is refundable.
 	const isDisputeRefundable = charge.dispute
 		? isRefundable( charge.dispute.status )
 		: true;
 
-	const showRefundMenu =
+	// Control menu only shows refund actions for now. In the future, it may show other actions.
+	const showControlMenu =
 		charge.captured && ! charge.refunded && isDisputeRefundable;
 
 	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
@@ -493,7 +494,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						</div>
 					</div>
 					<div className="payment-details__refund-controls">
-						{ showRefundMenu && (
+						{ showControlMenu && (
 							<Loadable
 								isLoading={ isLoading }
 								placeholder={ moreVertical }
