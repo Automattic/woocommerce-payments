@@ -202,16 +202,28 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Gets the product total price.
 	 *
 	 * @param object $product WC_Product_* object.
+	 * @param bool   $is_deposit Whether customer is paying a deposit.
 	 * @return mixed Total price.
 	 *
 	 * @throws Invalid_Price_Exception Whenever a product has no price.
 	 */
-	public function get_product_price( $product ) {
+	public function get_product_price( $product, ?bool $is_deposit = null ) {
 		// If prices should include tax, using tax inclusive price.
 		if ( $this->express_checkout_helper->cart_prices_include_tax() ) {
 			$base_price = wc_get_price_including_tax( $product );
 		} else {
 			$base_price = wc_get_price_excluding_tax( $product );
+		}
+
+		// If WooCommerce Deposits is active, we need to get the correct price for the product.
+		if ( class_exists( 'WC_Deposits_Product_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
+			// If is_deposit is null, we use the default deposit type for the product.
+			if ( is_null( $is_deposit ) ) {
+				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_type( $product->get_id() );
+			}
+			if ( $is_deposit ) {
+				$base_price = WC_Deposits_Product_Manager::get_deposit_amount( $product, 0, 'display', $base_price );
+			}
 		}
 
 		// Add subscription sign-up fees to product price.
@@ -1050,6 +1062,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$product      = wc_get_product( $product_id );
 			$variation_id = null;
 			$currency     = get_woocommerce_currency();
+			$is_deposit   = isset( $_POST['wc_deposit_option'] ) ? 'yes' === $_POST['wc_deposit_option'] : null;
 
 			if ( ! is_a( $product, 'WC_Product' ) ) {
 				/* translators: product ID */
@@ -1077,7 +1090,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
 			}
 
-			$price = $this->get_product_price( $product );
+			$price = $this->get_product_price( $product, $is_deposit );
 			$total = $qty * $price + $addon_value;
 
 			$quantity_label = 1 < $qty ? ' (x' . $qty . ')' : '';

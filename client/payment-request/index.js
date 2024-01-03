@@ -313,6 +313,14 @@ jQuery( ( $ ) => {
 				0
 			);
 
+			// WC Deposits Support.
+			const depositObject = {};
+			if ( $( 'input[name=wc_deposit_option]' ).length ) {
+				depositObject.wc_deposit_option = $(
+					'input[name=wc_deposit_option]:checked'
+				).val();
+			}
+
 			const data = {
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
@@ -320,6 +328,7 @@ jQuery( ( $ ) => {
 					? wcpayPaymentRequest.getAttributes().data
 					: [],
 				addon_value: addonValue,
+				...depositObject,
 			};
 
 			return api.paymentRequestGetSelectedProductData( data );
