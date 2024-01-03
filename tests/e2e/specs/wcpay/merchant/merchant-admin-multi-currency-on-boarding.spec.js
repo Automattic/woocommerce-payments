@@ -9,6 +9,16 @@ import { merchantWCP, uiLoaded } from '../../../utils';
 
 let wasMulticurrencyEnabled;
 
+const goToOnboardingPage = async () => {
+	await page.goto(
+		`${ WP_ADMIN_DASHBOARD }admin.php?page=wc-admin&path=%2Fpayments%2Fmulti-currency-setup`,
+		{
+			waitUntil: 'networkidle0',
+		}
+	);
+	await uiLoaded();
+};
+
 describe( 'Merchant On-boarding', () => {
 	beforeAll( async () => {
 		await merchant.login();
@@ -38,13 +48,7 @@ describe( 'Merchant On-boarding', () => {
 		} );
 
 		beforeEach( async () => {
-			await page.goto(
-				`${ WP_ADMIN_DASHBOARD }admin.php?page=wc-admin&path=%2Fpayments%2Fmulti-currency-setup`,
-				{
-					waitUntil: 'networkidle0',
-				}
-			);
-			await uiLoaded();
+			await goToOnboardingPage();
 		} );
 
 		it( 'Should disable the submit button when no currencies are selected', async () => {
@@ -78,12 +82,52 @@ describe( 'Merchant On-boarding', () => {
 			expect( isDisabled ).toBeTruthy();
 		} );
 
-		it.skip( 'Should allow multiple currencies to be selectable', async () => {
-			// Implement test
+		it( 'Should allow multiple currencies to be selectable', async () => {
+			const listItemSelector =
+				'li.enabled-currency-checkbox:not([data-testid="recommended-currency"])';
+			const checkboxSelector = 'input[type="checkbox"]';
+
+			await page.waitForSelector( listItemSelector, {
+				timeout: 3000,
+			} );
+
+			// Ensure the checkbox within the list item is present and not disabled.
+			const checkbox = await page.$(
+				`${ listItemSelector } ${ checkboxSelector }`
+			);
+			expect( checkbox ).not.toBeNull();
+			const isDisabled = await (
+				await checkbox.getProperty( 'disabled' )
+			 ).jsonValue();
+			expect( isDisabled ).toBe( false );
+
+			// Click the checkbox to select the currency and verify it's checked.
+			await checkbox.click();
+
+			const isChecked = await (
+				await checkbox.getProperty( 'checked' )
+			 ).jsonValue();
+			expect( isChecked ).toBe( true );
 		} );
 
-		it.skip( 'Should exclude already enabled currencies from the currency screen', async () => {
-			// Implement test
+		it( 'Should exclude already enabled currencies from the currency screen', async () => {
+			await merchantWCP.addCurrency( 'GBP' );
+
+			await goToOnboardingPage();
+			const currencySelector = 'li.enabled-currency-checkbox';
+
+			await page.waitForSelector( currencySelector, {
+				timeout: 3000,
+			} );
+
+			// Get the list of currencies as text
+			const currencies = await page.$$eval( currencySelector, ( items ) =>
+				items.map( ( item ) => item.textContent.trim() )
+			);
+
+			expect( currencies ).not.toContain( 'GBP' );
+
+			await merchantWCP.removeCurrency( 'GBP' );
 		} );
 
 		it.skip( 'Should display some suggested currencies at the beginning of the list', async () => {
