@@ -19,6 +19,7 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Internal\Payment\Factor;
 use WCPay\Internal\Payment\Router;
@@ -49,7 +50,7 @@ require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
-class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
+class Timur_Test extends WCPAY_UnitTestCase {
 
 	const NO_REQUIREMENTS      = false;
 	const PENDING_REQUIREMENTS = true;
@@ -72,6 +73,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * @var WC_Payment_Gateway_WCPay[]
 	 */
 	private $gateways;
+
+	/**
+	 * Arrays of payment methods.
+	 *
+	 * Useful when testing operations involving multiple payment methods.
+	 *
+	 * @var WCPay\Payment_Methods\UPE_Payment_Method[]
+	 */
+	private $payment_methods;
 
 	/**
 	 * Mock WC_Payments_API_Client.
@@ -291,6 +301,352 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 
 		wcpay_get_test_container()->reset_all_replacements();
+	}
+
+	public function test_process_redirect_payment_intent_processing() {
+		$order               = WC_Helper_Order::create_order();
+		$order_id            = $order->get_id();
+		$save_payment_method = false;
+		$user                = wp_get_current_user();
+		$intent_status       = Intent_Status::PROCESSING;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
+		$charge_id           = 'ch_mock';
+		$customer_id         = 'cus_mock';
+		$intent_id           = 'pi_mock';
+		$payment_method_id   = 'pm_mock';
+
+		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will( $this->returnValue( $payment_intent ) );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( $customer_id ) );
+
+		$this->card_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		$result_order = wc_get_order( $order_id );
+		$note         = wc_get_order_notes(
+			[
+				'order_id' => $order_id,
+				'limit'    => 1,
+			]
+		)[0];
+
+		$this->assertStringContainsString( 'authorized', $note->content );
+		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
+		$this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
+		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
+		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
+		$this->assertEquals( Order_Status::ON_HOLD, $result_order->get_status() );
+	}
+
+	public function test_process_redirect_payment_intent_succeded() {
+		$order = WC_Helper_Order::create_order();
+
+		$order_id            = $order->get_id();
+		$save_payment_method = false;
+		$user                = wp_get_current_user();
+		$intent_status       = Intent_Status::SUCCEEDED;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
+		$charge_id           = 'ch_mock';
+		$customer_id         = 'cus_mock';
+		$intent_id           = 'pi_mock';
+		$payment_method_id   = 'pm_mock';
+
+		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( $customer_id ) );
+
+		$this->card_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		$result_order = wc_get_order( $order_id );
+
+		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
+		$this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
+		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
+		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
+		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
+	}
+
+	public function test_validate_order_id_received_vs_intent_meta_order_id_throw_exception() {
+		$order           = WC_Helper_Order::create_order();
+		$intent_metadata = [ 'order_id' => (string) ( $order->get_id() + 100 ) ];
+
+		$this->expectException( Process_Payment_Exception::class );
+		$this->expectExceptionMessage( "We're not able to process this payment due to the order ID mismatch. Please try again later." );
+
+		\PHPUnit_Utils::call_method(
+			$this->card_gateway,
+			'validate_order_id_received_vs_intent_meta_order_id',
+			[ $order, $intent_metadata ]
+		);
+	}
+
+	public function test_validate_order_id_received_vs_intent_meta_order_id_returning_void() {
+		$order           = WC_Helper_Order::create_order();
+		$intent_metadata = [ 'order_id' => (string) ( $order->get_id() ) ];
+
+		$res = \PHPUnit_Utils::call_method(
+			$this->card_gateway,
+			'validate_order_id_received_vs_intent_meta_order_id',
+			[ $order, $intent_metadata ]
+		);
+
+		$this->assertSame( null, $res );
+	}
+
+	public function test_correct_payment_method_title_for_order() {
+		$order = WC_Helper_Order::create_order();
+
+		$visa_credit_details       = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'credit',
+			],
+		];
+		$visa_debit_details        = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'debit',
+			],
+		];
+		$mastercard_credit_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'mastercard',
+				'funding' => 'credit',
+			],
+		];
+		$eps_details               = [
+			'type' => 'eps',
+		];
+		$giropay_details           = [
+			'type' => 'giropay',
+		];
+		$p24_details               = [
+			'type' => 'p24',
+		];
+		$sofort_details            = [
+			'type' => 'sofort',
+		];
+		$bancontact_details        = [
+			'type' => 'bancontact',
+		];
+		$sepa_details              = [
+			'type' => 'sepa_debit',
+		];
+		$ideal_details             = [
+			'type' => 'ideal',
+		];
+		$becs_details              = [
+			'type' => 'au_becs_debit',
+		];
+
+		$charge_payment_method_details = [
+			$visa_credit_details,
+			$visa_debit_details,
+			$mastercard_credit_details,
+			$giropay_details,
+			$sofort_details,
+			$bancontact_details,
+			$eps_details,
+			$p24_details,
+			$ideal_details,
+			$sepa_details,
+			$becs_details,
+		];
+
+		$expected_payment_method_titles = [
+			'Visa credit card',
+			'Visa debit card',
+			'Mastercard credit card',
+			'giropay',
+			'Sofort',
+			'Bancontact',
+			'EPS',
+			'Przelewy24 (P24)',
+			'iDEAL',
+			'SEPA Direct Debit',
+			'BECS Direct Debit',
+		];
+
+		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
+			$this->card_gateway->set_payment_method_title_for_order( $order, $payment_method_details['type'], $payment_method_details );
+			$this->assertEquals( $expected_payment_method_titles[ $i ], $order->get_payment_method_title() );
+		}
+	}
+
+	public function test_payment_methods_show_correct_default_outputs() {
+		$mock_token = WC_Helper_Token::create_token( 'pm_mock' );
+		$this->mock_token_service->expects( $this->any() )
+			->method( 'add_payment_method_to_user' )
+			->will(
+				$this->returnValue( $mock_token )
+			);
+
+		$mock_user              = 'mock_user';
+		$mock_payment_method_id = 'pm_mock';
+
+		$mock_visa_details       = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'debit',
+			],
+		];
+		$mock_mastercard_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'mastercard',
+				'funding' => 'credit',
+			],
+		];
+		$mock_giropay_details    = [
+			'type' => 'giropay',
+		];
+		$mock_p24_details        = [
+			'type' => 'p24',
+		];
+		$mock_sofort_details     = [
+			'type' => 'sofort',
+		];
+		$mock_bancontact_details = [
+			'type' => 'bancontact',
+		];
+		$mock_eps_details        = [
+			'type' => 'eps',
+		];
+		$mock_sepa_details       = [
+			'type' => 'sepa_debit',
+		];
+		$mock_ideal_details      = [
+			'type' => 'ideal',
+		];
+		$mock_becs_details       = [
+			'type' => 'au_becs_debit',
+		];
+		$mock_affirm_details     = [
+			'type' => 'affirm',
+		];
+		$mock_afterpay_details   = [
+			'type' => 'afterpay_clearpay',
+		];
+
+		$card_method       = $this->payment_methods['card'];
+		$giropay_method    = $this->payment_methods['giropay'];
+		$p24_method        = $this->payment_methods['p24'];
+		$sofort_method     = $this->payment_methods['sofort'];
+		$bancontact_method = $this->payment_methods['bancontact'];
+		$eps_method        = $this->payment_methods['eps'];
+		$sepa_method       = $this->payment_methods['sepa_debit'];
+		$ideal_method      = $this->payment_methods['ideal'];
+		$becs_method       = $this->payment_methods['au_becs_debit'];
+		$affirm_method     = $this->payment_methods['affirm'];
+		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
+
+		$this->assertEquals( 'card', $card_method->get_id() );
+		$this->assertEquals( 'Credit card / debit card', $card_method->get_title() );
+		$this->assertEquals( 'Visa debit card', $card_method->get_title( $mock_visa_details ) );
+		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( $mock_mastercard_details ) );
+		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertTrue( $card_method->is_reusable() );
+		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
+
+		$this->assertEquals( 'giropay', $giropay_method->get_id() );
+		$this->assertEquals( 'giropay', $giropay_method->get_title() );
+		$this->assertEquals( 'giropay', $giropay_method->get_title( $mock_giropay_details ) );
+		$this->assertTrue( $giropay_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $giropay_method->is_reusable() );
+
+		$this->assertEquals( 'p24', $p24_method->get_id() );
+		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title() );
+		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( $mock_p24_details ) );
+		$this->assertTrue( $p24_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $p24_method->is_reusable() );
+
+		$this->assertEquals( 'sofort', $sofort_method->get_id() );
+		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
+		$this->assertEquals( 'Sofort', $sofort_method->get_title( $mock_sofort_details ) );
+		$this->assertTrue( $sofort_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $sofort_method->is_reusable() );
+
+		$this->assertEquals( 'bancontact', $bancontact_method->get_id() );
+		$this->assertEquals( 'Bancontact', $bancontact_method->get_title() );
+		$this->assertEquals( 'Bancontact', $bancontact_method->get_title( $mock_bancontact_details ) );
+		$this->assertTrue( $bancontact_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $bancontact_method->is_reusable() );
+
+		$this->assertEquals( 'eps', $eps_method->get_id() );
+		$this->assertEquals( 'EPS', $eps_method->get_title() );
+		$this->assertEquals( 'EPS', $eps_method->get_title( $mock_eps_details ) );
+		$this->assertTrue( $eps_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $eps_method->is_reusable() );
+
+		$this->assertEquals( 'sepa_debit', $sepa_method->get_id() );
+		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title() );
+		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( $mock_sepa_details ) );
+		$this->assertTrue( $sepa_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $sepa_method->is_reusable() );
+
+		$this->assertEquals( 'ideal', $ideal_method->get_id() );
+		$this->assertEquals( 'iDEAL', $ideal_method->get_title() );
+		$this->assertEquals( 'iDEAL', $ideal_method->get_title( $mock_ideal_details ) );
+		$this->assertTrue( $ideal_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $ideal_method->is_reusable() );
+
+		$this->assertEquals( 'au_becs_debit', $becs_method->get_id() );
+		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title() );
+		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title( $mock_becs_details ) );
+		$this->assertTrue( $becs_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $becs_method->is_reusable() );
+
+		$this->assertSame( 'affirm', $affirm_method->get_id() );
+		$this->assertSame( 'Affirm', $affirm_method->get_title() );
+		$this->assertSame( 'Affirm', $affirm_method->get_title( $mock_affirm_details ) );
+		$this->assertTrue( $affirm_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $affirm_method->is_reusable() );
+
+		$this->assertSame( 'afterpay_clearpay', $afterpay_method->get_id() );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title() );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title( $mock_afterpay_details ) );
+		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $afterpay_method->is_reusable() );
 	}
 
 	public function test_display_gateway_html() {
@@ -2492,8 +2848,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	private function init_gateways() {
-		$gateways               = [];
+	private function init_payment_methods() {
+		$payment_methods = [];
+
 		$payment_method_classes = [
 			CC_Payment_Method::class,
 			Bancontact_Payment_Method::class,
@@ -2511,8 +2868,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		];
 
 		foreach ( $payment_method_classes as $payment_method_class ) {
-			$payment_method = new $payment_method_class( $this->mock_token_service );
-			$gateways[]     = new WC_Payment_Gateway_WCPay(
+			$payment_method                               = new $payment_method_class( $this->mock_token_service );
+			$payment_methods[ $payment_method->get_id() ] = new $payment_method_class( $this->mock_token_service );
+		}
+		$this->payment_methods = $payment_methods;
+	}
+
+	private function init_gateways() {
+		$this->init_payment_methods();
+		$gateways = [];
+
+		foreach ( $this->payment_methods as $payment_method ) {
+			$gateways[] = new WC_Payment_Gateway_WCPay(
 				$this->mock_api_client,
 				$this->mock_wcpay_account,
 				$this->mock_customer_service,
