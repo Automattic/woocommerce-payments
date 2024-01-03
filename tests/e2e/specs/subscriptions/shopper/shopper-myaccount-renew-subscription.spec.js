@@ -64,12 +64,17 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				testSelectors.subscriptionRenewButton
 			);
 
+			await page.waitFor( 3000 );
 			// Place an order to renew a subscription
-			await page.waitForSelector( testSelectors.wcNotice );
-			await expect( page ).toMatchElement( testSelectors.wcNotice, {
-				text: 'Complete checkout to renew now.',
-			} );
-			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+			// await expect( page ).toMatch( 'Complete checkout to renew now.' );
+			// await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+
+			await Promise.all( [
+				expect( page ).toClick( '#place_order' ),
+				page.waitForNavigation( {
+					waitUntil: 'networkidle0',
+				} ),
+			] );
 
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );

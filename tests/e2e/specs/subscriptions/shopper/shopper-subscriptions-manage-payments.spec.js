@@ -93,9 +93,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await fillCardDetails( page, newCard );
 
 			await shopper.placeOrder();
-			await page.waitForSelector( testSelectors.wcNotice, {
-				text: 'Payment method updated.',
-			} );
+			await expect( page ).toMatch( 'Payment method updated.' );
 
 			// Verify the new payment method has been set
 			await page.waitForSelector(
@@ -133,9 +131,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			);
 			await checkboxes[ 0 ].click();
 			await shopper.placeOrder();
-			await page.waitForSelector( testSelectors.wcNotice, {
-				text: 'Payment method updated.',
-			} );
+			await expect( page ).toMatch( 'Payment method updated.' );
 
 			// Verify the new payment method has been set
 			await page.waitForSelector(
