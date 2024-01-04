@@ -19,7 +19,7 @@ use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WC_Payment_Gateway_WCPay;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 
@@ -32,7 +32,7 @@ class WC_Payments_Checkout {
 	/**
 	 * WC Payments Gateway.
 	 *
-	 * @var UPE_Payment_Gateway
+	 * @var WC_Payment_Gateway_WCPay
 	 */
 	protected $gateway;
 
@@ -67,14 +67,14 @@ class WC_Payments_Checkout {
 	/**
 	 * Construct.
 	 *
-	 * @param UPE_Payment_Gateway          $gateway          WC Payment Gateway.
+	 * @param WC_Payment_Gateway_WCPay     $gateway          WC Payment Gateway.
 	 * @param WooPay_Utilities             $woopay_util      WooPay Utilities.
 	 * @param WC_Payments_Account          $account          WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service WC Payments Customer Service.
 	 * @param WC_Payments_Fraud_Service    $fraud_service    Fraud service instance.
 	 */
 	public function __construct(
-		UPE_Payment_Gateway $gateway,
+		WC_Payment_Gateway_WCPay $gateway,
 		WooPay_Utilities $woopay_util,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service,
@@ -95,16 +95,12 @@ class WC_Payments_Checkout {
 	public function init_hooks() {
 		add_action( 'wc_payments_set_gateway', [ $this, 'set_gateway' ] );
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
-		add_action( 'woocommerce_after_account_payment_methods', [ $this->gateway, 'remove_upe_setup_intent_from_session' ], 10, 0 );
-		add_action( 'woocommerce_subscription_payment_method_updated', [ $this->gateway, 'remove_upe_setup_intent_from_session' ], 10, 0 );
-		add_action( 'woocommerce_order_payment_status_changed', [ get_class( $this->gateway ), 'remove_upe_payment_intent_from_session' ], 10, 0 );
 		add_action( 'wp', [ $this->gateway, 'maybe_process_upe_redirect' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 		add_action( 'wp_ajax_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'switch_theme', [ $this->gateway, 'clear_upe_appearance_transient' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this->gateway, 'clear_upe_appearance_transient' ] );
-		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this->gateway, 'init_setup_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
@@ -174,7 +170,7 @@ class WC_Payments_Checkout {
 		WC_Checkout::instance();
 
 		// The registered card gateway is more reliable than $this->gateway, but if it isn't available for any reason, fall back to the gateway provided to this checkout class.
-		$gateway = WC_Payments::get_registered_card_gateway() ?? $this->gateway;
+		$gateway = WC_Payments::get_gateway() ?? $this->gateway;
 
 		$js_config = [
 			'publishableKey'                 => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
@@ -183,8 +179,6 @@ class WC_Payments_Checkout {
 			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'createPaymentIntentNonce'       => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
-			'updatePaymentIntentNonce'       => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
 			'logPaymentErrorNonce'           => wp_create_nonce( 'wcpay_log_payment_error_nonce' ),
 			'initWooPayNonce'                => wp_create_nonce( 'wcpay_init_woopay_nonce' ),
 			'saveUPEAppearanceNonce'         => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
@@ -220,12 +214,12 @@ class WC_Payments_Checkout {
 
 		$payment_fields['accountDescriptor']        = $this->gateway->get_account_statement_descriptor();
 		$payment_fields['addPaymentReturnURL']      = wc_get_account_endpoint_url( 'payment-methods' );
-		$payment_fields['gatewayId']                = UPE_Payment_Gateway::GATEWAY_ID;
+		$payment_fields['gatewayId']                = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$payment_fields['isCheckout']               = is_checkout();
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
 		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
-		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['upeAppearance']            = get_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['wcBlocksUPEAppearance']    = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
 		$payment_fields['currency']                 = get_woocommerce_currency();
 		$cart_total                                 = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
@@ -266,7 +260,7 @@ class WC_Payments_Checkout {
 				$payment_fields['orderReturnURL'] = esc_url_raw(
 					add_query_arg(
 						[
-							'wc_payment_method' => UPE_Payment_Gateway::GATEWAY_ID,
+							'wc_payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 							'_wpnonce'          => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
 						],
 						$this->gateway->get_return_url( $order )
@@ -318,10 +312,8 @@ class WC_Payments_Checkout {
 				'countries'      => $payment_method->get_countries(),
 			];
 
-			$gateway_for_payment_method                             = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
-			$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
-			$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
-			$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
+			$gateway_for_payment_method                            = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+			$settings[ $payment_method_id ]['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
 				/* translators: link to Stripe testing page */
 				$payment_method->get_testing_instructions(),
 				[
