@@ -641,7 +641,7 @@ class Timur_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
-		// Simulate is_changing_payment_method_for_subscription being true.
+		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
 			function ( $order ) {
@@ -773,7 +773,8 @@ class Timur_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
-		$wp->query_vars = [];
+		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		$wp->query_vars                              = [];
 	}
 
 	public function test_create_token_from_setup_intent_adds_token() {
@@ -868,6 +869,292 @@ class Timur_Test extends WCPAY_UnitTestCase {
 				[],
 			],
 		];
+	}
+
+	// This test uses a mock of the gateway class due to get_selected_payment_method()'s reliance on the static method WC_Payments::get_payment_method_map(), which can't be mocked. Refactoring the gateway class to avoid using this static method would allow mocking it in tests.
+	public function test_process_redirect_setup_intent_succeded() {
+		$order = WC_Helper_Order::create_order();
+
+		/** @var WC_Payment_Gateway_WCPay */
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->payment_methods['card'],
+					[ $this->payment_methods ],
+					$this->mock_rate_limiter,
+					$this->order_service,
+					$this->mock_dpps,
+					$this->mock_localization_service,
+					$this->mock_fraud_service,
+				]
+			)
+			->onlyMethods(
+				[
+					'manage_customer_details_for_order',
+					'get_selected_payment_method',
+				]
+			)
+			->getMock();
+
+		$order_id            = $order->get_id();
+		$save_payment_method = true;
+		$user                = wp_get_current_user();
+		$intent_status       = Intent_Status::SUCCEEDED;
+		$client_secret       = 'cs_mock';
+		$customer_id         = 'cus_mock';
+		$intent_id           = 'si_mock';
+		$payment_method_id   = 'pm_mock';
+		$token               = WC_Helper_Token::create_token( $payment_method_id );
+
+		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		$card_method = $this->payment_methods['card'];
+
+		$order->set_shipping_total( 0 );
+		$order->set_shipping_tax( 0 );
+		$order->set_cart_tax( 0 );
+		$order->set_total( 0 );
+		$order->save();
+
+		$setup_intent = WC_Helper_Intention::create_setup_intention(
+			[
+				'id'                     => 'pi_mock',
+				'client_secret'          => $client_secret,
+				'status'                 => $intent_status,
+				'payment_method'         => $payment_method_id,
+				'payment_method_options' => [
+					'card' => [
+						'request_three_d_secure' => 'automatic',
+					],
+				],
+				'last_setup_error'       => [],
+			]
+		);
+
+		$mock_gateway->expects( $this->once() )
+			->method( 'manage_customer_details_for_order' )
+			->will(
+				$this->returnValue( [ $user, $customer_id ] )
+			);
+
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $setup_intent );
+
+		$this->mock_token_service->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->will(
+				$this->returnValue( $token )
+			);
+
+		$mock_gateway->expects( $this->any() )
+			->method( 'get_selected_payment_method' )
+			->willReturn( $card_method );
+
+		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
+		$_GET['change_payment_method'] = 10;
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) {
+				return true;
+			}
+		);
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		$result_order = wc_get_order( $order_id );
+
+		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
+		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
+		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
+		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
+		$this->assertEquals( 1, count( $result_order->get_payment_tokens() ) );
+	}
+
+	// This test uses a mock of the gateway class due to get_selected_payment_method()'s reliance on the static method WC_Payments::get_payment_method_map(), which can't be mocked. Refactoring the gateway class to avoid using this static method would allow mocking it in tests.
+	public function test_process_redirect_payment_save_payment_token() {
+		/** @var WC_Payment_Gateway_WCPay */
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->payment_methods['card'],
+					[ $this->payment_methods ],
+					$this->mock_rate_limiter,
+					$this->order_service,
+					$this->mock_dpps,
+					$this->mock_localization_service,
+					$this->mock_fraud_service,
+				]
+			)
+			->onlyMethods(
+				[
+					'manage_customer_details_for_order',
+					'get_selected_payment_method',
+				]
+			)
+			->getMock();
+
+		$order               = WC_Helper_Order::create_order();
+		$order_id            = $order->get_id();
+		$save_payment_method = true;
+		$user                = wp_get_current_user();
+		$intent_status       = Intent_Status::PROCESSING;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
+		$charge_id           = 'ch_mock';
+		$customer_id         = 'cus_mock';
+		$intent_id           = 'pi_mock';
+		$payment_method_id   = 'pm_mock';
+		$token               = WC_Helper_Token::create_token( $payment_method_id );
+
+		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		$card_method = $this->payment_methods['card'];
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
+
+		$mock_gateway->expects( $this->once() )
+			->method( 'manage_customer_details_for_order' )
+			->will(
+				$this->returnValue( [ $user, $customer_id ] )
+			);
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+
+		$this->mock_token_service->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->will(
+				$this->returnValue( $token )
+			);
+
+		$mock_gateway->expects( $this->any() )
+			->method( 'get_selected_payment_method' )
+			->willReturn( $card_method );
+
+		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
+		$_GET['change_payment_method'] = 10;
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) {
+				return true;
+			}
+		);
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		$result_order = wc_get_order( $order_id );
+		$note         = wc_get_order_notes(
+			[
+				'order_id' => $order_id,
+				'limit'    => 1,
+			]
+		)[0];
+
+		$this->assertStringContainsString( 'authorized', $note->content );
+		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
+		$this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
+		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
+		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
+		$this->assertEquals( Order_Status::ON_HOLD, $result_order->get_status() );
+		$this->assertEquals( 1, count( $result_order->get_payment_tokens() ) );
+	}
+
+	public function test_get_payment_methods_with_post_request_context() {
+		$order               = WC_Helper_Order::create_order();
+		$payment_information = new Payment_Information( 'pm_mock', $order );
+
+		$_POST['payment_method'] = 'woocommerce_payments';
+
+		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
+
+		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+
+		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
+
+	public function test_get_payment_methods_without_post_request_context() {
+		$token               = WC_Helper_Token::create_token( 'pm_mock' );
+		$order               = WC_Helper_Order::create_order();
+		$payment_information = new Payment_Information( 'pm_mock', $order, null, $token );
+
+		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
+
+		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+	}
+
+	public function test_get_payment_methods_without_request_context_or_token() {
+		$payment_information = new Payment_Information( 'pm_mock' );
+
+		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		$gateway = WC_Payments::get_gateway();
+		WC_Payments::set_gateway( $this->card_gateway );
+
+		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
+
+		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+
+		WC_Payments::set_gateway( $gateway );
+	}
+
+	public function test_get_payment_methods_from_gateway_id_upe() {
+		WC_Helper_Order::create_order();
+
+		$gateway = WC_Payments::get_gateway();
+
+		$payment_methods = $this->card_gateway->get_payment_methods_from_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::BANCONTACT );
+		$this->assertSame( [ Payment_Method::BANCONTACT ], $payment_methods );
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => [
+						'link_payments' => 'active',
+						'card_payments' => 'active',
+					],
+					'capability_requirements' => [
+						'link_payments' => [],
+						'card_payments' => [],
+					],
+				]
+			);
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::LINK, Payment_Method::CARD ];
+		WC_Payments::set_gateway( $this->card_gateway );
+		$payment_methods = $this->card_gateway->get_payment_methods_from_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->assertSame( [ Payment_Method::CARD, Payment_Method::LINK ], $payment_methods );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::CARD ];
+		$payment_methods = $this->card_gateway->get_payment_methods_from_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+
+		WC_Payments::set_gateway( $gateway );
 	}
 
 	public function test_display_gateway_html() {
@@ -2316,7 +2603,7 @@ class Timur_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_non_reusable_gateways_not_available_when_changing_payment_method_for_card() {
-		// Simulate is_changing_payment_method_for_subscription being true.
+		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
 			function ( $order ) {
@@ -3090,7 +3377,7 @@ class Timur_Test extends WCPAY_UnitTestCase {
 				$this->mock_token_service,
 				$this->mock_action_scheduler_service,
 				$payment_method,
-				[ $payment_method->get_id() => $payment_method ],
+				$this->payment_methods,
 				$this->mock_rate_limiter,
 				$this->order_service,
 				$this->mock_dpps,
