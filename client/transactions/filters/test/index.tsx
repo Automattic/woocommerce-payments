@@ -27,10 +27,30 @@ function addAdvancedFilter( filter: string ) {
 const storeCurrencies = [ 'eur', 'usd' ];
 const customerCurrencies = [ 'eur', 'usd', 'gbp' ];
 
+declare const global: {
+	wcSettings: { countries: Record< string, string > };
+};
+
+global.wcSettings = {
+	countries: {
+		US: 'United States of America',
+		CA: 'Canada',
+		UK: 'United Kingdom',
+	},
+};
+
 describe( 'Transactions filters', () => {
 	beforeEach( () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
+
+		global.wcSettings = {
+			countries: {
+				US: 'United States of America',
+				CA: 'Canada',
+				UK: 'United Kingdom',
+			},
+		};
 
 		const { rerender } = render(
 			<TransactionsFilters
@@ -260,6 +280,150 @@ describe( 'Transactions filters', () => {
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().source_device_is_not ).toEqual( 'android' );
+		} );
+	} );
+
+	describe( 'when filtering by channel', () => {
+		let ruleSelector: HTMLElement;
+
+		beforeEach( () => {
+			addAdvancedFilter( 'Channel' );
+			ruleSelector = screen.getByRole( 'combobox', {
+				name: /transaction channel filter/i,
+			} );
+		} );
+
+		test( 'should render all types', () => {
+			const typeSelect = screen.getByRole( 'combobox', {
+				name: /transaction channel$/i,
+			} ) as HTMLSelectElement;
+			expect( typeSelect.options ).toMatchSnapshot();
+		} );
+
+		test( 'should filter by is', () => {
+			user.selectOptions( ruleSelector, 'is' );
+
+			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /transaction channel$/i,
+				} ),
+				'online'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().channel_is ).toEqual( 'online' );
+		} );
+
+		test( 'should filter by is_not', () => {
+			user.selectOptions( ruleSelector, 'is_not' );
+
+			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /transaction channel$/i,
+				} ),
+				'in_person'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().channel_is_not ).toEqual( 'in_person' );
+		} );
+	} );
+
+	describe( 'when filtering by customer country', () => {
+		let ruleSelector: HTMLElement;
+
+		beforeEach( () => {
+			addAdvancedFilter( 'Customer Country' );
+			ruleSelector = screen.getByRole( 'combobox', {
+				name: /transaction customer country filter/i,
+			} );
+		} );
+
+		test( 'should render all types', () => {
+			const typeSelect = screen.getByRole( 'combobox', {
+				name: /transaction customer country$/i,
+			} ) as HTMLSelectElement;
+			expect( typeSelect.options ).toMatchSnapshot();
+		} );
+
+		test( 'should filter by is', () => {
+			user.selectOptions( ruleSelector, 'is' );
+
+			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /transaction customer country$/i,
+				} ),
+				'US'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().customer_country_is ).toEqual( 'US' );
+		} );
+
+		test( 'should filter by is_not', () => {
+			user.selectOptions( ruleSelector, 'is_not' );
+
+			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /transaction customer country$/i,
+				} ),
+				'CA'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().customer_country_is_not ).toEqual( 'CA' );
+		} );
+	} );
+
+	describe( 'when filtering by risk level', () => {
+		let ruleSelector: HTMLElement;
+
+		beforeEach( () => {
+			addAdvancedFilter( 'Risk Level' );
+			ruleSelector = screen.getByRole( 'combobox', {
+				name: /transaction Risk level filter/i,
+			} );
+		} );
+
+		test( 'should render all types', () => {
+			const typeSelect = screen.getByRole( 'combobox', {
+				name: /transaction Risk level$/i,
+			} ) as HTMLSelectElement;
+			expect( typeSelect.options ).toMatchSnapshot();
+		} );
+
+		test( 'should filter by is', () => {
+			user.selectOptions( ruleSelector, 'is' );
+
+			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /transaction Risk level$/i,
+				} ),
+				'0'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().risk_level_is ).toEqual( '0' );
+		} );
+
+		test( 'should filter by is_not', () => {
+			user.selectOptions( ruleSelector, 'is_not' );
+
+			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /transaction Risk level$/i,
+				} ),
+				'1'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().risk_level_is_not ).toEqual( '1' );
 		} );
 	} );
 } );

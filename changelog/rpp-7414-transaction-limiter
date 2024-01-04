@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Handle failed transaction rate limiter in RPP.

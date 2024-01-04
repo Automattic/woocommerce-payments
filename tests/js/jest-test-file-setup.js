@@ -84,6 +84,16 @@ global.wcSettings = {
 	// 	woocommerce_excluded_report_order_statuses: [],
 	// },
 	siteTitle: 'WooCommerce Payments Dev',
+	countries: {
+		US: 'United States of America',
+		CA: 'Canada',
+		UK: 'United Kingdom',
+	},
+	storePages: {
+		checkout: {
+			permalink: 'http://localhost/',
+		},
+	},
 };
 
 global.wpApiSettings = {

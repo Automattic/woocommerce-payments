@@ -96,7 +96,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_wcpay_connect' ], 12 ); // Run this after the redirect to onboarding logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect_or_overview' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_flow_to_overview' ] );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 
@@ -834,15 +834,15 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects WooPayments settings to the connect page for partially
-	 * onboarded accounts.
+	 * Redirects WooPayments settings to the overview page for partially
+	 * onboarded accounts, and the connect page when there is no account.
 	 *
 	 * Every WooPayments page except connect are already hidden, but merchants can still access
 	 * it through WooCommerce settings.
 	 *
-	 * @return bool True if the redirection happened, false otherwise.
+	 * @return bool True if a redirection happened, false otherwise.
 	 */
-	public function maybe_redirect_settings_to_connect(): bool {
+	public function maybe_redirect_settings_to_connect_or_overview(): bool {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
@@ -858,22 +858,37 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Account not partially onboarded, don't redirect.
-		if ( ! $this->is_account_partially_onboarded() ) {
+		// Account fully onboarded, don't redirect.
+		if ( $this->is_account_fully_onboarded() ) {
 			return false;
 		}
 
-		$this->redirect_to(
-			admin_url(
-				add_query_arg(
-					[
-						'page' => 'wc-admin',
-						'path' => '/payments/connect',
-					],
-					'admin.php'
+		// Account partially onboarded, redirect to overview.
+		if ( $this->is_account_partially_onboarded() ) {
+			$this->redirect_to(
+				admin_url(
+					add_query_arg(
+						[
+							'page' => 'wc-admin',
+							'path' => '/payments/overview',
+						],
+						'admin.php'
+					)
 				)
-			)
-		);
+			);
+		} else {
+			$this->redirect_to(
+				admin_url(
+					add_query_arg(
+						[
+							'page' => 'wc-admin',
+							'path' => '/payments/connect',
+						],
+						'admin.php'
+					)
+				)
+			);
+		}
 
 		return true;
 	}
@@ -954,6 +969,12 @@ class WC_Payments_Account {
 				if ( $this->is_account_partially_onboarded() ) {
 					$args         = $_GET;
 					$args['type'] = 'complete_kyc_link';
+
+					// Allow progressive onboarding accounts to continue onboarding without payout collection.
+					if ( $this->is_progressive_onboarding_in_progress() ) {
+						$args['is_progressive_onboarding'] = $this->is_progressive_onboarding_in_progress() ?? false;
+					}
+
 					$this->redirect_to_account_link( $args );
 				}
 
@@ -999,9 +1020,10 @@ class WC_Payments_Account {
 
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
-			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
-			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
-			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
+			$from_wc_admin_task           = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
+			$from_wc_admin_incentive_page = false !== strpos( wp_get_referer(), 'path=%2Fwc-pay-welcome-page' );
+			$from_wc_pay_connect_page     = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
+			if ( $from_wc_admin_task || $from_wc_pay_connect_page || $from_wc_admin_incentive_page ) {
 				// Redirect non-onboarded account to the onboarding flow, otherwise to payments overview page.
 				if ( ! $this->is_stripe_connected() ) {
 					$this->redirect_to_onboarding_flow_page();
@@ -1011,12 +1033,26 @@ class WC_Payments_Account {
 				}
 			}
 
+			// Handle the flow for a builder moving from test to live.
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
-				// Delete the account if the dev mode is enabled otherwise it'll cause issues to onboard again.
-				if ( WC_Payments::mode()->is_dev() ) {
-					$this->payments_api_client->delete_account();
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+
+				// Delete the account if the test mode is enabled otherwise it'll cause issues to onboard again.
+				if ( $test_mode ) {
+					$this->payments_api_client->delete_account( $test_mode );
 				}
+
+				// Set the test mode to false now that we are handling a real onboarding.
 				WC_Payments_Onboarding_Service::set_test_mode( false );
+				$this->redirect_to_onboarding_flow_page();
+				return;
+			}
+
+			if ( isset( $_GET['wcpay-reset-account'] ) ) {
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+
+				// Delete the account.
+				$this->payments_api_client->delete_account( $test_mode );
 				$this->redirect_to_onboarding_flow_page();
 				return;
 			}
@@ -1448,9 +1484,6 @@ class WC_Payments_Account {
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
-
-		// Automatically enable deferred intent UPE for new stores.
-		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
 
 		// Track account connection finish.
 		$incentive        = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';

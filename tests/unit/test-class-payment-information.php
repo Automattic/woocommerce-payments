@@ -34,7 +34,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 
 	public function test_requires_payment_method_or_token() {
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Invalid payment method. Please input a new card number.' );
+		$this->expectExceptionMessage( 'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.' );
 
 		$payment_information = new Payment_Information( '' );
 	}
