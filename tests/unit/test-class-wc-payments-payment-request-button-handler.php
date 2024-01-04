@@ -446,6 +446,12 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_get_product_price_includes_subscription_sign_up_fee() {
 		$mock_product = $this->create_mock_subscription( 'subscription' );
+		add_filter(
+			'test_deposit_get_product',
+			function() use ( $mock_product ) {
+				return $mock_product;
+			}
+		);
 
 		// We have a helper because we are not loading subscriptions.
 		WC_Subscriptions_Product::set_sign_up_fee( 10 );
@@ -458,6 +464,12 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_get_product_price_includes_variable_subscription_sign_up_fee() {
 		$mock_product = $this->create_mock_subscription( 'subscription_variation' );
+		add_filter(
+			'test_deposit_get_product',
+			function() use ( $mock_product ) {
+				return $mock_product;
+			}
+		);
 
 		// We have a helper because we are not loading subscriptions.
 		WC_Subscriptions_Product::set_sign_up_fee( 10 );
@@ -483,6 +495,12 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_get_product_price_throws_exception_for_a_non_numeric_signup_fee() {
 		$mock_product = $this->create_mock_subscription( 'subscription' );
+		add_filter(
+			'test_deposit_get_product',
+			function() use ( $mock_product ) {
+				return $mock_product;
+			}
+		);
 		WC_Subscriptions_Product::set_sign_up_fee( 'a' );
 
 		$this->expectException( WCPay\Exceptions\Invalid_Price_Exception::class );

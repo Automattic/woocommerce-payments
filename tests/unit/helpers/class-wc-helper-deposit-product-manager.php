@@ -16,8 +16,8 @@ class WC_Deposits_Product_Manager {
 	 * @return mixed
 	 */
 	public static function get_deposit_type( $product ) {
-		if ( is_int( $product ) ) {
-			$product = wc_get_product( $product );
+		if ( ! is_object( $product ) ) {
+			$product = apply_filters( 'test_deposit_get_product', wc_get_product( $product ) );
 		}
 		return $product->get_meta( '_wc_deposit_type' );
 	}
@@ -27,8 +27,8 @@ class WC_Deposits_Product_Manager {
 	 * @return bool
 	 */
 	public static function deposits_enabled( $product ) {
-		if ( is_int( $product ) ) {
-			$product = wc_get_product( $product );
+		if ( ! is_object( $product ) ) {
+			$product = apply_filters( 'test_deposit_get_product', wc_get_product( $product ) );
 		}
 		return true === $product->get_meta( '_wc_deposits_enabled' );
 	}
