@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Checkout error when page URL is too long

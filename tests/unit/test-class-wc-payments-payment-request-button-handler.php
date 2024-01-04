@@ -6,6 +6,7 @@
  */
 
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -77,6 +78,13 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	private $mock_wcpay_gateway;
 
 	/**
+	 * Express Checkout Helper instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Helper
+	 */
+	private $express_checkout_helper;
+
+	/**
 	 * Sets up things all tests need.
 	 */
 	public function set_up() {
@@ -100,7 +108,9 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
-		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+		$this->express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( $this->mock_wcpay_account );
+
+		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
 
 		$this->simple_product = WC_Helper_Product::create_simple_product();
 
@@ -189,6 +199,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 		$mock_dpps                     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$mock_payment_method           = $this->createMock( CC_Payment_Method::class );
 
 		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -196,6 +207,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$mock_customer_service,
 			$mock_token_service,
 			$mock_action_scheduler_service,
+			$mock_payment_method,
+			[ 'card' => $mock_payment_method ],
 			$mock_rate_limiter,
 			$mock_order_service,
 			$mock_dpps,
@@ -294,7 +307,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_get_button_settings() {
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
-		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
 
 		$this->assertEquals(
 			[
@@ -320,7 +333,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			}
 		);
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
-		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
 
 		$this->assertFalse( $this->pr->has_allowed_items_in_cart() );
 	}
@@ -505,10 +518,10 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, "__return_$tax_display_cart" ] ); // reset in tear_down.
 		add_filter( 'wc_shipping_enabled', '__return_false' ); // reset in tear_down.
 		WC()->cart->calculate_totals();
-		$build_display_items_result = $this->pr->build_display_items( true );
+		$build_display_items_result = $this->express_checkout_helper->build_display_items( true );
 
 		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
-			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway ] )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
 			->setMethods( [ 'is_product', 'get_product' ] )
 			->getMock();
 
