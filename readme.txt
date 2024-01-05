@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 6.9.2
+Stable tag: 7.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,62 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 7.0.0 - 2024-01-03 =
+* Add - Add Account Management tools with reset account functionality for partially onboarded accounts.
+* Add - Adding Compatibility Service to assist with flagging possible compatibility issues in the future.
+* Add - Add refund controls to transaction details view
+* Add - Add test mode notice in page order detail.
+* Add - Display a Confirmaton Modal on enabling Test Mode
+* Add - Introduce Customer currency, Deposit currency, Amount in Customer Currency and Deposit ID columns to the Transaction list UI and CSV export
+* Fix - Allow test phone number as Support Phone in Dev mode
+* Fix - Avoid using the removed deferred UPE flag
+* Fix - Ensure proper backfilling of subscription metadata (i.e. dates and cache) to the postmeta table when HPOS is enabled and compatibility mode (data syncing) is turned on.
+* Fix - Fetch and update the `_cancelled_email_sent` meta in a HPOS compatibile way.
+* Fix - fix: account currency hook return value
+* Fix - Fix account status error messages with links.
+* Fix - Fix country names with accents not showing correctly on international country fraud filter
+* Fix - Fix currency negative sign position on JS rendered amounts
+* Fix - Fixed a Level 3 error occurring during the capture of an authorization for amounts lower than the initial authorization amount.
+* Fix - Fixed Apple Pay Double Tax Calculation Issue
+* Fix - Fixed broken styles in authorization capture notifications
+* Fix - Fix incorrect amounts caused by zero-decimal currencies on Transactions, Deposits and Deposits CSV export
+* Fix - Fix missing customer data from transactions report
+* Fix - Fix missing order number in transaction reports CSV
+* Fix - Fix WooPay integration with AutomateWoo - Refer a Friend extension.
+* Fix - Improved error message for invalid payment method
+* Fix - Include discount fee in fees tooltip
+* Fix - Introduce WC_Payments_Express_Checkout_Button_Utils class.
+* Fix - Pass the pay-for-order params to get the pre-fetch session data
+* Fix - Prevents a PHP fatal error that occurs when the cart contains a renewal order item that no longer exists.
+* Fix - Resolved an issue that would cause undefined $current_page, $max_num_pages, and $paginate variable errors when viewing a page with the subscriptions-shortcode.
+* Fix - Revemoved pre-fretch session for button to prevent draft order creation
+* Fix - Update account balances on the Payments Overview screen when an instant deposit is requested
+* Fix - Update Qualitative Feedback note to have more efficient sql query.
+* Fix - When HPOS is enabled and data compatibility mode is turned on, make sure subscription date changes made to postmeta are synced to orders_meta table.
+* Fix - When using the checkout block to pay for renewal orders, ensure the order's cart hash is updated to make sure the existing order can be used.
+* Update - Actualized cards-related assets for settings and transactions pages.
+* Update - Cleanup the deprecated payment gateway processing - part II
+* Update - Cleanup the deprecated payment gateway processing - part III
+* Update - Confirmation when cancelling order with pending authorization. Automatic order changes submission if confirmed.
+* Update - Updates the anchor text for the fraud and risk tools documentation link on the Payments Settings page.
+* Update - Updates the behavior and display of the international IP address rule card if the rule is being affected by the WooCommerce core selling locations general option.
+* Dev - Add e2e tests for the currency switcher widget.
+* Dev - Added documentation for deposits REST API endpoints.
+* Dev - Bump WC tested up to version to 8.4.0.
+* Dev - Cleanup enqueueing of the scripts which were removed
+* Dev - Cleanup the deprecated payment gateway processing - part IV
+* Dev - Cleanup the deprecated payment gateway processing - part V
+* Dev - Cleanup the deprecated payment gateway processing - part VI
+* Dev - Comment: Fix declined 3DS card E2E test.
+* Dev - Deprecate the WC_Subscriptions_Synchroniser::add_to_recurring_cart_key(). Use WC_Subscriptions_Synchroniser::add_to_recurring_product_grouping_key() instead.
+* Dev - E2E test - Merchant facing: Multi-currency setup
+* Dev - Improve E2E checkout tests
+* Dev - Introduce a new wcs_get_subscription_grouping_key() function to generate a unique key for a subscription based on its billing schedule. This function uses the existing recurring cart key concept.
+* Dev - Remove "Set-up refund policy" Inbox note as superfluous.
+* Dev - remove unused factor flag for deferred UPE
+* Dev - Thank you page Tracks event
+* Dev - Updated subscriptions-core to version 6.6.0
 
 = 6.9.2 - 2023-12-14 =
 * Add - Notice is added when merchant has funds that are not yet available for deposit.

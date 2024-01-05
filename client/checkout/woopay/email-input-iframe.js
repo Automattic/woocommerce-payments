@@ -263,7 +263,10 @@ export const handleWooPayEmailInput = async (
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
 		urlParams.append( 'is_blocks', isBlocksCheckout ? 'true' : 'false' );
-		urlParams.append( 'source_url', window.location.href );
+		urlParams.append(
+			'source_url',
+			wcSettings?.storePages?.checkout?.permalink
+		);
 		urlParams.append(
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`

@@ -61,6 +61,9 @@ jQuery( function ( $ ) {
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
 	const chargeId = getConfig( 'chargeId' );
 	const testMode = getConfig( 'testMode' );
+	// Order and site are both in test mode, or both in live mode.
+	// '1' = true, '' = false, null = the order was created before the test mode meta was added, so we assume it matches.
+	const orderTestModeMatch = getConfig( 'orderTestModeMatch' ) !== '';
 
 	maybeShowOrderNotices();
 
@@ -175,7 +178,7 @@ jQuery( function ( $ ) {
 			'#wcpay-order-payment-details-container'
 		);
 
-		// If the container doesn't exist (WC < 7.9), or the charge ID isn't present, don't render the notice.
+		// If the container doesn't exist (WC < 7.9) don't render notices.
 		if ( ! container ) {
 			return;
 		}
@@ -184,7 +187,7 @@ jQuery( function ( $ ) {
 			<>
 				{ testMode && <TestModeNotice /> }
 
-				{ chargeId && (
+				{ chargeId && orderTestModeMatch && (
 					<DisputedOrderNoticeHandler
 						chargeId={ chargeId }
 						onDisableOrderRefund={ disableWooOrderRefundButton }

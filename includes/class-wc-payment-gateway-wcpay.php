@@ -1463,7 +1463,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 				if ( $intent_meta_order_id !== $order_id ) {
 					throw new Intent_Authentication_Exception(
-						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						sprintf(
+							/* translators: %s: metadata. We do not need to translate WooPayMeta */
+							esc_html( __( 'We\'re not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: %1$s, order_id: %2$s', 'woocommerce-payments' ) ),
+							esc_attr( $intent_meta_order_id ),
+							esc_attr( $order_id ),
+						),
 						'order_id_mismatch'
 					);
 				}
