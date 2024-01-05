@@ -723,6 +723,23 @@ class WC_Payments_Admin {
 
 			if ( $order && WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
 				$refund_amount = $order->get_remaining_refund_amount();
+
+				// Check if the order's test mode meta matches the site's current test mode state.
+				// E.g. order and site are both in test mode, or both in live mode.
+				$order_mode = $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY );
+				if ( '' === $order_mode ) {
+					// If the order doesn't have a mode set, assume it was created before the order mode meta was added (< 6.9 PR#7651) and return null.
+					$order_test_mode_match = null;
+				} else {
+					$order_test_mode_match = (
+						\WCPay\Constants\Order_Mode::PRODUCTION === $order_mode &&
+						WC_Payments::mode()->is_live()
+					) || (
+						\WCPay\Constants\Order_Mode::TEST === $order_mode &&
+						WC_Payments::mode()->is_test()
+					);
+				}
+
 				wp_localize_script(
 					'WCPAY_ADMIN_ORDER_ACTIONS',
 					'wcpay_order_config',
@@ -736,6 +753,7 @@ class WC_Payments_Admin {
 						'chargeId'              => $this->order_service->get_charge_id_for_order( $order ),
 						'hasOpenAuthorization'  => $this->order_service->has_open_authorization( $order ),
 						'testMode'              => \WCPay\Constants\Order_Mode::TEST === $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY ),
+						'orderTestModeMatch'    => $order_test_mode_match,
 					]
 				);
 				wp_localize_script(
