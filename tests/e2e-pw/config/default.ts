@@ -271,3 +271,5 @@ export const config = {
 		},
 	},
 };
+
+export type CustomerAddress = typeof config.addresses.customer.billing;
