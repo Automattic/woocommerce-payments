@@ -39,6 +39,7 @@ class Compatibility_Service {
 	 */
 	public function init_hooks() {
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'update_compatibility_data' ] );
+		add_action( 'after_switch_theme', [ $this, 'update_compatibility_data' ] );
 	}
 
 	/**

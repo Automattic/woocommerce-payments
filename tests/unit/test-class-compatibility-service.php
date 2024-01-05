@@ -40,6 +40,8 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	public function test_registers_woocommerce_filters_properly() {
 		$priority = has_filter( 'woocommerce_payments_account_refreshed', [ $this->compatibility_service, 'update_compatibility_data' ] );
 		$this->assertEquals( 10, $priority );
+		$priority = has_action( 'after_switch_theme', [ $this->compatibility_service, 'update_compatibility_data' ] );
+		$this->assertEquals( 10, $priority );
 	}
 
 	public function test_update_compatibility_data() {
