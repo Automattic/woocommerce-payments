@@ -728,7 +728,7 @@ class WC_Payments_Admin {
 				// E.g. order and site are both in test mode, or both in live mode.
 				$order_mode = $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY );
 				if ( '' === $order_mode ) {
-					// If the order doesn't have a mode set, assume it was created before the order mode meta was added and return null.
+					// If the order doesn't have a mode set, assume it was created before the order mode meta was added (< 6.9 PR#7651) and return null.
 					$order_test_mode_match = null;
 				} else {
 					$order_test_mode_match = (
