@@ -60,7 +60,10 @@ jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
 	const chargeId = getConfig( 'chargeId' );
-	const orderTestMode = getConfig( 'testMode' );
+	const testMode = getConfig( 'testMode' );
+	// Order and site are both in test mode, or both in live mode.
+	// '1' = true, '' = false, null = the order was created before the test mode meta was added, so we assume it matches.
+	const orderTestModeMatch = getConfig( 'orderTestModeMatch' ) !== '';
 
 	maybeShowOrderNotices();
 
@@ -175,20 +178,16 @@ jQuery( function ( $ ) {
 			'#wcpay-order-payment-details-container'
 		);
 
-		// Check if the order's test mode meta matches the site's current test mode setting.
-		// E.g. order and site are both in test mode, or both in live mode.
-		const isOrderTestModeMatch = orderTestMode === wcpaySettings.testMode;
-
-		// If the container doesn't exist (WC < 7.9) don't render the notice.
+		// If the container doesn't exist (WC < 7.9) don't render notices.
 		if ( ! container ) {
 			return;
 		}
 
 		ReactDOM.render(
 			<>
-				{ orderTestMode && <TestModeNotice /> }
+				{ testMode && <TestModeNotice /> }
 
-				{ isOrderTestModeMatch && chargeId && (
+				{ chargeId && orderTestModeMatch && (
 					<DisputedOrderNoticeHandler
 						chargeId={ chargeId }
 						onDisableOrderRefund={ disableWooOrderRefundButton }
