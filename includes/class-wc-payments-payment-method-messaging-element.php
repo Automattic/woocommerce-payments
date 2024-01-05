@@ -10,7 +10,6 @@ use WCPay\Constants\Payment_Method;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-use WC_Payment_Gateway_WCPay;
 /**
  * WC_Payments_Payment_Method_Messaging_Element class.
  */
