@@ -353,7 +353,7 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	private function mock_wcs_get_subscriptions_for_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $value ) {
+			function ( $order ) use ( $value ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return $value;
 			}
 		);
