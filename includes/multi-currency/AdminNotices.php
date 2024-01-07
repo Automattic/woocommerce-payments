@@ -88,13 +88,13 @@ class AdminNotices {
 	 * Adds admin notice to be displayed.
 	 *
 	 * @param string $slug        Slug for the notice.
-	 * @param string $class       Class(es) for the notice.
+	 * @param string $css_class   CSS class(es) for the notice.
 	 * @param string $message     Message in the notice.
 	 * @param bool   $dismissible Whether the notice can be dismissed or not.
 	 */
-	private function add_admin_notice( $slug, $class, $message, $dismissible = false ) {
+	private function add_admin_notice( $slug, $css_class, $message, $dismissible = false ) {
 		$this->notices[ $slug ] = [
-			'class'       => $class,
+			'class'       => $css_class, // TODO: Rename array key to something more expressive.
 			'message'     => $message,
 			'dismissible' => $dismissible,
 		];
