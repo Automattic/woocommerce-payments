@@ -275,8 +275,8 @@ abstract class Request {
 			throw new Invalid_Request_Parameter_Exception(
 				sprintf(
 					'Trying to access the parameters of a request which is not (fully) initialized yet. Missing parameter(s) for %s: %s',
-					get_class( $this ),
-					implode( ', ', $missing_params )
+					get_class( $this ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+					implode( ', ', $missing_params ) // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 				),
 				'wcpay_core_invalid_request_parameter_missing_parameters'
 			);
@@ -307,7 +307,7 @@ abstract class Request {
 		throw new Invalid_Request_Parameter_Exception(
 			sprintf(
 				'The passed key %s does not exist in Request class',
-				$key
+				$key // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 			),
 			'wcpay_core_invalid_request_parameter_uninitialized_param'
 		);
@@ -324,7 +324,7 @@ abstract class Request {
 	 */
 	final public function send() {
 		return $this->format_response(
-			$this->api_client->send_request( $this->apply_filters( $this->hook, ...$this->hook_args ) )
+			$this->api_client->send_request( $this->apply_filters( $this->hook, ...$this->hook_args ) ) // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- This is a generic hook call configured for each request class implementation.
 		);
 	}
 
@@ -457,7 +457,7 @@ abstract class Request {
 
 		if ( ! $base_request->protected_mode ) {
 			throw new Extend_Request_Exception(
-				get_class( $base_request ) . ' can only be extended within its ->apply_filters() method.',
+				get_class( $base_request ) . ' can only be extended within its ->apply_filters() method.', // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 				'wcpay_core_extend_class_incorrectly'
 			);
 		}
@@ -486,6 +486,8 @@ abstract class Request {
 	 * @throws Extend_Request_Exception                In case a class does not exist.
 	 * @throws Immutable_Parameter_Exception           In case an immutable propery is tried to change.
 	 * @throws Invalid_Request_Parameter_Exception     In case an invalid property is passed.
+	 *
+	 * @since 5.6.0
 	 */
 	final public function apply_filters( $hook, ...$args ) {
 		// Lock the class in order to prevent `set_param` for protected props.
@@ -501,6 +503,8 @@ abstract class Request {
 		 * @param Request $request The request to modify.
 		 * @param mixed   ...$args Other provided parameters for the hook.
 		 * @return Request         Either the same request, or a sub-class.
+		 *
+		 * @since 5.6.0
 		 */
 		$replacement = apply_filters( $hook, $this, ...$args );
 
@@ -540,8 +544,8 @@ abstract class Request {
 		throw new Immutable_Parameter_Exception(
 			sprintf(
 				'The value of %s::%s is immutable and cannot be changed.',
-				get_class( $this ),
-				$param
+				get_class( $this ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+				$param // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 			),
 			'wcpay_core_immutable_parameter_changed'
 		);
@@ -629,7 +633,7 @@ abstract class Request {
 	protected function validate_stripe_id( $id, $prefixes = null ) {
 		if ( empty( $id ) ) {
 			throw new Invalid_Request_Parameter_Exception(
-				__( 'Empty parameter is not allowed', 'woocommerce-payments' ),
+				__( 'Empty parameter is not allowed', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 				'wcpay_core_invalid_request_parameter_stripe_id'
 			);
 		}
@@ -659,8 +663,8 @@ abstract class Request {
 		throw new Invalid_Request_Parameter_Exception(
 			sprintf(
 				// Translators: %s is a Stripe ID.
-				__( '%s is not a valid Stripe identifier', 'woocommerce-payments' ),
-				$id
+				__( '%s is not a valid Stripe identifier', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+				$id // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 			),
 			'wcpay_core_invalid_request_parameter_stripe_id'
 		);
@@ -680,7 +684,7 @@ abstract class Request {
 		}
 
 		throw new Invalid_Request_Parameter_Exception(
-			"Invalid number passed. Number $value_to_compare needs to be larger than $value_to_compare",
+			"Invalid number passed. Number $value_to_compare needs to be larger than $value_to_compare", // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 			'wcpay_core_invalid_request_parameter_order'
 		);
 	}
@@ -699,8 +703,8 @@ abstract class Request {
 			throw new Invalid_Request_Parameter_Exception(
 				sprintf(
 				// Translators: %s is a currency code.
-					__( '%s is not a supported currency for payments.', 'woocommerce-payments' ),
-					$currency_code
+					__( '%s is not a supported currency for payments.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+					$currency_code // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 				),
 				'wcpay_core_invalid_request_parameter_currency_not_available'
 			);
@@ -722,8 +726,8 @@ abstract class Request {
 			throw new Extend_Request_Exception(
 				sprintf(
 					'Failed to extend request. %s is not a subclass of %s',
-					is_string( $child_class ) ? $child_class : get_class( $child_class ),
-					$parent_class
+					is_string( $child_class ) ? $child_class : get_class( $child_class ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+					$parent_class // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 				),
 				'wcpay_core_extend_class_not_subclass'
 			);
@@ -745,9 +749,9 @@ abstract class Request {
 			throw new Invalid_Request_Parameter_Exception(
 				sprintf(
 					// Translators: %1$s is a provided date string, %2$s is a date format.
-					__( '%1$s is not a valid date for format %2$s.', 'woocommerce-payments' ),
-					$date,
-					$format
+					__( '%1$s is not a valid date for format %2$s.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+					$date, // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+					$format // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 				),
 				'wcpay_core_invalid_request_parameter_invalid_date'
 			);
@@ -768,8 +772,8 @@ abstract class Request {
 			throw new Invalid_Request_Parameter_Exception(
 				sprintf(
 				// Translators: %s is a currency code.
-					__( '%1$s is not a valid redirect URL. Use a URL in the allowed_redirect_hosts filter.', 'woocommerce-payments' ),
-					$redirect_url
+					__( '%1$s is not a valid redirect URL. Use a URL in the allowed_redirect_hosts filter.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+					$redirect_url // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 				),
 				'wcpay_core_invalid_request_parameter_invalid_redirect_url'
 			);
@@ -790,8 +794,8 @@ abstract class Request {
 			throw new Invalid_Request_Parameter_Exception(
 				sprintf(
 					// Translators: %s is a provided username.
-					__( '%s is not a valid username.', 'woocommerce-payments' ),
-					$user_name
+					__( '%s is not a valid username.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+					$user_name // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 				),
 				'wcpay_core_invalid_request_parameter_invalid_username'
 			);
