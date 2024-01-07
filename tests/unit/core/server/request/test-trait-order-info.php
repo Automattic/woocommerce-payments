@@ -51,7 +51,7 @@ class Trait_Order_Info_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->set_parent( $mock_order );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $parent_order ) use ( $mock_subscription ) {
+			function ( $parent_order ) use ( $mock_subscription ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return [ $mock_subscription ];
 			}
 		);
