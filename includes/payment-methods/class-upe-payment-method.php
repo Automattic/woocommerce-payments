@@ -117,7 +117,7 @@ abstract class UPE_Payment_Method {
 	 *
 	 * @return string
 	 */
-	public function get_title( $payment_details = false ) {
+	public function get_title( $payment_details = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- TODO: Double-check unused param with Samir (PR #2324).
 		return $this->title;
 	}
 
