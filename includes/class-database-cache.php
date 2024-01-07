@@ -360,6 +360,17 @@ class Database_Cache {
 				break;
 		}
 
+		/**
+		 * Allows overriding wcpay_database_cache_ttl for a specific cache key.
+		 *
+		 * @param int    $ttl            The cache TTL.
+		 * @param string $key            The cache key.
+		 * @param array  $cache_contents The cache contents.
+		 *
+		 * @return int The cache TTL.
+		 *
+		 * @since 4.0.0
+		 */
 		return apply_filters( 'wcpay_database_cache_ttl', $ttl, $key, $cache_contents );
 	}
 }
