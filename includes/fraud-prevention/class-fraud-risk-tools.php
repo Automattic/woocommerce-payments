@@ -274,16 +274,16 @@ class Fraud_Risk_Tools {
 	/**
 	 * Returns the array representation of ruleset.
 	 *
-	 * @param array $array The array of Rule objects.
+	 * @param Rule[] $rules The list of Rule objects.
 	 *
-	 * @return  array
+	 * @return array The list of rules converted to arrays.
 	 */
-	private static function get_ruleset_array( $array ) {
+	private static function get_ruleset_array( $rules ) {
 		return array_map(
 			function ( Rule $rule ) {
 				return $rule->to_array();
 			},
-			$array
+			$rules
 		);
 	}
 
