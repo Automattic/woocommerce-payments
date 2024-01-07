@@ -43,7 +43,7 @@ class ExtendedContainer extends Container {
 			throw new ContainerException(
 				sprintf(
 					'The ID you provided (%s) for replacement is not associated with anything inside the container or its delegates. Maybe try adding it instead?',
-					$id
+					$id // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 				)
 			);
 		}
