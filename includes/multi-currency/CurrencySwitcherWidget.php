@@ -92,6 +92,17 @@ class CurrencySwitcherWidget extends WC_Widget {
 			self::DEFAULT_SETTINGS
 		);
 
+		/**
+		 * Allows customizing widget title.
+		 *
+		 * @param string $title    Original widget title.
+		 * @param array  $instance Widget instance.
+		 * @param string $id_base  Root ID for all widgets of this type.
+		 *
+		 * @return string Customized widget title.
+		 *
+		 * @since 2.6.0
+		 */
 		$title = apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base );
 
 		echo $args['before_widget']; // phpcs:ignore WordPress.Security.EscapeOutput
