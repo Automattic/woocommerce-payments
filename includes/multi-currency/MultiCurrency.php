@@ -490,7 +490,21 @@ class MultiCurrency {
 		ob_start();
 		the_widget(
 			spl_object_hash( $this->get_currency_switcher_widget() ),
+			/**
+			 * Renders widget markup based on instance.
+			 *
+			 * @param array $instance The widget's instance.
+			 *
+			 * @since 3.0.0
+			 */
 			apply_filters( self::FILTER_PREFIX . 'theme_widget_instance', $instance ),
+			/**
+			 * Renders widget markup based on args.
+			 *
+			 * @param array $args The widget's arguments.
+			 *
+			 * @since 3.0.0
+			 */
 			apply_filters( self::FILTER_PREFIX . 'theme_widget_args', $args )
 		);
 		return ob_get_clean();
@@ -559,7 +573,7 @@ class MultiCurrency {
 			if ( ! is_numeric( $manual_rate ) || 0 >= $manual_rate ) {
 				$message = 'Invalid manual currency rate passed to update_single_currency_settings: ' . $manual_rate;
 				Logger::error( $message );
-				throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 );
+				throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 			}
 			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
 		}
@@ -862,6 +876,11 @@ class MultiCurrency {
 	 * @return mixed The configured value.
 	 */
 	public function get_apply_charm_only_to_products() {
+		/**
+		 * Allows overriding apply_charm_only_to_products setting. Default is true.
+		 *
+		 * @since 2.6.0
+		 */
 		return apply_filters( self::FILTER_PREFIX . 'apply_charm_only_to_products', true );
 	}
 
@@ -933,7 +952,7 @@ class MultiCurrency {
 		if ( 0 >= $from_currency_rate ) {
 			$message = 'Invalid rate for from_currency in get_raw_conversion: ' . $from_currency_rate;
 			Logger::error( $message );
-			throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 );
+			throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 		}
 
 		$amount = $amount * ( $to_currency_rate / $from_currency_rate );
@@ -1009,7 +1028,21 @@ class MultiCurrency {
 		$message = sprintf(
 		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
 			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a>Use %3$s instead.</a>', 'woocommerce-payments' ),
+			/**
+			 * Allows overriding detected country name in the notice.
+			 *
+			 * @param string $country The detected country name.
+			 *
+			 * @since 3.1.0
+			 */
 			apply_filters( self::FILTER_PREFIX . 'override_notice_country', WC()->countries->countries[ $country ] ),
+			/**
+			 * Allows overriding detected currency name in the notice.
+			 *
+			 * @param string $currency_name The detected currency name.
+			 *
+			 * @since 3.1.0
+			 */
 			apply_filters( self::FILTER_PREFIX . 'override_notice_currency_name', $current_currency->get_name() ),
 			$currencies[ $store_currency ]
 		);
@@ -1017,10 +1050,10 @@ class MultiCurrency {
 		$notice_id = md5( $message );
 
 		echo '<p class="woocommerce-store-notice demo_store" data-notice-id="' . esc_attr( $notice_id . 2 ) . '" style="display:none;">';
-		echo \WC_Payments_Utils::esc_interpolated_html(
+		echo \WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaping performed within the function.
 			$message,
 			[
-				'a' => '<a href="?currency=' . $store_currency . '">',
+				'a' => '<a href="?currency=' . $store_currency . '">', // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaping performed within the function.
 			]
 		);
 		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
@@ -1403,7 +1436,7 @@ class MultiCurrency {
 		// Simulate client currency from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_currency_name',
-			function ( $selected_currency_name ) use ( $simulation_currency_name ) {
+			function ( $selected_currency_name ) use ( $simulation_currency_name ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Unused parameter is needed to match the filter signature.
 				return $simulation_currency_name;
 			}
 		);
@@ -1411,7 +1444,7 @@ class MultiCurrency {
 		// Simulate client country from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_country',
-			function ( $selected_country ) use ( $simulation_country ) {
+			function ( $selected_country ) use ( $simulation_country ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Unused parameter is needed to match the filter signature.
 				return $simulation_country;
 			}
 		);
@@ -1621,7 +1654,7 @@ class MultiCurrency {
 	private function log_and_throw_invalid_currency_exception( $method, $currency_code, $code = 500 ) {
 		$message = 'Invalid currency passed to ' . $method . ': ' . $currency_code;
 		Logger::error( $message );
-		throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', $code );
+		throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', $code ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 	}
 
 	/**
