@@ -202,7 +202,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_order_contains_subscription( $value ) {
 		WC_Subscriptions::set_wcs_order_contains_subscription(
-			function ( $order ) use ( $value ) {
+			function ( $order ) use ( $value ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return $value;
 			}
 		);
@@ -210,7 +210,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_get_subscriptions_for_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $value ) {
+			function ( $order ) use ( $value ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return $value;
 			}
 		);
@@ -218,7 +218,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_get_subscriptions_for_renewal_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $order ) use ( $value ) {
+			function ( $order ) use ( $value ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return $value;
 			}
 		);
@@ -303,7 +303,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( true );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $parent_order ) use ( $order ) {
+			function ( $parent_order ) use ( $order ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return $order;
 			}
 		);
@@ -316,7 +316,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$mock_subscription->update_meta_data( '_wcpay_subscription_id', 'test_is_wcpay_subscription' );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $id ) use ( $mock_subscription ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return [ '1' => $mock_subscription ];
 			}
 		);
