@@ -46,15 +46,15 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 	/**
 	 * Checks to see if the product's price should be converted.
 	 *
-	 * @param bool   $return  Whether to convert the product's price or not. Default is true.
+	 * @param bool   $current_value  Whether to convert the product's price or not. Default is true.
 	 * @param object $product Product object to test.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_product_price( bool $return, $product ): bool {
+	public function should_convert_product_price( bool $current_value, $product ): bool {
 		// If it's already false, return it.
-		if ( ! $return ) {
-			return $return;
+		if ( ! $current_value ) {
+			return $current_value;
 		}
 
 		// Check for cart items to see if they have already been converted.
@@ -62,7 +62,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 			return false;
 		}
 
-		return $return;
+		return $current_value;
 	}
 
 	/**
@@ -118,6 +118,11 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 			$name .= '';
 		} elseif ( 'custom_price' === $addon['field_type'] ) {
 			$name .= ' (' . wc_price( $addon['price'] ) . ')';
+			/**
+			 * Existing hook woocommerce_addons_add_price_to_name is used to check if price should be added to name.
+			 *
+			 * @since 3.3.0
+			 */
 		} elseif ( 'percentage_based' !== $addon['price_type'] && $addon['price'] && apply_filters( 'woocommerce_addons_add_price_to_name', '__return_true' ) ) {
 			// Get our converted and tax adjusted price to put in the add on name.
 			$price = $this->multi_currency->get_price( $addon['price'], 'product' );
@@ -228,7 +233,11 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 	 */
 	public function order_line_item_meta( array $meta_data, array $addon, \WC_Order_Item_Product $item, array $values ): array {
 
-		// If there is an add-on price, add the price of the add-on to the label name.
+		/**
+		 * Existing hook woocommerce_addons_add_price_to_name is used to check if price should be added to name.
+		 *
+		 * @since 3.3.0
+		 */
 		if ( $addon['price'] && apply_filters( 'woocommerce_addons_add_price_to_name', true ) ) {
 			$product = $item->get_product();
 
