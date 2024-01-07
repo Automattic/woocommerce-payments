@@ -773,7 +773,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			->method( 'get_or_add' )
 			->with( Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() )
 			->willReturnCallback(
-				function ( $key, $generator, $validator ) use ( &$get_or_add_call_count ) {
+				function ( $key, $generator, $validator ) use ( &$get_or_add_call_count ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- This is a mock, so need to keep method signature.
 					if ( 1 === $get_or_add_call_count ) {
 						// Call that happens inside the init function in MultiCurrency, still use cached data.
 						$get_or_add_call_count++;
