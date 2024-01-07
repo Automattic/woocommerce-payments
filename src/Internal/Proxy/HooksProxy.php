@@ -50,8 +50,10 @@ class HooksProxy {
 	 * @param mixed  $value     The value to filter.
 	 * @param mixed  ...$args   Optional. Additional parameters to pass to the callback functions.
 	 * @return mixed The filtered value after all hooked functions are applied to it.
+	 *
+	 * @since 6.6.0
 	 */
 	public function apply_filters( $hook_name, $value, ...$args ) {
-		return apply_filters( $hook_name, $value, ...$args );
+		return apply_filters( $hook_name, $value, ...$args ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Doc block for proxy call is the same as for the method.
 	}
 }
