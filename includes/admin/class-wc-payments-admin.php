@@ -881,6 +881,14 @@ class WC_Payments_Admin {
 			'isNextDepositNoticeDismissed'  => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 		];
 
+		/**
+		 *  Allows extending WooPayments JS settings sent to browser.
+		 *
+		 * @param array $wcpay_js_settings WooPayments JS settings.
+		 * @return array
+		 *
+		 * @since 6.1.0
+		 */
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
 	}
 
