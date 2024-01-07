@@ -59,7 +59,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 		if ( ! $this->is_connected() ) {
 			Logger::error( 'HTTP_REQUEST_ERROR Site is not connected to WordPress.com' );
 			throw new API_Exception(
-				__( 'Site is not connected to WordPress.com', 'woocommerce-payments' ),
+				__( 'Site is not connected to WordPress.com', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 				'wcpay_wpcom_not_connected',
 				409 // HTTP Conflict status code.
 			);
@@ -121,7 +121,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
 				$response->get_error_message()
 			);
-			throw new Connection_Exception( $message, 'wcpay_http_request_failed', 500 );
+			throw new Connection_Exception( $message, 'wcpay_http_request_failed', 500 ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 		}
 
 		return $response;
@@ -191,7 +191,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 		if ( ! $this->connection_manager->is_connected() ) {
 			$result = $this->connection_manager->try_registration();
 			if ( is_wp_error( $result ) ) {
-				throw new API_Exception( $result->get_error_message(), 'wcpay_jetpack_register_site_failed', 500 );
+				throw new API_Exception( $result->get_error_message(), 'wcpay_jetpack_register_site_failed', 500 ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 			}
 		}
 
