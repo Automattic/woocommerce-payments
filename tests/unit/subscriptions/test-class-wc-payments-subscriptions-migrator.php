@@ -34,7 +34,7 @@ class WC_Payments_Subscriptions_Migrator_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->save();
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $id ) use ( $mock_subscription ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return $mock_subscription;
 			}
 		);
