@@ -305,7 +305,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = array_reverse( $clauses );
 		add_filter(
 			'wcpay_multi_currency_filter_select_clauses',
-			function ( $new_clauses ) use ( $clauses ) {
+			function ( $new_clauses ) use ( $clauses ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return array_reverse( $clauses );
 			}
 		);
@@ -493,7 +493,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = array_reverse( $clauses );
 		add_filter(
 			'wcpay_multi_currency_filter_join_clauses',
-			function ( $new_clauses ) use ( $clauses ) {
+			function ( $new_clauses ) use ( $clauses ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return array_reverse( $clauses );
 			}
 		);
@@ -545,7 +545,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = array_reverse( $clauses );
 		add_filter(
 			'wcpay_multi_currency_filter_select_orders_clauses',
-			function ( $new_clauses ) use ( $clauses ) {
+			function ( $new_clauses ) use ( $clauses ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a fake callback, so need to keep method signature.
 				return array_reverse( $clauses );
 			}
 		);
