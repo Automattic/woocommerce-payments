@@ -160,7 +160,7 @@ class Analytics {
 	 *
 	 * @return boolean
 	 */
-	public function disable_report_caching( $args ): bool {
+	public function disable_report_caching( $args ): bool { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Unused parameter is needed to match the filter signature.
 		return false;
 	}
 
@@ -221,6 +221,11 @@ class Analytics {
 			return $clauses;
 		}
 
+		/**
+		 * Allows disabling filter_select_clauses.
+		 *
+		 * @since 2.8.0
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_clauses', false ) ) {
 			return $clauses;
 		}
@@ -268,6 +273,13 @@ class Analytics {
 			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_meta.meta_value AS stripe_exchange_rate';
 		}
 
+		/**
+		 * Allows customizing filter_select_clauses.
+		 *
+		 * @param array $clauses - An array containing the SELECT clauses to be applied.
+		 *
+		 * @since 2.8.0
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_select_clauses', $new_clauses );
 	}
 
@@ -282,6 +294,11 @@ class Analytics {
 	public function filter_join_clauses( array $clauses, $context ): array {
 		global $wpdb;
 
+		/**
+		 * Allows disabling filter_join_clauses.
+		 *
+		 * @since 2.8.0
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_join_clauses', false ) ) {
 			return $clauses;
 		}
@@ -319,6 +336,13 @@ class Analytics {
 			$clauses[] = "LEFT JOIN {$meta_table} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.{$id_field} AND {$stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
 		}
 
+		/**
+		 * Allows customizing filter_join_clauses.
+		 *
+		 * @param array $clauses - An array containing the JOIN clauses to be applied.
+		 *
+		 * @since 2.8.0
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_join_clauses', $clauses );
 	}
 
@@ -330,6 +354,11 @@ class Analytics {
 	 * @return array
 	 */
 	public function filter_where_clauses( array $clauses ): array {
+		/**
+		 * Allows disabling filter_where_clauses.
+		 *
+		 * @since 2.8.0
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_where_clauses', false ) ) {
 			return $clauses;
 		}
@@ -368,6 +397,13 @@ class Analytics {
 			$clauses[]  = $wpdb->prepare( $expression, $currency_args['currency'] ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		}
 
+		/**
+		 * Allows customizing filter_where_clauses.
+		 *
+		 * @param array $clauses - An array containing the WHERE clauses to be applied.
+		 *
+		 * @since 2.8.0
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
 	}
 
@@ -379,6 +415,11 @@ class Analytics {
 	 * @return array
 	 */
 	public function filter_select_orders_clauses( array $clauses ): array {
+		/**
+		 * Allows disabling filter_select_orders_clauses.
+		 *
+		 * @since 2.8.0
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_orders_clauses', false ) ) {
 			return $clauses;
 		}
@@ -407,6 +448,13 @@ class Analytics {
 			}
 		}
 
+		/**
+		 * Allows customizing filter_select_order_clauses.
+		 *
+		 * @param array $clauses - An array containing the SELECT orders clauses to be applied.
+		 *
+		 * @since 2.8.0
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_select_orders_clauses', $clauses );
 	}
 
@@ -493,7 +541,7 @@ class Analytics {
 	 *
 	 * @return string
 	 */
-	private function generate_case_when( string $variable, string $then, string $else ): string {
+	private function generate_case_when( string $variable, string $then, string $else ): string { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.elseFound -- Ok to use else as a parameter name here for generic method.
 		return "CASE WHEN {$variable} IS NOT NULL THEN {$then} ELSE {$else} END";
 	}
 
