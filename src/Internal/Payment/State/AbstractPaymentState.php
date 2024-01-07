@@ -78,7 +78,7 @@ abstract class AbstractPaymentState {
 	 * @throws Order_Not_Found_Exception Order could not be found.
 	 * @throws PaymentRequestException   When data is not available or invalid.
 	 */
-	public function start_processing( PaymentRequest $request ) {
+	public function start_processing( PaymentRequest $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- This is a backup implementation, real implementation will use all arguments.
 		$this->throw_unavailable_method_exception( __METHOD__ );
 	}
 
@@ -129,9 +129,9 @@ abstract class AbstractPaymentState {
 		throw new StateTransitionException(
 			sprintf(
 				// translators: %1$s is the name of a method of the payment object, %2$s is its current state.
-				__( 'The %1$s method is not available in the current payment state (%2$s).', 'woocommerce-payments' ),
-				$method_name,
-				get_class( $this )
+				__( 'The %1$s method is not available in the current payment state (%2$s).', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+				$method_name, // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
+				get_class( $this ) // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 			)
 		);
 	}
