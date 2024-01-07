@@ -75,7 +75,7 @@ class Rule {
 	 * @return Rule
 	 * @throws Fraud_Ruleset_Exception
 	 */
-	public static function from_array( array $array ): Rule {
+	public static function from_array( array $array ): Rule { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.arrayFound -- Ok to use array as a parameter name for generic method.
 		// Check if this is a valid candidate for a rule. Rules should have keys, outcomes, and checks defined and not empty.
 		if ( ! self::validate_array( $array ) ) {
 			throw new Fraud_Ruleset_Exception( 'Rule definition not valid.' );
@@ -95,7 +95,7 @@ class Rule {
 	 *
 	 * @return  bool          Whether it is a valid Rule array.
 	 */
-	public static function validate_array( array $array ) {
+	public static function validate_array( array $array ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.arrayFound -- Ok to use array as a parameter name for generic method.
 		if ( ! isset( $array['key'], $array['check'], $array['outcome'] )
 			|| ! is_array( $array['check'] )
 			|| empty( $array['check'] )
