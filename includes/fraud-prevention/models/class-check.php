@@ -89,7 +89,7 @@ class Check {
 	 * @return Check
 	 * @throws Fraud_Ruleset_Exception When the array validation fails.
 	 */
-	public static function from_array( array $array ): Check {
+	public static function from_array( array $array ): Check { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.arrayFound -- Ok to use array as a parameter name for generic method.
 		// Check if this is a valid candidate for a rule. Rules should have keys, outcomes, and checks defined and not empty.
 		if ( ! self::validate_array( $array ) ) {
 			throw new Fraud_Ruleset_Exception( 'Check definition not valid.' );
@@ -113,7 +113,7 @@ class Check {
 	 *
 	 * @return  bool          Whether it is a valid Check array.
 	 */
-	public static function validate_array( array $array ): bool {
+	public static function validate_array( array $array ): bool { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.arrayFound -- Ok to use array as a parameter name for generic method.
 		// Check if this array contains an operator. In all cases it should have an operator field.
 		if ( ! isset( $array['operator'] ) ) {
 			return false;
@@ -154,7 +154,7 @@ class Check {
 	 */
 	public static function list( string $operator, array $checks ) {
 		if ( ! in_array( $operator, self::$list_operators, true ) ) {
-			throw new Fraud_Ruleset_Exception( 'Operator for the check is invalid: ' . $operator );
+			throw new Fraud_Ruleset_Exception( 'Operator for the check is invalid: ' . $operator ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 		}
 		if ( 0 < count(
 			array_filter(
@@ -183,7 +183,7 @@ class Check {
 	 */
 	public static function check( string $key, string $operator, $value ) {
 		if ( ! in_array( $operator, self::$check_operators, true ) ) {
-			throw new Fraud_Ruleset_Exception( 'Operator for the check is invalid: ' . $operator );
+			throw new Fraud_Ruleset_Exception( 'Operator for the check is invalid: ' . $operator ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 		}
 
 		$check           = new Check();
