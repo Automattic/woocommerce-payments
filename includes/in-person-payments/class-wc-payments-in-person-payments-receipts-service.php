@@ -166,7 +166,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	private function validate_required_fields( array $required_fields, array $data, string $message ) {
 		foreach ( $required_fields as $required_key ) {
 			if ( ! array_key_exists( $required_key, $data ) ) {
-				throw new \RuntimeException( sprintf( '%s. Missing key: %s', $message, $required_key ) );
+				throw new \RuntimeException( sprintf( '%s. Missing key: %s', $message, $required_key ) ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, no escaping needed.
 			}
 		}
 	}
