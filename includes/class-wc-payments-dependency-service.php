@@ -140,7 +140,11 @@ class WC_Payments_Dependency_Service {
 	 */
 	public function is_wc_admin_enabled() {
 
-		// Check if the current WooCommerce version has WooCommerce Admin bundled (WC 4.0+) but it's disabled using a filter.
+		/**
+		 * Filter checks if bundled WooCommerce Admin bundled is disabled.
+		 *
+		 * @since 3.3.0
+		 */
 		if ( ! defined( 'WC_ADMIN_VERSION_NUMBER' ) || apply_filters( 'woocommerce_admin_disabled', false ) ) {
 			return false;
 		}
