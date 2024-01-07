@@ -30,14 +30,14 @@ class WooCommerceFedEx extends BaseCompatibility {
 	/**
 	 * Determine whether to return the store currency or not.
 	 *
-	 * @param bool $return Whether to return the store currency or not.
+	 * @param bool $current_value Whether to return the store currency or not.
 	 *
 	 * @return bool
 	 */
-	public function should_return_store_currency( bool $return ): bool {
+	public function should_return_store_currency( bool $current_value ): bool {
 		// If it's already true, return it.
-		if ( $return ) {
-			return $return;
+		if ( $current_value ) {
+			return $current_value;
 		}
 
 		$calls = [
@@ -52,6 +52,6 @@ class WooCommerceFedEx extends BaseCompatibility {
 			return true;
 		}
 
-		return $return;
+		return $current_value;
 	}
 }
