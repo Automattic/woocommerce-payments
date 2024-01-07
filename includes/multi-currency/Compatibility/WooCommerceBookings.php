@@ -90,14 +90,14 @@ class WooCommerceBookings extends BaseCompatibility {
 	/**
 	 * Checks to see if the product's price should be converted.
 	 *
-	 * @param bool $return Whether to convert the product's price or not. Default is true.
+	 * @param bool $current_value Whether to convert the product's price or not. Default is true.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_product_price( bool $return ): bool {
+	public function should_convert_product_price( bool $current_value ): bool {
 		// If it's already false, return it.
-		if ( ! $return ) {
-			return $return;
+		if ( ! $current_value ) {
+			return $current_value;
 		}
 
 		// This prevents a double conversion of the price in the cart.
@@ -117,7 +117,7 @@ class WooCommerceBookings extends BaseCompatibility {
 			return false;
 		}
 
-		return $return;
+		return $current_value;
 	}
 
 	/**
