@@ -63,7 +63,7 @@ class LegacyProxy {
 	 */
 	public function get_global( string $name ) {
 		if ( ! $this->has_global( $name ) ) {
-			throw new ProxyException( sprintf( 'The global "%s" is not set.', $name ) );
+			throw new ProxyException( sprintf( 'The global "%s" is not set.', $name ) ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message no need escaping.
 		}
 
 		return $GLOBALS[ $name ];
