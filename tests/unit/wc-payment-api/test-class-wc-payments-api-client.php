@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Compatibility_Service;
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Logger;
@@ -39,6 +40,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	private $mock_db_wrapper;
 
 	/**
+	 * Compatibility service.
+	 *
+	 * @var Compatibility_Service
+	 */
+	private $compatibility_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -60,6 +68,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			$this->mock_http_client,
 			$this->mock_db_wrapper
 		);
+
+		$this->compatibility_service = new Compatibility_Service( $this->payments_api_client );
 	}
 
 	/**
@@ -297,6 +307,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'create_live_account'         => true,
 						'progressive'                 => false,
 						'collect_payout_requirements' => false,
+						'compatibility_data'          => $this->compatibility_service->get_compatibility_data(),
 					]
 				),
 				true,
