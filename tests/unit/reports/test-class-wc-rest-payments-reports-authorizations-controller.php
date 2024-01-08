@@ -6,7 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Core\Server\Request\List_Authorizations;
 
@@ -197,7 +197,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 					'source_identifier' => '4242',
 					'customer_name'     => 'Test One',
 					'customer_email'    => 'test1@woo.com',
-					'customer_country'  => Country_Codes::UNITED_STATES,
+					'customer_country'  => Country_Code::UNITED_STATES,
 					'fees'              => 312,
 					'currency'          => 'eur',
 					'risk_level'        => 0,
@@ -222,7 +222,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 					'source_identifier' => '4242',
 					'customer_name'     => 'Test Two',
 					'customer_email'    => 'test2@woo.com',
-					'customer_country'  => Country_Codes::UNITED_STATES,
+					'customer_country'  => Country_Code::UNITED_STATES,
 					'fees'              => 98,
 					'currency'          => 'eur',
 					'risk_level'        => 0,
@@ -247,7 +247,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 					'source_identifier' => '4242',
 					'customer_name'     => 'Test One',
 					'customer_email'    => 'test1@woo.com',
-					'customer_country'  => Country_Codes::UNITED_STATES,
+					'customer_country'  => Country_Code::UNITED_STATES,
 					'fees'              => 312,
 					'currency'          => 'eur',
 					'risk_level'        => 0,
@@ -278,7 +278,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 				'customer'         => [
 					'name'    => 'Test One',
 					'email'   => 'test1@woo.com',
-					'country' => Country_Codes::UNITED_STATES,
+					'country' => Country_Code::UNITED_STATES,
 				],
 				'net_amount'       => 6988,
 				'order_id'         => 123,
@@ -299,7 +299,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 				'customer'         => [
 					'name'    => 'Test Two',
 					'email'   => 'test2@woo.com',
-					'country' => Country_Codes::UNITED_STATES,
+					'country' => Country_Code::UNITED_STATES,
 				],
 				'net_amount'       => 1702,
 				'order_id'         => 456,
@@ -320,7 +320,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 				'customer'         => [
 					'name'    => 'Test One',
 					'email'   => 'test1@woo.com',
-					'country' => Country_Codes::UNITED_STATES,
+					'country' => Country_Code::UNITED_STATES,
 				],
 				'net_amount'       => 6988,
 				'order_id'         => 789,

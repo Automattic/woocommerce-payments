@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Country_Codes
+ * Class Country_Code
  *
  * @package WooCommerce\Payments
  */
@@ -12,11 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Country Codes constants
+ * Country Code constants
  *
  * @psalm-immutable
  */
-class Country_Codes extends Base_Constant {
+class Country_Code extends Base_Constant {
 	const AFGHANISTAN                      = 'AF';
 	const ALAND_ISLANDS                    = 'AX';
 	const ALBANIA                          = 'AL';

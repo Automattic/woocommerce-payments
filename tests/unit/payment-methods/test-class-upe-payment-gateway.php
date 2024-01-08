@@ -9,7 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payments_Fraud_Service;
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Create_Intention;
@@ -190,7 +190,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( Country_Codes::UNITED_STATES );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_wcpay_account->method( 'get_account_default_currency' )->willReturn( 'USD' );
 
 		// Mock the main class's cache service.
@@ -526,7 +526,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_payment_country' )
-			->with( Country_Codes::UNITED_STATES );
+			->with( Country_Code::UNITED_STATES );
 
 		$request->expects( $this->never() )
 			->method( 'setup_future_usage' );
@@ -539,7 +539,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
-		$this->mock_upe_gateway->update_payment_intent( 'pi_mock', $order_id, false, null, Country_Codes::UNITED_STATES );
+		$this->mock_upe_gateway->update_payment_intent( 'pi_mock', $order_id, false, null, Country_Code::UNITED_STATES );
 	}
 
 	public function test_create_payment_intent_uses_order_amount_if_order() {
@@ -1432,68 +1432,68 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Credit card / debit card', $card_method->get_title() );
 		$this->assertEquals( 'Visa debit card', $card_method->get_title( $mock_visa_details ) );
 		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( $mock_mastercard_details ) );
-		$this->assertTrue( $card_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $card_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertTrue( $card_method->is_reusable() );
 		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
 
 		$this->assertEquals( 'giropay', $giropay_method->get_id() );
 		$this->assertEquals( 'giropay', $giropay_method->get_title() );
 		$this->assertEquals( 'giropay', $giropay_method->get_title( $mock_giropay_details ) );
-		$this->assertTrue( $giropay_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $giropay_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertFalse( $giropay_method->is_reusable() );
 
 		$this->assertEquals( 'p24', $p24_method->get_id() );
 		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title() );
 		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( $mock_p24_details ) );
-		$this->assertTrue( $p24_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $p24_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertFalse( $p24_method->is_reusable() );
 
 		$this->assertEquals( 'sofort', $sofort_method->get_id() );
 		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
 		$this->assertEquals( 'Sofort', $sofort_method->get_title( $mock_sofort_details ) );
-		$this->assertTrue( $sofort_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $sofort_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertFalse( $sofort_method->is_reusable() );
 
 		$this->assertEquals( 'bancontact', $bancontact_method->get_id() );
 		$this->assertEquals( 'Bancontact', $bancontact_method->get_title() );
 		$this->assertEquals( 'Bancontact', $bancontact_method->get_title( $mock_bancontact_details ) );
-		$this->assertTrue( $bancontact_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $bancontact_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertFalse( $bancontact_method->is_reusable() );
 
 		$this->assertEquals( 'eps', $eps_method->get_id() );
 		$this->assertEquals( 'EPS', $eps_method->get_title() );
 		$this->assertEquals( 'EPS', $eps_method->get_title( $mock_eps_details ) );
-		$this->assertTrue( $eps_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $eps_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertFalse( $eps_method->is_reusable() );
 
 		$this->assertEquals( 'sepa_debit', $sepa_method->get_id() );
 		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title() );
 		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( $mock_sepa_details ) );
-		$this->assertTrue( $sepa_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $sepa_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertFalse( $sepa_method->is_reusable() );
 
 		$this->assertEquals( 'ideal', $ideal_method->get_id() );
 		$this->assertEquals( 'iDEAL', $ideal_method->get_title() );
 		$this->assertEquals( 'iDEAL', $ideal_method->get_title( $mock_ideal_details ) );
-		$this->assertTrue( $ideal_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $ideal_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertFalse( $ideal_method->is_reusable() );
 
 		$this->assertEquals( 'au_becs_debit', $becs_method->get_id() );
 		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title() );
 		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title( $mock_becs_details ) );
-		$this->assertTrue( $becs_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $becs_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertFalse( $becs_method->is_reusable() );
 
 		$this->assertSame( 'affirm', $affirm_method->get_id() );
 		$this->assertSame( 'Affirm', $affirm_method->get_title() );
 		$this->assertSame( 'Affirm', $affirm_method->get_title( $mock_affirm_details ) );
-		$this->assertTrue( $affirm_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $affirm_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertFalse( $affirm_method->is_reusable() );
 
 		$this->assertSame( 'afterpay_clearpay', $afterpay_method->get_id() );
 		$this->assertSame( 'Afterpay', $afterpay_method->get_title() );
 		$this->assertSame( 'Afterpay', $afterpay_method->get_title( $mock_afterpay_details ) );
-		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 		$this->assertFalse( $afterpay_method->is_reusable() );
 	}
 
@@ -1512,17 +1512,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$affirm_method     = $this->mock_payment_methods['affirm'];
 		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
-		$this->assertTrue( $card_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
-		$this->assertFalse( $giropay_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
-		$this->assertFalse( $sofort_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
-		$this->assertFalse( $bancontact_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
-		$this->assertFalse( $eps_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
-		$this->assertFalse( $sepa_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
-		$this->assertFalse( $p24_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
-		$this->assertFalse( $ideal_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
-		$this->assertFalse( $becs_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
-		$this->assertFalse( $affirm_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
-		$this->assertFalse( $afterpay_method->is_enabled_at_checkout( Country_Codes::UNITED_STATES ) );
+		$this->assertTrue( $card_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
+		$this->assertFalse( $giropay_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
+		$this->assertFalse( $sofort_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
+		$this->assertFalse( $bancontact_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
+		$this->assertFalse( $eps_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
+		$this->assertFalse( $sepa_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
+		$this->assertFalse( $p24_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
+		$this->assertFalse( $ideal_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
+		$this->assertFalse( $becs_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
+		$this->assertFalse( $affirm_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
+		$this->assertFalse( $afterpay_method->is_enabled_at_checkout( Country_Code::UNITED_STATES ) );
 	}
 
 	public function test_only_valid_payment_methods_returned_for_currency() {

@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 
 /**
  * WC_Payments_API_Charge unit tests.
@@ -26,7 +26,7 @@ class WC_Payments_API_Charge_Test extends WCPAY_UnitTestCase {
 						'address_postal_code_check' => null,
 						'cvc_check'                 => null,
 					],
-					'country'     => Country_Codes::UNITED_STATES,
+					'country'     => Country_Code::UNITED_STATES,
 					'exp_month'   => 1,
 					'exp_year'    => 2022,
 					'fingerprint' => 'mock',

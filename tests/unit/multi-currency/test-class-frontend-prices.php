@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 
 /**
  * WCPay\MultiCurrency\FrontendPrices unit tests.
@@ -208,7 +208,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		);
 
 		WC()->session->init();
-		WC()->customer->set_location( Country_Codes::UNITED_STATES, 'CA' );
+		WC()->customer->set_location( Country_Code::UNITED_STATES, 'CA' );
 
 		$shipping_method             = new \WC_Shipping_Flat_Rate();
 		$shipping_method->tax_status = 'taxable';
@@ -252,7 +252,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		);
 
 		WC()->session->init();
-		WC()->customer->set_location( Country_Codes::UNITED_STATES, 'CA' );
+		WC()->customer->set_location( Country_Code::UNITED_STATES, 'CA' );
 
 		$shipping_method             = new \WC_Shipping_Flat_Rate();
 		$shipping_method->tax_status = 'taxable';

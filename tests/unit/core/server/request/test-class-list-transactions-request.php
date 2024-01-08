@@ -6,7 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\List_Transactions;
 
@@ -71,8 +71,8 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$device_is_not     = 'android';
 		$channel           = 'online';
 		$channel_is_not    = 'in_person';
-		$country           = Country_Codes::UNITED_STATES;
-		$country_is_not    = Country_Codes::CANADA;
+		$country           = Country_Code::UNITED_STATES;
+		$country_is_not    = Country_Code::CANADA;
 		$risk_level        = '0';
 		$risk_level_is_not = '1';
 		$search            = [ 'search' ];
@@ -152,8 +152,8 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$device_is_not     = 'android';
 		$channel           = 'online';
 		$channel_is_not    = 'in_person';
-		$country           = Country_Codes::UNITED_STATES;
-		$country_is_not    = Country_Codes::CANADA;
+		$country           = Country_Code::UNITED_STATES;
+		$country_is_not    = Country_Code::CANADA;
 		$risk_level        = '0';
 		$risk_level_is_not = '1';
 		$search            = [ 'search' ];

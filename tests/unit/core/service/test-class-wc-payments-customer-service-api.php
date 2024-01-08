@@ -6,7 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Core\WC_Payments_Customer_Service_API;
@@ -475,7 +475,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 				'postal_code' => '09876',
 				'city'        => 'City',
 				'state'       => 'State',
-				'country'     => Country_Codes::UNITED_STATES,
+				'country'     => Country_Code::UNITED_STATES,
 			],
 			'shipping'    => [
 				'name'    => 'Shipping Ship',
@@ -485,7 +485,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 					'postal_code' => '76543',
 					'city'        => 'City2',
 					'state'       => 'State2',
-					'country'     => Country_Codes::UNITED_STATES,
+					'country'     => Country_Code::UNITED_STATES,
 				],
 			],
 		];

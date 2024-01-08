@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 use WooCommerce\Payments\Tasks\WC_Payments_Task_Disputes;
 
 /**
@@ -46,7 +46,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => Country_Codes::UNITED_STATES,
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+9 days' ) ),
@@ -73,7 +73,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => Country_Codes::UNITED_STATES,
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+6 days' ) ),
@@ -105,7 +105,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => Country_Codes::UNITED_STATES,
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+23 hours' ) ),
@@ -137,7 +137,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => Country_Codes::UNITED_STATES,
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+6 days' ) ),
@@ -154,7 +154,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => Country_Codes::UNITED_STATES,
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'warning_needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+3 days' ) ),
@@ -184,7 +184,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => Country_Codes::UNITED_STATES,
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+23 hours' ) ),
@@ -201,7 +201,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => Country_Codes::UNITED_STATES,
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'warning_needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+23 hours' ) ),
@@ -218,7 +218,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => Country_Codes::UNITED_STATES,
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'warning_needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+9 days' ) ),
@@ -248,7 +248,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => Country_Codes::UNITED_STATES,
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+6 days' ) ),
@@ -265,7 +265,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => Country_Codes::UNITED_STATES,
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'warning_needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+3 days' ) ),

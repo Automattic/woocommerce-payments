@@ -9,7 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
 use WC_Payments_Utils;
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -32,68 +32,68 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/klarna.svg', WCPAY_PLUGIN_FILE );
 		$this->currencies                   = [ 'USD', 'GBP', 'EUR', 'DKK', 'NOK', 'SEK' ];
 		$this->accept_only_domestic_payment = true;
-		$this->countries                    = [ Country_Codes::UNITED_STATES, Country_Codes::UNITED_KINGDOM, Country_Codes::AUSTRIA, Country_Codes::GERMANY, Country_Codes::NETHERLANDS, Country_Codes::BELGIUM, Country_Codes::SPAIN, Country_Codes::ITALY, Country_Codes::IRELAND, Country_Codes::DENMARK, Country_Codes::FINLAND, Country_Codes::NORWAY, Country_Codes::SWEDEN ];
+		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM, Country_Code::AUSTRIA, Country_Code::GERMANY, Country_Code::NETHERLANDS, Country_Code::BELGIUM, Country_Code::SPAIN, Country_Code::ITALY, Country_Code::IRELAND, Country_Code::DENMARK, Country_Code::FINLAND, Country_Code::NORWAY, Country_Code::SWEDEN ];
 		$this->limits_per_currency          = [
 			'USD' => [
-				Country_Codes::UNITED_STATES => [
+				Country_Code::UNITED_STATES => [
 					'min' => 0,
 					'max' => 1000000,
 				],
 			],
 			'GBP' => [
-				Country_Codes::UNITED_KINGDOM => [
+				Country_Code::UNITED_KINGDOM => [
 					'min' => 0,
 					'max' => 1150000,
 				],
 			],
 			'EUR' => [
-				Country_Codes::AUSTRIA     => [
+				Country_Code::AUSTRIA     => [
 					'min' => 1,
 					'max' => 1000000,
 				],
-				Country_Codes::BELGIUM     => [
+				Country_Code::BELGIUM     => [
 					'min' => 1,
 					'max' => 1000000,
 				],
-				Country_Codes::GERMANY     => [
+				Country_Code::GERMANY     => [
 					'min' => 1,
 					'max' => 1000000,
 				],
-				Country_Codes::NETHERLANDS => [
+				Country_Code::NETHERLANDS => [
 					'min' => 1,
 					'max' => 1500000,
 				],
-				Country_Codes::FINLAND     => [
+				Country_Code::FINLAND     => [
 					'min' => 0,
 					'max' => 1000000,
 				],
-				Country_Codes::SPAIN       => [
+				Country_Code::SPAIN       => [
 					'min' => 0,
 					'max' => 1000000,
 				],
-				Country_Codes::IRELAND     => [
+				Country_Code::IRELAND     => [
 					'min' => 0,
 					'max' => 400000,
 				],
-				Country_Codes::ITALY       => [
+				Country_Code::ITALY       => [
 					'min' => 0,
 					'max' => 1000000,
 				],
 			],
 			'DKK' => [
-				Country_Codes::DENMARK => [
+				Country_Code::DENMARK => [
 					'min' => 100,
 					'max' => 100000000,
 				],
 			],
 			'NOK' => [
-				Country_Codes::NORWAY => [
+				Country_Code::NORWAY => [
 					'min' => 0,
 					'max' => 100000000,
 				],
 			],
 			'SEK' => [
-				Country_Codes::SWEDEN => [
+				Country_Code::SWEDEN => [
 					'min' => 0,
 					'max' => 15000000,
 				],

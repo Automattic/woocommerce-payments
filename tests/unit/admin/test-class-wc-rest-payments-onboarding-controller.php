@@ -6,7 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 
 /**
  * WC_REST_Payments_Onboarding_Controller unit tests.
@@ -106,7 +106,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$request = new WP_REST_Request( 'GET' );
 		$request->set_url_params(
 			[
-				'country'   => Country_Codes::UNITED_STATES,
+				'country'   => Country_Code::UNITED_STATES,
 				'type'      => 'company',
 				'structure' => 'sole_proprietor',
 			]
@@ -132,7 +132,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_body_params(
 			[
 				'business'        => [
-					'country' => Country_Codes::UNITED_STATES,
+					'country' => Country_Code::UNITED_STATES,
 					'type'    => 'company',
 					'mcc'     => 'most_popular__software_services',
 				],
@@ -171,7 +171,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 			[
 
 				'business'        => [
-					'country' => Country_Codes::UNITED_STATES,
+					'country' => Country_Code::UNITED_STATES,
 					'type'    => 'company',
 					'mcc'     => 'most_popular__software_services',
 				],

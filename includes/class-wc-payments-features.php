@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -312,7 +312,7 @@ class WC_Payments_Features {
 		}
 
 		$store_base_location = wc_get_base_location();
-		return ! empty( $store_base_location['country'] ) && Country_Codes::UNITED_STATES === $store_base_location['country'];
+		return ! empty( $store_base_location['country'] ) && Country_Code::UNITED_STATES === $store_base_location['country'];
 	}
 
 	/**

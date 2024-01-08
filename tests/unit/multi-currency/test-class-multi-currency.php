@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 use WCPay\MultiCurrency\Utils;
 use WCPay\Database_Cache;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
@@ -452,11 +452,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_update_selected_currency_by_geolocation_does_not_set_session_cookie() {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Codes::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
+		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function() {
-				return Country_Codes::CANADA;
+				return Country_Code::CANADA;
 			}
 		);
 
@@ -473,11 +473,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function() {
-				return Country_Codes::CANADA;
+				return Country_Code::CANADA;
 			}
 		);
 
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Codes::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
+		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
 
 		$this->multi_currency->update_selected_currency_by_geolocation();
 
@@ -490,11 +490,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function() {
-				return Country_Codes::CANADA;
+				return Country_Code::CANADA;
 			}
 		);
 
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Codes::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
+		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
 
 		$this->multi_currency->update_selected_currency_by_geolocation();
 
@@ -513,14 +513,14 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function() {
-				return Country_Codes::CANADA;
+				return Country_Code::CANADA;
 			}
 		);
 
 		// Arrange: Set the expected calls and retruns for our mock classes.
 		$this->mock_localization_service
 			->method( 'get_country_locale_data' )
-			->with( Country_Codes::CANADA )
+			->with( Country_Code::CANADA )
 			->willReturn( [ 'currency_code' => 'CAD' ] );
 
 		$this->mock_utils
@@ -543,11 +543,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function() {
-				return Country_Codes::CANADA;
+				return Country_Code::CANADA;
 			}
 		);
 
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Codes::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
+		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
 
 		$this->multi_currency->display_geolocation_currency_update_notice();
 
@@ -555,11 +555,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_display_geolocation_currency_update_notice_does_not_display_if_using_default_currency() {
-		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, Country_Codes::UNITED_STATES );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, Country_Code::UNITED_STATES );
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function() {
-				return Country_Codes::UNITED_STATES;
+				return Country_Code::UNITED_STATES;
 			}
 		);
 
@@ -573,7 +573,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function() {
-				return Country_Codes::UNITED_STATES;
+				return Country_Code::UNITED_STATES;
 			}
 		);
 

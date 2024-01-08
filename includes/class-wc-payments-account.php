@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 use WCPay\Core\Server\Request\Get_Account;
 use WCPay\Core\Server\Request\Get_Account_Capital_Link;
 use WCPay\Core\Server\Request\Get_Account_Login_Data;
@@ -278,7 +278,7 @@ class WC_Payments_Account {
 
 		return [
 			'email'                 => $account['email'] ?? '',
-			'country'               => $account['country'] ?? Country_Codes::UNITED_STATES,
+			'country'               => $account['country'] ?? Country_Code::UNITED_STATES,
 			'status'                => $account['status'],
 			'created'               => $account['created'] ?? '',
 			'paymentsEnabled'       => $account['payments_enabled'],
@@ -1787,7 +1787,7 @@ class WC_Payments_Account {
 	 */
 	public function get_account_country() {
 		$account = $this->get_cached_account_data();
-		return $account['country'] ?? Country_Codes::UNITED_STATES;
+		return $account['country'] ?? Country_Code::UNITED_STATES;
 	}
 
 	/**

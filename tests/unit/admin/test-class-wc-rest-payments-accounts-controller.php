@@ -6,7 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Constants\Country_Codes;
+use WCPay\Constants\Country_Code;
 use WCPay\Core\Server\Request\Get_Account;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
@@ -77,7 +77,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 				new Response(
 					[
 						'is_live'          => true,
-						'country'          => Country_Codes::GERMANY,
+						'country'          => Country_Code::GERMANY,
 						'status'           => 'complete',
 						'store_currencies' => [ 'default' => 'EUR' ],
 					]
@@ -90,7 +90,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 200, $response->status );
 		$this->assertTrue( $response_data['test_mode'] );
 		$this->assertSame( 'complete', $response_data['status'] );
-		$this->assertSame( Country_Codes::GERMANY, $response_data['country'] );
+		$this->assertSame( Country_Code::GERMANY, $response_data['country'] );
 		$this->assertSame( 'EUR', $response_data['store_currencies']['default'] );
 	}
 
@@ -115,7 +115,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $response_data['test_mode'] );
 		$this->assertSame( 'NOACCOUNT', $response_data['status'] );
 		// The default country and currency have changed in WC 5.3, hence multiple options in assertions.
-		$this->assertContains( $response_data['country'], [ Country_Codes::UNITED_STATES, Country_Codes::UNITED_KINGDOM ] );
+		$this->assertContains( $response_data['country'], [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM ] );
 		$this->assertContains( $response_data['store_currencies']['default'], [ 'USD', 'GBP' ] );
 	}
 
@@ -139,7 +139,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $response_data['test_mode'] );
 		$this->assertSame( 'ONBOARDING_DISABLED', $response_data['status'] );
 		// The default country and currency have changed in WC 5.3, hence multiple options in assertions.
-		$this->assertContains( $response_data['country'], [ Country_Codes::UNITED_STATES, Country_Codes::UNITED_KINGDOM ] );
+		$this->assertContains( $response_data['country'], [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM ] );
 		$this->assertContains( $response_data['store_currencies']['default'], [ 'USD', 'GBP' ] );
 	}
 
