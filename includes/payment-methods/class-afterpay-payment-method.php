@@ -67,7 +67,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns payment method title.
 	 *
-	 * @param string|null $account_country Country of merchants account.
+	 * @param string      $account_country Country of merchants account.
 	 * @param array|false $payment_details Optional payment details from charge object.
 	 * @return string|null
 	 */

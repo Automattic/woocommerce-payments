@@ -113,8 +113,8 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Returns payment method title
 	 *
-	 * @param string     $account_country Country of merchants account.
-	 * @param array|bool $payment_details Optional payment details from charge object.
+	 * @param string      $account_country Country of merchants account.
+	 * @param array|false $payment_details Optional payment details from charge object.
 	 *
 	 * @return string
 	 */
