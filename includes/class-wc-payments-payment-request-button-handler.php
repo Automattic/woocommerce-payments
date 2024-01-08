@@ -1062,7 +1062,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$product      = wc_get_product( $product_id );
 			$variation_id = null;
 			$currency     = get_woocommerce_currency();
-			$is_deposit   = isset( $_POST['wc_deposit_option'] ) ? 'yes' === $_POST['wc_deposit_option'] : null;
+			$is_deposit   = isset( $_POST['wc_deposit_option'] ) ? 'yes' === sanitize_text_field( wp_unslash( $_POST['wc_deposit_option'] ) ) : null;
 
 			if ( ! is_a( $product, 'WC_Product' ) ) {
 				/* translators: product ID */

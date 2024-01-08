@@ -3,7 +3,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { applyFilters, doAction } from '@wordpress/hooks';
+import { doAction } from '@wordpress/hooks';
 import { debounce } from 'lodash';
 /**
  * Internal dependencies
@@ -189,19 +189,8 @@ jQuery( ( $ ) => {
 
 			// Add addons data to the POST body
 			const formData = $( 'form.cart' ).serializeArray();
-			let allowedFieldNames = applyFilters(
-				'wcpayPaymentRequestAllowedFieldNames',
-				[]
-			);
-			// Ensure allowedFieldNames is an array.
-			if ( ! Array.isArray( allowedFieldNames ) ) {
-				allowedFieldNames = [ allowedFieldNames ];
-			}
 			$.each( formData, ( i, field ) => {
-				if (
-					allowedFieldNames.includes( field.name ) ||
-					/^(addon-|wc_)/.test( field.name )
-				) {
+				if ( /^(addon-|wc_)/.test( field.name ) ) {
 					if ( /\[\]$/.test( field.name ) ) {
 						const fieldName = field.name.substring(
 							0,

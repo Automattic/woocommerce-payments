@@ -2,7 +2,6 @@
  * External dependencies
  */
 import validator from 'validator';
-import { applyFilters } from '@wordpress/hooks';
 
 const useExpressCheckoutProductHandler = ( api ) => {
 	const getAttributes = () => {
@@ -105,24 +104,12 @@ const useExpressCheckoutProductHandler = ( api ) => {
 		}
 
 		const addOnForm = document.querySelector( 'form.cart' );
-		let allowedFieldNames = applyFilters(
-			'wcpayPaymentRequestAllowedFieldNames',
-			[]
-		);
-		// Ensure allowedFieldNames is an array.
-		if ( ! Array.isArray( allowedFieldNames ) ) {
-			allowedFieldNames = [ allowedFieldNames ];
-		}
 
 		if ( addOnForm ) {
 			const formData = new FormData( addOnForm );
 
 			formData.forEach( ( value, name ) => {
-				if (
-					/^addon-/.test( name ) ||
-					/^wc_/.test( name ) ||
-					allowedFieldNames.includes( name )
-				) {
+				if ( /^(addon-|wc_)/.test( name ) ) {
 					if ( /\[\]$/.test( name ) ) {
 						const fieldName = name.substring( 0, name.length - 2 );
 
