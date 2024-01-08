@@ -68,14 +68,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
-	public function test_get_compatibility_data() {
-		// Arrange: Create the expected value.
-		$expected = $this->get_mock_compatibility_data();
-
-		// Act/Assert: Call the method we're testing and confirm we get the expected value.
-		$this->assertSame( $expected, $this->compatibility_service->get_compatibility_data() );
-	}
-
 	public function test_update_compatibility_data() {
 		// Arrange: Create the expected value to be passed to update_compatibility_data.
 		$expected = $this->get_mock_compatibility_data();

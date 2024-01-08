@@ -43,18 +43,6 @@ class Compatibility_Service {
 	}
 
 	/**
-	 * Gets the compatibility data.
-	 *
-	 * @return array
-	 */
-	public function get_compatibility_data(): array {
-		return [
-			'woopayments_version' => WCPAY_VERSION_NUMBER,
-			'woocommerce_version' => WC_VERSION,
-		];
-	}
-
-	/**
 	 * Gets the data we need to confirm compatibility and sends it to the server.
 	 *
 	 * @return void
@@ -77,5 +65,17 @@ class Compatibility_Service {
 	public function add_compatibility_onboarding_data( $args ): array {
 		$args['compatibility_data'] = $this->get_compatibility_data();
 		return $args;
+	}
+
+	/**
+	 * Gets the compatibility data.
+	 *
+	 * @return array
+	 */
+	private function get_compatibility_data(): array {
+		return [
+			'woopayments_version' => WCPAY_VERSION_NUMBER,
+			'woocommerce_version' => WC_VERSION,
+		];
 	}
 }
