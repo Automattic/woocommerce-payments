@@ -219,7 +219,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( class_exists( 'WC_Deposits_Product_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
 			// If is_deposit is null, we use the default deposit type for the product.
 			if ( is_null( $is_deposit ) ) {
-				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_type( $product->get_id() );
+				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_selected_type( $product->get_id() );
 			}
 			if ( $is_deposit ) {
 				$base_price = WC_Deposits_Product_Manager::get_deposit_amount( $product, 0, 'display', $base_price );
