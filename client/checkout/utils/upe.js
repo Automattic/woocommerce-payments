@@ -322,7 +322,14 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 
 	const stripeLinkButton = document.createElement( 'button' );
 	stripeLinkButton.setAttribute( 'class', 'wcpay-stripelink-modal-trigger' );
-	stripeLinkButton.style.display = emailInput.value ? 'inline-block' : 'none';
+	stripeLinkButton.style.display = 'none';
+	if ( emailInput.value !== '' ) {
+		const linkButtonTop =
+			emailInput.offsetTop + ( emailInput.offsetHeight - 40 ) / 2;
+		stripeLinkButton.style.display = 'inline-block';
+		stripeLinkButton.style.top = `${ linkButtonTop }px`;
+	}
+
 	stripeLinkButton.addEventListener( 'click', ( event ) => {
 		event.preventDefault();
 		linkAutofill.launch( {
