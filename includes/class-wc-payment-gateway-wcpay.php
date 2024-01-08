@@ -2872,7 +2872,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string code of the country.
 	 */
-	protected function get_account_country( string $default_value = 'US' ): string {
+	public function get_account_country( string $default_value = 'US' ): string {
 		try {
 			if ( $this->is_connected() ) {
 				return $this->account->get_account_country() ?? $default_value;
