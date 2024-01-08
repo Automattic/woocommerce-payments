@@ -8,7 +8,11 @@ import { useState, useEffect, useRef } from 'react';
 /**
  * Internal dependencies
  */
-import { useAccountBusinessSupportPhone, useGetSavingError } from 'wcpay/data';
+import {
+	useAccountBusinessSupportPhone,
+	useGetSavingError,
+	useDevMode,
+} from 'wcpay/data';
 import PhoneNumberInput from 'wcpay/settings/phone-input';
 
 const SupportPhoneInput = ( { setInputVallid } ) => {
@@ -19,9 +23,12 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 
 	const currentPhone = useRef( supportPhone ).current;
 	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';
+	const isDevModeEnabled = useDevMode();
+	const isTestPhoneValid =
+		isDevModeEnabled && supportPhone === '+10000000000';
 
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
-	if ( ! isPhoneValid && ! isEmptyPhoneValid ) {
+	if ( ! isTestPhoneValid && ! isPhoneValid && ! isEmptyPhoneValid ) {
 		supportPhoneError = __(
 			'Please enter a valid phone number.',
 			'woocommerce-payments'
@@ -41,6 +48,13 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 		}
 	}, [ supportPhoneError, setInputVallid ] );
 
+	let labelText = __( 'Support phone number', 'woocommerce-payments' );
+	if ( isDevModeEnabled ) {
+		labelText += __(
+			' (+1 0000000000 can be used in dev mode)',
+			'woocommerce-payments'
+		);
+	}
 	return (
 		<>
 			{ supportPhoneError && (
@@ -54,7 +68,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 					'This may be visible on receipts, invoices, and automated emails from your store.',
 					'woocommerce-payments'
 				) }
-				label={ __( 'Support phone number', 'woocommerce-payments' ) }
+				label={ labelText }
 				id="account-business-support-phone-input"
 			>
 				<PhoneNumberInput
@@ -62,10 +76,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 					value={ supportPhone }
 					onValidationChange={ setPhoneValidity }
 					inputProps={ {
-						ariaLabel: __(
-							'Support phone number',
-							'woocommerce-payments'
-						),
+						ariaLabel: labelText,
 					} }
 				/>
 			</BaseControl>

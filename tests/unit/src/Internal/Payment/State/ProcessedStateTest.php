@@ -16,8 +16,7 @@ use WCPay\Internal\Payment\State\StateFactory;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Proxy\LegacyProxy;
-use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
+use WC_Payment_Gateway_WCPay;
 use WCPAY_UnitTestCase;
 
 /**
@@ -166,12 +165,6 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 		// Test the 'empty_cart' is called.
 		$mock_cart->expects( $this->once() )
 			->method( 'empty_cart' );
-
-		// Test methods to remove upe payment intent are called.
-		$this->mock_legacy_proxy
-			->expects( $this->exactly( 2 ) )
-			->method( 'call_static' )
-			->withConsecutive( [ UPE_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' ], [ UPE_Split_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' ] );
 
 		$this->sut->complete_processing();
 	}

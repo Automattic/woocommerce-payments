@@ -1049,6 +1049,15 @@ class WC_Payments_Account {
 				return;
 			}
 
+			if ( isset( $_GET['wcpay-reset-account'] ) ) {
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+
+				// Delete the account.
+				$this->payments_api_client->delete_account( $test_mode );
+				$this->redirect_to_onboarding_flow_page();
+				return;
+			}
+
 			// Hide menu notification badge upon starting setup.
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 

@@ -1,3 +1,5 @@
+/* global wcpayPaymentRequestParams */
+
 /**
  * External dependencies
  */
@@ -9,6 +11,7 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 import { useInitialization } from './use-initialization';
 import { getPaymentRequestData } from '../utils';
 import wcpayTracks from 'tracks';
+import { useEffect, useState } from 'react';
 
 /**
  * PaymentRequestExpressComponent
@@ -24,6 +27,7 @@ const PaymentRequestExpressComponent = ( {
 	setExpressPaymentError,
 	onClick,
 	onClose,
+	onPaymentRequestAvailable,
 } ) => {
 	// TODO: Don't display custom button when result.requestType
 	// is `apple_pay` or `google_pay`.
@@ -68,6 +72,7 @@ const PaymentRequestExpressComponent = ( {
 		} else if ( result.googlePay ) {
 			paymentRequestType = 'google_pay';
 		}
+		onPaymentRequestAvailable( paymentRequestType );
 	} );
 
 	const onPaymentRequestButtonClick = () => {
@@ -80,7 +85,9 @@ const PaymentRequestExpressComponent = ( {
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
 			const event = paymentRequestTypeEvents[ paymentRequestType ];
-			wcpayTracks.recordUserEvent( event, { source: 'checkout' } );
+			wcpayTracks.recordUserEvent( event, {
+				source: wcpayPaymentRequestParams?.button_context,
+			} );
 		}
 	};
 
@@ -104,9 +111,36 @@ const PaymentRequestExpressComponent = ( {
  */
 export const PaymentRequestExpress = ( props ) => {
 	const { stripe } = props;
+	const [ paymentRequestType, setPaymentRequestType ] = useState( false );
+
+	const handlePaymentRequestAvailability = ( paymentType ) => {
+		setPaymentRequestType( paymentType );
+	};
+
+	useEffect( () => {
+		if ( paymentRequestType ) {
+			const paymentRequestTypeEvents = {
+				google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_LOAD,
+				apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_LOAD,
+			};
+
+			if (
+				paymentRequestTypeEvents.hasOwnProperty( paymentRequestType )
+			) {
+				const event = paymentRequestTypeEvents[ paymentRequestType ];
+				wcpayTracks.recordUserEvent( event, {
+					source: wcpayPaymentRequestParams?.button_context,
+				} );
+			}
+		}
+	}, [ paymentRequestType ] );
+
 	return (
 		<Elements stripe={ stripe }>
-			<PaymentRequestExpressComponent { ...props } />
+			<PaymentRequestExpressComponent
+				{ ...props }
+				onPaymentRequestAvailable={ handlePaymentRequestAvailability }
+			/>
 		</Elements>
 	);
 };
