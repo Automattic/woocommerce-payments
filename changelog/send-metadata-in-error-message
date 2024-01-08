@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Send metadata in error message
