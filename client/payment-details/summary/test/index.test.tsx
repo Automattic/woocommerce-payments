@@ -431,7 +431,7 @@ describe( 'PaymentDetailsSummary', () => {
 		// Refund menu is not rendered
 		expect(
 			screen.queryByRole( 'button', {
-				name: /Translation actions/i,
+				name: /Transaction actions/i,
 			} )
 		).toBeNull();
 	} );
@@ -694,7 +694,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		// Refund menu is rendered
 		screen.getByRole( 'button', {
-			name: /Translation actions/i,
+			name: /Transaction actions/i,
 		} );
 	} );
 
@@ -728,7 +728,7 @@ describe( 'PaymentDetailsSummary', () => {
 		// Refund menu is not rendered
 		expect(
 			screen.queryByRole( 'button', {
-				name: /Translation actions/i,
+				name: /Transaction actions/i,
 			} )
 		).toBeNull();
 	} );
@@ -767,7 +767,7 @@ describe( 'PaymentDetailsSummary', () => {
 		// Refund menu is not rendered
 		expect(
 			screen.queryByRole( 'button', {
-				name: /Translation actions/i,
+				name: /Transaction actions/i,
 			} )
 		).toBeNull();
 	} );
@@ -807,7 +807,7 @@ describe( 'PaymentDetailsSummary', () => {
 		// Refund menu is not rendered
 		expect(
 			screen.queryByRole( 'button', {
-				name: /Translation actions/i,
+				name: /Transaction actions/i,
 			} )
 		).toBeNull();
 	} );
@@ -843,7 +843,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		// Refund menu is rendered
 		screen.getByRole( 'button', {
-			name: /Translation actions/i,
+			name: /Transaction actions/i,
 		} );
 	} );
 
@@ -875,7 +875,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		// Refund menu is rendered
 		screen.getByRole( 'button', {
-			name: /Translation actions/i,
+			name: /Transaction actions/i,
 		} );
 	} );
 
@@ -908,7 +908,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		// Refund menu is rendered
 		screen.getByRole( 'button', {
-			name: /Translation actions/i,
+			name: /Transaction actions/i,
 		} );
 	} );
 

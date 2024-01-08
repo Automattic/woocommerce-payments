@@ -544,7 +544,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                 <button
                   aria-expanded="false"
                   aria-haspopup="true"
-                  aria-label="Translation actions"
+                  aria-label="Transaction actions"
                   class="components-button components-dropdown-menu__toggle has-icon"
                   type="button"
                 >

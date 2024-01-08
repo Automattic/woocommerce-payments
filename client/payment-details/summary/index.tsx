@@ -502,7 +502,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<DropdownMenu
 									icon={ moreVertical }
 									label={ __(
-										'Translation actions',
+										'Transaction actions',
 										'woocommerce-payments'
 									) }
 									popoverProps={ {
