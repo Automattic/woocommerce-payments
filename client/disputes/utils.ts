@@ -72,6 +72,11 @@ export const isInquiry = ( dispute: Pick< Dispute, 'status' > ): boolean => {
 	return dispute.status.startsWith( 'warning' );
 };
 
+export const isRefundable = ( status: DisputeStatus ): boolean => {
+	// Refundable dispute statuses are one of `warning_needs_response`, `warning_under_review`, `warning_closed` or `won`.
+	return isInquiry( { status } ) || 'won' === status;
+};
+
 /**
  * Returns the dispute fee balance transaction for a dispute if it exists
  * and the deduction has not been reversed.

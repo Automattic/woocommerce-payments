@@ -1463,7 +1463,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 				if ( $intent_meta_order_id !== $order_id ) {
 					throw new Intent_Authentication_Exception(
-						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						sprintf(
+							/* translators: %s: metadata. We do not need to translate WooPayMeta */
+							esc_html( __( 'We\'re not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: %1$s, order_id: %2$s', 'woocommerce-payments' ) ),
+							esc_attr( $intent_meta_order_id ),
+							esc_attr( $order_id ),
+						),
 						'order_id_mismatch'
 					);
 				}
@@ -2280,6 +2285,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$wc_last_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order_id );
 		if ( $wc_last_refund ) {
 			$this->order_service->set_wcpay_refund_id_for_order( $wc_last_refund, $refund['id'] );
+			$this->order_service->set_wcpay_refund_transaction_id_for_order( $wc_last_refund, $refund['balance_transaction'] );
 			$wc_last_refund->save_meta_data();
 		}
 

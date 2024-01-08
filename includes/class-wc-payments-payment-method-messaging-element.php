@@ -10,7 +10,6 @@ use WCPay\Constants\Payment_Method;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-use WC_Payment_Gateway_WCPay;
 /**
  * WC_Payments_Payment_Method_Messaging_Element class.
  */
@@ -35,7 +34,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	 * @param  WC_Payment_Gateway_WCPay $gateway Gateway instance.
 	 * @return void
 	 */
-	public function __construct( WC_Payments_Account $account, $gateway ) {
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->account = $account;
 		$this->gateway = $gateway;
 	}

@@ -102,9 +102,13 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		}
 
-		$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
-		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
-		if ( $intent_meta_order_id !== $order->get_id() ) {
+		$intent_meta_order_id_raw     = $intent->get_metadata()['order_id'] ?? '';
+		$intent_meta_order_id         = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+		$intent_meta_order_number_raw = $intent->get_metadata()['order_number'] ?? '';
+		$intent_meta_order_number     = is_numeric( $intent_meta_order_number_raw ) ? intval( $intent_meta_order_number_raw ) : 0;
+		$paid_on_woopay               = filter_var( $intent->get_metadata()['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN );
+		$is_woopay_order              = $order->get_id() === $intent_meta_order_number;
+		if ( ! ( $paid_on_woopay && $is_woopay_order ) && $intent_meta_order_id !== $order->get_id() ) {
 			return;
 		}
 

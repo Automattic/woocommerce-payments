@@ -4,6 +4,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { doAction } from '@wordpress/hooks';
+import { debounce } from 'lodash';
 /**
  * Internal dependencies
  */
@@ -64,6 +65,19 @@ jQuery( ( $ ) => {
 			wcpayTracks.recordUserEvent( event, { source } );
 		}
 	};
+
+	// Track the payment request button load event.
+	const trackPaymentRequestButtonLoad = debounce( ( source ) => {
+		const paymentRequestTypeEvents = {
+			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_LOAD,
+			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_LOAD,
+		};
+
+		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
+			const event = paymentRequestTypeEvents[ paymentRequestType ];
+			wcpayTracks.recordUserEvent( event, { source } );
+		}
+	}, 1000 );
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -235,6 +249,10 @@ jQuery( ( $ ) => {
 				doActionPaymentRequestAvailability( {
 					paymentRequestType: paymentRequestType,
 				} );
+
+				trackPaymentRequestButtonLoad(
+					wcpayPaymentRequestParams.button_context
+				);
 
 				wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
 					prButton,
