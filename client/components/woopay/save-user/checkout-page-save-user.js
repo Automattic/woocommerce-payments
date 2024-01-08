@@ -119,6 +119,15 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	};
 
 	useEffect( () => {
+		// Record Tracks event when the mobile number is entered.
+		if ( isPhoneValid ) {
+			wcpayTracks.recordUserEvent(
+				wcpayTracks.events.WOOPAY_SAVE_MY_INFO_MOBILE_ENTER
+			);
+		}
+	}, [ isPhoneValid ] );
+
+	useEffect( () => {
 		// Record Tracks event when user clicks on the info icon for the first time.
 		if ( isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
 			setHasShownInfoFlyout( true );
