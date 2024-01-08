@@ -1,4 +1,4 @@
 Significance: minor
 Type: add
 
-Apply localization to CSV exports sent via email.
+Apply localization to CSV exports for transactions, deposits, and disputes sent via email. 
