@@ -40,13 +40,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	private $mock_db_wrapper;
 
 	/**
-	 * Compatibility service.
-	 *
-	 * @var Compatibility_Service
-	 */
-	private $compatibility_service;
-
-	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -68,8 +61,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			$this->mock_http_client,
 			$this->mock_db_wrapper
 		);
-
-		$this->compatibility_service = new Compatibility_Service( $this->payments_api_client );
 	}
 
 	/**
@@ -307,7 +298,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'create_live_account'         => true,
 						'progressive'                 => false,
 						'collect_payout_requirements' => false,
-						'compatibility_data'          => $this->compatibility_service->get_compatibility_data(),
+						'compatibility_data'          => $this->get_mock_compatibility_data(),
 					]
 				),
 				true,
@@ -1298,5 +1289,22 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'connect_timeout', $data );
 		$this->assertSame( 70, $data['connect_timeout'] );
 
+	}
+
+	/**
+	 * Returns the mock compatibility data.
+	 *
+	 * @param array $args If any values need to be overridden, the values can be added here.
+	 *
+	 * @return array
+	 */
+	private function get_mock_compatibility_data( array $args = [] ): array {
+		return array_merge(
+			[
+				'woopayments_version' => WCPAY_VERSION_NUMBER,
+				'woocommerce_version' => WC_VERSION,
+			],
+			$args
+		);
 	}
 }
