@@ -300,14 +300,19 @@ export async function setupCheckout( billingDetails ) {
 /**
  * Selects the Giropay payment method on the checkout page.
  *
+ * @param {*} paymentMethod The payment method to select.
  * @param {*} page The page reference object.
  */
-export async function selectGiropayOnCheckout( page ) {
-	await page.$( '#payment .payment_method_woocommerce_payments_giropay' );
-	const giropayRadioLabel = await page.waitForSelector(
-		'#payment .payment_method_woocommerce_payments_giropay label'
+export async function selectOnCheckout( paymentMethod, page ) {
+	await page.$(
+		'#payment .payment_method_woocommerce_payments_' + paymentMethod
 	);
-	giropayRadioLabel.click();
+	const radioLabel = await page.waitForSelector(
+		'#payment .payment_method_woocommerce_payments_' +
+			paymentMethod +
+			' label'
+	);
+	radioLabel.click();
 	await page.waitFor( 1000 );
 }
 
@@ -317,7 +322,7 @@ export async function selectGiropayOnCheckout( page ) {
  * @param {*} page The page reference object.
  * @param {string} action Either of 'success' or 'failure'.
  */
-export async function completeGiropayPayment( page, action ) {
+export async function completeRedirectedPayment( page, action ) {
 	await page.$( '.actions .common-ButtonGroup' );
 	const actionButton = await page.waitForSelector(
 		`.actions .common-ButtonGroup a[name=${ action }]`

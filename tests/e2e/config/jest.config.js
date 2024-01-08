@@ -11,7 +11,6 @@ const e2ePaths = {
 	wcpay: path.resolve( __dirname, '../specs/wcpay' ),
 	subscriptions: path.resolve( __dirname, '../specs/subscriptions' ),
 	blocks: path.resolve( __dirname, '../specs/blocks' ),
-	upe: path.resolve( __dirname, '../specs/upe' ),
 	upeSplit: path.resolve( __dirname, '../specs/upe-split' ),
 };
 

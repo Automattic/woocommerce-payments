@@ -87,6 +87,17 @@ describe( 'Saved cards ', () => {
 				await shopperWCP.deleteSavedPaymentMethod( card.label );
 				await expect( page ).toMatch( 'Payment method deleted' );
 			} );
+
+			it( 'should not allow guest user to save the card', async () => {
+				await shopperWCP.logout();
+				await setupProductCheckout(
+					config.get( 'addresses.customer.billing' )
+				);
+
+				await expect( page ).not.toMatchElement(
+					'input#wc-woocommerce_payments-new-payment-method'
+				);
+			} );
 		}
 	);
 } );
