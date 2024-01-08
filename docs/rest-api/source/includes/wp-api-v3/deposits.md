@@ -26,7 +26,7 @@ The Deposits API endpoints provide access to an account's deposits data, includi
 -   `date` _int_ - The arrival date of the deposit in unix timestamp milliseconds.
 -   `type` _string_ - The type of deposit. `deposit` `withdrawal`
 -   `amount` _int_ - The amount of the deposit.
--   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
+-   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
 -   `bankAccount` _string_ - The bank account the deposit was/will be paid to.
 -   `currency` _string_ - The currency of the deposit. E.g. `eur`
 -   `automatic` _bool_ - Returns `true` if the payout is created by an automated schedule and `false` if it’s requested manually.
@@ -51,14 +51,14 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
 
 -   `deposit` _object_
     -   `last_paid` _array_ of [**Deposit**](#deposit-object) - The last deposit that has been paid for each deposit currency.
-    -   ~~`next_scheduled`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
+    -   ~~`next_scheduled`~~ _undefined_ - Deprecated since `7.1.0`, no longer included in response.
     -   `last_manual_deposits` _array_ of [**Deposit**](#deposit-object) - Manual deposits that have been paid in the last 24 hours.
 -   `balance` _object_
     -   `pending` _array_ - The pending balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-        -   ~~`deposits_count`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
+        -   ~~`deposits_count`~~ _undefined_ - Deprecated since `7.1.0`, no longer included in response.
     -   `available` _array_ - The available balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -69,7 +69,7 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
         -   `fee` _int_ - The fee amount of the balance.
         -   `fee_percentage` _int_ - The fee percentage of the balance.
         -   `net` _int_ - The net amount of the balance.
-        -   ~~`transaction_ids`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
+        -   ~~`transaction_ids`~~ _undefined_ - Deprecated since `7.1.0`, no longer included in response.
 -   `account` _object_
     -   `deposits_enabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -192,13 +192,13 @@ Fetch an overview of account deposits for a single deposit currency. This includ
 ### Returns
 
 -   `last_deposit` _object_ [**Deposit**](#deposit-object) | _null_- The last deposit that has been paid for the deposit currency.
--   ~~`next_deposit`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
+-   ~~`next_deposit`~~ _undefined_ - Deprecated since `7.1.0`, no longer included in response.
 -   `balance` _object_
     -   `pending` _object_ - The pending balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-        -   ~~`deposits_count`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
+        -   ~~`deposits_count`~~ _undefined_ - Deprecated since `7.1.0`, no longer included in response.
     -   `available` _object_ - The available balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -209,7 +209,7 @@ Fetch an overview of account deposits for a single deposit currency. This includ
     -   `fee` _int_ - The fee amount of the balance.
     -   `fee_percentage` _int_ - The fee percentage of the balance.
     -   `net` _int_ - The net amount of the balance.
-    -   ~~`transaction_ids`~~ _undefined_ - Deprecated since `7.0.0`, no longer included in response.
+    -   ~~`transaction_ids`~~ _undefined_ - Deprecated since `7.1.0`, no longer included in response.
 -   `account` _object_
     -   `deposits_disabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -282,7 +282,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 
 Fetch a list of deposits.
 
-Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter.
+Since `7.1.0`, `estimated` deposits are no longer returned or accepted as a filter parameter.
 
 ### HTTP request
 
@@ -304,8 +304,8 @@ Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filt
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
--   `status_is_not` _string_ `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
+-   `status_is` _string_ `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
+-   `status_is_not` _string_ `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
 -   `direction` _string_
 -   `page` _integer_
 -   `pagesize` _integer_
@@ -362,7 +362,7 @@ Fetches a summary of deposits matching the query. This includes the total number
 
 Useful in combination with the **List deposits** endpoint to get a summary of deposits matching the query without having to fetch the full list of deposits.
 
-Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filter parameter.
+Since `7.1.0`, `estimated` deposits are no longer returned or accepted as a filter parameter.
 
 ### HTTP request
 
@@ -380,8 +380,8 @@ Since `7.0.0`, `estimated` deposits are no longer returned or accepted as a filt
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
--   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
 
 ### Returns
 
@@ -410,7 +410,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/summary \
 
 Fetches a deposit by ID.
 
-_Since `7.0.0`, `estimated` deposits are no longer returned and will return a `404` status code._
+_Since `7.1.0`, `estimated` deposits are no longer returned and will return a `404` status code._
 
 ### HTTP request
 
@@ -467,7 +467,7 @@ Submit an instant deposit for a list of transactions. Only for eligible accounts
 
 -   `type`: _string_ - The type of deposit. `instant`
 -   `currency`: _string_ - The currency of the balance to deposit. E.g. `usd`
--   ~~`transaction_ids`~~: _array_ - Deprecated since `7.0.0`, use `currency` instead. The list of transaction IDs to deposit.
+-   ~~`transaction_ids`~~: _array_ - Deprecated since `7.1.0`, use `currency` instead. The list of transaction IDs to deposit.
 
 ```shell
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
@@ -482,7 +482,7 @@ curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
 
 Request a CSV export of deposits matching the query. A link to the exported CSV will be emailed to the provided email address or the account's primary email address if no email address is provided.
 
-Since `7.0.0`, `estimated` deposits are no longer included in the CSV export or accepted as a filter parameter.
+Since `7.1.0`, `estimated` deposits are no longer included in the CSV export or accepted as a filter parameter.
 
 ### HTTP request
 
@@ -504,8 +504,8 @@ Since `7.0.0`, `estimated` deposits are no longer included in the CSV export or 
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
--   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.0.0`)
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
 
 ### Returns
 
