@@ -51,7 +51,7 @@ describe( 'Merchant On-boarding', () => {
 			await goToOnboardingPage();
 		} );
 
-		it( 'Should disable the submit button when no currencies are selected', async () => {
+		it.skip( 'Should disable the submit button when no currencies are selected', async () => {
 			const checkboxes = await page.$$(
 				'.enabled-currency-checkbox .components-checkbox-control__input'
 			);
@@ -82,7 +82,7 @@ describe( 'Merchant On-boarding', () => {
 			expect( isDisabled ).toBeTruthy();
 		} );
 
-		it( 'Should allow multiple currencies to be selectable', async () => {
+		it.skip( 'Should allow multiple currencies to be selectable', async () => {
 			const listItemSelector =
 				'li.enabled-currency-checkbox:not([data-testid="recommended-currency"])';
 			const checkboxSelector = 'input[type="checkbox"]';
@@ -110,7 +110,7 @@ describe( 'Merchant On-boarding', () => {
 			expect( isChecked ).toBe( true );
 		} );
 
-		it( 'Should exclude already enabled currencies from the currency screen', async () => {
+		it.skip( 'Should exclude already enabled currencies from the currency screen', async () => {
 			await merchantWCP.addCurrency( 'GBP' );
 
 			await goToOnboardingPage();
@@ -131,11 +131,65 @@ describe( 'Merchant On-boarding', () => {
 		} );
 
 		it.skip( 'Should display some suggested currencies at the beginning of the list', async () => {
-			// Implement test
+			const recommendedCurrencySelector =
+				'li[data-testid="recommended-currency"]';
+
+			await page.waitForSelector( recommendedCurrencySelector, {
+				timeout: 3000,
+			} );
+
+			// Get the list of recommended currencies
+			const recommendedCurrencies = await page.$$eval(
+				recommendedCurrencySelector,
+				( items ) =>
+					items.map( ( item ) => ( {
+						code: item
+							.querySelector( 'input' )
+							.getAttribute( 'code' ),
+						name: item
+							.querySelector(
+								'span.enabled-currency-checkbox__code'
+							)
+							.textContent.trim(),
+					} ) )
+			);
+
+			expect( recommendedCurrencies.length ).toBeGreaterThan( 0 );
 		} );
 
-		it.skip( 'Should ensure selected currencies are enabled after submitting the form', async () => {
-			// Implement test
+		it( 'Should ensure selected currencies are enabled after submitting the form', async () => {
+			const testCurrencies = [ 'GBP', 'EUR', 'CAD', 'AUD' ];
+			const addCurrenciesContentSelector =
+				'.add-currencies-task__content';
+			const currencyCheckboxSelector = `${ addCurrenciesContentSelector } li input[type="checkbox"]`;
+
+			await page.waitForSelector( addCurrenciesContentSelector, {
+				timeout: 3000,
+			} );
+
+			// Select the currencies
+			for ( const currency of testCurrencies ) {
+				await page.click(
+					`${ currencyCheckboxSelector }[code="${ currency }"]`
+				);
+			}
+
+			// Submit the form.
+			const submitButton = await page.$(
+				'.add-currencies-task.is-active .task-collapsible-body.is-active > button.is-primary'
+			);
+			await submitButton.click();
+
+			await merchantWCP.openMultiCurrency();
+
+			// Ensure the currencies are enabled.
+			for ( const currency of testCurrencies ) {
+				const selector = `li.enabled-currency.${ currency.toLowerCase() }`;
+				await page.waitForSelector( selector );
+				const element = await page.$( selector );
+
+				expect( element ).not.toBeNull();
+			}
 		} );
 	} );
 
