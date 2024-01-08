@@ -181,6 +181,7 @@ class Country_Code_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'GD', Country_Code::GRENADA );
 		$this->assertSame( 'GT', Country_Code::GUATEMALA );
 		$this->assertSame( 'HT', Country_Code::HAITI );
+		$this->assertSame( 'HK', Country_Code::HONG_KONG );
 		$this->assertSame( 'HN', Country_Code::HONDURAS );
 		$this->assertSame( 'JM', Country_Code::JAMAICA );
 		$this->assertSame( 'MX', Country_Code::MEXICO );
