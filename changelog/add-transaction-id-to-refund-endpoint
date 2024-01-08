@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Expose the refund transaction ID in WooCommerce Order Refund API
