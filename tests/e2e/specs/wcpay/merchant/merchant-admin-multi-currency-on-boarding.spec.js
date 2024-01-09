@@ -49,7 +49,7 @@ describe( 'Merchant On-boarding', () => {
 		await merchant.logout();
 	} );
 
-	describe.skip( 'Currency Selection and Management', () => {
+	describe( 'Currency Selection and Management', () => {
 		beforeAll( async () => {
 			await merchantWCP.disableAllEnabledCurrencies();
 		} );
@@ -58,7 +58,7 @@ describe( 'Merchant On-boarding', () => {
 			await goToOnboardingPage();
 		} );
 
-		it.skip( 'Should disable the submit button when no currencies are selected', async () => {
+		it( 'Should disable the submit button when no currencies are selected', async () => {
 			const checkboxes = await page.$$(
 				'.enabled-currency-checkbox .components-checkbox-control__input'
 			);
@@ -89,7 +89,7 @@ describe( 'Merchant On-boarding', () => {
 			expect( isDisabled ).toBeTruthy();
 		} );
 
-		it.skip( 'Should allow multiple currencies to be selectable', async () => {
+		it( 'Should allow multiple currencies to be selectable', async () => {
 			const listItemSelector =
 				'li.enabled-currency-checkbox:not([data-testid="recommended-currency"])';
 			const checkboxSelector = 'input[type="checkbox"]';
@@ -117,7 +117,7 @@ describe( 'Merchant On-boarding', () => {
 			expect( isChecked ).toBe( true );
 		} );
 
-		it.skip( 'Should exclude already enabled currencies from the currency screen', async () => {
+		it( 'Should exclude already enabled currencies from the currency screen', async () => {
 			await merchantWCP.addCurrency( 'GBP' );
 
 			await goToOnboardingPage();
@@ -137,7 +137,7 @@ describe( 'Merchant On-boarding', () => {
 			await merchantWCP.removeCurrency( 'GBP' );
 		} );
 
-		it.skip( 'Should display some suggested currencies at the beginning of the list', async () => {
+		it( 'Should display some suggested currencies at the beginning of the list', async () => {
 			const recommendedCurrencySelector =
 				'li[data-testid="recommended-currency"]';
 
@@ -224,7 +224,7 @@ describe( 'Merchant On-boarding', () => {
 			expect( isDisabled ).toBe( false );
 
 			// Click the checkbox to select it.
-			await checkbox.click();
+			await page.click( geoCurrencySwitchCheckboxSelector );
 
 			// Check if the checkbox is selected.
 			const isChecked = await (
@@ -234,7 +234,54 @@ describe( 'Merchant On-boarding', () => {
 		} );
 
 		it( 'Should preview currency switch by geolocation correctly with USD and GBP', async () => {
-			// Implement test
+			await goToNextOnboardingStep();
+
+			const geoCurrencySwitchCheckboxSelector =
+				'input[data-testid="enable_auto_currency"]';
+			const previewBtnSelector = '.multi-currency-setup-preview-button';
+			const previewModalSelector =
+				'.multi-currency-store-settings-preview-modal';
+			const iframeSelector =
+				'.multi-currency-store-settings-preview-iframe';
+
+			// Enable feature.
+			await page.click( geoCurrencySwitchCheckboxSelector );
+
+			// Click preview button.
+			await page.click( previewBtnSelector );
+
+			await page.waitForSelector( previewModalSelector, {
+				timeout: 3000,
+			} );
+
+			await page.waitForSelector( iframeSelector, {
+				timeout: 3000,
+			} );
+			const iframeElement = await page.$( iframeSelector );
+			const iframe = await iframeElement.contentFrame();
+
+			// Assert that all occurrences of '.woocommerce-Price-currencySymbol' have the sterling pound symbol
+			const currencySymbols = await iframe.$$eval(
+				'.woocommerce-Price-currencySymbol',
+				( elements ) =>
+					elements.map( ( element ) => element.textContent )
+			);
+			currencySymbols.forEach( ( symbol ) => {
+				expect( symbol ).toBe( '£' );
+			} );
+
+			await iframe.waitForSelector( '.woocommerce-store-notice', {
+				timeout: 3000,
+			} );
+
+			const noticeText = await iframe.$eval(
+				'.woocommerce-store-notice',
+				( element ) => element.innerText
+			);
+			expect( noticeText ).toContain(
+				// eslint-disable-next-line max-len
+				"We noticed you're visiting from United Kingdom (UK). We've updated our prices to Pound sterling for your shopping convenience."
+			);
 		} );
 	} );
 
