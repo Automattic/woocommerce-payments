@@ -94,6 +94,18 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.1.0-test-1 - unreleased =
+* Add - Expose the refund transaction ID in WooCommerce Order Refund API
+* Fix - Checkout error when page URL is too long
+* Fix - Fix network error that occurs when viewing an test mode order with test mode disabled, and vice versa.
+* Fix - Hide the transaction details refund menu for ineligble disputed transactions
+* Fix - Re-render WooPay button when cart updates, when checkout updates.
+* Fix - Remove unnecessary import statement which leads to a warning when first loaded
+* Fix - Send metadata in error message
+* Fix - Update WooPay tablet breakpoint.
+* Dev - Place order button Tracks
+* Dev - Track payment-request-button loads
+
 = 7.0.0 - 2024-01-03 =
 * Add - Add Account Management tools with reset account functionality for partially onboarded accounts.
 * Add - Adding Compatibility Service to assist with flagging possible compatibility issues in the future.
