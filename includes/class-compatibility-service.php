@@ -47,7 +47,7 @@ class Compatibility_Service {
 	 * @return void
 	 */
 	public function update_compatibility_data() {
-		$active_plugins = get_option( 'active_plugins' );
+		$active_plugins = get_option( 'active_plugins', [] );
 
 		try {
 			$this->payments_api_client->update_compatibility_data(
