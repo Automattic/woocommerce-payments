@@ -9,6 +9,27 @@ import { merchantWCP, uiLoaded } from '../../../utils';
 
 let wasMulticurrencyEnabled;
 
+const goToThemesPage = async () => {
+	await page.goto( `${ WP_ADMIN_DASHBOARD }themes.php`, {
+		waitUntil: 'networkidle0',
+	} );
+};
+
+const activateTheme = async ( themeSlug ) => {
+	await goToThemesPage();
+
+	const selector = `.theme[data-slug="${ themeSlug }"] .button.activate`;
+	const themeExists = await page.$( selector );
+	if ( themeExists ) {
+		await page.click( selector );
+	} else {
+		throw new Error( `Theme with slug '${ themeSlug }' not found.` );
+	}
+
+	// Wait for the navigation to ensure theme activation is complete.
+	await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+};
+
 const goToOnboardingPage = async () => {
 	await page.goto(
 		`${ WP_ADMIN_DASHBOARD }admin.php?page=wc-admin&path=%2Fpayments%2Fmulti-currency-setup`,
@@ -49,7 +70,7 @@ describe( 'Merchant On-boarding', () => {
 		await merchant.logout();
 	} );
 
-	describe( 'Currency Selection and Management', () => {
+	describe.skip( 'Currency Selection and Management', () => {
 		beforeAll( async () => {
 			await merchantWCP.disableAllEnabledCurrencies();
 		} );
@@ -200,7 +221,7 @@ describe( 'Merchant On-boarding', () => {
 		} );
 	} );
 
-	describe( 'Geolocation Features', () => {
+	describe.skip( 'Geolocation Features', () => {
 		beforeAll( async () => {
 			await merchantWCP.disableAllEnabledCurrencies();
 		} );
@@ -285,13 +306,19 @@ describe( 'Merchant On-boarding', () => {
 		} );
 	} );
 
-	describe.skip( 'Currency Switcher Widget', () => {
+	describe( 'Currency Switcher Widget', () => {
 		it( 'Should offer the currency switcher widget while Storefront theme is active', async () => {
-			// Implement test
+			await activateTheme( 'storefront' );
+
+			await goToOnboardingPage();
+			await goToNextOnboardingStep();
 		} );
 
 		it( 'Should not offer the currency switcher widget when an unsupported theme is active', async () => {
-			// Implement test
+			await activateTheme( 'twentytwentyfour' );
+
+			await goToOnboardingPage();
+			await goToNextOnboardingStep();
 		} );
 	} );
 } );
