@@ -26,6 +26,7 @@ import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
+import wcpayTracks from 'tracks';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -42,11 +43,9 @@ jQuery( function ( $ ) {
 			accountId: getUPEConfig( 'accountId' ),
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
-			isUPEEnabled: getUPEConfig( 'isUPEEnabled' ),
 			isStripeLinkEnabled: isLinkEnabled(
 				getUPEConfig( 'paymentMethodsConfig' )
 			),
-			isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		},
 		apiRequest
 	);
@@ -58,6 +57,18 @@ jQuery( function ( $ ) {
 
 	$( 'form.checkout' ).on( generateCheckoutEventNames(), function () {
 		return processPaymentIfNotUsingSavedMethod( $( this ) );
+	} );
+
+	$( 'form.checkout' ).on( 'click', '#place_order', function () {
+		const isWCPay = document.getElementById(
+			'payment_method_woocommerce_payments'
+		).checked;
+
+		if ( ! isWCPay ) {
+			return;
+		}
+
+		wcpayTracks.recordUserEvent( wcpayTracks.events.PLACE_ORDER_CLICK );
 	} );
 
 	window.addEventListener( 'hashchange', () => {
@@ -79,9 +90,7 @@ jQuery( function ( $ ) {
 		$( 'form#add_payment_method' ).length ||
 		$( 'form#order_review' ).length
 	) {
-		if ( getUPEConfig( 'isUPEEnabled' ) ) {
-			maybeMountStripePaymentElement();
-		}
+		maybeMountStripePaymentElement();
 	}
 
 	$( 'form#add_payment_method' ).on( 'submit', function () {

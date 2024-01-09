@@ -723,6 +723,23 @@ class WC_Payments_Admin {
 
 			if ( $order && WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
 				$refund_amount = $order->get_remaining_refund_amount();
+
+				// Check if the order's test mode meta matches the site's current test mode state.
+				// E.g. order and site are both in test mode, or both in live mode.
+				$order_mode = $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY );
+				if ( '' === $order_mode ) {
+					// If the order doesn't have a mode set, assume it was created before the order mode meta was added (< 6.9 PR#7651) and return null.
+					$order_test_mode_match = null;
+				} else {
+					$order_test_mode_match = (
+						\WCPay\Constants\Order_Mode::PRODUCTION === $order_mode &&
+						WC_Payments::mode()->is_live()
+					) || (
+						\WCPay\Constants\Order_Mode::TEST === $order_mode &&
+						WC_Payments::mode()->is_test()
+					);
+				}
+
 				wp_localize_script(
 					'WCPAY_ADMIN_ORDER_ACTIONS',
 					'wcpay_order_config',
@@ -734,6 +751,9 @@ class WC_Payments_Admin {
 						'refundedAmount'        => $order->get_total_refunded(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
 						'chargeId'              => $this->order_service->get_charge_id_for_order( $order ),
+						'hasOpenAuthorization'  => $this->order_service->has_open_authorization( $order ),
+						'testMode'              => \WCPay\Constants\Order_Mode::TEST === $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY ),
+						'orderTestModeMatch'    => $order_test_mode_match,
 					]
 				);
 				wp_localize_script(
@@ -847,10 +867,6 @@ class WC_Payments_Admin {
 			'accountEmail'                  => $this->account->get_account_email(),
 			'showUpdateDetailsTask'         => $this->get_should_show_update_business_details_task( $account_status_data ),
 			'wpcomReconnectUrl'             => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
-			'additionalMethodsSetup'        => [
-				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
-				'upeType'      => WC_Payments_Features::get_enabled_upe_type(),
-			],
 			'multiCurrencySetup'            => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
@@ -881,6 +897,7 @@ class WC_Payments_Admin {
 			'isStripeBillingEligible'       => WC_Payments_Features::is_stripe_billing_eligible(),
 			'capabilityRequestNotices'      => get_option( 'wcpay_capability_request_dismissed_notices ', [] ),
 			'storeName'                     => get_bloginfo( 'name' ),
+			'isNextDepositNoticeDismissed'  => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
@@ -921,7 +938,6 @@ class WC_Payments_Admin {
 			[
 				'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 				'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
-				'upeType'         => WC_Payments_Features::get_enabled_upe_type(),
 			],
 			WC_Payments_Features::to_array()
 		);

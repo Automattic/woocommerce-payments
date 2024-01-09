@@ -51,6 +51,7 @@ declare const global: {
 	wcpaySettings: {
 		accountStatus: {
 			deposits: {
+				restrictions: string;
 				completed_waiting_period: boolean;
 			};
 		};
@@ -209,6 +210,7 @@ describe( 'Deposits Overview information', () => {
 		global.wcpaySettings = {
 			accountStatus: {
 				deposits: {
+					restrictions: 'deposits_unrestricted',
 					completed_waiting_period: true,
 				},
 			},

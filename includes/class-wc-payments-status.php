@@ -139,17 +139,10 @@ class WC_Payments_Status {
 						<td><?php WC_Payments::mode()->is_test() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
 					</tr>
 					<tr>
-						<td data-export-label="UPE"><?php esc_html_e( 'UPE', 'woocommerce-payments' ); ?>:</td>
-						<td class="help"><?php echo wc_help_tip( esc_html__( 'The general state of the new payments architecture and the type in use (split or legacy).', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
-						<td><?php echo esc_html( WC_Payments_Features::is_upe_enabled() ? __( 'Enabled', 'woocommerce-payments' ) . ' (' . WC_Payments_Features::get_enabled_upe_type() . ')' : __( 'Disabled', 'woocommerce-payments' ) ); ?></td>
-					</tr>
-						<?php if ( WC_Payments_Features::is_upe_enabled() ) : ?>
-					<tr>
-						<td data-export-label="UPE Enabled APMs"><?php esc_html_e( 'UPE Enabled APMs', 'woocommerce-payments' ); ?>:</td>
-						<td class="help"><?php echo wc_help_tip( esc_html__( 'What UPE payments methods are enabled for the store.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
+						<td data-export-label="Enabled APMs"><?php esc_html_e( 'Enabled APMs', 'woocommerce-payments' ); ?>:</td>
+						<td class="help"><?php echo wc_help_tip( esc_html__( 'What payment methods are enabled for the store.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
 						<td><?php echo esc_html( implode( ',', $this->gateway->get_upe_enabled_payment_method_ids() ) ); ?></td>
 					</tr>
-<?php endif; ?>
 
 					<?php if ( ! WC_Payments_Features::is_woopay_express_checkout_enabled() ) : ?>
 					<tr>

@@ -87,10 +87,8 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-terminal-locations-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-	require_once $_plugin_dir . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
-	require_once $_plugin_dir . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
 	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
@@ -98,6 +96,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
 	require_once $_plugin_dir . 'includes/class-woopay-tracker.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-customer-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
 
 	// Load currency helper class early to ensure its implementation is used over the one resolved during further test initialization.
 	require_once __DIR__ . '/helpers/class-wc-helper-site-currency.php';

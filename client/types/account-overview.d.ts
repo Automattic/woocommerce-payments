@@ -67,8 +67,8 @@ export interface Overview {
 
 export interface OverviewsResponse {
 	overviews: {
-		account: Account;
-		currencies: Array< Overview >;
+		account: Account | null;
+		currencies: Overview[];
 	};
 	isLoading: boolean;
 }

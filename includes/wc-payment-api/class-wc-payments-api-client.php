@@ -76,6 +76,7 @@ class WC_Payments_API_Client {
 	const FRAUD_SERVICES_API           = 'accounts/fraud_services';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
+	const COMPATIBILITY_API            = 'compatibility';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1701,6 +1702,27 @@ class WC_Payments_API_Client {
 			true,
 			true
 		);
+	}
+
+	/**
+	 * Sends the compatibility data to the server to be saved to the account.
+	 *
+	 * @param array $compatibility_data The array containing the data.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function update_compatibility_data( $compatibility_data ) {
+		$response = $this->request(
+			[
+				'compatibility_data' => $compatibility_data,
+			],
+			self::COMPATIBILITY_API,
+			self::POST
+		);
+
+		return $response;
 	}
 
 	/**

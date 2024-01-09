@@ -32,12 +32,6 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 			->getMock();
 	}
 
-	public function tear_down() {
-		delete_option( '_wcpay_feature_upe' );
-
-		parent::tear_down();
-	}
-
 	public function test_stripelink_setup_get_note() {
 		$this->mock_gateway_data( '1', [ 'card', 'link' ], [ 'card' ] );
 
@@ -72,8 +66,6 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function mock_gateway_data( $upe_enabled = '0', $available_methods, $enabled_methods ) {
-		update_option( '_wcpay_feature_upe', $upe_enabled );
-
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
 			->method( 'get_upe_available_payment_methods' )

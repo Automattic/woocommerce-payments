@@ -773,6 +773,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			$updated_fields['deposit_schedule_interval'] = $this->wcpay_gateway->get_option( 'deposit_schedule_interval' );
 		}
 
+		// If we are updating any deposit schedule values, we should invalidate the next deposit notice dismissed notice option.
+		if ( preg_grep( '/^deposit_schedule_/', array_keys( $updated_fields ) ) ) {
+			delete_option( 'wcpay_next_deposit_notice_dismissed' );
+		}
+
 		return $this->wcpay_gateway->update_account_settings( $updated_fields );
 	}
 
