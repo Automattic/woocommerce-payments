@@ -100,7 +100,7 @@ class CountryFlags {
 		'GF'                                           => '🇬🇫',
 		'GG'                                           => '🇬🇬',
 		Country_Code::GHANA                            => '🇬🇭',
-		'GI'                                           => '🇬🇮',
+		Country_Code::GIBRALTAR                        => '🇬🇮',
 		'GL'                                           => '🇬🇱',
 		Country_Code::GAMBIA                           => '🇬🇲',
 		Country_Code::GUINEA                           => '🇬🇳',

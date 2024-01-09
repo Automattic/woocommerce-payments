@@ -93,6 +93,7 @@ class Country_Code extends Base_Constant {
 	const GAMBIA                           = 'GM';
 	const GEORGIA                          = 'GE';
 	const GERMANY                          = 'DE';
+	const GIBRALTAR                        = 'GI';
 	const GHANA                            = 'GH';
 	const GREECE                           = 'GR';
 	const GRENADA                          = 'GD';
