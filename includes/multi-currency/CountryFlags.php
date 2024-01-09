@@ -8,6 +8,7 @@
 namespace WCPay\MultiCurrency;
 
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -288,12 +289,12 @@ class CountryFlags {
 	 */
 	public static function get_by_currency( string $currency ): string {
 		$exceptions = [
-			'ANG' => '',
-			'BTC' => '',
-			'XAF' => '',
-			'XCD' => '',
-			'XOF' => '',
-			'XPF' => '',
+			Currency_Code::NETHERLANDS_ANTILLES       => '',
+			Currency_Code::BITCOIN                    => '',
+			Currency_Code::CENTRAL_AFRICAN_REPUBLIC   => '',
+			Currency_Code::EAST_CARIBBEAN             => '',
+			Currency_Code::WEST_AFRICAN               => '',
+			Currency_Code::FRENCH_PACIFIC_TERRITORIES => '',
 		];
 
 		$flag = $exceptions[ $currency ] ?? self::get_by_country( substr( $currency, 0, -1 ) );
