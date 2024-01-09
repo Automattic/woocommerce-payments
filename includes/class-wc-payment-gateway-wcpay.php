@@ -267,7 +267,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->localization_service                 = $localization_service;
 		$this->fraud_service                        = $fraud_service;
 
-		$account_country          = $this->get_account_country();
+		$account_country          = $this->get_account_country( wc_get_base_location()['country'] ?? 'US' );
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = $payment_method->get_icon( $account_country );
 		$this->has_fields         = true;
@@ -2877,7 +2877,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $this->is_connected() ) {
 				return $this->account->get_account_country() ?? $default_value;
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to get account country.' . $e );
 		}
 		return $default_value;
