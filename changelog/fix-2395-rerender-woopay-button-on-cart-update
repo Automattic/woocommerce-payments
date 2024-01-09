@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Re-render WooPay button when cart updates, when checkout updates.
