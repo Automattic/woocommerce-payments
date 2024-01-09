@@ -18,16 +18,20 @@ const goToThemesPage = async () => {
 const activateTheme = async ( themeSlug ) => {
 	await goToThemesPage();
 
-	const selector = `.theme[data-slug="${ themeSlug }"] .button.activate`;
-	const themeExists = await page.$( selector );
-	if ( themeExists ) {
-		await page.click( selector );
-	} else {
-		throw new Error( `Theme with slug '${ themeSlug }' not found.` );
-	}
+	const themeSelector = `.theme[data-slug="${ themeSlug }"]`;
+	const activateButtonSelector = `${ themeSelector } .button.activate`;
 
-	// Wait for the navigation to ensure theme activation is complete.
-	await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+	// Check if the theme is already active.
+	const isActive = await page.evaluate( ( selector ) => {
+		const themeElement = document.querySelector( selector );
+		return themeElement && themeElement.classList.contains( 'active' );
+	}, themeSelector );
+
+	// Activate the theme if it's not already active.
+	if ( ! isActive ) {
+		await page.click( activateButtonSelector );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+	}
 };
 
 const goToOnboardingPage = async () => {
@@ -307,11 +311,48 @@ describe( 'Merchant On-boarding', () => {
 	} );
 
 	describe( 'Currency Switcher Widget', () => {
+		let activeThemeSlug;
+
+		beforeAll( async () => {
+			await goToThemesPage();
+
+			// Get current theme slug.
+			activeThemeSlug = await page.evaluate( () => {
+				const theme = document.querySelector( '.theme.active-theme' );
+				return theme ? theme.getAttribute( 'data-slug' ) : '';
+			} );
+		} );
+
+		afterAll( async () => {
+			// Restore original theme.
+			await activateTheme( activeThemeSlug );
+		} );
+
 		it( 'Should offer the currency switcher widget while Storefront theme is active', async () => {
 			await activateTheme( 'storefront' );
 
 			await goToOnboardingPage();
 			await goToNextOnboardingStep();
+
+			const storefrontSwitchCheckboxSelector =
+				'input[data-testid="enable_storefront_switcher"]';
+			const checkbox = await page.$( storefrontSwitchCheckboxSelector );
+
+			// Check if exists and not disabled.
+			expect( checkbox ).not.toBeNull();
+			const isDisabled = await (
+				await checkbox.getProperty( 'disabled' )
+			 ).jsonValue();
+			expect( isDisabled ).toBe( false );
+
+			// Click the checkbox to select it.
+			await page.click( storefrontSwitchCheckboxSelector );
+
+			// Check if the checkbox is selected.
+			const isChecked = await (
+				await checkbox.getProperty( 'checked' )
+			 ).jsonValue();
+			expect( isChecked ).toBe( true );
 		} );
 
 		it( 'Should not offer the currency switcher widget when an unsupported theme is active', async () => {
@@ -319,6 +360,12 @@ describe( 'Merchant On-boarding', () => {
 
 			await goToOnboardingPage();
 			await goToNextOnboardingStep();
+
+			const storefrontSwitchCheckboxSelector =
+				'input[data-testid="enable_storefront_switcher"]';
+			const checkbox = await page.$( storefrontSwitchCheckboxSelector );
+
+			expect( checkbox ).toBeNull();
 		} );
 	} );
 } );
