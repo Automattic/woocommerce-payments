@@ -24,6 +24,18 @@ import {
 	SofortIcon,
 } from 'wcpay/payment-methods-icons';
 
+declare global {
+	interface Window {
+		wcpaySettings: {
+			accountStatus: {
+				country: string;
+			};
+		};
+	}
+}
+
+const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
+
 export interface PaymentMethodMapEntry {
 	id: string;
 	label: string;
@@ -210,11 +222,11 @@ const PaymentMethodInformationObject: Record<
 	afterpay_clearpay: {
 		id: 'afterpay_clearpay',
 		label:
-			'GB' === wcpaySettings.accountCountry
+			'GB' === accountCountry
 				? __( 'Clearpay', 'woocommerce-payments' )
 				: __( 'Afterpay', 'woocommerce-payments' ),
 		brandTitles:
-			'GB' === wcpaySettings.accountCountry
+			'GB' === accountCountry
 				? {
 						afterpay_clearpay: __(
 							'Clearpay',
@@ -228,7 +240,7 @@ const PaymentMethodInformationObject: Record<
 						),
 				  },
 		description:
-			'GB' === wcpaySettings.accountCountry
+			'GB' === accountCountry
 				? __(
 						// translators: %s is the store currency.
 						'Allow customers to pay over time with Clearpay. Available to all customers paying in %s.',
@@ -239,8 +251,7 @@ const PaymentMethodInformationObject: Record<
 						'Allow customers to pay over time with Afterpay. Available to all customers paying in %s.',
 						'woocommerce-payments'
 				  ),
-		icon:
-			'GB' === wcpaySettings.accountCountry ? ClearpayIcon : AfterpayIcon,
+		icon: 'GB' === accountCountry ? ClearpayIcon : AfterpayIcon,
 		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP', 'EUR' ],
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,
