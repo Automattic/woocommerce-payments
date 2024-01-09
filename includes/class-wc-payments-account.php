@@ -1642,6 +1642,11 @@ class WC_Payments_Account {
 			return true;
 		}
 
+		// Check if mode is set at this point. If not, we can't determine if the account is valid.
+		if ( is_null( WC_Payments::mode() ) ) {
+			return false;
+		}
+
 		// test accounts are valid only when in dev mode.
 		if ( WC_Payments::mode()->is_dev() ) {
 			return true;
