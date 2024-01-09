@@ -74,7 +74,7 @@ describe( 'Merchant On-boarding', () => {
 		await merchant.logout();
 	} );
 
-	describe.skip( 'Currency Selection and Management', () => {
+	describe( 'Currency Selection and Management', () => {
 		beforeAll( async () => {
 			await merchantWCP.disableAllEnabledCurrencies();
 		} );
@@ -225,7 +225,7 @@ describe( 'Merchant On-boarding', () => {
 		} );
 	} );
 
-	describe.skip( 'Geolocation Features', () => {
+	describe( 'Geolocation Features', () => {
 		beforeAll( async () => {
 			await merchantWCP.disableAllEnabledCurrencies();
 		} );
