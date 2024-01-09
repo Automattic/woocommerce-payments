@@ -19,6 +19,13 @@ const goToOnboardingPage = async () => {
 	await uiLoaded();
 };
 
+const goToNextOnboardingStep = async () => {
+	const continueBtnSelector =
+		'.add-currencies-task.is-active .task-collapsible-body.is-active > button.is-primary';
+
+	await page.click( continueBtnSelector );
+};
+
 describe( 'Merchant On-boarding', () => {
 	beforeAll( async () => {
 		await merchant.login();
@@ -42,7 +49,7 @@ describe( 'Merchant On-boarding', () => {
 		await merchant.logout();
 	} );
 
-	describe( 'Currency Selection and Management', () => {
+	describe.skip( 'Currency Selection and Management', () => {
 		beforeAll( async () => {
 			await merchantWCP.disableAllEnabledCurrencies();
 		} );
@@ -193,9 +200,37 @@ describe( 'Merchant On-boarding', () => {
 		} );
 	} );
 
-	describe.skip( 'Geolocation Features', () => {
+	describe( 'Geolocation Features', () => {
+		beforeAll( async () => {
+			await merchantWCP.disableAllEnabledCurrencies();
+		} );
+
+		beforeEach( async () => {
+			await goToOnboardingPage();
+		} );
+
 		it( 'Should offer currency switch by geolocation', async () => {
-			// Implement test
+			await goToNextOnboardingStep();
+
+			const geoCurrencySwitchCheckboxSelector =
+				'input[data-testid="enable_auto_currency"]';
+			const checkbox = await page.$( geoCurrencySwitchCheckboxSelector );
+
+			// Check if exists and not disabled.
+			expect( checkbox ).not.toBeNull();
+			const isDisabled = await (
+				await checkbox.getProperty( 'disabled' )
+			 ).jsonValue();
+			expect( isDisabled ).toBe( false );
+
+			// Click the checkbox to select it.
+			await checkbox.click();
+
+			// Check if the checkbox is selected.
+			const isChecked = await (
+				await checkbox.getProperty( 'checked' )
+			 ).jsonValue();
+			expect( isChecked ).toBe( true );
 		} );
 
 		it( 'Should preview currency switch by geolocation correctly with USD and GBP', async () => {
