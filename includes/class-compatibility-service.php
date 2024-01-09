@@ -47,15 +47,39 @@ class Compatibility_Service {
 	 * @return void
 	 */
 	public function update_compatibility_data() {
+		$post_types_count = $this->get_post_types_count();
 		try {
 			$this->payments_api_client->update_compatibility_data(
 				[
 					'woopayments_version' => WCPAY_VERSION_NUMBER,
 					'woocommerce_version' => WC_VERSION,
+					'post_types_count'    => $post_types_count,
 				]
 			);
 		} catch ( API_Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 			// The exception is already logged if logging is on, nothing else needed.
 		}
+	}
+
+	/**
+	 * Gets the count of public posts for each post type.
+	 *
+	 * @return array
+	 */
+	private function get_post_types_count(): array {
+		$post_types = get_post_types(
+			[
+				'public' => true,
+			]
+		);
+
+		$post_types_count = [];
+
+		foreach ( $post_types as $post_type ) {
+			$post_types_count[ $post_type ] = wp_count_posts( $post_type )->publish;
+		}
+
+		return $post_types_count;
+
 	}
 }

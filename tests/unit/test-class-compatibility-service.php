@@ -47,6 +47,12 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$expected = [
 			'woopayments_version' => WCPAY_VERSION_NUMBER,
 			'woocommerce_version' => WC_VERSION,
+			'post_types_count'    => [
+				'post'       => 0,
+				'page'       => 0,
+				'attachment' => 0,
+				'product'    => 0,
+			],
 		];
 
 		// Arrange/Assert: Set the expectations for update_compatibility_data.
