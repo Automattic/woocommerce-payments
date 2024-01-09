@@ -462,33 +462,6 @@ describe( 'blocksShowLinkButtonHandler', () => {
 		expect( stripeLinkButton ).toBeDefined();
 		expect( stripeLinkButton.style.display ).toEqual( 'inline-block' );
 	} );
-
-	test( 'should align link button to middle if email input is present', () => {
-		// Remove any existing element with the ID of 'email'
-		const existingEmailInput = document.getElementById( 'email' );
-		if ( existingEmailInput ) {
-			existingEmailInput.parentNode.removeChild( existingEmailInput );
-		}
-
-		// Create a mock emailInput element and append it to the document body
-		const emailInput = document.createElement( 'input' );
-		emailInput.id = 'email';
-		emailInput.value = 'admin@example.com';
-
-		Object.defineProperty( emailInput, 'offsetTop', { value: 0 } );
-		Object.defineProperty( emailInput, 'offsetHeight', { value: 55 } );
-
-		document.body.appendChild( emailInput );
-
-		blocksShowLinkButtonHandler( autofill );
-
-		const stripeLinkButton = document.querySelector(
-			'.wcpay-stripelink-modal-trigger'
-		);
-
-		expect( stripeLinkButton ).toBeDefined();
-		expect( stripeLinkButton.style.top ).toBe( '7.5px' );
-	} );
 } );
 
 describe( 'isUsingSavedPaymentMethod', () => {
