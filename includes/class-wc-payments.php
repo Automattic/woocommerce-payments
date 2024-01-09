@@ -657,7 +657,7 @@ class WC_Payments {
 	/**
 	 * Returns the gateway's working mode.
 	 *
-	 * @return Mode|null
+	 * @return Mode
 	 */
 	public static function mode() {
 		return self::$mode;
