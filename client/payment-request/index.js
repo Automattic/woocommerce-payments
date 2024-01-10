@@ -309,6 +309,11 @@ jQuery( ( $ ) => {
 					'input[name=wc_deposit_option]:checked'
 				).val();
 			}
+			if ( $( 'input[name=wc_deposit_payment_plan]' ).length ) {
+				depositObject.wc_deposit_payment_plan = $(
+					'input[name=wc_deposit_payment_plan]:checked'
+				).val();
+			}
 
 			const data = {
 				product_id: productId,
