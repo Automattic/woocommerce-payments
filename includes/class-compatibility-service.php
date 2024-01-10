@@ -39,6 +39,7 @@ class Compatibility_Service {
 	 */
 	public function init_hooks() {
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'update_compatibility_data' ] );
+		add_action( 'after_switch_theme', [ $this, 'update_compatibility_data' ] );
 	}
 
 	/**
@@ -52,6 +53,7 @@ class Compatibility_Service {
 				[
 					'woopayments_version' => WCPAY_VERSION_NUMBER,
 					'woocommerce_version' => WC_VERSION,
+					'blog_theme'          => get_stylesheet(),
 				]
 			);
 		} catch ( API_Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
