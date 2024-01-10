@@ -5,7 +5,7 @@ const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP, uiLoaded } from '../../../utils';
+import { merchantWCP, takeScreenshot, uiLoaded } from '../../../utils';
 
 let wasMulticurrencyEnabled;
 
@@ -52,6 +52,8 @@ const goToNextOnboardingStep = async () => {
 };
 
 describe( 'Merchant On-boarding', () => {
+	let activeThemeSlug;
+
 	beforeAll( async () => {
 		await merchant.login();
 		// Get initial multi-currency feature status.
@@ -63,9 +65,20 @@ describe( 'Merchant On-boarding', () => {
 			);
 			return checkbox ? checkbox.checked : false;
 		} );
+
+		await goToThemesPage();
+
+		// Get current theme slug.
+		activeThemeSlug = await page.evaluate( () => {
+			const theme = document.querySelector( '.theme.active-theme' );
+			return theme ? theme.getAttribute( 'data-slug' ) : '';
+		} );
 	} );
 
 	afterAll( async () => {
+		// Restore original theme.
+		await activateTheme( activeThemeSlug );
+
 		// Disable multi-currency if it was not initially enabled.
 		if ( ! wasMulticurrencyEnabled ) {
 			await merchant.login();
@@ -112,6 +125,10 @@ describe( 'Merchant On-boarding', () => {
 			);
 
 			expect( isDisabled ).toBeTruthy();
+
+			await takeScreenshot(
+				'merchant-admin-multi-currency-on-boarding-disabled-submit-button'
+			);
 		} );
 
 		it( 'Should allow multiple currencies to be selectable', async () => {
@@ -186,6 +203,10 @@ describe( 'Merchant On-boarding', () => {
 					} ) )
 			);
 
+			await takeScreenshot(
+				'merchant-admin-multi-currency-on-boarding-recommended-currencies'
+			);
+
 			expect( recommendedCurrencies.length ).toBeGreaterThan( 0 );
 		} );
 
@@ -201,9 +222,16 @@ describe( 'Merchant On-boarding', () => {
 
 			// Select the currencies
 			for ( const currency of testCurrencies ) {
-				await page.click(
-					`${ currencyCheckboxSelector }[code="${ currency }"]`
-				);
+				const checkboxSelector = `${ currencyCheckboxSelector }[code="${ currency }"]`;
+				const isChecked = await page.evaluate( ( selector ) => {
+					const checkbox = document.querySelector( selector );
+					return checkbox && checkbox.checked;
+				}, checkboxSelector );
+
+				if ( ! isChecked ) {
+					await page.click( checkboxSelector );
+					await page.waitForTimeout( 1000 ); // Use waitForTimeout instead of waitFor
+				}
 			}
 
 			// Submit the form.
@@ -213,6 +241,10 @@ describe( 'Merchant On-boarding', () => {
 			await submitButton.click();
 
 			await merchantWCP.openMultiCurrency();
+
+			await takeScreenshot(
+				'merchant-admin-multi-currency-on-boarding-enabled-currencies'
+			);
 
 			// Ensure the currencies are enabled.
 			for ( const currency of testCurrencies ) {
@@ -282,8 +314,13 @@ describe( 'Merchant On-boarding', () => {
 			await page.waitForSelector( iframeSelector, {
 				timeout: 3000,
 			} );
+
 			const iframeElement = await page.$( iframeSelector );
 			const iframe = await iframeElement.contentFrame();
+
+			await iframe.waitForSelector( '.woocommerce-Price-currencySymbol', {
+				timeout: 5000,
+			} );
 
 			// Assert that all occurrences of '.woocommerce-Price-currencySymbol' have the sterling pound symbol
 			const currencySymbols = await iframe.$$eval(
@@ -311,23 +348,6 @@ describe( 'Merchant On-boarding', () => {
 	} );
 
 	describe( 'Currency Switcher Widget', () => {
-		let activeThemeSlug;
-
-		beforeAll( async () => {
-			await goToThemesPage();
-
-			// Get current theme slug.
-			activeThemeSlug = await page.evaluate( () => {
-				const theme = document.querySelector( '.theme.active-theme' );
-				return theme ? theme.getAttribute( 'data-slug' ) : '';
-			} );
-		} );
-
-		afterAll( async () => {
-			// Restore original theme.
-			await activateTheme( activeThemeSlug );
-		} );
-
 		it( 'Should offer the currency switcher widget while Storefront theme is active', async () => {
 			await activateTheme( 'storefront' );
 
