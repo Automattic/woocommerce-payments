@@ -8,7 +8,7 @@ import React from 'react';
 
 const documentationUrls = {
 	sandboxMode:
-		'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/',
+		'https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/',
 	tos: 'https://wordpress.com/tos/',
 	merchantTerms: 'https://wordpress.com/tos/#more-woopay-specifically',
 	privacyPolicy: 'https://automattic.com/privacy/',

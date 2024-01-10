@@ -128,7 +128,7 @@ const GeneralSettings = () => {
 											<a
 												target="_blank"
 												rel="noreferrer"
-												href="https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/"
+												href="https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
 											/>
 										),
 									},

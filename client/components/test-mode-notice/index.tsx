@@ -87,7 +87,7 @@ const getNoticeContent = (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content
 								<Link
 									href={
-										'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/'
+										'https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
 									}
 									target="_blank"
 									rel="noreferrer"

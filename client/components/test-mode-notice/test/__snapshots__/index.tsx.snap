@@ -22,7 +22,7 @@ exports[`Test mode notification Returns valid component for deposits page 1`] = 
     <div
       class="wcpay-banner-notice__content"
     >
-      Viewing test deposits. To view live deposits, disable test mode in 
+      Viewing test deposits. To view live deposits, disable test mode in
       <a
         href="https://example.com/"
       >
@@ -42,7 +42,7 @@ exports[`Test mode notification Returns valid component for disputes page 1`] = 
     <div
       class="wcpay-banner-notice__content"
     >
-      Viewing test disputes. To view live disputes, disable test mode in 
+      Viewing test disputes. To view live disputes, disable test mode in
       <a
         href="https://example.com/"
       >
@@ -62,7 +62,7 @@ exports[`Test mode notification Returns valid component for documents page 1`] =
     <div
       class="wcpay-banner-notice__content"
     >
-      Viewing test documents. To view live documents, disable test mode in 
+      Viewing test documents. To view live documents, disable test mode in
       <a
         href="https://example.com/"
       >
@@ -82,7 +82,7 @@ exports[`Test mode notification Returns valid component for loans page 1`] = `
     <div
       class="wcpay-banner-notice__content"
     >
-      Viewing test loans. To view live loans, disable test mode in 
+      Viewing test loans. To view live loans, disable test mode in
       <a
         href="https://example.com/"
       >
@@ -105,10 +105,10 @@ exports[`Test mode notification Returns valid component for overview page 1`] = 
       <strong>
         WooPayments is in test mode.
       </strong>
-       All transactions will be simulated. 
+       All transactions will be simulated.
       <a
         data-link-type="wc-admin"
-        href="https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/"
+        href="https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
         rel="noreferrer"
         target="_blank"
       >
@@ -127,7 +127,7 @@ exports[`Test mode notification Returns valid component for payments page 1`] = 
     <div
       class="wcpay-banner-notice__content"
     >
-      Viewing test payments. To view live payments, disable test mode in 
+      Viewing test payments. To view live payments, disable test mode in
       <a
         href="https://example.com/"
       >
@@ -147,7 +147,7 @@ exports[`Test mode notification Returns valid component for transactions page 1`
     <div
       class="wcpay-banner-notice__content"
     >
-      Viewing test transactions. To view live transactions, disable test mode in 
+      Viewing test transactions. To view live transactions, disable test mode in
       <a
         href="https://example.com/"
       >
