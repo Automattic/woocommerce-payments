@@ -106,6 +106,12 @@ body.wcpay-onboarding__body {
 			padding: $gap-small $gap;
 		}
 
+		.onboarding-mode__sandbox {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
 		.personal-details-notice {
 			margin: 0;
 		}

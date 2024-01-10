@@ -9,31 +9,31 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies
  */
-import RadioCard from 'components/radio-card';
+import OnboardingCard from 'wcpay/components/onboarding-card';
 import { useStepperContext } from 'components/stepper';
 import { trackModeSelected } from '../tracking';
 import strings from '../strings';
 import InlineNotice from 'components/inline-notice';
 
-const DevModeNotice = () => (
+const SandboxModeNotice = () => (
 	<InlineNotice icon status="warning" isDismissible={ false }>
-		{ strings.steps.mode.devModeNotice }
+		{ strings.steps.mode.sandboxModeNotice }
 	</InlineNotice>
 );
 
 const ModeChoice: React.FC = () => {
 	const { devMode } = wcpaySettings;
-	const liveStrings = strings.steps.mode.live;
-	const testStrings = strings.steps.mode.test;
+	const modeStrings = strings.steps.mode;
 
-	const [ selected, setSelected ] = useState< 'live' | 'test' >( 'live' );
 	const { nextStep } = useStepperContext();
 
-	const handleContinue = () => {
-		trackModeSelected( selected );
+	const handleContinue = ( mode: 'live' | 'test' ) => {
+		trackModeSelected( mode );
 
-		if ( selected === 'live' ) return nextStep();
+		// If live mode is selected, go to the next step of the flow.
+		if ( mode === 'live' ) return nextStep();
 
+		// Else, redirect to the test mode Stripe flow.
 		const { connectUrl } = wcpaySettings;
 		const url = addQueryArgs( connectUrl, {
 			test_mode: true,
@@ -43,41 +43,34 @@ const ModeChoice: React.FC = () => {
 
 	return (
 		<>
-			{ devMode && <DevModeNotice /> }
-			<RadioCard
-				name="onboarding-mode"
-				selected={ selected }
-				onChange={ setSelected as ( value: string ) => void }
-				options={ [
-					{
-						label: liveStrings.label,
-						value: 'live',
-						icon: <Icon icon={ store } />,
-						content: (
-							<div className="onboarding-mode__note">
-								{ liveStrings.note }
-							</div>
-						),
-					},
-					{
-						label: testStrings.label,
-						value: 'test',
-						icon: <Icon icon={ tool } />,
-						content: (
-							<div className="onboarding-mode__note">
-								{ testStrings.note }
-							</div>
-						),
-					},
-				] }
+			{ devMode && <SandboxModeNotice /> }
+			<OnboardingCard
+				icon={ <Icon icon={ store } /> }
+				heading={ modeStrings.label }
+				content={
+					<>
+						<div className="onboarding-mode__note">
+							{ modeStrings.note }
+						</div>
+						<p>{ modeStrings.tos }</p>
+					</>
+				}
+				actionLabel={ modeStrings.continue.live }
+				onClick={ () => {
+					handleContinue( 'live' );
+				} }
 			/>
-			<Button
-				isPrimary
-				onClick={ handleContinue }
-				className="stepper__cta"
-			>
-				{ strings.continue }
-			</Button>
+
+			<div className="onboarding-mode__sandbox">
+				<Button
+					variant="tertiary"
+					onClick={ () => {
+						handleContinue( 'test' );
+					} }
+				>
+					{ modeStrings.continue.test }
+				</Button>
+			</div>
 		</>
 	);
 };
