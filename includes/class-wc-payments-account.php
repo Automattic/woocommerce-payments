@@ -918,7 +918,7 @@ class WC_Payments_Account {
 
 		// We check it here after refreshing the cache, because merchant might have clicked back in browser (after Stripe KYC).
 		// That will mean that no redirect from Stripe happened and user might be able to go through onboarding again if no webhook processed yet.
-		// That might cause issues if user selects dev onboarding after live one.
+		// That might cause issues if user selects sandbox onboarding after live one.
 		// Shouldn't be called with force disconnected option enabled, otherwise we'll get current account data.
 		if ( ! WC_Payments_Utils::force_disconnected_enabled() ) {
 			$this->refresh_account_data();

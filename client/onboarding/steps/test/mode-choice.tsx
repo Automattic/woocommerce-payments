@@ -27,7 +27,7 @@ declare const global: {
 };
 
 describe( 'ModeChoice', () => {
-	it( 'displays test and live radio cards, notice for dev mode', () => {
+	it( 'displays test and live radio cards, notice for sandbox mode', () => {
 		global.wcpaySettings = {
 			connectUrl: 'https://wcpay.test/connect',
 			devMode: true,

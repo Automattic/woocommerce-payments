@@ -828,7 +828,7 @@ class WC_Payments_Admin {
 		try {
 			$dev_mode = WC_Payments::mode()->is_dev();
 		} catch ( Exception $e ) {
-			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if WCPay should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
+			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if WCPay should be in sandbox mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
 		$connect_url       = WC_Payments_Account::get_connect_url();

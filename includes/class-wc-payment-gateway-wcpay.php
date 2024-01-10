@@ -2350,12 +2350,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( 'test_mode' === $key && $in_dev_mode ) {
 			$data['custom_attributes']['disabled'] = 'disabled';
-			$data['label']                         = __( 'Dev mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
+			$data['label']                         = __( 'Sandbox mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
 		}
 
 		if ( 'enable_logging' === $key && $in_dev_mode ) {
 			$data['custom_attributes']['disabled'] = 'disabled';
-			$data['label']                         = __( 'Dev mode is active so logging is on by default.', 'woocommerce-payments' );
+			$data['label']                         = __( 'Sandbox mode is active so logging is on by default.', 'woocommerce-payments' );
 		}
 
 		return parent::generate_checkbox_html( $key, $data );

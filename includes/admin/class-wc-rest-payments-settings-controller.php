@@ -676,7 +676,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	private function update_is_test_mode_enabled( WP_REST_Request $request ) {
-		// avoiding updating test mode when dev mode is enabled.
+		// Avoid updating test mode when dev mode is enabled.
 		if ( WC_Payments::mode()->is_dev() ) {
 			return;
 		}
@@ -696,7 +696,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	private function update_is_debug_log_enabled( WP_REST_Request $request ) {
-		// avoiding updating test mode when dev mode is enabled.
+		// Avoid updating test mode when dev mode is enabled.
 		if ( WC_Payments::mode()->is_dev() ) {
 			return;
 		}

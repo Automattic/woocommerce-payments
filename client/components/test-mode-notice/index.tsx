@@ -59,7 +59,7 @@ const getNoticeContent = (
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								'{{strong}}%1$s is in dev mode.{{/strong}} You need to set up a live %1$s account before you can accept real transactions.',
+								'{{strong}}%1$s is in sandbox mode.{{/strong}} You need to set up a live %1$s account before you can accept real transactions.',
 								'woocommerce-payments'
 							),
 							'WooPayments'
