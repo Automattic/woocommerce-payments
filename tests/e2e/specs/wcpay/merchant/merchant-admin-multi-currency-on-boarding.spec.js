@@ -230,7 +230,6 @@ describe( 'Merchant On-boarding', () => {
 
 				if ( ! isChecked ) {
 					await page.click( checkboxSelector );
-					await page.waitForTimeout( 1000 ); // Use waitForTimeout instead of waitFor
 				}
 			}
 
