@@ -57,6 +57,7 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 						'reason'         => $reason,
 						'order_id'       => $order_id,
 						'refund_payment' => true,
+						'restock_items'  => true,
 					]
 				);
 
