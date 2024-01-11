@@ -812,7 +812,7 @@ class WC_Payments_Order_Service {
 		$charge                 = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_charge() : null;
 		$charge_id              = $charge ? $charge->get_id() : null;
 		$payment_transaction    = $charge ? $charge->get_balance_transaction() : null;
-		$payment_transaction_id = $payment_transaction ? $payment_transaction['id'] : '';
+		$payment_transaction_id = $payment_transaction['id'] ?? '';
 		// next, save it in order meta.
 		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id );
 	}
