@@ -19,6 +19,8 @@ import {
 	renderTerms,
 	createAndConfirmSetupIntent,
 	maybeEnableStripeLink,
+	blockUI,
+	unblockUI,
 } from './payment-processing';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
@@ -41,6 +43,10 @@ jQuery( function ( $ ) {
 	const $addPaymentMethodForm = $( 'form#add_payment_method' );
 	const $orderReviewForm = $( 'form#order_review' );
 
+	const $forms = jQuery( $checkoutForm )
+		.add( $addPaymentMethodForm )
+		.add( $orderReviewForm );
+
 	const api = new WCPayAPI(
 		{
 			publishableKey: publishableKey,
@@ -53,7 +59,11 @@ jQuery( function ( $ ) {
 		},
 		apiRequest
 	);
-	showAuthenticationModalIfRequired( api );
+
+	blockUI( $form );
+	showAuthenticationModalIfRequired( api ).finally( () => {
+		unblockUI( $form );
+	} );
 
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement();
@@ -77,7 +87,10 @@ jQuery( function ( $ ) {
 
 	window.addEventListener( 'hashchange', () => {
 		if ( window.location.hash.startsWith( '#wcpay-confirm-' ) ) {
-			showAuthenticationModalIfRequired( api );
+			blockUI( $form );
+			showAuthenticationModalIfRequired( api, $forms ).finally( () => {
+				unblockUI( $form );
+			} );
 		}
 	} );
 

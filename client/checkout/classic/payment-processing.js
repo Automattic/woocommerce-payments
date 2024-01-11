@@ -51,7 +51,7 @@ function initializeAppearance( api ) {
 }
 
 /**
- * Block UI to indicate processing and avoid duplicate submission.
+ * Block the UI to indicate processing and avoid duplicate submission.
  *
  * @param {Object} $form The jQuery object for the form.
  */
@@ -63,6 +63,14 @@ function blockUI( $form ) {
 			opacity: 0.6,
 		},
 	} );
+}
+/**
+ * Unblocks the UI to allow payment processing.
+ *
+ * @param {Object} $form The jQuery object for the form.
+ */
+function unblockUI( $form ) {
+	$form.removeClass( 'processing' ).unblock();
 }
 
 /**
@@ -375,7 +383,7 @@ export const processPayment = (
 			submitForm( $form );
 		} catch ( err ) {
 			hasCheckoutCompleted = false;
-			$form.removeClass( 'processing' ).unblock();
+			unblockUI( $form );
 			showErrorCheckout( err.message );
 		}
 	} )();

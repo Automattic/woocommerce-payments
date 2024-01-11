@@ -1,7 +1,12 @@
 /**
  * Internal dependencies
  */
-import { getConfig, getUPEConfig } from 'wcpay/utils/checkout';
+import {
+	getConfig,
+	getUPEConfig,
+	blockUi,
+	unblockUi,
+} from 'wcpay/utils/checkout';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 
 export const shouldSavePaymentPaymentMethod = () => {
@@ -32,31 +37,17 @@ export const showAuthenticationModalIfRequired = ( api ) => {
 
 	// Boolean `true` means that there is nothing to confirm.
 	if ( confirmation === true ) {
-		return;
+		return Promise.resolve();
 	}
 
 	const { request } = confirmation;
 	cleanupURL();
 
-	if ( getUPEConfig( 'isOrderPay' ) ) {
-		// TODO: block UI
-	}
-
-	request
+	return request
 		.then( ( redirectUrl ) => {
 			window.location = redirectUrl;
 		} )
 		.catch( ( error ) => {
-			// TODO: the checkout form might not be present on pay for order or add payment method pages
-			document
-				.querySelector( 'form.checkout' )
-				.classList.remove( 'processing' );
-
-			const elements = document.getElementsByClassName( 'blockUI' );
-			Array.from( elements ).forEach( ( element ) => {
-				element.parentNode.removeChild( element );
-			} );
-
 			let errorMessage = error.message;
 
 			// If this is a generic error, we probably don't want to display the error message to the user,
