@@ -5,7 +5,12 @@ const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP, takeScreenshot, uiLoaded } from '../../../utils';
+import {
+	merchantWCP,
+	setCheckboxState,
+	takeScreenshot,
+	uiLoaded,
+} from '../../../utils';
 
 let wasMulticurrencyEnabled;
 
@@ -97,19 +102,10 @@ describe( 'Merchant On-boarding', () => {
 		} );
 
 		it( 'Should disable the submit button when no currencies are selected', async () => {
-			const checkboxes = await page.$$(
-				'.enabled-currency-checkbox .components-checkbox-control__input'
+			await setCheckboxState(
+				'.enabled-currency-checkbox .components-checkbox-control__input',
+				false
 			);
-
-			for ( const checkbox of checkboxes ) {
-				const isChecked = await (
-					await checkbox.getProperty( 'checked' )
-				 ).jsonValue();
-				if ( isChecked ) {
-					// Click the checkbox to uncheck it if it's checked
-					await checkbox.click();
-				}
-			}
 
 			await page.waitFor( 1000 );
 
@@ -222,15 +218,10 @@ describe( 'Merchant On-boarding', () => {
 
 			// Select the currencies
 			for ( const currency of testCurrencies ) {
-				const checkboxSelector = `${ currencyCheckboxSelector }[code="${ currency }"]`;
-				const isChecked = await page.evaluate( ( selector ) => {
-					const checkbox = document.querySelector( selector );
-					return checkbox && checkbox.checked;
-				}, checkboxSelector );
-
-				if ( ! isChecked ) {
-					await page.click( checkboxSelector );
-				}
+				await setCheckboxState(
+					`${ currencyCheckboxSelector }[code="${ currency }"]`,
+					true
+				);
 			}
 
 			// Submit the form.
