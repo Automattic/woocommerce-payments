@@ -55,7 +55,7 @@ function initializeAppearance( api ) {
  *
  * @param {Object} $form The jQuery object for the form.
  */
-function blockUI( $form ) {
+export function blockUI( $form ) {
 	$form.addClass( 'processing' ).block( {
 		message: null,
 		overlayCSS: {
@@ -69,7 +69,7 @@ function blockUI( $form ) {
  *
  * @param {Object} $form The jQuery object for the form.
  */
-function unblockUI( $form ) {
+export function unblockUI( $form ) {
 	$form.removeClass( 'processing' ).unblock();
 }
 
