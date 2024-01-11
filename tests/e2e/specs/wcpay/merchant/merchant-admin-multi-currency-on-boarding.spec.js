@@ -5,12 +5,7 @@ const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import {
-	merchantWCP,
-	setCheckboxState,
-	takeScreenshot,
-	uiLoaded,
-} from '../../../utils';
+import { merchantWCP, setCheckboxState, uiLoaded } from '../../../utils';
 
 // Shared selector constants.
 const THEME_SELECTOR = ( themeSlug ) => `.theme[data-slug="${ themeSlug }"]`;
@@ -276,10 +271,9 @@ describe( 'Merchant On-boarding', () => {
 			await goToNextOnboardingStep();
 
 			// Enable feature.
-			await page.click( GEO_CURRENCY_SWITCH_CHECKBOX_SELECTOR );
-
-			await takeScreenshot(
-				'merchant-admin-multi-currency-on-boarding-geolocation-1'
+			await setCheckboxState(
+				GEO_CURRENCY_SWITCH_CHECKBOX_SELECTOR,
+				true
 			);
 
 			// Click preview button.
@@ -300,9 +294,7 @@ describe( 'Merchant On-boarding', () => {
 				timeout: 5000,
 			} );
 
-			await takeScreenshot(
-				'merchant-admin-multi-currency-on-boarding-geolocation-2'
-			);
+			await page.waitFor( 3000 );
 
 			// Assert that all occurrences of '.woocommerce-Price-currencySymbol' have the sterling pound symbol
 			const currencySymbols = await iframe.$$eval(
@@ -310,6 +302,9 @@ describe( 'Merchant On-boarding', () => {
 				( elements ) =>
 					elements.map( ( element ) => element.textContent )
 			);
+
+			console.log( currencySymbols );
+
 			currencySymbols.forEach( ( symbol ) => {
 				expect( symbol ).toBe( '£' );
 			} );
