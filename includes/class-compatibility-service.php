@@ -68,7 +68,7 @@ class Compatibility_Service {
 	/**
 	 * Gets the count of public posts for each post type.
 	 *
-	 * @return array
+	 * @return array<\WP_Post_Type|string, string>
 	 */
 	private function get_post_types_count(): array {
 		$post_types = get_post_types(
@@ -80,7 +80,7 @@ class Compatibility_Service {
 		$post_types_count = [];
 
 		foreach ( $post_types as $post_type ) {
-			$post_types_count[ $post_type ] = (string) wp_count_posts( $post_type )->publish;
+			$post_types_count[ $post_type ] = wp_count_posts( $post_type )->publish;
 		}
 
 		return $post_types_count;
