@@ -1212,7 +1212,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_attach_intent_info_to_order() {
-		$intent = WC_Helper_Intention::create_intention( [ 'id' => 'pi_mock' ] );
+		$intent_id = 'pi_mock';
+		$intent    = WC_Helper_Intention::create_intention( [ 'id' => $intent_id ] );
 		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
 
 		$this->assertEquals( $intent_id, $this->order->get_meta( '_intent_id', true ) );
