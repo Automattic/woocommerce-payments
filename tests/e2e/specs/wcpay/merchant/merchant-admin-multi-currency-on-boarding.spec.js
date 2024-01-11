@@ -5,12 +5,7 @@ const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import {
-	merchantWCP,
-	setCheckboxState,
-	takeScreenshot,
-	uiLoaded,
-} from '../../../utils';
+import { merchantWCP, setCheckboxState, uiLoaded } from '../../../utils';
 
 let wasMulticurrencyEnabled;
 
@@ -121,10 +116,6 @@ describe( 'Merchant On-boarding', () => {
 			);
 
 			expect( isDisabled ).toBeTruthy();
-
-			await takeScreenshot(
-				'merchant-admin-multi-currency-on-boarding-disabled-submit-button'
-			);
 		} );
 
 		it( 'Should allow multiple currencies to be selectable', async () => {
@@ -199,10 +190,6 @@ describe( 'Merchant On-boarding', () => {
 					} ) )
 			);
 
-			await takeScreenshot(
-				'merchant-admin-multi-currency-on-boarding-recommended-currencies'
-			);
-
 			expect( recommendedCurrencies.length ).toBeGreaterThan( 0 );
 		} );
 
@@ -231,10 +218,6 @@ describe( 'Merchant On-boarding', () => {
 			await submitButton.click();
 
 			await merchantWCP.openMultiCurrency();
-
-			await takeScreenshot(
-				'merchant-admin-multi-currency-on-boarding-enabled-currencies'
-			);
 
 			// Ensure the currencies are enabled.
 			for ( const currency of testCurrencies ) {
