@@ -345,11 +345,11 @@ class WC_Payments_Checkout {
 			 * but we need `$this->get_payment_fields_js_config` to be called
 			 * before `$this->saved_payment_methods()`.
 			 */
-			$payment_fields  = $this->get_payment_fields_js_config();
+			$payment_fields = $this->get_payment_fields_js_config();
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
-				function() use ( $payment_fields) {
+				function() use ( $payment_fields ) {
 					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
 				}
 			);
