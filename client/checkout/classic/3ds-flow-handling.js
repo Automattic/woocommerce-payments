@@ -1,12 +1,7 @@
 /**
  * Internal dependencies
  */
-import {
-	getConfig,
-	getUPEConfig,
-	blockUi,
-	unblockUi,
-} from 'wcpay/utils/checkout';
+import { getConfig } from 'wcpay/utils/checkout';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 
 export const shouldSavePaymentPaymentMethod = () => {
