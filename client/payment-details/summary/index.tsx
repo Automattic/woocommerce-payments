@@ -214,6 +214,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		? isRefundable( charge.dispute.status )
 		: true;
 
+	// Partial refunds are done through the order page. If order number is not
+	// present, partial refund is not possible.
+	const isPartiallyRefundable = charge.order && charge.order.number;
+
 	// Control menu only shows refund actions for now. In the future, it may show other actions.
 	const showControlMenu =
 		charge.captured && ! charge.refunded && isDisputeRefundable;
@@ -531,7 +535,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 													'woocommerce-payments'
 												) }
 											</MenuItem>
-											{ charge.order && (
+											{ isPartiallyRefundable && (
 												<MenuItem
 													onClick={ () => {
 														wcpayTracks.recordEvent(

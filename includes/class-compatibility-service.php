@@ -39,6 +39,7 @@ class Compatibility_Service {
 	 */
 	public function init_hooks() {
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'update_compatibility_data' ] );
+		add_action( 'after_switch_theme', [ $this, 'update_compatibility_data' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'add_compatibility_onboarding_data' ] );
 	}
 
@@ -73,9 +74,13 @@ class Compatibility_Service {
 	 * @return array
 	 */
 	private function get_compatibility_data(): array {
+		$active_plugins = get_option( 'active_plugins', [] );
+
 		return [
 			'woopayments_version' => WCPAY_VERSION_NUMBER,
 			'woocommerce_version' => WC_VERSION,
+			'blog_theme'          => get_stylesheet(),
+			'active_plugins'      => $active_plugins,
 		];
 	}
 }

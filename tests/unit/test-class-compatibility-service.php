@@ -27,6 +27,23 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	private $compatibility_service;
 
 	/**
+	 * Test theme name.
+	 *
+	 * @var string
+	 */
+	private $stylesheet = 'my_theme_name';
+
+	/**
+	 * Test active plugins.
+	 *
+	 * @var array
+	 */
+	private $active_plugins = [
+		'woocommerce/woocommerce.php',
+		'woocommerce-payments/woocommerce-payments.php',
+	];
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -35,6 +52,19 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->compatibility_service = new Compatibility_Service( $this->mock_api_client );
 		$this->compatibility_service->init_hooks();
+
+		$this->add_stylesheet_filter();
+		$this->add_option_active_plugins_filter();
+	}
+
+	/**
+	 * Post-test anarchy
+	 */
+	public function tear_down() {
+		parent::tear_down();
+
+		$this->remove_stylesheet_filters();
+		$this->remove_option_active_plugins_filters();
 	}
 
 	/**
@@ -42,28 +72,29 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @param string $filter            The filter name.
 	 * @param string $method            The method being called in the class.
-	 * @param int    $expected_priority The expected priority.
 	 *
 	 * @dataProvider provider_test_registers_woocommerce_filters_properly
 	 *
 	 * @return void
 	 */
-	public function test_registers_woocommerce_filters_properly( string $filter, string $method, int $expected_priority ) {
+	public function test_registers_woocommerce_filters_properly( string $filter, string $method ) {
 		$priority = has_filter( $filter, [ $this->compatibility_service, $method ] );
-		$this->assertEquals( $expected_priority, $priority );
+		$this->assertEquals( 10, $priority );
 	}
 
 	public function provider_test_registers_woocommerce_filters_properly(): array {
 		return [
 			'woocommerce_payments_account_refreshed' => [
-				'filter'   => 'woocommerce_payments_account_refreshed',
-				'method'   => 'update_compatibility_data',
-				'priority' => 10,
+				'filter' => 'woocommerce_payments_account_refreshed',
+				'method' => 'update_compatibility_data',
+			],
+			'after_switch_theme'                     => [
+				'filter' => 'woocommerce_payments_account_refreshed',
+				'method' => 'update_compatibility_data',
 			],
 			'wc_payments_get_onboarding_data_args'   => [
-				'filter'   => 'wc_payments_get_onboarding_data_args',
-				'method'   => 'add_compatibility_onboarding_data',
-				'priority' => 10,
+				'filter' => 'wc_payments_get_onboarding_data_args',
+				'method' => 'add_compatibility_onboarding_data',
 			],
 		];
 	}
@@ -80,6 +111,30 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 
 		// Act: Call the method we're testing.
 		$this->compatibility_service->update_compatibility_data();
+	}
+
+	public function test_update_compatibility_data_active_plugins_false() {
+		// Arrange: Create the expected value to be passed to update_compatibility_data.
+		$expected = $this->get_mock_compatibility_data(
+			[
+				'active_plugins' => [],
+			]
+		);
+
+		// Arrange: Purposely break/delete the active_plugins option in WP.
+		$this->break_active_plugins_option();
+
+		// Arrange/Assert: Set the expectations for update_compatibility_data.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_compatibility_data' )
+			->with( $expected );
+
+		// Act: Call the method we're testing.
+		$this->compatibility_service->update_compatibility_data();
+
+		// Arrange: Fix the broke active_plugins option in WP.
+		$this->fix_active_plugins_option();
 	}
 
 	public function test_add_compatibility_onboarding_data() {
@@ -102,8 +157,70 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 			[
 				'woopayments_version' => WCPAY_VERSION_NUMBER,
 				'woocommerce_version' => WC_VERSION,
+				'blog_theme'          => $this->stylesheet,
+				'active_plugins'      => $this->active_plugins,
 			],
 			$args
 		);
+	}
+
+	/**
+	 * Adds a filter for the theme/stylesheet name.
+	 * Will use the default defined in the test class if no params passed.
+	 *
+	 * @param string $stylesheet The theme name you'd like to use, default null.
+	 *
+	 * @return void
+	 */
+	private function add_stylesheet_filter( $stylesheet = null ): void {
+		$stylesheet = $stylesheet ?? $this->stylesheet;
+		add_filter(
+			'stylesheet',
+			function( $theme ) use ( $stylesheet ) {
+				return $stylesheet;
+			},
+			404 // 404 is used to be able to use remove_all_filters later.
+		);
+	}
+
+	// Removes all stylesheet/theme name filters.
+	private function remove_stylesheet_filters(): void {
+		remove_all_filters( 'stylesheet', 404 );
+	}
+
+	/**
+	 * Adds a filter for the active plugins array.
+	 * Will use the default defined in the test class if no params passed.
+	 *
+	 * @param array $plugins The plugin array you'd like to use, default null.
+	 *
+	 * @return void
+	 */
+	private function add_option_active_plugins_filter( $plugins = null ): void {
+		$plugins = $plugins ?? $this->active_plugins;
+		add_filter(
+			'option_active_plugins',
+			function( $active_plugins ) use ( $plugins ) {
+				return $plugins;
+			},
+			404 // 404 is used to be able to use remove_all_filters later.
+		);
+	}
+
+	// Removes all active plugin filters.
+	private function remove_option_active_plugins_filters() {
+		remove_all_filters( 'option_active_plugins', [ $this, 'active_plugins_filter_return' ], 404 );
+	}
+
+	// Used to purposely delete the active_plugins option in WP.
+	private function break_active_plugins_option() {
+		update_option( 'temp_active_plugins', get_option( 'active_plugins' ) );
+		delete_option( 'active_plugins' );
+	}
+
+	// Used to restore the active_plugins option in WP after break_active_plugins_option is used.
+	private function fix_active_plugins_option() {
+		update_option( 'active_plugins', get_option( 'temp_active_plugins' ) );
+		delete_option( 'temp_active_plugins' );
 	}
 }
