@@ -48,6 +48,7 @@ class Compatibility_Service {
 	 * @return void
 	 */
 	public function update_compatibility_data() {
+		$active_plugins   = get_option( 'active_plugins', [] );
 		$post_types_count = $this->get_post_types_count();
 		try {
 			$this->payments_api_client->update_compatibility_data(
@@ -55,6 +56,7 @@ class Compatibility_Service {
 					'woopayments_version' => WCPAY_VERSION_NUMBER,
 					'woocommerce_version' => WC_VERSION,
 					'blog_theme'          => get_stylesheet(),
+					'active_plugins'      => $active_plugins,
 					'post_types_count'    => $post_types_count,
 				]
 			);

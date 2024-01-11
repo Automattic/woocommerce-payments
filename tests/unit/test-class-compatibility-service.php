@@ -58,6 +58,10 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 			'woopayments_version' => WCPAY_VERSION_NUMBER,
 			'woocommerce_version' => WC_VERSION,
 			'blog_theme'          => $stylesheet,
+			'active_plugins'      => [
+				'woocommerce/woocommerce.php',
+				'woocommerce-payments/woocommerce-payments.php',
+			],
 			'post_types_count'    => [
 				'post'       => 1,
 				'page'       => 6,
@@ -65,6 +69,51 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 				'product'    => 12,
 			],
 		];
+
+		// Arrange/Assert: Set the expectations for update_compatibility_data.
+		add_filter( 'option_active_plugins', [ $this, 'active_plugins_filter_return' ] );
+
+		// Arrange: Insert test posts.
+		$post_ids = $this->insert_test_posts( $expected['post_types_count'] );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_compatibility_data' )
+			->with( $expected );
+
+		// Act: Call the method we're testing.
+		$this->compatibility_service->update_compatibility_data();
+
+		remove_filter( 'option_active_plugins', [ $this, 'active_plugins_filter_return' ] );
+
+		// Clean up: Delete the test posts.
+		$this->delete_test_posts( $post_ids );
+	}
+
+	public function test_update_compatibility_data_active_plugins_false() {
+		$stylesheet = 'my_theme_name';
+		add_filter(
+			'stylesheet',
+			function( $theme ) use ( $stylesheet ) {
+				return $stylesheet;
+			}
+		);
+
+		// Arrange: Create the expected value to be passed to update_compatibility_data.
+		$expected = [
+			'woopayments_version' => WCPAY_VERSION_NUMBER,
+			'woocommerce_version' => WC_VERSION,
+			'blog_theme'          => $stylesheet,
+			'active_plugins'      => [],
+			'post_types_count'    => [
+				'post'       => 1,
+				'page'       => 6,
+				'attachment' => 0,
+				'product'    => 12,
+			],
+		];
+
+		$this->break_active_plugins_option();
 
 		// Arrange: Insert test posts.
 		$post_ids = $this->insert_test_posts( $expected['post_types_count'] );
@@ -78,8 +127,28 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		// Act: Call the method we're testing.
 		$this->compatibility_service->update_compatibility_data();
 
+		$this->fix_active_plugins_option();
+
 		// Clean up: Delete the test posts.
 		$this->delete_test_posts( $post_ids );
+	}
+
+
+	public function active_plugins_filter_return() {
+		return [
+			'woocommerce/woocommerce.php',
+			'woocommerce-payments/woocommerce-payments.php',
+		];
+	}
+
+	private function break_active_plugins_option() {
+		update_option( 'temp_active_plugins', get_option( 'active_plugins' ) );
+		delete_option( 'active_plugins' );
+	}
+
+	private function fix_active_plugins_option() {
+		update_option( 'active_plugins', get_option( 'temp_active_plugins' ) );
+		delete_option( 'temp_active_plugins' );
 	}
 
 	/**
