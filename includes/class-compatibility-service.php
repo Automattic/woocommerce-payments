@@ -48,12 +48,15 @@ class Compatibility_Service {
 	 * @return void
 	 */
 	public function update_compatibility_data() {
+		$active_plugins = get_option( 'active_plugins', [] );
+
 		try {
 			$this->payments_api_client->update_compatibility_data(
 				[
 					'woopayments_version' => WCPAY_VERSION_NUMBER,
 					'woocommerce_version' => WC_VERSION,
 					'blog_theme'          => get_stylesheet(),
+					'active_plugins'      => $active_plugins,
 				]
 			);
 		} catch ( API_Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
