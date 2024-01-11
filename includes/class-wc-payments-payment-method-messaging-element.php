@@ -10,8 +10,6 @@ use WCPay\Constants\Payment_Method;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 /**
  * WC_Payments_Payment_Method_Messaging_Element class.
  */
@@ -25,18 +23,18 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	/**
 	 * WC_Payments_Gateway instance to get information about the enabled payment methods.
 	 *
-	 * @var UPE_Payment_Gateway|UPE_Split_Payment_Gateway
+	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private $gateway;
 
 	/**
 	 * WC_Payments_Payment_Method_Messaging_Element constructor
 	 *
-	 * @param  WC_Payments_Account                           $account Account instance.
-	 * @param  UPE_Payment_Gateway|UPE_Split_Payment_Gateway $gateway Gateway instance.
+	 * @param  WC_Payments_Account      $account Account instance.
+	 * @param  WC_Payment_Gateway_WCPay $gateway Gateway instance.
 	 * @return void
 	 */
-	public function __construct( WC_Payments_Account $account, $gateway ) {
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->account = $account;
 		$this->gateway = $gateway;
 	}

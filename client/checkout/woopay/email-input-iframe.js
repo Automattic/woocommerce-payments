@@ -116,7 +116,7 @@ export const handleWooPayEmailInput = async (
 		}
 
 		// If the window width is less than the breakpoint, reset the styles and return.
-		if ( fullScreenModalBreakpoint >= window.innerWidth ) {
+		if ( fullScreenModalBreakpoint > window.innerWidth ) {
 			iframe.style.left = '0';
 			iframe.style.right = '';
 			return;
@@ -263,7 +263,10 @@ export const handleWooPayEmailInput = async (
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
 		urlParams.append( 'is_blocks', isBlocksCheckout ? 'true' : 'false' );
-		urlParams.append( 'source_url', window.location.href );
+		urlParams.append(
+			'source_url',
+			wcSettings?.storePages?.checkout?.permalink
+		);
 		urlParams.append(
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
