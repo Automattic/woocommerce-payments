@@ -116,7 +116,7 @@ function createStripePaymentMethod(
 ) {
 	/* global wcpayCustomerData */
 	let params = {};
-	if ( wcpayCustomerData ) {
+	if ( window.wcpayCustomerData ) {
 		params = {
 			billing_details: {
 				name: wcpayCustomerData.name || undefined,
