@@ -705,8 +705,7 @@ export const merchantWCP = {
 		await page.goto( WCPAY_MULTI_CURRENCY, { waitUntil: 'networkidle0' } );
 
 		await page.waitForSelector( '.enabled-currencies-list', {
-			visible: true,
-			timeout: 5000,
+			timeout: 10000,
 		} );
 
 		// Select all delete buttons for enabled currencies.

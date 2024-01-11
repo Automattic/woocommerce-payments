@@ -226,7 +226,7 @@ describe( 'Merchant On-boarding', () => {
 			// Ensure the currencies are enabled.
 			for ( const currency of testCurrencies ) {
 				const selector = `li.enabled-currency.${ currency.toLowerCase() }`;
-				await page.waitForSelector( selector );
+				await page.waitForSelector( selector, { timeout: 10000 } );
 				const element = await page.$( selector );
 
 				expect( element ).not.toBeNull();
