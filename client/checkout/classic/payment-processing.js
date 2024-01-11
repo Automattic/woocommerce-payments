@@ -106,22 +106,36 @@ function createStripePaymentMethod(
 	jQueryForm,
 	paymentMethodType
 ) {
+	/* global wcpayCustomerData */
 	let params = {};
+	if ( wcpayCustomerData ) {
+		params = {
+			billing_details: {
+				name: wcpayCustomerData.name || undefined,
+				email: wcpayCustomerData.email,
+				address: {
+					country: wcpayCustomerData.billing_country,
+				},
+			},
+		};
+	}
+
 	if ( jQueryForm.attr( 'name' ) === 'checkout' ) {
 		params = {
 			billing_details: {
-				name: document.querySelector( '#billing_first_name' )
-					? (
-							document.querySelector( '#billing_first_name' )
-								?.value +
-							' ' +
-							document.querySelector( '#billing_last_name' )
-								?.value
-					  ).trim()
-					: undefined,
+				...params.billing_details,
+				name:
+					`${
+						document.querySelector( '#billing_first_name' )
+							?.value || ''
+					} ${
+						document.querySelector( '#billing_last_name' )?.value ||
+						''
+					}`.trim() || undefined,
 				email: document.querySelector( '#billing_email' )?.value,
 				phone: document.querySelector( '#billing_phone' )?.value,
 				address: {
+					...params.billing_details?.address,
 					city: document.querySelector( '#billing_city' )?.value,
 					country: document.querySelector( '#billing_country' )
 						?.value,

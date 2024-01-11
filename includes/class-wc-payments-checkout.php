@@ -346,12 +346,11 @@ class WC_Payments_Checkout {
 			 * before `$this->saved_payment_methods()`.
 			 */
 			$payment_fields  = $this->get_payment_fields_js_config();
-			$upe_object_name = 'wcpay_upe_config';
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
-				function() use ( $payment_fields, $upe_object_name ) {
-					wp_localize_script( 'wcpay-upe-checkout', $upe_object_name, $payment_fields );
+				function() use ( $payment_fields) {
+					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
 				}
 			);
 
