@@ -278,15 +278,6 @@ class WC_Payments_Checkout {
 	}
 
 	/**
-	 * Checks if WooPay is enabled.
-	 *
-	 * @return bool - True if WooPay enabled, false otherwise.
-	 */
-	private function is_woopay_enabled() {
-		return WC_Payments_Features::is_woopay_eligible() && 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' ) && WC_Payments_Features::is_woopay_express_checkout_enabled();
-	}
-
-	/**
 	 * Gets payment method settings to pass to client scripts
 	 *
 	 * @return array
