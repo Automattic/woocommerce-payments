@@ -421,6 +421,7 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		document.getElementById( 'billing_country' )?.value ||
 		wcpayCustomerData?.billing_country ||
 		'';
+
 	const upeContainer = document.querySelector(
 		'.payment_method_woocommerce_payments_' + paymentMethodType
 	);
