@@ -83,7 +83,7 @@ class Compatibility_Service {
 			$post_types_count[ $post_type ] = wp_count_posts( $post_type )->publish;
 		}
 
-		return $post_types_count;
+		return (array) $post_types_count;
 
 	}
 }
