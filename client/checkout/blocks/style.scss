@@ -22,6 +22,11 @@
 	padding-bottom: 1.5em;
 }
 
+.wc-block-components-text-input button.wcpay-stripelink-modal-trigger {
+	top: 50%;
+	transform: translateY( -50% );
+}
+
 button.wcpay-stripelink-modal-trigger {
 	display: none;
 	position: absolute;
