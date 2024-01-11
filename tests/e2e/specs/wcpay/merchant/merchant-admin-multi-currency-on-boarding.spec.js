@@ -7,8 +7,27 @@ const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
  */
 import { merchantWCP, setCheckboxState, uiLoaded } from '../../../utils';
 
+// Shared selector constants.
+const THEME_SELECTOR = ( themeSlug ) => `.theme[data-slug="${ themeSlug }"]`;
+const ACTIVATE_THEME_BUTTON_SELECTOR = ( themeSlug ) =>
+	`${ THEME_SELECTOR( themeSlug ) } .button.activate`;
+const MULTI_CURRENCY_TOGGLE_SELECTOR = "[data-testid='multi-currency-toggle']";
+const RECOMMENDED_CURRENCY_LIST_SELECTOR =
+	'li[data-testid="recommended-currency"]';
+const CURRENCY_NOT_IN_RECOMMENDED_LIST_SELECTOR =
+	'li.enabled-currency-checkbox:not([data-testid="recommended-currency"])';
+const ENABLED_CURRENCY_LIST_SELECTOR = 'li.enabled-currency-checkbox';
+const GEO_CURRENCY_SWITCH_CHECKBOX_SELECTOR =
+	'input[data-testid="enable_auto_currency"]';
+const PREVIEW_STORE_BTN_SELECTOR = '.multi-currency-setup-preview-button';
+const PREVIEW_STORE_MODAL_SELECTOR =
+	'.multi-currency-store-settings-preview-modal';
+const PREVIEW_STORE_IFRAME_SELECTOR =
+	'.multi-currency-store-settings-preview-iframe';
 const SUBMIT_STEP_BTN_SELECTOR =
 	'.add-currencies-task.is-active .task-collapsible-body.is-active > button.is-primary';
+const STOREFRONT_SWITCH_CHECKBOX_SELECTOR =
+	'input[data-testid="enable_storefront_switcher"]';
 
 let wasMulticurrencyEnabled;
 
@@ -21,18 +40,15 @@ const goToThemesPage = async () => {
 const activateTheme = async ( themeSlug ) => {
 	await goToThemesPage();
 
-	const themeSelector = `.theme[data-slug="${ themeSlug }"]`;
-	const activateButtonSelector = `${ themeSelector } .button.activate`;
-
 	// Check if the theme is already active.
 	const isActive = await page.evaluate( ( selector ) => {
 		const themeElement = document.querySelector( selector );
 		return themeElement && themeElement.classList.contains( 'active' );
-	}, themeSelector );
+	}, THEME_SELECTOR( themeSlug ) );
 
 	// Activate the theme if it's not already active.
 	if ( ! isActive ) {
-		await page.click( activateButtonSelector );
+		await page.click( ACTIVATE_THEME_BUTTON_SELECTOR( themeSlug ) );
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 	}
 };
@@ -58,13 +74,11 @@ describe( 'Merchant On-boarding', () => {
 		await merchant.login();
 		// Get initial multi-currency feature status.
 		await merchantWCP.openWCPSettings();
-		await page.waitForSelector( "[data-testid='multi-currency-toggle']" );
-		wasMulticurrencyEnabled = await page.evaluate( () => {
-			const checkbox = document.querySelector(
-				"[data-testid='multi-currency-toggle']"
-			);
+		await page.waitForSelector( MULTI_CURRENCY_TOGGLE_SELECTOR );
+		wasMulticurrencyEnabled = await page.evaluate( ( selector ) => {
+			const checkbox = document.querySelector( selector );
 			return checkbox ? checkbox.checked : false;
-		} );
+		}, MULTI_CURRENCY_TOGGLE_SELECTOR );
 
 		await goToThemesPage();
 
@@ -98,7 +112,7 @@ describe( 'Merchant On-boarding', () => {
 
 		it( 'Should disable the submit button when no currencies are selected', async () => {
 			await setCheckboxState(
-				'.enabled-currency-checkbox .components-checkbox-control__input',
+				`${ ENABLED_CURRENCY_LIST_SELECTOR } .components-checkbox-control__input`,
 				false
 			);
 
@@ -116,17 +130,16 @@ describe( 'Merchant On-boarding', () => {
 		} );
 
 		it( 'Should allow multiple currencies to be selectable', async () => {
-			const listItemSelector =
-				'li.enabled-currency-checkbox:not([data-testid="recommended-currency"])';
-			const checkboxSelector = 'input[type="checkbox"]';
-
-			await page.waitForSelector( listItemSelector, {
-				timeout: 3000,
-			} );
+			await page.waitForSelector(
+				CURRENCY_NOT_IN_RECOMMENDED_LIST_SELECTOR,
+				{
+					timeout: 3000,
+				}
+			);
 
 			// Ensure the checkbox within the list item is present and not disabled.
 			const checkbox = await page.$(
-				`${ listItemSelector } ${ checkboxSelector }`
+				`${ CURRENCY_NOT_IN_RECOMMENDED_LIST_SELECTOR } input[type="checkbox"]`
 			);
 			expect( checkbox ).not.toBeNull();
 			const isDisabled = await (
@@ -147,15 +160,15 @@ describe( 'Merchant On-boarding', () => {
 			await merchantWCP.addCurrency( 'GBP' );
 
 			await goToOnboardingPage();
-			const currencySelector = 'li.enabled-currency-checkbox';
 
-			await page.waitForSelector( currencySelector, {
+			await page.waitForSelector( ENABLED_CURRENCY_LIST_SELECTOR, {
 				timeout: 3000,
 			} );
 
 			// Get the list of currencies as text
-			const currencies = await page.$$eval( currencySelector, ( items ) =>
-				items.map( ( item ) => item.textContent.trim() )
+			const currencies = await page.$$eval(
+				ENABLED_CURRENCY_LIST_SELECTOR,
+				( items ) => items.map( ( item ) => item.textContent.trim() )
 			);
 
 			expect( currencies ).not.toContain( 'GBP' );
@@ -164,16 +177,13 @@ describe( 'Merchant On-boarding', () => {
 		} );
 
 		it( 'Should display some suggested currencies at the beginning of the list', async () => {
-			const recommendedCurrencySelector =
-				'li[data-testid="recommended-currency"]';
-
-			await page.waitForSelector( recommendedCurrencySelector, {
+			await page.waitForSelector( RECOMMENDED_CURRENCY_LIST_SELECTOR, {
 				timeout: 3000,
 			} );
 
 			// Get the list of recommended currencies
 			const recommendedCurrencies = await page.$$eval(
-				recommendedCurrencySelector,
+				RECOMMENDED_CURRENCY_LIST_SELECTOR,
 				( items ) =>
 					items.map( ( item ) => ( {
 						code: item
@@ -236,9 +246,9 @@ describe( 'Merchant On-boarding', () => {
 		it( 'Should offer currency switch by geolocation', async () => {
 			await goToNextOnboardingStep();
 
-			const geoCurrencySwitchCheckboxSelector =
-				'input[data-testid="enable_auto_currency"]';
-			const checkbox = await page.$( geoCurrencySwitchCheckboxSelector );
+			const checkbox = await page.$(
+				GEO_CURRENCY_SWITCH_CHECKBOX_SELECTOR
+			);
 
 			// Check if exists and not disabled.
 			expect( checkbox ).not.toBeNull();
@@ -248,7 +258,7 @@ describe( 'Merchant On-boarding', () => {
 			expect( isDisabled ).toBe( false );
 
 			// Click the checkbox to select it.
-			await page.click( geoCurrencySwitchCheckboxSelector );
+			await page.click( GEO_CURRENCY_SWITCH_CHECKBOX_SELECTOR );
 
 			// Check if the checkbox is selected.
 			const isChecked = await (
@@ -260,29 +270,21 @@ describe( 'Merchant On-boarding', () => {
 		it( 'Should preview currency switch by geolocation correctly with USD and GBP', async () => {
 			await goToNextOnboardingStep();
 
-			const geoCurrencySwitchCheckboxSelector =
-				'input[data-testid="enable_auto_currency"]';
-			const previewBtnSelector = '.multi-currency-setup-preview-button';
-			const previewModalSelector =
-				'.multi-currency-store-settings-preview-modal';
-			const iframeSelector =
-				'.multi-currency-store-settings-preview-iframe';
-
 			// Enable feature.
-			await page.click( geoCurrencySwitchCheckboxSelector );
+			await page.click( GEO_CURRENCY_SWITCH_CHECKBOX_SELECTOR );
 
 			// Click preview button.
-			await page.click( previewBtnSelector );
+			await page.click( PREVIEW_STORE_BTN_SELECTOR );
 
-			await page.waitForSelector( previewModalSelector, {
+			await page.waitForSelector( PREVIEW_STORE_MODAL_SELECTOR, {
 				timeout: 3000,
 			} );
 
-			await page.waitForSelector( iframeSelector, {
+			await page.waitForSelector( PREVIEW_STORE_IFRAME_SELECTOR, {
 				timeout: 3000,
 			} );
 
-			const iframeElement = await page.$( iframeSelector );
+			const iframeElement = await page.$( PREVIEW_STORE_IFRAME_SELECTOR );
 			const iframe = await iframeElement.contentFrame();
 
 			await iframe.waitForSelector( '.woocommerce-Price-currencySymbol', {
@@ -321,9 +323,9 @@ describe( 'Merchant On-boarding', () => {
 			await goToOnboardingPage();
 			await goToNextOnboardingStep();
 
-			const storefrontSwitchCheckboxSelector =
-				'input[data-testid="enable_storefront_switcher"]';
-			const checkbox = await page.$( storefrontSwitchCheckboxSelector );
+			const checkbox = await page.$(
+				STOREFRONT_SWITCH_CHECKBOX_SELECTOR
+			);
 
 			// Check if exists and not disabled.
 			expect( checkbox ).not.toBeNull();
@@ -333,7 +335,7 @@ describe( 'Merchant On-boarding', () => {
 			expect( isDisabled ).toBe( false );
 
 			// Click the checkbox to select it.
-			await page.click( storefrontSwitchCheckboxSelector );
+			await page.click( STOREFRONT_SWITCH_CHECKBOX_SELECTOR );
 
 			// Check if the checkbox is selected.
 			const isChecked = await (
@@ -348,9 +350,9 @@ describe( 'Merchant On-boarding', () => {
 			await goToOnboardingPage();
 			await goToNextOnboardingStep();
 
-			const storefrontSwitchCheckboxSelector =
-				'input[data-testid="enable_storefront_switcher"]';
-			const checkbox = await page.$( storefrontSwitchCheckboxSelector );
+			const checkbox = await page.$(
+				STOREFRONT_SWITCH_CHECKBOX_SELECTOR
+			);
 
 			expect( checkbox ).toBeNull();
 		} );
