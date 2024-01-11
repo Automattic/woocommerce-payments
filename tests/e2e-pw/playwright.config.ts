@@ -41,7 +41,7 @@ export default defineConfig( {
 		toHaveScreenshot: { maxDiffPixels: 100 },
 	},
 	snapshotPathTemplate:
-		'{testDir}/__snapshots__/{testFilePath}/{arg}_{projectName}_{platform}{ext}',
+		'{testDir}/__snapshots__/{testFilePath}/{arg}_{projectName}{ext}',
 	// globalSetup: require.resolve( './global-setup' ),
 	// globalTeardown: require.resolve( './global-teardown' ),
 
