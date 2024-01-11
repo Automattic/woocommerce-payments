@@ -15,8 +15,6 @@ import {
 	getTerms,
 	getUpeSettings,
 	isLinkEnabled,
-	blockUI,
-	unblockUI,
 } from 'wcpay/checkout/utils/upe';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import {
@@ -50,6 +48,29 @@ function initializeAppearance( api ) {
 		api.saveUPEAppearance( appearance );
 	}
 	return appearance;
+}
+
+/**
+ * Block the UI to indicate processing and avoid duplicate submission.
+ *
+ * @param {Object} $form The jQuery object for the form.
+ */
+export function blockUI( $form ) {
+	$form.addClass( 'processing' ).block( {
+		message: null,
+		overlayCSS: {
+			background: '#fff',
+			opacity: 0.6,
+		},
+	} );
+}
+/**
+ * Unblocks the UI to allow payment processing.
+ *
+ * @param {Object} $form The jQuery object for the form.
+ */
+export function unblockUI( $form ) {
+	$form.removeClass( 'processing' ).unblock();
 }
 
 /**

@@ -12,8 +12,6 @@ import {
 	isPaymentMethodRestrictedToLocation,
 	isUsingSavedPaymentMethod,
 	togglePaymentMethodForCountry,
-	blockUI,
-	unblockUI,
 } from '../utils/upe';
 import {
 	processPayment,
@@ -21,6 +19,8 @@ import {
 	renderTerms,
 	createAndConfirmSetupIntent,
 	maybeEnableStripeLink,
+	blockUI,
+	unblockUI,
 } from './payment-processing';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
