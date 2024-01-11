@@ -315,6 +315,7 @@ describe( 'Merchant On-boarding', () => {
 				( elements ) =>
 					elements.map( ( element ) => element.textContent )
 			);
+			console.log( currencySymbols );
 			currencySymbols.forEach( ( symbol ) => {
 				expect( symbol ).toBe( '£' );
 			} );
