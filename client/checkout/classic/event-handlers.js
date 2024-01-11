@@ -37,6 +37,10 @@ jQuery( function ( $ ) {
 		return;
 	}
 
+	const $checkoutForm = $( 'form.checkout' );
+	const $addPaymentMethodForm = $( 'form#add_payment_method' );
+	const $orderReviewForm = $( 'form#order_review' );
+
 	const api = new WCPayAPI(
 		{
 			publishableKey: publishableKey,
@@ -55,11 +59,11 @@ jQuery( function ( $ ) {
 		maybeMountStripePaymentElement();
 	} );
 
-	$( 'form.checkout' ).on( generateCheckoutEventNames(), function () {
+	$checkoutForm.on( generateCheckoutEventNames(), function () {
 		return processPaymentIfNotUsingSavedMethod( $( this ) );
 	} );
 
-	$( 'form.checkout' ).on( 'click', '#place_order', function () {
+	$checkoutForm.on( 'click', '#place_order', function () {
 		const isWCPay = document.getElementById(
 			'payment_method_woocommerce_payments'
 		).checked;
@@ -86,35 +90,33 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	if (
-		$( 'form#add_payment_method' ).length ||
-		$( 'form#order_review' ).length
-	) {
+	if ( $addPaymentMethodForm.length || $orderReviewForm.length ) {
 		maybeMountStripePaymentElement();
 	}
 
-	$( 'form#add_payment_method' ).on( 'submit', function () {
+	$addPaymentMethodForm.on( 'submit', function () {
 		if (
-			$(
-				"#add_payment_method input:checked[name='payment_method']"
-			).val() !== 'woocommerce_payments'
+			$addPaymentMethodForm
+				.find( "input:checked[name='payment_method']" )
+				.val() !== 'woocommerce_payments'
 		) {
 			return;
 		}
+
 		// WC core calls block() when add_payment_method form is submitted, so we need to enable the ignore flag here to avoid
 		// the overlay blink when the form is blocked twice.
 		$.blockUI.defaults.ignoreIfBlocked = true;
 
 		return processPayment(
 			api,
-			$( 'form#add_payment_method' ),
+			$addPaymentMethodForm,
 			getSelectedUPEGatewayPaymentMethod(),
 			createAndConfirmSetupIntent
 		);
 	} );
 
-	$( 'form#order_review' ).on( 'submit', function () {
-		return processPaymentIfNotUsingSavedMethod( $( 'form#order_review' ) );
+	$orderReviewForm.on( 'submit', function () {
+		return processPaymentIfNotUsingSavedMethod( $orderReviewForm );
 	} );
 
 	if (
@@ -148,6 +150,8 @@ jQuery( function ( $ ) {
 	function restrictPaymentMethodToLocation( upeElement ) {
 		if ( isPaymentMethodRestrictedToLocation( upeElement ) ) {
 			togglePaymentMethodForCountry( upeElement );
+
+			// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
 			$( '#billing_country' ).on( 'change', function () {
 				togglePaymentMethodForCountry( upeElement );
 			} );

@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getConfig } from 'wcpay/utils/checkout';
+import { getConfig, getUPEConfig } from 'wcpay/utils/checkout';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 
 export const shouldSavePaymentPaymentMethod = () => {
@@ -22,12 +22,11 @@ const cleanupURL = () => {
 };
 
 export const showAuthenticationModalIfRequired = ( api ) => {
-	const url = window.location.href;
 	const paymentMethodId = document.querySelector( '#wcpay-payment-method' )
 		?.value;
 
 	const confirmation = api.confirmIntent(
-		url,
+		window.location.href,
 		shouldSavePaymentPaymentMethod() ? paymentMethodId : null
 	);
 
@@ -39,11 +38,16 @@ export const showAuthenticationModalIfRequired = ( api ) => {
 	const { request } = confirmation;
 	cleanupURL();
 
+	if ( getUPEConfig( 'isOrderPay' ) ) {
+		// TODO: block UI
+	}
+
 	request
 		.then( ( redirectUrl ) => {
 			window.location = redirectUrl;
 		} )
 		.catch( ( error ) => {
+			// TODO: the checkout form might not be present on pay for order or add payment method pages
 			document
 				.querySelector( 'form.checkout' )
 				.classList.remove( 'processing' );

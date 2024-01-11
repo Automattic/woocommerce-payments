@@ -53,10 +53,10 @@ function initializeAppearance( api ) {
 /**
  * Block UI to indicate processing and avoid duplicate submission.
  *
- * @param {Object} jQueryForm The jQuery object for the jQueryForm.
+ * @param {Object} $form The jQuery object for the form.
  */
-function blockUI( jQueryForm ) {
-	jQueryForm.addClass( 'processing' ).block( {
+function blockUI( $form ) {
+	$form.addClass( 'processing' ).block( {
 		message: null,
 		overlayCSS: {
 			background: '#fff',
@@ -339,16 +339,16 @@ export function renderTerms( event ) {
 let hasCheckoutCompleted;
 export const processPayment = (
 	api,
-	jQueryForm,
+	$form,
 	paymentMethodType,
-	additionalActionsHandler = () => {}
+	additionalActionsHandler = () => Promise.resolve()
 ) => {
 	if ( hasCheckoutCompleted ) {
 		hasCheckoutCompleted = false;
 		return;
 	}
 
-	blockUI( jQueryForm );
+	blockUI( $form );
 
 	const elements = gatewayUPEComponents[ paymentMethodType ].elements;
 
@@ -358,24 +358,24 @@ export const processPayment = (
 			const paymentMethodObject = await createStripePaymentMethod(
 				api,
 				elements,
-				jQueryForm,
+				$form,
 				paymentMethodType
 			);
-			appendFingerprintInputToForm( jQueryForm, fingerprint );
+			appendFingerprintInputToForm( $form, fingerprint );
 			appendPaymentMethodIdToForm(
-				jQueryForm,
+				$form,
 				paymentMethodObject.paymentMethod.id
 			);
 			await additionalActionsHandler(
 				paymentMethodObject.paymentMethod,
-				jQueryForm,
+				$form,
 				api
 			);
 			hasCheckoutCompleted = true;
-			submitForm( jQueryForm );
+			submitForm( $form );
 		} catch ( err ) {
 			hasCheckoutCompleted = false;
-			jQueryForm.removeClass( 'processing' ).unblock();
+			$form.removeClass( 'processing' ).unblock();
 			showErrorCheckout( err.message );
 		}
 	} )();
