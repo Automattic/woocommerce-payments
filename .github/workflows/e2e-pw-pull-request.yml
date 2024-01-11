@@ -65,7 +65,14 @@ jobs:
                   path: ${{ env.WCPAY_ARTIFACT_DIRECTORY }}
 
             - name: Setup E2E environment
-              uses: ./.github/actions/e2e-pw/env-setup
+              uses: ./.github/actions/e2e/env-setup
+
+            - name: Install Playwright
+              shell: bash
+              run: |
+                  echo "::group::Install Playwright"
+                  npx playwright install
+                  echo "::endgroup::"
 
             - name: Run tests, upload screenshots & logs
               uses: ./.github/actions/e2e-pw/run-log-tests
