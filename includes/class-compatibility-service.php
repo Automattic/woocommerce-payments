@@ -80,10 +80,10 @@ class Compatibility_Service {
 		$post_types_count = [];
 
 		foreach ( $post_types as $post_type ) {
-			$post_types_count[ $post_type ] = wp_count_posts( $post_type )->publish;
+			$post_types_count[ $post_type ] = (string) wp_count_posts( $post_type )->publish;
 		}
 
-		return (array) $post_types_count;
+		return $post_types_count;
 
 	}
 }
