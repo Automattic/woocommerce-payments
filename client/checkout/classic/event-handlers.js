@@ -60,9 +60,9 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 
-	blockUI( $form );
+	blockUI( $forms );
 	showAuthenticationModalIfRequired( api ).finally( () => {
-		unblockUI( $form );
+		unblockUI( $forms );
 	} );
 
 	$( document.body ).on( 'updated_checkout', () => {
@@ -87,9 +87,9 @@ jQuery( function ( $ ) {
 
 	window.addEventListener( 'hashchange', () => {
 		if ( window.location.hash.startsWith( '#wcpay-confirm-' ) ) {
-			blockUI( $form );
+			blockUI( $forms );
 			showAuthenticationModalIfRequired( api, $forms ).finally( () => {
-				unblockUI( $form );
+				unblockUI( $forms );
 			} );
 		}
 	} );
