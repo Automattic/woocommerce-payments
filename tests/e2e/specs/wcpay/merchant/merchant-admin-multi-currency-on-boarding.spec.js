@@ -7,6 +7,9 @@ const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
  */
 import { merchantWCP, setCheckboxState, uiLoaded } from '../../../utils';
 
+const SUBMIT_STEP_BTN_SELECTOR =
+	'.add-currencies-task.is-active .task-collapsible-body.is-active > button.is-primary';
+
 let wasMulticurrencyEnabled;
 
 const goToThemesPage = async () => {
@@ -45,10 +48,7 @@ const goToOnboardingPage = async () => {
 };
 
 const goToNextOnboardingStep = async () => {
-	const continueBtnSelector =
-		'.add-currencies-task.is-active .task-collapsible-body.is-active > button.is-primary';
-
-	await page.click( continueBtnSelector );
+	await page.click( SUBMIT_STEP_BTN_SELECTOR );
 };
 
 describe( 'Merchant On-boarding', () => {
@@ -104,10 +104,7 @@ describe( 'Merchant On-boarding', () => {
 
 			await page.waitFor( 1000 );
 
-			const button = await page.$(
-				'.add-currencies-task.is-active .task-collapsible-body.is-active > button.is-primary'
-			);
-
+			const button = await page.$( SUBMIT_STEP_BTN_SELECTOR );
 			expect( button ).not.toBeNull();
 
 			const isDisabled = await page.evaluate(
@@ -212,10 +209,7 @@ describe( 'Merchant On-boarding', () => {
 			}
 
 			// Submit the form.
-			const submitButton = await page.$(
-				'.add-currencies-task.is-active .task-collapsible-body.is-active > button.is-primary'
-			);
-			await submitButton.click();
+			await goToNextOnboardingStep();
 
 			await merchantWCP.openMultiCurrency();
 
