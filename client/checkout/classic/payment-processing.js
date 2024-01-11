@@ -64,6 +64,7 @@ export function blockUI( $form ) {
 		},
 	} );
 }
+
 /**
  * Unblocks the UI to allow payment processing.
  *
