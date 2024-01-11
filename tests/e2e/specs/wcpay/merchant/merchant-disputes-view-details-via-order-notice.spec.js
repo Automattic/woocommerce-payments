@@ -43,6 +43,10 @@ describe( 'Disputes > View dispute details via disputed order notice', () => {
 			'#wcpay-order-payment-details-container'
 		);
 		if ( ! orderPaymentDetailsContainer ) {
+			// eslint-disable-next-line no-console
+			console.log(
+				'Skipping test since the order dispute notice is not present in WC < 7.9'
+			);
 			return;
 		}
 
