@@ -16,6 +16,14 @@ let orderAmount;
 
 describe( 'Order > Full refund', () => {
 	beforeAll( async () => {
+		// Disable multi-currency in the merchant settings. This step is important because local environment setups
+		// might have multi-currency enabled. We need to ensure a consistent
+		// environment for the test.
+		await merchant.login();
+		await merchantWCP.deactivateMulticurrency();
+		await merchant.logout();
+
+		await shopper.login();
 		// Place an order to refund later
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )

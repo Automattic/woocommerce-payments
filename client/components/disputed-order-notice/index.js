@@ -14,6 +14,7 @@ import { getDetailsURL } from 'wcpay/components/details-link';
 import {
 	isAwaitingResponse,
 	isInquiry,
+	isRefundable,
 	isUnderReview,
 } from 'wcpay/disputes/utils';
 import { useCharge } from 'wcpay/data';
@@ -30,10 +31,7 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 		if ( ! charge?.dispute ) {
 			return;
 		}
-		// Refunds are only allowed if the dispute is an inquiry or if it's won.
-		const isRefundable =
-			isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
-		if ( ! isRefundable ) {
+		if ( ! isRefundable( dispute.status ) ) {
 			onDisableOrderRefund( dispute.status );
 		}
 	}, [ charge, onDisableOrderRefund ] );
@@ -42,8 +40,6 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	if ( ! charge?.dispute ) {
 		return null;
 	}
-	const isRefundable =
-		isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
 
 	// Special case the dispute "under review" notice which is much simpler.
 	// (And return early.)
@@ -66,7 +62,7 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	// This may be dead code. Leaving in for now as this is consistent with
 	// the logic before this PR.
 	// https://github.com/Automattic/woocommerce-payments/pull/7557
-	if ( dispute.status === 'lost' && ! isRefundable ) {
+	if ( dispute.status === 'lost' ) {
 		return (
 			<DisputeOrderLockedNotice
 				message={ __(

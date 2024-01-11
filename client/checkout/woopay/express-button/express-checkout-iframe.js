@@ -75,7 +75,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		}
 
 		// If the window width is less than the breakpoint, set iframe to full window
-		if ( fullScreenModalBreakpoint >= window.innerWidth ) {
+		if ( fullScreenModalBreakpoint > window.innerWidth ) {
 			iframe.style.left = '0';
 			iframe.style.right = '';
 			iframe.style.top = '0';
