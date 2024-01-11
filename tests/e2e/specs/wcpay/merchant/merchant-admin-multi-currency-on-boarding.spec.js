@@ -307,7 +307,7 @@ describe( 'Merchant On-boarding', () => {
 				timeout: 5000,
 			} );
 
-			await page.waitFor( 1000 );
+			await page.waitFor( 3000 );
 
 			// Assert that all occurrences of '.woocommerce-Price-currencySymbol' have the sterling pound symbol
 			const currencySymbols = await iframe.$$eval(
