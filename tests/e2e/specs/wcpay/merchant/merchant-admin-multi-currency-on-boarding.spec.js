@@ -290,10 +290,6 @@ describe( 'Merchant On-boarding', () => {
 			const iframeElement = await page.$( PREVIEW_STORE_IFRAME_SELECTOR );
 			const iframe = await iframeElement.contentFrame();
 
-			await iframe.waitForSelector( '.woocommerce-Price-currencySymbol', {
-				timeout: 5000,
-			} );
-
 			await iframe.waitForSelector( '.woocommerce-store-notice', {
 				timeout: 3000,
 			} );
@@ -306,6 +302,12 @@ describe( 'Merchant On-boarding', () => {
 				// eslint-disable-next-line max-len
 				"We noticed you're visiting from United Kingdom (UK). We've updated our prices to Pound sterling for your shopping convenience."
 			);
+
+			await iframe.waitForSelector( '.woocommerce-Price-currencySymbol', {
+				timeout: 5000,
+			} );
+
+			await page.waitFor( 1000 );
 
 			// Assert that all occurrences of '.woocommerce-Price-currencySymbol' have the sterling pound symbol
 			const currencySymbols = await iframe.$$eval(
