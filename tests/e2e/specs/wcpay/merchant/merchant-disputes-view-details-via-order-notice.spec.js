@@ -38,7 +38,13 @@ describe( 'Disputes > View dispute details via disputed order notice', () => {
 	} );
 
 	it( 'should click the disputed order notice and view the dispute details', async () => {
-		// TODO: if WC < 7.9, skip this test.
+		// If WC < 7.9, return early since the order dispute notice is not present.
+		const orderPaymentDetailsContainer = await page.$(
+			'#wcpay-order-payment-details-container'
+		);
+		if ( ! orderPaymentDetailsContainer ) {
+			return;
+		}
 
 		// Click the order dispute notice.
 		await expect( page ).toClick( '[type="button"]', {
