@@ -42,13 +42,6 @@ class WC_Payments_Order_Service {
 	const CHARGE_ID_META_KEY = '_charge_id';
 
 	/**
-	 * Meta key used to store payment transaction Id.
-	 *
-	 * @const string
-	 */
-	const PAYMENT_TRANSACTION_ID_META_KEY = '_payment_transaction_id';
-
-	/**
 	 * Meta key used to store intention status.
 	 *
 	 * @const string
@@ -119,6 +112,13 @@ class WC_Payments_Order_Service {
 	 * @const string
 	 */
 	const WCPAY_MODE_META_KEY = '_wcpay_mode';
+
+	/**
+	 * Meta key used to store payment transaction Id.
+	 *
+	 * @const string
+	 */
+	const WCPAY_PAYMENT_TRANSACTION_ID_META_KEY = '_wcpay_payment_transaction_id';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -551,7 +551,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 		$order = $this->get_order( $order );
-		$order->update_meta_data( self::PAYMENT_TRANSACTION_ID_META_KEY, $payment_transaction_id );
+		$order->update_meta_data( self::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY, $payment_transaction_id );
 		$order->save_meta_data();
 	}
 
