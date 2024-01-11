@@ -431,3 +431,26 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		upeContainer.style.display = 'none';
 	}
 };
+
+/**
+ * Block the UI to indicate processing and avoid duplicate submission.
+ *
+ * @param {Object} $form The jQuery object for the form.
+ */
+export function blockUI( $form ) {
+	$form.addClass( 'processing' ).block( {
+		message: null,
+		overlayCSS: {
+			background: '#fff',
+			opacity: 0.6,
+		},
+	} );
+}
+/**
+ * Unblocks the UI to allow payment processing.
+ *
+ * @param {Object} $form The jQuery object for the form.
+ */
+export function unblockUI( $form ) {
+	$form.removeClass( 'processing' ).unblock();
+}

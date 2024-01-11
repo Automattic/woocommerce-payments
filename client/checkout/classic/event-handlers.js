@@ -12,6 +12,8 @@ import {
 	isPaymentMethodRestrictedToLocation,
 	isUsingSavedPaymentMethod,
 	togglePaymentMethodForCountry,
+	blockUI,
+	unblockUI,
 } from '../utils/upe';
 import {
 	processPayment,
@@ -19,8 +21,6 @@ import {
 	renderTerms,
 	createAndConfirmSetupIntent,
 	maybeEnableStripeLink,
-	blockUI,
-	unblockUI,
 } from './payment-processing';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
@@ -41,11 +41,12 @@ jQuery( function ( $ ) {
 
 	const $checkoutForm = $( 'form.checkout' );
 	const $addPaymentMethodForm = $( 'form#add_payment_method' );
-	const $orderReviewForm = $( 'form#order_review' );
+	const $payForOrderForm = $( 'form#order_review' );
 
+	// creating a new jQuery object containing all the forms that need to be updated on submit, failure, or other events.
 	const $forms = jQuery( $checkoutForm )
 		.add( $addPaymentMethodForm )
-		.add( $orderReviewForm );
+		.add( $payForOrderForm );
 
 	const api = new WCPayAPI(
 		{
@@ -103,7 +104,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	if ( $addPaymentMethodForm.length || $orderReviewForm.length ) {
+	if ( $addPaymentMethodForm.length || $payForOrderForm.length ) {
 		maybeMountStripePaymentElement();
 	}
 
@@ -128,8 +129,8 @@ jQuery( function ( $ ) {
 		);
 	} );
 
-	$orderReviewForm.on( 'submit', function () {
-		return processPaymentIfNotUsingSavedMethod( $orderReviewForm );
+	$payForOrderForm.on( 'submit', function () {
+		return processPaymentIfNotUsingSavedMethod( $payForOrderForm );
 	} );
 
 	if (
