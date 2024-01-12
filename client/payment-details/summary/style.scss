@@ -106,7 +106,8 @@
 		 * that the parent container is positioned relatively.
 		 * This should be taken care of by the dropdown menu component's CSS, but we seem to be relying in outdated
 		 * wordpress/components styles.
-		 * TODO: link to GH issue.
+		 *
+		 * Github issue: https://github.com/Automattic/woocommerce-payments/issues/8012
 		 */
 		.components-popover {
 			position: fixed;
