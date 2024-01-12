@@ -2185,12 +2185,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Refund without an amount is a no-op, but required to succeed in
 		// case merchant needs it to re-stock order items.
-		if ( null === $amount || '0.00' === sprintf( '%0.2f', $amount ) ) {
+		if ( '0.00' === sprintf( '%0.2f', $amount ?? 0 ) ) {
 			return true;
 		}
 
 		// If the entered amount is not valid stop without making a request.
-		if ( $amount <= 0 || $amount > $order->get_total() ) {
+		if ( $amount < 0 || $amount > $order->get_total() ) {
 			return new WP_Error(
 				'invalid-amount',
 				__( 'The refund amount is not valid.', 'woocommerce-payments' )
