@@ -37,7 +37,7 @@ describe( 'Disputes > View dispute details via disputed order notice', () => {
 		await merchant.logout();
 	} );
 
-	it( 'should click the disputed order notice and view the dispute details', async () => {
+	it( 'should navigate to dispute details when disputed order notice button clicked', async () => {
 		// If WC < 7.9, return early since the order dispute notice is not present.
 		const orderPaymentDetailsContainer = await page.$(
 			'#wcpay-order-payment-details-container'
