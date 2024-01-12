@@ -273,7 +273,7 @@ describe( 'Merchant On-boarding', () => {
 		} );
 
 		it( 'Should preview currency switch by geolocation correctly with USD and GBP', async () => {
-			page.setViewport( { width: 1280, height: 720 } ); // To take a screenshot of the iframe preview.
+			page.setViewport( { width: 1280, height: 1280 } ); // To take a better screenshot of the iframe preview.
 
 			await goToNextOnboardingStep();
 
