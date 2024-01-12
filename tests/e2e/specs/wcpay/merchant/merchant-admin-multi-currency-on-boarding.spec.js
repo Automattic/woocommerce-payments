@@ -273,6 +273,9 @@ describe( 'Merchant On-boarding', () => {
 		} );
 
 		it( 'Should preview currency switch by geolocation correctly with USD and GBP', async () => {
+			page.setViewport( { width: 1600, height: 1200 } );
+
+			await takeScreenshot( 'geolocation-switcher-0' );
 			await goToNextOnboardingStep();
 
 			// Enable feature.
@@ -282,6 +285,8 @@ describe( 'Merchant On-boarding', () => {
 			);
 
 			await takeScreenshot( 'geolocation-switcher-enabled' );
+
+			await page.waitFor( 2000 );
 
 			// Click preview button.
 			await page.click( PREVIEW_STORE_BTN_SELECTOR );
