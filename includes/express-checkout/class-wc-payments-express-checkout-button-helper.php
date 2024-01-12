@@ -232,4 +232,29 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return 1;
 		}
 	}
+
+	/**
+	 * Checks if the store has any shipping method enabled.
+	 *
+	 * @return boolean
+	 */
+	public function has_any_shipping_method() {
+		// get_zones() doesn't include the default zone("Locations not covered by your other zones"), so we need to check it separately.
+		if ( ! empty( WC_Shipping_Zones::get_zone_by( 'zone_id', 0 )->get_shipping_methods() ) ) {
+			return true;
+		}
+
+		// Get all other zones.
+		$zones = WC_Shipping_Zones::get_zones();
+
+		foreach ( $zones as $zone ) {
+			// If the zone has any shipping methods, return true.
+			if ( ! empty( $zone['shipping_methods'] ) ) {
+				return true;
+			}
+		}
+
+		// If no zone has any shipping methods, return false.
+		return false;
+	}
 }

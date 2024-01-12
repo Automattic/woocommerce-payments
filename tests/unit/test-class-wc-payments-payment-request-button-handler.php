@@ -549,4 +549,78 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			'Failed asserting total amount are the same for get_product_data and build_display_items'
 		);
 	}
+
+	public function test_should_show_button_for_non_subscription_product() {
+		$product = $this->createMock( WC_Product::class );
+		WC()->cart->add_to_cart( $product->get_id() );
+
+		$this->assertTrue( $this->pr->should_show_button_for_subscription_product() );
+	}
+
+	public function test_should_not_show_button_for_subscription_product_when_no_shipping_methods_enabled() {
+		$product = $this->createMock( WC_Subscriptions_Product::class );
+
+		WC()->cart->add_to_cart( $product->get_id() );
+
+		$express_checkout_helper_mock = $this->createMock( WC_Payments_Express_Checkout_Button_Helper::class );
+		$express_checkout_helper_mock->method( 'has_any_shipping_method' )->willReturn( false );
+
+		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $express_checkout_helper_mock ] )
+			->setMethods( [ 'has_subscription_product' ] )
+			->getMock();
+
+		$mock_pr->method( 'has_subscription_product' )->willReturn( true );
+
+		$this->pr = $mock_pr;
+
+		$this->assertFalse( $this->pr->should_show_button_for_subscription_product() );
+	}
+
+	public function test_should_show_button_for_subscription_product_when_shipping_methods_enabled() {
+		// Shipping method is enabled by default in the setup method.
+		$product = $this->createMock( WC_Subscriptions_Product::class );
+
+		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
+			->setMethods( [ 'has_subscription_product' ] )
+			->getMock();
+
+		$mock_pr->method( 'has_subscription_product' )->willReturn( true );
+
+		WC()->cart->add_to_cart( $product->get_id() );
+
+		$this->assertTrue( $mock_pr->should_show_button_for_subscription_product() );
+	}
+
+	public function test_should_show_button_for_subscription_that_does_not_need_shipping() {
+		$product = $this->createMock( WC_Product::class );
+
+		add_filter(
+			'woocommerce_cart_item_product',
+			function ( $product, $cart_item, $cart_item_key ) {
+				$mock_product = $this->getMockBuilder( WC_Product::class )
+					->setMethods( [ 'needs_shipping', 'is_type' ] )
+					->getMock();
+				$mock_product->method( 'needs_shipping' )->willReturn( false );
+				$mock_product->method( 'is_type' )->willReturn( 'subscription' );
+
+				return $mock_product;
+			},
+			10,
+			3
+		);
+
+		WC()->cart->add_to_cart( $product->get_id() );
+
+		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
+			->setMethods( [ 'has_any_shipping_method', 'has_subscription_product' ] )
+			->getMock();
+
+		$mock_pr->method( 'has_any_shipping_method' )->willReturn( false );
+		$mock_pr->method( 'has_subscription_product' )->willReturn( true );
+
+		$this->assertTrue( $mock_pr->should_show_button_for_subscription_product() );
+	}
 }
