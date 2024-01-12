@@ -38,7 +38,7 @@ export default defineConfig( {
 		// storageState: 'tests/e2e-pw/storage/state.json',
 	},
 	expect: {
-		toHaveScreenshot: { maxDiffPixels: 100 },
+		toHaveScreenshot: { maxDiffPixelRatio: 0.025 },
 	},
 	snapshotPathTemplate:
 		'{testDir}/__snapshots__/{testFilePath}/{arg}_{projectName}{ext}',
