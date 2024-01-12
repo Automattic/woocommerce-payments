@@ -116,7 +116,7 @@ export const handleWooPayEmailInput = async (
 		}
 
 		// If the window width is less than the breakpoint, reset the styles and return.
-		if ( fullScreenModalBreakpoint >= window.innerWidth ) {
+		if ( fullScreenModalBreakpoint > window.innerWidth ) {
 			iframe.style.left = '0';
 			iframe.style.right = '';
 			return;
