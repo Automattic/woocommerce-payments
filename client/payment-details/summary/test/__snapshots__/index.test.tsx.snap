@@ -707,7 +707,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -1002,7 +1002,7 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -1297,7 +1297,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -1615,7 +1615,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -2454,7 +2454,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -2749,7 +2749,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -3044,7 +3044,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >

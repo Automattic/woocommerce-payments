@@ -48,6 +48,7 @@ import DisputeStatusChip from 'components/dispute-status-chip';
 import {
 	getDisputeFeeFormatted,
 	isAwaitingResponse,
+	isRefundable,
 } from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
@@ -207,6 +208,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const disputeFee =
 		charge.dispute && getDisputeFeeFormatted( charge.dispute );
+
+	// If this transaction is disputed, check if it is refundable.
+	const isDisputeRefundable = charge.dispute
+		? isRefundable( charge.dispute.status )
+		: true;
+
+	// Partial refunds are done through the order page. If order number is not
+	// present, partial refund is not possible.
+	const isPartiallyRefundable = charge.order && charge.order.number;
+
+	// Control menu only shows refund actions for now. In the future, it may show other actions.
+	const showControlMenu =
+		charge.captured && ! charge.refunded && isDisputeRefundable;
 
 	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
 	const transactionFee = charge.balance_transaction
@@ -484,7 +498,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						</div>
 					</div>
 					<div className="payment-details__refund-controls">
-						{ ! charge?.refunded && charge?.captured && (
+						{ showControlMenu && (
 							<Loadable
 								isLoading={ isLoading }
 								placeholder={ moreVertical }
@@ -492,7 +506,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<DropdownMenu
 									icon={ moreVertical }
 									label={ __(
-										'Translation actions',
+										'Transaction actions',
 										'woocommerce-payments'
 									) }
 									popoverProps={ {
@@ -521,7 +535,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 													'woocommerce-payments'
 												) }
 											</MenuItem>
-											{ charge.order && (
+											{ isPartiallyRefundable && (
 												<MenuItem
 													onClick={ () => {
 														wcpayTracks.recordEvent(
