@@ -115,6 +115,7 @@ describe( 'Merchant On-boarding', () => {
 		} );
 
 		it( 'Should disable the submit button when no currencies are selected', async () => {
+			await takeScreenshot( 'merchant-on-boarding-multicurrency-screen' );
 			await setCheckboxState(
 				`${ ENABLED_CURRENCY_LIST_SELECTOR } .components-checkbox-control__input`,
 				false
@@ -272,20 +273,19 @@ describe( 'Merchant On-boarding', () => {
 		} );
 
 		it( 'Should preview currency switch by geolocation correctly with USD and GBP', async () => {
-			page.setViewport( { width: 1600, height: 1200 } );
+			page.setViewport( { width: 1280, height: 720 } ); // To take a screenshot of the iframe preview.
 
-			await takeScreenshot( 'geolocation-switcher-0' );
 			await goToNextOnboardingStep();
+
+			await takeScreenshot(
+				'merchant-on-boarding-multicurrency-screen-2'
+			);
 
 			// Enable feature.
 			await setCheckboxState(
 				GEO_CURRENCY_SWITCH_CHECKBOX_SELECTOR,
 				true
 			);
-
-			await takeScreenshot( 'geolocation-switcher-enabled' );
-
-			await page.waitFor( 3000 );
 
 			// Click preview button.
 			await page.click( PREVIEW_STORE_BTN_SELECTOR );
@@ -294,8 +294,6 @@ describe( 'Merchant On-boarding', () => {
 				timeout: 3000,
 			} );
 
-			await takeScreenshot( 'geolocation-switcher-preview-0' );
-
 			const iframeElement = await page.$( PREVIEW_STORE_IFRAME_SELECTOR );
 			const iframe = await iframeElement.contentFrame();
 
@@ -303,7 +301,9 @@ describe( 'Merchant On-boarding', () => {
 				timeout: 3000,
 			} );
 
-			await takeScreenshot( 'geolocation-switcher-preview-1' );
+			await takeScreenshot(
+				'merchant-on-boarding-multicurrency-geolocation-switcher-preview'
+			);
 
 			const noticeText = await iframe.$eval(
 				'.woocommerce-store-notice',
@@ -318,15 +318,12 @@ describe( 'Merchant On-boarding', () => {
 				timeout: 5000,
 			} );
 
-			await takeScreenshot( 'geolocation-switcher-preview-2' );
-
 			// Assert that all occurrences of '.woocommerce-Price-currencySymbol' have the sterling pound symbol
 			const currencySymbols = await iframe.$$eval(
 				'.woocommerce-Price-currencySymbol',
 				( elements ) =>
 					elements.map( ( element ) => element.textContent )
 			);
-			console.log( currencySymbols );
 			currencySymbols.forEach( ( symbol ) => {
 				expect( symbol ).toBe( '£' );
 			} );
