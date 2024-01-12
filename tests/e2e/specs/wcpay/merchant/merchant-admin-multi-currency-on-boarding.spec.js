@@ -25,8 +25,6 @@ const ENABLED_CURRENCY_LIST_SELECTOR = 'li.enabled-currency-checkbox';
 const GEO_CURRENCY_SWITCH_CHECKBOX_SELECTOR =
 	'input[data-testid="enable_auto_currency"]';
 const PREVIEW_STORE_BTN_SELECTOR = '.multi-currency-setup-preview-button';
-const PREVIEW_STORE_MODAL_SELECTOR =
-	'.multi-currency-store-settings-preview-modal';
 const PREVIEW_STORE_IFRAME_SELECTOR =
 	'.multi-currency-store-settings-preview-iframe';
 const SUBMIT_STEP_BTN_SELECTOR =
@@ -84,12 +82,13 @@ describe( 'Merchant On-boarding', () => {
 			const checkbox = document.querySelector( selector );
 			return checkbox ? checkbox.checked : false;
 		}, MULTI_CURRENCY_TOGGLE_SELECTOR );
+		await merchantWCP.activateMulticurrency();
 
 		await goToThemesPage();
 
 		// Get current theme slug.
 		activeThemeSlug = await page.evaluate( () => {
-			const theme = document.querySelector( '.theme.active-theme' );
+			const theme = document.querySelector( '.theme.active' );
 			return theme ? theme.getAttribute( 'data-slug' ) : '';
 		} );
 	} );
@@ -286,14 +285,10 @@ describe( 'Merchant On-boarding', () => {
 
 			await takeScreenshot( 'geolocation-switcher-enabled' );
 
-			await page.waitFor( 2000 );
+			await page.waitFor( 3000 );
 
 			// Click preview button.
 			await page.click( PREVIEW_STORE_BTN_SELECTOR );
-
-			await page.waitForSelector( PREVIEW_STORE_MODAL_SELECTOR, {
-				timeout: 3000,
-			} );
 
 			await page.waitForSelector( PREVIEW_STORE_IFRAME_SELECTOR, {
 				timeout: 3000,
@@ -377,6 +372,8 @@ describe( 'Merchant On-boarding', () => {
 			);
 
 			expect( checkbox ).toBeNull();
+
+			await activateTheme( 'storefront' );
 		} );
 	} );
 } );

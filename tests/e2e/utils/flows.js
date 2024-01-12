@@ -23,7 +23,7 @@ const {
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
 
-import { uiLoaded } from './helpers';
+import { takeScreenshot, uiLoaded } from './helpers';
 
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
@@ -447,13 +447,9 @@ export const merchantWCP = {
 	},
 
 	openMultiCurrency: async () => {
-		const currentUrl = await page.url();
-
-		if ( currentUrl !== WCPAY_MULTI_CURRENCY ) {
-			await page.goto( WCPAY_MULTI_CURRENCY, {
-				waitUntil: 'networkidle0',
-			} );
-		}
+		await page.goto( WCPAY_MULTI_CURRENCY, {
+			waitUntil: 'networkidle0',
+		} );
 		await uiLoaded();
 	},
 
@@ -704,8 +700,10 @@ export const merchantWCP = {
 	disableAllEnabledCurrencies: async () => {
 		await page.goto( WCPAY_MULTI_CURRENCY, { waitUntil: 'networkidle0' } );
 
-		await page.waitForSelector( '.enabled-currencies-list', {
-			timeout: 10000,
+		await takeScreenshot( 'before-disable-all-enabled-currencies' );
+
+		await page.waitForSelector( '.enabled-currencies-list li', {
+			timeout: 20000,
 		} );
 
 		// Select all delete buttons for enabled currencies.
@@ -728,6 +726,9 @@ export const merchantWCP = {
 
 	editCurrency: async ( currencyCode ) => {
 		await merchantWCP.openMultiCurrency();
+
+		await takeScreenshot( `before-edit-currency-${ currencyCode }` );
+		await page.waitFor( 10000 );
 
 		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
 		await page.waitForSelector( currencyItemSelector, { timeout: 10000 } );
