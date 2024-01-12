@@ -166,8 +166,8 @@ export const generateCheckoutEventNames = () => {
 		.join( ' ' );
 };
 
-export const appendPaymentMethodIdToForm = ( form, paymentMethodId ) => {
-	form.append(
+export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
+	$form.append(
 		`<input type="hidden" id="wcpay-payment-method" name="wcpay-payment-method" value="${ paymentMethodId }" />`
 	);
 };
@@ -415,7 +415,13 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const supportedCountries =
 		paymentMethodsConfig[ paymentMethodType ].countries;
 
-	const billingCountry = document.getElementById( 'billing_country' ).value;
+	/* global wcpayCustomerData */
+	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
+	const billingCountry =
+		document.getElementById( 'billing_country' )?.value ||
+		wcpayCustomerData?.billing_country ||
+		'';
+
 	const upeContainer = document.querySelector(
 		'.payment_method_woocommerce_payments_' + paymentMethodType
 	);
