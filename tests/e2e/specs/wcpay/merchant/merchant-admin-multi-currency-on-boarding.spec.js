@@ -5,7 +5,12 @@ const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP, setCheckboxState, uiLoaded } from '../../../utils';
+import {
+	merchantWCP,
+	setCheckboxState,
+	takeScreenshot,
+	uiLoaded,
+} from '../../../utils';
 
 // Shared selector constants.
 const THEME_SELECTOR = ( themeSlug ) => `.theme[data-slug="${ themeSlug }"]`;
@@ -276,6 +281,8 @@ describe( 'Merchant On-boarding', () => {
 				true
 			);
 
+			await takeScreenshot( 'geolocation-switcher-enabled' );
+
 			// Click preview button.
 			await page.click( PREVIEW_STORE_BTN_SELECTOR );
 
@@ -287,12 +294,16 @@ describe( 'Merchant On-boarding', () => {
 				timeout: 3000,
 			} );
 
+			await takeScreenshot( 'geolocation-switcher-preview-0' );
+
 			const iframeElement = await page.$( PREVIEW_STORE_IFRAME_SELECTOR );
 			const iframe = await iframeElement.contentFrame();
 
 			await iframe.waitForSelector( '.woocommerce-store-notice', {
 				timeout: 3000,
 			} );
+
+			await takeScreenshot( 'geolocation-switcher-preview-1' );
 
 			const noticeText = await iframe.$eval(
 				'.woocommerce-store-notice',
@@ -307,7 +318,7 @@ describe( 'Merchant On-boarding', () => {
 				timeout: 5000,
 			} );
 
-			await page.waitFor( 10000 );
+			await takeScreenshot( 'geolocation-switcher-preview-2' );
 
 			// Assert that all occurrences of '.woocommerce-Price-currencySymbol' have the sterling pound symbol
 			const currencySymbols = await iframe.$$eval(
