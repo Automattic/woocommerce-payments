@@ -92,6 +92,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		[ isSaveDetailsChecked, phoneNumber, viewportWidth, viewportHeight ]
 	);
 
+	const handleCountryDropdownClick = useCallback( () => {
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.WOOPAY_SAVE_MY_INFO_COUNTRY_CLICK
+		);
+	}, [] );
+
 	const handleCheckboxClick = ( e ) => {
 		const isChecked = e.target.checked;
 		if ( isChecked ) {
@@ -111,6 +117,15 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			}
 		);
 	};
+
+	useEffect( () => {
+		// Record Tracks event when the mobile number is entered.
+		if ( isPhoneValid ) {
+			wcpayTracks.recordUserEvent(
+				wcpayTracks.events.WOOPAY_SAVE_MY_INFO_MOBILE_ENTER
+			);
+		}
+	}, [ isPhoneValid ] );
 
 	useEffect( () => {
 		// Record Tracks event when user clicks on the info icon for the first time.
@@ -305,6 +320,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							value={ phoneNumber }
 							onValueChange={ setPhoneNumber }
 							onValidationChange={ onPhoneValidationChange }
+							onCountryDropdownClick={
+								handleCountryDropdownClick
+							}
 							inputProps={ {
 								name:
 									'woopay_user_phone_field[no-country-code]',
