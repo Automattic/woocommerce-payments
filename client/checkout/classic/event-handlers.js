@@ -77,7 +77,7 @@ jQuery( function ( $ ) {
 	$checkoutForm.on( 'click', '#place_order', function () {
 		const isWCPay = document.getElementById(
 			'payment_method_woocommerce_payments'
-		).checked;
+		)?.checked;
 
 		if ( ! isWCPay ) {
 			return;
