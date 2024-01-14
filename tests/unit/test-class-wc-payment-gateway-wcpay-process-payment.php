@@ -6,19 +6,17 @@
  */
 
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
-use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
-use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
-use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Constants\Payment_Method;
+use WCPay\Payment_Methods\CC_Payment_Method;
+
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 
@@ -149,7 +147,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
-		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$this->mock_dpps     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$mock_payment_method = $this->createMock( CC_Payment_Method::class );
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -161,6 +160,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
+					$mock_payment_method,
+					[ 'card' => $mock_payment_method ],
 					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$this->mock_dpps,
@@ -321,7 +322,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
 
 		// Act: process a successful payment.
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
@@ -385,7 +386,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
 
 		// Act: process a successful payment.
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
@@ -490,7 +491,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
 
 		// Act: process payment.
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::MANUAL() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::MANUAL(), 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
@@ -510,7 +511,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::AUTOMATIC() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::AUTOMATIC(), 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Arrange: Throw an exception in create_and_confirm_intention.
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
@@ -937,7 +938,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
 
 		// Act: process payment.
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
@@ -1052,7 +1053,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'empty_cart' );
 
 		// Act: prepare payment information.
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information->must_save_payment_method_to_store();
 
 		// Act: process payment.
@@ -1205,7 +1206,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Create a mock cart.
 		$mock_cart = $this->createMock( 'WC_Cart' );
 
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Act: process a successful payment.
 		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
@@ -1417,7 +1418,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( [ 'id' => 'ch_mock' ] );
 
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Act: process a successful payment.
 		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
@@ -1476,7 +1477,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Act: process a successful payment.
 		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
@@ -1548,7 +1549,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$charge_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( [ 'id' => 'ch_mock' ] );
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Act: process a successful payment.
 		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
@@ -1591,7 +1592,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information->must_save_payment_method_to_store();
 
 		// Assert: The payment method is not added to the user.
@@ -1637,7 +1638,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information->must_save_payment_method_to_store();
 
 		// Assert: The payment method is added to the user.

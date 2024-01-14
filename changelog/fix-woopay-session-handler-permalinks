@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix WooPay session handler's Store API route checks.

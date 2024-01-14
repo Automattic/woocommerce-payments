@@ -115,7 +115,7 @@ const AccountBalances: React.FC = () => {
 			currencyCode: overview.currency,
 			availableFunds: overview.available?.amount ?? 0,
 			pendingFunds: overview.pending?.amount ?? 0,
-			delayDays: account.deposits_schedule.delay_days,
+			delayDays: account?.deposits_schedule.delay_days ?? 0,
 			instantBalance: overview.instant,
 		} )
 	);

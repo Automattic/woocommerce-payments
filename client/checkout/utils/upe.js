@@ -45,34 +45,6 @@ export const isWCPayChosen = function () {
 };
 
 /**
- * Returns the cached payment intent for the current cart state.
- *
- * @param {Object} paymentMethodsConfig Array of configs for payment methods.
- * @param {string} paymentMethodType Type of the payment method.
- * @return {Object} The intent id and client secret required for mounting the UPE element.
- */
-export const getPaymentIntentFromSession = (
-	paymentMethodsConfig,
-	paymentMethodType
-) => {
-	const cartHash = getCookieValue( 'woocommerce_cart_hash' );
-	const upePaymentIntentData =
-		paymentMethodsConfig[ paymentMethodType ].upePaymentIntentData;
-
-	if (
-		cartHash &&
-		upePaymentIntentData &&
-		upePaymentIntentData.startsWith( cartHash )
-	) {
-		const intentId = upePaymentIntentData.split( '-' )[ 1 ];
-		const clientSecret = upePaymentIntentData.split( '-' )[ 2 ];
-		return { intentId, clientSecret };
-	}
-
-	return {};
-};
-
-/**
  * Finds selected payment gateway and returns matching Stripe payment method for gateway.
  *
  * @return {string} Stripe payment method type
@@ -194,8 +166,8 @@ export const generateCheckoutEventNames = () => {
 		.join( ' ' );
 };
 
-export const appendPaymentMethodIdToForm = ( form, paymentMethodId ) => {
-	form.append(
+export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
+	$form.append(
 		`<input type="hidden" id="wcpay-payment-method" name="wcpay-payment-method" value="${ paymentMethodId }" />`
 	);
 };
@@ -443,7 +415,13 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const supportedCountries =
 		paymentMethodsConfig[ paymentMethodType ].countries;
 
-	const billingCountry = document.getElementById( 'billing_country' ).value;
+	/* global wcpayCustomerData */
+	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
+	const billingCountry =
+		document.getElementById( 'billing_country' )?.value ||
+		wcpayCustomerData?.billing_country ||
+		'';
+
 	const upeContainer = document.querySelector(
 		'.payment_method_woocommerce_payments_' + paymentMethodType
 	);

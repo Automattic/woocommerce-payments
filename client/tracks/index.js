@@ -61,6 +61,7 @@ function recordUserEvent( eventName, eventProperties, isLegacy = false ) {
 
 const events = {
 	APPLEPAY_BUTTON_CLICK: 'applepay_button_click',
+	APPLEPAY_BUTTON_LOAD: 'applepay_button_load',
 	CONNECT_ACCOUNT_CLICKED: 'wcpay_connect_account_clicked',
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
@@ -76,6 +77,7 @@ const events = {
 	DISPUTE_INQUIRY_REFUND_MODAL_VIEW:
 		'wcpay_dispute_inquiry_refund_modal_view',
 	GOOGLEPAY_BUTTON_CLICK: 'gpay_button_click',
+	GOOGLEPAY_BUTTON_LOAD: 'gpay_button_load',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
 		'wcpay_overview_balances_currency_tab_click',
 	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
@@ -90,6 +92,7 @@ const events = {
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
 	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',
+	PLACE_ORDER_CLICK: 'checkout_place_order_button_click',
 	// WCPay Subscriptions empty state - prompts to connect to WCPay or create product.
 	SUBSCRIPTIONS_EMPTY_STATE_VIEW: 'wcpay_subscriptions_empty_state_view',
 	SUBSCRIPTIONS_EMPTY_STATE_FINISH_SETUP:
@@ -105,12 +108,16 @@ const events = {
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
 	TRANSACTIONS_DOWNLOAD_CSV_CLICK: 'wcpay_transactions_download_csv_click',
 	WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
-	WOOPAY_OFFERED: 'woopay_offered',
+	WOOPAY_OFFERED: 'checkout_woopay_save_my_info_offered',
 	WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
 	WOOPAY_SKIPPED: 'woopay_skipped',
 	WOOPAY_BUTTON_LOAD: 'woopay_button_load',
 	WOOPAY_BUTTON_CLICK: 'woopay_button_click',
+	WOOPAY_SAVE_MY_INFO_COUNTRY_CLICK:
+		'checkout_woopay_save_my_info_country_click',
 	WOOPAY_SAVE_MY_INFO_CLICK: 'checkout_save_my_info_click',
+	WOOPAY_SAVE_MY_INFO_MOBILE_ENTER:
+		'checkout_woopay_save_my_info_mobile_enter',
 	WOOPAY_SAVE_MY_INFO_TOS_CLICK: 'checkout_save_my_info_tos_click',
 	WOOPAY_SAVE_MY_INFO_PRIVACY_CLICK:
 		'checkout_save_my_info_privacy_policy_click',
@@ -124,6 +131,7 @@ const events = {
 	ONBOARDING_FLOW_HIDDEN: 'wcpay_onboarding_flow_hidden',
 	ONBOARDING_FLOW_EXITED: 'wcpay_onboarding_flow_exited',
 	ONBOARDING_FLOW_REDIRECTED: 'wcpay_onboarding_flow_redirected',
+	ONBOARDING_FLOW_RESET: 'wcpay_onboarding_flow_reset',
 	ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED:
 		'wcpay_onboarding_flow_eligibility_modal_closed',
 };

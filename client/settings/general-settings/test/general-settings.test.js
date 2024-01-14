@@ -71,4 +71,43 @@ describe( 'GeneralSettings', () => {
 			);
 		}
 	);
+
+	it.each( [ [ true ], [ false ] ] )(
+		'display of CheckBox when initial Test Mode = %s',
+		( isEnabled ) => {
+			useTestMode.mockReturnValue( [ isEnabled, jest.fn() ] );
+			render( <GeneralSettings /> );
+			const enableTestModeCheckbox = screen.getByLabelText(
+				'Enable test mode'
+			);
+
+			let expectation = expect( enableTestModeCheckbox );
+			if ( ! isEnabled ) {
+				expectation = expectation.not;
+			}
+			expectation.toBeChecked();
+		}
+	);
+
+	it.each( [ [ true ], [ false ] ] )(
+		'Checks Confirmation Modal display when initial Test Mode = %s',
+		( isEnabled ) => {
+			useTestMode.mockReturnValue( [ isEnabled, jest.fn() ] );
+			render( <GeneralSettings /> );
+			const enableTestModeCheckbox = screen.getByLabelText(
+				'Enable test mode'
+			);
+			fireEvent.click( enableTestModeCheckbox );
+
+			let expectation = expect(
+				screen.queryByText(
+					'Are you sure you want to enable test mode?'
+				)
+			);
+			if ( isEnabled ) {
+				expectation = expectation.not;
+			}
+			expectation.toBeInTheDocument();
+		}
+	);
 } );

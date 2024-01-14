@@ -28,7 +28,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$this->title                        = __( 'Afterpay', 'woocommerce-payments' );
 		$this->is_reusable                  = false;
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/afterpay.svg', WCPAY_PLUGIN_FILE );
-		$this->currencies                   = [ 'USD', 'CAD', 'AUD', 'NZD', 'GBP', 'EUR' ];
+		$this->currencies                   = [ 'USD', 'CAD', 'AUD', 'NZD', 'GBP' ];
 		$this->accept_only_domestic_payment = true;
 		$this->limits_per_currency          = [
 			'AUD' => [
@@ -50,7 +50,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 				], // Represents NZD 1 - 2,000 NZD.
 			],
 			'GBP' => [
-				'UK' => [
+				'GB' => [
 					'min' => 100,
 					'max' => 120000,
 				], // Represents GBP 1 - 1,200 GBP.
@@ -60,12 +60,6 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 					'min' => 100,
 					'max' => 400000,
 				], // Represents USD 1 - 4,000 USD.
-			],
-			'EUR' => [
-				'default' => [
-					'min' => 100,
-					'max' => 100000,
-				], // Represents EUR 1 - 1,000 EUR.
 			],
 		];
 	}

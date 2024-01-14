@@ -161,6 +161,7 @@ abstract class Request {
 		WC_Payments_API_Client::AUTHORIZATIONS_API         => 'authorizations',
 		WC_Payments_API_Client::FRAUD_OUTCOMES_API         => 'fraud_outcomes',
 		WC_Payments_API_Client::FRAUD_RULESET_API          => 'fraud_ruleset',
+		WC_Payments_API_Client::COMPATIBILITY_API          => 'compatibility',
 	];
 
 	/**
@@ -460,7 +461,7 @@ abstract class Request {
 				'wcpay_core_extend_class_incorrectly'
 			);
 		}
-		$obj = new $current_class( $base_request->api_client, $base_request->http_interface );
+		$obj = new $current_class( $base_request->api_client, $base_request->http_interface, $base_request->id ?? null );
 		$obj->set_params( array_merge( static::DEFAULT_PARAMS, $base_request->params ) );
 
 		// Carry over the base class and protected mode into the child request.

@@ -776,8 +776,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[1]->content );
-		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[0]->content );
+		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $notes[1]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -1153,6 +1153,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$wcpay_refund_id = 'ri_mock';
 		$this->order_service->set_wcpay_refund_id_for_order( $this->order, $wcpay_refund_id );
 		$this->assertEquals( $this->order->get_meta( '_wcpay_refund_id', true ), $wcpay_refund_id );
+	}
+
+	public function set_wcpay_refund_transaction_id_for_order() {
+		$wcpay_refund_transaction_id = 'txn_mock';
+		$this->order_service->set_wcpay_refund_transaction_id_for_order( $this->order, $wcpay_refund_transaction_id );
+		$this->assertSame( $this->order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ), $wcpay_refund_transaction_id );
 	}
 
 	public function test_get_wcpay_refund_id() {
