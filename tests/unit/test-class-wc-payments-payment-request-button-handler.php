@@ -549,4 +549,27 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			'Failed asserting total amount are the same for get_product_data and build_display_items'
 		);
 	}
+
+	public function test_filter_cart_needs_shipping_address_returns_false() {
+		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
+			->setMethods( [ 'has_subscription_product', 'get_shipping_method_count' ] )
+			->getMock();
+
+		$mock_pr->method( 'has_subscription_product' )->willReturn( true );
+		$mock_pr->method( 'get_shipping_method_count' )->willReturn( 0 );
+
+		$this->assertFalse( $mock_pr->filter_cart_needs_shipping_address( true ) );
+	}
+
+	public function test_filter_cart_needs_shipping_address_returns_true() {
+		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
+			->setMethods( [ 'has_subscription_product', 'get_shipping_method_count' ] )
+			->getMock();
+
+		$mock_pr->method( 'has_subscription_product' )->willReturn( true );
+
+		$this->assertTrue( $mock_pr->filter_cart_needs_shipping_address( true ) );
+	}
 }
