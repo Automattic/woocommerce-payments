@@ -251,15 +251,15 @@ class WC_Payments_API_Client {
 	 * Trigger a manual deposit.
 	 *
 	 * @param string $type Type of deposit. Only "instant" is supported for now.
-	 * @param string $transaction_ids Comma-separated list of transaction IDs that will be associated with this deposit.
+	 * @param string $currency The deposit currency.
 	 * @return array The new deposit object.
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function manual_deposit( $type, $transaction_ids ) {
+	public function manual_deposit( $type, $currency ) {
 		return $this->request(
 			[
-				'type'            => $type,
-				'transaction_ids' => $transaction_ids,
+				'type'     => $type,
+				'currency' => $currency,
 			],
 			self::DEPOSITS_API,
 			self::POST
