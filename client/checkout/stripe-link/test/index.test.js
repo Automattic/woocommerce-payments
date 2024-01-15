@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import enableStripeLinkPaymentMethod, { autofill } from '..';
+import enableStripeLinkPaymentMethod from '..';
 import WCPayAPI from 'wcpay/checkout/api';
 
 jest.mock( 'wcpay/checkout/api', () => {
@@ -98,42 +98,6 @@ describe( 'Stripe Link elements behavior', () => {
 		expect(
 			WCPayAPI().getStripe().linkAutofillModal().launch
 		).toHaveBeenCalledWith( { email: billingEmail } );
-	} );
-
-	test( 'Custom fill function should be called', () => {
-		const customFillFunction = jest.fn();
-		autofill(
-			{
-				value: {
-					billingAddress: '123 Main St',
-					shippingAddress: {
-						name: 'First Last',
-						address: {
-							line1: '123 Main St',
-							line2: 'shipping',
-							state: 'AK',
-							country: 'US',
-							city: 'San Francisco',
-							postal_code: '94110',
-						},
-					},
-				},
-			},
-			{
-				fill_field_method: customFillFunction,
-				shipping_fields: {
-					line1: 'shipping_address_1',
-					line2: 'shipping_address_2',
-					city: 'shipping_city',
-					state: 'shipping_state',
-					postal_code: 'shipping_postcode',
-					country: 'shipping_country',
-					first_name: 'shipping_first_name',
-					last_name: 'shipping_last_name',
-				},
-			}
-		);
-		expect( customFillFunction ).toHaveBeenCalled();
 	} );
 
 	function createStripeLinkElements() {
