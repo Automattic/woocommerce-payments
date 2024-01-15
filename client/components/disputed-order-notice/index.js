@@ -118,12 +118,12 @@ const UrgentDisputeNoticeBody = ( {
 	const formatString = isPreDisputeInquiry
 		? __(
 				// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
-				'Please resolve the inquiry on this order for %1$s labeled "%2$s" by %3$s.',
+				"Please resolve the inquiry on this order for %1$s labeled '%2$s' by %3$s.",
 				'woocommerce-payments'
 		  )
 		: __(
 				// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
-				'Please resolve the dispute on this order for %1$s labeled "%2$s" by %3$s.',
+				"Please resolve the dispute on this order for %1$s labeled '%2$s' by %3$s.",
 				'woocommerce-payments'
 		  );
 
