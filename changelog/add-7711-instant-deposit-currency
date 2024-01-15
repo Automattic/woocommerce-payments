@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Pass currency parameter and not transaction_ids parameter when creating instant deposit.
