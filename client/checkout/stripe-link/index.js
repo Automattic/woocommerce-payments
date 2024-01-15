@@ -1,3 +1,18 @@
+/**
+ * Internal dependencies
+ */
+import { dispatchChangeEventFor } from '../utils/upe';
+
+const switchToNewPaymentTokenElement = () => {
+	const newPaymentTokenElement = document.getElementById(
+		'wc-woocommerce_payments-payment-token-new'
+	);
+	if ( ! newPaymentTokenElement.checked ) {
+		newPaymentTokenElement.checked = true;
+		dispatchChangeEventFor( newPaymentTokenElement );
+	}
+};
+
 const showLinkButton = ( linkAutofill ) => {
 	// Display StripeLink button if email field is prefilled.
 	const billingEmailInput = document.getElementById( 'billing_email' );
@@ -20,6 +35,7 @@ const showLinkButton = ( linkAutofill ) => {
 		event.preventDefault();
 		// Trigger modal.
 		linkAutofill.launch( { email: billingEmailInput.value } );
+		switchToNewPaymentTokenElement();
 	} );
 };
 
@@ -128,6 +144,7 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 
 	linkAutofill.on( 'autofill', ( event ) => {
 		autofill( event, options );
+		switchToNewPaymentTokenElement();
 	} );
 };
 

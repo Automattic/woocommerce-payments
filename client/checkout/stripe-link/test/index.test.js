@@ -31,6 +31,24 @@ jest.mock( 'wcpay/checkout/api', () => {
 const billingEmail = 'example@example.com';
 
 describe( 'Stripe Link elements behavior', () => {
+	let container;
+
+	beforeAll( () => {
+		container = document.createElement( 'div' );
+		container.innerHTML = `
+			<label>
+				<input type="radio" id="wc-woocommerce_payments-payment-token-new" value="new">
+				Use a new payment method
+			</label>
+		`;
+		document.body.appendChild( container );
+	} );
+
+	afterAll( () => {
+		document.body.removeChild( container );
+		container = null;
+	} );
+
 	test( 'Should stop if emailId is not found', () => {
 		enableStripeLinkPaymentMethod( {
 			emailId: 'not_existing_email@example.com',
@@ -98,6 +116,24 @@ describe( 'Stripe Link elements behavior', () => {
 		expect(
 			WCPayAPI().getStripe().linkAutofillModal().launch
 		).toHaveBeenCalledWith( { email: billingEmail } );
+	} );
+
+	test( 'Should switch to new payment token element when button is clicked', () => {
+		// given the new payment token element is not checked ( e.g. when saved payment method is selected )
+		const newPaymentToken = document.querySelector(
+			'#wc-woocommerce_payments-payment-token-new'
+		);
+		newPaymentToken.checked = false;
+
+		const stripeLinkButton = document.getElementsByClassName(
+			'wcpay-stripelink-modal-trigger'
+		)[ 0 ];
+
+		// when clicking the button
+		stripeLinkButton.click();
+
+		// then the new payment token element should be checked
+		expect( newPaymentToken.checked ).toBe( true );
 	} );
 
 	test( 'Custom fill function should be called', () => {

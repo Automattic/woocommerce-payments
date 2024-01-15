@@ -11,6 +11,7 @@ import {
 	blocksShowLinkButtonHandler,
 	getSelectedUPEGatewayPaymentMethod,
 	isUsingSavedPaymentMethod,
+	dispatchChangeEventFor,
 } from '../upe';
 import { getPaymentMethodsConstants } from '../../constants';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -531,5 +532,44 @@ describe( 'isUsingSavedPaymentMethod', () => {
 		const paymentMethodType = 'sofort';
 
 		expect( isUsingSavedPaymentMethod( paymentMethodType ) ).toBe( false );
+	} );
+} );
+
+describe( 'dispatching change event for element', () => {
+	it( 'should dispatch a change event with bubbling', () => {
+		// Create a mock element
+		const mockElement = document.createElement( 'input' );
+		// Spy on dispatchEvent method of the mock element
+		jest.spyOn( mockElement, 'dispatchEvent' );
+
+		// Call the function with the mock element
+		dispatchChangeEventFor( mockElement );
+
+		// Expect the dispatchEvent to have been called with a 'change' event
+		expect( mockElement.dispatchEvent ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				type: 'change',
+				bubbles: true,
+			} )
+		);
+	} );
+
+	it( 'should throw an error when called with an invalid element', () => {
+		expect( () => {
+			dispatchChangeEventFor( null );
+		} ).toThrow();
+
+		expect( () => {
+			dispatchChangeEventFor( undefined );
+		} ).toThrow();
+
+		// You can also test with other types of invalid inputs
+		expect( () => {
+			dispatchChangeEventFor( {} );
+		} ).toThrow();
+
+		expect( () => {
+			dispatchChangeEventFor( 'not-an-element' );
+		} ).toThrow();
 	} );
 } );
