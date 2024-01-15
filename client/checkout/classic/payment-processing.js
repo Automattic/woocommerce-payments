@@ -253,8 +253,8 @@ const ensureSameAsBillingIsUnchecked = () => {
 
 	sameAsBillingCheckbox.checked = true;
 
-	if ( jQuery ) {
-		const $sameAsBillingCheckbox = jQuery( sameAsBillingCheckbox );
+	if ( window.jQuery ) {
+		const $sameAsBillingCheckbox = window.jQuery( sameAsBillingCheckbox );
 
 		$sameAsBillingCheckbox.prop( 'checked', true ).change();
 	}
@@ -315,11 +315,9 @@ export function maybeEnableStripeLink( api ) {
 							`#${ SHORTCODE_SHIPPING_ADDRESS_FIELDS.country }, #${ SHORTCODE_SHIPPING_ADDRESS_FIELDS.state }`
 					)
 					.forEach( ( element ) => {
-						// eslint-disable-next-line no-undef
-						if ( ! jQuery ) return;
+						if ( ! window.jQuery ) return;
 
-						// eslint-disable-next-line no-undef
-						const $element = jQuery( element );
+						const $element = window.jQuery( element );
 						if ( $element.data( 'select2' ) ) {
 							$element.trigger( 'change' );
 						}
