@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix Stripe Link autofill on Blocks Checkout.
+Fix Stripe Link autofill on checkout.
