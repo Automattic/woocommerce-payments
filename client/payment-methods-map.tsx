@@ -225,20 +225,12 @@ const PaymentMethodInformationObject: Record<
 			'GB' === accountCountry
 				? __( 'Clearpay', 'woocommerce-payments' )
 				: __( 'Afterpay', 'woocommerce-payments' ),
-		brandTitles:
-			'GB' === accountCountry
-				? {
-						afterpay_clearpay: __(
-							'Clearpay',
-							'woocommerce-payments'
-						),
-				  }
-				: {
-						afterpay_clearpay: __(
-							'Afterpay',
-							'woocommerce-payments'
-						),
-				  },
+		brandTitles: {
+			afterpay_clearpay:
+				'GB' === accountCountry
+					? __( 'Clearpay', 'woocommerce-payments' )
+					: __( 'Afterpay', 'woocommerce-payments' ),
+		},
 		description:
 			'GB' === accountCountry
 				? __(
