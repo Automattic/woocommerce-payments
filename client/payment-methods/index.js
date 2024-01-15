@@ -75,8 +75,8 @@ const PaymentMethods = () => {
 
 	const orderedAvailablePaymentMethodIds = [
 		PAYMENT_METHOD_IDS.CARD,
-		...availablePayLaterMethods,
 		...availableNonPayLaterMethods,
+		...availablePayLaterMethods,
 	];
 
 	const availableMethods = orderedAvailablePaymentMethodIds.map(
