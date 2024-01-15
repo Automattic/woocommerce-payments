@@ -51,18 +51,27 @@ function initializeAppearance( api ) {
 }
 
 /**
- * Block UI to indicate processing and avoid duplicate submission.
+ * Block the UI to indicate processing and avoid duplicate submission.
  *
- * @param {Object} jQueryForm The jQuery object for the jQueryForm.
+ * @param {Object} $form The jQuery object for the form.
  */
-function blockUI( jQueryForm ) {
-	jQueryForm.addClass( 'processing' ).block( {
+export function blockUI( $form ) {
+	$form.addClass( 'processing' ).block( {
 		message: null,
 		overlayCSS: {
 			background: '#fff',
 			opacity: 0.6,
 		},
 	} );
+}
+
+/**
+ * Unblocks the UI to allow payment processing.
+ *
+ * @param {Object} $form The jQuery object for the form.
+ */
+export function unblockUI( $form ) {
+	$form.removeClass( 'processing' ).unblock();
 }
 
 /**
@@ -106,22 +115,36 @@ function createStripePaymentMethod(
 	jQueryForm,
 	paymentMethodType
 ) {
+	/* global wcpayCustomerData */
 	let params = {};
+	if ( window.wcpayCustomerData ) {
+		params = {
+			billing_details: {
+				name: wcpayCustomerData.name || undefined,
+				email: wcpayCustomerData.email,
+				address: {
+					country: wcpayCustomerData.billing_country,
+				},
+			},
+		};
+	}
+
 	if ( jQueryForm.attr( 'name' ) === 'checkout' ) {
 		params = {
 			billing_details: {
-				name: document.querySelector( '#billing_first_name' )
-					? (
-							document.querySelector( '#billing_first_name' )
-								?.value +
-							' ' +
-							document.querySelector( '#billing_last_name' )
-								?.value
-					  ).trim()
-					: undefined,
+				...params.billing_details,
+				name:
+					`${
+						document.querySelector( '#billing_first_name' )
+							?.value || ''
+					} ${
+						document.querySelector( '#billing_last_name' )?.value ||
+						''
+					}`.trim() || undefined,
 				email: document.querySelector( '#billing_email' )?.value,
 				phone: document.querySelector( '#billing_phone' )?.value,
 				address: {
+					...params.billing_details?.address,
 					city: document.querySelector( '#billing_city' )?.value,
 					country: document.querySelector( '#billing_country' )
 						?.value,
@@ -325,16 +348,16 @@ export function renderTerms( event ) {
 let hasCheckoutCompleted;
 export const processPayment = (
 	api,
-	jQueryForm,
+	$form,
 	paymentMethodType,
-	additionalActionsHandler = () => {}
+	additionalActionsHandler = () => Promise.resolve()
 ) => {
 	if ( hasCheckoutCompleted ) {
 		hasCheckoutCompleted = false;
 		return;
 	}
 
-	blockUI( jQueryForm );
+	blockUI( $form );
 
 	const elements = gatewayUPEComponents[ paymentMethodType ].elements;
 
@@ -344,24 +367,24 @@ export const processPayment = (
 			const paymentMethodObject = await createStripePaymentMethod(
 				api,
 				elements,
-				jQueryForm,
+				$form,
 				paymentMethodType
 			);
-			appendFingerprintInputToForm( jQueryForm, fingerprint );
+			appendFingerprintInputToForm( $form, fingerprint );
 			appendPaymentMethodIdToForm(
-				jQueryForm,
+				$form,
 				paymentMethodObject.paymentMethod.id
 			);
 			await additionalActionsHandler(
 				paymentMethodObject.paymentMethod,
-				jQueryForm,
+				$form,
 				api
 			);
 			hasCheckoutCompleted = true;
-			submitForm( jQueryForm );
+			submitForm( $form );
 		} catch ( err ) {
 			hasCheckoutCompleted = false;
-			jQueryForm.removeClass( 'processing' ).unblock();
+			unblockUI( $form );
 			showErrorCheckout( err.message );
 		}
 	} )();
