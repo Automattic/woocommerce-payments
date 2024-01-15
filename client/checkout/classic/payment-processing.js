@@ -238,6 +238,28 @@ function appendSetupIntentToForm( form, confirmedIntent ) {
 	form.append( input );
 }
 
+const ensureSameAsBillingIsUnchecked = () => {
+	const sameAsBillingCheckbox = document.getElementById(
+		'ship-to-different-address-checkbox'
+	);
+
+	if ( ! sameAsBillingCheckbox ) {
+		return;
+	}
+
+	if ( sameAsBillingCheckbox.checked === true ) {
+		return;
+	}
+
+	sameAsBillingCheckbox.checked = true;
+
+	if ( jQuery ) {
+		const $sameAsBillingCheckbox = jQuery( sameAsBillingCheckbox );
+
+		$sameAsBillingCheckbox.prop( 'checked', true ).change();
+	}
+};
+
 /**
  * If Link is enabled, add event listeners and handlers.
  *
@@ -276,6 +298,9 @@ export function maybeEnableStripeLink( api ) {
 						}
 					);
 				};
+
+				// this is needed on shortcode checkout, but not on blocks checkout.
+				ensureSameAsBillingIsUnchecked();
 
 				fillAddress( billingAddress, SHORTCODE_BILLING_ADDRESS_FIELDS );
 				fillAddress(
