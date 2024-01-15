@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Stripe Link autofill on Blocks Checkout.
