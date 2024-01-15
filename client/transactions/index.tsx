@@ -3,10 +3,11 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { TabPanel } from '@wordpress/components';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
+import wcpayTracks from 'tracks';
 
 /**
  * Internal dependencies
@@ -32,6 +33,12 @@ export const TransactionsPage: React.FC = () => {
 	const currentQuery = getQuery();
 	const initialTab = currentQuery.tab ?? null;
 	const { isFRTReviewFeatureActive } = wcpaySettings;
+
+	useEffect( () => {
+		wcpayTracks.recordEvent( 'page_view', {
+			path: 'payments_transactions',
+		} );
+	}, [] );
 
 	const onTabSelected = ( tab: string ) => {
 		// When switching tabs, make sure to revert the query strings to default values
