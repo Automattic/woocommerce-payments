@@ -688,72 +688,75 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
 		$this->assertEquals( 'card', $card_method->get_id() );
-		$this->assertEquals( 'Credit card / debit card', $card_method->get_title() );
-		$this->assertEquals( 'Visa debit card', $card_method->get_title( $mock_visa_details ) );
-		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( $mock_mastercard_details ) );
+		$this->assertEquals( 'Credit card / debit card', $card_method->get_title( 'US' ) );
+		$this->assertEquals( 'Visa debit card', $card_method->get_title( 'US', $mock_visa_details ) );
+		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( 'US', $mock_mastercard_details ) );
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertTrue( $card_method->is_reusable() );
 		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
 
 		$this->assertEquals( 'giropay', $giropay_method->get_id() );
-		$this->assertEquals( 'giropay', $giropay_method->get_title() );
-		$this->assertEquals( 'giropay', $giropay_method->get_title( $mock_giropay_details ) );
+		$this->assertEquals( 'giropay', $giropay_method->get_title( 'US' ) );
+		$this->assertEquals( 'giropay', $giropay_method->get_title( 'US', $mock_giropay_details ) );
 		$this->assertTrue( $giropay_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $giropay_method->is_reusable() );
 
 		$this->assertEquals( 'p24', $p24_method->get_id() );
-		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title() );
-		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( $mock_p24_details ) );
+		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( 'US' ) );
+		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( 'US', $mock_p24_details ) );
 		$this->assertTrue( $p24_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $p24_method->is_reusable() );
 
 		$this->assertEquals( 'sofort', $sofort_method->get_id() );
-		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
-		$this->assertEquals( 'Sofort', $sofort_method->get_title( $mock_sofort_details ) );
+		$this->assertEquals( 'Sofort', $sofort_method->get_title( 'US' ) );
+		$this->assertEquals( 'Sofort', $sofort_method->get_title( 'US', $mock_sofort_details ) );
 		$this->assertTrue( $sofort_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $sofort_method->is_reusable() );
 
 		$this->assertEquals( 'bancontact', $bancontact_method->get_id() );
-		$this->assertEquals( 'Bancontact', $bancontact_method->get_title() );
-		$this->assertEquals( 'Bancontact', $bancontact_method->get_title( $mock_bancontact_details ) );
+		$this->assertEquals( 'Bancontact', $bancontact_method->get_title( 'US' ) );
+		$this->assertEquals( 'Bancontact', $bancontact_method->get_title( 'US', $mock_bancontact_details ) );
 		$this->assertTrue( $bancontact_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $bancontact_method->is_reusable() );
 
 		$this->assertEquals( 'eps', $eps_method->get_id() );
-		$this->assertEquals( 'EPS', $eps_method->get_title() );
-		$this->assertEquals( 'EPS', $eps_method->get_title( $mock_eps_details ) );
+		$this->assertEquals( 'EPS', $eps_method->get_title( 'US' ) );
+		$this->assertEquals( 'EPS', $eps_method->get_title( 'US', $mock_eps_details ) );
 		$this->assertTrue( $eps_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $eps_method->is_reusable() );
 
 		$this->assertEquals( 'sepa_debit', $sepa_method->get_id() );
-		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title() );
-		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( $mock_sepa_details ) );
+		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( 'US' ) );
+		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( 'US', $mock_sepa_details ) );
 		$this->assertTrue( $sepa_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $sepa_method->is_reusable() );
 
 		$this->assertEquals( 'ideal', $ideal_method->get_id() );
-		$this->assertEquals( 'iDEAL', $ideal_method->get_title() );
-		$this->assertEquals( 'iDEAL', $ideal_method->get_title( $mock_ideal_details ) );
+		$this->assertEquals( 'iDEAL', $ideal_method->get_title( 'US' ) );
+		$this->assertEquals( 'iDEAL', $ideal_method->get_title( 'US', $mock_ideal_details ) );
 		$this->assertTrue( $ideal_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $ideal_method->is_reusable() );
 
 		$this->assertEquals( 'au_becs_debit', $becs_method->get_id() );
-		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title() );
-		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title( $mock_becs_details ) );
+		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title( 'US' ) );
+		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title( 'US', $mock_becs_details ) );
 		$this->assertTrue( $becs_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $becs_method->is_reusable() );
 
 		$this->assertSame( 'affirm', $affirm_method->get_id() );
-		$this->assertSame( 'Affirm', $affirm_method->get_title() );
-		$this->assertSame( 'Affirm', $affirm_method->get_title( $mock_affirm_details ) );
+		$this->assertSame( 'Affirm', $affirm_method->get_title( 'US' ) );
+		$this->assertSame( 'Affirm', $affirm_method->get_title( 'US', $mock_affirm_details ) );
 		$this->assertTrue( $affirm_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $affirm_method->is_reusable() );
 
 		$this->assertSame( 'afterpay_clearpay', $afterpay_method->get_id() );
-		$this->assertSame( 'Afterpay', $afterpay_method->get_title() );
-		$this->assertSame( 'Afterpay', $afterpay_method->get_title( $mock_afterpay_details ) );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title( 'US' ) );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $afterpay_method->is_reusable() );
+		$this->assertSame( 'Clearpay', $afterpay_method->get_title( 'GB' ) );
+		$this->assertSame( 'Clearpay', $afterpay_method->get_title( 'GB', $mock_afterpay_details ) );
+		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'GB' ) );
 	}
 
 	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
