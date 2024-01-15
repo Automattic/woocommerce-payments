@@ -1,5 +1,27 @@
 *** WooPayments Changelog ***
 
+= 7.1.0-test-2 - 2024-xx-xx =
+* Add - Add active plugins array to compatibility data.
+* Add - Add the active theme name of the blog to the compatibility service
+* Add - Expose the refund transaction ID in WooCommerce Order Refund API
+* Fix - Checkout error when page URL is too long
+* Fix - Fix network error that occurs when viewing an test mode order with test mode disabled, and vice versa.
+* Fix - fix pay-for-order quirks and 3DS behavior
+* Fix - Fix Stripe Link button alignment in the Checkout Block
+* Fix - Hide the transaction details refund menu for ineligble disputed transactions
+* Fix - Re-render WooPay button when cart updates, when checkout updates.
+* Fix - Remove unnecessary import statement which leads to a warning when first loaded
+* Fix - Restock order items when performing full refund from transaction details page
+* Fix - Reverting to manual styling over native WordPress components to fix CSS defects on Analytics page
+* Fix - Send metadata in error message
+* Fix - Update WooPay tablet breakpoint.
+* Fix - Verify that order exists before offering "Partial refund" option on transaction details page.
+* Update - Updated BNPL sorting in settings for consistency with onboarding.
+* Dev - Add new Tracks events to WooPay Save My Info checkbox
+* Dev - Place order button Tracks
+* Dev - Track payment-request-button loads
+* Dev - Update jetpack dependencies for syncing.
+
 = 7.0.0 - 2024-01-03 =
 * Add - Add Account Management tools with reset account functionality for partially onboarded accounts.
 * Add - Adding Compatibility Service to assist with flagging possible compatibility issues in the future.
