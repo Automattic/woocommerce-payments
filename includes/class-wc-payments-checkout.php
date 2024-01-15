@@ -278,15 +278,6 @@ class WC_Payments_Checkout {
 	}
 
 	/**
-	 * Checks if WooPay is enabled.
-	 *
-	 * @return bool - True if WooPay enabled, false otherwise.
-	 */
-	private function is_woopay_enabled() {
-		return WC_Payments_Features::is_woopay_eligible() && 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' ) && WC_Payments_Features::is_woopay_express_checkout_enabled();
-	}
-
-	/**
 	 * Gets payment method settings to pass to client scripts
 	 *
 	 * @return array
@@ -354,13 +345,12 @@ class WC_Payments_Checkout {
 			 * but we need `$this->get_payment_fields_js_config` to be called
 			 * before `$this->saved_payment_methods()`.
 			 */
-			$payment_fields  = $this->get_payment_fields_js_config();
-			$upe_object_name = 'wcpay_upe_config';
+			$payment_fields = $this->get_payment_fields_js_config();
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
-				function() use ( $payment_fields, $upe_object_name ) {
-					wp_localize_script( 'wcpay-upe-checkout', $upe_object_name, $payment_fields );
+				function() use ( $payment_fields ) {
+					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
 				}
 			);
 
