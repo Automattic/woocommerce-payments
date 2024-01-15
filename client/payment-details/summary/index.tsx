@@ -21,10 +21,6 @@ import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
 
-// This is a workaround for the position of the dropdown menu. At the same time underlines the need for a better solution.
-import '../../../node_modules/@wordpress/components/src/dropdown-menu/style.scss';
-import '../../../node_modules/@wordpress/components/src/popover/style.scss';
-
 /**
  * Internal dependencies.
  */
@@ -512,6 +508,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									popoverProps={ {
 										position: 'bottom left',
 									} }
+									className="refund-controls__dropdown-menu"
 								>
 									{ ( { onClose } ) => (
 										<MenuGroup>

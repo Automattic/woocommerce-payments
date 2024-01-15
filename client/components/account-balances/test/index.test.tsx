@@ -145,7 +145,6 @@ const createMockOverview = (
 			fee: 0,
 			net: 0,
 			fee_percentage: 0,
-			transaction_ids: [],
 		},
 	};
 };
