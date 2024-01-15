@@ -537,15 +537,11 @@ describe( 'isUsingSavedPaymentMethod', () => {
 
 describe( 'dispatching change event for element', () => {
 	it( 'should dispatch a change event with bubbling', () => {
-		// Create a mock element
 		const mockElement = document.createElement( 'input' );
-		// Spy on dispatchEvent method of the mock element
 		jest.spyOn( mockElement, 'dispatchEvent' );
 
-		// Call the function with the mock element
 		dispatchChangeEventFor( mockElement );
 
-		// Expect the dispatchEvent to have been called with a 'change' event
 		expect( mockElement.dispatchEvent ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				type: 'change',
@@ -563,7 +559,6 @@ describe( 'dispatching change event for element', () => {
 			dispatchChangeEventFor( undefined );
 		} ).toThrow();
 
-		// You can also test with other types of invalid inputs
 		expect( () => {
 			dispatchChangeEventFor( {} );
 		} ).toThrow();
