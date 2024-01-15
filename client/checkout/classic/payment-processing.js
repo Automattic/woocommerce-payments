@@ -283,7 +283,7 @@ export function maybeEnableStripeLink( api ) {
 					);
 					if ( countryElement ) {
 						countryElement.value = addressValues.country;
-						// manually dispatching the "change" event, since the element might be a `select2` component.
+						// manually dispatching the "change" event, since the element might not be a `select2` component.
 						countryElement.dispatchEvent( new Event( 'change' ) );
 					}
 
