@@ -116,6 +116,10 @@ export const getDepositScheduleInterval = ( state ) => {
 	return getSettings( state ).deposit_schedule_interval || '';
 };
 
+export const getExportLanguage = ( state ) => {
+	return getSettings( state ).reporting_export_language || '';
+};
+
 export const getDepositScheduleWeeklyAnchor = ( state ) => {
 	return getSettings( state ).deposit_schedule_weekly_anchor || '';
 };
