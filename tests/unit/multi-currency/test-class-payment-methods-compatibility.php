@@ -54,9 +54,11 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 			->setMethods(
 				[
 					'get_upe_enabled_payment_method_ids',
+					'get_account_country',
 				]
 			)
 			->getMock();
+		$this->gateway_mock->method( 'get_account_country' )->willReturn( 'US' );
 
 		$this->payment_methods_compatibility = new \WCPay\MultiCurrency\PaymentMethodsCompatibility( $this->multi_currency_mock, $this->gateway_mock );
 		$this->payment_methods_compatibility->init_hooks();
