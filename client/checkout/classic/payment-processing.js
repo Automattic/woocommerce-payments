@@ -311,7 +311,8 @@ export function maybeEnableStripeLink( api ) {
 				// manually dispatching the "change" event, since the element might be a `select2` component.
 				document
 					.querySelectorAll(
-						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }, #${ SHORTCODE_BILLING_ADDRESS_FIELDS.state }, #${ SHORTCODE_SHIPPING_ADDRESS_FIELDS.country }, #${ SHORTCODE_SHIPPING_ADDRESS_FIELDS.state }`
+						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }, #${ SHORTCODE_BILLING_ADDRESS_FIELDS.state }, ` +
+							`#${ SHORTCODE_SHIPPING_ADDRESS_FIELDS.country }, #${ SHORTCODE_SHIPPING_ADDRESS_FIELDS.state }`
 					)
 					.forEach( ( element ) => {
 						// eslint-disable-next-line no-undef
