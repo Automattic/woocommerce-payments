@@ -211,7 +211,7 @@ export const useCustomerData = () => {
 
 	return {
 		// Backward compatibility billingData/billingAddress
-		billingData: customerData.billingAddress || customerData.billingData,
+		billingAddress: customerData.billingAddress || customerData.billingData,
 		// Backward compatibility setBillingData/setBillingAddress
 		setBillingAddress: setBillingAddress || setBillingData,
 		setShippingAddress,

@@ -71,7 +71,7 @@ const PaymentProcessor = ( {
 	const isTestMode = getUPEConfig( 'testMode' );
 	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
 	const {
-		billingData,
+		billingAddress: billingData,
 		setShippingAddress,
 		setBillingAddress,
 	} = useCustomerData();
