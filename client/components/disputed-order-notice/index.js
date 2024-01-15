@@ -220,6 +220,7 @@ const DisputeNeedsResponseNotice = ( {
 			disputeReason={ disputeReason }
 			formattedAmount={ formattedAmount }
 			dueBy={ dueBy }
+			countdownDays={ countdownDays }
 		/>
 	) : (
 		<RegularDisputeNoticeBody
@@ -227,7 +228,6 @@ const DisputeNeedsResponseNotice = ( {
 			disputeReason={ disputeReason }
 			formattedAmount={ formattedAmount }
 			dueBy={ dueBy }
-			countdownDays={ countdownDays }
 		/>
 	);
 
