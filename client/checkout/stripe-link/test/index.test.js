@@ -45,6 +45,8 @@ describe( 'Stripe Link elements behavior', () => {
 		enableStripeLinkPaymentMethod( {
 			api: WCPayAPI(),
 			emailId: 'billing_email',
+			onAutofill: () => null,
+			onButtonShow: () => null,
 		} );
 		expect( WCPayAPI().getStripe().linkAutofillModal ).toHaveBeenCalled();
 	} );
@@ -60,6 +62,8 @@ describe( 'Stripe Link elements behavior', () => {
 		enableStripeLinkPaymentMethod( {
 			api: WCPayAPI(),
 			emailId: 'billing_email',
+			onAutofill: () => null,
+			onButtonShow: () => null,
 		} );
 
 		billingEmailInput.dispatchEvent( new Event( 'keyup' ) );
@@ -72,32 +76,17 @@ describe( 'Stripe Link elements behavior', () => {
 		).toHaveBeenCalledWith( { email: billingEmail } );
 	} );
 
-	test( 'Stripe Link button should be visible and clickable', () => {
+	test( 'Stripe Link button should call onButtonShow configuration value', () => {
 		createStripeLinkElements();
-		const stripeLinkButton = document.getElementsByClassName(
-			'wcpay-stripelink-modal-trigger'
-		)[ 0 ];
-		const addEventListenerSpy = jest.spyOn(
-			stripeLinkButton,
-			'addEventListener'
-		);
-
+		const handleButtonShow = jest.fn();
 		enableStripeLinkPaymentMethod( {
 			api: WCPayAPI(),
 			emailId: 'billing_email',
+			onAutofill: () => null,
+			onButtonShow: handleButtonShow,
 		} );
 
-		expect( stripeLinkButton.style.display ).toBe( 'block' );
-		expect( stripeLinkButton.style.top ).not.toBe( '' );
-
-		stripeLinkButton.click();
-		expect( addEventListenerSpy ).toHaveBeenCalledWith(
-			'click',
-			expect.any( Function )
-		);
-		expect(
-			WCPayAPI().getStripe().linkAutofillModal().launch
-		).toHaveBeenCalledWith( { email: billingEmail } );
+		expect( handleButtonShow ).toHaveBeenCalled();
 	} );
 
 	function createStripeLinkElements() {
