@@ -492,7 +492,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions_Product::set_sign_up_fee( 0 );
 	}
 
-	public function test_product_has_trial_and_needs_shipping() {
+	public function test_is_invalid_subscription_product() {
 		$mock_product = $this->createMock( WC_Subscriptions_Product::class );
 		$this->assertFalse( $this->pr->is_invalid_subscription_product( $mock_product ) );
 
