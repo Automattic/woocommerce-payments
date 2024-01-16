@@ -1305,6 +1305,12 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				'woocommerce_version' => WC_VERSION,
 				'blog_theme'          => 'default',
 				'active_plugins'      => [],
+				'post_types_count'    => [
+					'post'       => 0,
+					'page'       => 0,
+					'attachment' => 0,
+					'product'    => 0,
+				],
 			],
 			$args
 		);
