@@ -186,8 +186,9 @@ class OrderService {
 	) {
 		$order = $this->get_order( $order_id );
 
-		$charge    = null;
-		$charge_id = null;
+		$charge                 = null;
+		$charge_id              = null;
+		$payment_transaction_id = null;
 		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
 			$charge                 = $intent->get_charge();
 			$charge_id              = $intent->get_charge()->get_id();
