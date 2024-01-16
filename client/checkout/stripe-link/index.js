@@ -7,7 +7,7 @@ const switchToNewPaymentTokenElement = () => {
 	const newPaymentTokenElement = document.getElementById(
 		'wc-woocommerce_payments-payment-token-new'
 	);
-	if ( ! newPaymentTokenElement.checked ) {
+	if ( newPaymentTokenElement && ! newPaymentTokenElement.checked ) {
 		newPaymentTokenElement.checked = true;
 		dispatchChangeEventFor( newPaymentTokenElement );
 	}
@@ -37,6 +37,15 @@ const showLinkButton = ( linkAutofill ) => {
 		linkAutofill.launch( { email: billingEmailInput.value } );
 		switchToNewPaymentTokenElement();
 	} );
+};
+
+export const removeLinkButton = () => {
+	const stripeLinkButton = document.querySelector(
+		'.wcpay-stripelink-modal-trigger'
+	);
+	if ( stripeLinkButton ) {
+		stripeLinkButton.remove();
+	}
 };
 
 export const autofill = ( event, options ) => {
