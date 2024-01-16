@@ -1219,6 +1219,26 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $intent_id, $this->order->get_meta( '_intent_id', true ) );
 	}
 
+	public function test_attach_intent_info_to_order_after_successful_payment() {
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => 'pi_mock',
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
+
+		$another_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => 'pi_mock_2',
+				'status' => Intent_Status::CANCELED,
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $another_intent );
+
+		$this->assertEquals( Intent_Status::SUCCEEDED, $this->order->get_meta( '_intention_status', true ) );
+	}
+
 	/**
 	 * Several methods use the private method get_order to get the order being worked on. If an order is not found
 	 * then an exception is thrown. This test attempt to confirm that exception gets thrown.
