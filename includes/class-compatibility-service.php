@@ -89,7 +89,7 @@ class Compatibility_Service {
 	/**
 	 * Gets the count of public posts for each post type.
 	 *
-	 * @return array<\WP_Post_Type|string, string>
+	 * @return array<\WP_Post_Type|string, int>
 	 */
 	private function get_post_types_count(): array {
 		$post_types = get_post_types(
