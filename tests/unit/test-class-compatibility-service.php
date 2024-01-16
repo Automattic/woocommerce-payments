@@ -44,6 +44,25 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	];
 
 	/**
+	 * Test post types count.
+	 *
+	 * @var array
+	 */
+	private $post_types_count = [
+		'post'       => 1,
+		'page'       => 6,
+		'attachment' => 0,
+		'product'    => 12,
+	];
+
+	/**
+	 * Test posts.
+	 *
+	 * @var array
+	 */
+	private $test_posts = [];
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -55,6 +74,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->add_stylesheet_filter();
 		$this->add_option_active_plugins_filter();
+		$this->insert_test_posts();
 	}
 
 	/**
@@ -65,6 +85,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->remove_stylesheet_filters();
 		$this->remove_option_active_plugins_filters();
+		$this->delete_test_posts();
 	}
 
 	/**
@@ -159,6 +180,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 				'woocommerce_version' => WC_VERSION,
 				'blog_theme'          => $this->stylesheet,
 				'active_plugins'      => $this->active_plugins,
+				'post_types_count'    => $this->post_types_count,
 			],
 			$args
 		);
@@ -222,5 +244,46 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	private function fix_active_plugins_option() {
 		update_option( 'active_plugins', get_option( 'temp_active_plugins' ) );
 		delete_option( 'temp_active_plugins' );
+	}
+
+	/**
+	 * Insert test posts for use during a unit test.
+	 * Will use the default defined in the test class if no params passed.
+	 *
+	 * @param  array $post_types  Assoc array of post types as keys and the number of posts to create for each.
+	 *
+	 * @return array Array of post IDs that were created.
+	 */
+	private function insert_test_posts( array $post_types = [] ): array {
+		$post_types = ! empty( $post_types ) ? $post_types : $this->post_types_count;
+		$post_ids   = [];
+		foreach ( $post_types as $post_type => $count ) {
+			$title_content = 'This is a ' . $post_type . ' test post';
+			for ( $i = 0; $i < $count; $i++ ) {
+				$post_ids[] = (int) wp_insert_post(
+					[
+						'post_title'   => $title_content,
+						'post_content' => $title_content,
+						'post_type'    => $post_type,
+						'post_status'  => 'publish',
+					]
+				);
+			}
+		}
+
+		$this->test_posts = $post_ids;
+		return $post_ids;
+	}
+
+	/**
+	 * Delete test posts that were created during a unit test.
+	 *
+	 * @param array $post_ids Array of post IDs to delete.
+	 */
+	private function delete_test_posts( array $post_ids = [] ) {
+		$post_ids = ! empty( $post_ids ) ? $post_ids : $this->test_posts;
+		foreach ( $post_ids as $post_id ) {
+			wp_delete_post( (int) $post_id, true );
+		}
 	}
 }
