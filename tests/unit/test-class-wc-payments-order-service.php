@@ -1211,6 +1211,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $fraud_meta_box_type_from_service, $fraud_meta_box_type );
 	}
 
+	public function test_set_payment_transaction_id_for_order() {
+		$transaction_id = 'txn_mock';
+		$this->order_service->set_payment_transaction_id_for_order( $this->order, $transaction_id );
+		$this->assertSame( $this->order->get_meta( '_wcpay_payment_transaction_id', true ), $transaction_id );
+	}
+
 	public function test_attach_intent_info_to_order() {
 		$intent_id = 'pi_mock';
 		$intent    = WC_Helper_Intention::create_intention( [ 'id' => $intent_id ] );
