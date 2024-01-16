@@ -1,0 +1,22 @@
+.reporting-export-modal {
+	min-width: 500px;
+
+	.components-modal__header {
+		border-bottom: 1px solid #dcdcde !important;
+	}
+
+	.wcpay-confirmation-modal__footer {
+		.is-secondary {
+			box-shadow: none;
+		}
+	}
+
+	&__items-number {
+		border-bottom: 1px solid #dcdcde;
+		padding: 15px 0;
+	}
+
+	&__settings {
+		min-width: 500px;
+	}
+}
