@@ -462,6 +462,7 @@ class WooPay_Session {
 			WC()->customer->set_billing_email( $email );
 			WC()->customer->save();
 
+			$woopay_adapted_extensions->init();
 			$request['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
 
 			if ( ! is_user_logged_in() && count( $request['adapted_extensions'] ) > 0 ) {
