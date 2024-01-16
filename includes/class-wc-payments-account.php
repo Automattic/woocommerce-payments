@@ -199,6 +199,7 @@ class WC_Payments_Account {
 		if ( ! $this->is_stripe_connected() ) {
 			return false;
 		}
+
 		$account = $this->get_cached_account_data();
 
 		if ( ! isset( $account['capabilities']['card_payments'] ) ) {
@@ -224,33 +225,18 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
-	 * Returns true if the onboarding is started but did not finish.
+	 * Checks if the account "details_submitted" flag is true.
+	 * This is a proxy for telling if an account has completed onboarding.
+	 * If the "details_submitted" flag is false, it means that the account has not
+	 * yet finished the initial KYC.
 	 *
-	 * @return bool True if the account is connected and details are not submitted, false otherwise.
+	 * @return boolean True if the account is connected and details are not submitted, false otherwise.
 	 */
-	public function is_account_partially_onboarded(): bool {
-		if ( ! $this->is_stripe_connected() ) {
-			return false;
-		}
-
+	public function is_details_submitted(): bool {
 		$account = $this->get_cached_account_data();
-		return false === $account['details_submitted'];
-	}
 
-	/**
-	 * Checks if the account has completed onboarding/KYC.
-	 * Returns true if the onboarding/KYC is completed.
-	 *
-	 * @return bool True if the account is connected and details are submitted, false otherwise.
-	 */
-	public function is_account_fully_onboarded(): bool {
-		if ( ! $this->is_stripe_connected() ) {
-			return false;
-		}
-
-		$account = $this->get_cached_account_data();
-		return true === $account['details_submitted'];
+		$details_submitted = $account['details_submitted'] ?? false;
+		return true === $details_submitted;
 	}
 
 	/**
@@ -258,7 +244,7 @@ class WC_Payments_Account {
 	 *
 	 * @return array An array containing the status data, or [ 'error' => true ] on error or no connected account.
 	 */
-	public function get_account_status_data() {
+	public function get_account_status_data(): array {
 		$account = $this->get_cached_account_data();
 
 		if ( empty( $account ) ) {
@@ -858,31 +844,33 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Account fully onboarded, don't redirect.
-		if ( $this->is_account_fully_onboarded() ) {
-			return false;
-		}
-
-		// Account partially onboarded, redirect to overview.
-		if ( $this->is_account_partially_onboarded() ) {
-			$this->redirect_to(
-				admin_url(
-					add_query_arg(
-						[
-							'page' => 'wc-admin',
-							'path' => '/payments/overview',
-						],
-						'admin.php'
-					)
-				)
-			);
-		} else {
+		// Not able to establish Stripe connection, redirect to the Connect page.
+		if ( ! $this->is_stripe_connected() ) {
 			$this->redirect_to(
 				admin_url(
 					add_query_arg(
 						[
 							'page' => 'wc-admin',
 							'path' => '/payments/connect',
+						],
+						'admin.php'
+					)
+				)
+			);
+			return true;
+		}
+
+		if ( $this->is_details_submitted() ) {
+			// Account fully onboarded, don't redirect.
+			return false;
+		} else {
+			// Account not yet fully onboarded so redirect to overview page.
+			$this->redirect_to(
+				admin_url(
+					add_query_arg(
+						[
+							'page' => 'wc-admin',
+							'path' => '/payments/overview',
 						],
 						'admin.php'
 					)
@@ -966,7 +954,7 @@ class WC_Payments_Account {
 
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			try {
-				if ( $this->is_account_partially_onboarded() ) {
+				if ( $this->is_stripe_connected() && ! $this->is_details_submitted() ) {
 					$args         = $_GET;
 					$args['type'] = 'complete_kyc_link';
 
