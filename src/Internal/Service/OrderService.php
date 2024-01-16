@@ -189,8 +189,10 @@ class OrderService {
 		$charge    = null;
 		$charge_id = null;
 		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
-			$charge    = $intent->get_charge();
-			$charge_id = $intent->get_charge()->get_id();
+			$charge                 = $intent->get_charge();
+			$charge_id              = $intent->get_charge()->get_id();
+			$payment_transaction    = $charge ? $charge->get_balance_transaction() : null;
+			$payment_transaction_id = $payment_transaction['id'] ?? '';
 		}
 
 		$this->legacy_service->attach_intent_info_to_order__legacy(
@@ -200,7 +202,8 @@ class OrderService {
 			$context->get_payment_method()->get_id(),
 			$context->get_customer_id(),
 			$charge_id,
-			$context->get_currency()
+			$context->get_currency(),
+			$payment_transaction_id,
 		);
 
 		$this->legacy_service->attach_transaction_fee_to_order( $order, $charge );
