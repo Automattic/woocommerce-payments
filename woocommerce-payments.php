@@ -28,6 +28,7 @@ require_once __DIR__ . '/vendor/autoload_packages.php';
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
 require_once __DIR__ . '/includes/woopay-user/class-woopay-extension.php';
 require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
+require_once __DIR__ . '/includes/class-wc-payments-utils.php';
 
 /**
  * Plugin activation hook.
