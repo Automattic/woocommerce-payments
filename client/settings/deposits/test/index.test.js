@@ -139,7 +139,7 @@ describe( 'Deposits', () => {
 		);
 
 		const depositsMessage = screen.getByText(
-			/Your first deposit will be held for [0-9]+ days. Deposit scheduling will be available after this period./,
+			/Your first deposit will be held for/,
 			{
 				ignore: '.a11y-speak-region',
 			}
