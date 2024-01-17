@@ -417,9 +417,7 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { queryByText } = render( <DepositsOverview /> );
-		expect(
-			queryByText( 'Your first deposit is held for seven business days' )
-		).toBeFalsy();
+		expect( queryByText( /Your first deposit is held for/ ) ).toBeFalsy();
 	} );
 
 	test( 'Confirm new account waiting period notice shows', () => {
