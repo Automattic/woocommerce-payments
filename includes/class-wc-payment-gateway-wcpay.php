@@ -267,13 +267,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->localization_service                 = $localization_service;
 		$this->fraud_service                        = $fraud_service;
 
+		$account_country          = $this->get_account_country();
 		$this->id                 = static::GATEWAY_ID;
-		$this->icon               = $payment_method->get_icon();
+		$this->icon               = $payment_method->get_icon( $account_country );
 		$this->has_fields         = true;
 		$this->method_title       = 'WooPayments';
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 
-		$this->title       = $payment_method->get_title();
+		$this->title       = $payment_method->get_title( $account_country );
 		$this->description = '';
 		$this->supports    = [
 			'products',
@@ -2052,7 +2053,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$payment_method_title = $payment_method->get_title( $payment_method_details );
+		$payment_method_title = $payment_method->get_title( $this->get_account_country(), $payment_method_details );
 
 		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
 
@@ -2183,8 +2184,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 		}
 
+		// Refund without an amount is a no-op, but required to succeed in
+		// case merchant needs it to re-stock order items.
+		if ( '0.00' === sprintf( '%0.2f', $amount ?? 0 ) ) {
+			return true;
+		}
+
 		// If the entered amount is not valid stop without making a request.
-		if ( $amount <= 0 || $amount > $order->get_total() ) {
+		if ( $amount < 0 || $amount > $order->get_total() ) {
 			return new WP_Error(
 				'invalid-amount',
 				__( 'The refund amount is not valid.', 'woocommerce-payments' )
@@ -2871,7 +2878,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string code of the country.
 	 */
-	protected function get_account_country( string $default_value = 'US' ): string {
+	public function get_account_country( string $default_value = 'US' ): string {
 		try {
 			if ( $this->is_connected() ) {
 				return $this->account->get_account_country() ?? $default_value;
