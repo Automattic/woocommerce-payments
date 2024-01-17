@@ -2,10 +2,17 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, SelectControl } from '@wordpress/components';
+import {
+	Button,
+	SelectControl,
+	CheckboxControl,
+	ExternalLink,
+} from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
+import { useDispatch } from '@wordpress/data';
+import DomainsIcon from 'gridicons/dist/domains';
 
 /**
  * Internal dependencies
@@ -13,13 +20,14 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 import { useReportingExportLanguage } from 'wcpay/data';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
+import { getAdminUrl } from 'wcpay/utils';
 import './styles.scss';
 
 interface CSVExportModalProps {
 	totalItems: number;
 	exportType: string;
 	onClose: () => void;
-	onSubmit: () => void;
+	onSubmit: ( language: string ) => void;
 }
 
 const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
@@ -28,17 +36,36 @@ const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 	onClose,
 	onSubmit,
 } ) => {
+	const { updateOptions } = useDispatch( 'wc/admin/options' );
+
 	const [
 		exportLanguage,
 		updateExportLanguage,
 	] = useReportingExportLanguage() as ReportingExportLanguageHook;
+
+	const [ modalLanguage, setModalLanguage ] = useState( exportLanguage );
+
+	const [ modalRemember, setmodalRemember ] = useState( true );
+
+	const onDownload = async () => {
+		// If the Remember checkbox is checked, dismiss the modal.
+		if ( modalRemember ) {
+			await updateOptions( {
+				wcpay_reporting_export_modal_dismissed: modalRemember,
+			} );
+
+			wcpaySettings.reporting.exportModalDismissed = true;
+		}
+
+		onSubmit( modalLanguage );
+	};
 
 	const buttonContent = (
 		<>
 			<Button isSecondary onClick={ onClose }>
 				{ __( 'Cancel', 'woocommerce-payments' ) }
 			</Button>
-			<Button isPrimary onClick={ onSubmit }>
+			<Button isPrimary onClick={ onDownload }>
 				{ __( 'Download', 'woocommerce-payments' ) }
 			</Button>
 		</>
@@ -85,16 +112,47 @@ const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 		}
 	};
 
+	const getExportLabel = ( type: string ): string => {
+		switch ( type ) {
+			case 'transactions':
+				return __(
+					'Export transactions report in',
+					'woocommerce-payments'
+				);
+			case 'deposits':
+				return __(
+					'Export deposits report in',
+					'woocommerce-payments'
+				);
+			case 'disputes':
+				return __(
+					'Export disputes report in',
+					'woocommerce-payments'
+				);
+			default:
+				return __( 'Export report in', 'woocommerce-payments' );
+		}
+	};
+
 	const exportLanguageOptions = [
-		{ label: __( 'English', 'woocommerce-payments' ), value: 'en' },
 		{
-			label: __( 'Site Language', 'woocommerce-payments' ),
-			value: 'default',
+			label: __( 'English (United States)', 'woocommerce-payments' ),
+			value: 'en',
+		},
+		{
+			label:
+				__( 'Site Language - ', 'woocommerce-payments' ) +
+				wcpaySettings.locale.native_name,
+			value: wcpaySettings.locale.code,
 		},
 	];
 
 	const handleExportLanguageChange = ( language: string ) => {
-		updateExportLanguage( language );
+		setModalLanguage( language );
+	};
+
+	const handleExportLanguageRememberChange = ( value: boolean ) => {
+		setmodalRemember( value );
 	};
 
 	return (
@@ -119,12 +177,50 @@ const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 			<div className="reporting-export-modal__settings">
 				<h4>Settings</h4>
 
-				<div className="reporting-export-modal__settings-language">
-					<SelectControl
-						label={ __( 'Language', 'woocommerce-payments' ) }
-						value={ exportLanguage }
-						onChange={ handleExportLanguageChange }
-						options={ exportLanguageOptions }
+				<div className="reporting-export-modal__settings--language">
+					<div className="reporting-export-modal__settings--language-label">
+						<DomainsIcon className="domains-icon" />
+						<span className="export-label">
+							{ getExportLabel( exportType ) }
+						</span>
+					</div>
+					<div className="reporting-export-modal__settings--language-select">
+						<SelectControl
+							label={ '' }
+							value={ modalLanguage }
+							onChange={ handleExportLanguageChange }
+							options={ exportLanguageOptions }
+						/>
+					</div>
+				</div>
+
+				<div className="reporting-export-modal__settings--remember">
+					<CheckboxControl
+						label={ __(
+							'Remember the language settings.',
+							'woocommerce-payments'
+						) }
+						help={ interpolateComponents( {
+							mixedString: __(
+								"Don't worry, you can always change this later in the {{learnMoreLink}}Payment Settings{{/learnMoreLink}}",
+								'woocommerce-payments'
+							),
+							components: {
+								learnMoreLink: (
+									// eslint-disable-next-line max-len
+									<ExternalLink
+										href={ getAdminUrl( {
+											page: 'wc-settings',
+											tab: 'checkout',
+											section: 'woocommerce_payments',
+										} ) }
+									/>
+								),
+							},
+						} ) }
+						checked={ modalRemember }
+						onChange={ handleExportLanguageRememberChange }
+						data-testid="export-modal-remember"
 					/>
 				</div>
 			</div>
