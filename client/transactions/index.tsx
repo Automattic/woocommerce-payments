@@ -3,11 +3,10 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { TabPanel } from '@wordpress/components';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
-import wcpayTracks from 'tracks';
 
 /**
  * Internal dependencies
