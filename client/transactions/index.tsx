@@ -34,12 +34,6 @@ export const TransactionsPage: React.FC = () => {
 	const initialTab = currentQuery.tab ?? null;
 	const { isFRTReviewFeatureActive } = wcpaySettings;
 
-	useEffect( () => {
-		wcpayTracks.recordEvent( 'page_view', {
-			path: 'payments_transactions',
-		} );
-	}, [] );
-
 	const onTabSelected = ( tab: string ) => {
 		// When switching tabs, make sure to revert the query strings to default values
 		updateQueryString(
