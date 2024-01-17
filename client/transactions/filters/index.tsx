@@ -11,7 +11,7 @@ import { getQuery } from '@woocommerce/navigation';
 import { getFilters, getAdvancedFilters } from './config';
 import { formatCurrencyName } from '../../utils/currency';
 import './style.scss';
-import wcpayTracks from 'wcpay/tracks';
+import wcpayTracks from 'tracks';
 
 interface TransactionsFiltersProps {
 	storeCurrencies: string[];
