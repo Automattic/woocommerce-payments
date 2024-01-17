@@ -121,7 +121,10 @@ declare global {
 		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
-		locale: string;
+		reporting: {
+			exportModalDismissed?: boolean;
+		};
+		locale: Record< string, string >;
 	};
 
 	const wcTracks: any;

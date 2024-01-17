@@ -24,10 +24,15 @@ const ExportLanguage: React.FC = () => {
 	};
 
 	const exportLanguageOptions = [
-		{ label: __( 'English', 'woocommerce-payments' ), value: 'en' },
 		{
-			label: __( 'Site Language', 'woocommerce-payments' ),
-			value: 'default',
+			label: __( 'English (United States)', 'woocommerce-payments' ),
+			value: 'en',
+		},
+		{
+			label:
+				__( 'Site Language - ', 'woocommerce-payments' ) +
+				wcpaySettings.locale.native_name,
+			value: wcpaySettings.locale.code,
 		},
 	];
 

@@ -898,7 +898,10 @@ class WC_Payments_Admin {
 			'capabilityRequestNotices'      => get_option( 'wcpay_capability_request_dismissed_notices ', [] ),
 			'storeName'                     => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'  => WC_Payments_Features::is_next_deposit_notice_dismissed(),
-			'locale'                        => get_locale(),
+			'reporting'                     => [
+				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', true ),
+			],
+			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );

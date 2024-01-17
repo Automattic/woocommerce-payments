@@ -346,7 +346,7 @@ export const DisputesList = (): JSX.Element => {
 		const title = __( 'Disputes', 'woocommerce-payments' );
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 		const userEmail = wcpaySettings.currentUserEmail;
-		const locale = wcpaySettings.locale;
+		const locale = wcpaySettings.locale.code;
 
 		if ( 'endpoint' === downloadType ) {
 			const {

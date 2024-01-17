@@ -991,4 +991,31 @@ class WC_Payments_Utils {
 		}
 		wp_enqueue_style( $handle );
 	}
+
+	/**
+	 * Returns language data: english name and native name
+	 *
+	 * @param string $language Language code.
+	 *
+	 * @return array
+	 */
+	public static function get_language_data( $language ) {
+		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
+
+		$transaltions = wp_get_available_translations();
+
+		if ( isset( $transaltions[ $language ] ) ) {
+			return [
+				'code'         => $language,
+				'english_name' => $transaltions[ $language ]['english_name'] ?? '',
+				'native_name'  => $transaltions[ $language ]['native_name'] ?? '',
+			];
+		}
+
+		return [
+			'code'         => 'en',
+			'english_name' => 'English (United States)',
+			'native_name'  => 'English (United States)',
+		];
+	}
 }
