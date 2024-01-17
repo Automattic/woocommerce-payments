@@ -333,7 +333,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();
 	if ( false !== $urls ) {
 		$current_url = untrailingslashit( $urls['current_url'] );
-		$wpcom_url   = untrailingslashit( $urls['wpcom_url'] );
+		$wpcom_url   = untrailingslashit( WC_Payments_Utils::reverse_url_if_trailing_slash( $urls['wpcom_url'] ) );
 
 		$custom_content['migrateCardBodyText'] = sprintf(
 			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly. %3$s: WooPayments. */

@@ -991,4 +991,21 @@ class WC_Payments_Utils {
 		}
 		wp_enqueue_style( $handle );
 	}
+
+	/**
+	 * Reverse URL if it starts with a trailing slash.
+	 *
+	 * @param  string $url URL.
+	 * @return string
+	 */
+	public static function reverse_url_if_trailing_slash( $url ) {
+		// Check if the URL starts with a trailing slash.
+		if ( substr( $url, 0, 1 ) === '/' ) {
+			// Reverse the URL.
+			return strrev( $url );
+		} else {
+			// Return the original URL if no trailing slash is found.
+			return $url;
+		}
+	}
 }
