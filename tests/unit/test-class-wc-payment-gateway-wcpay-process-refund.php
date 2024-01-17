@@ -766,7 +766,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'uncaptured-payment', $result->get_error_code() );
 	}
 
-	public function test_process_refund_on_invalid_amount() {
+	public function test_process_refund_on_zero_amount() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
 
@@ -778,9 +778,19 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order_id = $order->get_id();
 
 		$result = $this->wcpay_gateway->process_refund( $order_id, 0 );
+		$this->assertSame( true, $result );
+	}
 
-		$this->assertInstanceOf( WP_Error::class, $result );
-		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
+	public function test_process_refund_on_invalid_amount() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$order_id = $order->get_id();
 
 		$result = $this->wcpay_gateway->process_refund( $order_id, - 5 );
 
