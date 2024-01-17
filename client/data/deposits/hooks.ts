@@ -235,18 +235,18 @@ export const useDepositsSummary = ( {
 };
 
 export const useInstantDeposit = (
-	transactionIds: string[]
+	currency: string
 ): { inProgress: boolean; submit: () => void; deposit: unknown } => {
 	const { deposit, inProgress } = useSelect( ( select ) => {
 		const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
 		return {
-			deposit: getInstantDeposit( [ transactionIds ] ),
-			inProgress: isResolving( 'getInstantDeposit', [ transactionIds ] ),
+			deposit: getInstantDeposit( [ currency ] ),
+			inProgress: isResolving( 'getInstantDeposit', [ currency ] ),
 		};
 	} );
 	const { submitInstantDeposit } = useDispatch( STORE_NAME );
-	const submit = () => submitInstantDeposit( transactionIds );
+	const submit = () => submitInstantDeposit( currency );
 
 	return { deposit, inProgress, submit };
 };
