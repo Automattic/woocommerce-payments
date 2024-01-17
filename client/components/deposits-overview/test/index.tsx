@@ -437,7 +437,7 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { getByText, getByRole } = render( <DepositsOverview /> );
-		getByText( /Your first deposit is held for seven business days/, {
+		getByText( /Your first deposit is held for 7-14 days/, {
 			ignore: '.a11y-speak-region',
 		} );
 		expect( getByRole( 'link', { name: /Why\?/ } ) ).toHaveAttribute(
