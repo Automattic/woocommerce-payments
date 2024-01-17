@@ -298,7 +298,7 @@ export async function setupCheckout( billingDetails ) {
 }
 
 /**
- * Selects the Giropay payment method on the checkout page.
+ * Selects the payment method on the checkout page.
  *
  * @param {*} paymentMethod The payment method to select.
  * @param {*} page The page reference object.
@@ -317,7 +317,7 @@ export async function selectOnCheckout( paymentMethod, page ) {
 }
 
 /**
- * Authorizes or fails a Giropay payment.
+ * Authorizes or fails a redirected payment.
  *
  * @param {*} page The page reference object.
  * @param {string} action Either of 'success' or 'failure'.
