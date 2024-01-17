@@ -29,6 +29,13 @@ class Mode {
 	private $dev_mode;
 
 	/**
+	 * Logging enabled.
+	 *
+	 * @var bool
+	 */
+	private $logging_enabled;
+
+	/**
 	 * Indicates the WCPay version which introduced the class.
 	 *
 	 * @var string
@@ -74,10 +81,11 @@ class Mode {
 		$this->dev_mode = (bool) apply_filters( 'wcpay_dev_mode', $dev_mode );
 
 		// Getting the gateway settings directly from the database so the gateway doesn't need to be initialized.
-		$settings_option_name = 'woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings';
-		$wcpay_settings       = get_option( $settings_option_name );
-		$test_mode_setting    = 'yes' === ( $wcpay_settings['test_mode'] ?? false );
-		$test_mode            = $this->dev_mode || $test_mode_setting;
+		$settings_option_name  = 'woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings';
+		$wcpay_settings        = get_option( $settings_option_name );
+		$test_mode_setting     = 'yes' === ( $wcpay_settings['test_mode'] ?? false );
+		$test_mode             = $this->dev_mode || $test_mode_setting;
+		$this->logging_enabled = 'yes' === ( $wcpay_settings['enable_logging'] ?? false );
 
 		/**
 		 * Allows WooCommerce to enter test mode.
@@ -120,6 +128,17 @@ class Mode {
 	public function is_dev() : bool {
 		$this->maybe_init();
 		return $this->dev_mode;
+	}
+
+	/**
+	 * Checks if logging is enabled.
+	 *
+	 * @throws Exception In case the class has not been initialized yet.
+	 * @return bool
+	 */
+	public function is_logging_enabled() : bool {
+		$this->maybe_init();
+		return $this->logging_enabled;
 	}
 
 	/**

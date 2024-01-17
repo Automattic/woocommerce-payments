@@ -10,7 +10,6 @@ namespace WCPay\Internal;
 use Exception;
 use WC_Log_Levels;
 use WC_Logger_Interface;
-use WC_Payment_Gateway_WCPay;
 use WCPay\Core\Mode;
 
 /**
@@ -35,23 +34,14 @@ class Logger {
 	private $mode;
 
 	/**
-	 * WC_Payment_Gateway_WCPay
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $gateway;
-
-	/**
 	 * Logger constructor.
 	 *
-	 * @param WC_Logger_Interface      $wc_logger    WC_Logger_Interface.
-	 * @param Mode                     $mode         Mode.
-	 * @param WC_Payment_Gateway_WCPay $gateway      WC_Payment_Gateway_WCPay.
+	 * @param WC_Logger_Interface $wc_logger    WC_Logger_Interface.
+	 * @param Mode                $mode         Mode.
 	 */
-	public function __construct( WC_Logger_Interface $wc_logger, Mode $mode, WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct( WC_Logger_Interface $wc_logger, Mode $mode ) {
 		$this->wc_logger = $wc_logger;
 		$this->mode      = $mode;
-		$this->gateway   = $gateway;
 	}
 
 	/**
@@ -92,7 +82,7 @@ class Logger {
 		} catch ( Exception $e ) {
 			return false;
 		}
-		return 'yes' === $this->gateway->get_option( 'enable_logging' );
+		return $this->mode->is_logging_enabled();
 	}
 
 	/**
