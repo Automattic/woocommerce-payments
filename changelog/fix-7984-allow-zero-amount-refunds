@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Allow zero-amount refunds for backwards compatibility with basic payment gateway and to allow re-stock of refunded orders.
