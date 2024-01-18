@@ -878,7 +878,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param boolean $needs_shipping_address Whether the cart needs a shipping address.
 	 */
 	public function filter_cart_needs_shipping_address( $needs_shipping_address ) {
-		if ( $this->has_subscription_product() && $this->get_shipping_method_count( true, true ) === 0 ) {
+		if ( $this->has_subscription_product() && wc_get_shipping_method_count( true, true ) === 0 ) {
 			return false;
 		}
 
@@ -1576,16 +1576,5 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
 		return WC_Tax::calc_tax( $price, $rates, false );
-	}
-
-	/**
-	 * Wrapper for `wc_get_shipping_method_count` to allow mocking.
-	 *
-	 * @param boolean $include_legacy Whether to include legacy shipping methods.
-	 * @param boolean $enabled_only   Whether to include only enabled shipping methods.
-	 * @return int                    The number of shipping methods.
-	 */
-	public function get_shipping_method_count( $include_legacy = false, $enabled_only = false ) {
-		return wc_get_shipping_method_count( $include_legacy, $enabled_only );
 	}
 }

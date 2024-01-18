@@ -551,25 +551,18 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_filter_cart_needs_shipping_address_returns_false() {
-		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
-			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
-			->setMethods( [ 'has_subscription_product', 'get_shipping_method_count' ] )
-			->getMock();
+		sleep( 1 );
+		$this->zone->delete_shipping_method( $this->flat_rate_id );
+		$this->zone->delete_shipping_method( $this->local_pickup_id );
 
-		$mock_pr->method( 'has_subscription_product' )->willReturn( true );
-		$mock_pr->method( 'get_shipping_method_count' )->willReturn( 0 );
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
 
-		$this->assertFalse( $mock_pr->filter_cart_needs_shipping_address( true ) );
+		$this->assertFalse( $this->pr->filter_cart_needs_shipping_address( true ) );
 	}
 
 	public function test_filter_cart_needs_shipping_address_returns_true() {
-		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
-			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
-			->setMethods( [ 'has_subscription_product', 'get_shipping_method_count' ] )
-			->getMock();
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
 
-		$mock_pr->method( 'has_subscription_product' )->willReturn( true );
-
-		$this->assertTrue( $mock_pr->filter_cart_needs_shipping_address( true ) );
+		$this->assertTrue( $this->pr->filter_cart_needs_shipping_address( true ) );
 	}
 }
