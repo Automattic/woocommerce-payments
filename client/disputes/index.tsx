@@ -48,6 +48,7 @@ import {
 	isExportModalDismissed,
 	getExportLanguage,
 } from 'wcpay/utils';
+import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
@@ -203,6 +204,9 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 };
 
 export const DisputesList = (): JSX.Element => {
+	// pre-fetching the settings.
+	useSettings();
+
 	const [ isDownloading, setIsDownloading ] = useState( false );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { disputes, isLoading } = useDisputes( getQuery() );

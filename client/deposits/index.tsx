@@ -14,6 +14,7 @@ import { TestModeNotice } from 'components/test-mode-notice';
 import BannerNotice from 'components/banner-notice';
 import DepositSchedule from 'components/deposits-overview/deposit-schedule';
 import { useAllDepositsOverviews } from 'data';
+import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
 
 const useNextDepositNoticeState = () => {
@@ -73,6 +74,9 @@ const NextDepositNotice: React.FC = () => {
 };
 
 const DepositsPage: React.FC = () => {
+	// pre-fetching the settings.
+	useSettings();
+
 	return (
 		<Page>
 			<TestModeNotice currentPage="deposits" />

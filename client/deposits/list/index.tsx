@@ -23,11 +23,8 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies.
  */
-import {
-	useDeposits,
-	useDepositsSummary,
-	useReportingExportLanguage,
-} from 'wcpay/data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
+import { useReportingExportLanguage } from 'data/index';
 import { displayType, displayStatus } from '../strings';
 import { formatExplicitCurrency, formatExportAmount } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
@@ -96,6 +93,10 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 ];
 
 export const DepositsList = (): JSX.Element => {
+	const [
+		exportLanguage,
+	] = useReportingExportLanguage() as ReportingExportLanguageHook;
+
 	const [ isDownloading, setIsDownloading ] = useState( false );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { deposits, isLoading } = useDeposits( getQuery() );
@@ -103,15 +104,11 @@ export const DepositsList = (): JSX.Element => {
 		getQuery()
 	);
 
+	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
+
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
 	const totalRows = depositsSummary.count || 0;
-
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
-
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (

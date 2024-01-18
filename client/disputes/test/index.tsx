@@ -15,6 +15,7 @@ import {
 	useDisputes,
 	useDisputesSummary,
 	useReportingExportLanguage,
+	useSettings,
 } from 'data/index';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
@@ -54,6 +55,7 @@ jest.mock( 'data/index', () => ( {
 	useDisputes: jest.fn(),
 	useDisputesSummary: jest.fn(),
 	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
+	useSettings: jest.fn(),
 } ) );
 
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
@@ -68,6 +70,10 @@ const mockUseDisputes = useDisputes as jest.MockedFunction<
 
 const mockUseDisputesSummary = useDisputesSummary as jest.MockedFunction<
 	typeof useDisputesSummary
+>;
+
+const mockUseSettings = useSettings as jest.MockedFunction<
+	typeof useSettings
 >;
 
 const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
@@ -165,6 +171,12 @@ describe( 'Disputes list', () => {
 		);
 
 		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
+
+		mockUseSettings.mockReturnValue( {
+			isLoading: false,
+			isSaving: false,
+			saveSettings: ( a ) => a,
+		} );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
