@@ -1,3 +1,27 @@
+/**
+ * Internal dependencies
+ */
+import { dispatchChangeEventFor } from '../utils/upe';
+
+export const switchToNewPaymentTokenElement = () => {
+	const newPaymentTokenElement = document.getElementById(
+		'wc-woocommerce_payments-payment-token-new'
+	);
+	if ( newPaymentTokenElement && ! newPaymentTokenElement.checked ) {
+		newPaymentTokenElement.checked = true;
+		dispatchChangeEventFor( newPaymentTokenElement );
+	}
+};
+
+export const removeLinkButton = () => {
+	const stripeLinkButton = document.querySelector(
+		'.wcpay-stripelink-modal-trigger'
+	);
+	if ( stripeLinkButton ) {
+		stripeLinkButton.remove();
+	}
+};
+
 const transformStripeLinkAddress = ( address ) => {
 	// when clicking "use another address" or "use another payment method", the returned value for shipping/billing might be `null`.
 	if ( ! address ) return null;
@@ -40,6 +64,7 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 			transformStripeLinkAddress( billingAddress ),
 			transformStripeLinkAddress( shippingAddress )
 		);
+		switchToNewPaymentTokenElement();
 	} );
 };
 
