@@ -304,7 +304,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
-			->with( $mock_order, $intent_id, $status, 'pm_mock', $customer_id, $charge_id, 'USD' );
+			->with( $mock_order, $intent );
 
 		$this->mock_order_service
 			->expects( $this->once() )
@@ -471,7 +471,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
-			->with( $mock_order, $intent_id, $status, 'pm_mock', $customer_id, $charge_id, 'USD' );
+			->with( $mock_order, $intent );
 
 		// Assert: The Order_Service is called correctly.
 		$this->mock_order_service
@@ -919,7 +919,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
-			->with( $mock_order, $intent_id, $status, 'pm_mock', $customer_id, $charge_id, 'USD' );
+			->with( $mock_order, $intent );
 
 		$this->mock_order_service
 			->expects( $this->once() )
@@ -1035,7 +1035,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
-			->with( $mock_order, $intent_id, $status, 'pm_mock', $customer_id, '', 'USD' );
+			->with( $mock_order, $intent );
 
 		// Assert: Order status was not updated.
 		$mock_order
