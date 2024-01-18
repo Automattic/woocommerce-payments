@@ -88,11 +88,6 @@ const DepositsOverview: React.FC = () => {
 		);
 	}
 
-	// This card isn't shown if there are no deposits, so we can bail early.
-	if ( ! isLoading && deposits.length === 0 ) {
-		return null;
-	}
-
 	return (
 		<Card className="wcpay-deposits-overview">
 			<CardHeader>
