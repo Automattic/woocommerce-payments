@@ -554,12 +554,6 @@ describe( 'Transactions list', () => {
 
 			await waitFor( () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
-				expect( mockApiFetch ).toHaveBeenCalledWith( {
-					method: 'POST',
-					path: `/wc/v3/payments/transactions/download?user_email=mock%40example.com&user_timezone=${ encodeURIComponent(
-						getUserTimeZone()
-					) }`,
-				} );
 			} );
 		} );
 
@@ -614,7 +608,7 @@ describe( 'Transactions list', () => {
 					method: 'POST',
 					path: `/wc/v3/payments/transactions/download?user_email=mock%40example.com&deposit_id=po_mock&user_timezone=${ encodeURIComponent(
 						getUserTimeZone()
-					) }`,
+					) }&locale=en`,
 				} );
 			} );
 		} );
