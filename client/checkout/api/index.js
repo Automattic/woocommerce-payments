@@ -85,6 +85,7 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			let betas = [ 'card_country_event_beta_1' ];
 			if ( isStripeLinkEnabled ) {
+				// https://stripe.com/docs/payments/link/autofill-modal
 				betas = betas.concat( [ 'link_autofill_modal_beta_1' ] );
 			}
 
