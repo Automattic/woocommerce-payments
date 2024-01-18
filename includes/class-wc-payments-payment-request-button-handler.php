@@ -94,6 +94,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
 		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_cart_needs_shipping_address', [ $this, 'filter_cart_needs_shipping_address' ], 11, 1 );
 
 		// Add a filter for the value of `wcpay_is_apple_pay_enabled`.
 		// This option does not get stored in the database at all, and this function
@@ -869,6 +870,19 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
+	}
+
+	/**
+	 * Determine wether to filter the cart needs shipping address.
+	 *
+	 * @param boolean $needs_shipping_address Whether the cart needs a shipping address.
+	 */
+	public function filter_cart_needs_shipping_address( $needs_shipping_address ) {
+		if ( $this->has_subscription_product() && wc_get_shipping_method_count( true, true ) === 0 ) {
+			return false;
+		}
+
+		return $needs_shipping_address;
 	}
 
 	/**
