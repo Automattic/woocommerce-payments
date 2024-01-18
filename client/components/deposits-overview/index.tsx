@@ -58,8 +58,7 @@ const DepositsOverview: React.FC = () => {
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
-	const showRecentDeposits =
-		! isLoading && deposits?.length > 0 && !! account;
+	const hasRecentDeposits = ! isLoading && deposits?.length > 0 && !! account;
 
 	// Show a loading state if the page is still loading.
 	if ( isLoading ) {
@@ -128,7 +127,7 @@ const DepositsOverview: React.FC = () => {
 				) }
 			</CardBody>
 
-			{ showRecentDeposits && (
+			{ hasRecentDeposits && (
 				<>
 					<CardBody className="wcpay-deposits-overview__heading">
 						<span className="wcpay-deposits-overview__heading__title">
@@ -140,24 +139,26 @@ const DepositsOverview: React.FC = () => {
 			) }
 
 			<CardFooter className="wcpay-deposits-overview__footer">
-				<Button
-					variant="secondary"
-					href={ getAdminUrl( {
-						page: 'wc-admin',
-						path: '/payments/deposits',
-					} ) }
-					onClick={ () =>
-						wcpayTracks.recordEvent(
-							wcpayTracks.events
-								.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
-						)
-					}
-				>
-					{ __(
-						'View full deposits history',
-						'woocommerce-payments'
-					) }
-				</Button>
+				{ hasRecentDeposits && (
+					<Button
+						variant="secondary"
+						href={ getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/deposits',
+						} ) }
+						onClick={ () =>
+							wcpayTracks.recordEvent(
+								wcpayTracks.events
+									.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+							)
+						}
+					>
+						{ __(
+							'View full deposits history',
+							'woocommerce-payments'
+						) }
+					</Button>
+				) }
 
 				{ ! account?.deposits_blocked && (
 					<Button
