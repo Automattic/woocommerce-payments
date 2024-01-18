@@ -899,7 +899,7 @@ class WC_Payments_Admin {
 			'storeName'                     => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'  => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'reporting'                     => [
-				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', true ),
+				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
 			],
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
 		];

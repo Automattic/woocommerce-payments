@@ -43,7 +43,11 @@ import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { displayStatus as displayDepositStatus } from 'deposits/strings';
-import { formatStringValue, isExportModalDismissed } from 'utils';
+import {
+	formatStringValue,
+	isExportModalDismissed,
+	getExportLanguage,
+} from 'utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
@@ -605,11 +609,7 @@ export const TransactionsList = (
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		// In case the default export setting is not present, use the site locale.
-		const defaultLanguage = exportLanguage ?? wcpaySettings.locale.code;
-
-		// When modal is dismissed use the default language locale.
-		const locale = language !== '' ? language : defaultLanguage;
+		const locale = getExportLanguage( language, exportLanguage );
 		const {
 			date_after: dateAfter,
 			date_before: dateBefore,

@@ -124,7 +124,11 @@ declare global {
 		reporting: {
 			exportModalDismissed?: boolean;
 		};
-		locale: Record< string, string >;
+		locale: {
+			code: string;
+			english_name: string;
+			native_name: string;
+		};
 	};
 
 	const wcTracks: any;

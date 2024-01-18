@@ -166,7 +166,30 @@ export const applyThousandSeparator = ( trxCount ) => {
  */
 export const isExportModalDismissed = () => {
 	if ( typeof wcpaySettings === 'undefined' ) {
-		return false;
+		return true;
 	}
+
 	return wcpaySettings?.reporting?.exportModalDismissed ?? false;
+};
+
+/**
+ * Returns the language code for CSV exports.
+ *
+ * @param {string} language Selected language code.
+ * @param {string} storedLanguage Stored language code.
+ *
+ * @return {string} Language code.
+ */
+export const getExportLanguage = ( language, storedLanguage ) => {
+	let siteLanguage = 'en';
+
+	if ( typeof wcpaySettings !== 'undefined' ) {
+		siteLanguage = wcpaySettings?.locale?.code ?? siteLanguage;
+	}
+
+	// In case the default export setting is not present, use the site locale.
+	const defaultLanguage = storedLanguage ?? siteLanguage;
+
+	// When modal is dismissed use the default language locale.
+	return language !== '' ? language : defaultLanguage;
 };
