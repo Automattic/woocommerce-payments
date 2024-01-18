@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Select the proper payment element when using saved Stripe Link tokens or choosing to use Stripe Link for new email.
