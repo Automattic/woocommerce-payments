@@ -285,13 +285,15 @@ export const WoopayExpressCheckoutButton = ( {
 							}
 						)
 							.then( ( response ) => {
-								iframe.contentWindow.postMessage(
-									{
-										action: 'setPreemptiveSessionData',
-										value: response,
-									},
-									getConfig( 'woopayHost' )
-								);
+								if ( response?.data?.session ) {
+									iframe.contentWindow.postMessage(
+										{
+											action: 'setPreemptiveSessionData',
+											value: response,
+										},
+										getConfig( 'woopayHost' )
+									);
+								}
 							} )
 							.catch( () => {
 								const errorMessage = __(
@@ -317,13 +319,15 @@ export const WoopayExpressCheckoutButton = ( {
 						}
 					)
 						.then( ( response ) => {
-							iframe.contentWindow.postMessage(
-								{
-									action: 'setPreemptiveSessionData',
-									value: response,
-								},
-								getConfig( 'woopayHost' )
-							);
+							if ( response?.data?.session ) {
+								iframe.contentWindow.postMessage(
+									{
+										action: 'setPreemptiveSessionData',
+										value: response,
+									},
+									getConfig( 'woopayHost' )
+								);
+							}
 						} )
 						?.catch( () => {
 							const errorMessage = __(
