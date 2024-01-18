@@ -89,6 +89,15 @@ const DepositsOverview: React.FC = () => {
 		);
 	}
 
+	if (
+		! hasCompletedWaitingPeriod &&
+		availableFunds === 0 &&
+		pendingFunds === 0
+	) {
+		// If the account has not received any transactions before completing the waiting period, don't show the deposits overview section.
+		return null;
+	}
+
 	return (
 		<Card className="wcpay-deposits-overview">
 			<CardHeader>
@@ -139,6 +148,7 @@ const DepositsOverview: React.FC = () => {
 					<RecentDepositsList deposits={ deposits } />
 				</>
 			) }
+
 			{ ( hasRecentDeposits || canChangeDepositSchedule ) && (
 				<CardFooter className="wcpay-deposits-overview__footer">
 					{ hasRecentDeposits && (
