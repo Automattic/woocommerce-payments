@@ -156,12 +156,7 @@ const DepositsSchedule = () => {
 		depositRestrictions === 'schedule_restricted'
 	) {
 		return (
-			<InlineNotice
-				status="warning"
-				isDismissible={ false }
-				className="deposits__notice"
-				icon
-			>
+			<InlineNotice status="warning" isDismissible={ false } icon>
 				{ interpolateComponents( {
 					mixedString: __(
 						'Deposit scheduling is currently unavailable for your store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
@@ -183,12 +178,7 @@ const DepositsSchedule = () => {
 	}
 	if ( completedWaitingPeriod !== true ) {
 		return (
-			<InlineNotice
-				status="warning"
-				isDismissible={ false }
-				className="deposits__notice"
-				icon
-			>
+			<InlineNotice status="warning" isDismissible={ false } icon>
 				{ interpolateComponents( {
 					mixedString: __(
 						'Your first deposit will be held for 7 days. ' +
