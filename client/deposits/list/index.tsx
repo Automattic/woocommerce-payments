@@ -111,7 +111,6 @@ export const DepositsList = (): JSX.Element => {
 
 	const [
 		exportLanguage,
-		updateExportLanguage,
 	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const rows = deposits.map( ( deposit ) => {

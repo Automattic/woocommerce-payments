@@ -320,7 +320,6 @@ export const TransactionsList = (
 
 	const [
 		exportLanguage,
-		updateExportLanguage,
 	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const columnsToDisplay = useMemo(

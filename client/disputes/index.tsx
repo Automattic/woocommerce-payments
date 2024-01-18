@@ -215,7 +215,6 @@ export const DisputesList = (): JSX.Element => {
 
 	const [
 		exportLanguage,
-		updateExportLanguage,
 	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const headers = getHeaders( getQuery().orderby );

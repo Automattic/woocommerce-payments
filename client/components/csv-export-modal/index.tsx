@@ -40,7 +40,6 @@ const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 
 	const [
 		exportLanguage,
-		updateExportLanguage,
 	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const [ modalLanguage, setModalLanguage ] = useState( exportLanguage );
