@@ -147,6 +147,23 @@ describe( 'Deposits', () => {
 		expect( depositsMessage ).toBeInTheDocument();
 	} );
 
+	it( `doesn't render the deposits within waiting period message for accounts not within waiting period`, () => {
+		useDepositStatus.mockReturnValue( 'enabled' );
+		useCompletedWaitingPeriod.mockReturnValue( true );
+
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText( /Your first deposit will be held for/, {
+				ignore: '.a11y-speak-region',
+			} )
+		).toBeFalsy();
+	} );
+
 	it( 'renders the frequency select', () => {
 		useDepositScheduleInterval.mockReturnValue( [ 'daily', jest.fn() ] );
 
