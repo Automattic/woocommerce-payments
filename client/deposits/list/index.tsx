@@ -23,7 +23,11 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies.
  */
-import { useDeposits, useDepositsSummary } from 'wcpay/data';
+import {
+	useDeposits,
+	useDepositsSummary,
+	useReportingExportLanguage,
+} from 'wcpay/data';
 import { displayType, displayStatus } from '../strings';
 import { formatExplicitCurrency, formatExportAmount } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
@@ -34,6 +38,9 @@ import DownloadButton from 'components/download-button';
 import { getDepositsCSV } from 'wcpay/data/deposits/resolvers';
 import { applyThousandSeparator } from '../../utils/index.js';
 import DepositStatusChip from 'components/deposit-status-chip';
+import { isExportModalDismissed, getExportLanguage } from 'utils';
+import CSVExportModal from 'components/csv-export-modal';
+import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
 import { parseInt } from 'lodash';
@@ -99,6 +106,13 @@ export const DepositsList = (): JSX.Element => {
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
 	const totalRows = depositsSummary.count || 0;
+
+	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
+
+	const [
+		exportLanguage,
+		updateExportLanguage,
+	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
@@ -209,49 +223,48 @@ export const DepositsList = (): JSX.Element => {
 
 	const downloadable = !! rows.length;
 
-	const onDownload = async () => {
-		setIsDownloading( true );
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
+	const endpointExport = async ( language: string ) => {
+		// We destructure page and path to get the right params.
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
-		const locale = wcpaySettings.locale?.code ?? 'en';
+		const locale = getExportLanguage( language, exportLanguage );
 
-		if ( 'endpoint' === downloadType ) {
-			const {
-				date_before: dateBefore,
-				date_after: dateAfter,
-				date_between: dateBetween,
-				match,
-				status_is: statusIs,
-				status_is_not: statusIsNot,
-				store_currency_is: storeCurrencyIs,
-			} = getQuery();
+		const {
+			date_before: dateBefore,
+			date_after: dateAfter,
+			date_between: dateBetween,
+			match,
+			status_is: statusIs,
+			status_is_not: statusIsNot,
+			store_currency_is: storeCurrencyIs,
+		} = getQuery();
 
-			const isFiltered =
-				!! dateBefore ||
-				!! dateAfter ||
-				!! dateBetween ||
-				!! statusIs ||
-				!! statusIsNot ||
-				!! storeCurrencyIs;
+		const isFiltered =
+			!! dateBefore ||
+			!! dateAfter ||
+			!! dateBetween ||
+			!! statusIs ||
+			!! statusIsNot ||
+			!! storeCurrencyIs;
 
-			const confirmThreshold = 1000;
-			const confirmMessage = sprintf(
-				__(
-					"You are about to export %d deposits. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
-					'woocommerce-payments'
-				),
-				totalRows
-			);
+		const confirmThreshold = 1000;
+		const confirmMessage = sprintf(
+			__(
+				"You are about to export %d deposits. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
+				'woocommerce-payments'
+			),
+			totalRows
+		);
 
-			if (
-				isFiltered ||
-				totalRows < confirmThreshold ||
-				window.confirm( confirmMessage )
-			) {
-				try {
-					const {
-						exported_deposits: exportedDeposits,
-					} = await apiFetch( {
+		if (
+			isFiltered ||
+			totalRows < confirmThreshold ||
+			window.confirm( confirmMessage )
+		) {
+			try {
+				const { exported_deposits: exportedDeposits } = await apiFetch(
+					{
 						path: getDepositsCSV( {
 							userEmail,
 							locale,
@@ -264,36 +277,49 @@ export const DepositsList = (): JSX.Element => {
 							storeCurrencyIs,
 						} ),
 						method: 'POST',
-					} );
+					}
+				);
 
-					createNotice(
-						'success',
-						sprintf(
-							__(
-								'Your export will be emailed to %s',
-								'woocommerce-payments'
-							),
-							userEmail
-						)
-					);
-
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DEPOSITS_DOWNLOAD_CSV_CLICK,
-						{
-							exported_deposits: exportedDeposits,
-							total_deposits: exportedDeposits,
-							download_type: 'endpoint',
-						}
-					);
-				} catch {
-					createNotice(
-						'error',
+				createNotice(
+					'success',
+					sprintf(
 						__(
-							'There was a problem generating your export.',
+							'Your export will be emailed to %s',
 							'woocommerce-payments'
-						)
-					);
-				}
+						),
+						userEmail
+					)
+				);
+
+				wcpayTracks.recordEvent(
+					wcpayTracks.events.DEPOSITS_DOWNLOAD_CSV_CLICK,
+					{
+						exported_deposits: exportedDeposits,
+						total_deposits: exportedDeposits,
+						download_type: 'endpoint',
+					}
+				);
+			} catch {
+				createNotice(
+					'error',
+					__(
+						'There was a problem generating your export.',
+						'woocommerce-payments'
+					)
+				);
+			}
+		}
+	};
+
+	const onDownload = async () => {
+		setIsDownloading( true );
+		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
+
+		if ( 'endpoint' === downloadType ) {
+			if ( ! isExportModalDismissed() ) {
+				setCSVExportModalOpen( true );
+			} else {
+				endpointExport( '' );
 			}
 		} else {
 			const params = getQuery();
@@ -337,6 +363,16 @@ export const DepositsList = (): JSX.Element => {
 		setIsDownloading( false );
 	};
 
+	const closeModal = () => {
+		setCSVExportModalOpen( false );
+	};
+
+	const exportDeposits = ( language: string ) => {
+		endpointExport( language );
+
+		closeModal();
+	};
+
 	return (
 		<Page>
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
@@ -361,6 +397,14 @@ export const DepositsList = (): JSX.Element => {
 					),
 				] }
 			/>
+			{ ! isExportModalDismissed() && isCSVExportModalOpen && (
+				<CSVExportModal
+					onClose={ closeModal }
+					onSubmit={ exportDeposits }
+					totalItems={ totalRows }
+					exportType={ 'deposits' }
+				/>
+			) }
 		</Page>
 	);
 };
