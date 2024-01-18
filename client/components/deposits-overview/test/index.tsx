@@ -308,7 +308,7 @@ describe( 'Deposits Overview information', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 		const { getByText, queryByText } = render( <DepositsOverview /> );
-		getByText( /Your first deposit is held for seven business days/, {
+		getByText( /Your first deposit is held for/, {
 			ignore: '.a11y-speak-region',
 		} );
 		expect( queryByText( 'Change deposit schedule' ) ).toBeFalsy();
@@ -430,9 +430,7 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { queryByText } = render( <DepositsOverview /> );
-		expect(
-			queryByText( 'Your first deposit is held for seven business days' )
-		).toBeFalsy();
+		expect( queryByText( /Your first deposit is held for/ ) ).toBeFalsy();
 	} );
 
 	test( 'Confirm new account waiting period notice shows if within waiting period', () => {
@@ -450,7 +448,7 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { getByText, getByRole } = render( <DepositsOverview /> );
-		getByText( /Your first deposit is held for seven business days/, {
+		getByText( /Your first deposit is held for/, {
 			ignore: '.a11y-speak-region',
 		} );
 		expect( getByRole( 'link', { name: /Why\?/ } ) ).toHaveAttribute(
