@@ -1,6 +1,4 @@
 .reporting-export-modal {
-	min-width: 500px;
-
 	.components-modal__header {
 		border-bottom: 1px solid #dcdcde !important;
 	}
@@ -17,7 +15,9 @@
 	}
 
 	&__settings {
-		min-width: 500px;
+		@include breakpoint( '>660px' ) {
+			min-width: 500px;
+		}
 
 		&--language {
 			display: flex;
