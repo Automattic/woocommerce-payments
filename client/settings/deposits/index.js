@@ -4,12 +4,7 @@
 import React, { useContext } from 'react';
 import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	SelectControl,
-	ExternalLink,
-	Notice,
-} from '@wordpress/components';
+import { Card, SelectControl, ExternalLink } from '@wordpress/components';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { STORE_NAME } from 'wcpay/data/constants';
 
@@ -29,6 +24,7 @@ import {
 } from '../../data';
 import './style.scss';
 import wcpayTracks from 'wcpay/tracks';
+import InlineNotice from 'components/inline-notice';
 
 const daysOfWeek = [
 	{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
@@ -160,10 +156,11 @@ const DepositsSchedule = () => {
 		depositRestrictions === 'schedule_restricted'
 	) {
 		return (
-			<Notice
+			<InlineNotice
 				status="warning"
 				isDismissible={ false }
 				className="deposits__notice"
+				icon
 			>
 				<span>
 					{ __(
@@ -182,15 +179,16 @@ const DepositsSchedule = () => {
 				>
 					<HelpOutlineIcon size={ 18 } />
 				</a>
-			</Notice>
+			</InlineNotice>
 		);
 	}
 	if ( completedWaitingPeriod !== true ) {
 		return (
-			<Notice
+			<InlineNotice
 				status="warning"
 				isDismissible={ false }
 				className="deposits__notice"
+				icon
 			>
 				<span>
 					{ __(
@@ -209,7 +207,7 @@ const DepositsSchedule = () => {
 				>
 					<HelpOutlineIcon size={ 18 } />
 				</a>
-			</Notice>
+			</InlineNotice>
 		);
 	}
 
