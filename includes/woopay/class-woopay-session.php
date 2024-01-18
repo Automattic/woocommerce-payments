@@ -543,6 +543,14 @@ class WooPay_Session {
 			);
 		}
 
+		$blog_id = Jetpack_Options::get_option('id');
+		if ( empty( $blog_id ) ) {
+			wp_send_json_error(
+				__( 'Could not determine the blog ID.', 'woocommerce-payments' ),
+				500
+			);
+		}
+
 		wp_send_json( self::get_frontend_init_session_request() );
 	}
 
