@@ -11,6 +11,7 @@ import {
 	blocksShowLinkButtonHandler,
 	getSelectedUPEGatewayPaymentMethod,
 	isUsingSavedPaymentMethod,
+	dispatchChangeEventFor,
 } from '../upe';
 import { getPaymentMethodsConstants } from '../../constants';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -531,5 +532,39 @@ describe( 'isUsingSavedPaymentMethod', () => {
 		const paymentMethodType = 'sofort';
 
 		expect( isUsingSavedPaymentMethod( paymentMethodType ) ).toBe( false );
+	} );
+} );
+
+describe( 'dispatching change event for element', () => {
+	it( 'should dispatch a change event with bubbling', () => {
+		const mockElement = document.createElement( 'input' );
+		jest.spyOn( mockElement, 'dispatchEvent' );
+
+		dispatchChangeEventFor( mockElement );
+
+		expect( mockElement.dispatchEvent ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				type: 'change',
+				bubbles: true,
+			} )
+		);
+	} );
+
+	it( 'should throw an error when called with an invalid element', () => {
+		expect( () => {
+			dispatchChangeEventFor( null );
+		} ).toThrow();
+
+		expect( () => {
+			dispatchChangeEventFor( undefined );
+		} ).toThrow();
+
+		expect( () => {
+			dispatchChangeEventFor( {} );
+		} ).toThrow();
+
+		expect( () => {
+			dispatchChangeEventFor( 'not-an-element' );
+		} ).toThrow();
 	} );
 } );

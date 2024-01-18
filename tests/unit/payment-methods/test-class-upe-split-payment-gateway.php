@@ -621,7 +621,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$setup_intent = WC_Helper_Intention::create_setup_intention(
 			[
-				'id'                     => 'pi_mock',
+				'id'                     => $intent_id,
 				'client_secret'          => $client_secret,
 				'status'                 => $intent_status,
 				'payment_method'         => $payment_method_id,

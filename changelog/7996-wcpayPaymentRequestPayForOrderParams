@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Checking if wcpayPaymentRequestPayForOrderParams before using it in Pay for Order page
