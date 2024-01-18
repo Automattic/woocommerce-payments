@@ -40,11 +40,9 @@ export const placeOrder = async ( page: Page ): Promise< void > => {
 
 export const addCartProduct = async (
 	page: Page,
-	productSlug = 'beanie'
+	productId = 16 // Beanie
 ): Promise< void > => {
-	await page.goto( `/product/${ productSlug }/` );
-	await page.getByRole( 'button', { name: /add to cart/i } ).click();
-	await page.waitForLoadState( 'networkidle' );
+	await page.goto( `/shop/?add-to-cart=${ productId }` );
 };
 
 export const fillCardDetails = async (
