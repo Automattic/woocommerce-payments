@@ -192,6 +192,11 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 	);
 }
 
+export function dispatchChangeEventFor( element ) {
+	const event = new Event( 'change', { bubbles: true } );
+	element.dispatchEvent( event );
+}
+
 /**
  *
  * Custom React hook that provides customer data and related functions for managing customer information.

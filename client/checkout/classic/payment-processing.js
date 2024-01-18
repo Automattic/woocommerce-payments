@@ -16,7 +16,9 @@ import {
 	getUpeSettings,
 	isLinkEnabled,
 } from 'wcpay/checkout/utils/upe';
-import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
+import enableStripeLinkPaymentMethod, {
+	switchToNewPaymentTokenElement,
+} from 'wcpay/checkout/stripe-link';
 import {
 	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
@@ -347,6 +349,7 @@ export function maybeEnableStripeLink( api ) {
 					event.preventDefault();
 					// Trigger modal.
 					linkAutofill.launch( { email: billingEmailInput.value } );
+					switchToNewPaymentTokenElement();
 				} );
 			},
 		} );
