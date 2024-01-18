@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+On Payments Overview, show the first deposit waiting period notice for new accounts that have transacted
