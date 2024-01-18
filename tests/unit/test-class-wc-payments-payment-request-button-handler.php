@@ -153,6 +153,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function tear_down() {
 		parent::tear_down();
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
 		$this->zone->delete();
