@@ -57,6 +57,8 @@ const DepositsOverview: React.FC = () => {
 		availableFunds === 0 && pendingFunds > 0;
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
+	const canChangeDepositSchedule =
+		! account?.deposits_blocked && hasCompletedWaitingPeriod;
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
 	const hasRecentDeposits = ! isLoading && deposits?.length > 0 && !! account;
 
@@ -137,53 +139,54 @@ const DepositsOverview: React.FC = () => {
 					<RecentDepositsList deposits={ deposits } />
 				</>
 			) }
+			{ ( hasRecentDeposits || canChangeDepositSchedule ) && (
+				<CardFooter className="wcpay-deposits-overview__footer">
+					{ hasRecentDeposits && (
+						<Button
+							variant="secondary"
+							href={ getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/deposits',
+							} ) }
+							onClick={ () =>
+								wcpayTracks.recordEvent(
+									wcpayTracks.events
+										.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+								)
+							}
+						>
+							{ __(
+								'View full deposits history',
+								'woocommerce-payments'
+							) }
+						</Button>
+					) }
 
-			<CardFooter className="wcpay-deposits-overview__footer">
-				{ hasRecentDeposits && (
-					<Button
-						variant="secondary"
-						href={ getAdminUrl( {
-							page: 'wc-admin',
-							path: '/payments/deposits',
-						} ) }
-						onClick={ () =>
-							wcpayTracks.recordEvent(
-								wcpayTracks.events
-									.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
-							)
-						}
-					>
-						{ __(
-							'View full deposits history',
-							'woocommerce-payments'
-						) }
-					</Button>
-				) }
-
-				{ ! account?.deposits_blocked && (
-					<Button
-						variant="tertiary"
-						href={
-							getAdminUrl( {
-								page: 'wc-settings',
-								tab: 'checkout',
-								section: 'woocommerce_payments',
-							} ) + '#deposit-schedule'
-						}
-						onClick={ () =>
-							wcpayTracks.recordEvent(
-								wcpayTracks.events
-									.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
-							)
-						}
-					>
-						{ __(
-							'Change deposit schedule',
-							'woocommerce-payments'
-						) }
-					</Button>
-				) }
-			</CardFooter>
+					{ canChangeDepositSchedule && (
+						<Button
+							variant="tertiary"
+							href={
+								getAdminUrl( {
+									page: 'wc-settings',
+									tab: 'checkout',
+									section: 'woocommerce_payments',
+								} ) + '#deposit-schedule'
+							}
+							onClick={ () =>
+								wcpayTracks.recordEvent(
+									wcpayTracks.events
+										.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
+								)
+							}
+						>
+							{ __(
+								'Change deposit schedule',
+								'woocommerce-payments'
+							) }
+						</Button>
+					) }
+				</CardFooter>
+			) }
 		</Card>
 	);
 };
