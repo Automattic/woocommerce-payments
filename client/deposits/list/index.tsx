@@ -213,7 +213,7 @@ export const DepositsList = (): JSX.Element => {
 		setIsDownloading( true );
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 		const userEmail = wcpaySettings.currentUserEmail;
-		const locale = wcpaySettings.locale.code;
+		const locale = wcpaySettings.locale?.code ?? 'en';
 
 		if ( 'endpoint' === downloadType ) {
 			const {

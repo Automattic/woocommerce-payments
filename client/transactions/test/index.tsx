@@ -18,6 +18,7 @@ import {
 	useSettings,
 	useTransactions,
 	useTransactionsSummary,
+	useReportingExportLanguage,
 } from 'data/index';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -44,6 +45,7 @@ jest.mock( 'data/index', () => ( {
 	useManualCapture: jest.fn(),
 	useSettings: jest.fn(),
 	useAuthorizationsSummary: jest.fn(),
+	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
 const mockUseTransactions = useTransactions as jest.MockedFunction<
@@ -70,6 +72,10 @@ const mockUseFraudOutcomeTransactionsSummary = useFraudOutcomeTransactionsSummar
 	typeof useFraudOutcomeTransactionsSummary
 >;
 
+const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
+	typeof useReportingExportLanguage
+>;
+
 declare const global: {
 	wcpaySettings: {
 		featureFlags: {
@@ -89,6 +95,8 @@ declare const global: {
 describe( 'TransactionsPage', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+
+		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
 
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );

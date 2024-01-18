@@ -158,3 +158,15 @@ export const applyThousandSeparator = ( trxCount ) => {
 	const formattedNumber = partial( numberFormat, siteNumberOptions );
 	return formattedNumber( trxCount );
 };
+
+/**
+ * Returns true if Export Modal is dismissed, false otherwise.
+ *
+ * @return {boolean} True if dismissed, false otherwise.
+ */
+export const isExportModalDismissed = () => {
+	if ( typeof wcpaySettings === 'undefined' ) {
+		return false;
+	}
+	return wcpaySettings?.reporting?.exportModalDismissed ?? false;
+};

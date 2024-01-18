@@ -31,7 +31,11 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'data/index';
+import {
+	useTransactions,
+	useTransactionsSummary,
+	useReportingExportLanguage,
+} from 'data/index';
 import { Transaction } from 'data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
@@ -39,7 +43,7 @@ import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { displayStatus as displayDepositStatus } from 'deposits/strings';
-import { formatStringValue } from 'utils';
+import { formatStringValue, isExportModalDismissed } from 'utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
@@ -61,7 +65,6 @@ import { applyThousandSeparator } from '../../utils/index.js';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'payment-methods/constants';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
-import { useReportingExportLanguage } from 'wcpay/data';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -111,9 +114,6 @@ const getPaymentSourceDetails = ( txn: Transaction ) => {
 			);
 	}
 };
-
-const isExportModalDismissed =
-	wcpaySettings?.reporting.exportModalDismissed ?? false;
 
 const getSourceDeviceIcon = ( txn: Transaction ) => {
 	let tooltipDescription = '';
@@ -729,7 +729,7 @@ export const TransactionsList = (
 		);
 
 		if ( 'endpoint' === downloadType ) {
-			if ( ! isExportModalDismissed ) {
+			if ( ! isExportModalDismissed() ) {
 				setCSVExportModalOpen( true );
 			} else {
 				endpointExport( '' );
@@ -872,7 +872,7 @@ export const TransactionsList = (
 				] }
 			/>
 
-			{ ! isExportModalDismissed && isCSVExportModalOpen && (
+			{ ! isExportModalDismissed() && isCSVExportModalOpen && (
 				<CSVExportModal
 					onClose={ closeModal }
 					onSubmit={ exportTransactions }
