@@ -31,24 +31,6 @@ jest.mock( 'wcpay/checkout/api', () => {
 const billingEmail = 'example@example.com';
 
 describe( 'Stripe Link elements behavior', () => {
-	let container;
-
-	beforeAll( () => {
-		container = document.createElement( 'div' );
-		container.innerHTML = `
-			<label>
-				<input type="radio" id="wc-woocommerce_payments-payment-token-new" value="new">
-				Use a new payment method
-			</label>
-		`;
-		document.body.appendChild( container );
-	} );
-
-	afterAll( () => {
-		document.body.removeChild( container );
-		container = null;
-	} );
-
 	test( 'Should stop if emailId is not found', () => {
 		enableStripeLinkPaymentMethod( {
 			emailId: 'not_existing_email@example.com',
