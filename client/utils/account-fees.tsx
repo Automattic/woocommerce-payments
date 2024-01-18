@@ -362,6 +362,20 @@ export const formatAccountFeesDescription = (
 	return feeDescription;
 };
 
+export const formatMethodMinimalFee = ( accountFees: FeeStructure ): string => {
+	const discountAdjustedFeeRate: number =
+		accountFees.discount.length && accountFees.discount[ 0 ].discount
+			? 1 - accountFees.discount[ 0 ].discount
+			: 1;
+
+	return sprintf(
+		// eslint-disable-next-line max-len
+		/* translators: %1 Base fee */
+		__( 'From %1$s', 'woocommerce-payments' ),
+		getFeeDescriptionString( accountFees.base, discountAdjustedFeeRate )
+	);
+};
+
 export const formatMethodFeesDescription = (
 	methodFees: FeeStructure | undefined
 ): string | JSX.Element => {

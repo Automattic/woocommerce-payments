@@ -15,7 +15,7 @@ import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants'
 import { useManualCapture } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
 import {
-	formatMethodFeesDescription,
+	formatMethodMinimalFee,
 	formatMethodFeesTooltip,
 } from 'wcpay/utils/account-fees';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
@@ -319,13 +319,13 @@ const PaymentMethod = ( {
 												'Base transaction fees: %s',
 												'woocommerce-payments'
 											),
-											formatMethodFeesDescription(
+											formatMethodMinimalFee(
 												accountFees[ id ]
 											)
 										) }
 									>
 										<span>
-											{ formatMethodFeesDescription(
+											{ formatMethodMinimalFee(
 												accountFees[ id ]
 											) }
 										</span>
