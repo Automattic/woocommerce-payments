@@ -18,7 +18,7 @@ import DomainsIcon from 'gridicons/dist/domains';
  * Internal dependencies
  */
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
-import { useReportingExportLanguage } from 'wcpay/data';
+import { useReportingExportLanguage, useSettings } from 'wcpay/data';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import { getAdminUrl } from 'wcpay/utils';
 import './styles.scss';
@@ -30,6 +30,12 @@ interface CSVExportModalProps {
 	onSubmit: ( language: string ) => void;
 }
 
+interface SettingsHook {
+	isSaving: boolean;
+	isLoading: boolean;
+	saveSettings: () => void;
+}
+
 const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 	totalItems,
 	exportType,
@@ -37,26 +43,30 @@ const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 	onSubmit,
 } ) => {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
+	const { saveSettings } = useSettings() as SettingsHook;
 
 	const [
 		exportLanguage,
+		updateExportLanguage,
 	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const [ modalLanguage, setModalLanguage ] = useState( exportLanguage );
-
-	const [ modalRemember, setmodalRemember ] = useState( true );
+	const [ modalRemember, setModalRemember ] = useState( true );
 
 	const onDownload = async () => {
+		onSubmit( modalLanguage );
+
 		// If the Remember checkbox is checked, dismiss the modal.
 		if ( modalRemember ) {
 			await updateOptions( {
 				wcpay_reporting_export_modal_dismissed: modalRemember,
 			} );
 
+			updateExportLanguage( modalLanguage );
+			saveSettings();
+
 			wcpaySettings.reporting.exportModalDismissed = true;
 		}
-
-		onSubmit( modalLanguage );
 	};
 
 	const buttonContent = (
@@ -151,7 +161,7 @@ const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 	};
 
 	const handleExportLanguageRememberChange = ( value: boolean ) => {
-		setmodalRemember( value );
+		setModalRemember( value );
 	};
 
 	return (
