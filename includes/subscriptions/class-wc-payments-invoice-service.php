@@ -299,15 +299,7 @@ class WC_Payments_Invoice_Service {
 
 		$charge = $intent_object->get_charge();
 
-		$this->order_service->attach_intent_info_to_order(
-			$order,
-			$intent_id,
-			$intent_object->get_status(),
-			$intent_object->get_payment_method_id(),
-			$intent_object->get_customer_id(),
-			$charge ? $charge->get_id() : null,
-			$intent_object->get_currency()
-		);
+		$this->order_service->attach_intent_info_to_order( $order, $intent_object );
 	}
 
 	/**
