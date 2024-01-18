@@ -5,7 +5,7 @@ import React, { useContext } from 'react';
 import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import { Card, SelectControl, ExternalLink } from '@wordpress/components';
-import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import interpolateComponents from '@automattic/interpolate-components';
 import { STORE_NAME } from 'wcpay/data/constants';
 
 /**
@@ -162,23 +162,22 @@ const DepositsSchedule = () => {
 				className="deposits__notice"
 				icon
 			>
-				<span>
-					{ __(
-						'Deposit scheduling is currently unavailable for your store.',
+				{ interpolateComponents( {
+					mixedString: __(
+						'Deposit scheduling is currently unavailable for your store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
-					) }
-				</span>
-				<a
-					aria-label={ __(
-						'Learn more about deposit scheduling.',
-						'woocommerce-payments'
-					) }
-					href="https://woo.com/document/woopayments/deposits/deposit-schedule/"
-					target="_blank"
-					rel="external noreferrer noopener"
-				>
-					<HelpOutlineIcon size={ 18 } />
-				</a>
+					),
+					components: {
+						learnMoreLink: (
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							<a
+								href="https://woo.com/document/woopayments/deposits/deposit-schedule/"
+								target="_blank"
+								rel="noreferrer noopener"
+							/>
+						),
+					},
+				} ) }
 			</InlineNotice>
 		);
 	}
@@ -190,23 +189,23 @@ const DepositsSchedule = () => {
 				className="deposits__notice"
 				icon
 			>
-				<span>
-					{ __(
-						'Your first deposit will be held for 7 days. Deposit scheduling will be available after this period.',
+				{ interpolateComponents( {
+					mixedString: __(
+						'Your first deposit will be held for 7 days. ' +
+							'Deposit scheduling will be available after this period. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
-					) }
-				</span>
-				<a
-					aria-label={ __(
-						'Learn more about deposit scheduling.',
-						'woocommerce-payments'
-					) }
-					href="https://woo.com/document/woopayments/deposits/deposit-schedule/"
-					target="_blank"
-					rel="external noreferrer noopener"
-				>
-					<HelpOutlineIcon size={ 18 } />
-				</a>
+					),
+					components: {
+						learnMoreLink: (
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							<a
+								href="https://woo.com/document/woopayments/deposits/deposit-schedule/"
+								target="_blank"
+								rel="noreferrer noopener"
+							/>
+						),
+					},
+				} ) }
 			</InlineNotice>
 		);
 	}
