@@ -205,13 +205,9 @@ export function dispatchChangeEventFor( element ) {
  * @return {Object} An object containing customer data and functions for managing customer information.
  */
 export const useCustomerData = () => {
-	const { customerData, isInitialized } = useSelect( ( select ) => {
-		const store = select( WC_STORE_CART );
-		return {
-			customerData: store.getCustomerData(),
-			isInitialized: store.hasFinishedResolution( 'getCartData' ),
-		};
-	} );
+	const customerData = useSelect( ( select ) =>
+		select( WC_STORE_CART ).getCustomerData()
+	);
 	const {
 		setShippingAddress,
 		setBillingData,
@@ -219,14 +215,10 @@ export const useCustomerData = () => {
 	} = useDispatch( WC_STORE_CART );
 
 	return {
-		isInitialized,
-		billingData: customerData.billingData,
 		// Backward compatibility billingData/billingAddress
-		billingAddress: customerData.billingAddress,
-		shippingAddress: customerData.shippingAddress,
-		setBillingData,
+		billingAddress: customerData.billingAddress || customerData.billingData,
 		// Backward compatibility setBillingData/setBillingAddress
-		setBillingAddress,
+		setBillingAddress: setBillingAddress || setBillingData,
 		setShippingAddress,
 	};
 };
