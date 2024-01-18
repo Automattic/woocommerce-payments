@@ -11,7 +11,11 @@ import os from 'os';
  * Internal dependencies
  */
 import DisputesList from '..';
-import { useDisputes, useDisputesSummary } from 'data/index';
+import {
+	useDisputes,
+	useDisputesSummary,
+	useReportingExportLanguage,
+} from 'data/index';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
 import {
@@ -49,6 +53,7 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useDisputes: jest.fn(),
 	useDisputesSummary: jest.fn(),
+	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
@@ -63,6 +68,10 @@ const mockUseDisputes = useDisputes as jest.MockedFunction<
 
 const mockUseDisputesSummary = useDisputesSummary as jest.MockedFunction<
 	typeof useDisputesSummary
+>;
+
+const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
+	typeof useReportingExportLanguage
 >;
 
 declare const global: {
@@ -81,6 +90,9 @@ declare const global: {
 				decimalSeparator: string;
 				precision: number;
 			};
+		};
+		reporting?: {
+			exportModalDismissed: boolean;
 		};
 	};
 };
@@ -152,6 +164,8 @@ describe( 'Disputes list', () => {
 			new Date( '2019-11-07T12:33:37.000Z' ).getTime()
 		);
 
+		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
+
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
 			connect: {
@@ -167,6 +181,9 @@ describe( 'Disputes list', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
+			},
+			reporting: {
+				exportModalDismissed: true,
 			},
 		};
 	} );

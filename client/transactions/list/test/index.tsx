@@ -96,6 +96,9 @@ declare const global: {
 				precision: number;
 			};
 		};
+		reporting?: {
+			exportModalDismissed: boolean;
+		};
 	};
 };
 
@@ -235,6 +238,9 @@ describe( 'Transactions list', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
+			},
+			reporting: {
+				exportModalDismissed: true,
 			},
 		};
 	} );
