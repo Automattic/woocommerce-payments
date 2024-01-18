@@ -210,9 +210,10 @@ const DisputeNeedsResponseNotice = ( {
 
 	const isUrgent = countdownDays < 7;
 
-	const buttonLabel = isUrgent
-		? __( 'Respond today', 'woocommerce-payments' )
-		: __( 'Respond now', 'woocommerce-payments' );
+	const buttonLabel =
+		countdownDays < 1
+			? __( 'Respond today', 'woocommerce-payments' )
+			: __( 'Respond now', 'woocommerce-payments' );
 
 	const noticeBody = isUrgent ? (
 		<UrgentDisputeNoticeBody
