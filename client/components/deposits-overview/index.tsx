@@ -94,7 +94,8 @@ const DepositsOverview: React.FC = () => {
 		availableFunds === 0 &&
 		pendingFunds === 0
 	) {
-		// If the account has not received any transactions before completing the waiting period, don't show the deposits overview section.
+		// If still in new account waiting period and account has no transactions,
+		// don't render deposits card (nothing to show).
 		return null;
 	}
 
