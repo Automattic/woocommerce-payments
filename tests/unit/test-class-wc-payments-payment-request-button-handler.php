@@ -153,6 +153,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function tear_down() {
 		parent::tear_down();
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
 		$this->zone->delete();
@@ -548,5 +549,21 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$build_display_items_result['total']['amount'],
 			'Failed asserting total amount are the same for get_product_data and build_display_items'
 		);
+	}
+
+	public function test_filter_cart_needs_shipping_address_returns_false() {
+		sleep( 1 );
+		$this->zone->delete_shipping_method( $this->flat_rate_id );
+		$this->zone->delete_shipping_method( $this->local_pickup_id );
+
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->assertFalse( $this->pr->filter_cart_needs_shipping_address( true ) );
+	}
+
+	public function test_filter_cart_needs_shipping_address_returns_true() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->assertTrue( $this->pr->filter_cart_needs_shipping_address( true ) );
 	}
 }
