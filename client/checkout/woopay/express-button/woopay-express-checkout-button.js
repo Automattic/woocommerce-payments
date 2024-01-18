@@ -285,7 +285,10 @@ export const WoopayExpressCheckoutButton = ( {
 							}
 						)
 							.then( ( response ) => {
-								if ( response?.data?.session ) {
+								if (
+									response?.blog_id &&
+									response?.data?.session
+								) {
 									iframe.contentWindow.postMessage(
 										{
 											action: 'setPreemptiveSessionData',
@@ -293,11 +296,13 @@ export const WoopayExpressCheckoutButton = ( {
 										},
 										getConfig( 'woopayHost' )
 									);
+								} else {
+									throw new Error( response?.data );
 								}
 							} )
 							.catch( () => {
 								const errorMessage = __(
-									'Something went wrong. Please try again.',
+									'Something went wrong. Please reload this page and try again.',
 									'woocommerce-payments'
 								);
 								showErrorMessage( context, errorMessage );
@@ -319,7 +324,10 @@ export const WoopayExpressCheckoutButton = ( {
 						}
 					)
 						.then( ( response ) => {
-							if ( response?.data?.session ) {
+							if (
+								response?.blog_id &&
+								response?.data?.session
+							) {
 								iframe.contentWindow.postMessage(
 									{
 										action: 'setPreemptiveSessionData',
@@ -327,11 +335,13 @@ export const WoopayExpressCheckoutButton = ( {
 									},
 									getConfig( 'woopayHost' )
 								);
+							} else {
+								throw new Error( response?.data );
 							}
 						} )
 						?.catch( () => {
 							const errorMessage = __(
-								'Something went wrong. Please try again.',
+								'Something went wrong. Please reload this page and try again.',
 								'woocommerce-payments'
 							);
 							showErrorMessage( context, errorMessage );
