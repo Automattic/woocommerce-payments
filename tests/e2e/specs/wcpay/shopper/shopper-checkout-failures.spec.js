@@ -123,28 +123,14 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		const declinedCard = config.get( 'cards.declined-3ds' );
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
-		const errorNoticeToCheck = ( async () => {
-			const declined3dsCardError = await page.$eval(
-				'div.wc-block-components-notice-banner',
-				( el ) => el.innerText
-			);
-			return await expect( page ).toMatch(
-				declined3dsCardError,
-				'Error: Your card was declined.'
-			);
-		} )();
-
-		const oldErrorNoticeToCheck = ( async () => {
-			const declined3dsCardError = await page.$eval(
-				'div.woocommerce-NoticeGroup > ul.woocommerce-error',
-				( el ) => el.innerText
-			);
-			return await expect( page ).toMatch(
-				declined3dsCardError,
-				'Error: Your card was declined.'
-			);
-		} )();
-
-		await Promise.race( [ errorNoticeToCheck, oldErrorNoticeToCheck ] );
+		await page.waitForSelector( 'ul.woocommerce-error' );
+		const declined3dsCardError = await page.$eval(
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
+			( el ) => el.innerText
+		);
+		await expect( page ).toMatch(
+			declined3dsCardError,
+			'Your card has been declined.'
+		);
 	} );
 } );
