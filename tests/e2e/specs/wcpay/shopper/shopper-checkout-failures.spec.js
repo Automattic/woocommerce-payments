@@ -11,27 +11,11 @@ import {
 import { shopperWCP } from '../../../utils';
 
 const { uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const notice = 'div.wc-block-components-notice-banner';
+const oldNotice = 'div.woocommerce-NoticeGroup > ul.woocommerce-error > li';
 
-const waitForErrorBanner = async ( errorText ) => {
-	const newWayPromise = ( async () => {
-		await expect( page ).toMatchElement(
-			'div.wc-block-components-notice-banner',
-			{
-				text: errorText,
-			}
-		);
-	} )();
-
-	const oldWayPromise = ( async () => {
-		await expect(
-			page
-		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
-			{ text: errorText }
-		);
-	} )();
-
-	await Promise.race( [ newWayPromise, oldWayPromise ] );
+const waitForBanner = async ( errorText ) => {
+	return shopperWCP.waitForErrorBanner( errorText, notice, oldNotice );
 };
 
 describe( 'Shopper > Checkout > Failures with various cards', () => {
@@ -51,7 +35,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await waitForErrorBanner( 'Error: Your card was declined.' );
+		await waitForBanner( 'Error: Your card was declined.' );
 		await clearCardDetails();
 	} );
 
@@ -88,7 +72,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardInsufficientFunds );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await waitForErrorBanner( 'Error: Your card has insufficient funds.' );
+		await waitForBanner( 'Error: Your card has insufficient funds.' );
 		await clearCardDetails();
 	} );
 
@@ -97,7 +81,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardExpired );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await waitForErrorBanner( 'Error: Your card has expired.' );
+		await waitForBanner( 'Error: Your card has expired.' );
 		await clearCardDetails();
 	} );
 
@@ -106,9 +90,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardIncorrectCVC );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await waitForErrorBanner(
-			"Error: Your card's security code is incorrect."
-		);
+		await waitForBanner( "Error: Your card's security code is incorrect." );
 		await clearCardDetails();
 	} );
 
@@ -117,7 +99,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardProcessingError );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await waitForErrorBanner(
+		await waitForBanner(
 			'Error: An error occurred while processing your card. Try again in a little bit.'
 		);
 		await clearCardDetails();
@@ -141,25 +123,28 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		const declinedCard = config.get( 'cards.declined-3ds' );
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
-		await page.waitForSelector( 'ul.woocommerce-error' );
-		const createExpectPromise = async ( selector ) => {
-			const content = await page.$eval(
-				selector,
+		const newWayPromise = ( async () => {
+			const declined3dsCardError = await page.$eval(
+				'div.wc-block-components-notice-banner',
 				( el ) => el.innerText
 			);
 			await expect( page ).toMatch(
-				content,
+				declined3dsCardError,
 				'Error: Your card was declined.'
 			);
-		};
+		} )();
 
-		const wcNoticePromise = createExpectPromise(
-			'div.wc-block-components-notice-banner'
-		);
-		const oldWcNoticePromise = createExpectPromise(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error'
-		);
+		const oldWayPromise = ( async () => {
+			const declined3dsCardError = await page.$eval(
+				'div.woocommerce-NoticeGroup > ul.woocommerce-error',
+				( el ) => el.innerText
+			);
+			await expect( page ).toMatch(
+				declined3dsCardError,
+				'Error: Your card was declined.'
+			);
+		} )();
 
-		await Promise.race( [ wcNoticePromise, oldWcNoticePromise ] );
+		await Promise.race( [ newWayPromise, oldWayPromise ] );
 	} );
 } );

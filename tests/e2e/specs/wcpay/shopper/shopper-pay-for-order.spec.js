@@ -26,25 +26,11 @@ describe( 'Shopper > Pay for Order', () => {
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		const newWayPromise = ( async () => {
-			await expect( page ).toMatchElement(
-				'div.wc-block-components-notice-banner',
-				{
-					text: 'Error: Your card was declined.',
-				}
-			);
-		} )();
-
-		const oldWayPromise = ( async () => {
-			await expect( page ).toMatchElement(
-				'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
-				{
-					text: 'Error: Your card was declined.',
-				}
-			);
-		} )();
-
-		await Promise.race( [ newWayPromise, oldWayPromise ] );
+		await shopperWCP.waitForErrorBanner(
+			'Error: Your card was declined.',
+			'div.wc-block-components-notice-banner',
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li'
+		);
 
 		// after the card has been declined, go to the order page and pay with a basic card
 		await shopperWCP.goToOrders();

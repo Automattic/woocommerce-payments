@@ -316,6 +316,26 @@ export const shopperWCP = {
 		await shopperWCP.goToProductPageBySlug( productSlug );
 		await shopper.addToCart();
 	},
+
+	waitForErrorBanner: async (
+		errorText,
+		noticeSelector,
+		oldNoticeSelector
+	) => {
+		const newWayPromise = ( async () => {
+			await expect( page ).toMatchElement( noticeSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		const oldWayPromise = ( async () => {
+			await expect( page ).toMatchElement( oldNoticeSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		await Promise.race( [ newWayPromise, oldWayPromise ] );
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
