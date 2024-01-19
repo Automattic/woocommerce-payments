@@ -2,10 +2,6 @@
  * External dependencies
  */
 import config from 'config';
-/**
- * Internal dependencies
- */
-import { shopperWCP } from '../../../utils';
 
 import {
 	clearCardDetails,
@@ -24,7 +20,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 
 	afterAll( async () => {
 		// Clear the cart at the end so it's ready for another test
-		await shopperWCP.emptyCart();
+		// await shopperWCP.emptyCart();
 	} );
 
 	it( 'should throw an error that the card was simply declined', async () => {
