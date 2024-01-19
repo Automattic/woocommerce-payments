@@ -113,12 +113,11 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Returns payment method title
 	 *
-	 * @param string      $account_country Country of merchants account.
-	 * @param array|false $payment_details Optional payment details from charge object.
+	 * @param array|bool $payment_details Optional payment details from charge object.
 	 *
 	 * @return string
 	 */
-	public function get_title( string $account_country, $payment_details = false ) {
+	public function get_title( $payment_details = false ) {
 		return $this->title;
 	}
 
@@ -225,10 +224,9 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Returns the payment method icon URL or an empty string.
 	 *
-	 * @param string $account_country Optional account country.
 	 * @return string
 	 */
-	public function get_icon( string $account_country ) {
+	public function get_icon() {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
 	}
 
