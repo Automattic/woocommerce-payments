@@ -24,6 +24,7 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
 import { useDepositDelayDays, useSettings } from '../../data';
 import FraudProtection from '../fraud-protection';
+import { isDefaultSiteLanguage } from 'wcpay/utils';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -264,16 +265,18 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection
-				description={ ReportingDescription }
-				id="fp-settings"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<ReportingSettings />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
+			{ ! isDefaultSiteLanguage() && (
+				<SettingsSection
+					description={ ReportingDescription }
+					id="fp-settings"
+				>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<ReportingSettings />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+			) }
 			<SettingsSection
 				description={ AdvancedDescription }
 				id="advanced-settings"

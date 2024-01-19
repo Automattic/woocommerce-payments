@@ -47,6 +47,7 @@ import {
 	formatStringValue,
 	isExportModalDismissed,
 	getExportLanguage,
+	isDefaultSiteLanguage,
 } from 'utils';
 import {
 	formatCurrency,
@@ -728,7 +729,7 @@ export const TransactionsList = (
 		);
 
 		if ( 'endpoint' === downloadType ) {
-			if ( ! isExportModalDismissed() ) {
+			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
 				setCSVExportModalOpen( true );
 			} else {
 				endpointExport( '' );
@@ -871,14 +872,16 @@ export const TransactionsList = (
 				] }
 			/>
 
-			{ ! isExportModalDismissed() && isCSVExportModalOpen && (
-				<CSVExportModal
-					onClose={ closeModal }
-					onSubmit={ exportTransactions }
-					totalItems={ totalRows }
-					exportType={ 'transactions' }
-				/>
-			) }
+			{ ! isDefaultSiteLanguage() &&
+				! isExportModalDismissed() &&
+				isCSVExportModalOpen && (
+					<CSVExportModal
+						onClose={ closeModal }
+						onSubmit={ exportTransactions }
+						totalItems={ totalRows }
+						exportType={ 'transactions' }
+					/>
+				) }
 		</Page>
 	);
 };

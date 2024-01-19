@@ -47,6 +47,7 @@ import {
 	applyThousandSeparator,
 	isExportModalDismissed,
 	getExportLanguage,
+	isDefaultSiteLanguage,
 } from 'wcpay/utils';
 import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
@@ -449,7 +450,7 @@ export const DisputesList = (): JSX.Element => {
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
 		if ( 'endpoint' === downloadType ) {
-			if ( ! isExportModalDismissed() ) {
+			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
 				setCSVExportModalOpen( true );
 			} else {
 				endpointExport( '' );
@@ -575,14 +576,16 @@ export const DisputesList = (): JSX.Element => {
 					),
 				] }
 			/>
-			{ ! isExportModalDismissed() && isCSVExportModalOpen && (
-				<CSVExportModal
-					onClose={ closeModal }
-					onSubmit={ exportDisputes }
-					totalItems={ totalRows }
-					exportType={ 'disputes' }
-				/>
-			) }
+			{ ! isDefaultSiteLanguage() &&
+				! isExportModalDismissed() &&
+				isCSVExportModalOpen && (
+					<CSVExportModal
+						onClose={ closeModal }
+						onSubmit={ exportDisputes }
+						totalItems={ totalRows }
+						exportType={ 'disputes' }
+					/>
+				) }
 		</Page>
 	);
 };

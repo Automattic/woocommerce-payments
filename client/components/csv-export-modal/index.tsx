@@ -146,7 +146,7 @@ const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 	const exportLanguageOptions = [
 		{
 			label: __( 'English (United States)', 'woocommerce-payments' ),
-			value: 'en',
+			value: 'en_US',
 		},
 		{
 			label:

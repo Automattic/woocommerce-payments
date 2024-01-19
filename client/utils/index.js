@@ -173,6 +173,20 @@ export const isExportModalDismissed = () => {
 };
 
 /**
+ * Returns true if Export Modal is dismissed, false otherwise.
+ *
+ * @return {boolean} True if dismissed, false otherwise.
+ */
+
+export const isDefaultSiteLanguage = () => {
+	if ( typeof wcpaySettings === 'undefined' ) {
+		return true;
+	}
+
+	return wcpaySettings.locale?.code === 'en_US';
+};
+
+/**
  * Returns the language code for CSV exports.
  *
  * @param {string} language Selected language code.
@@ -181,7 +195,12 @@ export const isExportModalDismissed = () => {
  * @return {string} Language code.
  */
 export const getExportLanguage = ( language, storedLanguage ) => {
-	let siteLanguage = 'en';
+	let siteLanguage = 'en_US';
+
+	// If the default site language is en_US, skip
+	if ( isDefaultSiteLanguage() ) {
+		return siteLanguage;
+	}
 
 	if ( typeof wcpaySettings !== 'undefined' ) {
 		siteLanguage = wcpaySettings?.locale?.code ?? siteLanguage;

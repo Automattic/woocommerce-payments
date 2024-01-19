@@ -35,7 +35,11 @@ import DownloadButton from 'components/download-button';
 import { getDepositsCSV } from 'wcpay/data/deposits/resolvers';
 import { applyThousandSeparator } from '../../utils/index.js';
 import DepositStatusChip from 'components/deposit-status-chip';
-import { isExportModalDismissed, getExportLanguage } from 'utils';
+import {
+	isExportModalDismissed,
+	getExportLanguage,
+	isDefaultSiteLanguage,
+} from 'utils';
 import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
@@ -312,7 +316,7 @@ export const DepositsList = (): JSX.Element => {
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
 		if ( 'endpoint' === downloadType ) {
-			if ( ! isExportModalDismissed() ) {
+			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
 				setCSVExportModalOpen( true );
 			} else {
 				endpointExport( '' );
@@ -393,14 +397,16 @@ export const DepositsList = (): JSX.Element => {
 					),
 				] }
 			/>
-			{ ! isExportModalDismissed() && isCSVExportModalOpen && (
-				<CSVExportModal
-					onClose={ closeModal }
-					onSubmit={ exportDeposits }
-					totalItems={ totalRows }
-					exportType={ 'deposits' }
-				/>
-			) }
+			{ ! isDefaultSiteLanguage() &&
+				! isExportModalDismissed() &&
+				isCSVExportModalOpen && (
+					<CSVExportModal
+						onClose={ closeModal }
+						onSubmit={ exportDeposits }
+						totalItems={ totalRows }
+						exportType={ 'deposits' }
+					/>
+				) }
 		</Page>
 	);
 };

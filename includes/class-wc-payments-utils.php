@@ -1013,7 +1013,7 @@ class WC_Payments_Utils {
 		}
 
 		return [
-			'code'         => 'en',
+			'code'         => 'en_US',
 			'english_name' => 'English (United States)',
 			'native_name'  => 'English (United States)',
 		];
