@@ -181,7 +181,7 @@ const DepositsSchedule = () => {
 			<InlineNotice status="warning" isDismissible={ false } icon>
 				{ interpolateComponents( {
 					mixedString: __(
-						'Your first deposit will be held for 7 days. ' +
+						'Your first deposit will be held for 7-14 days. ' +
 							'Deposit scheduling will be available after this period. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
 					),
