@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Code;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
@@ -14,7 +15,7 @@ use WCPay\Session_Rate_Limiter;
  */
 class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase {
 	const SHIPPING_ADDRESS = [
-		'country'   => 'US',
+		'country'   => Country_Code::UNITED_STATES,
 		'state'     => 'CA',
 		'postcode'  => '94110',
 		'city'      => 'San Francisco',
