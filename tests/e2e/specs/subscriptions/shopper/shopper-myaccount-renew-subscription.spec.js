@@ -19,7 +19,7 @@ let subscriptionId;
 const testSelectors = {
 	subscriptionIdField: '.woocommerce-orders-table__cell-subscription-id > a',
 	subscriptionRenewButton: 'a.button.subscription_renewal_early',
-	wcNotice: 'div.wc-block-components-notice-banner',
+	wcNotice: 'div.wc-blockq-components-notice-banner',
 	wcOldNotice:
 		'.woocommerce .woocommerce-notices-wrapper .woocommerce-message',
 };
@@ -67,14 +67,20 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			);
 
 			// Place an order to renew a subscription
-			const newWay = page.waitForSelector( testSelectors.wcNotice, {
-				text: 'Complete checkout to renew now.',
-			} );
+			const newWayPromise = ( async () => {
+				return page.waitForSelector( testSelectors.wcNotice, {
+					text: 'Complete checkout to renew now.',
+				} );
+			} )();
 
-			const oldWay = page.waitForSelector( testSelectors.wcOldNotice, {
-				text: 'Complete checkout to renew now.',
-			} );
-			await Promise.race( [ newWay, oldWay ] );
+			const oldWayPromise = ( async () => {
+				return page.waitForSelector( testSelectors.wcOldNotice, {
+					text: 'Complete checkout to renew now.',
+				} );
+			} )();
+
+			await Promise.race( [ newWayPromise, oldWayPromise ] );
+
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			await shopper.placeOrder();

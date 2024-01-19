@@ -95,15 +95,20 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await fillCardDetails( page, newCard );
 
 			await shopper.placeOrder();
-			const newWay = page.waitForSelector( testSelectors.wcNotice, {
-				text: 'Payment method updated.',
-			} );
 
-			const oldWay = page.waitForSelector( testSelectors.wcOldNotice, {
-				text: 'Payment method updated.',
-			} );
-			await Promise.race( [ newWay, oldWay ] );
+			const oldWayPromise = ( async () => {
+				return page.waitForSelector( testSelectors.wcOldNotice, {
+					text: 'Payment method updated.',
+				} );
+			} )();
 
+			const newWayPromise = ( async () => {
+				return page.waitForSelector( testSelectors.wcNotice, {
+					text: 'Payment method updated.',
+				} );
+			} )();
+
+			await Promise.race( [ newWayPromise, oldWayPromise ] );
 			// Verify the new payment method has been set
 			await page.waitForSelector(
 				testSelectors.subscriptionPaymentMethod,
@@ -140,14 +145,19 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			);
 			await checkboxes[ 0 ].click();
 			await shopper.placeOrder();
-			const newWay = page.waitForSelector( testSelectors.wcNotice, {
-				text: 'Payment method updated.',
-			} );
+			const newWayPromise = ( async () => {
+				return page.waitForSelector( testSelectors.wcNotice, {
+					text: 'Payment method updated.',
+				} );
+			} )();
 
-			const oldWay = page.waitForSelector( testSelectors.wcOldNotice, {
-				text: 'Payment method updated.',
-			} );
-			await Promise.race( [ newWay, oldWay ] );
+			const oldWayPromise = ( async () => {
+				return page.waitForSelector( testSelectors.wcOldNotice, {
+					text: 'Payment method updated.',
+				} );
+			} )();
+
+			await Promise.race( [ newWayPromise, oldWayPromise ] );
 
 			// Verify the new payment method has been set
 			await page.waitForSelector(
