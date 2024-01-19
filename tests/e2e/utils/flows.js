@@ -281,10 +281,11 @@ export const shopperWCP = {
 			await uiUnblocked();
 		}
 
-		await page.waitForSelector( '.cart-empty.woocommerce-info' );
-		await expect( page ).toMatchElement( '.cart-empty.woocommerce-info', {
-			text: 'Your cart is currently empty.',
-		} );
+		await shopperWCP.waitForErrorBanner(
+			'Your cart is currently empty.',
+			'div.wc-block-components-notice-banner',
+			'.cart-empty.woocommerce-info'
+		);
 	},
 
 	goToProductPageBySlug: async ( productSlug ) => {
@@ -296,6 +297,46 @@ export const shopperWCP = {
 	addToCartBySlug: async ( productSlug ) => {
 		await shopperWCP.goToProductPageBySlug( productSlug );
 		await shopper.addToCart();
+	},
+
+	waitForErrorBanner: async (
+		errorText,
+		noticeSelector,
+		oldNoticeSelector
+	) => {
+		const errorBannerToCheck = ( async () => {
+			await expect( page ).toMatchElement( noticeSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		const oldErrorBannerToCheck = ( async () => {
+			await expect( page ).toMatchElement( oldNoticeSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		await Promise.race( [ errorBannerToCheck, oldErrorBannerToCheck ] );
+	},
+
+	waitForSubscriptionsErrorBanner: async (
+		errorText,
+		errorSelector,
+		oldErrorSelector
+	) => {
+		const errorBannerToCheck = ( async () => {
+			return page.waitForSelector( errorSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		const oldErrorBannerToCheck = ( async () => {
+			return page.waitForSelector( oldErrorSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		await Promise.race( [ errorBannerToCheck, oldErrorBannerToCheck ] );
 	},
 };
 

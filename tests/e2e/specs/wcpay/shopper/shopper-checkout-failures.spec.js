@@ -2,18 +2,21 @@
  * External dependencies
  */
 import config from 'config';
-/**
- * Internal dependencies
- */
-import { shopperWCP } from '../../../utils';
 
 import {
 	clearCardDetails,
 	fillCardDetails,
 	setupProductCheckout,
 } from '../../../utils/payments';
+import { shopperWCP } from '../../../utils';
 
 const { uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const notice = 'div.wc-block-components-notice-banner';
+const oldNotice = 'div.woocommerce-NoticeGroup > ul.woocommerce-error > li';
+
+const waitForBanner = async ( errorText ) => {
+	return shopperWCP.waitForErrorBanner( errorText, notice, oldNotice );
+};
 
 describe( 'Shopper > Checkout > Failures with various cards', () => {
 	beforeAll( async () => {
@@ -32,12 +35,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect(
-			page
-		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
-			{ text: 'Error: Your card was declined.' }
-		);
+		await waitForBanner( 'Error: Your card was declined.' );
 		await clearCardDetails();
 	} );
 
@@ -74,12 +72,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardInsufficientFunds );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect(
-			page
-		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
-			{ text: 'Error: Your card has insufficient funds.' }
-		);
+		await waitForBanner( 'Error: Your card has insufficient funds.' );
 		await clearCardDetails();
 	} );
 
@@ -88,12 +81,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardExpired );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect(
-			page
-		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
-			{ text: 'Error: Your card has expired.' }
-		);
+		await waitForBanner( 'Error: Your card has expired.' );
 		await clearCardDetails();
 	} );
 
@@ -102,12 +90,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardIncorrectCVC );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect(
-			page
-		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
-			{ text: "Error: Your card's security code is incorrect." }
-		);
+		await waitForBanner( "Error: Your card's security code is incorrect." );
 		await clearCardDetails();
 	} );
 
@@ -116,12 +99,8 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardProcessingError );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect( page ).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
-			{
-				text:
-					'Error: An error occurred while processing your card. Try again in a little bit.',
-			}
+		await waitForBanner(
+			'Error: An error occurred while processing your card. Try again in a little bit.'
 		);
 		await clearCardDetails();
 	} );
@@ -151,7 +130,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		);
 		await expect( page ).toMatch(
 			declined3dsCardError,
-			'Error: Your card was declined.'
+			'Your card has been declined.'
 		);
 	} );
 } );
