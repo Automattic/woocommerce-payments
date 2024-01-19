@@ -44,11 +44,11 @@ describe( 'Deposits', () => {
 	it( 'renders the language select', () => {
 		render( <Reporting /> );
 
-		const frequencySelect = screen.getByLabelText( /Language/ );
-		expect( frequencySelect ).toHaveValue( 'en_US' );
+		const languageSelect = screen.getByLabelText( /Language/ );
+		expect( languageSelect ).toHaveValue( 'en_US' );
 
-		within( frequencySelect ).getByRole( 'option', { name: /English/ } );
-		within( frequencySelect ).getByRole( 'option', {
+		within( languageSelect ).getByRole( 'option', { name: /English/ } );
+		within( languageSelect ).getByRole( 'option', {
 			name: /Site Language - Spanish/,
 		} );
 	} );
