@@ -94,7 +94,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await fillCardDetails( page, newCard );
 
 			await shopper.placeOrder();
-			await shopperWCP.waitForErrorBannerForSubscriptions(
+			await shopperWCP.waitForSubscriptionsErrorBanner(
 				'Payment method updated.',
 				testSelectors.wcNotice,
 				testSelectors.wcOldNotice
@@ -135,7 +135,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			);
 			await checkboxes[ 0 ].click();
 			await shopper.placeOrder();
-			await shopperWCP.waitForErrorBannerForSubscriptions(
+			await shopperWCP.waitForSubscriptionsErrorBanner(
 				'Payment method updated.',
 				testSelectors.wcNotice,
 				testSelectors.wcOldNotice

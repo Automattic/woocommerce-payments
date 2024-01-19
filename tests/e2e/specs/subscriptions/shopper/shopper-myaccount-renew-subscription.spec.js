@@ -67,7 +67,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			);
 
 			// Place an order to renew a subscription
-			await shopperWCP.waitForErrorBannerForSubscriptions(
+			await shopperWCP.waitForSubscriptionsErrorBanner(
 				'Complete checkout to renew now.',
 				testSelectors.wcNotice,
 				testSelectors.wcOldNotice

@@ -319,7 +319,7 @@ export const shopperWCP = {
 		await Promise.race( [ newWayPromise, oldWayPromise ] );
 	},
 
-	waitForErrorBannerForSubscriptions: async (
+	waitForSubscriptionsErrorBanner: async (
 		errorText,
 		errorSelector,
 		oldErrorSelector
