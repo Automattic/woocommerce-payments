@@ -25,8 +25,7 @@ const testSelectors = {
 	subscriptionChangePaymentButton:
 		'.subscription_details a.button.change_payment_method',
 	wcNotice: 'div.wc-block-components-notice-banner',
-	wcOldNotice:
-		'.woocommerce .woocommerce-notices-wrapper .woocommerce-message',
+	wcOldNotice: '.woocommerce .woocommerce-message',
 	pageTitle: 'h1.entry-title',
 	newPaymentMethodCheckbox: 'input#wc-woocommerce_payments-payment-token-new',
 	subscriptionPaymentMethod: '.subscription-payment-method',
