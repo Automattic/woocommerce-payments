@@ -1500,18 +1500,18 @@ class WC_Payments_Account {
 			$event_properties
 		);
 
-		wp_safe_redirect(
-			add_query_arg(
-				[
-					'wcpay-state'                => false,
-					'wcpay-account-id'           => false,
-					'wcpay-live-publishable-key' => false,
-					'wcpay-test-publishable-key' => false,
-					'wcpay-mode'                 => false,
-					'wcpay-connection-success'   => '1',
-				]
-			)
-		);
+		$params = [
+			'wcpay-state'                => false,
+			'wcpay-account-id'           => false,
+			'wcpay-live-publishable-key' => false,
+			'wcpay-test-publishable-key' => false,
+			'wcpay-mode'                 => false,
+		];
+		if ( empty( $_GET['wcpay-connection-error'] ) ) {
+			$params['wcpay-connection-success'] = '1';
+		}
+
+		wp_safe_redirect( add_query_arg( $params ) );
 		exit;
 	}
 

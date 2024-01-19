@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add post_types and their counts as an array to compatibility data.

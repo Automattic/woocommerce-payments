@@ -54,7 +54,6 @@ export interface InstantBalance {
 	fee: number;
 	net: number;
 	fee_percentage: number;
-	transaction_ids: Array< string >;
 }
 
 export interface Overview {
