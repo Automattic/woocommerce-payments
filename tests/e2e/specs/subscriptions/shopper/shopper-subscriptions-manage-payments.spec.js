@@ -25,6 +25,8 @@ const testSelectors = {
 	subscriptionChangePaymentButton:
 		'.subscription_details a.button.change_payment_method',
 	wcNotice: 'div.wc-block-components-notice-banner',
+	wcOldNotice:
+		'.woocommerce .woocommerce-notices-wrapper .woocommerce-message',
 	pageTitle: 'h1.entry-title',
 	newPaymentMethodCheckbox: 'input#wc-woocommerce_payments-payment-token-new',
 	subscriptionPaymentMethod: '.subscription-payment-method',
@@ -93,9 +95,14 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await fillCardDetails( page, newCard );
 
 			await shopper.placeOrder();
-			await page.waitForSelector( testSelectors.wcNotice, {
+			const newWay = page.waitForSelector( testSelectors.wcNotice, {
 				text: 'Payment method updated.',
 			} );
+
+			const oldWay = page.waitForSelector( testSelectors.wcOldNotice, {
+				text: 'Payment method updated.',
+			} );
+			await Promise.race( [ newWay, oldWay ] );
 
 			// Verify the new payment method has been set
 			await page.waitForSelector(
@@ -133,9 +140,14 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			);
 			await checkboxes[ 0 ].click();
 			await shopper.placeOrder();
-			await page.waitForSelector( testSelectors.wcNotice, {
+			const newWay = page.waitForSelector( testSelectors.wcNotice, {
 				text: 'Payment method updated.',
 			} );
+
+			const oldWay = page.waitForSelector( testSelectors.wcOldNotice, {
+				text: 'Payment method updated.',
+			} );
+			await Promise.race( [ newWay, oldWay ] );
 
 			// Verify the new payment method has been set
 			await page.waitForSelector(
