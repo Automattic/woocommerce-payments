@@ -28,10 +28,8 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect(
-			page
-		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
+		await expect(page).toMatchElement(
+			'div.wc-block-components-notice-banner',
 			{ text: 'Error: Your card was declined.' }
 		);
 		await clearCardDetails();
@@ -45,7 +43,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect(
 			page
 		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
+			'div.wc-block-components-notice-banner',
 			{ text: "Your card's expiration year is in the past." }
 		);
 		await clearCardDetails();
@@ -59,7 +57,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect(
 			page
 		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
+			'div.wc-block-components-notice-banner',
 			{ text: "Your card's security code is incomplete." }
 		);
 		await clearCardDetails();
@@ -73,7 +71,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect(
 			page
 		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
+			'div.wc-block-components-notice-banner',
 			{ text: 'Error: Your card has insufficient funds.' }
 		);
 		await clearCardDetails();
@@ -87,7 +85,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect(
 			page
 		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
+			'div.wc-block-components-notice-banner',
 			{ text: 'Error: Your card has expired.' }
 		);
 		await clearCardDetails();
@@ -101,7 +99,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect(
 			page
 		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
+			'div.wc-block-components-notice-banner',
 			{ text: "Error: Your card's security code is incorrect." }
 		);
 		await clearCardDetails();
@@ -113,7 +111,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
 		await expect( page ).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
+			'div.wc-block-components-notice-banner',
 			{
 				text:
 					'Error: An error occurred while processing your card. Try again in a little bit.',
@@ -130,7 +128,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect(
 			page
 		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
+			'div.wc-block-components-notice-banner',
 			{ text: 'Your card number is invalid.' }
 		);
 		await clearCardDetails();
@@ -142,7 +140,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect( page ).toClick( '#place_order' );
 		await page.waitForSelector( 'ul.woocommerce-error' );
 		const declined3dsCardError = await page.$eval(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
+			'div.wc-block-components-notice-banner',
 			( el ) => el.innerText
 		);
 		await expect( page ).toMatch(
