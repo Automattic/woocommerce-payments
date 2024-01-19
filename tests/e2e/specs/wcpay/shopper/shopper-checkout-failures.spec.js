@@ -29,9 +29,11 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect(page).toMatchElement(
+		await expect( page ).toMatchElement(
 			'div.wc-block-components-notice-banner',
-			{ text: 'Error: Your card was declined.' }
+			{
+				text: 'Error: Your card was declined.',
+			}
 		);
 		await clearCardDetails();
 	} );
@@ -69,11 +71,11 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardInsufficientFunds );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect(
-			page
-		).toMatchElement(
+		await expect( page ).toMatchElement(
 			'div.wc-block-components-notice-banner',
-			{ text: 'Error: Your card has insufficient funds.' }
+			{
+				text: 'Error: Your card has insufficient funds.',
+			}
 		);
 		await clearCardDetails();
 	} );
@@ -83,11 +85,11 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardExpired );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect(
-			page
-		).toMatchElement(
+		await expect( page ).toMatchElement(
 			'div.wc-block-components-notice-banner',
-			{ text: 'Error: Your card has expired.' }
+			{
+				text: 'Error: Your card has expired.',
+			}
 		);
 		await clearCardDetails();
 	} );
@@ -97,11 +99,11 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardIncorrectCVC );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect(
-			page
-		).toMatchElement(
+		await expect( page ).toMatchElement(
 			'div.wc-block-components-notice-banner',
-			{ text: "Error: Your card's security code is incorrect." }
+			{
+				text: "Error: Your card's security code is incorrect.",
+			}
 		);
 		await clearCardDetails();
 	} );
