@@ -267,14 +267,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->localization_service                 = $localization_service;
 		$this->fraud_service                        = $fraud_service;
 
-		$account_country          = $this->get_account_country();
 		$this->id                 = static::GATEWAY_ID;
-		$this->icon               = $payment_method->get_icon( $account_country );
+		$this->icon               = $payment_method->get_icon();
 		$this->has_fields         = true;
 		$this->method_title       = 'WooPayments';
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 
-		$this->title       = $payment_method->get_title( $account_country );
+		$this->title       = $payment_method->get_title();
 		$this->description = '';
 		$this->supports    = [
 			'products',
@@ -1690,7 +1689,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->order_service->attach_intent_info_to_order( $order, $intent );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 		if ( Intent_Status::SUCCEEDED === $status ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
@@ -1885,7 +1884,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
+				$this->order_service->attach_intent_info_to_order( $order, $intent );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				if ( Intent_Status::SUCCEEDED === $status ) {
 					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
@@ -2053,7 +2052,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$payment_method_title = $payment_method->get_title( $this->get_account_country(), $payment_method_details );
+		$payment_method_title = $payment_method->get_title( $payment_method_details );
 
 		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
 
@@ -2878,7 +2877,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string code of the country.
 	 */
-	public function get_account_country( string $default_value = 'US' ): string {
+	protected function get_account_country( string $default_value = 'US' ): string {
 		try {
 			if ( $this->is_connected() ) {
 				return $this->account->get_account_country() ?? $default_value;
@@ -3426,7 +3425,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
 
 				$this->attach_exchange_info_to_order( $order, $charge_id );
-				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
+				$this->order_service->attach_intent_info_to_order( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.

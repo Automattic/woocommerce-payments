@@ -82,7 +82,7 @@ class PaymentMethodsCompatibility {
 
 				$result[ $method ] = [
 					'currencies' => $payment_method_instance->get_currencies(),
-					'title'      => $payment_method_instance->get_title( $this->gateway->get_account_country() ),
+					'title'      => $payment_method_instance->get_title(),
 				];
 
 				return $result;
