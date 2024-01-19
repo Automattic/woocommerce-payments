@@ -304,19 +304,19 @@ export const shopperWCP = {
 		noticeSelector,
 		oldNoticeSelector
 	) => {
-		const newWayPromise = ( async () => {
+		const errorBannerToCheck = ( async () => {
 			await expect( page ).toMatchElement( noticeSelector, {
 				text: errorText,
 			} );
 		} )();
 
-		const oldWayPromise = ( async () => {
+		const oldErrorBannerToCheck = ( async () => {
 			await expect( page ).toMatchElement( oldNoticeSelector, {
 				text: errorText,
 			} );
 		} )();
 
-		await Promise.race( [ newWayPromise, oldWayPromise ] );
+		await Promise.race( [ errorBannerToCheck, oldErrorBannerToCheck ] );
 	},
 
 	waitForSubscriptionsErrorBanner: async (
@@ -324,19 +324,19 @@ export const shopperWCP = {
 		errorSelector,
 		oldErrorSelector
 	) => {
-		const newWayPromise = ( async () => {
+		const errorBannerToCheck = ( async () => {
 			return page.waitForSelector( errorSelector, {
 				text: errorText,
 			} );
 		} )();
 
-		const oldWayPromise = ( async () => {
+		const oldErrorBannerToCheck = ( async () => {
 			return page.waitForSelector( oldErrorSelector, {
 				text: errorText,
 			} );
 		} )();
 
-		await Promise.race( [ newWayPromise, oldWayPromise ] );
+		await Promise.race( [ errorBannerToCheck, oldErrorBannerToCheck ] );
 	},
 };
 
