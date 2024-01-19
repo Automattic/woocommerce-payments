@@ -19,7 +19,7 @@ let subscriptionId;
 const testSelectors = {
 	subscriptionIdField: '.woocommerce-orders-table__cell-subscription-id > a',
 	subscriptionRenewButton: 'a.button.subscription_renewal_early',
-	wcNotice: 'div.wc-blockq-components-notice-banner',
+	wcNotice: 'div.wc-block-components-notice-banner',
 	wcOldNotice:
 		'.woocommerce .woocommerce-notices-wrapper .woocommerce-message',
 };
