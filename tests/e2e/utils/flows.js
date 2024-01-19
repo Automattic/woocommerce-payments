@@ -281,8 +281,8 @@ export const shopperWCP = {
 			await uiUnblocked();
 		}
 
-		await page.waitForSelector( '.cart-empty.woocommerce-info' );
-		await expect( page ).toMatchElement( '.cart-empty.woocommerce-info', {
+		await page.waitForSelector( 'div.wc-block-components-notice-banner' );
+		await expect( page ).toMatchElement( 'div.wc-block-components-notice-banner', {
 			text: 'Your cart is currently empty.',
 		} );
 	},

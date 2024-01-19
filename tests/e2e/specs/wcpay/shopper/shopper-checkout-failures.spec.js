@@ -8,6 +8,7 @@ import {
 	fillCardDetails,
 	setupProductCheckout,
 } from '../../../utils/payments';
+import { shopperWCP } from '../../../utils';
 
 const { uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
@@ -20,7 +21,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 
 	afterAll( async () => {
 		// Clear the cart at the end so it's ready for another test
-		// await shopperWCP.emptyCart();
+		await shopperWCP.emptyCart();
 	} );
 
 	it( 'should throw an error that the card was simply declined', async () => {

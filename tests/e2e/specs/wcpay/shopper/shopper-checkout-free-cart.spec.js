@@ -6,6 +6,7 @@ import config from 'config';
  * Internal dependencies
  */
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
+import { shopperWCP } from '../../../utils';
 
 const {
 	shopper,
@@ -52,7 +53,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 
 		afterAll( async () => {
 			// Clear the cart at the end so it's ready for another test
-			// await shopperWCP.emptyCart();
+			await shopperWCP.emptyCart();
 		} );
 	} );
 
