@@ -166,8 +166,8 @@ export const generateCheckoutEventNames = () => {
 		.join( ' ' );
 };
 
-export const appendPaymentMethodIdToForm = ( form, paymentMethodId ) => {
-	form.append(
+export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
+	$form.append(
 		`<input type="hidden" id="wcpay-payment-method" name="wcpay-payment-method" value="${ paymentMethodId }" />`
 	);
 };
@@ -192,6 +192,11 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 	);
 }
 
+export function dispatchChangeEventFor( element ) {
+	const event = new Event( 'change', { bubbles: true } );
+	element.dispatchEvent( event );
+}
+
 /**
  *
  * Custom React hook that provides customer data and related functions for managing customer information.
@@ -200,13 +205,9 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
  * @return {Object} An object containing customer data and functions for managing customer information.
  */
 export const useCustomerData = () => {
-	const { customerData, isInitialized } = useSelect( ( select ) => {
-		const store = select( WC_STORE_CART );
-		return {
-			customerData: store.getCustomerData(),
-			isInitialized: store.hasFinishedResolution( 'getCartData' ),
-		};
-	} );
+	const customerData = useSelect( ( select ) =>
+		select( WC_STORE_CART ).getCustomerData()
+	);
 	const {
 		setShippingAddress,
 		setBillingData,
@@ -214,14 +215,10 @@ export const useCustomerData = () => {
 	} = useDispatch( WC_STORE_CART );
 
 	return {
-		isInitialized,
-		billingData: customerData.billingData,
 		// Backward compatibility billingData/billingAddress
-		billingAddress: customerData.billingAddress,
-		shippingAddress: customerData.shippingAddress,
-		setBillingData,
+		billingAddress: customerData.billingAddress || customerData.billingData,
 		// Backward compatibility setBillingData/setBillingAddress
-		setBillingAddress,
+		setBillingAddress: setBillingAddress || setBillingData,
 		setShippingAddress,
 	};
 };
@@ -415,7 +412,13 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const supportedCountries =
 		paymentMethodsConfig[ paymentMethodType ].countries;
 
-	const billingCountry = document.getElementById( 'billing_country' ).value;
+	/* global wcpayCustomerData */
+	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
+	const billingCountry =
+		document.getElementById( 'billing_country' )?.value ||
+		wcpayCustomerData?.billing_country ||
+		'';
+
 	const upeContainer = document.querySelector(
 		'.payment_method_woocommerce_payments_' + paymentMethodType
 	);

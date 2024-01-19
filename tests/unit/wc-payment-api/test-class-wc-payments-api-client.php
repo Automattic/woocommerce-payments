@@ -795,8 +795,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
 			->setMethods( [ 'log' ] )
 			->getMock();
-		$mock_gateway         = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode(), $mock_gateway );
+		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode() );
 		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
 
 		WC_Payments::mode()->dev();

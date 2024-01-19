@@ -97,8 +97,7 @@
 				"amount": 12345,
 				"fee": 185.175,
 				"net": 12159.83,
-				"fee_percentage": 1.5,
-				"transaction_ids": [ "txn_XYZ", "txn_ZXY" ]
+				"fee_percentage": 1.5
 			}
 		]
 	},
