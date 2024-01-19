@@ -12,7 +12,7 @@ import { useDispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import { trackEligibilityModalClosed } from 'onboarding/tracking';
-import ConfettiImage from 'assets/images/confetti-blurred.svg?asset';
+import ConfettiAnimation from 'components/confetti-animation';
 import './style.scss';
 
 const ProgressiveOnboardingEligibilityModal: React.FC = () => {
@@ -70,6 +70,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 			className="wcpay-progressive-onboarding-eligibility-modal"
 			onRequestClose={ handleDismiss }
 		>
+			<ConfettiAnimation />
 			<h1 className="wcpay-progressive-onboarding-eligibility-modal__heading">
 				{ __( 'You’re ready to sell.', 'woocommerce-payments' ) }
 			</h1>
@@ -126,11 +127,6 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 					{ __( 'Start selling', 'woocommerce-payments' ) }
 				</Button>
 			</div>
-			<img
-				src={ ConfettiImage }
-				alt=""
-				className="wcpay-progressive-onboarding-eligibility-modal__confetti"
-			/>
 		</Modal>
 	);
 };
