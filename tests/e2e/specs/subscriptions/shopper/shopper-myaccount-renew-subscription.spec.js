@@ -65,24 +65,13 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await expect( page ).toClick(
 				testSelectors.subscriptionRenewButton
 			);
-
-			// Place an order to renew a subscription
-			const newWayPromise = ( async () => {
-				return page.waitForSelector( testSelectors.wcNotice, {
-					text: 'Complete checkout to renew now.',
-				} );
-			} )();
-
-			const oldWayPromise = ( async () => {
-				return page.waitForSelector( testSelectors.wcOldNotice, {
-					text: 'Complete checkout to renew now.',
-				} );
-			} )();
-
-			await Promise.race( [ newWayPromise, oldWayPromise ] );
-
+			await shopperWCP.waitForErrorBannerForSubscriptions(
+				'Complete checkout to renew now.',
+				testSelectors.wcNotice,
+				testSelectors.wcOldNotice
+			);
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-
+			// Place an order to renew a subscription
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
 		} );

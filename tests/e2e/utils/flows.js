@@ -318,6 +318,26 @@ export const shopperWCP = {
 
 		await Promise.race( [ newWayPromise, oldWayPromise ] );
 	},
+
+	waitForErrorBannerForSubscriptions: async (
+		errorText,
+		errorSelector,
+		oldErrorSelector
+	) => {
+		const newWayPromise = ( async () => {
+			return page.waitForSelector( errorSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		const oldWayPromise = ( async () => {
+			return page.waitForSelector( oldErrorSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		await Promise.race( [ newWayPromise, oldWayPromise ] );
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
