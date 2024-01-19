@@ -194,7 +194,7 @@ const DepositsSchedule = () => {
 			>
 				<span>
 					{ __(
-						'Your first deposit will be held for 7 days. Deposit scheduling will be available after this period.',
+						'Your first deposit will be held for 7-14 days. Deposit scheduling will be available after this period.',
 						'woocommerce-payments'
 					) }
 				</span>
