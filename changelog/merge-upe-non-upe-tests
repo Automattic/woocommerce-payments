@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Merge UPE tests into the single and main gateway test file for unit and E2E tests.

@@ -33,11 +33,11 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns payment method title
 	 *
-	 * @param string      $account_country Account country.
-	 * @param array|false $payment_details Payment details.
+	 * @param array|bool $payment_details Optional payment details from charge object.
+	 *
 	 * @return string
 	 */
-	public function get_title( string $account_country, $payment_details = false ) {
+	public function get_title( $payment_details = false ) {
 		if ( ! $payment_details ) {
 			return $this->title;
 		}

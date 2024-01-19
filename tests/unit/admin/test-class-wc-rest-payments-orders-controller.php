@@ -114,12 +114,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'attach_intent_info_to_order' )
 			->with(
 				$this->isInstanceOf( WC_Order::class ),
-				$this->mock_intent_id,
-				Intent_Status::REQUIRES_CAPTURE,
-				'pm_mock',
-				'cus_mock',
-				$this->mock_charge_id,
-				'USD'
+				$mock_intent,
 			);
 
 		$request = new WP_REST_Request( 'POST' );
@@ -171,12 +166,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'attach_intent_info_to_order' )
 			->with(
 				$this->isInstanceOf( WC_Order::class ),
-				$this->mock_intent_id,
-				Intent_Status::SUCCEEDED,
-				'pm_mock',
-				'cus_mock',
-				$this->mock_charge_id,
-				'USD'
+				$mock_intent,
 			);
 
 		$this->mock_gateway
@@ -236,12 +226,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'attach_intent_info_to_order' )
 			->with(
 				$this->isInstanceOf( WC_Order::class ),
-				$this->mock_intent_id,
-				Intent_Status::SUCCEEDED,
-				'pm_mock',
-				'cus_mock',
-				$this->mock_charge_id,
-				'USD'
+				$mock_intent,
 			);
 
 		$this->mock_gateway
