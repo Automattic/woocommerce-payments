@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
+use WCPay\Constants\Country_Code;
 use WCPay\Core\Server\Request\Get_Account;
 use WCPay\Core\Server\Request\Get_Account_Capital_Link;
 use WCPay\Core\Server\Request\Get_Account_Login_Data;
@@ -263,7 +264,7 @@ class WC_Payments_Account {
 
 		return [
 			'email'                 => $account['email'] ?? '',
-			'country'               => $account['country'] ?? 'US',
+			'country'               => $account['country'] ?? Country_Code::UNITED_STATES,
 			'status'                => $account['status'],
 			'created'               => $account['created'] ?? '',
 			'paymentsEnabled'       => $account['payments_enabled'],
@@ -1487,18 +1488,18 @@ class WC_Payments_Account {
 			$event_properties
 		);
 
-		wp_safe_redirect(
-			add_query_arg(
-				[
-					'wcpay-state'                => false,
-					'wcpay-account-id'           => false,
-					'wcpay-live-publishable-key' => false,
-					'wcpay-test-publishable-key' => false,
-					'wcpay-mode'                 => false,
-					'wcpay-connection-success'   => '1',
-				]
-			)
-		);
+		$params = [
+			'wcpay-state'                => false,
+			'wcpay-account-id'           => false,
+			'wcpay-live-publishable-key' => false,
+			'wcpay-test-publishable-key' => false,
+			'wcpay-mode'                 => false,
+		];
+		if ( empty( $_GET['wcpay-connection-error'] ) ) {
+			$params['wcpay-connection-success'] = '1';
+		}
+
+		wp_safe_redirect( add_query_arg( $params ) );
 		exit;
 	}
 
@@ -1783,7 +1784,7 @@ class WC_Payments_Account {
 	 */
 	public function get_account_country() {
 		$account = $this->get_cached_account_data();
-		return $account['country'] ?? 'US';
+		return $account['country'] ?? Country_Code::UNITED_STATES;
 	}
 
 	/**

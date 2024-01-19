@@ -8,6 +8,7 @@
 namespace WCPay\Migrations;
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPAY_UnitTestCase;
 
 /**
@@ -74,7 +75,7 @@ class Update_Service_Data_From_Server_Test extends WCPAY_UnitTestCase {
 								'discount' => [],
 							],
 					],
-					'country'    => 'US',
+					'country'    => Country_Code::UNITED_STATES,
 				]
 			)
 		);
@@ -106,7 +107,7 @@ class Update_Service_Data_From_Server_Test extends WCPAY_UnitTestCase {
 								'discount' => [],
 							],
 					],
-					'country'    => 'US',
+					'country'    => Country_Code::UNITED_STATES,
 				]
 			)
 		);

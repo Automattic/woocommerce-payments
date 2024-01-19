@@ -293,8 +293,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 		include_once __DIR__ . '/core/class-mode.php';
 
-		self::$mode = new Mode();
-
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
 		self::$database_cache->init_hooks();
@@ -416,6 +414,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-fraud-ruleset-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
+		include_once __DIR__ . '/constants/class-country-code.php';
 		include_once __DIR__ . '/constants/class-fraud-meta-box-type.php';
 		include_once __DIR__ . '/constants/class-order-mode.php';
 		include_once __DIR__ . '/constants/class-order-status.php';
@@ -539,6 +538,8 @@ class WC_Payments {
 
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
+
+		self::$mode = new Mode();
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
