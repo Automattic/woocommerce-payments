@@ -109,7 +109,15 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
-		$this->express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( $this->mock_wcpay_account );
+		$this->express_checkout_helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->disableOriginalConstructor()
+			->setMethods(
+				[
+					'is_product',
+					'get_product',
+				]
+			)
+			->getMock();
 
 		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
 
