@@ -679,7 +679,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_account_partially_onboarded(): bool {
-		return $this->account->is_account_partially_onboarded();
+		return $this->account->is_stripe_connected() && ! $this->account->is_details_submitted();
 	}
 
 	/**
