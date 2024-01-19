@@ -282,9 +282,12 @@ export const shopperWCP = {
 		}
 
 		await page.waitForSelector( 'div.wc-block-components-notice-banner' );
-		await expect( page ).toMatchElement( 'div.wc-block-components-notice-banner', {
-			text: 'Your cart is currently empty.',
-		} );
+		await expect( page ).toMatchElement(
+			'div.wc-block-components-notice-banner',
+			{
+				text: 'Your cart is currently empty.',
+			}
+		);
 	},
 
 	goToProductPageBySlug: async ( productSlug ) => {
