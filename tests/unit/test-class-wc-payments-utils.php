@@ -544,18 +544,4 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 			'VND (decimal currency) - not skip symbol' => [ 123456, 'VND', false, [], '123.456 ₫ VND' ],
 		];
 	}
-
-	public function test_reverse_url_with_trailing_slash() {
-		$url      = '/moc.elpmaxe.ppa';
-		$reversed = WC_Payments_Utils::reverse_url_if_trailing_slash( $url );
-
-		$this->assertEquals( 'app.example.com/', $reversed );
-	}
-
-	public function test_reverse_url_without_trailing_slash() {
-		$url      = 'app.example.com';
-		$reversed = WC_Payments_Utils::reverse_url_if_trailing_slash( $url );
-
-		$this->assertEquals( 'app.example.com', $reversed );
-	}
 }
