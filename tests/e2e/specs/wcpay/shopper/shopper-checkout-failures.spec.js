@@ -43,7 +43,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect(
 			page
 		).toMatchElement(
-			'div.wc-block-components-notice-banner',
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
 			{ text: "Your card's expiration year is in the past." }
 		);
 		await clearCardDetails();
@@ -57,7 +57,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect(
 			page
 		).toMatchElement(
-			'div.wc-block-components-notice-banner',
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
 			{ text: "Your card's security code is incomplete." }
 		);
 		await clearCardDetails();
@@ -128,7 +128,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await expect(
 			page
 		).toMatchElement(
-			'div.wc-block-components-notice-banner',
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
 			{ text: 'Your card number is invalid.' }
 		);
 		await clearCardDetails();
