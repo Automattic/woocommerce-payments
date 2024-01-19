@@ -26,11 +26,11 @@ describe( 'Shopper > Pay for Order', () => {
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect(
-			page
-		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
-			{ text: 'Error: Your card was declined.' }
+		await expect( page ).toMatchElement(
+			'div.wc-block-components-notice-banner',
+			{
+				text: 'Error: Your card was declined.',
+			}
 		);
 
 		// after the card has been declined, go to the order page and pay with a basic card
