@@ -37,6 +37,9 @@ describe( 'Saved cards ', () => {
 				await expect( page ).toMatch(
 					'Payment method successfully added'
 				);
+				await expect( page ).toMatch(
+					`${ card.expires.month }/${ card.expires.year }`
+				);
 			} );
 
 			it( 'should process a payment with the saved card', async () => {

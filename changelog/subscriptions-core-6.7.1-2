@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Resolved an issue that caused ordering the Admin Subscriptions List Table to not work when HPOS is enabled.
