@@ -70,7 +70,7 @@ jobs:
               shell: bash
               run: |
                   echo "::group::Install Playwright"
-                  npx playwright install
+                  npx playwright install chromium
                   echo "::endgroup::"
 
             - name: Run tests, upload screenshots & logs
