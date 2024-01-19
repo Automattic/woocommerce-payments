@@ -281,13 +281,29 @@ export const shopperWCP = {
 			await uiUnblocked();
 		}
 
-		await page.waitForSelector( 'div.wc-block-components-notice-banner' );
-		await expect( page ).toMatchElement(
-			'div.wc-block-components-notice-banner',
-			{
-				text: 'Your cart is currently empty.',
-			}
-		);
+		const newWayPromise = ( async () => {
+			await page.waitForSelector(
+				'div.wc-block-components-notice-banner'
+			);
+			await expect( page ).toMatchElement(
+				'div.wc-block-components-notice-banner',
+				{
+					text: 'Your cart is currently empty.',
+				}
+			);
+		} )();
+
+		const oldWayPromise = ( async () => {
+			await page.waitForSelector( '.cart-empty.woocommerce-info' );
+			await expect( page ).toMatchElement(
+				'.cart-empty.woocommerce-info',
+				{
+					text: 'Your cart is currently empty.',
+				}
+			);
+		} )();
+
+		await Promise.race( [ newWayPromise, oldWayPromise ] );
 	},
 
 	goToProductPageBySlug: async ( productSlug ) => {

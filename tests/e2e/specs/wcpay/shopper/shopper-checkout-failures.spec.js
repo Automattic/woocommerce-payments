@@ -12,6 +12,28 @@ import { shopperWCP } from '../../../utils';
 
 const { uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
+const waitForErrorBanner = async ( errorText ) => {
+	const newWayPromise = ( async () => {
+		await expect( page ).toMatchElement(
+			'div.wc-block-components-notice-banner',
+			{
+				text: errorText,
+			}
+		);
+	} )();
+
+	const oldWayPromise = ( async () => {
+		await expect(
+			page
+		).toMatchElement(
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
+			{ text: errorText }
+		);
+	} )();
+
+	await Promise.race( [ newWayPromise, oldWayPromise ] );
+};
+
 describe( 'Shopper > Checkout > Failures with various cards', () => {
 	beforeAll( async () => {
 		await setupProductCheckout(
@@ -29,12 +51,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect( page ).toMatchElement(
-			'div.wc-block-components-notice-banner',
-			{
-				text: 'Error: Your card was declined.',
-			}
-		);
+		await waitForErrorBanner( 'Error: Your card was declined.' );
 		await clearCardDetails();
 	} );
 
@@ -71,12 +88,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardInsufficientFunds );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect( page ).toMatchElement(
-			'div.wc-block-components-notice-banner',
-			{
-				text: 'Error: Your card has insufficient funds.',
-			}
-		);
+		await waitForErrorBanner( 'Error: Your card has insufficient funds.' );
 		await clearCardDetails();
 	} );
 
@@ -85,12 +97,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardExpired );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect( page ).toMatchElement(
-			'div.wc-block-components-notice-banner',
-			{
-				text: 'Error: Your card has expired.',
-			}
-		);
+		await waitForErrorBanner( 'Error: Your card has expired.' );
 		await clearCardDetails();
 	} );
 
@@ -99,11 +106,8 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardIncorrectCVC );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect( page ).toMatchElement(
-			'div.wc-block-components-notice-banner',
-			{
-				text: "Error: Your card's security code is incorrect.",
-			}
+		await waitForErrorBanner(
+			"Error: Your card's security code is incorrect."
 		);
 		await clearCardDetails();
 	} );
@@ -113,12 +117,8 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, cardProcessingError );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
-		await expect( page ).toMatchElement(
-			'div.wc-block-components-notice-banner',
-			{
-				text:
-					'Error: An error occurred while processing your card. Try again in a little bit.',
-			}
+		await waitForErrorBanner(
+			'Error: An error occurred while processing your card. Try again in a little bit.'
 		);
 		await clearCardDetails();
 	} );
@@ -142,13 +142,24 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await page.waitForSelector( 'ul.woocommerce-error' );
-		const declined3dsCardError = await page.$eval(
-			'div.wc-block-components-notice-banner',
-			( el ) => el.innerText
+		const createExpectPromise = async ( selector ) => {
+			const content = await page.$eval(
+				selector,
+				( el ) => el.innerText
+			);
+			await expect( page ).toMatch(
+				content,
+				'Error: Your card was declined.'
+			);
+		};
+
+		const wcNoticePromise = createExpectPromise(
+			'div.wc-block-components-notice-banner'
 		);
-		await expect( page ).toMatch(
-			declined3dsCardError,
-			'Error: Your card was declined.'
+		const oldWcNoticePromise = createExpectPromise(
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error'
 		);
+
+		await Promise.race( [ wcNoticePromise, oldWcNoticePromise ] );
 	} );
 } );
