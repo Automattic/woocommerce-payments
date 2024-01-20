@@ -152,7 +152,7 @@ const OverviewPage = () => {
 								{
 									label: strings.notice.actions.learnMore,
 									url:
-										'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/',
+										'https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/',
 									urlTarget: '_blank',
 								},
 						  ]

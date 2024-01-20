@@ -22,7 +22,7 @@ const DebugMode = () => {
 				label={
 					isDevModeEnabled
 						? __(
-								'Dev mode is active so logging is on by default.',
+								'Sandbox mode is active so logging is on by default.',
 								'woocommerce-payments'
 						  )
 						: __( 'Log error messages', 'woocommerce-payments' )
