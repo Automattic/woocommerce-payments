@@ -66,9 +66,9 @@ class Mode {
 		);
 
 		/**
-		 * Allows WooCommerce to enter dev mode.
+		 * Allows WooPayments to enter dev (aka sandbox) mode.
 		 *
-		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/
+		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/
 		 * @param bool $dev_mode The pre-determined dev mode.
 		 */
 		$this->dev_mode = (bool) apply_filters( 'wcpay_dev_mode', $dev_mode );
