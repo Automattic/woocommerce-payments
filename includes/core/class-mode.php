@@ -80,7 +80,7 @@ class Mode {
 		$test_mode            = $this->dev_mode || $test_mode_setting;
 
 		/**
-		 * Allows WooCommerce to enter test mode.
+		 * Allows WooPayments to enter test mode.
 		 *
 		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
 		 * @param bool $test_mode The pre-determined test mode.
