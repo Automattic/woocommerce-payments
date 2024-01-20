@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Core\Server\Request\List_Transactions;
 
@@ -200,7 +201,7 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 					'source_identifier' => '3184',
 					'customer_name'     => 'Test Customer1',
 					'customer_email'    => 'test1@woo.com',
-					'customer_country'  => 'US',
+					'customer_country'  => Country_Code::UNITED_STATES,
 					'amount'            => 2583,
 					'net'               => 2426,
 					'fees'              => 157,
@@ -233,7 +234,7 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 					'source_identifier' => '3184',
 					'customer_name'     => 'Test Customer2',
 					'customer_email'    => 'test2@woo.com',
-					'customer_country'  => 'US',
+					'customer_country'  => Country_Code::UNITED_STATES,
 					'amount'            => 2583,
 					'net'               => 2452,
 					'fees'              => 131,
@@ -282,7 +283,7 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 				'customer'             => [
 					'name'    => 'Test Customer1',
 					'email'   => 'test1@woo.com',
-					'country' => 'US',
+					'country' => Country_Code::UNITED_STATES,
 				],
 				'net_amount'           => 2426,
 				'order_id'             => 123,
@@ -308,7 +309,7 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 				'customer'             => [
 					'name'    => 'Test Customer2',
 					'email'   => 'test2@woo.com',
-					'country' => 'US',
+					'country' => Country_Code::UNITED_STATES,
 				],
 				'net_amount'           => 2452,
 				'order_id'             => 275,

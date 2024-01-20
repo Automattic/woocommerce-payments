@@ -108,12 +108,16 @@ const events = {
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
 	TRANSACTIONS_DOWNLOAD_CSV_CLICK: 'wcpay_transactions_download_csv_click',
 	WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
-	WOOPAY_OFFERED: 'woopay_offered',
+	WOOPAY_OFFERED: 'checkout_woopay_save_my_info_offered',
 	WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
 	WOOPAY_SKIPPED: 'woopay_skipped',
 	WOOPAY_BUTTON_LOAD: 'woopay_button_load',
 	WOOPAY_BUTTON_CLICK: 'woopay_button_click',
+	WOOPAY_SAVE_MY_INFO_COUNTRY_CLICK:
+		'checkout_woopay_save_my_info_country_click',
 	WOOPAY_SAVE_MY_INFO_CLICK: 'checkout_save_my_info_click',
+	WOOPAY_SAVE_MY_INFO_MOBILE_ENTER:
+		'checkout_woopay_save_my_info_mobile_enter',
 	WOOPAY_SAVE_MY_INFO_TOS_CLICK: 'checkout_save_my_info_tos_click',
 	WOOPAY_SAVE_MY_INFO_PRIVACY_CLICK:
 		'checkout_save_my_info_privacy_policy_click',

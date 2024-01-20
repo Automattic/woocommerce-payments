@@ -303,17 +303,12 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.getByText(
-				'You’re eligible to start selling now and fast-track the setup process.'
-			)
+			screen.getByText( 'You’re ready to sell.' )
 		).toBeInTheDocument();
 	} );
 
 	it( 'does not displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is false', () => {
-		const query = () =>
-			screen.queryByText(
-				'You’re eligible to start selling now and fast-track the setup process.'
-			);
+		const query = () => screen.queryByText( 'You’re ready to sell.' );
 
 		render( <OverviewPage /> );
 

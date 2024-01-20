@@ -11,6 +11,7 @@ import { getQuery } from '@woocommerce/navigation';
 import { getFilters, getAdvancedFilters } from './config';
 import { formatCurrencyName } from '../../utils/currency';
 import './style.scss';
+import wcpayTracks from 'tracks';
 
 interface TransactionsFiltersProps {
 	storeCurrencies: string[];
@@ -53,6 +54,14 @@ export const TransactionsFilters = ( {
 				showDatePicker={ false }
 				path="/payments/transactions"
 				query={ getQuery() }
+				onAdvancedFilterAction={ ( event ) => {
+					if ( event === 'filter' ) {
+						wcpayTracks.recordEvent( 'page_view', {
+							path: 'payments_transactions',
+							filter: 'advanced',
+						} );
+					}
+				} }
 			/>
 		</div>
 	);

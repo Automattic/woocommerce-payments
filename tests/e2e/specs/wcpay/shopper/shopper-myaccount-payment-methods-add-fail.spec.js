@@ -9,7 +9,10 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 import { shopperWCP } from '../../../utils/flows';
-const { fillCardDetails } = require( '../../../utils/payments' );
+const {
+	fillCardDetails,
+	confirmCardAuthentication,
+} = require( '../../../utils/payments' );
 
 const cards = Object.entries( config.get( 'cards' ) );
 const invalidCards = cards.filter( ( [ cardType ] ) =>
@@ -46,6 +49,9 @@ describe( 'Payment Methods', () => {
 				await expect( page ).toClick( 'button', {
 					text: 'Add payment method',
 				} );
+				if ( cardType === 'declined-3ds' ) {
+					await confirmCardAuthentication( page, '3DS2' );
+				}
 				await expect( page ).toMatchElement( '.woocommerce-error', {
 					timeout: 30000,
 				} );

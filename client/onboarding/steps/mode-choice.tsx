@@ -1,15 +1,14 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@wordpress/components';
-import { Icon, store, tool } from '@wordpress/icons';
+import { Icon, store } from '@wordpress/icons';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
-import OnboardingCard from 'wcpay/components/onboarding-card';
 import { useStepperContext } from 'components/stepper';
 import { trackModeSelected } from '../tracking';
 import strings from '../strings';
@@ -44,22 +43,30 @@ const ModeChoice: React.FC = () => {
 	return (
 		<>
 			{ devMode && <SandboxModeNotice /> }
-			<OnboardingCard
-				icon={ <Icon icon={ store } /> }
-				heading={ modeStrings.label }
-				content={
-					<>
-						<div className="onboarding-mode__note">
-							{ modeStrings.note }
-						</div>
-						<p>{ modeStrings.tos }</p>
-					</>
-				}
-				actionLabel={ modeStrings.continue.live }
-				onClick={ () => {
-					handleContinue( 'live' );
-				} }
-			/>
+			<div className={ 'wcpay-component-onboarding-card' }>
+				<div className="wcpay-component-onboarding-card__label">
+					<Icon icon={ store } />
+					{ modeStrings.label }
+				</div>
+				<div className="wcpay-component-onboarding-card__body">
+					<div className="onboarding-mode__note">
+						{ modeStrings.note }
+					</div>
+					<p>{ modeStrings.tos }</p>
+				</div>
+				<div className="wcpay-component-onboarding-card__footer">
+					<Button
+						className="wcpay-component-onboarding-card__button"
+						variant="primary"
+						data-testid="live-mode-button"
+						onClick={ () => {
+							handleContinue( 'live' );
+						} }
+					>
+						{ modeStrings.continue.live }
+					</Button>
+				</div>
+			</div>
 
 			<div className="onboarding-mode__sandbox">
 				<Button

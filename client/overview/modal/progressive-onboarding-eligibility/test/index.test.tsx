@@ -36,8 +36,7 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 
 		const queryHeading = () =>
 			screen.queryByRole( 'heading', {
-				name:
-					'You’re eligible to start selling now and fast-track the setup process.',
+				name: 'You’re ready to sell.',
 			} );
 
 		expect( queryHeading() ).toBeInTheDocument();
@@ -55,14 +54,13 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Enable payments only',
+				name: 'Start selling',
 			} )
 		);
 
 		expect(
 			screen.queryByRole( 'heading', {
-				name:
-					'You’re eligible to start selling now and fast-track the setup process.',
+				name: 'You’re ready to sell.',
 			} )
 		).not.toBeInTheDocument();
 	} );
@@ -85,7 +83,7 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Set up payments and deposits',
+				name: 'Start receiving deposits',
 			} )
 		);
 
