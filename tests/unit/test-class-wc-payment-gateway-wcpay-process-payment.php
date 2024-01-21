@@ -702,7 +702,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that a draft order is updated to "pending" when the $_POST 'is-woopay-preflight-check` is present.
+	 * Tests that a draft order is updated to "pending" when the $_POST 'is-woopay-preflight-check' is present.
 	 */
 	public function test_draft_order_is_set_to_pending_for_woopay_preflight_check_request() {
 		$_POST['is-woopay-preflight-check'] = true;
@@ -776,7 +776,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that a success response and no redirect is returned when the $_POST 'is-woopay-preflight-check` is present.
+	 * Tests that a success response and no redirect is returned when the $_POST 'is-woopay-preflight-check' is present.
 	 */
 	public function test_successful_result_no_redirect_for_woopay_preflight_check_request() {
 		$_POST['is-woopay-preflight-check'] = true;
