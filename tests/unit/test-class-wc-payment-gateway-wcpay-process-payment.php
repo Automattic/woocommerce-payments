@@ -723,6 +723,59 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that woocommerce_order_status_pending action is not called when the $_POST 'is-woopay-preflight-check' is present.
+	 */
+	public function test_woopay_preflight_request_does_not_call_woocommerce_order_status_pending() {
+		// Arrange: Add woocommerce_order_status_pending action to check if it's called.
+		$results = [
+			'has_called_woocommerce_order_status_pending' => false,
+		];
+		add_action(
+			'woocommerce_order_status_pending',
+			function () use ( &$results ) {
+				$results['has_called_woocommerce_order_status_pending'] = true;
+			}
+		);
+
+		// Arrange: Add filter to change default order status to 'wc-checkout-draft'.
+		// Needed to avoid a default order status of 'pending'.
+		add_filter(
+			'woocommerce_default_order_status',
+			function () {
+				return 'wc-checkout-draft';
+			}
+		);
+
+		// Arrange: Create a request to simulate a woopay preflight request.
+		$_POST['is-woopay-preflight-check'] = true;
+		$request                            = new WP_REST_Request( 'POST', '' );
+		$request->set_body_params(
+			[
+				'payment_data' => [
+					[
+						'key'   => 'is-woopay-preflight-check',
+						'value' => true,
+					],
+				],
+			]
+		);
+		apply_filters( 'rest_request_before_callbacks', [], [], $request );
+
+		// Arrange: Create an order to test with.
+		$order_data = [
+			'status' => 'wc-checkout-draft',
+			'total'  => '100',
+		];
+		$order      = wc_create_order( $order_data );
+
+		// Act: process payment.
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		// Assert: woocommerce_order_status_pending was not called.
+		$this->assertFalse( $results['has_called_woocommerce_order_status_pending'] );
+	}
+
+	/**
 	 * Tests that a success response and no redirect is returned when the $_POST 'is-woopay-preflight-check` is present.
 	 */
 	public function test_successful_result_no_redirect_for_woopay_preflight_check_request() {
