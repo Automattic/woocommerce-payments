@@ -98,7 +98,7 @@ describe( 'SupportPhoneInput', () => {
 		).toEqual( 'Please enter a valid phone number.' );
 	} );
 
-	it( 'in dev mode, allow all 0s number', async () => {
+	it( 'in sandbox mode, allow all 0s number', async () => {
 		useAccountBusinessSupportPhone.mockReturnValue( [
 			'+10000000000', // test phone number.
 			jest.fn(),
