@@ -224,22 +224,6 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 	return createdStripePaymentElement;
 }
 
-/**
- * Appends a hidden input field with the confirmed setup intent ID to the provided form.
- *
- * @param {HTMLElement} form The HTML form element to which the input field will be appended.
- * @param {Object} confirmedIntent The confirmed setup intent object containing the ID to be stored in the input field.
- */
-function appendSetupIntentToForm( form, confirmedIntent ) {
-	const input = document.createElement( 'input' );
-	input.type = 'hidden';
-	input.id = 'wcpay-setup-intent';
-	input.name = 'wcpay-setup-intent';
-	input.value = confirmedIntent.id;
-
-	form.append( input );
-}
-
 const ensureSameAsBillingIsUnchecked = () => {
 	const sameAsBillingCheckbox = document.getElementById(
 		'ship-to-different-address-checkbox'
@@ -398,21 +382,6 @@ export async function mountStripePaymentElement( api, domElement ) {
 }
 
 /**
- * Creates and confirms a setup intent using the provided ID, then appends the confirmed setup intent to the given jQuery form.
- *
- * @param {Object} id Payment method object ID.
- * @param {Object} $form The jQuery object for the form to which the confirmed setup intent will be appended.
- * @param {Object} api The API object with the setupIntent method to create and confirm the setup intent.
- *
- * @return {Promise} A promise that resolves when the setup intent is confirmed and appended to the form.
- */
-export const createAndConfirmSetupIntent = ( { id }, $form, api ) => {
-	return api.setupIntent( id ).then( function ( confirmedSetupIntent ) {
-		appendSetupIntentToForm( $form, confirmedSetupIntent );
-	} );
-};
-
-/**
  * Updates the terms parameter in the Payment Element based on the "save payment information" checkbox.
  *
  * @param {Event} event The change event that triggers the function.
@@ -444,12 +413,7 @@ export function renderTerms( event ) {
  * @return {boolean} return false to prevent the default form submission from WC Core.
  */
 let hasCheckoutCompleted;
-export const processPayment = (
-	api,
-	$form,
-	paymentMethodType,
-	additionalActionsHandler = () => Promise.resolve()
-) => {
+export const processPayment = ( api, $form, paymentMethodType ) => {
 	if ( hasCheckoutCompleted ) {
 		hasCheckoutCompleted = false;
 		return;
@@ -472,11 +436,6 @@ export const processPayment = (
 			appendPaymentMethodIdToForm(
 				$form,
 				paymentMethodObject.paymentMethod.id
-			);
-			await additionalActionsHandler(
-				paymentMethodObject.paymentMethod,
-				$form,
-				api
 			);
 			hasCheckoutCompleted = true;
 			submitForm( $form );

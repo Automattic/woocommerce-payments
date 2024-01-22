@@ -507,9 +507,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
 
-			add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-			add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-
 			// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 			add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
@@ -604,6 +601,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Gets payment method settings to pass to client scripts
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @deprecated 5.0.0
 	 *
@@ -675,6 +673,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
 	 * Also used by WC Core to complete the task "Set up WooPayments".
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return bool
 	 */
@@ -2342,6 +2341,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Overrides the original method in woo's WC_Settings_API in order to conditionally render the enabled checkbox.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @param string $key Field key.
 	 * @param array  $data Field data.
@@ -2370,6 +2370,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Generates markup for account statement descriptor field.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @param string $key Field key.
 	 * @param array  $data Field data.
@@ -3513,44 +3514,59 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function add_payment_method() {
 		try {
-
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) {
-				throw new Add_Payment_Method_Exception(
-					sprintf(
-						/* translators: %s: WooPayments */
-						__( 'A %s payment method was not provided', 'woocommerce-payments' ),
-						'WooPayments'
-					),
-					'payment_method_intent_not_provided'
-				);
-			}
-
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$setup_intent_id = ! empty( $_POST['wcpay-setup-intent'] ) ? wc_clean( $_POST['wcpay-setup-intent'] ) : false;
-
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
 
-			if ( ! $setup_intent_id || null === $customer_id ) {
+			if ( null === $customer_id ) {
 				throw new Add_Payment_Method_Exception(
 					__( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ),
 					'invalid_setup_intent_id'
 				);
 			}
 
-			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
-			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-			$setup_intent = $setup_intent_request->send();
+			// TODO: ~fr
+			$payment_method_stripe_id = $this->get_payment_method_to_use_for_intent();
+			$payment_information      = Payment_Information::from_payment_request( $_POST, null, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type(), $payment_method_stripe_id );
+			$payment_information->must_save_payment_method_to_store();
 
-			if ( Intent_Status::SUCCEEDED !== $setup_intent->get_status() ) {
-				throw new Add_Payment_Method_Exception(
-					__( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ),
-					'invalid_response_status'
-				);
+			$request = Create_And_Confirm_Setup_Intention::create();
+			$request->set_customer( $customer_id );
+			$request->set_payment_method( $payment_information->get_payment_method() );
+			// TODO: ~fr
+			// $request->set_metadata( $metadata );
+			$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
+			$request->set_hook_args( $payment_information, false, false );
+
+			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$setup_intent = $request->send();
+
+			if ( in_array( $setup_intent->get_status(), Intent_Status::AUTHORIZED_STATUSES, true ) ) {
+				$payment_method = $setup_intent->get_payment_method_id();
+				$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
+
+				return [
+					'result'   => 'success',
+					'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
+				];
 			}
 
 			$payment_method = $setup_intent->get_payment_method_id();
 			$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
+
+			// TODO: handle "require action" and "failed"
+			return [
+//				'result'         => 'success',
+				// Include a new nonce for update_order_status to ensure the update order
+				// status call works when a guest user creates an account during checkout.
+				'redirect'       => sprintf(
+					'#wcpay-confirm-%s:%s:%s:%s',
+					 'si',
+					null,
+					WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $setup_intent->get_client_secret() ),
+					''
+				),
+				// Include the payment method ID so the Blocks integration can save cards.
+				'payment_method' => $payment_information->get_payment_method(),
+			];
 
 			return [
 				'result'   => 'success',
@@ -3558,7 +3574,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		} catch ( Exception $e ) {
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
+
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
+
 			return [
 				'result' => 'error',
 			];
@@ -3611,6 +3629,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Create a payment intent without confirming the intent.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @param WC_Order    $order                        - Order based on which to create intent.
 	 * @param array       $payment_methods - A list of allowed payment methods. Eg. card, card_present.
@@ -3660,81 +3679,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Create a setup intent when adding cards using the my account page.
-	 *
-	 * @return WC_Payments_API_Setup_Intention
-	 *
-	 * @throws API_Exception
-	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
-	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception
-	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
-	 */
-	public function create_and_confirm_setup_intent() {
-		$payment_information             = Payment_Information::from_payment_request( $_POST, null, null, null, null, $this->get_payment_method_to_use_for_intent() ); // phpcs:ignore WordPress.Security.NonceVerification
-		$should_save_in_platform_account = false;
-
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( ! empty( $_POST['save_payment_method_in_platform_account'] ) && filter_var( wp_unslash( $_POST['save_payment_method_in_platform_account'] ), FILTER_VALIDATE_BOOLEAN ) ) {
-			$should_save_in_platform_account = true;
-		}
-
-		// Determine the customer adding the payment method, create one if we don't have one already.
-		$user        = wp_get_current_user();
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-		if ( null === $customer_id ) {
-			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
-			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
-		}
-
-		$request = Create_And_Confirm_Setup_Intention::create();
-		$request->set_customer( $customer_id );
-		$request->set_payment_method( $payment_information->get_payment_method() );
-		$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
-		$request->set_hook_args( $payment_information, $should_save_in_platform_account, false );
-		return $request->send();
-	}
-
-	/**
-	 * Handle AJAX request for creating a setup intent when adding cards using the my account page.
-	 *
-	 * @throws Add_Payment_Method_Exception - If nonce or setup intent is invalid.
-	 */
-	public function create_setup_intent_ajax() {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Add_Payment_Method_Exception(
-					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
-					'invalid_referrer'
-				);
-			}
-
-			$setup_intent        = $this->create_and_confirm_setup_intent();
-			$setup_intent_output = [
-				'id'            => $setup_intent->get_id(),
-				'status'        => $setup_intent->get_status(),
-				'client_secret' => WC_Payments_Utils::encrypt_client_secret(
-					$this->account->get_stripe_account_id(),
-					$setup_intent->get_client_secret()
-				),
-			];
-
-			wp_send_json_success( $setup_intent_output, 200 );
-		} catch ( Exception $e ) {
-			// Send back error so it can be displayed to the customer.
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
-					],
-				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
-			);
-		}
-	}
-
-	/**
 	 * Add a url to the admin order page that links directly to the transactions detail view.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @since 1.4.0
 	 *
@@ -4034,6 +3980,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Text provided to users during onboarding setup.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return string
 	 */
@@ -4043,6 +3990,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Get the connection URL.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return string Connection URL.
 	 */
@@ -4188,6 +4136,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Get selected UPE payment methods.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @param string $selected_upe_payment_type Selected payment methods.
 	 * @param array  $enabled_payment_methods Enabled payment methods.
@@ -4226,6 +4175,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return string URL of the configuration screen for this gateway
 	 */
@@ -4246,6 +4196,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * This function wraps WC_Payments::get_payment_method_map, useful for unit testing.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return array Array of UPE_Payment_Method instances.
 	 */
@@ -4255,6 +4206,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Returns the payment methods for this gateway.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return array|UPE_Payment_Method[]
 	 */
@@ -4302,6 +4254,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Get the right method description if WooPay is eligible.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return string
 	 */
@@ -4372,6 +4325,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Whether the current page is the WooPayments settings page.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @deprecated 5.0.0
 	 *
@@ -4402,6 +4356,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Customer data is retrieved from order when on Pay for Order.
 	 * Customer data is retrieved from customer when on 'Add Payment Method'.
 	 *
+	 * TODO: ~FR: is this used anywhere?
+	 *
 	 * @deprecated use WC_Payments_Customer_Service::get_prepared_customer_data() instead.
 	 *
 	 * @return array|null An array with customer data or nothing.
@@ -4415,6 +4371,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Determine if current payment method is a platform payment method.
+	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @param boolean $is_using_saved_payment_method If it is using saved payment method.
 	 *

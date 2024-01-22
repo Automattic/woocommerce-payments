@@ -40,9 +40,11 @@ export const showAuthenticationModalIfRequired = ( api ) => {
 
 	return request
 		.then( ( redirectUrl ) => {
+			debugger;
 			window.location = redirectUrl;
 		} )
 		.catch( ( error ) => {
+			debugger;
 			let errorMessage = error.message;
 
 			// If this is a generic error, we probably don't want to display the error message to the user,

@@ -211,7 +211,7 @@ export default class WCPayAPI {
 	 */
 	confirmIntent( redirectUrl, paymentMethodToSave ) {
 		const partials = redirectUrl.match(
-			/#wcpay-confirm-(pi|si):(.+):(.+):(.+)$/
+			/#wcpay-confirm-(pi|si):(.*):(.*):(.*)$/
 		);
 
 		if ( ! partials ) {
@@ -293,6 +293,14 @@ export default class WCPayAPI {
 					( result.error.setup_intent &&
 						result.error.setup_intent.id );
 
+				if ( ! orderIdPartials ) {
+					console.log( '### reached here', result );
+					return [
+						Promise.resolve( { return_url: '' } ),
+						result.error,
+					];
+				}
+
 				// In case this is being called via payment request button from a product page,
 				// the getConfig function won't work, so fallback to getPaymentRequestData.
 				const ajaxUrl =
@@ -312,6 +320,7 @@ export default class WCPayAPI {
 				return [ ajaxCall, result.error ];
 			} )
 			.then( ( [ verificationCall, originalError ] ) => {
+				debugger;
 				if ( originalError ) {
 					throw originalError;
 				}
@@ -334,42 +343,6 @@ export default class WCPayAPI {
 			request,
 			isOrderPage,
 		};
-	}
-
-	/**
-	 * Sets up an intent based on a payment method.
-	 *
-	 * @param {string} paymentMethodId The ID of the payment method.
-	 * @return {Promise} The final promise for the request to the server.
-	 */
-	setupIntent( paymentMethodId ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			action: 'create_setup_intent',
-			'wcpay-payment-method': paymentMethodId,
-			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
-		} ).then( ( response ) => {
-			if ( ! response.success ) {
-				throw response.data.error;
-			}
-
-			if ( response.data.status === 'succeeded' ) {
-				// No need for further authentication.
-				return response.data;
-			}
-
-			return this.getStripe()
-				.confirmCardSetup(
-					decryptClientSecret( response.data.client_secret )
-				)
-				.then( ( confirmedSetupIntent ) => {
-					const { setupIntent, error } = confirmedSetupIntent;
-					if ( error ) {
-						throw error;
-					}
-
-					return setupIntent;
-				} );
-		} );
 	}
 
 	/**

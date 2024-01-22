@@ -17,7 +17,6 @@ import {
 	processPayment,
 	mountStripePaymentElement,
 	renderTerms,
-	createAndConfirmSetupIntent,
 	maybeEnableStripeLink,
 	blockUI,
 	unblockUI,
@@ -87,7 +86,9 @@ jQuery( function ( $ ) {
 	} );
 
 	window.addEventListener( 'hashchange', () => {
+		console.log( '### hashchange', window.location.hash );
 		if ( window.location.hash.startsWith( '#wcpay-confirm-' ) ) {
+			console.log( '### hashchange confirm' );
 			blockUI( $forms );
 			showAuthenticationModalIfRequired( api, $forms ).finally( () => {
 				unblockUI( $forms );
@@ -124,8 +125,7 @@ jQuery( function ( $ ) {
 		return processPayment(
 			api,
 			$addPaymentMethodForm,
-			getSelectedUPEGatewayPaymentMethod(),
-			createAndConfirmSetupIntent
+			getSelectedUPEGatewayPaymentMethod()
 		);
 	} );
 
@@ -149,11 +149,9 @@ jQuery( function ( $ ) {
 	}
 
 	async function maybeMountStripePaymentElement() {
-		if (
-			$( '.wcpay-upe-element' ).length &&
-			! $( '.wcpay-upe-element' ).children().length
-		) {
-			for ( const upeElement of $( '.wcpay-upe-element' ).toArray() ) {
+		const $wcpayUpeElement = $( '.wcpay-upe-element' );
+		if ( $wcpayUpeElement.length && ! $wcpayUpeElement.children().length ) {
+			for ( const upeElement of $wcpayUpeElement.toArray() ) {
 				await mountStripePaymentElement( api, upeElement );
 				restrictPaymentMethodToLocation( upeElement );
 			}
