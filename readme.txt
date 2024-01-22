@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 7.1.0 - 2024-01-24 =
+= 7.1.0-test-4 - unreleased =
 * Add - Add active plugins array to compatibility data.
 * Add - Add post_types and their counts as an array to compatibility data.
 * Add - Add the active theme name of the blog to the compatibility service
