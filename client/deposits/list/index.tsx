@@ -105,9 +105,7 @@ export const DepositsList = (): JSX.Element => {
 			<ClickableCell
 				href={ getDetailsURL( deposit.id, 'deposits' ) }
 				onClick={ () =>
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DEPOSITS_ROW_CLICK
-					)
+					wcpayTracks.recordEvent( 'wcpay_deposits_row_click' )
 				}
 			>
 				{ children }
@@ -121,9 +119,7 @@ export const DepositsList = (): JSX.Element => {
 			<Link
 				href={ getDetailsURL( deposit.id, 'deposits' ) }
 				onClick={ () =>
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DEPOSITS_ROW_CLICK
-					)
+					wcpayTracks.recordEvent( 'wcpay_deposits_row_click' )
 				}
 			>
 				{ dateI18n(
@@ -275,14 +271,11 @@ export const DepositsList = (): JSX.Element => {
 						)
 					);
 
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DEPOSITS_DOWNLOAD_CSV_CLICK,
-						{
-							exported_deposits: exportedDeposits,
-							total_deposits: exportedDeposits,
-							download_type: 'endpoint',
-						}
-					);
+					wcpayTracks.recordEvent( 'wcpay_deposits_download', {
+						exported_deposits: exportedDeposits,
+						total_deposits: exportedDeposits,
+						download_type: 'endpoint',
+					} );
 				} catch {
 					createNotice(
 						'error',
@@ -322,14 +315,11 @@ export const DepositsList = (): JSX.Element => {
 				generateCSVDataFromTable( csvColumns, csvRows )
 			);
 
-			wcpayTracks.recordEvent(
-				wcpayTracks.events.DEPOSITS_DOWNLOAD_CSV_CLICK,
-				{
-					exported_deposits: rows.length,
-					total_deposits: depositsSummary.count,
-					download_type: 'browser',
-				}
-			);
+			wcpayTracks.recordEvent( 'wcpay_deposits_download', {
+				exported_deposits: rows.length,
+				total_deposits: depositsSummary.count,
+				download_type: 'browser',
+			} );
 		}
 
 		setIsDownloading( false );

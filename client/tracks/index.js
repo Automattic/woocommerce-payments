@@ -67,8 +67,6 @@ const events = {
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
 	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
-	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
-	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download',
 	DISPUTES_ROW_ACTION_CLICK: 'wcpay_disputes_row_action_click',
 	DISPUTE_CHALLENGE_CLICKED: 'wcpay_dispute_challenge_clicked',
 	DISPUTE_ACCEPT_CLICK: 'wcpay_dispute_accept_click',
