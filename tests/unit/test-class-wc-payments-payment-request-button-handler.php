@@ -110,13 +110,13 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
 		$this->express_checkout_helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->disableOriginalConstructor()
 			->setMethods(
 				[
 					'is_product',
 					'get_product',
 				]
 			)
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
 			->getMock();
 
 		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
@@ -530,17 +530,19 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		WC()->cart->calculate_totals();
 		$build_display_items_result = $this->express_checkout_helper->build_display_items( true );
 
-		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
-			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
-			->setMethods( [ 'is_product', 'get_product' ] )
-			->getMock();
-
-		$mock_pr->method( 'is_product' )
+		$this->express_checkout_helper
+			->method( 'is_product' )
 			->willReturn( true );
-		$mock_pr->method( 'get_product' )
+
+		$this->express_checkout_helper
+			->method( 'get_product' )
 			->willReturn( $this->simple_product );
 
-		$get_product_data_result = $mock_pr->get_product_data();
+		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
+			->getMock();
+
+		$get_product_data_result = $this->pr->get_product_data();
 
 		foreach ( $get_product_data_result['displayItems'] as $key => $display_item ) {
 			if ( isset( $display_item['pending'] ) ) {
