@@ -59,7 +59,6 @@ export interface InstantBalance {
 export interface Overview {
 	currency: string;
 	lastPaid: Deposit | undefined;
-	nextScheduled: Deposit | undefined;
 	pending: Balance | undefined;
 	available: Balance | undefined;
 	instant: InstantBalance | undefined;

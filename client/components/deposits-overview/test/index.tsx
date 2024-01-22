@@ -117,19 +117,6 @@ const createMockOverview = (
 			fee_percentage: 0,
 			status: 'paid',
 		},
-		nextScheduled: {
-			id: '456',
-			type: 'deposit',
-			amount: depositAmount,
-			automatic: true,
-			currency: currencyCode,
-			bankAccount: null,
-			created: Date.now(),
-			date: depositDate,
-			fee: 0,
-			fee_percentage: 0,
-			status: depositStatus,
-		},
 		instant: {
 			currency: currencyCode,
 			amount: 0,
@@ -158,7 +145,6 @@ const createMockNewAccountOverview = (
 			source_types: [],
 		},
 		lastPaid: undefined,
-		nextScheduled: undefined,
 		instant: undefined,
 	};
 };
