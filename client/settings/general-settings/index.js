@@ -115,7 +115,7 @@ const GeneralSettings = () => {
 									mixedString: sprintf(
 										/* translators: %s: WooPayments */
 										__(
-											'{{b}}%1$s is in dev mode.{{/b}} You need to set up a live %1$s account before ' +
+											'{{b}}%1$s is in sandbox mode.{{/b}} You need to set up a live %1$s account before ' +
 												'you can accept real transactions. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 											'woocommerce-payments'
 										),
@@ -128,7 +128,7 @@ const GeneralSettings = () => {
 											<a
 												target="_blank"
 												rel="noreferrer"
-												href="https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/"
+												href="https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
 											/>
 										),
 									},

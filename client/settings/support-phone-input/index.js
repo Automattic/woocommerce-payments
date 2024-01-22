@@ -51,7 +51,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 	let labelText = __( 'Support phone number', 'woocommerce-payments' );
 	if ( isDevModeEnabled ) {
 		labelText += __(
-			' (+1 0000000000 can be used in dev mode)',
+			' (+1 0000000000 can be used in sandbox mode)',
 			'woocommerce-payments'
 		);
 	}

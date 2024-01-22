@@ -59,13 +59,13 @@ This is a singular `WCPay\Core\Mode` object, accessible through `WC_Payments::mo
 
 During initialization, the following logic is used:
 
-1. Dev mode would be entered if:
+1. Sandbox mode would be entered if:
     - Either [WordPress's environment type](https://developer.wordpress.org/reference/functions/wp_get_environment_type/#description) is either `development` or 		`staging`.
     - or `WCPAY_DEV_MODE` is defined and set to boolean true.
 2. Test mode is entered if:
-    - Either Dev mode is already enabled.
+    - Either Sandbox mode is already enabled.
     - or the gateway's test mode setting is on.
-3. If the gateway is neither in dev or test mode, live mode is entered.
+3. If the gateway is neither in sandbox or test mode, live mode is entered.
 
 To alter this behavior, you can use the `wcpay_dev_mode` and `wcpay_test_mode` filters, for example:
 
