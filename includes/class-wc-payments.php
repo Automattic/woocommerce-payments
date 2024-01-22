@@ -9,8 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Constants\Country_Code;
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
+use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
@@ -525,7 +527,7 @@ class WC_Payments {
 		foreach ( $payment_methods as $payment_method ) {
 			self::$payment_method_map[ $payment_method->get_id() ] = $payment_method;
 
-			$split_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service );
+			$split_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::get_account_country() );
 
 			// Card gateway hooks are registered once below.
 			if ( 'card' !== $payment_method->get_id() ) {
@@ -1784,5 +1786,25 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ( class_exists( 'WC_Subscriptions' ) || ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) ) {
 			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
 		}
+	}
+
+	/**
+	 * Gets connected account country. Very often this will be cached.
+	 * The only cases when it won't be cached are when the plugin has just been updated or
+	 * when the devtools is used to clear the cache.
+	 *
+	 * @param string $default_value Value to return when not connected or fails to fetch account details. Default is US.
+	 *
+	 * @return string code of the country.
+	 */
+	private static function get_account_country( string $default_value = Country_Code::UNITED_STATES ): string {
+		try {
+			if ( self::$account->is_stripe_connected() ) {
+				return self::$account->get_account_country() ?? $default_value;
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account country.' . $e );
+		}
+		return $default_value;
 	}
 }

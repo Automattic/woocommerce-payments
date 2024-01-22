@@ -224,6 +224,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $stripe_id;
 
 	/**
+	 * Account country.
+	 *
+	 * @var string
+	 */
+	protected $account_country;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client                  - WooCommerce Payments API client.
@@ -238,6 +245,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
 	 * @param WC_Payments_Localization_Service     $localization_service                 - Localization service instance.
 	 * @param WC_Payments_Fraud_Service            $fraud_service                        - Fraud service instance.
+	 * @param string                               $account_country                      - Account country.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -251,7 +259,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Order_Service $order_service,
 		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service,
 		WC_Payments_Localization_Service $localization_service,
-		WC_Payments_Fraud_Service $fraud_service
+		WC_Payments_Fraud_Service $fraud_service,
+		string $account_country = Country_Code::UNITED_STATES
 	) {
 		$this->payment_methods = $payment_methods;
 		$this->payment_method  = $payment_method;
@@ -267,8 +276,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->duplicate_payment_prevention_service = $duplicate_payment_prevention_service;
 		$this->localization_service                 = $localization_service;
 		$this->fraud_service                        = $fraud_service;
+		$this->account_country                      = $account_country;
 
-		$account_country          = $this->get_account_country();
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = $payment_method->get_icon( $account_country );
 		$this->has_fields         = true;
@@ -2875,19 +2884,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Gets connected account country.
 	 *
-	 * @param string $default_value Value to return when not connected or fails to fetch account details. Default is US.
-	 *
 	 * @return string code of the country.
 	 */
-	public function get_account_country( string $default_value = Country_Code::UNITED_STATES ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_account_country() ?? $default_value;
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account country.' . $e );
-		}
-		return $default_value;
+	public function get_account_country(): string {
+		return $this->account_country;
 	}
 
 	/**
