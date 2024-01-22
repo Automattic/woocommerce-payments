@@ -70,7 +70,7 @@ const getDepositTimelineItem = (
 	body = []
 ) => {
 	let headline = '';
-	if ( event.deposit && ! event.deposit.id.includes( 'wcpay_estimated_' ) ) {
+	if ( event.deposit ) {
 		headline = sprintf(
 			isPositive
 				? // translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
@@ -135,7 +135,7 @@ const getDepositTimelineItem = (
  */
 const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 	let headline = '';
-	if ( event.deposit && ! event.deposit.id.includes( 'wcpay_estimated_' ) ) {
+	if ( event.deposit ) {
 		headline = sprintf(
 			// translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
 			__(
