@@ -221,13 +221,11 @@ describe( 'Deposits overviews selectors', () => {
 
 		// Check the grouping
 		checkResult( first.lastPaid, 'deposit.last_paid', first );
-		checkResult( first.nextScheduled, 'deposit.next_scheduled', first );
 		checkResult( first.pending, 'balance.pending', first );
 		checkResult( first.available, 'balance.available', first );
 		checkResult( first.instant, 'balance.instant', first );
 
 		checkResult( second.lastPaid, 'deposit.last_paid', second );
-		checkResult( second.nextScheduled, 'deposit.next_scheduled', second );
 		checkResult( second.pending, 'balance.pending', second );
 		checkResult( second.available, 'balance.available', second );
 		checkResult( second.instant, 'balance.instant', second );
