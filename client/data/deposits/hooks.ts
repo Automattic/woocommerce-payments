@@ -191,12 +191,6 @@ export const useDepositsSummary = ( {
 	status_is: statusIs,
 	status_is_not: statusIsNot,
 }: Query ): DepositsSummaryCache => {
-	// Temporarily default to excluding estimated deposits.
-	// Client components can (temporarily) opt-in by passing `status_is=estimated`.
-	// When we remove estimated deposits from server / APIs we can remove this default.
-	if ( ! statusIsNot && statusIs !== 'estimated' ) {
-		statusIsNot = 'estimated';
-	}
 	return useSelect(
 		( select ) => {
 			const { getDepositsSummary, isResolving } = select( STORE_NAME );
