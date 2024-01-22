@@ -68,11 +68,11 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns payment method title.
 	 *
-	 * @param string      $account_country Country of merchants account.
+	 * @param string|null $account_country Country of merchants account.
 	 * @param array|false $payment_details Optional payment details from charge object.
 	 * @return string|null
 	 */
-	public function get_title( string $account_country, $payment_details = false ) {
+	public function get_title( string $account_country = null, $payment_details = false ) {
 		if ( 'GB' === $account_country ) {
 			return __( 'Clearpay', 'woocommerce-payments' );
 		}
@@ -83,10 +83,10 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns payment method icon.
 	 *
-	 * @param string $account_country Country of merchants account.
+	 * @param string|null $account_country Country of merchants account.
 	 * @return string|null
 	 */
-	public function get_icon( string $account_country ) {
+	public function get_icon( string $account_country = null ) {
 		if ( 'GB' === $account_country ) {
 			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
 		}

@@ -268,14 +268,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->localization_service                 = $localization_service;
 		$this->fraud_service                        = $fraud_service;
 
-		$account_country          = $this->get_account_country();
 		$this->id                 = static::GATEWAY_ID;
-		$this->icon               = $payment_method->get_icon( $account_country );
+		$this->icon               = $payment_method->get_icon();
 		$this->has_fields         = true;
 		$this->method_title       = 'WooPayments';
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 
-		$this->title       = $payment_method->get_title( $account_country );
+		$this->title       = $payment_method->get_title();
 		$this->description = '';
 		$this->supports    = [
 			'products',
@@ -498,6 +497,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	public function init_hooks() {
+		add_action( 'init', [ $this, 'update_properties_with_country' ] );
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
@@ -525,6 +525,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$this->maybe_init_subscriptions_hooks();
+	}
+
+	/**
+	 * Updates icon and title using the account country.
+	 * This method runs on init is not in the controller because get_account_country might
+	 * make a request to the API if the account data is not cached.
+	 *
+	 * @return void
+	 */
+	public function update_properties_with_country(): void {
+		$account_country = $this->get_account_country();
+		$this->icon      = $this->payment_method->get_icon( $account_country );
+		$this->title     = $this->payment_method->get_title( $account_country );
 	}
 
 	/**
