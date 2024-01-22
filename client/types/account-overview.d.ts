@@ -30,7 +30,6 @@ export interface Account {
 export interface Balance {
 	amount: number;
 	currency: string;
-	deposits_count?: number;
 	source_types: Record< string, never >[];
 }
 
