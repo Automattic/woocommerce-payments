@@ -400,8 +400,6 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/summary \
 
 Fetches a deposit by ID.
 
-_Since `7.1.0`, `estimated` deposits are no longer returned and will return a `404` status code._
-
 ### HTTP request
 
 <div class="api-endpoint">
@@ -415,7 +413,7 @@ _Since `7.1.0`, `estimated` deposits are no longer returned and will return a `4
 
 If a deposit is found for the provided ID, the response will return a [**Deposit**](#deposit-object) object.
 
-If no deposit is found for the provided ID, the response will return a `404` status code.
+If no deposit is found for the provided ID, the response will return a `500` status code.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
