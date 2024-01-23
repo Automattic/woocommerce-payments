@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
 
@@ -388,7 +389,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		// Japan accounts require Japanese phone numbers.
-		if ( 'JP' === $this->account->get_account_country() ) {
+		if ( Country_Code::JAPAN === $this->account->get_account_country() ) {
 			if ( '+81' !== substr( $value, 0, 3 ) ) {
 				return new WP_Error(
 					'rest_invalid_pattern',
@@ -676,7 +677,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	private function update_is_test_mode_enabled( WP_REST_Request $request ) {
-		// avoiding updating test mode when dev mode is enabled.
+		// Avoid updating test mode when dev mode is enabled.
 		if ( WC_Payments::mode()->is_dev() ) {
 			return;
 		}
@@ -696,7 +697,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	private function update_is_debug_log_enabled( WP_REST_Request $request ) {
-		// avoiding updating test mode when dev mode is enabled.
+		// Avoid updating test mode when dev mode is enabled.
 		if ( WC_Payments::mode()->is_dev() ) {
 			return;
 		}

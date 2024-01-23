@@ -414,6 +414,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-fraud-ruleset-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
+		include_once __DIR__ . '/constants/class-country-code.php';
 		include_once __DIR__ . '/constants/class-fraud-meta-box-type.php';
 		include_once __DIR__ . '/constants/class-order-mode.php';
 		include_once __DIR__ . '/constants/class-order-status.php';
@@ -1357,7 +1358,7 @@ class WC_Payments {
 							'WooPayments'
 						),
 						[
-							'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+							'a1' => '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">',
 						]
 					)
 					?>
@@ -1723,10 +1724,10 @@ class WC_Payments {
 					$notice,
 					'WooCommerce',
 					'WooPayments',
-					WC_VERSION
+					esc_html( WC_VERSION )
 				),
 				[
-					'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+					'a1' => '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">',
 				]
 			)
 			?>
