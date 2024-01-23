@@ -678,7 +678,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				// Defaults to 'required' to match how core initializes this option.
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
-			'button'             => $this->get_button_settings(),
+			'button'             => $this->express_checkout_helper->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
 			'is_product_page'    => $this->express_checkout_helper->is_product(),
 			'button_context'     => $this->express_checkout_helper->get_button_context(),
@@ -1396,23 +1396,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return $value;
-	}
-
-	/**
-	 * The settings for the `button` attribute - they depend on the "grouped settings" flag value.
-	 *
-	 * @return array
-	 */
-	public function get_button_settings() {
-		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
-		return [
-			'type'         => $button_type,
-			'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
-			'height'       => $this->express_checkout_helper->get_button_height(),
-			// Default format is en_US.
-			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
-			'branded_type' => 'default' === $button_type ? 'short' : 'long',
-		];
 	}
 
 	/**

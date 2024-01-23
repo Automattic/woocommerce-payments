@@ -295,6 +295,23 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * The settings for the `button` attribute - they depend on the "grouped settings" flag value.
+	 *
+	 * @return array
+	 */
+	public function get_button_settings() {
+		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
+		return [
+			'type'         => $button_type,
+			'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
+			'height'       => $this->get_button_height(),
+			// Default format is en_US.
+			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
+			'branded_type' => 'default' === $button_type ? 'short' : 'long',
+		];
+	}
+
+	/**
 	 * Gets the context for where the button is being displayed.
 	 *
 	 * @return string

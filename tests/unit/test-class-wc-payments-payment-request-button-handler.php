@@ -114,6 +114,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 				[
 					'is_product',
 					'get_product',
+					'get_button_settings',
 				]
 			)
 			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
@@ -313,22 +314,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		$this->assertEquals( 'success', $data['result'] );
 		$this->assertEquals( $expected_shipping_options, $data['shipping_options'], 'Shipping options mismatch' );
-	}
-
-	public function test_get_button_settings() {
-		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
-		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
-
-		$this->assertEquals(
-			[
-				'type'         => 'buy',
-				'theme'        => 'dark',
-				'height'       => '48',
-				'locale'       => 'en',
-				'branded_type' => 'long',
-			],
-			$this->pr->get_button_settings()
-		);
 	}
 
 	public function test_multiple_packages_in_cart_not_allowed() {
