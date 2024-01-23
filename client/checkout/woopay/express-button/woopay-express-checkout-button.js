@@ -302,7 +302,7 @@ export const WoopayExpressCheckoutButton = ( {
 							} )
 							.catch( () => {
 								const errorMessage = __(
-									'Something went wrong. Please reload this page and try again.',
+									'Something went wrong. Please refresh the page and try again.',
 									'woocommerce-payments'
 								);
 								showErrorMessage( context, errorMessage );
@@ -341,7 +341,7 @@ export const WoopayExpressCheckoutButton = ( {
 						} )
 						?.catch( () => {
 							const errorMessage = __(
-								'Something went wrong. Please reload this page and try again.',
+								'Something went wrong. Please refresh the page and try again.',
 								'woocommerce-payments'
 							);
 							showErrorMessage( context, errorMessage );
