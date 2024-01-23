@@ -12,6 +12,7 @@ import {
 	formatAccountFeesDescription,
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
+	formatMethodMinimalFee,
 	getCurrentBaseFee,
 } from '../account-fees';
 import { formatCurrency } from '../currency';
@@ -69,6 +70,41 @@ const mockAccountFees = (
 };
 
 describe( 'Account fees utility functions', () => {
+	describe( 'formatMethodMinimalFee()', () => {
+		it( 'formats base fee with both fixed and percentage parts', () => {
+			const accountFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
+			expect( formatMethodMinimalFee( accountFees ) ).toEqual(
+				'From 12.3% + $4.57'
+			);
+		} );
+
+		it( 'formats base fee with only fixed part', () => {
+			const accountFees = mockAccountFees( {
+				percentage_rate: 0,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
+			expect( formatMethodMinimalFee( accountFees ) ).toEqual(
+				'From $4.57'
+			);
+		} );
+
+		it( 'formats base fee with only percentage part', () => {
+			const accountFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 0,
+				currency: 'USD',
+			} );
+			expect( formatMethodMinimalFee( accountFees ) ).toEqual(
+				'From 12.3%'
+			);
+		} );
+	} );
+
 	describe( 'getCurrentBaseFee()', () => {
 		it( 'returns first discount regardless of amount', () => {
 			const accountFees = mockAccountFees(
