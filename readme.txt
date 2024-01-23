@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 7.1.0 - 2024-01-24 =
+= 7.1.0 - 2023-01-24 =
 * Add - Add active plugins array to compatibility data.
 * Add - Add post_types and their counts as an array to compatibility data.
 * Add - Add the active theme name of the blog to the compatibility service
@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Allow zero-amount refunds for backwards compatibility with basic payment gateway and to allow re-stock of refunded orders.
 * Fix - Checking if wcpayPaymentRequestPayForOrderParams before using it in Pay for Order page
 * Fix - Checkout error when page URL is too long
+* Fix - Comment: Fix QIT security tests errors.
 * Fix - Fix incorrect test mode notice when left KYC early after going live from builder mode
 * Fix - Fix network error that occurs when viewing an test mode order with test mode disabled, and vice versa.
 * Fix - fix pay-for-order quirks and 3DS behavior
