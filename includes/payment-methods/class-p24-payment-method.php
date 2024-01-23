@@ -8,6 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
+use WCPay\Constants\Country_Code;
 
 /**
  * P24 Payment Method class extending UPE base class
@@ -28,6 +29,7 @@ class P24_Payment_Method extends UPE_Payment_Method {
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR', 'PLN' ];
 		$this->icon_url    = plugins_url( 'assets/images/payment-methods/p24.svg', WCPAY_PLUGIN_FILE );
+		$this->countries   = [ Country_Code::POLAND ];
 	}
 
 	/**
