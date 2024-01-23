@@ -1358,7 +1358,7 @@ class WC_Payments {
 							'WooPayments'
 						),
 						[
-							'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+							'a1' => '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">',
 						]
 					)
 					?>
@@ -1724,10 +1724,10 @@ class WC_Payments {
 					$notice,
 					'WooCommerce',
 					'WooPayments',
-					WC_VERSION
+					esc_html( WC_VERSION )
 				),
 				[
-					'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+					'a1' => '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">',
 				]
 			)
 			?>
