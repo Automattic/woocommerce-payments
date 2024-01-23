@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+chore: deprecate is_account_partially_onboarded, get_transaction_url, get_settings_url gateway methods.

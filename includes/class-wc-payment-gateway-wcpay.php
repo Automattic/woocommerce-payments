@@ -679,6 +679,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_account_partially_onboarded(): bool {
+		wc_deprecated_function( __FUNCTION__, '7.1.0' );
 		return $this->account->is_stripe_connected() && ! $this->account->is_details_submitted();
 	}
 
@@ -3742,6 +3743,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_transaction_url( $order ) {
+		wc_deprecated_function( __FUNCTION__, '7.1.0', 'WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id )' );
 		$intent_id = $this->order_service->get_intent_id_for_order( $order );
 		$charge_id = $this->order_service->get_charge_id_for_order( $order );
 
@@ -4230,6 +4232,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
+		wc_deprecated_function( __FUNCTION__, '7.1.0', 'WC_Payments_Admin_Settings::get_settings_url()' );
 		return WC_Payments_Admin_Settings::get_settings_url();
 	}
 
