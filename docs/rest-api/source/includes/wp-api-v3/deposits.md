@@ -354,8 +354,6 @@ Fetches a summary of deposits matching the query. This includes the total number
 
 Useful in combination with the **List deposits** endpoint to get a summary of deposits matching the query without having to fetch the full list of deposits.
 
-Since `7.1.0`, `estimated` deposits are no longer returned or accepted as a filter parameter.
-
 ### HTTP request
 
 <div class="api-endpoint">
@@ -372,8 +370,8 @@ Since `7.1.0`, `estimated` deposits are no longer returned or accepted as a filt
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
--   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed`
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed`
 
 ### Returns
 
