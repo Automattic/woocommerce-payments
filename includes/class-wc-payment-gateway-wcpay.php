@@ -601,7 +601,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Gets payment method settings to pass to client scripts
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @deprecated 5.0.0
 	 *
@@ -673,7 +672,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
 	 * Also used by WC Core to complete the task "Set up WooPayments".
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return bool
 	 */
@@ -2341,7 +2339,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Overrides the original method in woo's WC_Settings_API in order to conditionally render the enabled checkbox.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @param string $key Field key.
 	 * @param array  $data Field data.
@@ -2370,7 +2367,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Generates markup for account statement descriptor field.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @param string $key Field key.
 	 * @param array  $data Field data.
@@ -3680,7 +3676,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Add a url to the admin order page that links directly to the transactions detail view.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @since 1.4.0
 	 *
@@ -3980,7 +3975,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Text provided to users during onboarding setup.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return string
 	 */
@@ -3990,7 +3984,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Get the connection URL.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return string Connection URL.
 	 */
@@ -4175,7 +4168,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return string URL of the configuration screen for this gateway
 	 */
@@ -4196,7 +4188,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * This function wraps WC_Payments::get_payment_method_map, useful for unit testing.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return array Array of UPE_Payment_Method instances.
 	 */
@@ -4206,7 +4197,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Returns the payment methods for this gateway.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return array|UPE_Payment_Method[]
 	 */
@@ -4254,7 +4244,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Get the right method description if WooPay is eligible.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @return string
 	 */
@@ -4325,7 +4314,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Whether the current page is the WooPayments settings page.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @deprecated 5.0.0
 	 *
@@ -4356,8 +4344,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Customer data is retrieved from order when on Pay for Order.
 	 * Customer data is retrieved from customer when on 'Add Payment Method'.
 	 *
-	 * TODO: ~FR: is this used anywhere?
-	 *
 	 * @deprecated use WC_Payments_Customer_Service::get_prepared_customer_data() instead.
 	 *
 	 * @return array|null An array with customer data or nothing.
@@ -4371,7 +4357,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Determine if current payment method is a platform payment method.
-	 * TODO: ~FR: is this used anywhere?
 	 *
 	 * @param boolean $is_using_saved_payment_method If it is using saved payment method.
 	 *
