@@ -679,7 +679,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_account_partially_onboarded(): bool {
-		return $this->account->is_account_partially_onboarded();
+		return $this->account->is_stripe_connected() && ! $this->account->is_details_submitted();
 	}
 
 	/**
@@ -2338,50 +2338,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $payment_method_details['type'] ?? 'unknown';
-	}
-
-	/**
-	 * Overrides the original method in woo's WC_Settings_API in order to conditionally render the enabled checkbox.
-	 *
-	 * @param string $key Field key.
-	 * @param array  $data Field data.
-	 *
-	 * @return string Checkbox markup or empty string.
-	 */
-	public function generate_checkbox_html( $key, $data ) {
-		if ( 'enabled' === $key && ! $this->is_connected() ) {
-			return '';
-		}
-
-		$in_dev_mode = WC_Payments::mode()->is_dev();
-
-		if ( 'test_mode' === $key && $in_dev_mode ) {
-			$data['custom_attributes']['disabled'] = 'disabled';
-			$data['label']                         = __( 'Dev mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
-		}
-
-		if ( 'enable_logging' === $key && $in_dev_mode ) {
-			$data['custom_attributes']['disabled'] = 'disabled';
-			$data['label']                         = __( 'Dev mode is active so logging is on by default.', 'woocommerce-payments' );
-		}
-
-		return parent::generate_checkbox_html( $key, $data );
-	}
-
-	/**
-	 * Generates markup for account statement descriptor field.
-	 *
-	 * @param string $key Field key.
-	 * @param array  $data Field data.
-	 *
-	 * @return string
-	 */
-	public function generate_account_statement_descriptor_html( $key, $data ) {
-		if ( ! $this->is_connected() ) {
-			return '';
-		}
-
-		return parent::generate_text_html( $key, $data );
 	}
 
 	/**
