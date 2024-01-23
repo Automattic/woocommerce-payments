@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Format fee descriptions for iDeal payment method without percentage rate
