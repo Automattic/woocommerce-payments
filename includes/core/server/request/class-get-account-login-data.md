@@ -5,7 +5,7 @@
 ## Description
 
 The `WCPay\Core\Server\Request\Get_Account_Login_Data` class is used to construct the request for getting one-time dashboard login url.
-Note that this request sends the test_mode flag only when the site is in the dev mode.
+Note that this request sends the test_mode flag only when the site is in sandbox mode.
 
 ## Parameters
 

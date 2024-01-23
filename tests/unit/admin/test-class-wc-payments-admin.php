@@ -134,19 +134,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	/**
-	 * @dataProvider feature_flag_combinations_not_causing_settings_badge_render_provider
-	 *
-	 * @param bool $is_upe_settings_preview_enabled
-	 * @param bool $is_upe_enabled
-	 */
-	public function test_it_does_not_render_settings_badge( $is_upe_settings_preview_enabled, $is_upe_enabled ) {
+	public function test_it_does_not_render_settings_badge(): void {
 		global $submenu;
 
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_account_fully_onboarded' )->willReturn( true );
+		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
@@ -161,7 +155,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_account_fully_onboarded' )->willReturn( true );
+		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
@@ -180,7 +174,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		];
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_account_fully_onboarded' )->willReturn( true );
+		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->mock_account->expects( $this->once() )->method( 'refresh_account_data' );
 		$this->payments_admin->add_payments_menu();
@@ -195,7 +189,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu without submenu items.
-		$this->mock_account->method( 'is_account_fully_onboarded' )->willReturn( false );
+		$this->mock_account->method( 'is_details_submitted' )->willReturn( false );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( false );
 		update_option( 'wcpay_activation_timestamp', time() - ( 3 * DAY_IN_SECONDS ) );
 		$this->payments_admin->add_payments_menu();
@@ -210,7 +204,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu without submenu items.
-		$this->mock_account->method( 'is_account_fully_onboarded' )->willReturn( false );
+		$this->mock_account->method( 'is_details_submitted' )->willReturn( false );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( false );
 		update_option( 'wcpay_menu_badge_hidden', 'no' );
 		update_option( 'wcpay_activation_timestamp', time() - ( DAY_IN_SECONDS * 2 ) );
@@ -219,15 +213,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
 		$this->assertEquals( 'Payments', $item_names_by_urls['wc-admin&path=/payments/connect'] );
 		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
-	}
-
-	public function feature_flag_combinations_not_causing_settings_badge_render_provider() {
-		return [
-			[ false, false ],
-			[ false, true ],
-			[ true, false ],
-			[ true, true ],
-		];
 	}
 
 	private function mock_current_user_is_admin() {
@@ -514,7 +499,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_account_fully_onboarded' )->willReturn( true );
+		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
@@ -556,7 +541,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_account_fully_onboarded' )->willReturn( true );
+		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
@@ -600,7 +585,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_account_fully_onboarded' )->willReturn( true );
+		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
@@ -646,7 +631,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_account_fully_onboarded' )->willReturn( true );
+		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
