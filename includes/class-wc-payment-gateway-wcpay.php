@@ -4300,50 +4300,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return WC_Payments::get_payment_method_by_id( $payment_method_id );
 	}
 
-	/**
-	 * Get the right method description if WooPay is eligible.
-	 *
-	 * @return string
-	 */
-	public function get_method_description() {
-		$description_links = [
-			'br'                   => '<br/>',
-			'tosLink'              => '<a href="https://wordpress.com/tos/" target="_blank" rel="noopener noreferrer">',
-			'privacyLink'          => '<a href="https://automattic.com/privacy/" target="_blank" rel="noopener noreferrer">',
-			'woopayMechantTosLink' => '<a href="https://wordpress.com/tos/#more-woopay-specifically" target="_blank" rel="noopener noreferrer">',
-		];
-
-		$description = WC_Payments_Utils::esc_interpolated_html(
-			sprintf(
-				/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
-				__(
-					'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
-			By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-					'woocommerce-payments'
-				),
-				'WooPayments'
-			),
-			$description_links
-		);
-
-		if ( WooPay_Utilities::is_store_country_available() ) {
-			$description = WC_Payments_Utils::esc_interpolated_html(
-				sprintf(
-					/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, woopayMechantTosLink: Link to WooPay merchant terms, privacyLink: Link to privacy policy page */
-					__(
-						'Payments made simple — including WooPay, a new express checkout feature.<br/><br/>
-				By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink> (including WooPay <woopayMechantTosLink>merchant terms</woopayMechantTosLink>) and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-						'woocommerce-payments'
-					),
-					'WooPayments'
-				),
-				$description_links
-			);
-		}
-
-		return $description;
-	}
-
 	// Start: Deprecated functions.
 
 	/**
@@ -4412,31 +4368,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	// End: Deprecated functions.
-
-	/**
-	 * Determine if current payment method is a platform payment method.
-	 *
-	 * @param boolean $is_using_saved_payment_method If it is using saved payment method.
-	 *
-	 * @return boolean True if it is a platform payment method.
-	 */
-	private function is_platform_payment_method( bool $is_using_saved_payment_method ) {
-		// Return false for express checkout method.
-		if ( isset( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return false;
-		}
-
-		// Make sure the payment method being charged was created in the platform.
-		if (
-			! $is_using_saved_payment_method &&
-			$this->should_use_stripe_platform_on_checkout_page()
-		) {
-			// This payment method was created under the platform account.
-			return true;
-		}
-
-		return false;
-	}
 
 	/**
 	 * Determine whether redirection is needed for the non-card UPE payment method.
