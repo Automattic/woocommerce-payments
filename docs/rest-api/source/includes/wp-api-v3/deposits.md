@@ -469,8 +469,6 @@ curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
 
 Request a CSV export of deposits matching the query. A link to the exported CSV will be emailed to the provided email address or the account's primary email address if no email address is provided.
 
-Since `7.1.0`, `estimated` deposits are no longer included in the CSV export or accepted as a filter parameter.
-
 ### HTTP request
 
 <div class="api-endpoint">
@@ -491,8 +489,8 @@ Since `7.1.0`, `estimated` deposits are no longer included in the CSV export or 
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
--   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` (~~`estimated`~~ deprecated since `7.1.0`)
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed`
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed`
 
 ### Returns
 
