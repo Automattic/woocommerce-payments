@@ -676,6 +676,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
 	 * Also used by WC Core to complete the task "Set up WooPayments".
 	 *
+	 * @deprecated 7.1.0
+	 *
 	 * @return bool
 	 */
 	public function is_account_partially_onboarded(): bool {
@@ -3738,6 +3740,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Add a url to the admin order page that links directly to the transactions detail view.
 	 *
 	 * @since 1.4.0
+	 * @deprecated 7.1.0
 	 *
 	 * @param WC_Order $order The context passed into this function when the user view the order details page in WordPress admin.
 	 * @return string
@@ -4228,6 +4231,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 *
+	 * @deprecated 7.1.0
 	 *
 	 * @return string URL of the configuration screen for this gateway
 	 */
