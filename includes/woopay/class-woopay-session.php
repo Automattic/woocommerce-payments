@@ -547,7 +547,7 @@ class WooPay_Session {
 		if ( empty( $blog_id ) ) {
 			wp_send_json_error(
 				__( 'Could not determine the blog ID.', 'woocommerce-payments' ),
-				500
+				503
 			);
 		}
 
