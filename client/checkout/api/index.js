@@ -279,20 +279,9 @@ export default class WCPayAPI {
 			);
 		};
 
-		const confirmAction = confirmPaymentOrSetup();
-
-		const request = confirmAction
+		const request = confirmPaymentOrSetup()
 			// ToDo: Switch to an async function once it works with webpack.
 			.then( ( result ) => {
-				const intentId =
-					( result.paymentIntent && result.paymentIntent.id ) ||
-					( result.setupIntent && result.setupIntent.id ) ||
-					( result.error &&
-						result.error.payment_intent &&
-						result.error.payment_intent.id ) ||
-					( result.error.setup_intent &&
-						result.error.setup_intent.id );
-
 				if ( ! orderIdPartials ) {
 					console.log( '### reached here', result );
 					return [
@@ -307,7 +296,16 @@ export default class WCPayAPI {
 					getPaymentRequestData( 'ajax_url' ) ??
 					getConfig( 'ajaxUrl' );
 
-				const ajaxCall = this.request( ajaxUrl, {
+				const intentId =
+					( result.paymentIntent && result.paymentIntent.id ) ||
+					( result.setupIntent && result.setupIntent.id ) ||
+					( result.error &&
+						result.error.payment_intent &&
+						result.error.payment_intent.id ) ||
+					( result.error.setup_intent &&
+						result.error.setup_intent.id );
+
+				const orderUpdateCall = this.request( ajaxUrl, {
 					action: 'update_order_status',
 					order_id: orderId,
 					// Update the current order status nonce with the new one to ensure that the update
@@ -317,7 +315,7 @@ export default class WCPayAPI {
 					payment_method_id: paymentMethodToSave || null,
 				} );
 
-				return [ ajaxCall, result.error ];
+				return [ orderUpdateCall, result.error ];
 			} )
 			.then( ( [ verificationCall, originalError ] ) => {
 				debugger;
