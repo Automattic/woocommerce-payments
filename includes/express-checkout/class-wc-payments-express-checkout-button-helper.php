@@ -308,6 +308,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			// Default format is en_US.
 			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
 			'branded_type' => 'default' === $button_type ? 'short' : 'long',
+			'size'         => $this->gateway->get_option( 'payment_request_button_size' ),
+			'context'      => $this->get_button_context(),
 		];
 	}
 

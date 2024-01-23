@@ -52,7 +52,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			)
 			->setMethods(
 				[
-					'is_checkout',
+					'is_product',
 				]
 			)
 			->getMock();
@@ -108,6 +108,10 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_get_button_settings() {
+		$this->mock_express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
 		$this->assertEquals(
 			[
 				'type'         => 'buy',
@@ -115,6 +119,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 				'height'       => '48',
 				'locale'       => 'en',
 				'branded_type' => 'long',
+				'size'         => 'medium',
+				'context'      => 'product',
 			],
 			$this->mock_express_checkout_helper->get_button_settings()
 		);
@@ -137,5 +143,30 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_excl' ] ); // reset in tear_down.
 
 		$this->assertFalse( $this->mock_express_checkout_helper->cart_prices_include_tax() );
+	}
+
+	public function test_get_total_label() {
+		$this->mock_wcpay_account->method( 'get_statement_descriptor' )
+			->willReturn( 'Google Pay' );
+
+		$result = $this->mock_express_checkout_helper->get_total_label();
+
+		$this->assertEquals( 'Google Pay (via WooCommerce)', $result );
+	}
+
+	public function test_get_total_label_with_filter() {
+		$this->mock_wcpay_account->method( 'get_statement_descriptor' )
+			->willReturn( 'Google Pay' );
+
+		add_filter(
+			'wcpay_payment_request_total_label_suffix',
+			function() {
+				return ' (via WooPayments)';
+			}
+		);
+
+		$result = $this->mock_express_checkout_helper->get_total_label();
+
+		$this->assertEquals( 'Google Pay (via WooPayments)', $result );
 	}
 }
