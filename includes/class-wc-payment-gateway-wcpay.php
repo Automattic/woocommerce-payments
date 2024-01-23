@@ -603,19 +603,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Gets payment method settings to pass to client scripts
-	 *
-	 * @deprecated 5.0.0
-	 *
-	 * @return array
-	 */
-	private function get_enabled_payment_method_config() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Checkout::get_enabled_payment_method_config' );
-		return WC_Payments::get_wc_payments_checkout()->get_enabled_payment_method_config();
-	}
-
-
-	/**
 	 * If we're in a WooPay preflight check, remove all the checkout order processed
 	 * actions to prevent reduce available resources quantity.
 	 *
@@ -670,16 +657,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function is_connected() {
 		return $this->account->is_stripe_connected();
-	}
-
-	/**
-	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
-	 * Also used by WC Core to complete the task "Set up WooPayments".
-	 *
-	 * @return bool
-	 */
-	public function is_account_partially_onboarded(): bool {
-		return $this->account->is_stripe_connected() && ! $this->account->is_details_submitted();
 	}
 
 	/**
@@ -3734,21 +3711,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Add a url to the admin order page that links directly to the transactions detail view.
-	 *
-	 * @since 1.4.0
-	 *
-	 * @param WC_Order $order The context passed into this function when the user view the order details page in WordPress admin.
-	 * @return string
-	 */
-	public function get_transaction_url( $order ) {
-		$intent_id = $this->order_service->get_intent_id_for_order( $order );
-		$charge_id = $this->order_service->get_charge_id_for_order( $order );
-
-		return WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-	}
-
-	/**
 	 * Returns a formatted token list for a user.
 	 *
 	 * @param int $user_id The user ID.
@@ -3876,7 +3838,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_selected_stripe_payment_type_id() {
 		return $this->stripe_id;
 	}
-
 
 	/**
 	 * Returns the list of enabled payment method types that will function with the current checkout.
@@ -4029,31 +3990,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function clear_upe_appearance_transient() {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
-	}
-
-
-	/**
-	 * Text provided to users during onboarding setup.
-	 *
-	 * @return string
-	 */
-	public function get_setup_help_text() {
-		return __( 'Next we’ll ask you to share a few details about your business to create your account.', 'woocommerce-payments' );
-	}
-
-	/**
-	 * Get the connection URL.
-	 *
-	 * @return string Connection URL.
-	 */
-	public function get_connection_url() {
-		$account_data = $this->account->get_cached_account_data();
-
-		// The onboarding is finished if account_id is set. `Set up` will be shown instead of `Connect`.
-		if ( isset( $account_data['account_id'] ) ) {
-			return '';
-		}
-		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
 	}
 
 	/**
@@ -4225,15 +4161,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 *
-	 * @return string URL of the configuration screen for this gateway
-	 */
-	public static function get_settings_url() {
-		return WC_Payments_Admin_Settings::get_settings_url();
-	}
-
-	/**
 	 * Return the payment method type from the payment method details.
 	 *
 	 * @param array $payment_method_details Payment method details.
@@ -4243,7 +4170,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $payment_method_details['type'] ?? null;
 	}
 
-
 	/**
 	 * This function wraps WC_Payments::get_payment_method_map, useful for unit testing.
 	 *
@@ -4251,15 +4177,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function wc_payments_get_payment_method_map() {
 		return WC_Payments::get_payment_method_map();
-	}
-
-	/**
-	 * Returns the payment methods for this gateway.
-	 *
-	 * @return array|UPE_Payment_Method[]
-	 */
-	public function get_payment_methods() {
-		return $this->payment_methods;
 	}
 
 	/**
@@ -4300,50 +4217,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return WC_Payments::get_payment_method_by_id( $payment_method_id );
 	}
 
-	/**
-	 * Get the right method description if WooPay is eligible.
-	 *
-	 * @return string
-	 */
-	public function get_method_description() {
-		$description_links = [
-			'br'                   => '<br/>',
-			'tosLink'              => '<a href="https://wordpress.com/tos/" target="_blank" rel="noopener noreferrer">',
-			'privacyLink'          => '<a href="https://automattic.com/privacy/" target="_blank" rel="noopener noreferrer">',
-			'woopayMechantTosLink' => '<a href="https://wordpress.com/tos/#more-woopay-specifically" target="_blank" rel="noopener noreferrer">',
-		];
-
-		$description = WC_Payments_Utils::esc_interpolated_html(
-			sprintf(
-				/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
-				__(
-					'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
-			By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-					'woocommerce-payments'
-				),
-				'WooPayments'
-			),
-			$description_links
-		);
-
-		if ( WooPay_Utilities::is_store_country_available() ) {
-			$description = WC_Payments_Utils::esc_interpolated_html(
-				sprintf(
-					/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, woopayMechantTosLink: Link to WooPay merchant terms, privacyLink: Link to privacy policy page */
-					__(
-						'Payments made simple — including WooPay, a new express checkout feature.<br/><br/>
-				By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink> (including WooPay <woopayMechantTosLink>merchant terms</woopayMechantTosLink>) and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-						'woocommerce-payments'
-					),
-					'WooPayments'
-				),
-				$description_links
-			);
-		}
-
-		return $description;
-	}
-
 	// Start: Deprecated functions.
 
 	/**
@@ -4370,73 +4243,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return WC_Payments::mode()->is_test();
 	}
 
-	/**
-	 * Whether the current page is the WooPayments settings page.
-	 *
-	 * @deprecated 5.0.0
-	 *
-	 * @return bool
-	 */
-	public static function is_current_page_settings() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Admin_Settings::is_current_page_settings' );
-		return WC_Payments_Admin_Settings::is_current_page_settings();
-	}
-
-	/**
-	 * Generates the configuration values, needed for payment fields.
-	 *
-	 * Isolated as a separate method in order to be available both
-	 * during the classic checkout, as well as the checkout block.
-	 *
-	 * @deprecated use WC_Payments_Checkout::get_payment_fields_js_config instead.
-	 *
-	 * @return array
-	 */
-	public function get_payment_fields_js_config() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Checkout::get_payment_fields_js_config' );
-		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-	}
-
-	/**
-	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
-	 * Customer data is retrieved from order when on Pay for Order.
-	 * Customer data is retrieved from customer when on 'Add Payment Method'.
-	 *
-	 * @deprecated use WC_Payments_Customer_Service::get_prepared_customer_data() instead.
-	 *
-	 * @return array|null An array with customer data or nothing.
-	 */
-	public function get_prepared_customer_data() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Customer_Service::get_prepared_customer_data' );
-		return WC_Payments::get_customer_service()->get_prepared_customer_data();
-	}
-
 	// End: Deprecated functions.
-
-	/**
-	 * Determine if current payment method is a platform payment method.
-	 *
-	 * @param boolean $is_using_saved_payment_method If it is using saved payment method.
-	 *
-	 * @return boolean True if it is a platform payment method.
-	 */
-	private function is_platform_payment_method( bool $is_using_saved_payment_method ) {
-		// Return false for express checkout method.
-		if ( isset( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return false;
-		}
-
-		// Make sure the payment method being charged was created in the platform.
-		if (
-			! $is_using_saved_payment_method &&
-			$this->should_use_stripe_platform_on_checkout_page()
-		) {
-			// This payment method was created under the platform account.
-			return true;
-		}
-
-		return false;
-	}
 
 	/**
 	 * Determine whether redirection is needed for the non-card UPE payment method.
