@@ -297,12 +297,14 @@ export const WoopayExpressCheckoutButton = ( {
 										getConfig( 'woopayHost' )
 									);
 								} else {
+									// Set button's default onClick handle to use modal checkout flow.
+									initWoopayRef.current = onClickFallback;
 									throw new Error( response?.data );
 								}
 							} )
 							.catch( () => {
 								const errorMessage = __(
-									'Something went wrong. Please refresh the page and try again.',
+									'Something went wrong. Please try again.',
 									'woocommerce-payments'
 								);
 								showErrorMessage( context, errorMessage );
@@ -336,12 +338,14 @@ export const WoopayExpressCheckoutButton = ( {
 									getConfig( 'woopayHost' )
 								);
 							} else {
+								// Set button's default onClick handle to use modal checkout flow.
+								initWoopayRef.current = onClickFallback;
 								throw new Error( response?.data );
 							}
 						} )
 						?.catch( () => {
 							const errorMessage = __(
-								'Something went wrong. Please refresh the page and try again.',
+								'Something went wrong. Please try again.',
 								'woocommerce-payments'
 							);
 							showErrorMessage( context, errorMessage );
