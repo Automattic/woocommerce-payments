@@ -1,6 +1,6 @@
 *** WooPayments Changelog ***
 
-= 7.1.0 - 2023-01-24 =
+= 7.1.0 - 2024-01-24 =
 * Add - Add active plugins array to compatibility data.
 * Add - Add post_types and their counts as an array to compatibility data.
 * Add - Add the active theme name of the blog to the compatibility service
