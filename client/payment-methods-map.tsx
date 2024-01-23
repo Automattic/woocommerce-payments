@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
 import {
 	AffirmIcon,
 	AfterpayIcon,
+	ClearpayIcon,
 	BancontactIcon,
 	BankDebitIcon,
 	CreditCardIcon,
@@ -22,6 +23,18 @@ import {
 	SepaIcon,
 	SofortIcon,
 } from 'wcpay/payment-methods-icons';
+
+declare global {
+	interface Window {
+		wcpaySettings: {
+			accountStatus: {
+				country: string;
+			};
+		};
+	}
+}
+
+const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
 
 export interface PaymentMethodMapEntry {
 	id: string;
@@ -208,16 +221,29 @@ const PaymentMethodInformationObject: Record<
 	},
 	afterpay_clearpay: {
 		id: 'afterpay_clearpay',
-		label: __( 'Afterpay', 'woocommerce-payments' ),
+		label:
+			'GB' === accountCountry
+				? __( 'Clearpay', 'woocommerce-payments' )
+				: __( 'Afterpay', 'woocommerce-payments' ),
 		brandTitles: {
-			afterpay_clearpay: __( 'Afterpay', 'woocommerce-payments' ),
+			afterpay_clearpay:
+				'GB' === accountCountry
+					? __( 'Clearpay', 'woocommerce-payments' )
+					: __( 'Afterpay', 'woocommerce-payments' ),
 		},
-		description: __(
-			// translators: %s is the store currency.
-			'Allow customers to pay over time with Afterpay. Available to all customers paying in %s.',
-			'woocommerce-payments'
-		),
-		icon: AfterpayIcon,
+		description:
+			'GB' === accountCountry
+				? __(
+						// translators: %s is the store currency.
+						'Allow customers to pay over time with Clearpay. Available to all customers paying in %s.',
+						'woocommerce-payments'
+				  )
+				: __(
+						// translators: %s is the store currency.
+						'Allow customers to pay over time with Afterpay. Available to all customers paying in %s.',
+						'woocommerce-payments'
+				  ),
+		icon: 'GB' === accountCountry ? ClearpayIcon : AfterpayIcon,
 		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP', 'EUR' ],
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,

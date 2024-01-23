@@ -497,6 +497,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	public function init_hooks() {
+		add_action( 'init', [ $this, 'maybe_update_properties_with_country' ] );
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
@@ -524,6 +525,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$this->maybe_init_subscriptions_hooks();
+	}
+
+	/**
+	 * Updates icon and title using the account country.
+	 * This method runs on init is not in the controller because get_account_country might
+	 * make a request to the API if the account data is not cached.
+	 *
+	 * @return void
+	 */
+	public function maybe_update_properties_with_country(): void {
+		if ( Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $this->stripe_id ) {
+			return;
+		}
+		$account_country = $this->get_account_country();
+		$this->icon      = $this->payment_method->get_icon( $account_country );
+		$this->title     = $this->payment_method->get_title( $account_country );
 	}
 
 	/**
@@ -2106,7 +2123,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$payment_method_title = $payment_method->get_title( $payment_method_details );
+		$payment_method_title = $payment_method->get_title( $this->get_account_country(), $payment_method_details );
 
 		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
 
@@ -2887,7 +2904,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string code of the country.
 	 */
-	protected function get_account_country( string $default_value = Country_Code::UNITED_STATES ): string {
+	public function get_account_country( string $default_value = Country_Code::UNITED_STATES ): string {
 		try {
 			if ( $this->is_connected() ) {
 				return $this->account->get_account_country() ?? $default_value;
