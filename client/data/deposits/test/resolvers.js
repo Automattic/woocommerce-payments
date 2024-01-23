@@ -66,7 +66,6 @@ const filterQuery = {
 describe( 'getDepositsOverview resolver', () => {
 	const successfulResponse = {
 		last_deposit: depositsResponse.data[ 0 ],
-		next_deposit: depositsResponse.data[ 1 ],
 		balance: { pending: { amount: 5500 }, available: { amount: 0 } },
 		deposits_schedule: { interval: 'daily' },
 	};

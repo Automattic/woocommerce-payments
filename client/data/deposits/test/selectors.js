@@ -126,7 +126,6 @@ describe( 'Deposits overview selectors', () => {
 			overview: {
 				data: {
 					last_deposit: null,
-					next_deposit: null,
 					balance: { object: 'balance' },
 					deposits_schedule: { interval: 'daily' },
 				},
