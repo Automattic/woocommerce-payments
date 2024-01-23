@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
@@ -37,14 +38,23 @@ class WC_Payments_Payment_Request_Button_Handler {
 	private $gateway;
 
 	/**
+	 * Express Checkout Helper instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Helper
+	 */
+	private $express_checkout_helper;
+
+	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_Account      $account Account information.
-	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway.
+	 * @param WC_Payments_Account                        $account Account information.
+	 * @param WC_Payment_Gateway_WCPay                   $gateway WCPay gateway.
+	 * @param WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper Express checkout helper.
 	 */
-	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
-		$this->account = $account;
-		$this->gateway = $gateway;
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper ) {
+		$this->account                 = $account;
+		$this->gateway                 = $gateway;
+		$this->express_checkout_helper = $express_checkout_helper;
 	}
 
 	/**
@@ -78,7 +88,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
 		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
-		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
 		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
 		add_action( 'wc_ajax_wcpay_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
 
@@ -86,6 +95,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
 		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_cart_needs_shipping_address', [ $this, 'filter_cart_needs_shipping_address' ], 11, 1 );
 
 		// Add a filter for the value of `wcpay_is_apple_pay_enabled`.
 		// This option does not get stored in the database at all, and this function
@@ -132,17 +142,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
 			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
 		);
-	}
-
-	/**
-	 * Gets total label.
-	 *
-	 * @return string
-	 */
-	public function get_total_label() {
-		// Get statement descriptor from API/cached account data.
-		$statement_descriptor = $this->account->get_statement_descriptor();
-		return str_replace( "'", '', $statement_descriptor ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
 	}
 
 	/**
@@ -211,10 +210,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function get_product_price( $product ) {
 		// If prices should include tax, using tax inclusive price.
-		if ( ! $this->prices_exclude_tax() ) {
+		if ( $this->express_checkout_helper->cart_prices_include_tax() ) {
 			$base_price = wc_get_price_including_tax( $product );
 		} else {
-			$base_price = $product->get_price();
+			$base_price = wc_get_price_excluding_tax( $product );
 		}
 
 		// Add subscription sign-up fees to product price.
@@ -292,7 +291,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		];
 
 		$total_tax = 0;
-		foreach ( $this->get_taxes( $product, $price ) as $tax ) {
+		foreach ( $this->get_taxes_like_cart( $product, $price ) as $tax ) {
 			$total_tax += $tax;
 
 			$items[] = [
@@ -319,7 +318,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$data['displayItems'] = $items;
 		$data['total']        = [
-			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
+			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->express_checkout_helper->get_total_label() ),
 			'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
 			'pending' => true,
 		];
@@ -382,7 +381,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems']   = $items;
 		$data['needs_shipping'] = false; // This should be already entered/prepared.
 		$data['total']          = [
-			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
+			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->express_checkout_helper->get_total_label() ),
 			'amount'  => WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ),
 			'pending' => true,
 		];
@@ -400,7 +399,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		return $this->build_display_items();
+		return $this->express_checkout_helper->build_display_items();
 	}
 
 	/**
@@ -444,7 +443,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
 		 * the postal code and not calculate shipping zones correctly.
 		 */
-		if ( 'GB' === $country ) {
+		if ( Country_Code::UNITED_KINGDOM === $country ) {
 			// Replaces a redacted string with something like LN10***.
 			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '*' );
 		}
@@ -802,7 +801,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_pay_for_order'   => $this->is_pay_for_order_page(),
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->get_product_data(),
-			'total_label'        => $this->get_total_label(),
+			'total_label'        => $this->express_checkout_helper->get_total_label(),
 		];
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/payment-request', [ 'jquery', 'stripe' ] );
@@ -875,6 +874,19 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Determine wether to filter the cart needs shipping address.
+	 *
+	 * @param boolean $needs_shipping_address Whether the cart needs a shipping address.
+	 */
+	public function filter_cart_needs_shipping_address( $needs_shipping_address ) {
+		if ( $this->has_subscription_product() && wc_get_shipping_method_count( true, true ) === 0 ) {
+			return false;
+		}
+
+		return $needs_shipping_address;
+	}
+
+	/**
 	 * Get cart details.
 	 */
 	public function ajax_get_cart_details() {
@@ -890,7 +902,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC()->cart->calculate_totals();
 
-		wp_send_json( array_merge( $this->build_display_items(), [ 'needs_shipping' => WC()->cart->needs_shipping() ] ) );
+		wp_send_json( array_merge( $this->express_checkout_helper->build_display_items(), [ 'needs_shipping' => WC()->cart->needs_shipping() ] ) );
 	}
 
 	/**
@@ -928,6 +940,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
 	 *
 	 * @return array Shipping options data.
+	 *
 	 * phpcs:ignore Squiz.Commenting.FunctionCommentThrowTag
 	 */
 	public function get_shipping_options( $shipping_address, $itemized_display_items = false ) {
@@ -986,10 +999,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			WC()->cart->calculate_totals();
 
-			$data          += $this->build_display_items( $itemized_display_items );
+			$data          += $this->express_checkout_helper->build_display_items( $itemized_display_items );
 			$data['result'] = 'success';
 		} catch ( Exception $e ) {
-			$data          += $this->build_display_items( $itemized_display_items );
+			$data          += $this->express_checkout_helper->build_display_items( $itemized_display_items );
 			$data['result'] = 'invalid_shipping_address';
 		}
 
@@ -1015,7 +1028,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data           = [];
-		$data          += $this->build_display_items( $should_show_itemized_view );
+		$data          += $this->express_checkout_helper->build_display_items( $should_show_itemized_view );
 		$data['result'] = 'success';
 
 		wp_send_json( $data );
@@ -1094,7 +1107,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			];
 
 			$total_tax = 0;
-			foreach ( $this->get_taxes( $product, $price ) as $tax ) {
+			foreach ( $this->get_taxes_like_cart( $product, $price ) as $tax ) {
 				$total_tax += $tax;
 
 				$items[] = [
@@ -1121,7 +1134,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			$data['displayItems'] = $items;
 			$data['total']        = [
-				'label'   => $this->get_total_label(),
+				'label'   => $this->express_checkout_helper->get_total_label(),
 				'amount'  => WC_Payments_Utils::prepare_amount( $total + $total_tax, $currency ),
 				'pending' => true,
 			];
@@ -1137,62 +1150,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 			wp_send_json( [ 'error' => wp_strip_all_tags( $e->getMessage() ) ], 500 );
 		}
-	}
-
-	/**
-	 * Adds the current product to the cart. Used on product detail page.
-	 */
-	public function ajax_add_to_cart() {
-		check_ajax_referer( 'wcpay-add-to-cart', 'security' );
-
-		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
-			define( 'WOOCOMMERCE_CART', true );
-		}
-
-		WC()->shipping->reset_shipping();
-
-		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
-		$product    = wc_get_product( $product_id );
-
-		if ( ! $product ) {
-			wp_send_json(
-				[
-					'error' => [
-						'code'    => 'invalid_product_id',
-						'message' => __( 'Invalid product id', 'woocommerce-payments' ),
-					],
-				],
-				404
-			);
-			return;
-		}
-
-		$qty          = ! isset( $_POST['qty'] ) ? 1 : absint( $_POST['qty'] );
-		$product_type = $product->get_type();
-
-		// First empty the cart to prevent wrong calculation.
-		WC()->cart->empty_cart();
-
-		if ( ( 'variable' === $product_type || 'variable-subscription' === $product_type ) && isset( $_POST['attributes'] ) ) {
-			$attributes = wc_clean( wp_unslash( $_POST['attributes'] ) );
-
-			$data_store   = WC_Data_Store::load( 'product' );
-			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
-
-			WC()->cart->add_to_cart( $product->get_id(), $qty, $variation_id, $attributes );
-		}
-
-		if ( in_array( $product_type, [ 'simple', 'variation', 'subscription', 'subscription_variation' ], true ) ) {
-			WC()->cart->add_to_cart( $product->get_id(), $qty );
-		}
-
-		WC()->cart->calculate_totals();
-
-		$data           = [];
-		$data          += $this->build_display_items();
-		$data['result'] = 'success';
-
-		wp_send_json( $data );
 	}
 
 	/**
@@ -1511,16 +1468,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Whether tax should be displayed on seperate line.
-	 * returns true if tax is enabled & display of tax in checkout is set to exclusive.
-	 *
-	 * @return boolean
-	 */
-	private function prices_exclude_tax() {
-		return wc_tax_enabled() && 'incl' !== get_option( 'woocommerce_tax_display_cart' );
-	}
-
-	/**
 	 * Builds the shipping methods to pass to Payment Request
 	 *
 	 * @param array $shipping_methods Shipping methods.
@@ -1542,103 +1489,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return $shipping;
-	}
-
-	/**
-	 * Builds the line items to pass to Payment Request
-	 *
-	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
-	 */
-	protected function build_display_items( $itemized_display_items = false ) {
-		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
-			define( 'WOOCOMMERCE_CART', true );
-		}
-
-		$items     = [];
-		$subtotal  = 0;
-		$discounts = 0;
-		$currency  = get_woocommerce_currency();
-
-		// Default show only subtotal instead of itemization.
-		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', true ) || $itemized_display_items ) {
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-				$amount         = $cart_item['line_subtotal'];
-				$subtotal      += $cart_item['line_subtotal'];
-				$quantity_label = 1 < $cart_item['quantity'] ? ' (x' . $cart_item['quantity'] . ')' : '';
-
-				$product_name = $cart_item['data']->get_name();
-
-				$item_tax = $this->prices_exclude_tax() ? 0 : ( $cart_item['line_subtotal_tax'] ?? 0 );
-
-				$item = [
-					'label'  => $product_name . $quantity_label,
-					'amount' => WC_Payments_Utils::prepare_amount( $amount + $item_tax, $currency ),
-				];
-
-				$items[] = $item;
-			}
-		}
-
-		if ( version_compare( WC_VERSION, '3.2', '<' ) ) {
-			$discounts = wc_format_decimal( WC()->cart->get_cart_discount_total(), WC()->cart->dp );
-		} else {
-			$applied_coupons = array_values( WC()->cart->get_coupon_discount_totals() );
-
-			foreach ( $applied_coupons as $amount ) {
-				$discounts += (float) $amount;
-			}
-		}
-
-		$discounts   = wc_format_decimal( $discounts, WC()->cart->dp );
-		$tax         = wc_format_decimal( WC()->cart->tax_total + WC()->cart->shipping_tax_total, WC()->cart->dp );
-		$shipping    = wc_format_decimal( WC()->cart->shipping_total, WC()->cart->dp );
-		$items_total = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
-		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( '' );
-
-		if ( $this->prices_exclude_tax() ) {
-			$items[] = [
-				'label'  => esc_html( __( 'Tax', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $tax, $currency ),
-			];
-		}
-
-		if ( WC()->cart->needs_shipping() ) {
-			$shipping_tax = $this->prices_exclude_tax() ? 0 : WC()->cart->shipping_tax_total;
-			$items[]      = [
-				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $shipping + $shipping_tax, $currency ),
-			];
-		}
-
-		if ( WC()->cart->has_discount() ) {
-			$items[] = [
-				'label'  => esc_html( __( 'Discount', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $discounts, $currency ),
-			];
-		}
-
-		if ( version_compare( WC_VERSION, '3.2', '<' ) ) {
-			$cart_fees = WC()->cart->fees;
-		} else {
-			$cart_fees = WC()->cart->get_fees();
-		}
-
-		// Include fees and taxes as display items.
-		foreach ( $cart_fees as $key => $fee ) {
-			$items[] = [
-				'label'  => $fee->name,
-				'amount' => WC_Payments_Utils::prepare_amount( $fee->amount, $currency ),
-			];
-		}
-
-		return [
-			'displayItems' => $items,
-			'total'        => [
-				'label'   => $this->get_total_label(),
-				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
-				'pending' => false,
-			],
-		];
 	}
 
 	/**
@@ -1708,14 +1558,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Calculates taxes, based on a product and a particular price.
+	 * Calculates taxes as displayed on cart, based on a product and a particular price.
 	 *
 	 * @param WC_Product $product The product, for retrieval of tax classes.
 	 * @param float      $price   The price, which to calculate taxes for.
 	 * @return array              An array of final taxes.
 	 */
-	private function get_taxes( $product, $price ) {
-		if ( ! wc_tax_enabled() || ! $this->prices_exclude_tax() ) {
+	private function get_taxes_like_cart( $product, $price ) {
+		if ( ! wc_tax_enabled() || $this->express_checkout_helper->cart_prices_include_tax() ) {
 			// Only proceed when taxes are enabled, but not included.
 			return [];
 		}

@@ -98,10 +98,10 @@ export function updateInstantDeposit( data ) {
 	};
 }
 
-export function* submitInstantDeposit( transactionIds ) {
+export function* submitInstantDeposit( currency ) {
 	try {
 		yield dispatch( STORE_NAME ).startResolution( 'getInstantDeposit', [
-			transactionIds,
+			currency,
 		] );
 
 		const deposit = yield apiFetch( {
@@ -109,18 +109,21 @@ export function* submitInstantDeposit( transactionIds ) {
 			method: 'POST',
 			data: {
 				type: 'instant',
-				transaction_ids: transactionIds,
+				currency,
 			},
 		} );
 
 		yield updateInstantDeposit( deposit );
 
-		// Need to invalidate the resolution so that the components will render again.
+		// Invalidate deposits and deposits overview queries to ensure that the UI is updated with fresh data.
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDeposits'
 		);
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDepositsOverview'
+		);
+		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
+			'getAllDepositsOverviews'
 		);
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
@@ -150,7 +153,7 @@ export function* submitInstantDeposit( transactionIds ) {
 		);
 	} finally {
 		yield dispatch( STORE_NAME ).finishResolution( 'getInstantDeposit', [
-			transactionIds,
+			currency,
 		] );
 	}
 }

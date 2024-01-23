@@ -73,7 +73,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				? {}
 				: {
 						save_user_in_woopay: isSaveDetailsChecked,
-						woopay_source_url: window.location.href,
+						woopay_source_url:
+							wcSettings?.storePages?.checkout?.permalink,
 						woopay_is_blocks: true,
 						woopay_viewport: `${ viewportWidth }x${ viewportHeight }`,
 						woopay_user_phone_field: {
@@ -90,6 +91,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		},
 		[ isSaveDetailsChecked, phoneNumber, viewportWidth, viewportHeight ]
 	);
+
+	const handleCountryDropdownClick = useCallback( () => {
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.WOOPAY_SAVE_MY_INFO_COUNTRY_CLICK
+		);
+	}, [] );
 
 	const handleCheckboxClick = ( e ) => {
 		const isChecked = e.target.checked;
@@ -110,6 +117,15 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			}
 		);
 	};
+
+	useEffect( () => {
+		// Record Tracks event when the mobile number is entered.
+		if ( isPhoneValid ) {
+			wcpayTracks.recordUserEvent(
+				wcpayTracks.events.WOOPAY_SAVE_MY_INFO_MOBILE_ENTER
+			);
+		}
+	}, [ isPhoneValid ] );
 
 	useEffect( () => {
 		// Record Tracks event when user clicks on the info icon for the first time.
@@ -291,7 +307,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						<input
 							type="hidden"
 							name="woopay_source_url"
-							value={ window.location.href }
+							value={
+								wcSettings?.storePages?.checkout?.permalink
+							}
 						/>
 						<input
 							type="hidden"
@@ -302,6 +320,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							value={ phoneNumber }
 							onValueChange={ setPhoneNumber }
 							onValidationChange={ onPhoneValidationChange }
+							onCountryDropdownClick={
+								handleCountryDropdownClick
+							}
 							inputProps={ {
 								name:
 									'woopay_user_phone_field[no-country-code]',

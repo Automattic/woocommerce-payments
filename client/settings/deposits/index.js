@@ -4,13 +4,8 @@
 import React, { useContext } from 'react';
 import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	SelectControl,
-	ExternalLink,
-	Notice,
-} from '@wordpress/components';
-import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import { Card, SelectControl, ExternalLink } from '@wordpress/components';
+import interpolateComponents from '@automattic/interpolate-components';
 import { STORE_NAME } from 'wcpay/data/constants';
 
 /**
@@ -29,6 +24,7 @@ import {
 } from '../../data';
 import './style.scss';
 import wcpayTracks from 'wcpay/tracks';
+import InlineNotice from 'components/inline-notice';
 
 const daysOfWeek = [
 	{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
@@ -160,56 +156,47 @@ const DepositsSchedule = () => {
 		depositRestrictions === 'schedule_restricted'
 	) {
 		return (
-			<Notice
-				status="warning"
-				isDismissible={ false }
-				className="deposits__notice"
-			>
-				<span>
-					{ __(
-						'Deposit scheduling is currently unavailable for your store.',
+			<InlineNotice status="warning" isDismissible={ false } icon>
+				{ interpolateComponents( {
+					mixedString: __(
+						'Deposit scheduling is currently unavailable for your store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
-					) }
-				</span>
-				<a
-					aria-label={ __(
-						'Learn more about deposit scheduling.',
-						'woocommerce-payments'
-					) }
-					href="https://woo.com/document/woopayments/deposits/deposit-schedule/"
-					target="_blank"
-					rel="external noreferrer noopener"
-				>
-					<HelpOutlineIcon size={ 18 } />
-				</a>
-			</Notice>
+					),
+					components: {
+						learnMoreLink: (
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							<a
+								href="https://woo.com/document/woopayments/deposits/deposit-schedule/"
+								target="_blank"
+								rel="noreferrer noopener"
+							/>
+						),
+					},
+				} ) }
+			</InlineNotice>
 		);
 	}
 	if ( completedWaitingPeriod !== true ) {
 		return (
-			<Notice
-				status="warning"
-				isDismissible={ false }
-				className="deposits__notice"
-			>
-				<span>
-					{ __(
-						'Your first deposit will be held for 7 days. Deposit scheduling will be available after this period.',
+			<InlineNotice status="warning" isDismissible={ false } icon>
+				{ interpolateComponents( {
+					mixedString: __(
+						'Your first deposit will be held for 7-14 days. ' +
+							'Deposit scheduling will be available after this period. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
-					) }
-				</span>
-				<a
-					aria-label={ __(
-						'Learn more about deposit scheduling.',
-						'woocommerce-payments'
-					) }
-					href="https://woo.com/document/woopayments/deposits/deposit-schedule/"
-					target="_blank"
-					rel="external noreferrer noopener"
-				>
-					<HelpOutlineIcon size={ 18 } />
-				</a>
-			</Notice>
+					),
+					components: {
+						learnMoreLink: (
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							<a
+								href="https://woo.com/document/woopayments/deposits/deposit-schedule/"
+								target="_blank"
+								rel="noreferrer noopener"
+							/>
+						),
+					},
+				} ) }
+			</InlineNotice>
 		);
 	}
 

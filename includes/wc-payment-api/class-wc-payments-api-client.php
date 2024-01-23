@@ -76,6 +76,7 @@ class WC_Payments_API_Client {
 	const FRAUD_SERVICES_API           = 'accounts/fraud_services';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
+	const COMPATIBILITY_API            = 'compatibility';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -250,15 +251,15 @@ class WC_Payments_API_Client {
 	 * Trigger a manual deposit.
 	 *
 	 * @param string $type Type of deposit. Only "instant" is supported for now.
-	 * @param string $transaction_ids Comma-separated list of transaction IDs that will be associated with this deposit.
+	 * @param string $currency The deposit currency.
 	 * @return array The new deposit object.
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function manual_deposit( $type, $transaction_ids ) {
+	public function manual_deposit( $type, $currency ) {
 		return $this->request(
 			[
-				'type'            => $type,
-				'transaction_ids' => $transaction_ids,
+				'type'     => $type,
+				'currency' => $currency,
 			],
 			self::DEPOSITS_API,
 			self::POST
@@ -1158,6 +1159,56 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Updates a charge.
+	 *
+	 * @param string $charge_id ID of the charge to update.
+	 * @param array  $data arameters to send to the transaction endpoint. Optional. Default is an empty array.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function update_charge( string $charge_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::CHARGES_API . '/' . $charge_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Fetch a charge by id.
+	 *
+	 * @param string $charge_id Charge id.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_charge( string $charge_id ) {
+		return $this->request(
+			[],
+			self::CHARGES_API . '/' . $charge_id,
+			self::GET
+		);
+	}
+
+	/**
+	 * Updates a transaction.
+	 *
+	 * @param string $transaction_id Transaction id.
+	 * @param array  $data Data to be updated.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function update_transaction( string $transaction_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::TRANSACTIONS_API . '/' . $transaction_id,
+			self::POST
+		);
+	}
+
+	/**
 	 * Fetch a WCPay subscription.
 	 *
 	 * @param string $wcpay_subscription_id Data used to create subscription.
@@ -1651,6 +1702,27 @@ class WC_Payments_API_Client {
 			true,
 			true
 		);
+	}
+
+	/**
+	 * Sends the compatibility data to the server to be saved to the account.
+	 *
+	 * @param array $compatibility_data The array containing the data.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function update_compatibility_data( $compatibility_data ) {
+		$response = $this->request(
+			[
+				'compatibility_data' => $compatibility_data,
+			],
+			self::COMPATIBILITY_API,
+			self::POST
+		);
+
+		return $response;
 	}
 
 	/**

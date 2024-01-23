@@ -5,13 +5,13 @@ import {
 	getTerms,
 	getCookieValue,
 	isWCPayChosen,
-	getPaymentIntentFromSession,
 	generateCheckoutEventNames,
 	getUpeSettings,
 	getStripeElementOptions,
 	blocksShowLinkButtonHandler,
 	getSelectedUPEGatewayPaymentMethod,
 	isUsingSavedPaymentMethod,
+	dispatchChangeEventFor,
 } from '../upe';
 import { getPaymentMethodsConstants } from '../../constants';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -165,71 +165,6 @@ describe( 'UPE checkout utils', () => {
 				`;
 			document.body.appendChild( container );
 			expect( isWCPayChosen() ).toBe( false );
-		} );
-	} );
-
-	describe( 'getPaymentIntentFromSession', () => {
-		const paymentMethodsConfig = {
-			card: {
-				upePaymentIntentData:
-					'abcd1234-pi_abc123-pi_abc123_secret_5678xyz',
-			},
-			eps: {
-				upePaymentIntentData: null,
-			},
-		};
-
-		const cardData = {
-			clientSecret: 'pi_abc123_secret_5678xyz',
-			intentId: 'pi_abc123',
-		};
-
-		it( 'should return the correct client secret and intent ID', () => {
-			Object.defineProperty( document, 'cookie', {
-				get: () => {
-					return 'woocommerce_cart_hash=abcd1234;';
-				},
-				configurable: true,
-			} );
-			expect(
-				getPaymentIntentFromSession( paymentMethodsConfig, 'card' )
-			).toEqual( cardData );
-		} );
-
-		it( 'should return an empty object if no payment intent exists', () => {
-			Object.defineProperty( document, 'cookie', {
-				get: () => {
-					return 'woocommerce_cart_hash=abcd1234;';
-				},
-				configurable: true,
-			} );
-			expect(
-				getPaymentIntentFromSession( paymentMethodsConfig, 'eps' )
-			).toEqual( {} );
-		} );
-
-		it( 'should return an empty object if no cart hash exists', () => {
-			Object.defineProperty( document, 'cookie', {
-				get: () => {
-					return 'woocommerce_cart_items=1;';
-				},
-				configurable: true,
-			} );
-			expect(
-				getPaymentIntentFromSession( paymentMethodsConfig, 'card' )
-			).toEqual( {} );
-		} );
-
-		it( 'should return an empty object if the payment intent data does not start with the cart hash', () => {
-			Object.defineProperty( document, 'cookie', {
-				get: () => {
-					return 'woocommerce_cart_hash=xyz9876;';
-				},
-				configurable: true,
-			} );
-			expect(
-				getPaymentIntentFromSession( paymentMethodsConfig, 'card' )
-			).toEqual( {} );
 		} );
 	} );
 
@@ -597,5 +532,39 @@ describe( 'isUsingSavedPaymentMethod', () => {
 		const paymentMethodType = 'sofort';
 
 		expect( isUsingSavedPaymentMethod( paymentMethodType ) ).toBe( false );
+	} );
+} );
+
+describe( 'dispatching change event for element', () => {
+	it( 'should dispatch a change event with bubbling', () => {
+		const mockElement = document.createElement( 'input' );
+		jest.spyOn( mockElement, 'dispatchEvent' );
+
+		dispatchChangeEventFor( mockElement );
+
+		expect( mockElement.dispatchEvent ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				type: 'change',
+				bubbles: true,
+			} )
+		);
+	} );
+
+	it( 'should throw an error when called with an invalid element', () => {
+		expect( () => {
+			dispatchChangeEventFor( null );
+		} ).toThrow();
+
+		expect( () => {
+			dispatchChangeEventFor( undefined );
+		} ).toThrow();
+
+		expect( () => {
+			dispatchChangeEventFor( {} );
+		} ).toThrow();
+
+		expect( () => {
+			dispatchChangeEventFor( 'not-an-element' );
+		} ).toThrow();
 	} );
 } );

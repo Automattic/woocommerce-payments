@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 
 /**
  * WC_REST_Payments_Customer_Controller_Test unit tests.
@@ -55,7 +56,7 @@ class WC_REST_Payments_Customer_Controller_Test extends WCPAY_UnitTestCase {
 				'address_postal_code_check' => 'unchecked',
 				'cvc_check'                 => 'pass',
 			],
-			'country'              => 'US',
+			'country'              => Country_Code::UNITED_STATES,
 			'exp_month'            => 11,
 			'exp_year'             => 2030,
 			'fingerprint'          => 'RSTUvWXZa1b2c3Y4',
@@ -105,7 +106,7 @@ class WC_REST_Payments_Customer_Controller_Test extends WCPAY_UnitTestCase {
 			'billing_details' => [
 				'address' => [
 					'city'        => 'Los Angeles',
-					'country'     => 'US',
+					'country'     => Country_Code::UNITED_STATES,
 					'line1'       => '123 Sunset Blvd',
 					'line2'       => 'Apt 456',
 					'postal_code' => '90028',

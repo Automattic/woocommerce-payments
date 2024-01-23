@@ -10,7 +10,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
         Base fee
       </div>
       <div>
-        12.3% + $4.57
+        9.84% + $3.65
       </div>
     </div>
     <div>
@@ -18,7 +18,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
         International payment method fee
       </div>
       <div>
-        1%
+        0.8%
       </div>
     </div>
     <div>
@@ -26,7 +26,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
         Foreign exchange fee
       </div>
       <div>
-        1%
+        0.8%
       </div>
     </div>
     <div>
@@ -36,7 +36,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
       <div
         class="wcpay-fees-tooltip__bold"
       >
-        14.3% + $4.57
+        11.44% + $3.65
       </div>
     </div>
     <div
@@ -94,63 +94,6 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
         class="wcpay-fees-tooltip__bold"
       >
         14.3% + $4.57
-      </div>
-    </div>
-    <div
-      class="wcpay-fees-tooltip__hint-text"
-    >
-      <span>
-        <a
-          href="https://woo.com/document/woopayments/fees-and-debits/fees/#united-states"
-          rel="noreferrer"
-          target="_blank"
-        >
-          Learn more
-        </a>
-         about WooPayments Fees in your country
-      </span>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`Account fees utility functions formatMethodFeesTooltip() displays custom fee details, when applicable 1`] = `
-<div>
-  <div
-    class="wcpay-fees-tooltip"
-  >
-    <div>
-      <div>
-        Base fee
-      </div>
-      <div>
-        10.1% + $4.01
-      </div>
-    </div>
-    <div>
-      <div>
-        International payment method fee
-      </div>
-      <div>
-        1%
-      </div>
-    </div>
-    <div>
-      <div>
-        Foreign exchange fee
-      </div>
-      <div>
-        1%
-      </div>
-    </div>
-    <div>
-      <div>
-        Total per transaction
-      </div>
-      <div
-        class="wcpay-fees-tooltip__bold"
-      >
-        12.1% + $4.01
       </div>
     </div>
     <div

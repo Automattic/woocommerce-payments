@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Hide the transaction details refund menu for ineligble disputed transactions

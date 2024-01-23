@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Introduce filter `wcpay_payment_request_is_cart_supported`.  Allow plugins to conditionally disable payment request buttons on cart and checkout pages containing products that do not support them.

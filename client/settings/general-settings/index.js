@@ -13,12 +13,14 @@ import { useDevMode, useIsWCPayEnabled, useTestMode } from 'wcpay/data';
 import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/overview/modal/setup-live-payments';
+import TestModeConfirmationModal from './test-mode-confirm-modal';
 
 const GeneralSettings = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
 	const [ modalVisible, setModalVisible ] = useState( false );
 	const isDevModeEnabled = useDevMode();
+	const [ testModeModalVisible, setTestModeModalVisible ] = useState( false );
 
 	return (
 		<>
@@ -48,7 +50,15 @@ const GeneralSettings = () => {
 							</h4>
 							<CheckboxControl
 								checked={ isEnabled }
-								onChange={ updateIsTestModeEnabled }
+								onChange={ ( enableTestMode ) => {
+									if ( enableTestMode ) {
+										setTestModeModalVisible( true );
+									} else {
+										updateIsTestModeEnabled(
+											enableTestMode
+										);
+									}
+								} }
 								label={ __(
 									'Enable test mode',
 									'woocommerce-payments'
@@ -105,7 +115,7 @@ const GeneralSettings = () => {
 									mixedString: sprintf(
 										/* translators: %s: WooPayments */
 										__(
-											'{{b}}%1$s is in dev mode.{{/b}} You need to set up a live %1$s account before ' +
+											'{{b}}%1$s is in sandbox mode.{{/b}} You need to set up a live %1$s account before ' +
 												'you can accept real transactions. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 											'woocommerce-payments'
 										),
@@ -118,7 +128,7 @@ const GeneralSettings = () => {
 											<a
 												target="_blank"
 												rel="noreferrer"
-												href="https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/"
+												href="https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
 											/>
 										),
 									},
@@ -131,6 +141,17 @@ const GeneralSettings = () => {
 			{ modalVisible && (
 				<SetupLivePaymentsModal
 					closeModal={ () => setModalVisible( false ) }
+				/>
+			) }
+			{ testModeModalVisible && (
+				<TestModeConfirmationModal
+					onClose={ () => {
+						setTestModeModalVisible( false );
+					} }
+					onConfirm={ () => {
+						updateIsTestModeEnabled( true );
+						setTestModeModalVisible( false );
+					} }
 				/>
 			) }
 		</>

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Reverting to manual styling over native WordPress components to fix CSS defects on Analytics page

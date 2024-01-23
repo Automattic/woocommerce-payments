@@ -186,21 +186,25 @@ class OrderService {
 	) {
 		$order = $this->get_order( $order_id );
 
-		$charge    = null;
-		$charge_id = null;
+		$charge                 = null;
+		$charge_id              = null;
+		$payment_transaction_id = null;
 		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
-			$charge    = $intent->get_charge();
-			$charge_id = $intent->get_charge()->get_id();
+			$charge                 = $intent->get_charge();
+			$charge_id              = $intent->get_charge()->get_id();
+			$payment_transaction    = $charge ? $charge->get_balance_transaction() : null;
+			$payment_transaction_id = $payment_transaction['id'] ?? '';
 		}
 
-		$this->legacy_service->attach_intent_info_to_order(
+		$this->legacy_service->attach_intent_info_to_order__legacy(
 			$order,
 			$intent->get_id(),
 			$intent->get_status(),
 			$context->get_payment_method()->get_id(),
 			$context->get_customer_id(),
 			$charge_id,
-			$context->get_currency()
+			$context->get_currency(),
+			$payment_transaction_id,
 		);
 
 		$this->legacy_service->attach_transaction_fee_to_order( $order, $charge );
@@ -221,7 +225,7 @@ class OrderService {
 	 */
 	public function set_mode( string $order_id, string $mode ) : void {
 		$order = $this->get_order( $order_id );
-		$order->update_meta_data( '_wcpay_mode', $mode );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $mode );
 		$order->save_meta_data();
 	}
 
@@ -235,7 +239,7 @@ class OrderService {
 	 */
 	public function get_mode( string $order_id ) : string {
 		$order = $this->get_order( $order_id );
-		return $order->get_meta( '_wcpay_mode', true );
+		return $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, true );
 	}
 
 	/**
@@ -253,7 +257,7 @@ class OrderService {
 	) {
 		$order = $this->get_order( $order_id );
 
-		$this->legacy_service->attach_intent_info_to_order(
+		$this->legacy_service->attach_intent_info_to_order__legacy(
 			$order,
 			$intent->get_id(),
 			$intent->get_status(),
