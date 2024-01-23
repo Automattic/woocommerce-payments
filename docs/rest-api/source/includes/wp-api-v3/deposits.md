@@ -455,7 +455,6 @@ Submit an instant deposit for a list of transactions. Only for eligible accounts
 
 -   `type`: _string_ - The type of deposit. `instant`
 -   `currency`: _string_ - The currency of the balance to deposit. E.g. `usd`
--   ~~`transaction_ids`~~: _array_ - Deprecated since `7.1.0`, use `currency` instead. The list of transaction IDs to deposit.
 
 ```shell
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
