@@ -104,6 +104,12 @@ const getFeeDescriptionString = (
 	return '';
 };
 
+function calculateDiscountAdjustedFeeRate( accountFees: FeeStructure ) {
+	return accountFees.discount.length && accountFees.discount[ 0 ].discount
+		? 1 - accountFees.discount[ 0 ].discount
+		: 1;
+}
+
 export const getCurrentBaseFee = (
 	accountFees: FeeStructure
 ): BaseFee | DiscountFee => {
@@ -117,10 +123,9 @@ export const formatMethodFeesTooltip = (
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
 
-	const discountAdjustedFeeRate: number =
-		accountFees.discount.length && accountFees.discount[ 0 ].discount
-			? 1 - accountFees.discount[ 0 ].discount
-			: 1;
+	const discountAdjustedFeeRate: number = calculateDiscountAdjustedFeeRate(
+		accountFees
+	);
 
 	const total = {
 		percentage_rate:
@@ -363,13 +368,11 @@ export const formatAccountFeesDescription = (
 };
 
 export const formatMethodMinimalFee = ( accountFees: FeeStructure ): string => {
-	const discountAdjustedFeeRate: number =
-		accountFees.discount.length && accountFees.discount[ 0 ].discount
-			? 1 - accountFees.discount[ 0 ].discount
-			: 1;
+	const discountAdjustedFeeRate: number = calculateDiscountAdjustedFeeRate(
+		accountFees
+	);
 
 	return sprintf(
-		// eslint-disable-next-line max-len
 		/* translators: %1 Base fee */
 		__( 'From %1$s', 'woocommerce-payments' ),
 		getFeeDescriptionString( accountFees.base, discountAdjustedFeeRate )
