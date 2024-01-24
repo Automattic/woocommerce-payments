@@ -110,6 +110,7 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                   </li>
                   <li
                     class="enabled-currency-checkbox"
+                    data-testid="recommended-currency"
                   >
                     <div
                       class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
@@ -171,6 +172,7 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                   </li>
                   <li
                     class="enabled-currency-checkbox"
+                    data-testid="recommended-currency"
                   >
                     <div
                       class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
@@ -232,6 +234,7 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                   </li>
                   <li
                     class="enabled-currency-checkbox"
+                    data-testid="recommended-currency"
                   >
                     <div
                       class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
@@ -293,6 +296,7 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                   </li>
                   <li
                     class="enabled-currency-checkbox"
+                    data-testid="recommended-currency"
                   >
                     <div
                       class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
@@ -354,6 +358,7 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                   </li>
                   <li
                     class="enabled-currency-checkbox"
+                    data-testid="recommended-currency"
                   >
                     <div
                       class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
@@ -415,6 +420,7 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                   </li>
                   <li
                     class="enabled-currency-checkbox"
+                    data-testid="recommended-currency"
                   >
                     <div
                       class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"

@@ -1021,7 +1021,7 @@ class MultiCurrency {
 		echo \WC_Payments_Utils::esc_interpolated_html(
 			$message,
 			[
-				'a' => '<a href="?currency=' . $store_currency . '">',
+				'a' => '<a href="?currency=' . esc_attr( $store_currency ) . '">',
 			]
 		);
 		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
