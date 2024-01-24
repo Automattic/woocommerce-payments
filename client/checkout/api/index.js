@@ -283,7 +283,7 @@ export default class WCPayAPI {
 			confirmPaymentOrSetup()
 				// ToDo: Switch to an async function once it works with webpack.
 				.then( ( result ) => {
-					if ( ! isOrderPage ) {
+					if ( ! orderId ) {
 						return [ true, result.error ];
 					}
 
