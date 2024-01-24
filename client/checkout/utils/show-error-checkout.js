@@ -6,7 +6,6 @@ const showErrorCheckout = (
 	validateFields = true,
 	customId = null
 ) => {
-	debugger;
 	let messageWrapper = '';
 	if ( errorMessage.includes( 'woocommerce-error' ) ) {
 		messageWrapper = errorMessage;
