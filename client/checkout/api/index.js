@@ -284,11 +284,7 @@ export default class WCPayAPI {
 				// ToDo: Switch to an async function once it works with webpack.
 				.then( ( result ) => {
 					if ( ! isOrderPage ) {
-						console.log( '### reached here', result );
-						return [
-							Promise.resolve( { return_url: '' } ),
-							result.error,
-						];
+						return [ true, result.error ];
 					}
 
 					// In case this is being called via payment request button from a product page,
@@ -318,13 +314,16 @@ export default class WCPayAPI {
 
 					return [ orderUpdateCall, result.error ];
 				} )
-				.then( ( [ verificationCall, originalError ] ) => {
-					debugger;
-					if ( originalError ) {
-						throw originalError;
+				.then( ( [ orderUpdateCall, confirmationError ] ) => {
+					if ( confirmationError ) {
+						throw confirmationError;
 					}
 
-					return verificationCall.then( ( response ) => {
+					if ( orderUpdateCall === true ) {
+						return '';
+					}
+
+					return orderUpdateCall.then( ( response ) => {
 						const result =
 							typeof response === 'string'
 								? JSON.parse( response )

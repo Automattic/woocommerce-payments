@@ -3,10 +3,10 @@
 // Show error notice at top of checkout form.
 const showErrorCheckout = (
 	errorMessage,
-	isFirst = false,
 	validateFields = true,
 	customId = null
 ) => {
+	debugger;
 	let messageWrapper = '';
 	if ( errorMessage.includes( 'woocommerce-error' ) ) {
 		messageWrapper = errorMessage;
@@ -18,13 +18,9 @@ const showErrorCheckout = (
 			errorMessage +
 			'</ul>';
 	}
-	let $container = jQuery( '.woocommerce-notices-wrapper, form.checkout' );
-
-	if ( isFirst ) {
-		$container = $container.first();
-	} else {
-		$container = $container.last();
-	}
+	const $container = jQuery(
+		'.woocommerce-notices-wrapper, form.checkout'
+	).last();
 
 	if ( ! $container.length ) {
 		return;
@@ -35,9 +31,7 @@ const showErrorCheckout = (
 		'.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message'
 	).remove();
 	$container.prepend(
-		'<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' +
-			messageWrapper +
-			'</div>'
+		`<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">${ messageWrapper }</div>`
 	);
 	if ( validateFields ) {
 		$container
