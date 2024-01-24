@@ -9,9 +9,13 @@ const defaultColors = [ '#889BF2', '#C3CDF9', '#6079ED' ];
 const randomInRange = ( min: number, max: number ): number =>
 	Math.floor( Math.random() * ( max - min ) + min );
 
-const rectangle = confetti.shapeFromPath( {
-	path: 'M0,0 L2,0 L2,1 L0,1 Z',
-} );
+// Use a rectangle instead of an square on supported browsers.
+const rectangle =
+	typeof Path2D === 'function' && typeof DOMMatrix === 'function'
+		? confetti.shapeFromPath( {
+				path: 'M0,0 L2,0 L2,1 L0,1 Z',
+		  } )
+		: 'square';
 
 // Adjust particle amount based on screen size.
 const particleLength = ( window.innerWidth + window.innerHeight ) / 50;
