@@ -19,6 +19,8 @@ import {
 	renderTerms,
 	createAndConfirmSetupIntent,
 	maybeEnableStripeLink,
+	blockUI,
+	unblockUI,
 } from './payment-processing';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
@@ -37,6 +39,15 @@ jQuery( function ( $ ) {
 		return;
 	}
 
+	const $checkoutForm = $( 'form.checkout' );
+	const $addPaymentMethodForm = $( 'form#add_payment_method' );
+	const $payForOrderForm = $( 'form#order_review' );
+
+	// creating a new jQuery object containing all the forms that need to be updated on submit, failure, or other events.
+	const $forms = jQuery( $checkoutForm )
+		.add( $addPaymentMethodForm )
+		.add( $payForOrderForm );
+
 	const api = new WCPayAPI(
 		{
 			publishableKey: publishableKey,
@@ -49,20 +60,24 @@ jQuery( function ( $ ) {
 		},
 		apiRequest
 	);
-	showAuthenticationModalIfRequired( api );
+
+	blockUI( $forms );
+	showAuthenticationModalIfRequired( api ).finally( () => {
+		unblockUI( $forms );
+	} );
 
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement();
 	} );
 
-	$( 'form.checkout' ).on( generateCheckoutEventNames(), function () {
+	$checkoutForm.on( generateCheckoutEventNames(), function () {
 		return processPaymentIfNotUsingSavedMethod( $( this ) );
 	} );
 
-	$( 'form.checkout' ).on( 'click', '#place_order', function () {
+	$checkoutForm.on( 'click', '#place_order', function () {
 		const isWCPay = document.getElementById(
 			'payment_method_woocommerce_payments'
-		).checked;
+		)?.checked;
 
 		if ( ! isWCPay ) {
 			return;
@@ -73,7 +88,10 @@ jQuery( function ( $ ) {
 
 	window.addEventListener( 'hashchange', () => {
 		if ( window.location.hash.startsWith( '#wcpay-confirm-' ) ) {
-			showAuthenticationModalIfRequired( api );
+			blockUI( $forms );
+			showAuthenticationModalIfRequired( api, $forms ).finally( () => {
+				unblockUI( $forms );
+			} );
 		}
 	} );
 
@@ -86,35 +104,33 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	if (
-		$( 'form#add_payment_method' ).length ||
-		$( 'form#order_review' ).length
-	) {
+	if ( $addPaymentMethodForm.length || $payForOrderForm.length ) {
 		maybeMountStripePaymentElement();
 	}
 
-	$( 'form#add_payment_method' ).on( 'submit', function () {
+	$addPaymentMethodForm.on( 'submit', function () {
 		if (
-			$(
-				"#add_payment_method input:checked[name='payment_method']"
-			).val() !== 'woocommerce_payments'
+			$addPaymentMethodForm
+				.find( "input:checked[name='payment_method']" )
+				.val() !== 'woocommerce_payments'
 		) {
 			return;
 		}
+
 		// WC core calls block() when add_payment_method form is submitted, so we need to enable the ignore flag here to avoid
 		// the overlay blink when the form is blocked twice.
 		$.blockUI.defaults.ignoreIfBlocked = true;
 
 		return processPayment(
 			api,
-			$( 'form#add_payment_method' ),
+			$addPaymentMethodForm,
 			getSelectedUPEGatewayPaymentMethod(),
 			createAndConfirmSetupIntent
 		);
 	} );
 
-	$( 'form#order_review' ).on( 'submit', function () {
-		return processPaymentIfNotUsingSavedMethod( $( 'form#order_review' ) );
+	$payForOrderForm.on( 'submit', function () {
+		return processPaymentIfNotUsingSavedMethod( $payForOrderForm );
 	} );
 
 	if (
@@ -148,6 +164,8 @@ jQuery( function ( $ ) {
 	function restrictPaymentMethodToLocation( upeElement ) {
 		if ( isPaymentMethodRestrictedToLocation( upeElement ) ) {
 			togglePaymentMethodForCountry( upeElement );
+
+			// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
 			$( '#billing_country' ).on( 'change', function () {
 				togglePaymentMethodForCountry( upeElement );
 			} );

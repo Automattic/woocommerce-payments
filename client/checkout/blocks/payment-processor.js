@@ -27,10 +27,6 @@ import {
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/classic/payment-processing';
-import {
-	BLOCKS_SHIPPING_ADDRESS_FIELDS,
-	BLOCKS_BILLING_ADDRESS_FIELDS,
-} from '../constants';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -74,8 +70,11 @@ const PaymentProcessor = ( {
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
 	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
-	const customerData = useCustomerData();
-	const billingData = customerData.billingAddress;
+	const {
+		billingAddress: billingData,
+		setShippingAddress,
+		setBillingAddress,
+	} = useCustomerData();
 
 	useEffect( () => {
 		if ( isLinkEnabled( paymentMethodsConfig ) ) {
@@ -83,57 +82,52 @@ const PaymentProcessor = ( {
 				api: api,
 				elements: elements,
 				emailId: 'email',
-				fill_field_method: ( address, nodeId, key ) => {
-					const setAddress =
-						BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
-							? customerData.setShippingAddress
-							: customerData.setBillingData ||
-							  customerData.setBillingAddress;
-					const customerAddress =
-						BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
-							? customerData.shippingAddress
-							: customerData.billingData ||
-							  customerData.billingAddress;
-
-					if ( key === 'line1' ) {
-						customerAddress.address_1 = address.address[ key ];
-					} else if ( key === 'line2' ) {
-						customerAddress.address_2 = address.address[ key ];
-					} else if ( key === 'postal_code' ) {
-						customerAddress.postcode = address.address[ key ];
-					} else {
-						customerAddress[ key ] = address.address[ key ];
+				onAutofill: ( billingAddress, shippingAddress ) => {
+					// in some cases (e.g.: customer doesn't select the payment method in the Link modal), the billing address is empty.
+					if ( billingAddress ) {
+						// setting the country first, in case the "state"/"county"/"province"
+						// select changes from a select to a text field (or vice-versa).
+						setBillingAddress( {
+							country: billingAddress.country,
+						} );
+						// after the country, we can safely set the other fields
+						setBillingAddress( {
+							...billingAddress,
+						} );
 					}
 
-					setAddress( customerAddress );
-
-					if ( customerData.billingData ) {
-						customerData.billingData.email = getBlocksEmailValue();
-						customerData.setBillingData( customerData.billingData );
-					} else {
-						customerData.billingAddress.email = getBlocksEmailValue();
-						customerData.setBillingAddress(
-							customerData.billingAddress
-						);
+					// in some cases (e.g.: customer doesn't select the shipping address method in the Link modal),
+					// the shipping address is empty.
+					if ( shippingAddress ) {
+						// setting the country first, in case the "state"/"county"/"province"
+						// select changes from a select to a text field (or vice-versa).
+						setShippingAddress( {
+							country: shippingAddress.country,
+						} );
+						// after the country, we can safely set the other fields
+						setShippingAddress( {
+							...shippingAddress,
+						} );
 					}
+
+					// after all the above, we can now set the email field by getting its value from the DOM.
+					setBillingAddress( {
+						email: getBlocksEmailValue(),
+					} );
+					setShippingAddress( {
+						email: getBlocksEmailValue(),
+					} );
 				},
-				show_button: blocksShowLinkButtonHandler,
-				shipping_fields: BLOCKS_SHIPPING_ADDRESS_FIELDS,
-				billing_fields: BLOCKS_BILLING_ADDRESS_FIELDS,
-				complete_shipping: () => {
-					return (
-						document.getElementById( 'shipping-address_1' ) !== null
-					);
-				},
-				complete_billing: () => {
-					return (
-						document.getElementById( 'billing-address_1' ) !== null
-					);
-				},
+				onButtonShow: blocksShowLinkButtonHandler,
 			} );
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ elements ] );
+	}, [
+		api,
+		elements,
+		paymentMethodsConfig,
+		setBillingAddress,
+		setShippingAddress,
+	] );
 
 	useEffect(
 		() =>

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Code;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
@@ -14,7 +15,7 @@ use WCPay\Session_Rate_Limiter;
  */
 class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase {
 	const SHIPPING_ADDRESS = [
-		'country'   => 'US',
+		'country'   => Country_Code::UNITED_STATES,
 		'state'     => 'CA',
 		'postcode'  => '94110',
 		'city'      => 'San Francisco',
@@ -153,6 +154,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function tear_down() {
 		parent::tear_down();
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
 		$this->zone->delete();
@@ -548,5 +550,21 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$build_display_items_result['total']['amount'],
 			'Failed asserting total amount are the same for get_product_data and build_display_items'
 		);
+	}
+
+	public function test_filter_cart_needs_shipping_address_returns_false() {
+		sleep( 1 );
+		$this->zone->delete_shipping_method( $this->flat_rate_id );
+		$this->zone->delete_shipping_method( $this->local_pickup_id );
+
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->assertFalse( $this->pr->filter_cart_needs_shipping_address( true ) );
+	}
+
+	public function test_filter_cart_needs_shipping_address_returns_true() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->assertTrue( $this->pr->filter_cart_needs_shipping_address( true ) );
 	}
 }

@@ -332,7 +332,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 				->willReturn( $mock_charge );
 		}
 
-		// Prepare all parameters for `attach_intent_info_to_order`.
+		// Prepare all parameters for `attach_intent_info_to_order__legacy`.
 		$intent->expects( $this->once() )
 			->method( 'get_id' )
 			->willReturn( $intent_id );
@@ -355,7 +355,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			->willReturn( 'prod' );
 
 		$this->mock_legacy_service->expects( $this->once() )
-			->method( 'attach_intent_info_to_order' )
+			->method( 'attach_intent_info_to_order__legacy' )
 			->with(
 				$mock_order,
 				$intent_id,
@@ -412,7 +412,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$mock_intent->expects( $this->once() )->method( 'get_status' )->willReturn( $intent_status );
 
 		$this->mock_legacy_service->expects( $this->once() )
-			->method( 'attach_intent_info_to_order' )
+			->method( 'attach_intent_info_to_order__legacy' )
 			->with(
 				$mock_order,
 				$intent_id,

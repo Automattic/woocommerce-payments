@@ -12,7 +12,7 @@ import { useDispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import { trackEligibilityModalClosed } from 'onboarding/tracking';
-import HeaderImg from 'assets/images/illustrations/po-eligibility.svg';
+import ConfettiAnimation from 'components/confetti-animation';
 import './style.scss';
 
 const ProgressiveOnboardingEligibilityModal: React.FC = () => {
@@ -70,18 +70,13 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 			className="wcpay-progressive-onboarding-eligibility-modal"
 			onRequestClose={ handleDismiss }
 		>
-			<div className="wcpay-progressive-onboarding-eligibility-modal__image">
-				<img src={ HeaderImg } alt="Header" />
-			</div>
+			<ConfettiAnimation />
 			<h1 className="wcpay-progressive-onboarding-eligibility-modal__heading">
-				{ __(
-					'You’re eligible to start selling now and fast-track the setup process.',
-					'woocommerce-payments'
-				) }
+				{ __( 'You’re ready to sell.', 'woocommerce-payments' ) }
 			</h1>
 			<h2 className="wcpay-progressive-onboarding-eligibility-modal__subheading">
 				{ __(
-					'Start selling now with these benefits or continue the process to set up deposits.',
+					'Start selling now and fast track the setup process, or continue the process to set up deposits with WooPayments.',
 					'woocommerce-payments'
 				) }
 			</h2>
@@ -97,7 +92,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 					{ sprintf(
 						/* translators: %s: WooPayments */
 						__(
-							'%s enables you to start processing payments right away.',
+							'%s enables you to start processing credit card payments right away.',
 							'woocommerce-payments'
 						),
 						'WooPayments'
@@ -109,7 +104,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 						{ __( 'Quick and easy setup', 'woocommerce-payments' ) }
 					</h3>
 					{ __(
-						'The setup process is super simple and ensures your store is ready to accept payments.',
+						'The setup process is super simple and ensures your store is ready to accept card payments.',
 						'woocommerce-payments'
 					) }
 				</div>
@@ -125,14 +120,11 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 				</div>
 			</div>
 			<div className="wcpay-progressive-onboarding-eligibility-modal__footer">
-				<Button isSecondary onClick={ handleSetup }>
-					{ __(
-						'Set up payments and deposits',
-						'woocommerce-payments'
-					) }
+				<Button variant="secondary" onClick={ handleSetup }>
+					{ __( 'Start receiving deposits', 'woocommerce-payments' ) }
 				</Button>
-				<Button isPrimary onClick={ handlePaymentsOnly }>
-					{ __( 'Enable payments only', 'woocommerce-payments' ) }
+				<Button variant="primary" onClick={ handlePaymentsOnly }>
+					{ __( 'Start selling', 'woocommerce-payments' ) }
 				</Button>
 			</div>
 		</Modal>
