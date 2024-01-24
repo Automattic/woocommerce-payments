@@ -86,9 +86,7 @@ jQuery( function ( $ ) {
 	} );
 
 	window.addEventListener( 'hashchange', () => {
-		console.log( '### hashchange', window.location.hash );
 		if ( window.location.hash.startsWith( '#wcpay-confirm-' ) ) {
-			console.log( '### hashchange confirm' );
 			blockUI( $forms );
 			showAuthenticationModalIfRequired( api, $forms ).finally( () => {
 				unblockUI( $forms );

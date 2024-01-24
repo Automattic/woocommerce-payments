@@ -279,68 +279,65 @@ export default class WCPayAPI {
 			);
 		};
 
-		const request = confirmPaymentOrSetup()
-			// ToDo: Switch to an async function once it works with webpack.
-			.then( ( result ) => {
-				if ( ! orderIdPartials ) {
-					console.log( '### reached here', result );
-					return [
-						Promise.resolve( { return_url: '' } ),
-						result.error,
-					];
-				}
-
-				// In case this is being called via payment request button from a product page,
-				// the getConfig function won't work, so fallback to getPaymentRequestData.
-				const ajaxUrl =
-					getPaymentRequestData( 'ajax_url' ) ??
-					getConfig( 'ajaxUrl' );
-
-				const intentId =
-					( result.paymentIntent && result.paymentIntent.id ) ||
-					( result.setupIntent && result.setupIntent.id ) ||
-					( result.error &&
-						result.error.payment_intent &&
-						result.error.payment_intent.id ) ||
-					( result.error.setup_intent &&
-						result.error.setup_intent.id );
-
-				const orderUpdateCall = this.request( ajaxUrl, {
-					action: 'update_order_status',
-					order_id: orderId,
-					// Update the current order status nonce with the new one to ensure that the update
-					// order status call works when a guest user creates an account during checkout.
-					_ajax_nonce: nonce,
-					intent_id: intentId,
-					payment_method_id: paymentMethodToSave || null,
-				} );
-
-				return [ orderUpdateCall, result.error ];
-			} )
-			.then( ( [ verificationCall, originalError ] ) => {
-				debugger;
-				if ( originalError ) {
-					throw originalError;
-				}
-
-				return verificationCall.then( ( response ) => {
-					const result =
-						typeof response === 'string'
-							? JSON.parse( response )
-							: response;
-
-					if ( result.error ) {
-						throw result.error;
+		return (
+			confirmPaymentOrSetup()
+				// ToDo: Switch to an async function once it works with webpack.
+				.then( ( result ) => {
+					if ( ! isOrderPage ) {
+						console.log( '### reached here', result );
+						return [
+							Promise.resolve( { return_url: '' } ),
+							result.error,
+						];
 					}
 
-					return result.return_url;
-				} );
-			} );
+					// In case this is being called via payment request button from a product page,
+					// the getConfig function won't work, so fallback to getPaymentRequestData.
+					const ajaxUrl =
+						getPaymentRequestData( 'ajax_url' ) ??
+						getConfig( 'ajaxUrl' );
 
-		return {
-			request,
-			isOrderPage,
-		};
+					const intentId =
+						( result.paymentIntent && result.paymentIntent.id ) ||
+						( result.setupIntent && result.setupIntent.id ) ||
+						( result.error &&
+							result.error.payment_intent &&
+							result.error.payment_intent.id ) ||
+						( result.error.setup_intent &&
+							result.error.setup_intent.id );
+
+					const orderUpdateCall = this.request( ajaxUrl, {
+						action: 'update_order_status',
+						order_id: orderId,
+						// Update the current order status nonce with the new one to ensure that the update
+						// order status call works when a guest user creates an account during checkout.
+						_ajax_nonce: nonce,
+						intent_id: intentId,
+						payment_method_id: paymentMethodToSave || null,
+					} );
+
+					return [ orderUpdateCall, result.error ];
+				} )
+				.then( ( [ verificationCall, originalError ] ) => {
+					debugger;
+					if ( originalError ) {
+						throw originalError;
+					}
+
+					return verificationCall.then( ( response ) => {
+						const result =
+							typeof response === 'string'
+								? JSON.parse( response )
+								: response;
+
+						if ( result.error ) {
+							throw result.error;
+						}
+
+						return result.return_url;
+					} );
+				} )
+		);
 	}
 
 	/**

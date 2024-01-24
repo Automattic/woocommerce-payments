@@ -21,38 +21,33 @@ const cleanupURL = () => {
 	);
 };
 
-export const showAuthenticationModalIfRequired = ( api ) => {
+export const showAuthenticationModalIfRequired = async ( api ) => {
 	const paymentMethodId = document.querySelector( '#wcpay-payment-method' )
 		?.value;
 
-	const confirmation = api.confirmIntent(
+	const confirmationRequest = api.confirmIntent(
 		window.location.href,
 		shouldSavePaymentPaymentMethod() ? paymentMethodId : null
 	);
 
 	// Boolean `true` means that there is nothing to confirm.
-	if ( confirmation === true ) {
+	if ( confirmationRequest === true ) {
 		return Promise.resolve();
 	}
 
-	const { request } = confirmation;
 	cleanupURL();
 
-	return request
-		.then( ( redirectUrl ) => {
-			debugger;
-			window.location = redirectUrl;
-		} )
-		.catch( ( error ) => {
-			debugger;
-			let errorMessage = error.message;
+	try {
+		window.location = await confirmationRequest;
+	} catch ( error ) {
+		let errorMessage = error.message;
 
-			// If this is a generic error, we probably don't want to display the error message to the user,
-			// so display a generic message instead.
-			if ( error instanceof Error ) {
-				errorMessage = getConfig( 'genericErrorMessage' );
-			}
+		// If this is a generic error, we probably don't want to display the error message to the user,
+		// so display a generic message instead.
+		if ( error instanceof Error ) {
+			errorMessage = getConfig( 'genericErrorMessage' );
+		}
 
-			showErrorCheckout( errorMessage );
-		} );
+		showErrorCheckout( errorMessage );
+	}
 };
