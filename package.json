@@ -33,7 +33,7 @@
     "test:e2e-up": "./tests/e2e/env/up.sh",
     "test:e2e-cleanup": "./tests/e2e/env/cleanup.sh",
     "test:e2e-reset": "npm run test:e2e-down && npm run test:e2e-cleanup",
-    "test:e2e": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.config.js",
+    "test:e2e": "NODE_CONFIG_DIR='tests/e2e/config' JEST_PUPPETEER_CONFIG='tests/e2e/config/jest-puppeteer-headless.config.js' wp-scripts test-e2e --config tests/e2e/config/jest.config.js",
     "test:e2e-dev": "NODE_CONFIG_DIR='tests/e2e/config' JEST_PUPPETEER_CONFIG='tests/e2e/config/jest-puppeteer.config.js' wp-scripts test-e2e --config tests/e2e/config/jest.config.js --puppeteer-interactive",
     "test:e2e-performance": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.performance.config.js",
     "test:update-snapshots": "npm run test:js -- --updateSnapshot",
