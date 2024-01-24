@@ -285,13 +285,22 @@ export const WoopayExpressCheckoutButton = ( {
 							}
 						)
 							.then( ( response ) => {
-								iframe.contentWindow.postMessage(
-									{
-										action: 'setPreemptiveSessionData',
-										value: response,
-									},
-									getConfig( 'woopayHost' )
-								);
+								if (
+									response?.blog_id &&
+									response?.data?.session
+								) {
+									iframe.contentWindow.postMessage(
+										{
+											action: 'setPreemptiveSessionData',
+											value: response,
+										},
+										getConfig( 'woopayHost' )
+									);
+								} else {
+									// Set button's default onClick handle to use modal checkout flow.
+									initWoopayRef.current = onClickFallback;
+									throw new Error( response?.data );
+								}
 							} )
 							.catch( () => {
 								const errorMessage = __(
@@ -317,13 +326,22 @@ export const WoopayExpressCheckoutButton = ( {
 						}
 					)
 						.then( ( response ) => {
-							iframe.contentWindow.postMessage(
-								{
-									action: 'setPreemptiveSessionData',
-									value: response,
-								},
-								getConfig( 'woopayHost' )
-							);
+							if (
+								response?.blog_id &&
+								response?.data?.session
+							) {
+								iframe.contentWindow.postMessage(
+									{
+										action: 'setPreemptiveSessionData',
+										value: response,
+									},
+									getConfig( 'woopayHost' )
+								);
+							} else {
+								// Set button's default onClick handle to use modal checkout flow.
+								initWoopayRef.current = onClickFallback;
+								throw new Error( response?.data );
+							}
 						} )
 						?.catch( () => {
 							const errorMessage = __(
