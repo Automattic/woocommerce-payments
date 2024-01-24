@@ -656,11 +656,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Proceed with current request using new login session (to ensure consistent nonce).
+	 * Only apply during the checkout process with the account creation.
 	 *
 	 * @param string $cookie New cookie value.
 	 */
 	public function set_cookie_on_current_request( $cookie ) {
-		$_COOKIE[ LOGGED_IN_COOKIE ] = $cookie;
+		if ( defined( 'WOOCOMMERCE_CHECKOUT' ) && WOOCOMMERCE_CHECKOUT && did_action( 'woocommerce_created_customer' ) > 0 ) {
+			$_COOKIE[ LOGGED_IN_COOKIE ] = $cookie;
+		}
 	}
 
 	/**
