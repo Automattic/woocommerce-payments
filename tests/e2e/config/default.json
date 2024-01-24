@@ -74,6 +74,32 @@
         "email": "e2e-wcpay-customer@woo.com"
       }
     },
+    "upe-customer": {
+      "billing": {
+        "be": {
+          "firstname": "I am",
+          "lastname": "Customer",
+          "company": "Automattic",
+          "country": "Belgium",
+          "addressfirstline": "Rue de l’Étuve, 1000",
+          "addresssecondline": "billing-be",
+          "city": "Bruxelles",
+          "phone": "123456789",
+          "email": "e2e-wcpay-customer@woo.com"
+        },
+        "de": {
+          "firstname": "I am",
+          "lastname": "Customer",
+          "company": "Automattic",
+          "country": "Germany",
+          "addressfirstline": "Petuelring 130",
+          "addresssecondline": "billing-de",
+          "city": "München",
+          "phone": "123456789",
+          "email": "e2e-wcpay-customer@woo.com"
+        }
+      }
+    },
     "subscriptions-customer": {
       "billing": {
         "firstname": "I am",
