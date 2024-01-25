@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Allow subscription purchase via Payment Request when no shipping methods are present.

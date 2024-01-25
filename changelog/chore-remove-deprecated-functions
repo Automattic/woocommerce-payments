@@ -1,0 +1,4 @@
+Significance: major
+Type: dev
+
+chore: removed deprecated functions since 5.0.0

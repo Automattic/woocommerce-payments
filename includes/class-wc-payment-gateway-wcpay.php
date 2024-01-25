@@ -620,21 +620,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Gets payment method settings to pass to client scripts
-	 *
-	 * @deprecated 5.0.0
-	 *
-	 * @return array
-	 */
-	private function get_enabled_payment_method_config() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Checkout::get_enabled_payment_method_config' );
-		return WC_Payments::get_wc_payments_checkout()->get_enabled_payment_method_config();
-	}
-
-
-	/**
 	 * If we're in a WooPay preflight check, remove all the checkout order processed
-	 * actions to prevent reduce available resources quantity.
+	 * actions to prevent a quantity reduction of the available resources.
 	 *
 	 * @param mixed           $response The response object.
 	 * @param mixed           $handler The handler used for the response.
@@ -647,6 +634,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! empty( $payment_data['is-woopay-preflight-check'] ) ) {
 			remove_all_actions( 'woocommerce_store_api_checkout_update_order_meta' );
 			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
+			// Avoid increasing coupon usage count during preflight check.
+			remove_all_actions( 'woocommerce_order_status_pending' );
 		}
 
 		return $response;
@@ -895,59 +884,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<div id="wcpay-account-settings-container"></div>
 			<?php
 		endif;
-	}
-
-	/**
-	 * Log payment errors on Checkout.
-	 *
-	 * @throws Exception If nonce is not present or invalid or charge ID is empty or order not found.
-	 */
-	public function log_payment_error_ajax() {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_log_payment_error_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Exception( 'Invalid request.' );
-			}
-
-			$charge_id = isset( $_POST['charge_id'] ) ? wc_clean( wp_unslash( $_POST['charge_id'] ) ) : '';
-			if ( empty( $charge_id ) ) {
-				throw new Exception( 'Charge ID cannot be empty.' );
-			}
-
-			// Get charge data from WCPay Server.
-			$request = Get_Charge::create( $charge_id );
-			$request->set_hook_args( $charge_id );
-			$charge_data = $request->send();
-			$order_id    = $charge_data['metadata']['order_id'];
-
-			// Validate Order ID and proceed with logging errors and updating order status.
-			$order = wc_get_order( $order_id );
-			if ( ! $order ) {
-				throw new Exception( 'Order not found. Unable to log error.' );
-			}
-
-			$intent_id = $charge_data['payment_intent'] ?? $order->get_meta( '_intent_id' );
-
-			$request = Get_Intention::create( $intent_id );
-			$request->set_hook_args( $order );
-			$intent = $request->send();
-
-			$intent_status = $intent->get_status();
-			$error_message = esc_html( rtrim( $charge_data['failure_message'], '.' ) );
-
-			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $error_message );
-
-			wp_send_json_success();
-		} catch ( Exception $e ) {
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
-					],
-				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
-			);
-		}
 	}
 
 	/**
@@ -3888,7 +3824,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $this->stripe_id;
 	}
 
-
 	/**
 	 * Returns the list of enabled payment method types that will function with the current checkout.
 	 *
@@ -4220,7 +4155,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $payment_method_details['type'] ?? null;
 	}
 
-
 	/**
 	 * This function wraps WC_Payments::get_payment_method_map, useful for unit testing.
 	 *
@@ -4345,47 +4279,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function is_in_test_mode() {
 		wc_deprecated_function( __FUNCTION__, '5.6.0', 'WC_Payments::mode()->is_test()' );
 		return WC_Payments::mode()->is_test();
-	}
-
-	/**
-	 * Whether the current page is the WooPayments settings page.
-	 *
-	 * @deprecated 5.0.0
-	 *
-	 * @return bool
-	 */
-	public static function is_current_page_settings() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Admin_Settings::is_current_page_settings' );
-		return WC_Payments_Admin_Settings::is_current_page_settings();
-	}
-
-	/**
-	 * Generates the configuration values, needed for payment fields.
-	 *
-	 * Isolated as a separate method in order to be available both
-	 * during the classic checkout, as well as the checkout block.
-	 *
-	 * @deprecated use WC_Payments_Checkout::get_payment_fields_js_config instead.
-	 *
-	 * @return array
-	 */
-	public function get_payment_fields_js_config() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Checkout::get_payment_fields_js_config' );
-		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-	}
-
-	/**
-	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
-	 * Customer data is retrieved from order when on Pay for Order.
-	 * Customer data is retrieved from customer when on 'Add Payment Method'.
-	 *
-	 * @deprecated use WC_Payments_Customer_Service::get_prepared_customer_data() instead.
-	 *
-	 * @return array|null An array with customer data or nothing.
-	 */
-	public function get_prepared_customer_data() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Customer_Service::get_prepared_customer_data' );
-		return WC_Payments::get_customer_service()->get_prepared_customer_data();
 	}
 
 	// End: Deprecated functions.
