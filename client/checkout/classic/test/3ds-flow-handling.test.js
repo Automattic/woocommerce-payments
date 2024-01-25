@@ -27,11 +27,7 @@ describe( 'showAuthenticationModalIfRequired', () => {
 		const mockedRequest = Promise.resolve( 'https://example.com/checkout' );
 
 		const apiMock = {
-			confirmIntent: jest.fn( () => {
-				return {
-					request: mockedRequest,
-				};
-			} ),
+			confirmIntent: jest.fn( () => mockedRequest ),
 		};
 
 		showAuthenticationModalIfRequired( apiMock );
