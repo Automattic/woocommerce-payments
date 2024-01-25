@@ -900,59 +900,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Log payment errors on Checkout.
-	 *
-	 * @throws Exception If nonce is not present or invalid or charge ID is empty or order not found.
-	 */
-	public function log_payment_error_ajax() {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_log_payment_error_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Exception( 'Invalid request.' );
-			}
-
-			$charge_id = isset( $_POST['charge_id'] ) ? wc_clean( wp_unslash( $_POST['charge_id'] ) ) : '';
-			if ( empty( $charge_id ) ) {
-				throw new Exception( 'Charge ID cannot be empty.' );
-			}
-
-			// Get charge data from WCPay Server.
-			$request = Get_Charge::create( $charge_id );
-			$request->set_hook_args( $charge_id );
-			$charge_data = $request->send();
-			$order_id    = $charge_data['metadata']['order_id'];
-
-			// Validate Order ID and proceed with logging errors and updating order status.
-			$order = wc_get_order( $order_id );
-			if ( ! $order ) {
-				throw new Exception( 'Order not found. Unable to log error.' );
-			}
-
-			$intent_id = $charge_data['payment_intent'] ?? $order->get_meta( '_intent_id' );
-
-			$request = Get_Intention::create( $intent_id );
-			$request->set_hook_args( $order );
-			$intent = $request->send();
-
-			$intent_status = $intent->get_status();
-			$error_message = esc_html( rtrim( $charge_data['failure_message'], '.' ) );
-
-			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $error_message );
-
-			wp_send_json_success();
-		} catch ( Exception $e ) {
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
-					],
-				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
-			);
-		}
-	}
-
-	/**
 	 * Displays the save to account checkbox.
 	 *
 	 * @param bool $force_checked True if the checkbox must be forced to "checked" state (and invisible).
