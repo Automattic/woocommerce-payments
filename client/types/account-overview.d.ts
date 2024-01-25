@@ -30,7 +30,6 @@ export interface Account {
 export interface Balance {
 	amount: number;
 	currency: string;
-	deposits_count?: number;
 	source_types: Record< string, never >[];
 }
 
@@ -59,7 +58,6 @@ export interface InstantBalance {
 export interface Overview {
 	currency: string;
 	lastPaid: Deposit | undefined;
-	nextScheduled: Deposit | undefined;
 	pending: Balance | undefined;
 	available: Balance | undefined;
 	instant: InstantBalance | undefined;
