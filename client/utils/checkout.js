@@ -37,22 +37,3 @@ export const getUPEConfig = ( name ) => {
 
 	return config[ name ] || null;
 };
-
-/**
- * Forms dynamic gateway title for UPE checkout from enabled methods
- *
- * @param {Object} paymentMethodsConfig Object containing map of enabled UPE payment methods to settings.
- * @return {string} Dynamic title string dependent on payment methods enabled.
- */
-export const getCustomGatewayTitle = ( paymentMethodsConfig ) => {
-	const enabledPaymentMethods = Object.keys( paymentMethodsConfig ).sort();
-	let label = '';
-
-	if ( enabledPaymentMethods.length < 2 ) {
-		label = paymentMethodsConfig[ enabledPaymentMethods[ 0 ] ].title;
-	} else {
-		label = getConfig( 'checkoutTitle' );
-	}
-
-	return label;
-};
