@@ -620,19 +620,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Gets payment method settings to pass to client scripts
-	 *
-	 * @deprecated 5.0.0
-	 *
-	 * @return array
-	 */
-	private function get_enabled_payment_method_config() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Checkout::get_enabled_payment_method_config' );
-		return WC_Payments::get_wc_payments_checkout()->get_enabled_payment_method_config();
-	}
-
-
-	/**
 	 * If we're in a WooPay preflight check, remove all the checkout order processed
 	 * actions to prevent a quantity reduction of the available resources.
 	 *
@@ -3837,7 +3824,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $this->stripe_id;
 	}
 
-
 	/**
 	 * Returns the list of enabled payment method types that will function with the current checkout.
 	 *
@@ -4169,7 +4155,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $payment_method_details['type'] ?? null;
 	}
 
-
 	/**
 	 * This function wraps WC_Payments::get_payment_method_map, useful for unit testing.
 	 *
@@ -4294,47 +4279,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function is_in_test_mode() {
 		wc_deprecated_function( __FUNCTION__, '5.6.0', 'WC_Payments::mode()->is_test()' );
 		return WC_Payments::mode()->is_test();
-	}
-
-	/**
-	 * Whether the current page is the WooPayments settings page.
-	 *
-	 * @deprecated 5.0.0
-	 *
-	 * @return bool
-	 */
-	public static function is_current_page_settings() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Admin_Settings::is_current_page_settings' );
-		return WC_Payments_Admin_Settings::is_current_page_settings();
-	}
-
-	/**
-	 * Generates the configuration values, needed for payment fields.
-	 *
-	 * Isolated as a separate method in order to be available both
-	 * during the classic checkout, as well as the checkout block.
-	 *
-	 * @deprecated use WC_Payments_Checkout::get_payment_fields_js_config instead.
-	 *
-	 * @return array
-	 */
-	public function get_payment_fields_js_config() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Checkout::get_payment_fields_js_config' );
-		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-	}
-
-	/**
-	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
-	 * Customer data is retrieved from order when on Pay for Order.
-	 * Customer data is retrieved from customer when on 'Add Payment Method'.
-	 *
-	 * @deprecated use WC_Payments_Customer_Service::get_prepared_customer_data() instead.
-	 *
-	 * @return array|null An array with customer data or nothing.
-	 */
-	public function get_prepared_customer_data() {
-		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Customer_Service::get_prepared_customer_data' );
-		return WC_Payments::get_customer_service()->get_prepared_customer_data();
 	}
 
 	// End: Deprecated functions.
