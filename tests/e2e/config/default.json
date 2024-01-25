@@ -95,6 +95,7 @@
           "addressfirstline": "Petuelring 130",
           "addresssecondline": "billing-de",
           "city": "München",
+          "state": "DE-BY",
           "phone": "123456789",
           "email": "e2e-wcpay-customer@woo.com"
         }
