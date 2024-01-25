@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent coupon usage increase in a WooPay preflight check.

@@ -497,6 +497,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	public function init_hooks() {
+		add_action( 'init', [ $this, 'maybe_update_properties_with_country' ] );
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
@@ -524,6 +525,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$this->maybe_init_subscriptions_hooks();
+	}
+
+	/**
+	 * Updates icon and title using the account country.
+	 * This method runs on init is not in the controller because get_account_country might
+	 * make a request to the API if the account data is not cached.
+	 *
+	 * @return void
+	 */
+	public function maybe_update_properties_with_country(): void {
+		if ( Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $this->stripe_id ) {
+			return;
+		}
+		$account_country = $this->get_account_country();
+		$this->icon      = $this->payment_method->get_icon( $account_country );
+		$this->title     = $this->payment_method->get_title( $account_country );
 	}
 
 	/**
@@ -617,7 +634,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * If we're in a WooPay preflight check, remove all the checkout order processed
-	 * actions to prevent reduce available resources quantity.
+	 * actions to prevent a quantity reduction of the available resources.
 	 *
 	 * @param mixed           $response The response object.
 	 * @param mixed           $handler The handler used for the response.
@@ -630,6 +647,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! empty( $payment_data['is-woopay-preflight-check'] ) ) {
 			remove_all_actions( 'woocommerce_store_api_checkout_update_order_meta' );
 			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
+			// Avoid increasing coupon usage count during preflight check.
+			remove_all_actions( 'woocommerce_order_status_pending' );
 		}
 
 		return $response;
@@ -675,11 +694,64 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
 	 * Also used by WC Core to complete the task "Set up WooPayments".
+	 * Called directly by WooCommerce Core.
 	 *
 	 * @return bool
 	 */
 	public function is_account_partially_onboarded(): bool {
 		return $this->account->is_stripe_connected() && ! $this->account->is_details_submitted();
+	}
+
+	/**
+	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 * Called directly by WooCommerce Core.
+	 *
+	 * @return string URL of the configuration screen for this gateway
+	 */
+	public static function get_settings_url() {
+		return WC_Payments_Admin_Settings::get_settings_url();
+	}
+
+	/**
+	 * Text provided to users during onboarding setup.
+	 * Called directly by WooCommerce Core.
+	 *
+	 * @return string
+	 */
+	public function get_setup_help_text() {
+		return __( 'Next we’ll ask you to share a few details about your business to create your account.', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Get the connection URL.
+	 * Called directly by WooCommerce Core.
+	 *
+	 * @return string Connection URL.
+	 */
+	public function get_connection_url() {
+		$account_data = $this->account->get_cached_account_data();
+
+		// The onboarding is finished if account_id is set. `Set up` will be shown instead of `Connect`.
+		if ( isset( $account_data['account_id'] ) ) {
+			return '';
+		}
+		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
+	}
+
+	/**
+	 * Add a url to the admin order page that links directly to the transactions detail view.
+	 * Called directly by WooCommerce Core.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param WC_Order $order The context passed into this function when the user view the order details page in WordPress admin.
+	 * @return string
+	 */
+	public function get_transaction_url( $order ) {
+		$intent_id = $this->order_service->get_intent_id_for_order( $order );
+		$charge_id = $this->order_service->get_charge_id_for_order( $order );
+
+		return WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 	}
 
 	/**
@@ -2053,7 +2125,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$payment_method_title = $payment_method->get_title( $payment_method_details );
+		$payment_method_title = $payment_method->get_title( $this->get_account_country(), $payment_method_details );
 
 		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
 
@@ -2338,50 +2410,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $payment_method_details['type'] ?? 'unknown';
-	}
-
-	/**
-	 * Overrides the original method in woo's WC_Settings_API in order to conditionally render the enabled checkbox.
-	 *
-	 * @param string $key Field key.
-	 * @param array  $data Field data.
-	 *
-	 * @return string Checkbox markup or empty string.
-	 */
-	public function generate_checkbox_html( $key, $data ) {
-		if ( 'enabled' === $key && ! $this->is_connected() ) {
-			return '';
-		}
-
-		$in_dev_mode = WC_Payments::mode()->is_dev();
-
-		if ( 'test_mode' === $key && $in_dev_mode ) {
-			$data['custom_attributes']['disabled'] = 'disabled';
-			$data['label']                         = __( 'Sandbox mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
-		}
-
-		if ( 'enable_logging' === $key && $in_dev_mode ) {
-			$data['custom_attributes']['disabled'] = 'disabled';
-			$data['label']                         = __( 'Sandbox mode is active so logging is on by default.', 'woocommerce-payments' );
-		}
-
-		return parent::generate_checkbox_html( $key, $data );
-	}
-
-	/**
-	 * Generates markup for account statement descriptor field.
-	 *
-	 * @param string $key Field key.
-	 * @param array  $data Field data.
-	 *
-	 * @return string
-	 */
-	public function generate_account_statement_descriptor_html( $key, $data ) {
-		if ( ! $this->is_connected() ) {
-			return '';
-		}
-
-		return parent::generate_text_html( $key, $data );
 	}
 
 	/**
@@ -2878,7 +2906,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string code of the country.
 	 */
-	protected function get_account_country( string $default_value = Country_Code::UNITED_STATES ): string {
+	public function get_account_country( string $default_value = Country_Code::UNITED_STATES ): string {
 		try {
 			if ( $this->is_connected() ) {
 				return $this->account->get_account_country() ?? $default_value;
@@ -3734,21 +3762,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Add a url to the admin order page that links directly to the transactions detail view.
-	 *
-	 * @since 1.4.0
-	 *
-	 * @param WC_Order $order The context passed into this function when the user view the order details page in WordPress admin.
-	 * @return string
-	 */
-	public function get_transaction_url( $order ) {
-		$intent_id = $this->order_service->get_intent_id_for_order( $order );
-		$charge_id = $this->order_service->get_charge_id_for_order( $order );
-
-		return WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-	}
-
-	/**
 	 * Returns a formatted token list for a user.
 	 *
 	 * @param int $user_id The user ID.
@@ -4031,31 +4044,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 	}
 
-
-	/**
-	 * Text provided to users during onboarding setup.
-	 *
-	 * @return string
-	 */
-	public function get_setup_help_text() {
-		return __( 'Next we’ll ask you to share a few details about your business to create your account.', 'woocommerce-payments' );
-	}
-
-	/**
-	 * Get the connection URL.
-	 *
-	 * @return string Connection URL.
-	 */
-	public function get_connection_url() {
-		$account_data = $this->account->get_cached_account_data();
-
-		// The onboarding is finished if account_id is set. `Set up` will be shown instead of `Connect`.
-		if ( isset( $account_data['account_id'] ) ) {
-			return '';
-		}
-		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
-	}
-
 	/**
 	 * Returns true if the code returned from the API represents an error that should be rate-limited.
 	 *
@@ -4222,15 +4210,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_selected_payment_method( $payment_method_type ) {
 		return WC_Payments::get_payment_method_by_id( $payment_method_type );
-	}
-
-	/**
-	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 *
-	 * @return string URL of the configuration screen for this gateway
-	 */
-	public static function get_settings_url() {
-		return WC_Payments_Admin_Settings::get_settings_url();
 	}
 
 	/**

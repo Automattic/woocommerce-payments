@@ -75,6 +75,7 @@ describe( 'Merchant Multi-Currency Settings', () => {
 
 		beforeAll( async () => {
 			await merchantWCP.activateMulticurrency();
+			await merchantWCP.disableAllEnabledCurrencies();
 
 			await shopperWCP.goToShopWithCurrency( 'USD' );
 			await shopperWCP.goToProductPageBySlug( 'beanie' );
