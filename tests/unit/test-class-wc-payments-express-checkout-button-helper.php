@@ -43,19 +43,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
-		$this->mock_express_checkout_helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_gateway,
-					$this->mock_wcpay_account,
-				]
-			)
-			->setMethods(
-				[
-					'is_product',
-				]
-			)
-			->getMock();
+		$this->mock_express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( $this->mock_wcpay_gateway, $this->mock_wcpay_account );
 	}
 
 	public function tear_down() {
@@ -108,10 +96,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_common_get_button_settings() {
-		$this->mock_express_checkout_helper
-			->method( 'is_product' )
-			->willReturn( true );
-
 		$this->assertEquals(
 			[
 				'type'   => 'buy',
