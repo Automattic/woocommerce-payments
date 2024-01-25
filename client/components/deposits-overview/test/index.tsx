@@ -20,7 +20,7 @@ import {
 	useDeposits,
 	useAllDepositsOverviews,
 } from 'wcpay/data';
-import type { CachedDeposit, DepositStatus } from 'wcpay/types/deposits';
+import type { CachedDeposit } from 'wcpay/types/deposits';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
 jest.mock( 'wcpay/data', () => ( {
@@ -87,10 +87,7 @@ const mockDeposits = [
 
 // Creates a mock Overview object for the given currency code and balance amounts.
 const createMockOverview = (
-	currencyCode: string,
-	depositAmount: number,
-	depositDate: number,
-	depositStatus: DepositStatus
+	currencyCode: string
 ): AccountOverview.Overview => {
 	return {
 		currency: currencyCode,
@@ -235,7 +232,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Component Renders', () => {
-		mockOverviews( [ createMockOverview( 'usd', 100, 0, 'pending' ) ] );
+		mockOverviews( [ createMockOverview( 'usd' ) ] );
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
 			deposits: mockDeposits,
@@ -296,9 +293,7 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Confirm notice renders if deposits blocked', () => {
 		mockAccount.deposits_blocked = true;
-		mockOverviews( [
-			createMockOverview( 'usd', 30000, 50000, 'pending' ),
-		] );
+		mockOverviews( [ createMockOverview( 'usd' ) ] );
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
 			deposits: mockDeposits,
