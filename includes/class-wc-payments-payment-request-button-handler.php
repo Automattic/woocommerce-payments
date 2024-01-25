@@ -23,6 +23,8 @@ use WCPay\Payment_Information;
  * WC_Payments_Payment_Request_Button_Handler class.
  */
 class WC_Payments_Payment_Request_Button_Handler {
+	const BUTTON_LOCATIONS = 'payment_request_button_locations';
+
 	/**
 	 * WC_Payments_Account instance to get information about the account
 	 *
@@ -507,17 +509,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Product page, but not available in settings.
-		if ( $this->express_checkout_helper->is_product() && ! $this->express_checkout_helper->is_available_at( 'product', 'payment_request_button_locations' ) ) {
+		if ( $this->express_checkout_helper->is_product() && ! $this->express_checkout_helper->is_available_at( 'product', self::BUTTON_LOCATIONS ) ) {
 			return false;
 		}
 
 		// Checkout page, but not available in settings.
-		if ( $this->express_checkout_helper->is_checkout() && ! $this->express_checkout_helper->is_available_at( 'checkout', 'payment_request_button_locations' ) ) {
+		if ( $this->express_checkout_helper->is_checkout() && ! $this->express_checkout_helper->is_available_at( 'checkout', self::BUTTON_LOCATIONS ) ) {
 			return false;
 		}
 
 		// Cart page, but not available in settings.
-		if ( $this->express_checkout_helper->is_cart() && ! $this->express_checkout_helper->is_available_at( 'cart', 'payment_request_button_locations' ) ) {
+		if ( $this->express_checkout_helper->is_cart() && ! $this->express_checkout_helper->is_available_at( 'cart', self::BUTTON_LOCATIONS ) ) {
 			return false;
 		}
 

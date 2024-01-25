@@ -22,6 +22,8 @@ use WCPay\WooPay\WooPay_Utilities;
  * WC_Payments_WooPay_Button_Handler class.
  */
 class WC_Payments_WooPay_Button_Handler {
+	const BUTTON_LOCATIONS = 'platform_checkout_button_locations';
+
 	/**
 	 * WC_Payments_Account instance to get information about the account
 	 *
@@ -121,11 +123,11 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Create WooPay button location option if it doesn't exist and enable all locations by default.
-		if ( ! array_key_exists( 'platform_checkout_button_locations', get_option( 'woocommerce_woocommerce_payments_settings' ) ) ) {
+		if ( ! array_key_exists( self::BUTTON_LOCATIONS, get_option( 'woocommerce_woocommerce_payments_settings' ) ) ) {
 
-			$all_locations = $this->gateway->form_fields['platform_checkout_button_locations']['options'];
+			$all_locations = $this->gateway->form_fields[ self::BUTTON_LOCATIONS ]['options'];
 
-			$this->gateway->update_option( 'platform_checkout_button_locations', array_keys( $all_locations ) );
+			$this->gateway->update_option( self::BUTTON_LOCATIONS, array_keys( $all_locations ) );
 
 			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, array_keys( $all_locations ) );
 		}
@@ -264,17 +266,17 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Product page, but not available in settings.
-		if ( $this->express_checkout_helper->is_product() && ! $this->express_checkout_helper->is_available_at( 'product', 'platform_checkout_button_locations' ) ) {
+		if ( $this->express_checkout_helper->is_product() && ! $this->express_checkout_helper->is_available_at( 'product', self::BUTTON_LOCATIONS ) ) {
 			return false;
 		}
 
 		// Checkout page, but not available in settings.
-		if ( $this->express_checkout_helper->is_checkout() && ! $this->express_checkout_helper->is_available_at( 'checkout', 'platform_checkout_button_locations' ) ) {
+		if ( $this->express_checkout_helper->is_checkout() && ! $this->express_checkout_helper->is_available_at( 'checkout', self::BUTTON_LOCATIONS ) ) {
 			return false;
 		}
 
 		// Cart page, but not available in settings.
-		if ( $this->express_checkout_helper->is_cart() && ! $this->express_checkout_helper->is_available_at( 'cart', 'platform_checkout_button_locations' ) ) {
+		if ( $this->express_checkout_helper->is_cart() && ! $this->express_checkout_helper->is_available_at( 'cart', self::BUTTON_LOCATIONS ) ) {
 			return false;
 		}
 
