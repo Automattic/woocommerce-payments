@@ -207,7 +207,7 @@ export default class WCPayAPI {
 	 *
 	 * @param {string} redirectUrl The redirect URL, returned from the server.
 	 * @param {string} paymentMethodToSave The ID of a Payment Method if it should be saved (optional).
-	 * @return {string|boolean} A redirect URL on success, or `true` if no confirmation is needed.
+	 * @return {Promise<string>|boolean} A redirect URL on success, or `true` if no confirmation is needed.
 	 */
 	confirmIntent( redirectUrl, paymentMethodToSave ) {
 		const partials = redirectUrl.match(
