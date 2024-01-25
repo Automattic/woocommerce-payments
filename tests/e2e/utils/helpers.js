@@ -80,3 +80,21 @@ export const getProductPriceFromProductPage = async () => {
 
 	return price;
 };
+
+/**
+ * Sets the state of all checkboxes matching the specified selector.
+ *
+ * @param {string} selector The selector to use to find checkboxes.
+ * @param {boolean} desiredState The desired state of the checkboxes.
+ */
+export const setCheckboxState = async ( selector, desiredState ) => {
+	const checkboxes = await page.$$( selector );
+	for ( const checkbox of checkboxes ) {
+		const isChecked = await (
+			await checkbox.getProperty( 'checked' )
+		 ).jsonValue();
+		if ( isChecked !== desiredState ) {
+			await checkbox.click();
+		}
+	}
+};
