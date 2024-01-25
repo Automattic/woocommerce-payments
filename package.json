@@ -73,6 +73,8 @@
     "@fingerprintjs/fingerprintjs": "3.4.1",
     "@stripe/react-stripe-js": "1.4.1",
     "@stripe/stripe-js": "1.15.1",
+    "@tanstack/react-query": "5.0.0",
+    "@tanstack/react-query-devtools": "5.0.0",
     "@woocommerce/explat": "2.3.0",
     "@woocommerce/number": "2.4.0",
     "canvas-confetti": "1.9.2",

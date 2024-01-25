@@ -12,7 +12,6 @@ import * as deposits from './deposits';
 import * as transactions from './transactions';
 import * as charges from './charges';
 import * as timeline from './timeline';
-import * as disputes from './disputes';
 import * as settings from './settings';
 import * as multiCurrency from './multi-currency';
 import * as readers from './card-readers';
@@ -30,7 +29,6 @@ export const initStore = () =>
 			transactions: transactions.reducer,
 			charges: charges.reducer,
 			timeline: timeline.reducer,
-			disputes: disputes.reducer,
 			settings: settings.reducer,
 			multiCurrency: multiCurrency.reducer,
 			readers: readers.reducer,
@@ -45,7 +43,6 @@ export const initStore = () =>
 			...transactions.actions,
 			...charges.actions,
 			...timeline.actions,
-			...disputes.actions,
 			...settings.actions,
 			...multiCurrency.actions,
 			...readers.actions,
@@ -61,7 +58,6 @@ export const initStore = () =>
 			...transactions.selectors,
 			...charges.selectors,
 			...timeline.selectors,
-			...disputes.selectors,
 			...settings.selectors,
 			...multiCurrency.selectors,
 			...readers.selectors,
@@ -76,7 +72,6 @@ export const initStore = () =>
 			...transactions.resolvers,
 			...charges.resolvers,
 			...timeline.resolvers,
-			...disputes.resolvers,
 			...settings.resolvers,
 			...multiCurrency.resolvers,
 			...readers.resolvers,
