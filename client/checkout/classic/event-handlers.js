@@ -130,6 +130,14 @@ jQuery( function ( $ ) {
 	} );
 
 	$payForOrderForm.on( 'submit', function () {
+		if (
+			$payForOrderForm
+				.find( "input:checked[name='payment_method']" )
+				.val() !== 'woocommerce_payments'
+		) {
+			return;
+		}
+
 		return processPaymentIfNotUsingSavedMethod( $payForOrderForm );
 	} );
 
