@@ -87,7 +87,12 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$this->mock_express_checkout_helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->disableOriginalConstructor()
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_gateway,
+					$this->mock_wcpay_account,
+				]
+			)
 			->setMethods(
 				[
 					'is_cart',
@@ -419,5 +424,22 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->with( 'cart' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+	}
+
+	public function test_get_button_settings() {
+		$this->mock_express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'type'    => 'buy',
+				'theme'   => 'dark',
+				'height'  => '48',
+				'size'    => 'medium',
+				'context' => 'product',
+			],
+			$this->mock_pr->get_button_settings()
+		);
 	}
 }

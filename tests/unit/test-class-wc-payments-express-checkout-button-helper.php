@@ -107,22 +107,18 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		);
 	}
 
-	public function test_get_button_settings() {
+	public function test_common_get_button_settings() {
 		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( true );
 
 		$this->assertEquals(
 			[
-				'type'         => 'buy',
-				'theme'        => 'dark',
-				'height'       => '48',
-				'locale'       => 'en',
-				'branded_type' => 'long',
-				'size'         => 'medium',
-				'context'      => 'product',
+				'type'   => 'buy',
+				'theme'  => 'dark',
+				'height' => '48',
 			],
-			$this->mock_express_checkout_helper->get_button_settings()
+			$this->mock_express_checkout_helper->get_common_button_settings()
 		);
 	}
 

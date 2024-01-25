@@ -114,7 +114,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 				[
 					'is_product',
 					'get_product',
-					'get_button_settings',
 				]
 			)
 			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
@@ -561,5 +560,22 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
 
 		$this->assertTrue( $this->pr->filter_cart_needs_shipping_address( true ) );
+	}
+
+	public function test_get_button_settings() {
+		$this->express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'type'         => 'buy',
+				'theme'        => 'dark',
+				'height'       => '48',
+				'locale'       => 'en',
+				'branded_type' => 'long',
+			],
+			$this->pr->get_button_settings()
+		);
 	}
 }

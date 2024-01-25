@@ -146,7 +146,7 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return array The modified config array.
 	 */
 	public function add_woopay_config( $config ) {
-		$config['woopayButton']      = $this->express_checkout_helper->get_button_settings();
+		$config['woopayButton']      = $this->get_button_settings();
 		$config['woopayButtonNonce'] = wp_create_nonce( 'woopay_button_nonce' );
 		$config['addToCartNonce']    = wp_create_nonce( 'wcpay-add-to-cart' );
 
@@ -219,6 +219,21 @@ class WC_Payments_WooPay_Button_Handler {
 		);
 
 		wp_die();
+	}
+
+	/**
+	 * The settings for the `button` attribute - they depend on the "grouped settings" flag value.
+	 *
+	 * @return array
+	 */
+	public function get_button_settings() {
+		$common_settings        = $this->express_checkout_helper->get_common_button_settings();
+		$woopay_button_settings = [
+			'size'    => $this->gateway->get_option( 'payment_request_button_size' ),
+			'context' => $this->express_checkout_helper->get_button_context(),
+		];
+
+		return array_merge( $common_settings, $woopay_button_settings );
 	}
 
 	/**
@@ -314,7 +329,7 @@ class WC_Payments_WooPay_Button_Handler {
 			return;
 		}
 
-		$settings = $this->express_checkout_helper->get_button_settings();
+		$settings = $this->get_button_settings();
 
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->express_checkout_helper->is_product() ); ?>>
