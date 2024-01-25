@@ -532,49 +532,4 @@ export default class WCPayAPI {
 			...paymentData,
 		} );
 	}
-
-	/**
-	 * Log Payment Errors via Ajax.
-	 *
-	 * @param {string} chargeId Stripe Charge ID
-	 * @return {boolean} Returns true irrespective of result.
-	 */
-	logPaymentError( chargeId ) {
-		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'log_payment_error' ),
-			{
-				charge_id: chargeId,
-				_ajax_nonce: getConfig( 'logPaymentErrorNonce' ),
-			}
-		).then( () => {
-			// There is not any action to take or harm caused by a failed update, so just returning true.
-			return true;
-		} );
-	}
-
-	/**
-	 * Redirect to the order-received page for duplicate payments.
-	 *
-	 * @param {Object} response Response data to check if doing the redirect.
-	 * @return {boolean} Returns true if doing the redirection.
-	 */
-	handleDuplicatePayments( {
-		wcpay_upe_paid_for_previous_order: previouslyPaid,
-		wcpay_upe_previous_successful_intent: previousSuccessfulIntent,
-		redirect,
-	} ) {
-		if ( redirect ) {
-			// Another order has the same cart content and was paid.
-			if ( previouslyPaid ) {
-				return ( window.location = redirect );
-			}
-
-			// Another intent has the equivalent successful status for the order.
-			if ( previousSuccessfulIntent ) {
-				return ( window.location = redirect );
-			}
-		}
-
-		return false;
-	}
 }
