@@ -26,7 +26,6 @@ describe( 'Deposits reducer tests', () => {
 	};
 	const mockOverview = {
 		last_deposit: mockDeposits[ 0 ],
-		next_deposit: mockDeposits[ 1 ],
 		balance: { object: 'balance' },
 		deposits_schedule: { interval: 'daily' },
 	};
