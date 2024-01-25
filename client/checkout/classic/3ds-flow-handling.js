@@ -25,20 +25,19 @@ export const showAuthenticationModalIfRequired = ( api ) => {
 	const paymentMethodId = document.querySelector( '#wcpay-payment-method' )
 		?.value;
 
-	const confirmation = api.confirmIntent(
+	const confirmationRequest = api.confirmIntent(
 		window.location.href,
 		shouldSavePaymentPaymentMethod() ? paymentMethodId : null
 	);
 
 	// Boolean `true` means that there is nothing to confirm.
-	if ( confirmation === true ) {
+	if ( confirmationRequest === true ) {
 		return Promise.resolve();
 	}
 
-	const { request } = confirmation;
 	cleanupURL();
 
-	return request
+	return confirmationRequest
 		.then( ( redirectUrl ) => {
 			window.location = redirectUrl;
 		} )

@@ -55,16 +55,15 @@ const paymentResponseHandler = async (
 	}
 
 	try {
-		const confirmation = api.confirmIntent( response.redirect );
+		const confirmationRequest = api.confirmIntent( response.redirect );
 		// We need to call `complete` outside of `completePayment` to close the dialog for 3DS.
 		event.complete( 'success' );
 
 		// `true` means there is no intent to confirm.
-		if ( confirmation === true ) {
+		if ( confirmationRequest === true ) {
 			completePayment( response.redirect );
 		} else {
-			const { request } = confirmation;
-			const redirectUrl = await request;
+			const redirectUrl = await confirmationRequest;
 
 			completePayment( redirectUrl );
 		}
