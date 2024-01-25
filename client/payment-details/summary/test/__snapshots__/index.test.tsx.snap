@@ -701,13 +701,13 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             class="payment-details__refund-controls"
           >
             <div
-              class="components-dropdown components-dropdown-menu"
+              class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
               tabindex="-1"
             >
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -996,13 +996,13 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
             class="payment-details__refund-controls"
           >
             <div
-              class="components-dropdown components-dropdown-menu"
+              class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
               tabindex="-1"
             >
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -1291,13 +1291,13 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
             class="payment-details__refund-controls"
           >
             <div
-              class="components-dropdown components-dropdown-menu"
+              class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
               tabindex="-1"
             >
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -1609,13 +1609,13 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             class="payment-details__refund-controls"
           >
             <div
-              class="components-dropdown components-dropdown-menu"
+              class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
               tabindex="-1"
             >
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -2448,13 +2448,13 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             class="payment-details__refund-controls"
           >
             <div
-              class="components-dropdown components-dropdown-menu"
+              class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
               tabindex="-1"
             >
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -2743,13 +2743,13 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
             class="payment-details__refund-controls"
           >
             <div
-              class="components-dropdown components-dropdown-menu"
+              class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
               tabindex="-1"
             >
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >
@@ -3038,13 +3038,13 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             class="payment-details__refund-controls"
           >
             <div
-              class="components-dropdown components-dropdown-menu"
+              class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
               tabindex="-1"
             >
               <button
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Translation actions"
+                aria-label="Transaction actions"
                 class="components-button components-dropdown-menu__toggle has-icon"
                 type="button"
               >

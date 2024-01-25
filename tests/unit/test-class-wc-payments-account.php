@@ -931,53 +931,39 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->is_account_rejected() );
 	}
 
-	public function test_is_account_partially_onboarded_returns_true() {
-		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
-			[
-				'account_id'               => 'acc_test',
-				'live_publishable_key'     => 'pk_test_',
-				'test_publishable_key'     => 'pk_live_',
-				'has_pending_requirements' => true,
-				'current_deadline'         => 12345,
-				'is_live'                  => true,
-				'status'                   => 'restricted',
-				'details_submitted'        => false,
-			]
-		);
-
-		$this->assertTrue( $this->wcpay_account->is_account_partially_onboarded() );
-
-	}
-
-	public function test_is_account_partially_onboarded_returns_false() {
-		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
-			[
-				'account_id'               => 'acc_test',
-				'live_publishable_key'     => 'pk_test_',
-				'test_publishable_key'     => 'pk_live_',
-				'has_pending_requirements' => true,
-				'current_deadline'         => 12345,
-				'is_live'                  => true,
-				'status'                   => 'restricted',
-				'details_submitted'        => true,
-			]
-		);
-
-		$this->assertFalse( $this->wcpay_account->is_account_partially_onboarded() );
-
-	}
-
-	public function test_is_account_partially_onboarded_returns_false_when_stripe_not_connected() {
-		$this->mock_empty_cache();
-
-		$this->mock_wcpay_request( Get_Account::class )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willThrowException(
-				new API_Exception( 'test', 'wcpay_account_not_found', 401 )
+	/**
+	 * Test the is_details_submitted method.
+	 *
+	 * @param bool $details_submitted Whether details_submitted is true for the account.
+	 *
+	 * @return void
+	 *
+	 * @dataProvider is_details_submitted_provider
+	 */
+	public function test_is_details_submitted( bool $details_submitted ): void {
+		$this->mock_database_cache->expects( $this->once() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_test_',
+					'test_publishable_key'     => 'pk_live_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+					'status'                   => 'restricted',
+					'details_submitted'        => $details_submitted,
+				]
 			);
 
-		$this->assertFalse( $this->wcpay_account->is_account_partially_onboarded() );
+		$this->assertEquals( $details_submitted, $this->wcpay_account->is_details_submitted() );
+	}
+
+	public function is_details_submitted_provider(): array {
+		return [
+			[ true ],
+			[ false ],
+		];
 	}
 
 	public function test_is_account_partially_onboarded_returns_false_if_account_not_connected() {

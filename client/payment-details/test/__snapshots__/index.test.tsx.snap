@@ -538,13 +538,13 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               class="payment-details__refund-controls"
             >
               <div
-                class="components-dropdown components-dropdown-menu"
+                class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
                 tabindex="-1"
               >
                 <button
                   aria-expanded="false"
                   aria-haspopup="true"
-                  aria-label="Translation actions"
+                  aria-label="Transaction actions"
                   class="components-button components-dropdown-menu__toggle has-icon"
                   type="button"
                 >
