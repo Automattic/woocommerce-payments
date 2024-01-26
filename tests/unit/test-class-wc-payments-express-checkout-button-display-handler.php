@@ -95,12 +95,27 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->setMethods( [ 'is_country_available' ] )
 			->getMock();
 
+		$this->mock_express_checkout_helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_gateway,
+					$this->mock_wcpay_account,
+				]
+			)
+			->setMethods(
+				[
+					'is_checkout',
+				]
+			)
+			->getMock();
+
 		$this->mock_woopay_button_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
 			->setConstructorArgs(
 				[
 					$this->mock_wcpay_account,
 					$this->mock_wcpay_gateway,
 					$this->mock_woopay_utilities,
+					$this->mock_express_checkout_helper,
 				]
 			)
 			->setMethods(
@@ -111,14 +126,12 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			)
 			->getMock();
 
-		$this->express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( $this->mock_wcpay_account );
-
 		$this->mock_payment_request_button_handler = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
 			->setConstructorArgs(
 				[
 					$this->mock_wcpay_account,
 					$this->mock_wcpay_gateway,
-					$this->express_checkout_helper,
+					$this->mock_express_checkout_helper,
 				]
 			)
 			->setMethods(
@@ -129,7 +142,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			)
 			->getMock();
 
-			$this->express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( $this->mock_wcpay_gateway, $this->mock_payment_request_button_handler, $this->mock_woopay_button_handler, $this->express_checkout_helper );
+			$this->express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( $this->mock_wcpay_gateway, $this->mock_payment_request_button_handler, $this->mock_woopay_button_handler, $this->mock_express_checkout_helper );
 
 		add_filter(
 			'woocommerce_available_payment_gateways',
@@ -176,7 +189,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( true );
 
-		$this->mock_payment_request_button_handler
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( false );
 
@@ -198,7 +211,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( false );
 
-		$this->mock_payment_request_button_handler
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( false );
 
@@ -218,7 +231,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( false );
 
-		$this->mock_payment_request_button_handler
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( false );
 
@@ -239,7 +252,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( true );
 
-		$this->mock_payment_request_button_handler
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( true );
 
