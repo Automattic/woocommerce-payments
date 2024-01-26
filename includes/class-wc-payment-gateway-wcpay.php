@@ -61,6 +61,7 @@ use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
+use Automattic\WooCommerce\Utilities\StringUtil;
 
 /**
  * Gateway class for WooPayments
@@ -1074,6 +1075,49 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks whether the request is a WooPay preflight check,
+	 * and if so, decrement the coupon usage count of used coupons.
+	 *
+	 * @param WC_Order $order Order that needs payment.
+	 * @return void
+	 */
+	public function maybe_decrement_coupon_counts( $order ) {
+		// During the preflight check, as a result of the status transition to 'pending' in Block's `process_payment()` order counts are incremented.
+		// This negates that by decrementing those counts so that there won't be issues with usage limits.
+		// See https://github.com/Automattic/woopay/issues/2439#issuecomment-1898027833.
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( empty( $_POST['is-woopay-preflight-check'] ) ) {
+			return;
+		}
+
+		$has_recorded = $order->get_data_store()->get_recorded_coupon_usage_counts( $order );
+
+		if ( count( $order->get_coupon_codes() ) > 0 ) {
+			foreach ( $order->get_coupon_codes() as $code ) {
+				if ( StringUtil::is_null_or_whitespace( $code ) ) {
+					continue;
+				}
+
+				$coupon  = new WC_Coupon( $code );
+				$used_by = $order->get_user_id();
+
+				if ( ! $used_by ) {
+					$used_by = $order->get_billing_email();
+				}
+
+				// If the coupon has been recorded as being used, decrease the usage count.
+				if ( $has_recorded ) {
+					$coupon->decrease_usage_count( $used_by );
+				}
+			}
+		}
+
+		// Reset the recorded usage counts to allow the actual checkout attempt to handle the usage counts.
+		$order->get_data_store()->set_recorded_coupon_usage_counts( $order, false );
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -1119,8 +1163,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// The request is a preflight check from WooPay.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! empty( $_POST['is-woopay-preflight-check'] ) ) {
-				// Set the order status to "pending payment".
-				$order->update_status( 'pending' );
+				$this->maybe_decrement_coupon_counts( $order );
 
 				// Bail out with success so we don't process the payment now,
 				// but still let WooPay continue with the payment processing.

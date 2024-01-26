@@ -2987,6 +2987,61 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$response = $mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
+	/**
+	 * Tests that no coupons decrement exits early when it's not a preflight request.
+	 */
+	public function test_coupon_decrement_exits_early_if_no_preflight_check() {
+		$_POST['is-woopay-preflight-check'] = null;
+		$mock_order                         = WC_Helper_Order::create_order();
+		$response                           = $this->wcpay_gateway->maybe_decrement_coupon_counts( $mock_order );
+		$this->assertNull( $response );
+	}
+
+	/**
+	 * Tests that coupon usage count remains unchanged before and after preflight request.
+	 */
+	public function test_coupon_counts_in_preflight_request() {
+		// Arrange: Preflight header, coupon and product.
+		$_POST['is-woopay-preflight-check'] = 'true';
+
+		$coupon_code       = 'coupon1';
+		$coupon_data_store = WC_Data_Store::load( 'coupon' );
+
+		$coupon = WC_Helper_Coupon::create_coupon(
+			$coupon_code,
+			[
+				'usage_limit'          => 2,
+				'usage_limit_per_user' => 2,
+			]
+		);
+
+		$product = WC_Helper_Product::create_simple_product( true );
+		WC()->cart->add_to_cart( $product->get_id(), 1 );
+		WC()->cart->add_discount( $coupon_code );
+		$this->assertEquals( 0, $coupon_data_store->get_usage_by_email( $coupon, 'a@b.com' ) );
+
+		$order_id = WC_Checkout::instance()->create_order(
+			[
+				'billing_email'  => 'a@b.com',
+				'payment_method' => 'dummy',
+			]
+		);
+
+		$this->assertEquals( 0, $coupon->get_usage_count() );
+
+		$order = new WC_Order( $order_id );
+		$order->update_status( 'processing' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'process_payment_for_order' ] );
+
+		// Act: Call the method.
+		$response = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		// Assert: Coupon usage after preflight request.
+		$this->assertEquals( 0, $coupon->get_usage_count() );
+	}
+
+
 	public function test_should_use_new_process_requires_dev_mode() {
 		$mock_router = $this->createMock( Router::class );
 		wcpay_get_test_container()->replace( Router::class, $mock_router );
