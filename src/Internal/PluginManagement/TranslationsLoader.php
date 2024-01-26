@@ -16,6 +16,8 @@ use WCPay\Internal\Proxy\HooksProxy;
  * A class for managing WordPress translations loading for WooPayments.
  *
  * Unlike for other WordPress.org plugins, WooPayments translations are loaded from https://translate.wordpress.com.
+ *
+ * @codeCoverageIgnore -- The most of the code interacts with global WordPress methods to wrangle translations. Not that much to test here, so excluding it from test coverage.
  */
 class TranslationsLoader {
 	/**
