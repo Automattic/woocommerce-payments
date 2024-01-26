@@ -9,8 +9,14 @@ import { buildAjaxURL } from 'wcpay/payment-request/utils';
 
 class WoopayDirectCheckout {
 	static state = {
+		// The iframePostMessage promise is resolved when the WooPayConnectIframe is loaded. The
+		// promise resolves to a function that can be used to send messages to the WooPayConnectIframe.
 		iframePostMessage: null,
 	};
+	/**
+	 * The listeners object contains functions that are called when the WooPayConnectIframe
+	 * responds to an action. The listeners are "resolve" functions of Promises.
+	 */
 	static listeners = {
 		setIframePostMessage: () => {},
 		setTempThirdPartyCookie: () => {},
@@ -18,6 +24,14 @@ class WoopayDirectCheckout {
 		setIsUserLoggedIn: () => {},
 		setWoopaySessionResponse: () => {},
 	};
+	/**
+	 * The actionCallback object maps iframe actions (keys) to listeners (values). Take
+	 * "get_is_user_logged_in_success" for example: we send the action "get_is_user_logged_in_success"
+	 * to the WooPayConnectIframe and, when the iframe responds, it uses the "setIsUserLoggedIn" listener.
+	 *
+	 * The reason for this configuration is that it allows us to extend the functionality of the
+	 * WooPayConnectIframe without having to change the WooPayConnectIframe itself.
+	 */
 	static actionCallback = {
 		set_temp_third_party_cookie_success: 'setTempThirdPartyCookie',
 		get_is_third_party_cookies_enabled_success:
