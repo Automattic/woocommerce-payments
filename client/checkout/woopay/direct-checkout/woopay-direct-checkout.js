@@ -122,12 +122,22 @@ class WoopayDirectCheckout {
 	}
 
 	static getCheckoutRedirectElements() {
-		// TODO: Add other checkout elements, if needed.
-		const checkoutButton = document.querySelector(
-			'.wc-proceed-to-checkout .checkout-button'
+		const elements = [];
+		const addElementBySelector = ( selector ) => {
+			const element = document.querySelector( selector );
+			if ( element ) {
+				elements.push( element );
+			}
+		};
+
+		// Classic 'Proceed to Checkout' button.
+		addElementBySelector( '.wc-proceed-to-checkout .checkout-button' );
+		// Blocks 'Proceed to Checkout' button.
+		addElementBySelector(
+			'.wp-block-woocommerce-proceed-to-checkout-block'
 		);
 
-		return [ checkoutButton ];
+		return elements;
 	}
 
 	static redirectToWooPaySession( elements ) {
