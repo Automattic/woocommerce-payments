@@ -89,8 +89,18 @@ class TranslationsLoader {
 		}
 
 		// Use the same timeout values as Woo Core https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/includes/admin/helper/class-wc-helper-updater.php#L257.
-		$timeout     = wp_doing_cron() ? 30 : 3;
-		$plugin_name = 'woocommerce-payments'; // TODO: check if there is a better way of getting the plugin name.
+		$timeout = wp_doing_cron() ? 30 : 3;
+
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		$plugin_data = get_plugin_data( WCPAY_PLUGIN_FILE );
+
+		/**
+		 * Note: TextDomain could differ from the plugin slug, but WordPress uses TextDomain to load translations.
+		 */
+		$plugin_name = $plugin_data['TextDomain'];
 
 		$request_body = [
 			'locales' => $locales,
