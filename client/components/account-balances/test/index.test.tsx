@@ -138,14 +138,12 @@ const createMockOverview = (
 			fee_percentage: 0,
 			status: 'paid',
 		},
-		nextScheduled: undefined,
 		instant: {
 			currency: currencyCode,
 			amount: instantAmount,
 			fee: 0,
 			net: 0,
 			fee_percentage: 0,
-			transaction_ids: [],
 		},
 	};
 };

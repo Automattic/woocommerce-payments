@@ -20,7 +20,7 @@ import {
 	useDeposits,
 	useAllDepositsOverviews,
 } from 'wcpay/data';
-import type { CachedDeposit, DepositStatus } from 'wcpay/types/deposits';
+import type { CachedDeposit } from 'wcpay/types/deposits';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
 jest.mock( 'wcpay/data', () => ( {
@@ -87,10 +87,7 @@ const mockDeposits = [
 
 // Creates a mock Overview object for the given currency code and balance amounts.
 const createMockOverview = (
-	currencyCode: string,
-	depositAmount: number,
-	depositDate: number,
-	depositStatus: DepositStatus
+	currencyCode: string
 ): AccountOverview.Overview => {
 	return {
 		currency: currencyCode,
@@ -117,26 +114,12 @@ const createMockOverview = (
 			fee_percentage: 0,
 			status: 'paid',
 		},
-		nextScheduled: {
-			id: '456',
-			type: 'deposit',
-			amount: depositAmount,
-			automatic: true,
-			currency: currencyCode,
-			bankAccount: null,
-			created: Date.now(),
-			date: depositDate,
-			fee: 0,
-			fee_percentage: 0,
-			status: depositStatus,
-		},
 		instant: {
 			currency: currencyCode,
 			amount: 0,
 			fee: 0,
 			net: 0,
 			fee_percentage: 0,
-			transaction_ids: [],
 		},
 	};
 };
@@ -159,7 +142,6 @@ const createMockNewAccountOverview = (
 			source_types: [],
 		},
 		lastPaid: undefined,
-		nextScheduled: undefined,
 		instant: undefined,
 	};
 };
@@ -250,7 +232,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Component Renders', () => {
-		mockOverviews( [ createMockOverview( 'usd', 100, 0, 'pending' ) ] );
+		mockOverviews( [ createMockOverview( 'usd' ) ] );
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
 			deposits: mockDeposits,
@@ -269,7 +251,8 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( `Component doesn't render for new account`, () => {
+	test( `Component doesn't render for new accounts with no pending funds`, () => {
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
 		mockOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockUseDeposits.mockReturnValue( {
@@ -285,7 +268,8 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	test( `Component doesn't render for new accounts with pending funds but no available funds`, () => {
+	test( `Component renders for new accounts with pending funds but no available funds`, () => {
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
 		mockOverviews( [ createMockNewAccountOverview( 'eur', 5000, 0 ) ] );
 		mockDepositOverviews( [
 			createMockNewAccountOverview( 'eur', 5000, 0 ),
@@ -299,15 +283,17 @@ describe( 'Deposits Overview information', () => {
 			selectedCurrency: 'eur',
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
-		const { container } = render( <DepositsOverview /> );
-		expect( container ).toBeEmptyDOMElement();
+		const { getByText, queryByText } = render( <DepositsOverview /> );
+		getByText( /Your first deposit is held for/, {
+			ignore: '.a11y-speak-region',
+		} );
+		expect( queryByText( 'Change deposit schedule' ) ).toBeFalsy();
+		expect( queryByText( 'View full deposits history' ) ).toBeFalsy();
 	} );
 
 	test( 'Confirm notice renders if deposits blocked', () => {
 		mockAccount.deposits_blocked = true;
-		mockOverviews( [
-			createMockOverview( 'usd', 30000, 50000, 'pending' ),
-		] );
+		mockOverviews( [ createMockOverview( 'usd' ) ] );
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
 			deposits: mockDeposits,
@@ -403,7 +389,7 @@ describe( 'Deposits Overview information', () => {
 		).toBeFalsy();
 	} );
 
-	test( 'Confirm new account waiting period notice does not show', () => {
+	test( 'Confirm new account waiting period notice does not show if outside waiting period', () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
 		const accountOverview = createMockNewAccountOverview(
 			'eur',
@@ -418,12 +404,10 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { queryByText } = render( <DepositsOverview /> );
-		expect(
-			queryByText( 'Your first deposit is held for seven business days' )
-		).toBeFalsy();
+		expect( queryByText( /Your first deposit is held for/ ) ).toBeFalsy();
 	} );
 
-	test( 'Confirm new account waiting period notice shows', () => {
+	test( 'Confirm new account waiting period notice shows if within waiting period', () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
 		const accountOverview = createMockNewAccountOverview(
 			'eur',
@@ -438,7 +422,7 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { getByText, getByRole } = render( <DepositsOverview /> );
-		getByText( /Your first deposit is held for seven business days/, {
+		getByText( /Your first deposit is held for/, {
 			ignore: '.a11y-speak-region',
 		} );
 		expect( getByRole( 'link', { name: /Why\?/ } ) ).toHaveAttribute(
