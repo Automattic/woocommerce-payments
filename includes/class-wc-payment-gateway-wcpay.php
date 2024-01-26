@@ -61,7 +61,6 @@ use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use Automattic\WooCommerce\Utilities\StringUtil;
 
 /**
  * Gateway class for WooPayments
@@ -1095,7 +1094,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( count( $order->get_coupon_codes() ) > 0 ) {
 			foreach ( $order->get_coupon_codes() as $code ) {
-				if ( StringUtil::is_null_or_whitespace( $code ) ) {
+				// Skip empty coupon codes.
+				if ( is_null( $code ) || '' === $code || ctype_space( $code ) ) {
 					continue;
 				}
 
