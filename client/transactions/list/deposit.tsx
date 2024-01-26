@@ -24,11 +24,7 @@ interface DepositProps {
 }
 
 const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
-	if (
-		depositId &&
-		dateAvailable &&
-		! depositId.includes( 'wcpay_estimated_' )
-	) {
+	if ( depositId && dateAvailable ) {
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/deposits/details',

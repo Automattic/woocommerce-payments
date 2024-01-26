@@ -26,7 +26,7 @@ The Deposits API endpoints provide access to an account's deposits data, includi
 -   `date` _int_ - The arrival date of the deposit in unix timestamp milliseconds.
 -   `type` _string_ - The type of deposit. `deposit` `withdrawal`
 -   `amount` _int_ - The amount of the deposit.
--   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed`
 -   `bankAccount` _string_ - The bank account the deposit was/will be paid to.
 -   `currency` _string_ - The currency of the deposit. E.g. `eur`
 -   `automatic` _bool_ - Returns `true` if the payout is created by an automated schedule and `false` if it’s requested manually.
@@ -51,14 +51,12 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
 
 -   `deposit` _object_
     -   `last_paid` _array_ of [**Deposit**](#deposit-object) - The last deposit that has been paid for each deposit currency.
-    -   `next_scheduled` _array_ of [**Deposit**](#deposit-object) - The next scheduled deposit for each deposit currency.
     -   `last_manual_deposits` _array_ of [**Deposit**](#deposit-object) - Manual deposits that have been paid in the last 24 hours.
 -   `balance` _object_
     -   `pending` _array_ - The pending balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-        -   `deposits_count` _int_ - The number of deposits that make up the balance.
     -   `available` _array_ - The available balance for each deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -69,7 +67,6 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
         -   `fee` _int_ - The fee amount of the balance.
         -   `fee_percentage` _int_ - The fee percentage of the balance.
         -   `net` _int_ - The net amount of the balance.
-        -   `transaction_ids` _array_ - The list of transaction IDs that make up the balance.
 -   `account` _object_
     -   `deposits_enabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -118,34 +115,6 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 				"created": 1701302400
 			}
 		],
-		"next_scheduled": [
-			{
-				"id": "wcpay_estimated_weekly_eur_1702598400",
-				"date": 1702598400000,
-				"type": "deposit",
-				"amount": 458784,
-				"status": "estimated",
-				"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
-				"currency": "eur",
-				"automatic": true,
-				"fee": 0,
-				"fee_percentage": 0,
-				"created": 1702598400
-			},
-			{
-				"id": "wcpay_estimated_weekly_usd_1701993600",
-				"date": 1701993600000,
-				"type": "deposit",
-				"amount": 823789,
-				"status": "estimated",
-				"bankAccount": "STRIPE TEST BANK •••• 6789 (USD)",
-				"currency": "usd",
-				"automatic": true,
-				"fee": 0,
-				"fee_percentage": 0,
-				"created": 1701993600
-			}
-		],
 		"last_manual_deposits": []
 	},
 	"balance": {
@@ -155,16 +124,14 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 				"currency": "eur",
 				"source_types": {
 					"card": -114696
-				},
-				"deposits_count": 1
+				}
 			},
 			{
 				"amount": 707676,
 				"currency": "usd",
 				"source_types": {
 					"card": 707676
-				},
-				"deposits_count": 2
+				}
 			}
 		],
 		"available": [
@@ -189,11 +156,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 				"currency": "usd",
 				"fee": 185,
 				"fee_percentage": 1.5,
-				"net": 0,
-				"transaction_ids": [
-					"txn_3OHyIxCIHGKp1UAi0aVyDQ5D",
-					"txn_3OJSuOCIHGKp1UAi1mRA2lL5"
-				]
+				"net": 0
 			}
 		]
 	},
@@ -226,13 +189,11 @@ Fetch an overview of account deposits for a single deposit currency. This includ
 ### Returns
 
 -   `last_deposit` _object_ [**Deposit**](#deposit-object) | _null_- The last deposit that has been paid for the deposit currency.
--   `next_deposit` _object_ [**Deposit**](#deposit-object) | _null_ - The next scheduled deposit for the deposit currency.
 -   `balance` _object_
     -   `pending` _object_ - The pending balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-        -   `deposits_count` _int_ - The number of deposits that make up the balance.
     -   `available` _object_ - The available balance for the deposit currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
@@ -243,7 +204,6 @@ Fetch an overview of account deposits for a single deposit currency. This includ
     -   `fee` _int_ - The fee amount of the balance.
     -   `fee_percentage` _int_ - The fee percentage of the balance.
     -   `net` _int_ - The net amount of the balance.
-    -   `transaction_ids` _array_ - The list of transaction IDs that make up the balance.
 -   `account` _object_
     -   `deposits_disabled` _bool_ - Whether deposits are enabled for the account.
     -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
@@ -276,19 +236,6 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 		"fee_percentage": 0,
 		"created": 1701648000
 	},
-	"next_deposit": {
-		"id": "wcpay_estimated_weekly_eur_1702598400",
-		"date": 1702598400000,
-		"type": "deposit",
-		"amount": 458784,
-		"status": "estimated",
-		"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
-		"currency": "eur",
-		"automatic": true,
-		"fee": 0,
-		"fee_percentage": 0,
-		"created": 1702598400
-	},
 	"balance": {
 		"available": {
 			"amount": 573480,
@@ -302,8 +249,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 			"currency": "eur",
 			"source_types": {
 				"card": -114696
-			},
-			"deposits_count": 1
+			}
 		}
 	},
 	"instant_balance": {
@@ -311,8 +257,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
 		"currency": "usd",
 		"fee": 0,
 		"fee_percentage": 1.5,
-		"net": 0,
-		"transaction_ids": []
+		"net": 0
 	},
 	"account": {
 		"deposits_disabled": false,
@@ -351,8 +296,8 @@ Fetch a list of deposits.
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ `paid` `pending` `in_transit` `canceled` `failed` `estimated`
--   `status_is_not` _string_ `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status_is` _string_ `paid` `pending` `in_transit` `canceled` `failed`
+-   `status_is_not` _string_ `paid` `pending` `in_transit` `canceled` `failed`
 -   `direction` _string_
 -   `page` _integer_
 -   `pagesize` _integer_
@@ -372,19 +317,6 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
 ```json
 {
 	"data": [
-		{
-			"id": "wcpay_estimated_weekly_eur_1702598400",
-			"date": 1702598400000,
-			"type": "deposit",
-			"amount": 458784,
-			"status": "estimated",
-			"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
-			"currency": "eur",
-			"automatic": true,
-			"fee": 0,
-			"fee_percentage": 0,
-			"created": 1702598400
-		},
 		{
 			"id": "po_1OJ466CBu6Jj8nBr38JRxdNE",
 			"date": 1701648000000,
@@ -412,7 +344,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
 			"created": 1701302400
 		}
 	],
-	"total_count": 3
+	"total_count": 2
 }
 ```
 
@@ -438,8 +370,8 @@ Useful in combination with the **List deposits** endpoint to get a summary of de
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
--   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed`
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed`
 
 ### Returns
 
@@ -481,7 +413,7 @@ Fetches a deposit by ID.
 
 If a deposit is found for the provided ID, the response will return a [**Deposit**](#deposit-object) object.
 
-If no deposit is found for the provided ID, the response will be an empty array.
+If no deposit is found for the provided ID, the response will return a `500` status code.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
@@ -522,17 +454,14 @@ Submit an instant deposit for a list of transactions. Only for eligible accounts
 ### Required body properties
 
 -   `type`: _string_ - The type of deposit. `instant`
--   `transaction_ids`: _array_ - The list of transaction IDs to deposit.
+-   `currency`: _string_ - The currency of the balance to deposit. E.g. `usd`
 
 ```shell
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
   -u consumer_key:consumer_secret
   --data '{
       "type": "instant",
-      "transaction_ids": [
-          "txn_3OHyIxCIHGKp1UAi0aVyDQ5D",
-          "txn_3OJSuOCIHGKp1UAi1mRA2lL5"
-      ]
+      "currency": "usd"
     }'
 ```
 
@@ -560,8 +489,8 @@ Request a CSV export of deposits matching the query. A link to the exported CSV 
 -   `date_before` _string_
 -   `date_after` _string_
 -   `date_between` _array_
--   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
--   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed` `estimated`
+-   `status_is` _string_ - `paid` `pending` `in_transit` `canceled` `failed`
+-   `status_is_not` _string_ - `paid` `pending` `in_transit` `canceled` `failed`
 
 ### Returns
 
@@ -571,7 +500,7 @@ Request a CSV export of deposits matching the query. A link to the exported CSV 
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits/download?status_is=paid' \
   -u consumer_key:consumer_secret
   --data '{
-      "user_email": "name@example.woo.com",
+      "user_email": "name@example.woo.com"
     }'
 ```
 
