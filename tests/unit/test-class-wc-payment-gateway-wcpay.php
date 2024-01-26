@@ -2993,7 +2993,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_coupon_decrement_exits_early_if_no_preflight_check() {
 		$_POST['is-woopay-preflight-check'] = null;
 		$mock_order                         = WC_Helper_Order::create_order();
-		$response                           = $this->wcpay_gateway->maybe_decrement_coupon_counts( $mock_order );
+		$response                           = $this->card_gateway->maybe_decrement_coupon_counts( $mock_order );
 		$this->assertNull( $response );
 	}
 
