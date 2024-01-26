@@ -2796,6 +2796,35 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
+	public function test_process_payment_continues_if_missing_fraud_prevention_token_but_request_is_from_woopay() {
+		$order = WC_Helper_Order::create_order();
+
+		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->never() )
+			->method( 'is_enabled' );
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'prepare_payment_information' );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' );
+
+		$mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+	}
+
 	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {
 		$this->mock_wcpay_account
 			->expects( $this->any() )
