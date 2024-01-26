@@ -7,6 +7,10 @@ import { WooPayConnectIframe } from 'wcpay/checkout/woopay/direct-checkout/woopa
 import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 
+/**
+ * The WoopayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
+ * page and for handling the communication between the WooPayConnectIframe and the page.
+ */
 class WoopayDirectCheckout {
 	static state = {
 		// The iframePostMessage promise is resolved when the WooPayConnectIframe is loaded. The
@@ -48,10 +52,18 @@ class WoopayDirectCheckout {
 		this.injectWooPayConnectIframe();
 	}
 
+	/**
+	 * Checks if WooPay is enabled.
+	 *
+	 * @return {boolean} True if WooPay is enabled.
+	 */
 	static isWooPayEnabled() {
 		return getConfig( 'isWooPayEnabled' );
 	}
 
+	/**
+	 * Injects the WooPayConnectIframe into the page.
+	 */
 	static injectWooPayConnectIframe() {
 		const appendIframe = ( element ) => {
 			element.parentElement.style.position = 'relative';
@@ -84,6 +96,11 @@ class WoopayDirectCheckout {
 		}
 	}
 
+	/**
+	 * Sets a temporary third party cookie in the WooPayConnectIframe.
+	 *
+	 * @return {Promise<*>} Resolves to true if the cookie was set successfully.
+	 */
 	static async setTempThirdPartyCookie() {
 		const setTempThirdPartyCookie = new Promise( ( resolve ) => {
 			this.listeners.setTempThirdPartyCookie = resolve;
@@ -100,6 +117,11 @@ class WoopayDirectCheckout {
 		return await setTempThirdPartyCookie;
 	}
 
+	/**
+	 * Checks if third party cookies are enabled in the WooPayConnectIframe.
+	 *
+	 * @return {Promise<*>} Resolves to true if third party cookies are enabled.
+	 */
 	static async isWooPayThirdPartyCookiesEnabled() {
 		const isCookieSet = await this.setTempThirdPartyCookie();
 		if ( ! isCookieSet ) {
@@ -116,6 +138,11 @@ class WoopayDirectCheckout {
 		return await isWooPayThirdPartyCookiesEnabled;
 	}
 
+	/**
+	 * Checks if the user is logged in.
+	 *
+	 * @return {Promise<*>} Resolves to true if the user is logged in.
+	 */
 	static async isUserLoggedIn() {
 		const isUserLoggedIn = new Promise( ( resolve ) => {
 			this.listeners.setIsUserLoggedIn = resolve;
@@ -127,6 +154,11 @@ class WoopayDirectCheckout {
 		return await isUserLoggedIn;
 	}
 
+	/**
+	 * Sends the session data to the WooPayConnectIframe.
+	 *
+	 * @return {Promise<*>} Resolves to the redirect URL.
+	 */
 	static async sendSessionDataToWooPay() {
 		const woopaySessionData = new Promise( ( resolve ) => {
 			this.listeners.setWoopaySessionResponse = resolve;
@@ -144,6 +176,11 @@ class WoopayDirectCheckout {
 		return redirectUrl;
 	}
 
+	/**
+	 * Gets the checkout redirect elements.
+	 *
+	 * @return {*[]} The checkout redirect elements.
+	 */
 	static getCheckoutRedirectElements() {
 		const elements = [];
 		const addElementBySelector = ( selector ) => {
@@ -163,6 +200,11 @@ class WoopayDirectCheckout {
 		return elements;
 	}
 
+	/**
+	 * Adds a click-event listener that redirects to the WooPay checkout page to the given elements.
+	 *
+	 * @param {*[]} elements The elements to add a click-event listener to.
+	 */
 	static redirectToWooPaySession( elements ) {
 		elements.forEach( ( element ) => {
 			element.addEventListener( 'click', async ( event ) => {
@@ -175,6 +217,12 @@ class WoopayDirectCheckout {
 		} );
 	}
 
+	/**
+	 * Adds a click-event listener that redirects to WooPay and lets WooPay handle the checkout flow
+	 * to the given elements.
+	 *
+	 * @param {*[]} elements The elements to add a click-event listener to.
+	 */
 	static redirectToWooPay( elements ) {
 		elements.forEach( ( element ) => {
 			element.addEventListener( 'click', async ( event ) => {
@@ -188,6 +236,11 @@ class WoopayDirectCheckout {
 		} );
 	}
 
+	/**
+	 * Gets the WooPay session.
+	 *
+	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay session response.
+	 */
 	static async getWooPaySessionFromMerchant() {
 		return request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
