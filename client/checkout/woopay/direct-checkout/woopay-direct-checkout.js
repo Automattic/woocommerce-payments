@@ -149,7 +149,8 @@ class WoopayDirectCheckout {
 
 				const woopayRedirectUrl = await this.sendSessionDataToWooPay();
 
-				window.location.href = woopayRedirectUrl + '&redirect=1';
+				window.location.href =
+					woopayRedirectUrl + '&woopay_checkout_redirect=1';
 			} );
 		} );
 	}
