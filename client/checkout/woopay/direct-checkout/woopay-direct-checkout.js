@@ -39,17 +39,14 @@ class WoopayDirectCheckout {
 	}
 
 	static injectWooPayConnectIframe() {
-		const checkoutButton = document.querySelector(
-			'.wc-proceed-to-checkout .checkout-button'
-		);
-		if ( checkoutButton ) {
-			checkoutButton.parentElement.style.position = 'relative';
+		const appendIframe = ( element ) => {
+			element.parentElement.style.position = 'relative';
 			const hiddenDiv = document.createElement( 'div' );
 			hiddenDiv.style.visibility = 'hidden';
 			hiddenDiv.style.position = 'absolute';
 			hiddenDiv.style.height = '0';
 
-			checkoutButton.parentElement.appendChild( hiddenDiv );
+			element.parentElement.appendChild( hiddenDiv );
 
 			ReactDOM.render(
 				<WooPayConnectIframe
@@ -58,6 +55,18 @@ class WoopayDirectCheckout {
 				/>,
 				hiddenDiv
 			);
+		};
+
+		const checkoutButtonClassic = document.querySelector(
+			'.wc-proceed-to-checkout .checkout-button'
+		);
+		const checkoutButtonBlocks = document.querySelector(
+			'.wp-block-woocommerce-proceed-to-checkout-block'
+		);
+		if ( checkoutButtonClassic ) {
+			appendIframe( checkoutButtonClassic );
+		} else if ( checkoutButtonBlocks ) {
+			appendIframe( checkoutButtonBlocks );
 		}
 	}
 
