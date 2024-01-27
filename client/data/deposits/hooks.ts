@@ -129,12 +129,6 @@ export const useDeposits = ( {
 	status_is: statusIs,
 	status_is_not: statusIsNot,
 }: Query ): CachedDeposits => {
-	// Temporarily default to excluding estimated deposits.
-	// Client components can (temporarily) opt-in by passing `status_is=estimated`.
-	// When we remove estimated deposits from server / APIs we can remove this default.
-	if ( ! statusIsNot && statusIs !== 'estimated' ) {
-		statusIsNot = 'estimated';
-	}
 	return useSelect(
 		( select ) => {
 			const {
@@ -197,12 +191,6 @@ export const useDepositsSummary = ( {
 	status_is: statusIs,
 	status_is_not: statusIsNot,
 }: Query ): DepositsSummaryCache => {
-	// Temporarily default to excluding estimated deposits.
-	// Client components can (temporarily) opt-in by passing `status_is=estimated`.
-	// When we remove estimated deposits from server / APIs we can remove this default.
-	if ( ! statusIsNot && statusIs !== 'estimated' ) {
-		statusIsNot = 'estimated';
-	}
 	return useSelect(
 		( select ) => {
 			const { getDepositsSummary, isResolving } = select( STORE_NAME );
@@ -235,18 +223,18 @@ export const useDepositsSummary = ( {
 };
 
 export const useInstantDeposit = (
-	transactionIds: string[]
+	currency: string
 ): { inProgress: boolean; submit: () => void; deposit: unknown } => {
 	const { deposit, inProgress } = useSelect( ( select ) => {
 		const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
 		return {
-			deposit: getInstantDeposit( [ transactionIds ] ),
-			inProgress: isResolving( 'getInstantDeposit', [ transactionIds ] ),
+			deposit: getInstantDeposit( [ currency ] ),
+			inProgress: isResolving( 'getInstantDeposit', [ currency ] ),
 		};
 	} );
 	const { submitInstantDeposit } = useDispatch( STORE_NAME );
-	const submit = () => submitInstantDeposit( transactionIds );
+	const submit = () => submitInstantDeposit( currency );
 
 	return { deposit, inProgress, submit };
 };

@@ -34,6 +34,7 @@ import {
 } from '../constants.js';
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
+import wcpayTracks from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
 
@@ -113,6 +114,24 @@ Object.entries( enabledPaymentMethodsConfig )
 		} );
 	} );
 
+const addCheckoutTracking = () => {
+	const placeOrderButton = document.getElementsByClassName(
+		'wc-block-components-checkout-place-order-button'
+	);
+	if ( placeOrderButton.length ) {
+		placeOrderButton[ 0 ].addEventListener( 'click', () => {
+			const blocksCheckbox = document.getElementById(
+				'radio-control-wc-payment-method-options-woocommerce_payments'
+			);
+			if ( ! blocksCheckbox?.checked ) {
+				return;
+			}
+
+			wcpayTracks.recordUserEvent( wcpayTracks.events.PLACE_ORDER_CLICK );
+		} );
+	}
+};
+
 // Call handleWooPayEmailInput if woopay is enabled and this is the checkout page.
 if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	if (
@@ -131,4 +150,5 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
+	addCheckoutTracking();
 } );

@@ -17,7 +17,7 @@
 
 	<!-- https://github.com/Automattic/woocommerce-payments/issues/7263 -->
 	<exclude-pattern>*/includes/class-wc-payments-apple-pay-registration.php</exclude-pattern>
-	<exclude-pattern>*/includes/class-wc-payments-express-checkout-button-display-handler.php</exclude-pattern>
+	<exclude-pattern>*/includes/express-checkout/class-wc-payments-express-checkout-button-display-handler.php</exclude-pattern>
 
 	<!-- https://github.com/Automattic/woocommerce-payments/issues/7264 -->
 	<exclude-pattern>*/includes/class-wc-payments-customer-service.php</exclude-pattern>

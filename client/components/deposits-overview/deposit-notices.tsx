@@ -83,7 +83,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 	>
 		{ interpolateComponents( {
 			mixedString: __(
-				'Your first deposit is held for seven business days. {{whyLink}}Why?{{/whyLink}}',
+				'Your first deposit is held for 7-14 days. {{whyLink}}Why?{{/whyLink}}',
 				'woocommerce-payments'
 			),
 			components: {
@@ -144,6 +144,31 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
 						target="_blank"
 						rel="noopener noreferrer"
 						href="https://woo.com/document/woopayments/fees-and-debits/account-showing-negative-balance/"
+					/>
+				),
+			},
+		} ) }
+	</InlineNotice>
+);
+
+/**
+ * Renders a notice informing the user that deposits only occur when there are funds available.
+ */
+export const NoFundsAvailableForDepositNotice: React.FC = () => (
+	<InlineNotice status="warning" icon isDismissible={ false }>
+		{ interpolateComponents( {
+			mixedString: __(
+				'You have no funds available to deposit. {{whyLink}}Why?{{/whyLink}}',
+				'woocommerce-payments'
+			),
+			components: {
+				whyLink: (
+					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						target="_blank"
+						rel="noopener noreferrer"
+						href="https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-funds"
 					/>
 				),
 			},

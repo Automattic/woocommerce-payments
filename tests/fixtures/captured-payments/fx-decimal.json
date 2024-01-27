@@ -26,10 +26,7 @@
       },
       "currency": "EUR",
       "datetime": 1651215495,
-      "deposit": {
-        "id": "wcpay_estimated_daily_usd_1651795200",
-        "arrival_date": "1651795200"
-      },
+      "deposit": null,
       "transaction_id": "txn_3Ktnm22EFxam75ai0Sr9SR5A",
       "transaction_details": {
         "customer_currency": "EUR",
@@ -42,7 +39,7 @@
     },
   "expectation": {
     "fxString": "1.00 EUR → 1.0504 USD: $105.04 USD",
-    "feeString": "Fee (3.9% + $0.30): $-4.39",
+    "feeString": "Fee (3.9% + $0.30): -$4.39",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-fx": "Foreign exchange fee: 1%"

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Country_Code;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -310,7 +312,7 @@ class WC_Payments_Features {
 		}
 
 		$store_base_location = wc_get_base_location();
-		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+		return ! empty( $store_base_location['country'] ) && Country_Code::UNITED_STATES === $store_base_location['country'];
 	}
 
 	/**
@@ -349,6 +351,15 @@ class WC_Payments_Features {
 	 */
 	public static function is_dispute_issuer_evidence_enabled(): bool {
 		return '1' === get_option( self::DISPUTE_ISSUER_EVIDENCE, '0' );
+	}
+
+	/**
+	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
+	 *
+	 * @return bool
+	 */
+	public static function is_next_deposit_notice_dismissed(): bool {
+		return '1' === get_option( 'wcpay_next_deposit_notice_dismissed', '0' );
 	}
 
 	/**

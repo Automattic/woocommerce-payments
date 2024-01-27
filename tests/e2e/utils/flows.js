@@ -129,6 +129,14 @@ export const shopperWCP = {
 		await expect( page ).toClick( 'label', { text: label } );
 	},
 
+	setDefaultPaymentMethod: async ( label ) => {
+		const [ paymentMethodRow ] = await page.$x(
+			`//tr[contains(., '${ label }')]`
+		);
+		await expect( paymentMethodRow ).toClick( '.button.default' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+	},
+
 	toggleCreateAccount: async () => {
 		await expect( page ).toClick( '#createaccount' );
 	},
@@ -273,17 +281,62 @@ export const shopperWCP = {
 			await uiUnblocked();
 		}
 
-		await page.waitForSelector( '.cart-empty.woocommerce-info' );
-		await expect( page ).toMatchElement( '.cart-empty.woocommerce-info', {
-			text: 'Your cart is currently empty.',
+		await shopperWCP.waitForErrorBanner(
+			'Your cart is currently empty.',
+			'div.wc-block-components-notice-banner',
+			'.cart-empty.woocommerce-info'
+		);
+	},
+
+	goToProductPageBySlug: async ( productSlug ) => {
+		await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
+			waitUntil: 'networkidle0',
 		} );
 	},
 
 	addToCartBySlug: async ( productSlug ) => {
-		await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
-			waitUntil: 'networkidle0',
-		} );
+		await shopperWCP.goToProductPageBySlug( productSlug );
 		await shopper.addToCart();
+	},
+
+	waitForErrorBanner: async (
+		errorText,
+		noticeSelector,
+		oldNoticeSelector
+	) => {
+		const errorBannerToCheck = ( async () => {
+			await expect( page ).toMatchElement( noticeSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		const oldErrorBannerToCheck = ( async () => {
+			await expect( page ).toMatchElement( oldNoticeSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		await Promise.race( [ errorBannerToCheck, oldErrorBannerToCheck ] );
+	},
+
+	waitForSubscriptionsErrorBanner: async (
+		errorText,
+		errorSelector,
+		oldErrorSelector
+	) => {
+		const errorBannerToCheck = ( async () => {
+			return page.waitForSelector( errorSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		const oldErrorBannerToCheck = ( async () => {
+			return page.waitForSelector( oldErrorSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		await Promise.race( [ errorBannerToCheck, oldErrorBannerToCheck ] );
 	},
 };
 
@@ -460,16 +513,47 @@ export const merchantWCP = {
 			}
 		}, currencyCode );
 
+		await page.waitForSelector(
+			'div.wcpay-confirmation-modal__footer button.components-button.is-primary',
+			{ timeout: 3000 }
+		);
+
 		await page.click(
 			'div.wcpay-confirmation-modal__footer button.components-button.is-primary',
 			{ text: 'Update selected' }
 		);
+
+		const snackbar = '.components-snackbar';
+		await expect( page ).toMatchElement( snackbar, {
+			text: 'Enabled currencies updated.',
+			timeout: 60000,
+		} );
 
 		const selector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
 		await page.waitForSelector( selector );
 		const element = await page.$( selector );
 
 		expect( element ).not.toBeNull();
+	},
+
+	removeCurrency: async ( currencyCode ) => {
+		await merchantWCP.openMultiCurrency();
+		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
+		await page.waitForSelector( currencyItemSelector, { timeout: 10000 } );
+		await page.click(
+			`${ currencyItemSelector } .enabled-currency__action.delete`
+		);
+
+		const snackbar = '.components-snackbar';
+		await expect( page ).toMatchElement( snackbar, {
+			text: 'Enabled currencies updated.',
+			timeout: 60000,
+		} );
+
+		await page.waitForSelector( currencyItemSelector, {
+			hidden: true,
+			timeout: 15000,
+		} );
 	},
 
 	openConnectPage: async () => {
@@ -565,6 +649,9 @@ export const merchantWCP = {
 	},
 
 	setCheckboxByTestId: async ( testId ) => {
+		await page.waitForSelector( `[data-testid="${ testId }"]`, {
+			timeout: 5000,
+		} );
 		const checkbox = await page.$( `[data-testid="${ testId }"]` );
 		const checkboxStatus = await (
 			await checkbox.getProperty( 'checked' )
@@ -575,6 +662,9 @@ export const merchantWCP = {
 	},
 
 	unsetCheckboxByTestId: async ( testId ) => {
+		await page.waitForSelector( `[data-testid="${ testId }"]`, {
+			timeout: 5000,
+		} );
 		const checkbox = await page.$( `[data-testid="${ testId }"]` );
 		const checkboxStatus = await (
 			await checkbox.getProperty( 'checked' )
@@ -648,6 +738,92 @@ export const merchantWCP = {
 		return wasInitiallyEnabled;
 	},
 
+	disableAllEnabledCurrencies: async () => {
+		await page.goto( WCPAY_MULTI_CURRENCY, { waitUntil: 'networkidle0' } );
+
+		await page.waitForSelector( '.enabled-currencies-list li', {
+			timeout: 10000,
+		} );
+
+		// Select all delete buttons for enabled currencies.
+		const deleteButtons = await page.$$(
+			'.enabled-currency .enabled-currency__action.delete'
+		);
+
+		// Loop through each delete button and click it.
+		for ( const button of deleteButtons ) {
+			await button.click();
+
+			await page.waitForSelector( '.components-snackbar', {
+				text: 'Enabled currencies updated.',
+				timeout: 10000,
+			} );
+
+			await page.waitFor( 1000 );
+		}
+	},
+
+	editCurrency: async ( currencyCode ) => {
+		await merchantWCP.openMultiCurrency();
+
+		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
+		await page.waitForSelector( currencyItemSelector, { timeout: 10000 } );
+		await page.click(
+			`${ currencyItemSelector } .enabled-currency__action.edit`
+		);
+	},
+
+	saveCurrencySettings: async () => {
+		await page.click(
+			'.single-currency-settings-save-settings-section button'
+		);
+		await page.waitForSelector( '.components-snackbar', {
+			text: 'Currency settings updated.',
+			timeout: 15000,
+		} );
+	},
+
+	setCurrencyRate: async ( currencyCode, rate ) => {
+		await merchantWCP.editCurrency( currencyCode );
+
+		await page.waitForSelector(
+			'#single-currency-settings__manual_rate_radio'
+		);
+		await page.click( '#single-currency-settings__manual_rate_radio' );
+
+		await page.waitForSelector( '[data-testid="manual_rate_input"]', {
+			timeout: 5000,
+		} );
+		await clearAndFillInput(
+			'[data-testid="manual_rate_input"]',
+			rate.toString()
+		);
+
+		await merchantWCP.saveCurrencySettings();
+	},
+
+	setCurrencyPriceRounding: async ( currencyCode, rounding ) => {
+		await merchantWCP.editCurrency( currencyCode );
+
+		await page.waitForSelector( '[data-testid="price_rounding"]', {
+			timeout: 5000,
+		} );
+		await page.select( '[data-testid="price_rounding"]', rounding );
+
+		await merchantWCP.saveCurrencySettings();
+	},
+
+	setCurrencyCharmPricing: async ( currencyCode, charmPricing ) => {
+		await merchantWCP.editCurrency( currencyCode );
+
+		await page.waitForSelector( '[data-testid="price_charm"]', {
+			timeout: 5000,
+		} );
+		await page.select( '[data-testid="price_charm"]', charmPricing );
+
+		await merchantWCP.saveCurrencySettings();
+	},
+
 	addMulticurrencyWidget: async () => {
 		await page.goto( `${ WP_ADMIN_DASHBOARD }widgets.php`, {
 			waitUntil: 'networkidle0',
@@ -671,7 +847,11 @@ export const merchantWCP = {
 			searchInput.type( 'switcher', { delay: 20 } );
 
 			await page.waitForSelector(
-				'button.components-button[role="option"]'
+				'button.components-button[role="option"]',
+				{
+					visible: true,
+					timeout: 5000,
+				}
 			);
 			await page.click( 'button.components-button[role="option"]' );
 			await page.waitFor( 2000 );
@@ -691,7 +871,7 @@ export const merchantWCP = {
 		await merchant.openNewOrder();
 		await page.click( 'button.add-line-item' );
 		await page.click( 'button.add-order-item' );
-		await page.click( 'select.wc-product-search' );
+		await page.click( 'select[name="item_id"]' );
 		await page.type(
 			'.select2-search--dropdown > input',
 			config.get( 'products.simple.name' ),
