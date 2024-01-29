@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Don't instantiate `Fraud_Prevention_Service` in checkout if processing an authorized WooPay request.

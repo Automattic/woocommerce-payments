@@ -12,6 +12,7 @@ use WC_Payments_Account;
 use WC_Payments_Utils;
 use WC_Payments_API_Client;
 use WC_Payments_Localization_Service;
+use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 use WCPay\Logger;
@@ -1020,7 +1021,7 @@ class MultiCurrency {
 		echo \WC_Payments_Utils::esc_interpolated_html(
 			$message,
 			[
-				'a' => '<a href="?currency=' . $store_currency . '">',
+				'a' => '<a href="?currency=' . esc_attr( $store_currency ) . '">',
 			]
 		);
 		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
@@ -1392,8 +1393,8 @@ class MultiCurrency {
 		$countries = WC_Payments_Utils::supported_countries();
 
 		$predefined_simulation_currencies = [
-			'USD' => $countries['US'],
-			'GBP' => $countries['GB'],
+			'USD' => $countries[ Country_Code::UNITED_STATES ],
+			'GBP' => $countries[ Country_Code::UNITED_KINGDOM ],
 		];
 
 		$simulation_currency      = 'USD' === get_option( 'woocommerce_currency', 'USD' ) ? 'GBP' : 'USD';

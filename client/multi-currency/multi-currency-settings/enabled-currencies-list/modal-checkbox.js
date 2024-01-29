@@ -11,6 +11,7 @@ const EnabledCurrenciesModalCheckbox = ( {
 	onChange,
 	checked = false,
 	currency: { flag, symbol, code, name },
+	testId = null,
 } ) => {
 	const handleChange = useCallback(
 		( enabled ) => {
@@ -20,7 +21,7 @@ const EnabledCurrenciesModalCheckbox = ( {
 	);
 
 	return (
-		<li className="enabled-currency-checkbox">
+		<li className="enabled-currency-checkbox" data-testid={ testId }>
 			<CheckboxControl
 				code={ code }
 				checked={ checked }

@@ -6,19 +6,17 @@
  */
 
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
-use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
-use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
-use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Constants\Payment_Method;
+use WCPay\Payment_Methods\CC_Payment_Method;
+
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 
@@ -149,7 +147,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
-		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$this->mock_dpps     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$mock_payment_method = $this->createMock( CC_Payment_Method::class );
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -161,6 +160,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
+					$mock_payment_method,
+					[ 'card' => $mock_payment_method ],
 					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$this->mock_dpps,
@@ -303,7 +304,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
-			->with( $mock_order, $intent_id, $status, 'pm_mock', $customer_id, $charge_id, 'USD' );
+			->with( $mock_order, $intent );
 
 		$this->mock_order_service
 			->expects( $this->once() )
@@ -470,7 +471,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
-			->with( $mock_order, $intent_id, $status, 'pm_mock', $customer_id, $charge_id, 'USD' );
+			->with( $mock_order, $intent );
 
 		// Assert: The Order_Service is called correctly.
 		$this->mock_order_service
@@ -701,7 +702,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that a draft order is updated to "pending" when the $_POST 'is-woopay-preflight-check` is present.
+	 * Tests that a draft order is updated to "pending" when the $_POST 'is-woopay-preflight-check' is present.
 	 */
 	public function test_draft_order_is_set_to_pending_for_woopay_preflight_check_request() {
 		$_POST['is-woopay-preflight-check'] = true;
@@ -722,7 +723,60 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that a success response and no redirect is returned when the $_POST 'is-woopay-preflight-check` is present.
+	 * Tests that woocommerce_order_status_pending action is not called when the $_POST 'is-woopay-preflight-check' is present.
+	 */
+	public function test_woopay_preflight_request_does_not_call_woocommerce_order_status_pending() {
+		// Arrange: Add woocommerce_order_status_pending action to check if it's called.
+		$results = [
+			'has_called_woocommerce_order_status_pending' => false,
+		];
+		add_action(
+			'woocommerce_order_status_pending',
+			function () use ( &$results ) {
+				$results['has_called_woocommerce_order_status_pending'] = true;
+			}
+		);
+
+		// Arrange: Add filter to change default order status to 'wc-checkout-draft'.
+		// Needed to avoid a default order status of 'pending'.
+		add_filter(
+			'woocommerce_default_order_status',
+			function () {
+				return 'wc-checkout-draft';
+			}
+		);
+
+		// Arrange: Create a request to simulate a woopay preflight request.
+		$_POST['is-woopay-preflight-check'] = true;
+		$request                            = new WP_REST_Request( 'POST', '' );
+		$request->set_body_params(
+			[
+				'payment_data' => [
+					[
+						'key'   => 'is-woopay-preflight-check',
+						'value' => true,
+					],
+				],
+			]
+		);
+		apply_filters( 'rest_request_before_callbacks', [], [], $request );
+
+		// Arrange: Create an order to test with.
+		$order_data = [
+			'status' => 'wc-checkout-draft',
+			'total'  => '100',
+		];
+		$order      = wc_create_order( $order_data );
+
+		// Act: process payment.
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		// Assert: woocommerce_order_status_pending was not called.
+		$this->assertFalse( $results['has_called_woocommerce_order_status_pending'] );
+	}
+
+	/**
+	 * Tests that a success response and no redirect is returned when the $_POST 'is-woopay-preflight-check' is present.
 	 */
 	public function test_successful_result_no_redirect_for_woopay_preflight_check_request() {
 		$_POST['is-woopay-preflight-check'] = true;
@@ -918,7 +972,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
-			->with( $mock_order, $intent_id, $status, 'pm_mock', $customer_id, $charge_id, 'USD' );
+			->with( $mock_order, $intent );
 
 		$this->mock_order_service
 			->expects( $this->once() )
@@ -1034,7 +1088,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
-			->with( $mock_order, $intent_id, $status, 'pm_mock', $customer_id, '', 'USD' );
+			->with( $mock_order, $intent );
 
 		// Assert: Order status was not updated.
 		$mock_order

@@ -65,6 +65,7 @@ export const WooPayConnectIframe = ( { listeners, actionCallback } ) => {
 		<iframe
 			ref={ iframeRef }
 			src={ getWoopayConnectUrl() }
+			style={ { height: 0 } }
 			title="WooPay Connect Direct Checkout"
 		/>
 	);

@@ -27,10 +27,7 @@
       },
       "currency": "VND",
       "datetime": 1651215552,
-      "deposit": {
-        "id": "wcpay_estimated_daily_usd_1651795200",
-        "arrival_date": "1651795200"
-      },
+      "deposit": null,
       "transaction_id": "txn_3KtnnI2EFxam75ai06EEZYXQ",
       "transaction_details": {
         "customer_currency": "VND",
@@ -43,7 +40,7 @@
     },
   "expectation": {
     "fxString": "1 VND → 0.000044 USD: $100.04 USD",
-    "feeString": "Fee (3.9% + $0.30): $-4.20",
+    "feeString": "Fee (3.9% + $0.30): -$4.20",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-fx": "Foreign exchange fee: 1%"

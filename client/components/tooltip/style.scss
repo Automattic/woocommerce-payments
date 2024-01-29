@@ -37,6 +37,9 @@
 		z-index: 100010;
 		// Initial left position is set to 0 to fix a positioning bug in mobile Safari.
 		left: 0;
+		white-space: normal;
+		font-size: 12px;
+		font-weight: 400;
 
 		&.is-hiding {
 			opacity: 0 !important;

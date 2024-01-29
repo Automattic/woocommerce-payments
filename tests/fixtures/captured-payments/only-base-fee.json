@@ -19,10 +19,7 @@
     },
     "currency": "USD",
     "datetime": 1651997740,
-    "deposit": {
-      "id": "wcpay_estimated_daily_usd_1652572800",
-      "arrival_date": "1652572800"
-    },
+    "deposit": null,
     "transaction_id": "txn_3Kx5HD2EFxam75ai1FerGksO",
     "transaction_details": {
       "customer_currency": "USD",
@@ -34,7 +31,7 @@
     }
   },
   "expectation": {
-    "feeString": "Base fee (2.9% + $0.30): $-0.74",
+    "feeString": "Base fee (2.9% + $0.30): -$0.74",
     "netString": "Net deposit: $14.26 USD"
   }
 }

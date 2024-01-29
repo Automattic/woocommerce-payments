@@ -75,8 +75,8 @@ const PaymentMethods = () => {
 
 	const orderedAvailablePaymentMethodIds = [
 		PAYMENT_METHOD_IDS.CARD,
-		...availablePayLaterMethods,
 		...availableNonPayLaterMethods,
+		...availablePayLaterMethods,
 	];
 
 	const availableMethods = orderedAvailablePaymentMethodIds.map(
@@ -92,7 +92,7 @@ const PaymentMethods = () => {
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
 
-	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
+	const stripeAccountDomesticCurrency = useAccountDomesticCurrency();
 
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );

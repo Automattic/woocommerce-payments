@@ -27,10 +27,7 @@
     },
     "currency": "USD",
     "datetime": 1651996460,
-    "deposit": {
-      "id": "wcpay_estimated_daily_usd_1652572800",
-      "arrival_date": "1652572800"
-    },
+    "deposit": null,
     "transaction_id": "txn_3Kx4w12EFxam75ai0W5q4669",
     "transaction_details": {
       "customer_currency": "USD",
@@ -42,7 +39,7 @@
     }
   },
   "expectation": {
-    "feeString": "Fee (3.9% + $0.30): $-3.20",
+    "feeString": "Fee (3.9% + $0.30): -$3.20",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-international": "International card fee: 1%"
