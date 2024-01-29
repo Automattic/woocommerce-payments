@@ -94,6 +94,20 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.2.0-test-1 - unreleased =
+* Add - Displaying Clearpay instead of Afterpay for UK based stores
+* Add - Enhance WooPay session validation
+* Fix - Don't instantiate `Fraud_Prevention_Service` in checkout if processing an authorized WooPay request.
+* Fix - fix: pay-for-order compatibility with other gateways
+* Fix - Merge duplicated Payment Request and WooPay button functionality .
+* Fix - Prevent coupon usage increase in a WooPay preflight check.
+* Dev - chore: removed deprecated functions since 5.0.0
+* Dev - chore: remove unused checkout API methods
+* Dev - chore: update colors on documentation pages
+* Dev - E2E test - Merchant facing multi-currency on-boarding screen.
+* Dev - Remove unnecessary tracks events for dispute accept success/error.
+* Dev - Update REST API documentation for deposits endpoints with changes to estimated and instant deposits
+
 = 7.1.0 - 2024-01-25 =
 * Add - Add active plugins array to compatibility data.
 * Add - Add post_types and their counts as an array to compatibility data.
