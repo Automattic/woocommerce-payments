@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix incorrect test mode notice when left KYC early after going live from builder mode

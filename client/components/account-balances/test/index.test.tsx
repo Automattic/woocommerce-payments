@@ -138,7 +138,6 @@ const createMockOverview = (
 			fee_percentage: 0,
 			status: 'paid',
 		},
-		nextScheduled: undefined,
 		instant: {
 			currency: currencyCode,
 			amount: instantAmount,

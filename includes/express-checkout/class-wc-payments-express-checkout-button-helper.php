@@ -12,6 +12,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_Express_Checkout_Button_Helper {
 	/**
+	 * WC_Payment_Gateway_WCPay instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * WC_Payments_Account instance to get information about the account
 	 *
 	 * @var WC_Payments_Account
@@ -21,9 +28,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_Account $account Account information.
+	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway.
+	 * @param WC_Payments_Account      $account Account information.
 	 */
-	public function __construct( WC_Payments_Account $account ) {
+	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
+		$this->gateway = $gateway;
 		$this->account = $account;
 	}
 
@@ -231,5 +240,149 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		} else {
 			return 1;
 		}
+	}
+
+	/**
+	 * Checks if this is a product page or content contains a product_page shortcode.
+	 *
+	 * @return boolean
+	 */
+	public function is_product() {
+		return is_product() || wc_post_content_has_shortcode( 'product_page' );
+	}
+
+	/**
+	 * Checks if this is the Pay for Order page.
+	 *
+	 * @return boolean
+	 */
+	public function is_pay_for_order_page() {
+		return is_checkout() && isset( $_GET['pay_for_order'] ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
+
+	/**
+	 * Checks if this is the cart page or content contains a cart block.
+	 *
+	 * @return boolean
+	 */
+	public function is_cart() {
+		return is_cart() || has_block( 'woocommerce/cart' );
+	}
+
+	/**
+	 * Checks if this is the checkout page or content contains a cart block.
+	 *
+	 * @return boolean
+	 */
+	public function is_checkout() {
+		return is_checkout() || has_block( 'woocommerce/checkout' );
+	}
+
+	/**
+	 * Checks if button is available at a given location.
+	 *
+	 * @param string $location Location.
+	 * @param string $option_name Option name.
+	 * @return boolean
+	 */
+	public function is_available_at( $location, $option_name ) {
+		$available_locations = $this->gateway->get_option( $option_name );
+		if ( $available_locations && is_array( $available_locations ) ) {
+			return in_array( $location, $available_locations, true );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Gets settings that are shared between the Payment Request button and the WooPay button.
+	 *
+	 * @return array
+	 */
+	public function get_common_button_settings() {
+		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
+		return [
+			'type'   => $button_type,
+			'theme'  => $this->gateway->get_option( 'payment_request_button_theme' ),
+			'height' => $this->get_button_height(),
+		];
+	}
+
+	/**
+	 * Gets the context for where the button is being displayed.
+	 *
+	 * @return string
+	 */
+	public function get_button_context() {
+		if ( $this->is_product() ) {
+			return 'product';
+		}
+
+		if ( $this->is_cart() ) {
+			return 'cart';
+		}
+
+		if ( $this->is_pay_for_order_page() ) {
+			return 'pay_for_order';
+		}
+
+		if ( $this->is_checkout() ) {
+			return 'checkout';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Gets the button height.
+	 *
+	 * @return string
+	 */
+	public function get_button_height() {
+		$height = $this->gateway->get_option( 'payment_request_button_size' );
+		if ( 'medium' === $height ) {
+			return '48';
+		}
+
+		if ( 'large' === $height ) {
+			return '56';
+		}
+
+		// for the "default"/"small" and "catch-all" scenarios.
+		return '40';
+	}
+
+	/**
+	 * Get product from product page or product_page shortcode.
+	 *
+	 * @return WC_Product|false|null Product object.
+	 */
+	public function get_product() {
+		global $post;
+
+		if ( is_product() ) {
+			return wc_get_product( $post->ID );
+		} elseif ( wc_post_content_has_shortcode( 'product_page' ) ) {
+			// Get id from product_page shortcode.
+			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
+			if ( isset( $shortcode_match['id'] ) ) {
+				return wc_get_product( $shortcode_match['id'] );
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns true if the provided WC_Product is a subscription, false otherwise.
+	 *
+	 * @param WC_Product $product The product to check.
+	 *
+	 * @return bool  True if product is subscription, false otherwise.
+	 */
+	public function is_product_subscription( WC_Product $product ): bool {
+		return 'subscription' === $product->get_type()
+			|| 'subscription_variation' === $product->get_type()
+			|| 'variable-subscription' === $product->get_type();
 	}
 }
