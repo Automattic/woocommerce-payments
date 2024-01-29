@@ -404,6 +404,7 @@ class WC_Payments {
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
+		include_once __DIR__ . '/class-wc-payments-woopay-direct-checkout.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-large-exception.php';
@@ -554,6 +555,8 @@ class WC_Payments {
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		self::maybe_display_express_checkout_buttons();
+
+		self::maybe_enable_woopay_direct_checkout();
 
 		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
 		$enabled_bnpl_payment_methods = array_intersect(
@@ -1455,6 +1458,20 @@ class WC_Payments {
 
 			new WooPay_Order_Status_Sync( self::$api_client );
 		}
+	}
+
+	/**
+	 * Initializes woopay direct checkout if the woopay feature flag is enabled.
+	 *
+	 * @return void
+	 */
+	public static function maybe_enable_woopay_direct_checkout() {
+		if ( ! WC_Payments_Features::is_woopay_enabled() || ! WC_Payments_Features::is_woopay_direct_checkout_enabled() ) {
+			return;
+		}
+
+		$woopay_direct_checkout = new WC_Payments_WooPay_Direct_Checkout();
+		$woopay_direct_checkout->init();
 	}
 
 	/**
