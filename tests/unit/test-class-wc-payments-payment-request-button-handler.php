@@ -5,7 +5,9 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Code;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -13,7 +15,7 @@ use WCPay\Session_Rate_Limiter;
  */
 class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase {
 	const SHIPPING_ADDRESS = [
-		'country'   => 'US',
+		'country'   => Country_Code::UNITED_STATES,
 		'state'     => 'CA',
 		'postcode'  => '94110',
 		'city'      => 'San Francisco',
@@ -77,6 +79,13 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	private $mock_wcpay_gateway;
 
 	/**
+	 * Express Checkout Helper instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Helper
+	 */
+	private $express_checkout_helper;
+
+	/**
 	 * Sets up things all tests need.
 	 */
 	public function set_up() {
@@ -100,7 +109,17 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
-		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+		$this->express_checkout_helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setMethods(
+				[
+					'is_product',
+					'get_product',
+				]
+			)
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->getMock();
+
+		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
 
 		$this->simple_product = WC_Helper_Product::create_simple_product();
 
@@ -143,6 +162,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function tear_down() {
 		parent::tear_down();
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
 		$this->zone->delete();
@@ -189,6 +209,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 		$mock_dpps                     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$mock_payment_method           = $this->createMock( CC_Payment_Method::class );
 
 		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -196,6 +217,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$mock_customer_service,
 			$mock_token_service,
 			$mock_action_scheduler_service,
+			$mock_payment_method,
+			[ 'card' => $mock_payment_method ],
 			$mock_rate_limiter,
 			$mock_order_service,
 			$mock_dpps,
@@ -292,22 +315,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$this->assertEquals( $expected_shipping_options, $data['shipping_options'], 'Shipping options mismatch' );
 	}
 
-	public function test_get_button_settings() {
-		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
-		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
-
-		$this->assertEquals(
-			[
-				'type'         => 'buy',
-				'theme'        => 'dark',
-				'height'       => '48',
-				'locale'       => 'en',
-				'branded_type' => 'long',
-			],
-			$this->pr->get_button_settings()
-		);
-	}
-
 	public function test_multiple_packages_in_cart_not_allowed() {
 		// Add fake packages to the cart.
 		add_filter(
@@ -320,7 +327,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			}
 		);
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
-		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper );
 
 		$this->assertFalse( $this->pr->has_allowed_items_in_cart() );
 	}
@@ -505,19 +512,21 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, "__return_$tax_display_cart" ] ); // reset in tear_down.
 		add_filter( 'wc_shipping_enabled', '__return_false' ); // reset in tear_down.
 		WC()->cart->calculate_totals();
-		$build_display_items_result = $this->pr->build_display_items( true );
+		$build_display_items_result = $this->express_checkout_helper->build_display_items( true );
 
-		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
-			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway ] )
-			->setMethods( [ 'is_product', 'get_product' ] )
-			->getMock();
-
-		$mock_pr->method( 'is_product' )
+		$this->express_checkout_helper
+			->method( 'is_product' )
 			->willReturn( true );
-		$mock_pr->method( 'get_product' )
+
+		$this->express_checkout_helper
+			->method( 'get_product' )
 			->willReturn( $this->simple_product );
 
-		$get_product_data_result = $mock_pr->get_product_data();
+		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
+			->getMock();
+
+		$get_product_data_result = $this->pr->get_product_data();
 
 		foreach ( $get_product_data_result['displayItems'] as $key => $display_item ) {
 			if ( isset( $display_item['pending'] ) ) {
@@ -534,6 +543,39 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$get_product_data_result['total']['amount'],
 			$build_display_items_result['total']['amount'],
 			'Failed asserting total amount are the same for get_product_data and build_display_items'
+		);
+	}
+
+	public function test_filter_cart_needs_shipping_address_returns_false() {
+		sleep( 1 );
+		$this->zone->delete_shipping_method( $this->flat_rate_id );
+		$this->zone->delete_shipping_method( $this->local_pickup_id );
+
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->assertFalse( $this->pr->filter_cart_needs_shipping_address( true ) );
+	}
+
+	public function test_filter_cart_needs_shipping_address_returns_true() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->assertTrue( $this->pr->filter_cart_needs_shipping_address( true ) );
+	}
+
+	public function test_get_button_settings() {
+		$this->express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'type'         => 'buy',
+				'theme'        => 'dark',
+				'height'       => '48',
+				'locale'       => 'en',
+				'branded_type' => 'long',
+			],
+			$this->pr->get_button_settings()
 		);
 	}
 }

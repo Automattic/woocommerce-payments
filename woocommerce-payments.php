@@ -9,10 +9,10 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
- * WC tested up to: 8.3.1
+ * WC tested up to: 8.4.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 6.9.2
+ * Version: 7.1.0
  *
  * @package WooCommerce\Payments
  */
@@ -333,7 +333,16 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();
 	if ( false !== $urls ) {
 		$current_url = untrailingslashit( $urls['current_url'] );
-		$wpcom_url   = untrailingslashit( $urls['wpcom_url'] );
+		/**
+		 * Undo the reverse the Jetpack IDC library is doing since we want to display the URL.
+		 *
+		 * @see https://github.com/Automattic/jetpack-identity-crisis/blob/trunk/src/class-identity-crisis.php#L471
+		 */
+		$idc_sync_error = Automattic\Jetpack\Identity_Crisis::check_identity_crisis();
+		if ( is_array( $idc_sync_error ) && ! empty( $idc_sync_error['reversed_url'] ) ) {
+			$urls['wpcom_url'] = strrev( $urls['wpcom_url'] );
+		}
+		$wpcom_url = untrailingslashit( $urls['wpcom_url'] );
 
 		$custom_content['migrateCardBodyText'] = sprintf(
 			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly. %3$s: WooPayments. */

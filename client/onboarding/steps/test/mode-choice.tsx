@@ -27,7 +27,7 @@ declare const global: {
 };
 
 describe( 'ModeChoice', () => {
-	it( 'displays test and live radio cards, notice for dev mode', () => {
+	it( 'displays test and live radio cards, notice for sandbox mode', () => {
 		global.wcpaySettings = {
 			connectUrl: 'https://wcpay.test/connect',
 			devMode: true,
@@ -35,14 +35,11 @@ describe( 'ModeChoice', () => {
 		render( <ModeChoice /> );
 
 		expect(
-			screen.getByText( strings.steps.mode.live.label )
-		).toBeInTheDocument();
-		expect(
-			screen.getByText( strings.steps.mode.test.label )
+			screen.getByText( strings.steps.mode.label )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				'Dev mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it.'
+				'Sandbox mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it.'
 			)
 		).toBeInTheDocument();
 	} );
@@ -51,8 +48,7 @@ describe( 'ModeChoice', () => {
 		nextStep = jest.fn();
 		render( <ModeChoice /> );
 
-		user.click( screen.getByText( strings.steps.mode.live.label ) );
-		user.click( screen.getByRole( 'button' ) );
+		user.click( screen.getByTestId( 'live-mode-button' ) );
 
 		expect( nextStep ).toHaveBeenCalled();
 	} );
@@ -70,8 +66,9 @@ describe( 'ModeChoice', () => {
 
 		render( <ModeChoice /> );
 
-		user.click( screen.getByText( strings.steps.mode.test.label ) );
-		user.click( screen.getByRole( 'button' ) );
+		user.click(
+			screen.getByRole( 'button', { name: /Continue in sandbox mode/i } )
+		);
 
 		expect( window.location.href ).toBe(
 			`https://wcpay.test/connect?test_mode=true`

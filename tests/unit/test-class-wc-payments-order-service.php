@@ -1155,6 +1155,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $this->order->get_meta( '_wcpay_refund_id', true ), $wcpay_refund_id );
 	}
 
+	public function set_wcpay_refund_transaction_id_for_order() {
+		$wcpay_refund_transaction_id = 'txn_mock';
+		$this->order_service->set_wcpay_refund_transaction_id_for_order( $this->order, $wcpay_refund_transaction_id );
+		$this->assertSame( $this->order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ), $wcpay_refund_transaction_id );
+	}
+
 	public function test_get_wcpay_refund_id() {
 		$wcpay_refund_id = 'ri_1234';
 		$this->order->update_meta_data( '_wcpay_refund_id', $wcpay_refund_id );
@@ -1205,16 +1211,38 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $fraud_meta_box_type_from_service, $fraud_meta_box_type );
 	}
 
+	public function test_set_payment_transaction_id_for_order() {
+		$transaction_id = 'txn_mock';
+		$this->order_service->set_payment_transaction_id_for_order( $this->order, $transaction_id );
+		$this->assertSame( $this->order->get_meta( '_wcpay_payment_transaction_id', true ), $transaction_id );
+	}
+
 	public function test_attach_intent_info_to_order() {
-		$intent_id      = 'pi_mock';
-		$intent_status  = 'succeeded';
-		$payment_method = 'woocommerce_payments';
-		$customer_id    = 'cus_12345';
-		$charge_id      = 'ch_mock';
-		$currency       = 'USD';
-		$this->order_service->attach_intent_info_to_order( $this->order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+		$intent_id = 'pi_mock';
+		$intent    = WC_Helper_Intention::create_intention( [ 'id' => $intent_id ] );
+		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
 
 		$this->assertEquals( $intent_id, $this->order->get_meta( '_intent_id', true ) );
+	}
+
+	public function test_attach_intent_info_to_order_after_successful_payment() {
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => 'pi_mock',
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
+
+		$another_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => 'pi_mock_2',
+				'status' => Intent_Status::CANCELED,
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $another_intent );
+
+		$this->assertEquals( Intent_Status::SUCCEEDED, $this->order->get_meta( '_intention_status', true ) );
 	}
 
 	/**

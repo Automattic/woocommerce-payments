@@ -16,7 +16,9 @@ import {
 	getUpeSettings,
 	isLinkEnabled,
 } from 'wcpay/checkout/utils/upe';
-import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
+import enableStripeLinkPaymentMethod, {
+	switchToNewPaymentTokenElement,
+} from 'wcpay/checkout/stripe-link';
 import {
 	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
@@ -51,18 +53,27 @@ function initializeAppearance( api ) {
 }
 
 /**
- * Block UI to indicate processing and avoid duplicate submission.
+ * Block the UI to indicate processing and avoid duplicate submission.
  *
- * @param {Object} jQueryForm The jQuery object for the jQueryForm.
+ * @param {Object} $form The jQuery object for the form.
  */
-function blockUI( jQueryForm ) {
-	jQueryForm.addClass( 'processing' ).block( {
+export function blockUI( $form ) {
+	$form.addClass( 'processing' ).block( {
 		message: null,
 		overlayCSS: {
 			background: '#fff',
 			opacity: 0.6,
 		},
 	} );
+}
+
+/**
+ * Unblocks the UI to allow payment processing.
+ *
+ * @param {Object} $form The jQuery object for the form.
+ */
+export function unblockUI( $form ) {
+	$form.removeClass( 'processing' ).unblock();
 }
 
 /**
@@ -106,32 +117,56 @@ function createStripePaymentMethod(
 	jQueryForm,
 	paymentMethodType
 ) {
+	/* global wcpayCustomerData */
 	let params = {};
+	if ( window.wcpayCustomerData ) {
+		params = {
+			billing_details: {
+				name: wcpayCustomerData.name || undefined,
+				email: wcpayCustomerData.email,
+				address: {
+					country: wcpayCustomerData.billing_country,
+				},
+			},
+		};
+	}
+
 	if ( jQueryForm.attr( 'name' ) === 'checkout' ) {
 		params = {
 			billing_details: {
-				name: document.querySelector( '#billing_first_name' )
-					? (
-							document.querySelector( '#billing_first_name' )
-								?.value +
-							' ' +
-							document.querySelector( '#billing_last_name' )
-								?.value
-					  ).trim()
-					: undefined,
+				...params.billing_details,
+				name:
+					`${
+						document.querySelector(
+							`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name }`
+						)?.value || ''
+					} ${
+						document.querySelector(
+							`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name }`
+						)?.value || ''
+					}`.trim() || undefined,
 				email: document.querySelector( '#billing_email' )?.value,
 				phone: document.querySelector( '#billing_phone' )?.value,
 				address: {
-					city: document.querySelector( '#billing_city' )?.value,
-					country: document.querySelector( '#billing_country' )
-						?.value,
-					line1: document.querySelector( '#billing_address_1' )
-						?.value,
-					line2: document.querySelector( '#billing_address_2' )
-						?.value,
-					postal_code: document.querySelector( '#billing_postcode' )
-						?.value,
-					state: document.querySelector( '#billing_state' )?.value,
+					...params.billing_details?.address,
+					city: document.querySelector(
+						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.city }`
+					)?.value,
+					country: document.querySelector(
+						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }`
+					)?.value,
+					line1: document.querySelector(
+						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.address_1 }`
+					)?.value,
+					line2: document.querySelector(
+						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.address_2 }`
+					)?.value,
+					postal_code: document.querySelector(
+						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.postcode }`
+					)?.value,
+					state: document.querySelector(
+						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.state }`
+					)?.value,
 				},
 			},
 		};
@@ -205,6 +240,28 @@ function appendSetupIntentToForm( form, confirmedIntent ) {
 	form.append( input );
 }
 
+const ensureSameAsBillingIsUnchecked = () => {
+	const sameAsBillingCheckbox = document.getElementById(
+		'ship-to-different-address-checkbox'
+	);
+
+	if ( ! sameAsBillingCheckbox ) {
+		return;
+	}
+
+	if ( sameAsBillingCheckbox.checked === true ) {
+		return;
+	}
+
+	sameAsBillingCheckbox.checked = true;
+
+	if ( window.jQuery ) {
+		const $sameAsBillingCheckbox = window.jQuery( sameAsBillingCheckbox );
+
+		$sameAsBillingCheckbox.prop( 'checked', true ).change();
+	}
+};
+
 /**
  * If Link is enabled, add event listeners and handlers.
  *
@@ -216,21 +273,85 @@ export function maybeEnableStripeLink( api ) {
 			api: api,
 			elements: gatewayUPEComponents.card.elements,
 			emailId: 'billing_email',
-			complete_billing: () => {
-				return true;
-			},
-			complete_shipping: () => {
-				return (
-					document.getElementById(
-						'ship-to-different-address-checkbox'
-					) &&
-					document.getElementById(
-						'ship-to-different-address-checkbox'
-					).checked
+			onAutofill: ( billingAddress, shippingAddress ) => {
+				const fillAddress = ( addressValues, fieldsMap ) => {
+					// in some cases, the address might be empty.
+					if ( ! addressValues ) return;
+
+					// setting the country first, in case the "state"/"county"/"province"
+					// select changes from a select to a text field (or vice-versa).
+					const countryElement = document.getElementById(
+						fieldsMap.country
+					);
+					if ( countryElement ) {
+						countryElement.value = addressValues.country;
+						// manually dispatching the "change" event, since the element might not be a `select2` component.
+						countryElement.dispatchEvent( new Event( 'change' ) );
+					}
+
+					Object.entries( addressValues ).forEach(
+						( [ piece, value ] ) => {
+							const element = document.getElementById(
+								fieldsMap[ piece ]
+							);
+							if ( element ) {
+								element.value = value;
+							}
+						}
+					);
+				};
+
+				// this is needed on shortcode checkout, but not on blocks checkout.
+				ensureSameAsBillingIsUnchecked();
+
+				fillAddress( billingAddress, SHORTCODE_BILLING_ADDRESS_FIELDS );
+				fillAddress(
+					shippingAddress,
+					SHORTCODE_SHIPPING_ADDRESS_FIELDS
 				);
+
+				// manually dispatching the "change" event, since the element might be a `select2` component.
+				document
+					.querySelectorAll(
+						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }, #${ SHORTCODE_BILLING_ADDRESS_FIELDS.state }, ` +
+							`#${ SHORTCODE_SHIPPING_ADDRESS_FIELDS.country }, #${ SHORTCODE_SHIPPING_ADDRESS_FIELDS.state }`
+					)
+					.forEach( ( element ) => {
+						if ( ! window.jQuery ) return;
+
+						const $element = window.jQuery( element );
+						if ( $element.data( 'select2' ) ) {
+							$element.trigger( 'change' );
+						}
+					} );
 			},
-			shipping_fields: SHORTCODE_SHIPPING_ADDRESS_FIELDS,
-			billing_fields: SHORTCODE_BILLING_ADDRESS_FIELDS,
+			onButtonShow: ( linkAutofill ) => {
+				// Display StripeLink button if email field is prefilled.
+				const billingEmailInput = document.getElementById(
+					'billing_email'
+				);
+				if ( billingEmailInput.value !== '' ) {
+					const linkButtonTop =
+						billingEmailInput.offsetTop +
+						( billingEmailInput.offsetHeight - 40 ) / 2;
+					const stripeLinkButton = document.querySelector(
+						'.wcpay-stripelink-modal-trigger'
+					);
+					stripeLinkButton.style.display = 'block';
+					stripeLinkButton.style.top = `${ linkButtonTop }px`;
+				}
+
+				// Handle StripeLink button click.
+				const stripeLinkButton = document.querySelector(
+					'.wcpay-stripelink-modal-trigger'
+				);
+				stripeLinkButton.addEventListener( 'click', ( event ) => {
+					event.preventDefault();
+					// Trigger modal.
+					linkAutofill.launch( { email: billingEmailInput.value } );
+					switchToNewPaymentTokenElement();
+				} );
+			},
 		} );
 	}
 }
@@ -325,16 +446,16 @@ export function renderTerms( event ) {
 let hasCheckoutCompleted;
 export const processPayment = (
 	api,
-	jQueryForm,
+	$form,
 	paymentMethodType,
-	additionalActionsHandler = () => {}
+	additionalActionsHandler = () => Promise.resolve()
 ) => {
 	if ( hasCheckoutCompleted ) {
 		hasCheckoutCompleted = false;
 		return;
 	}
 
-	blockUI( jQueryForm );
+	blockUI( $form );
 
 	const elements = gatewayUPEComponents[ paymentMethodType ].elements;
 
@@ -344,24 +465,24 @@ export const processPayment = (
 			const paymentMethodObject = await createStripePaymentMethod(
 				api,
 				elements,
-				jQueryForm,
+				$form,
 				paymentMethodType
 			);
-			appendFingerprintInputToForm( jQueryForm, fingerprint );
+			appendFingerprintInputToForm( $form, fingerprint );
 			appendPaymentMethodIdToForm(
-				jQueryForm,
+				$form,
 				paymentMethodObject.paymentMethod.id
 			);
 			await additionalActionsHandler(
 				paymentMethodObject.paymentMethod,
-				jQueryForm,
+				$form,
 				api
 			);
 			hasCheckoutCompleted = true;
-			submitForm( jQueryForm );
+			submitForm( $form );
 		} catch ( err ) {
 			hasCheckoutCompleted = false;
-			jQueryForm.removeClass( 'processing' ).unblock();
+			unblockUI( $form );
 			showErrorCheckout( err.message );
 		}
 	} )();

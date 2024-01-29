@@ -427,6 +427,13 @@ describe( 'PaymentDetailsSummary', () => {
 		screen.getByRole( 'button', {
 			name: /Accept dispute/,
 		} );
+
+		// Refund menu is not rendered
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Transaction actions/i,
+			} )
+		).toBeNull();
 	} );
 
 	test( 'renders the information of a disputed charge when the store/charge currency differ', () => {
@@ -684,6 +691,11 @@ describe( 'PaymentDetailsSummary', () => {
 				name: /Accept/i,
 			} )
 		).toBeNull();
+
+		// Refund menu is rendered
+		screen.getByRole( 'button', {
+			name: /Transaction actions/i,
+		} );
 	} );
 
 	test( 'correctly renders dispute details for "under_review" disputes', () => {
@@ -710,6 +722,13 @@ describe( 'PaymentDetailsSummary', () => {
 		expect(
 			screen.queryByRole( 'button', {
 				name: /Accept/i,
+			} )
+		).toBeNull();
+
+		// Refund menu is not rendered
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Transaction actions/i,
 			} )
 		).toBeNull();
 	} );
@@ -742,6 +761,13 @@ describe( 'PaymentDetailsSummary', () => {
 		expect(
 			screen.queryByRole( 'button', {
 				name: /Accept/i,
+			} )
+		).toBeNull();
+
+		// Refund menu is not rendered
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Transaction actions/i,
 			} )
 		).toBeNull();
 	} );
@@ -777,6 +803,13 @@ describe( 'PaymentDetailsSummary', () => {
 				name: /Accept/i,
 			} )
 		).toBeNull();
+
+		// Refund menu is not rendered
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Transaction actions/i,
+			} )
+		).toBeNull();
 	} );
 
 	test( 'correctly renders dispute details for "warning_needs_response" inquiry disputes', () => {
@@ -807,6 +840,11 @@ describe( 'PaymentDetailsSummary', () => {
 		screen.getByRole( 'button', {
 			name: /Issue refund/i,
 		} );
+
+		// Refund menu is rendered
+		screen.getByRole( 'button', {
+			name: /Transaction actions/i,
+		} );
 	} );
 
 	test( 'correctly renders dispute details for "warning_under_review" inquiry disputes', () => {
@@ -834,6 +872,11 @@ describe( 'PaymentDetailsSummary', () => {
 				name: /Accept/i,
 			} )
 		).toBeNull();
+
+		// Refund menu is rendered
+		screen.getByRole( 'button', {
+			name: /Transaction actions/i,
+		} );
 	} );
 
 	test( 'correctly renders dispute details for "warning_closed" inquiry disputes', () => {
@@ -862,6 +905,11 @@ describe( 'PaymentDetailsSummary', () => {
 				name: /Accept/i,
 			} )
 		).toBeNull();
+
+		// Refund menu is rendered
+		screen.getByRole( 'button', {
+			name: /Transaction actions/i,
+		} );
 	} );
 
 	describe( 'order missing notice', () => {

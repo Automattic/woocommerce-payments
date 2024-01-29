@@ -13,6 +13,7 @@ use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Response;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
 // Need to use WC_Mock_Data_Store.
@@ -89,6 +90,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$this->mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 		$mock_dpps                           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$mock_payment_method                 = $this->createMock( CC_Payment_Method::class );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -96,6 +98,8 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			$this->mock_customer_service,
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
+			$mock_payment_method,
+			[ 'card' => $mock_payment_method ],
 			$this->mock_rate_limiter,
 			$this->mock_order_service,
 			$mock_dpps,
@@ -762,7 +766,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'uncaptured-payment', $result->get_error_code() );
 	}
 
-	public function test_process_refund_on_invalid_amount() {
+	public function test_process_refund_on_zero_amount() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
 
@@ -774,9 +778,19 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order_id = $order->get_id();
 
 		$result = $this->wcpay_gateway->process_refund( $order_id, 0 );
+		$this->assertSame( true, $result );
+	}
 
-		$this->assertInstanceOf( WP_Error::class, $result );
-		$this->assertEquals( 'invalid-amount', $result->get_error_code() );
+	public function test_process_refund_on_invalid_amount() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$order_id = $order->get_id();
 
 		$result = $this->wcpay_gateway->process_refund( $order_id, - 5 );
 

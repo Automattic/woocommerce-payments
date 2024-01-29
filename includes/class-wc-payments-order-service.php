@@ -84,6 +84,13 @@ class WC_Payments_Order_Service {
 	const WCPAY_REFUND_ID_META_KEY = '_wcpay_refund_id';
 
 	/**
+	 * Meta key used to store WCPay refund transaction id.
+	 *
+	 * @const string
+	 */
+	const WCPAY_REFUND_TRANSACTION_ID_META_KEY = '_wcpay_refund_transaction_id';
+
+	/**
 	 * Meta key used to store WCPay refund status.
 	 *
 	 * @const string
@@ -105,6 +112,13 @@ class WC_Payments_Order_Service {
 	 * @const string
 	 */
 	const WCPAY_MODE_META_KEY = '_wcpay_mode';
+
+	/**
+	 * Meta key used to store payment transaction Id.
+	 *
+	 * @const string
+	 */
+	const WCPAY_PAYMENT_TRANSACTION_ID_META_KEY = '_wcpay_payment_transaction_id';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -525,6 +539,23 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Set the payment metadata for payment transaction id.
+	 *
+	 * @param  mixed  $order The order.
+	 * @param  string $payment_transaction_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_payment_transaction_id_for_order( $order, $payment_transaction_id ) {
+		if ( ! isset( $payment_transaction_id ) || null === $payment_transaction_id ) {
+			return;
+		}
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY, $payment_transaction_id );
+		$order->save_meta_data();
+	}
+
+	/**
 	 * Get the payment metadata for charge id.
 	 *
 	 * @param  mixed $order The order Id or order object.
@@ -652,6 +683,20 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Set the payment metadata for refund transaction id.
+	 *
+	 * @param  WC_Order_Refund $order The order.
+	 * @param  string          $wcpay_transaction_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_wcpay_refund_transaction_id_for_order( WC_Order_Refund $order, string $wcpay_transaction_id ) {
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::WCPAY_REFUND_TRANSACTION_ID_META_KEY, $wcpay_transaction_id );
+		$order->save_meta_data();
+	}
+
+	/**
 	 * Get the payment metadata for refund id.
 	 *
 	 * @param  mixed $order The order Id or order object.
@@ -752,6 +797,35 @@ class WC_Payments_Order_Service {
 	/**
 	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added
 	 *
+	 * @param WC_Order                                                          $order The order.
+	 * @param WC_Payments_API_Payment_Intention|WC_Payments_API_Setup_Intention $intent The payment or setup intention object.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function attach_intent_info_to_order( WC_Order $order, $intent ) {
+		// We don't want to allow metadata for a successful payment to be disrupted.
+		if ( Intent_Status::SUCCEEDED === $this->get_intention_status_for_order( $order ) ) {
+			return;
+		}
+		// first, let's prepare all the metadata needed for refunds, required for status change etc.
+		$intent_id              = $intent->get_id();
+		$intent_status          = $intent->get_status();
+		$payment_method         = $intent->get_payment_method_id();
+		$customer_id            = $intent->get_customer_id();
+		$currency               = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_currency() : $order->get_currency();
+		$charge                 = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_charge() : null;
+		$charge_id              = $charge ? $charge->get_id() : null;
+		$payment_transaction    = $charge ? $charge->get_balance_transaction() : null;
+		$payment_transaction_id = $payment_transaction['id'] ?? '';
+		// next, save it in order meta.
+		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id );
+	}
+
+	/**
+	 * Legacy version of the attach_intent_info_to_order method.
+	 *
+	 * TODO: This method should ultimately be merged with `attach_intent_info_to_order` and then removed.
+	 *
 	 * @param WC_Order $order The order.
 	 * @param string   $intent_id The intent ID.
 	 * @param string   $intent_status Intent status.
@@ -759,10 +833,11 @@ class WC_Payments_Order_Service {
 	 * @param string   $customer_id Customer ID.
 	 * @param string   $charge_id Charge ID.
 	 * @param string   $currency Currency code.
+	 * @param string   $payment_transaction_id The transaction ID of the linked charge.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
+	public function attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id = null ) {
 		// first, let's save all the metadata that needed for refunds, required for status change etc.
 		$order->set_transaction_id( $intent_id );
 		$this->set_intent_id_for_order( $order, $intent_id );
@@ -771,6 +846,7 @@ class WC_Payments_Order_Service {
 		$this->set_intention_status_for_order( $order, $intent_status );
 		$this->set_customer_id_for_order( $order, $customer_id );
 		$this->set_wcpay_intent_currency_for_order( $order, $currency );
+		$this->set_payment_transaction_id_for_order( $order, $payment_transaction_id );
 		$order->save();
 	}
 

@@ -6,6 +6,14 @@ import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import React from 'react';
 
+const documentationUrls = {
+	sandboxMode:
+		'https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/',
+	tos: 'https://wordpress.com/tos/',
+	merchantTerms: 'https://wordpress.com/tos/#more-woopay-specifically',
+	privacyPolicy: 'https://automattic.com/privacy/',
+};
+
 export default {
 	steps: {
 		mode: {
@@ -17,33 +25,21 @@ export default {
 				'Select the option that best fits your needs.',
 				'woocommerce-payments'
 			),
-			live: {
-				label: __(
-					'I’d like to set up payments on my own store',
-					'woocommerce-payments'
-				),
-				note: __(
-					'You’ll need to provide details to verify that you’re the owner of the account. If you’re setting up payments for someone else, choose the test payments option.',
-					'woocommerce-payments'
-				),
+			label: __(
+				'I’d like to set up payments for my store',
+				'woocommerce-payments'
+			),
+			note: __(
+				'You’ll need to provide details to verify that you’re the owner of the account. If you’re setting up payments for someone else, choose sandbox mode.',
+				'woocommerce-payments'
+			),
+			continue: {
+				live: __( 'Continue', 'woocommerce-payments' ),
+				test: __( 'Continue in sandbox mode', 'woocommerce-payments' ),
 			},
-			test: {
-				label: __(
-					'I’m building a store for someone else and would like to test payments',
-					'woocommerce-payments'
-				),
-				note: sprintf(
-					/* translators: %s: WooPayments */
-					__(
-						'This option will set up %s in development mode. You can use test data to set up, no personal information is required. When you’re ready to launch your store, switching to live payments is easy.',
-						'woocommerce-payments'
-					),
-					'WooPayments'
-				),
-			},
-			devModeNotice: interpolateComponents( {
+			sandboxModeNotice: interpolateComponents( {
 				mixedString: __(
-					'Dev mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+					'Sandbox mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 					'woocommerce-payments'
 				),
 				components: {
@@ -51,11 +47,46 @@ export default {
 						// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
 						// eslint-disable-next-line jsx-a11y/anchor-has-content
 						<a
-							href={
-								'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/'
-							}
+							href={ documentationUrls.sandboxMode }
 							target="_blank"
 							rel="noreferrer"
+						/>
+					),
+				},
+			} ),
+			tos: interpolateComponents( {
+				mixedString: sprintf(
+					__(
+						/* translators: %1$s: WooPayments, %2$s: WooPay  */
+						'By using %1$s, you agree to the {{tosLink}}Terms of Service{{/tosLink}} (including %2$s {{merchantTermsLink}}merchant terms{{/merchantTermsLink}}) and acknowledge that you have read our {{privacyPolicyLink}}Privacy Policy{{/privacyPolicyLink}}.',
+						'woocommerce-payments'
+					),
+					'WooPayments',
+					'WooPay'
+				),
+				components: {
+					tosLink: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							rel="external noopener noreferrer"
+							target="_blank"
+							href={ documentationUrls.tos }
+						/>
+					),
+					merchantTermsLink: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							rel="external noopener noreferrer"
+							target="_blank"
+							href={ documentationUrls.merchantTerms }
+						/>
+					),
+					privacyPolicyLink: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							rel="external noopener noreferrer"
+							target="_blank"
+							href={ documentationUrls.privacyPolicy }
 						/>
 					),
 				},

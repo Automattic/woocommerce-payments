@@ -25,9 +25,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';
 	const isDevModeEnabled = useDevMode();
 	const isTestPhoneValid =
-		isDevModeEnabled &&
-		( supportPhone === '+1000-000-0000' ||
-			supportPhone === '+10000000000' );
+		isDevModeEnabled && supportPhone === '+10000000000';
 
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
 	if ( ! isTestPhoneValid && ! isPhoneValid && ! isEmptyPhoneValid ) {
@@ -53,7 +51,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 	let labelText = __( 'Support phone number', 'woocommerce-payments' );
 	if ( isDevModeEnabled ) {
 		labelText += __(
-			' (+1 000-000-0000 can be used in dev mode)',
+			' (+1 0000000000 can be used in sandbox mode)',
 			'woocommerce-payments'
 		);
 	}

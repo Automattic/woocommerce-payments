@@ -21,10 +21,6 @@ import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
 
-// This is a workaround for the position of the dropdown menu. At the same time underlines the need for a better solution.
-import '../../../node_modules/@wordpress/components/src/dropdown-menu/style.scss';
-import '../../../node_modules/@wordpress/components/src/popover/style.scss';
-
 /**
  * Internal dependencies.
  */
@@ -48,6 +44,7 @@ import DisputeStatusChip from 'components/dispute-status-chip';
 import {
 	getDisputeFeeFormatted,
 	isAwaitingResponse,
+	isRefundable,
 } from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
@@ -208,6 +205,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const disputeFee =
 		charge.dispute && getDisputeFeeFormatted( charge.dispute );
 
+	// If this transaction is disputed, check if it is refundable.
+	const isDisputeRefundable = charge.dispute
+		? isRefundable( charge.dispute.status )
+		: true;
+
+	// Partial refunds are done through the order page. If order number is not
+	// present, partial refund is not possible.
+	const isPartiallyRefundable = charge.order && charge.order.number;
+
+	// Control menu only shows refund actions for now. In the future, it may show other actions.
+	const showControlMenu =
+		charge.captured && ! charge.refunded && isDisputeRefundable;
+
 	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
 	const transactionFee = charge.balance_transaction
 		? {
@@ -243,307 +253,315 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	return (
 		<Card>
 			<CardBody>
-				<div className="payment-details-summary">
-					<div className="payment-details-summary__section">
-						<p className="payment-details-summary__amount">
-							<Loadable
-								isLoading={ isLoading }
-								placeholder="Amount placeholder"
-							>
-								{ formattedAmount }
-								<span className="payment-details-summary__amount-currency">
-									{ charge.currency || 'USD' }
-								</span>
-								{ charge.dispute ? (
-									<DisputeStatusChip
-										status={ charge.dispute.status }
-										dueBy={
-											charge.dispute.evidence_details
-												?.due_by
-										}
-										prefixDisputeType={ true }
-									/>
-								) : (
-									<PaymentStatusChip
-										status={ getChargeStatus(
-											charge,
-											paymentIntent
-										) }
-									/>
-								) }
-							</Loadable>
-						</p>
-						<div className="payment-details-summary__breakdown">
-							{ renderStorePrice ? (
-								<p>
-									{ formatExplicitCurrency(
-										balance.amount,
-										balance.currency
-									) }
-								</p>
-							) : null }
-							{ balance.refunded ? (
-								<p>
-									{ `${
-										disputeFee
-											? __(
-													'Deducted',
-													'woocommerce-payments'
-											  )
-											: __(
-													'Refunded',
-													'woocommerce-payments'
-											  )
-									}: ` }
-									{ formatExplicitCurrency(
-										-balance.refunded,
-										balance.currency
-									) }
-								</p>
-							) : (
-								''
-							) }
-							<p>
+				<Flex direction="row" align="start">
+					<div className="payment-details-summary">
+						<div className="payment-details-summary__section">
+							<p className="payment-details-summary__amount">
 								<Loadable
 									isLoading={ isLoading }
-									placeholder="Fee amount"
+									placeholder="Amount placeholder"
 								>
-									{ `${ __(
-										'Fees',
-										'woocommerce-payments'
-									) }: ` }
-									{ formatCurrency(
-										-balance.fee,
-										balance.currency
-									) }
-									{ disputeFee && (
-										<ClickTooltip
-											className="payment-details-summary__breakdown__fee-tooltip"
-											buttonIcon={ <HelpOutlineIcon /> }
-											buttonLabel={ __(
-												'Fee breakdown',
-												'woocommerce-payments'
-											) }
-											content={
-												<>
-													<Flex>
-														<label>
-															{ __(
-																'Transaction fee',
-																'woocommerce-payments'
-															) }
-														</label>
-														<span aria-label="Transaction fee">
-															{ formatCurrency(
-																transactionFee.fee,
-																transactionFee.currency
-															) }
-														</span>
-													</Flex>
-													<Flex>
-														<label>
-															{ __(
-																'Dispute fee',
-																'woocommerce-payments'
-															) }
-														</label>
-														<span aria-label="Dispute fee">
-															{ disputeFee }
-														</span>
-													</Flex>
-													<Flex>
-														<label>
-															{ __(
-																'Total fees',
-																'woocommerce-payments'
-															) }
-														</label>
-														<span aria-label="Total fees">
-															{ formatCurrency(
-																balance.fee,
-																balance.currency
-															) }
-														</span>
-													</Flex>
-												</>
+									{ formattedAmount }
+									<span className="payment-details-summary__amount-currency">
+										{ charge.currency || 'USD' }
+									</span>
+									{ charge.dispute ? (
+										<DisputeStatusChip
+											status={ charge.dispute.status }
+											dueBy={
+												charge.dispute.evidence_details
+													?.due_by
 											}
+											prefixDisputeType={ true }
+										/>
+									) : (
+										<PaymentStatusChip
+											status={ getChargeStatus(
+												charge,
+												paymentIntent
+											) }
 										/>
 									) }
 								</Loadable>
 							</p>
-							{ charge.paydown ? (
+							<div className="payment-details-summary__breakdown">
+								{ renderStorePrice ? (
+									<p>
+										{ formatExplicitCurrency(
+											balance.amount,
+											balance.currency
+										) }
+									</p>
+								) : null }
+								{ balance.refunded ? (
+									<p>
+										{ `${
+											disputeFee
+												? __(
+														'Deducted',
+														'woocommerce-payments'
+												  )
+												: __(
+														'Refunded',
+														'woocommerce-payments'
+												  )
+										}: ` }
+										{ formatExplicitCurrency(
+											-balance.refunded,
+											balance.currency
+										) }
+									</p>
+								) : (
+									''
+								) }
 								<p>
-									{ `${ __(
-										'Loan repayment',
-										'woocommerce-payments'
-									) }: ` }
-									{ formatExplicitCurrency(
-										charge.paydown.amount,
-										balance.currency
-									) }
+									<Loadable
+										isLoading={ isLoading }
+										placeholder="Fee amount"
+									>
+										{ `${ __(
+											'Fees',
+											'woocommerce-payments'
+										) }: ` }
+										{ formatCurrency(
+											-balance.fee,
+											balance.currency
+										) }
+										{ disputeFee && (
+											<ClickTooltip
+												className="payment-details-summary__breakdown__fee-tooltip"
+												buttonIcon={
+													<HelpOutlineIcon />
+												}
+												buttonLabel={ __(
+													'Fee breakdown',
+													'woocommerce-payments'
+												) }
+												content={
+													<>
+														<Flex>
+															<label>
+																{ __(
+																	'Transaction fee',
+																	'woocommerce-payments'
+																) }
+															</label>
+															<span aria-label="Transaction fee">
+																{ formatCurrency(
+																	transactionFee.fee,
+																	transactionFee.currency
+																) }
+															</span>
+														</Flex>
+														<Flex>
+															<label>
+																{ __(
+																	'Dispute fee',
+																	'woocommerce-payments'
+																) }
+															</label>
+															<span aria-label="Dispute fee">
+																{ disputeFee }
+															</span>
+														</Flex>
+														<Flex>
+															<label>
+																{ __(
+																	'Total fees',
+																	'woocommerce-payments'
+																) }
+															</label>
+															<span aria-label="Total fees">
+																{ formatCurrency(
+																	balance.fee,
+																	balance.currency
+																) }
+															</span>
+														</Flex>
+													</>
+												}
+											/>
+										) }
+									</Loadable>
 								</p>
-							) : (
-								''
+								{ charge.paydown ? (
+									<p>
+										{ `${ __(
+											'Loan repayment',
+											'woocommerce-payments'
+										) }: ` }
+										{ formatExplicitCurrency(
+											charge.paydown.amount,
+											balance.currency
+										) }
+									</p>
+								) : (
+									''
+								) }
+								<p>
+									<Loadable
+										isLoading={ isLoading }
+										placeholder="Net amount"
+									>
+										{ `${ __(
+											'Net',
+											'woocommerce-payments'
+										) }: ` }
+										{ formatExplicitCurrency(
+											charge.paydown
+												? balance.net -
+														Math.abs(
+															charge.paydown
+																.amount
+														)
+												: balance.net,
+											balance.currency
+										) }
+									</Loadable>
+								</p>
+							</div>
+						</div>
+						<div className="payment-details-summary__section">
+							{ ! isLoading && isFraudOutcomeReview && (
+								<div className="payment-details-summary__fraud-outcome-action">
+									<CancelAuthorizationButton
+										orderId={ charge.order?.number || 0 }
+										paymentIntentId={
+											charge.payment_intent || ''
+										}
+										onClick={ () => {
+											wcpayTracks.recordEvent(
+												'wcpay_fraud_protection_transaction_reviewed_merchant_blocked',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+											wcpayTracks.recordEvent(
+												'payments_transactions_details_cancel_charge_button_click',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+										} }
+									>
+										{ __( 'Block transaction' ) }
+									</CancelAuthorizationButton>
+
+									<CaptureAuthorizationButton
+										buttonIsPrimary
+										orderId={ charge.order?.number || 0 }
+										paymentIntentId={
+											charge.payment_intent || ''
+										}
+										buttonIsSmall={ false }
+										onClick={ () => {
+											wcpayTracks.recordEvent(
+												'wcpay_fraud_protection_transaction_reviewed_merchant_approved',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+											wcpayTracks.recordEvent(
+												'payments_transactions_details_capture_charge_button_click',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+										} }
+									>
+										{ __( 'Approve Transaction' ) }
+									</CaptureAuthorizationButton>
+								</div>
 							) }
-							<p>
+							<div className="payment-details-summary__id">
 								<Loadable
 									isLoading={ isLoading }
-									placeholder="Net amount"
+									placeholder="Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx"
 								>
 									{ `${ __(
-										'Net',
+										'Payment ID',
 										'woocommerce-payments'
 									) }: ` }
-									{ formatExplicitCurrency(
-										charge.paydown
-											? balance.net -
-													Math.abs(
-														charge.paydown.amount
-													)
-											: balance.net,
-										balance.currency
-									) }
+									{ charge.payment_intent
+										? charge.payment_intent
+										: charge.id }
 								</Loadable>
-							</p>
+							</div>
 						</div>
 					</div>
-					<div className="payment-details-summary__section">
-						{ ! isLoading && isFraudOutcomeReview && (
-							<div className="payment-details-summary__fraud-outcome-action">
-								<CancelAuthorizationButton
-									orderId={ charge.order?.number || 0 }
-									paymentIntentId={
-										charge.payment_intent || ''
-									}
-									onClick={ () => {
-										wcpayTracks.recordEvent(
-											'wcpay_fraud_protection_transaction_reviewed_merchant_blocked',
-											{
-												payment_intent_id:
-													charge.payment_intent,
-											}
-										);
-										wcpayTracks.recordEvent(
-											'payments_transactions_details_cancel_charge_button_click',
-											{
-												payment_intent_id:
-													charge.payment_intent,
-											}
-										);
-									} }
-								>
-									{ __( 'Block transaction' ) }
-								</CancelAuthorizationButton>
-
-								<CaptureAuthorizationButton
-									buttonIsPrimary
-									orderId={ charge.order?.number || 0 }
-									paymentIntentId={
-										charge.payment_intent || ''
-									}
-									buttonIsSmall={ false }
-									onClick={ () => {
-										wcpayTracks.recordEvent(
-											'wcpay_fraud_protection_transaction_reviewed_merchant_approved',
-											{
-												payment_intent_id:
-													charge.payment_intent,
-											}
-										);
-										wcpayTracks.recordEvent(
-											'payments_transactions_details_capture_charge_button_click',
-											{
-												payment_intent_id:
-													charge.payment_intent,
-											}
-										);
-									} }
-								>
-									{ __( 'Approve Transaction' ) }
-								</CaptureAuthorizationButton>
-							</div>
-						) }
-						<div className="payment-details-summary__id">
+					<div className="payment-details__refund-controls">
+						{ showControlMenu && (
 							<Loadable
 								isLoading={ isLoading }
-								placeholder="Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx"
+								placeholder={ moreVertical }
 							>
-								{ `${ __(
-									'Payment ID',
-									'woocommerce-payments'
-								) }: ` }
-								{ charge.payment_intent
-									? charge.payment_intent
-									: charge.id }
-							</Loadable>
-						</div>
-					</div>
-				</div>
-				<div className="payment-details__refund-controls">
-					{ ! charge?.refunded && charge?.captured && (
-						<Loadable
-							isLoading={ isLoading }
-							placeholder={ moreVertical }
-						>
-							<DropdownMenu
-								icon={ moreVertical }
-								label={ __(
-									'Translation actions',
-									'woocommerce-payments'
-								) }
-								popoverProps={ {
-									position: 'bottom left',
-								} }
-							>
-								{ ( { onClose } ) => (
-									<MenuGroup>
-										<MenuItem
-											onClick={ () => {
-												setIsRefundModalOpen( true );
-												wcpayTracks.recordEvent(
-													'payments_transactions_details_refund_modal_open',
-													{
-														payment_intent_id:
-															charge.payment_intent,
-													}
-												);
-												onClose();
-											} }
-										>
-											{ __(
-												'Refund in full',
-												'woocommerce-payments'
-											) }
-										</MenuItem>
-										{ charge.order && (
+								<DropdownMenu
+									icon={ moreVertical }
+									label={ __(
+										'Transaction actions',
+										'woocommerce-payments'
+									) }
+									popoverProps={ {
+										position: 'bottom left',
+									} }
+									className="refund-controls__dropdown-menu"
+								>
+									{ ( { onClose } ) => (
+										<MenuGroup>
 											<MenuItem
 												onClick={ () => {
+													setIsRefundModalOpen(
+														true
+													);
 													wcpayTracks.recordEvent(
-														'payments_transactions_details_partial_refund',
+														'payments_transactions_details_refund_modal_open',
 														{
 															payment_intent_id:
 																charge.payment_intent,
-															order_id:
-																charge.order
-																	?.number,
 														}
 													);
-													window.location =
-														charge.order?.url;
+													onClose();
 												} }
 											>
 												{ __(
-													'Partial refund',
+													'Refund in full',
 													'woocommerce-payments'
 												) }
 											</MenuItem>
-										) }
-									</MenuGroup>
-								) }
-							</DropdownMenu>
-						</Loadable>
-					) }
-				</div>
+											{ isPartiallyRefundable && (
+												<MenuItem
+													onClick={ () => {
+														wcpayTracks.recordEvent(
+															'payments_transactions_details_partial_refund',
+															{
+																payment_intent_id:
+																	charge.payment_intent,
+																order_id:
+																	charge.order
+																		?.number,
+															}
+														);
+														window.location =
+															charge.order?.url;
+													} }
+												>
+													{ __(
+														'Partial refund',
+														'woocommerce-payments'
+													) }
+												</MenuItem>
+											) }
+										</MenuGroup>
+									) }
+								</DropdownMenu>
+							</Loadable>
+						) }
+					</div>
+				</Flex>
 			</CardBody>
 			<CardDivider />
 			<CardBody>

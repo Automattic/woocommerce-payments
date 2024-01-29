@@ -1,5 +1,110 @@
 *** WooPayments Changelog ***
 
+= 7.1.0 - 2024-01-25 =
+* Add - Add active plugins array to compatibility data.
+* Add - Add post_types and their counts as an array to compatibility data.
+* Add - Add the active theme name of the blog to the compatibility service
+* Add - Expose the refund transaction ID in WooCommerce Order Refund API
+* Add - Select the proper payment element when using saved Stripe Link tokens or choosing to use Stripe Link for new email.
+* Add - Track filtering interactions on the Transactions page.
+* Fix - Allow subscription purchase via Payment Request when no shipping methods are present.
+* Fix - Allow zero-amount refunds for backwards compatibility with basic payment gateway and to allow re-stock of refunded orders.
+* Fix - Checking if wcpayPaymentRequestPayForOrderParams before using it in Pay for Order page
+* Fix - Checkout error when page URL is too long
+* Fix - Comment: Fix QIT security tests errors.
+* Fix - Fix incorrect test mode notice when left KYC early after going live from builder mode
+* Fix - Fix network error that occurs when viewing an test mode order with test mode disabled, and vice versa.
+* Fix - fix pay-for-order quirks and 3DS behavior
+* Fix - Fix Safe Mode message reversed host
+* Fix - Fix Stripe Link autofill on checkout.
+* Fix - Fix Stripe Link button alignment in the Checkout Block
+* Fix - Hide the transaction details refund menu for ineligble disputed transactions
+* Fix - Improve clarity & readability of disputed order notice (not all text bold).
+* Fix - Prevent possible fatal when using get_edit_post_link filter.
+* Fix - Re-render WooPay button when cart updates, when checkout updates.
+* Fix - Reinstate first deposit waiting period notice in payments overview (fix bug)
+* Fix - Remove unnecessary import statement which leads to a warning when first loaded
+* Fix - Resolved an error that would occur with WC 8.5.0 when editing a subscription customer from the admin dashboard.
+* Fix - Resolved an issue that caused ordering the Admin Subscriptions List Table to not work when HPOS is enabled.
+* Fix - Restock order items when performing full refund from transaction details page
+* Fix - Reverting to manual styling over native WordPress components to fix CSS defects on Analytics page
+* Fix - Send metadata in error message
+* Fix - Show the correct number of days in the new account waiting period notice.
+* Fix - Update WooPay tablet breakpoint.
+* Fix - Verify that order exists before offering "Partial refund" option on transaction details page.
+* Update - Changed the edit subscription product "Expire after" (Subscription length) so it more clearly describes when a subscription will automatically stop renewing.
+* Update - Pass currency parameter and not transaction_ids parameter when creating instant deposit.
+* Update - Store balance transaction ID in order metadata.
+* Update - Updated BNPL sorting in settings for consistency with onboarding.
+* Update - Update references to dev mode to use sandbox mode terminology.
+* Update - Updates to the styling of the onboarding mode selection page.
+* Update - Update style of notices within the deposits section of the settings screen.
+* Dev - Added enum class for country codes
+* Dev - Add new Tracks events to WooPay Save My Info checkbox
+* Dev - Allow test pipelines to pass by slightly adjusting HTML selectors
+* Dev - Merge UPE tests into the single and main gateway test file for unit and E2E tests.
+* Dev - Place order button Tracks
+* Dev - Track payment-request-button loads
+* Dev - Update jetpack dependencies for syncing.
+* Dev - Updates to account status logic to streamline it.
+* Dev - Update subscriptions-core to 6.7.1.
+
+= 7.0.0 - 2024-01-03 =
+* Add - Add Account Management tools with reset account functionality for partially onboarded accounts.
+* Add - Adding Compatibility Service to assist with flagging possible compatibility issues in the future.
+* Add - Add refund controls to transaction details view
+* Add - Add test mode notice in page order detail.
+* Add - Display a Confirmaton Modal on enabling Test Mode
+* Add - Introduce Customer currency, Deposit currency, Amount in Customer Currency and Deposit ID columns to the Transaction list UI and CSV export
+* Fix - Allow test phone number as Support Phone in Dev mode
+* Fix - Avoid using the removed deferred UPE flag
+* Fix - Ensure proper backfilling of subscription metadata (i.e. dates and cache) to the postmeta table when HPOS is enabled and compatibility mode (data syncing) is turned on.
+* Fix - Fetch and update the `_cancelled_email_sent` meta in a HPOS compatibile way.
+* Fix - fix: account currency hook return value
+* Fix - Fix account status error messages with links.
+* Fix - Fix country names with accents not showing correctly on international country fraud filter
+* Fix - Fix currency negative sign position on JS rendered amounts
+* Fix - Fixed a Level 3 error occurring during the capture of an authorization for amounts lower than the initial authorization amount.
+* Fix - Fixed Apple Pay Double Tax Calculation Issue
+* Fix - Fixed broken styles in authorization capture notifications
+* Fix - Fix incorrect amounts caused by zero-decimal currencies on Transactions, Deposits and Deposits CSV export
+* Fix - Fix missing customer data from transactions report
+* Fix - Fix missing order number in transaction reports CSV
+* Fix - Fix WooPay integration with AutomateWoo - Refer a Friend extension.
+* Fix - Improved error message for invalid payment method
+* Fix - Include discount fee in fees tooltip
+* Fix - Introduce WC_Payments_Express_Checkout_Button_Utils class.
+* Fix - Pass the pay-for-order params to get the pre-fetch session data
+* Fix - Prevents a PHP fatal error that occurs when the cart contains a renewal order item that no longer exists.
+* Fix - Resolved an issue that would cause undefined $current_page, $max_num_pages, and $paginate variable errors when viewing a page with the subscriptions-shortcode.
+* Fix - Revemoved pre-fretch session for button to prevent draft order creation
+* Fix - Update account balances on the Payments Overview screen when an instant deposit is requested
+* Fix - Update Qualitative Feedback note to have more efficient sql query.
+* Fix - When HPOS is enabled and data compatibility mode is turned on, make sure subscription date changes made to postmeta are synced to orders_meta table.
+* Fix - When using the checkout block to pay for renewal orders, ensure the order's cart hash is updated to make sure the existing order can be used.
+* Update - Actualized cards-related assets for settings and transactions pages.
+* Update - Cleanup the deprecated payment gateway processing - part II
+* Update - Cleanup the deprecated payment gateway processing - part III
+* Update - Confirmation when cancelling order with pending authorization. Automatic order changes submission if confirmed.
+* Update - Updates the anchor text for the fraud and risk tools documentation link on the Payments Settings page.
+* Update - Updates the behavior and display of the international IP address rule card if the rule is being affected by the WooCommerce core selling locations general option.
+* Dev - Add e2e tests for the currency switcher widget.
+* Dev - Added documentation for deposits REST API endpoints.
+* Dev - Bump WC tested up to version to 8.4.0.
+* Dev - Cleanup enqueueing of the scripts which were removed
+* Dev - Cleanup the deprecated payment gateway processing - part IV
+* Dev - Cleanup the deprecated payment gateway processing - part V
+* Dev - Cleanup the deprecated payment gateway processing - part VI
+* Dev - Comment: Fix declined 3DS card E2E test.
+* Dev - Deprecate the WC_Subscriptions_Synchroniser::add_to_recurring_cart_key(). Use WC_Subscriptions_Synchroniser::add_to_recurring_product_grouping_key() instead.
+* Dev - E2E test - Merchant facing: Multi-currency setup
+* Dev - Improve E2E checkout tests
+* Dev - Introduce a new wcs_get_subscription_grouping_key() function to generate a unique key for a subscription based on its billing schedule. This function uses the existing recurring cart key concept.
+* Dev - Remove "Set-up refund policy" Inbox note as superfluous.
+* Dev - remove unused factor flag for deferred UPE
+* Dev - Thank you page Tracks event
+* Dev - Updated subscriptions-core to version 6.6.0
+
 = 6.9.2 - 2023-12-14 =
 * Add - Notice is added when merchant has funds that are not yet available for deposit.
 * Add - Show a deposit schedule notice on the deposits list page to indicate that future deposits can be expected.
