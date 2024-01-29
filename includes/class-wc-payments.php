@@ -401,7 +401,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
-		include_once __DIR__ . '/class-wc-payments-express-checkout-button-display-handler.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -485,7 +485,6 @@ class WC_Payments {
 		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
-		self::$express_checkout_helper              = new WC_Payments_Express_Checkout_Button_Helper( self::$account );
 		self::$woopay_util                          = new WooPay_Utilities();
 		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
 		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
@@ -1465,9 +1464,10 @@ class WC_Payments {
 	 */
 	public static function maybe_display_express_checkout_buttons() {
 		if ( WC_Payments_Features::are_payments_enabled() ) {
-			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), self::$express_checkout_helper );
-			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
-			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, self::$express_checkout_helper );
+			$express_checkout_helper                 = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
+			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), $express_checkout_helper );
+			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, $express_checkout_helper );
+			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, $express_checkout_helper );
 		}
 	}
 

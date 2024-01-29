@@ -1097,8 +1097,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'invalid_phone_number'
 				);
 			}
-			// Check if session exists before instantiating Fraud_Prevention_Service.
-			if ( WC()->session ) {
+			// Check if session exists and we're currently not processing a WooPay request before instantiating `Fraud_Prevention_Service`.
+			if ( WC()->session && ! apply_filters( 'wcpay_is_woopay_store_api_request', false ) ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
