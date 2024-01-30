@@ -225,7 +225,6 @@ export const DepositsList = (): JSX.Element => {
 
 	const endpointExport = async ( language: string ) => {
 		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 		const locale = getExportLanguage( language, exportLanguage );
