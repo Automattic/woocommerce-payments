@@ -28,7 +28,7 @@ class Bancontact_Payment_Method extends UPE_Payment_Method {
 		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title       = 'Bancontact';
 		$this->is_reusable = false;
-		$this->currencies  = [ Currency_Code::EUROZONE ];
+		$this->currencies  = [ Currency_Code::EURO ];
 		$this->icon_url    = plugins_url( 'assets/images/payment-methods/bancontact.svg', WCPAY_PLUGIN_FILE );
 		$this->countries   = [ Country_Code::BELGIUM ];
 	}

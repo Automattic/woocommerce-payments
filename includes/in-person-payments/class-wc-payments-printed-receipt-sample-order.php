@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_Printed_Receipt_Sample_Order extends WC_Order {
 	const PREVIEW_RECEIPT_ORDER_DATA = [
 		'id'           => '42',
-		'currency'     => Currency_Code::UNITED_STATES,
+		'currency'     => Currency_Code::UNITED_STATES_DOLLAR,
 		'subtotal'     => 0,
 		'line_items'   => [
 			[

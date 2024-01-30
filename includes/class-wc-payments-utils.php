@@ -123,7 +123,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return int The amount in cents.
 	 */
-	public static function prepare_amount( $amount, $currency = Currency_Code::UNITED_STATES ): int {
+	public static function prepare_amount( $amount, $currency = Currency_Code::UNITED_STATES_DOLLAR ): int {
 		$conversion_rate = 100;
 
 		if ( self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
@@ -199,21 +199,21 @@ class WC_Payments_Utils {
 	 */
 	public static function zero_decimal_currencies(): array {
 		return [
-			strtolower( Currency_Code::BURUNDI ), // Burundian Franc.
-			strtolower( Currency_Code::CHILE ), // Chilean Peso.
-			strtolower( Currency_Code::DJIBOUTI ), // Djiboutian Franc.
-			strtolower( Currency_Code::GUINEA ), // Guinean Franc.
-			strtolower( Currency_Code::JAPAN ), // Japanese Yen.
-			strtolower( Currency_Code::COMOROS ), // Comorian Franc.
-			strtolower( Currency_Code::SOUTH_KOREA ), // South Korean Won.
-			strtolower( Currency_Code::MADAGASCAR ), // Malagasy Ariary.
-			strtolower( Currency_Code::PARAGUAY ), // Paraguayan Guaraní.
-			strtolower( Currency_Code::RWANDA ), // Rwandan Franc.
-			strtolower( Currency_Code::VIETNAM ), // Vietnamese Đồng.
-			strtolower( Currency_Code::VANUATU ), // Vanuatu Vatu.
-			strtolower( Currency_Code::CENTRAL_AFRICAN_REPUBLIC ), // Central African CFA Franc.
-			strtolower( Currency_Code::WEST_AFRICAN ), // West African CFA Franc.
-			strtolower( Currency_Code::FRENCH_PACIFIC_TERRITORIES ), // CFP Franc.
+			strtolower( Currency_Code::BRUNEI_DOLLAR ), // Burundian Franc.
+			strtolower( Currency_Code::CHILEAN_PESO ), // Chilean Peso.
+			strtolower( Currency_Code::DJIBOUTIAN_FRANC ), // Djiboutian Franc.
+			strtolower( Currency_Code::GUINEAN_FRANC ), // Guinean Franc.
+			strtolower( Currency_Code::JAPANESE_YEN ), // Japanese Yen.
+			strtolower( Currency_Code::COMORIAN_FRANC ), // Comorian Franc.
+			strtolower( Currency_Code::SOUTH_KOREAN_WON ), // South Korean Won.
+			strtolower( Currency_Code::MALAGASY_ARIARY ), // Malagasy Ariary.
+			strtolower( Currency_Code::PARAGUAYAN_GUARANI ), // Paraguayan Guaraní.
+			strtolower( Currency_Code::RWANDAN_FRANC ), // Rwandan Franc.
+			strtolower( Currency_Code::VIETNAMESE_DONG ), // Vietnamese Đồng.
+			strtolower( Currency_Code::VANUATU_VATU ), // Vanuatu Vatu.
+			strtolower( Currency_Code::CENTRAL_AFRICAN_CFA_FRANC ), // Central African CFA Franc.
+			strtolower( Currency_Code::WEST_AFRICAN_CFA_FRANC ), // West African CFA Franc.
+			strtolower( Currency_Code::CFP_FRANC ), // CFP Franc.
 		];
 	}
 

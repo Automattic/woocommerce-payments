@@ -28,7 +28,7 @@ class P24_Payment_Method extends UPE_Payment_Method {
 		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title       = 'Przelewy24 (P24)';
 		$this->is_reusable = false;
-		$this->currencies  = [ Currency_Code::EUROZONE, Currency_Code::POLAND ];
+		$this->currencies  = [ Currency_Code::EURO, Currency_Code::POLISH_ZLOTY ];
 		$this->icon_url    = plugins_url( 'assets/images/payment-methods/p24.svg', WCPAY_PLUGIN_FILE );
 		$this->countries   = [ Country_Code::POLAND ];
 	}

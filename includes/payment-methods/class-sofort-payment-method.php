@@ -29,7 +29,7 @@ class Sofort_Payment_Method extends UPE_Payment_Method {
 		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title       = 'Sofort';
 		$this->is_reusable = false;
-		$this->currencies  = [ Currency_Code::EUROZONE ];
+		$this->currencies  = [ Currency_Code::EURO ];
 		$this->icon_url    = plugins_url( 'assets/images/payment-methods/sofort.svg', WCPAY_PLUGIN_FILE );
 		$this->countries   = [ Country_Code::AUSTRIA, Country_Code::BELGIUM, Country_Code::GERMANY, Country_Code::NETHERLANDS, Country_Code::SPAIN ];
 	}

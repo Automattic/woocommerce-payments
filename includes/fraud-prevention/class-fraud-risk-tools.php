@@ -160,7 +160,7 @@ class Fraud_Risk_Tools {
 				Check::check(
 					'order_total',
 					Check::OPERATOR_GT,
-					self::get_formatted_converted_amount( 1000 * 100, strtolower( Currency_Code::UNITED_STATES ) )
+					self::get_formatted_converted_amount( 1000 * 100, strtolower( Currency_Code::UNITED_STATES_DOLLAR ) )
 				)
 			),
 			// REVIEW An order is originated from a different country than the shipping country.
@@ -202,7 +202,7 @@ class Fraud_Risk_Tools {
 				Check::check(
 					'order_total',
 					Check::OPERATOR_GT,
-					self::get_formatted_converted_amount( 1000 * 100, strtolower( Currency_Code::UNITED_STATES ) )
+					self::get_formatted_converted_amount( 1000 * 100, strtolower( Currency_Code::UNITED_STATES_DOLLAR ) )
 				)
 			),
 			// REVIEW An order has less than 2 items or more than 10 items.

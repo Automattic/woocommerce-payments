@@ -30,34 +30,34 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$this->title                        = __( 'Afterpay', 'woocommerce-payments' );
 		$this->is_reusable                  = false;
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/afterpay.svg', WCPAY_PLUGIN_FILE );
-		$this->currencies                   = [ Currency_Code::UNITED_STATES, Currency_Code::CANADA, Currency_Code::AUSTRALIA, Currency_Code::NEW_ZEALAND, Currency_Code::UNITED_KINGDOM ];
+		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR, Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::NEW_ZEALAND_DOLLAR, Currency_Code::POUND_STERLING ];
 		$this->accept_only_domestic_payment = true;
 		$this->limits_per_currency          = [
-			Currency_Code::AUSTRALIA      => [
+			Currency_Code::AUSTRALIAN_DOLLAR    => [
 				Country_Code::AUSTRALIA => [
 					'min' => 100,
 					'max' => 200000,
 				], // Represents AUD 1 - 2,000 AUD.
 			],
-			Currency_Code::CANADA         => [
+			Currency_Code::CANADIAN_DOLLAR      => [
 				Country_Code::CANADA => [
 					'min' => 100,
 					'max' => 200000,
 				], // Represents CAD 1 - 2,000 CAD.
 			],
-			Currency_Code::NEW_ZEALAND    => [
+			Currency_Code::NEW_ZEALAND_DOLLAR   => [
 				Country_Code::NEW_ZEALAND => [
 					'min' => 100,
 					'max' => 200000,
 				], // Represents NZD 1 - 2,000 NZD.
 			],
-			Currency_Code::UNITED_KINGDOM => [
+			Currency_Code::POUND_STERLING       => [
 				Country_Code::UNITED_KINGDOM => [
 					'min' => 100,
 					'max' => 120000,
 				], // Represents GBP 1 - 1,200 GBP.
 			],
-			Currency_Code::UNITED_STATES  => [
+			Currency_Code::UNITED_STATES_DOLLAR => [
 				Country_Code::UNITED_STATES => [
 					'min' => 100,
 					'max' => 400000,

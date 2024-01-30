@@ -289,12 +289,12 @@ class CountryFlags {
 	 */
 	public static function get_by_currency( string $currency ): string {
 		$exceptions = [
-			Currency_Code::NETHERLANDS_ANTILLES       => '',
-			Currency_Code::BITCOIN                    => '',
-			Currency_Code::CENTRAL_AFRICAN_REPUBLIC   => '',
-			Currency_Code::EAST_CARIBBEAN             => '',
-			Currency_Code::WEST_AFRICAN               => '',
-			Currency_Code::FRENCH_PACIFIC_TERRITORIES => '',
+			Currency_Code::NETHERLANDS_ANTILLEAN_GUILDER => '',
+			Currency_Code::BITCOIN                       => '',
+			Currency_Code::CENTRAL_AFRICAN_CFA_FRANC     => '',
+			Currency_Code::EAST_CARIBBEAN_DOLLAR         => '',
+			Currency_Code::WEST_AFRICAN_CFA_FRANC        => '',
+			Currency_Code::CFP_FRANC                     => '',
 		];
 
 		$flag = $exceptions[ $currency ] ?? self::get_by_country( substr( $currency, 0, -1 ) );
