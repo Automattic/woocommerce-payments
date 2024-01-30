@@ -87,7 +87,8 @@ export const getRiskReviewListRowContent = (
 
 	const handleActionButtonClick = () => {
 		wcpayTracks.recordEvent(
-			'payments_transactions_risk_review_list_review_button_click',
+			wcpayTracks.events
+				.TRANSACTIONS_RISK_REVIEW_LIST_REVIEW_BUTTON_CLICK,
 			{
 				payment_intent_id: data.payment_intent.id,
 			}

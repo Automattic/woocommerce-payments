@@ -194,7 +194,8 @@ export const AuthorizationsList = (): JSX.Element => {
 						buttonIsSmall={ false }
 						onClick={ () => {
 							wcpayTracks.recordEvent(
-								'payments_transactions_uncaptured_list_capture_charge_button_click',
+								wcpayTracks.events
+									.TRANSACTIONS_UNCAPTURED_LIST_CAPTURE_CHARGE_BUTTON_CLICK,
 								{
 									payment_intent_id: auth.payment_intent_id,
 								}
@@ -249,7 +250,7 @@ export const AuthorizationsList = (): JSX.Element => {
 	}
 
 	useEffect( () => {
-		wcpayTracks.recordEvent( 'page_view', {
+		wcpayTracks.recordEvent( wcpayTracks.events.PAGE_VIEW, {
 			path: 'payments_transactions_uncaptured',
 		} );
 	}, [] );

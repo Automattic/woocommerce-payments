@@ -19,8 +19,7 @@ const BannerActions: React.FC< BannerActionsProps > = ( {
 } ) => {
 	const handleLearnMoreButtonClick = () => {
 		wcpayTracks.recordEvent(
-			'wcpay_fraud_protection_banner_learn_more_button_clicked',
-			{}
+			wcpayTracks.events.FRAUD_PROTECTION_BANNER_LEARN_MORE_CLICKED
 		);
 	};
 

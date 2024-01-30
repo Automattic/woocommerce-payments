@@ -63,7 +63,7 @@ function hasValidNotes( notes ) {
 }
 
 const onBodyLinkClick = ( note, innerLink ) => {
-	wcpayTracks.recordEvent( 'wcpay_inbox_action_click', {
+	wcpayTracks.recordEvent( wcpayTracks.events.INBOX_ACTION_CLICK, {
 		note_name: note.name,
 		note_title: note.title,
 		note_content_inner_link: innerLink,
@@ -87,7 +87,7 @@ const renderNotes = ( {
 	}
 
 	const onNoteVisible = ( note ) => {
-		wcpayTracks.recordEvent( 'wcpay_inbox_note_view', {
+		wcpayTracks.recordEvent( wcpayTracks.events.INBOX_NOTE_VIEW, {
 			note_content: note.content,
 			note_name: note.name,
 			note_title: note.title,
@@ -207,7 +207,7 @@ const InboxPanel = () => {
 	const closeDismissModal = async ( confirmed = false ) => {
 		const noteNameDismissAll = dismiss.type === 'all';
 
-		wcpayTracks.recordEvent( 'wcpay_inbox_action_dismiss', {
+		wcpayTracks.recordEvent( wcpayTracks.events.INBOX_ACTION_DISMISSED, {
 			note_name: dismiss.note.name,
 			note_title: dismiss.note.title,
 			note_name_dismiss_all: noteNameDismissAll,

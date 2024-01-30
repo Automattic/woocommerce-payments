@@ -35,7 +35,9 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 	};
 
 	useEffect( () => {
-		wcpayTracks.recordEvent( 'wcpay_fraud_protection_banner_rendered', {} );
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.FRAUD_PROTECTION_BANNER_RENDERED
+		);
 
 		const stringifiedSettings = JSON.stringify( settings );
 

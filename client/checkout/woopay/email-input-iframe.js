@@ -403,8 +403,7 @@ export const handleWooPayEmailInput = async (
 					openIframe( email );
 				} else if ( data.code !== 'rest_invalid_param' ) {
 					wcpayTracks.recordUserEvent(
-						wcpayTracks.events.WOOPAY_OFFERED,
-						[]
+						wcpayTracks.events.WOOPAY_OFFERED
 					);
 				}
 			} )
@@ -627,7 +626,7 @@ export const handleWooPayEmailInput = async (
 
 		wcpayTracks.recordUserEvent(
 			wcpayTracks.events.WOOPAY_SKIPPED,
-			[],
+			{},
 			true
 		);
 

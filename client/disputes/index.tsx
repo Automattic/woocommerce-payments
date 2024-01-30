@@ -405,11 +405,14 @@ export const DisputesList = (): JSX.Element => {
 						)
 					);
 
-					wcpayTracks.recordEvent( 'wcpay_disputes_download', {
-						exported_disputes: exportedDisputes,
-						total_disputes: exportedDisputes,
-						download_type: 'endpoint',
-					} );
+					wcpayTracks.recordEvent(
+						wcpayTracks.events.DISPUTE_DOWNLOAD_CSV_CLICK,
+						{
+							exported_disputes: exportedDisputes,
+							total_disputes: exportedDisputes,
+							download_type: 'endpoint',
+						}
+					);
 				} catch {
 					createNotice(
 						'error',
@@ -471,11 +474,14 @@ export const DisputesList = (): JSX.Element => {
 				generateCSVDataFromTable( csvColumns, csvRows )
 			);
 
-			wcpayTracks.recordEvent( 'wcpay_disputes_download', {
-				exported_disputes: csvRows.length,
-				total_disputes: disputesSummary.count,
-				download_type: 'browser',
-			} );
+			wcpayTracks.recordEvent(
+				wcpayTracks.events.DISPUTE_DOWNLOAD_CSV_CLICK,
+				{
+					exported_disputes: csvRows.length,
+					total_disputes: disputesSummary.count,
+					download_type: 'browser',
+				}
+			);
 		}
 
 		setIsDownloading( false );

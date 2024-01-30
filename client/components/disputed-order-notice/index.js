@@ -201,7 +201,7 @@ const DisputeNeedsResponseNotice = ( {
 	disputeDetailsUrl,
 } ) => {
 	useEffect( () => {
-		wcpayTracks.recordEvent( 'wcpay_order_dispute_notice_view', {
+		wcpayTracks.recordEvent( wcpayTracks.events.DISPUTE_NOTICE_VIEW, {
 			is_inquiry: isPreDisputeInquiry,
 			dispute_reason: disputeReason,
 			due_by_days: countdownDays,
@@ -242,7 +242,7 @@ const DisputeNeedsResponseNotice = ( {
 					variant: 'secondary',
 					onClick: () => {
 						wcpayTracks.recordEvent(
-							'wcpay_order_dispute_notice_action_click',
+							wcpayTracks.events.DISPUTE_NOTICE_CLICK,
 							{
 								due_by_days: countdownDays,
 							}

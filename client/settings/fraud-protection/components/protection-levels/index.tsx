@@ -39,7 +39,7 @@ const ProtectionLevels: React.FC = () => {
 
 	const handleLevelChange = ( level: string ) => () => {
 		wcpayTracks.recordEvent(
-			'wcpay_fraud_protection_risk_level_preset_enabled',
+			wcpayTracks.events.FRAUD_PROTECTION_RISK_LEVEL_PRESET_ENABLED,
 			{ preset: level }
 		);
 		updateProtectionLevel( level );
@@ -47,7 +47,7 @@ const ProtectionLevels: React.FC = () => {
 
 	const handleBasicModalOpen = () => {
 		wcpayTracks.recordEvent(
-			'wcpay_fraud_protection_basic_modal_viewed',
+			wcpayTracks.events.FRAUD_PROTECTION_BASIC_MODAL_VIEWED,
 			{}
 		);
 		setBasicModalOpen( true );

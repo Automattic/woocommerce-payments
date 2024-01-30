@@ -46,9 +46,12 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 	};
 
 	const handleRefund = async () => {
-		wcpayTracks.recordEvent( 'payments_transactions_details_refund_full', {
-			payment_intent_id: charge.payment_intent,
-		} );
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.TRANSACTIONS_DETAILS_REFUND_FULL,
+			{
+				payment_intent_id: charge.payment_intent,
+			}
+		);
 		setIsRefundInProgress( true );
 		await doRefund( charge, reason === 'other' ? null : reason );
 		setIsRefundInProgress( false );

@@ -73,12 +73,12 @@ const FraudProtectionTour: React.FC = () => {
 
 		if ( 'done-btn' === element ) {
 			wcpayTracks.recordEvent(
-				'wcpay_fraud_protection_tour_clicked_through',
+				wcpayTracks.events.FRAUD_PROTECTION_TOUR_CLICKED_THROUGH,
 				{}
 			);
 		} else {
 			wcpayTracks.recordEvent(
-				'wcpay_fraud_protection_tour_abandoned',
+				wcpayTracks.events.FRAUD_PROTECTION_TOUR_ABANDONED,
 				{}
 			);
 		}

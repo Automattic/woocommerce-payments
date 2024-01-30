@@ -548,9 +548,12 @@ export default ( { query } ) => {
 			return;
 		}
 
-		wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_started', {
-			type: key,
-		} );
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.DISPUTE_FILE_UPLOAD_STARTED,
+			{
+				type: key,
+			}
+		);
 
 		const body = new FormData();
 		body.append( 'file', file );
@@ -580,13 +583,19 @@ export default ( { query } ) => {
 			} );
 			updateEvidence( key, uploadedFile.id );
 
-			wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_success', {
-				type: key,
-			} );
+			wcpayTracks.recordEvent(
+				wcpayTracks.events.DISPUTE_FILE_UPLOAD_SUCCESS,
+				{
+					type: key,
+				}
+			);
 		} catch ( err ) {
-			wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_failed', {
-				message: err.message,
-			} );
+			wcpayTracks.recordEvent(
+				wcpayTracks.events.DISPUTE_FILE_UPLOAD_FAILED,
+				{
+					message: err.message,
+				}
+			);
 
 			updateDispute( {
 				metadata: { [ key ]: '' },
@@ -611,8 +620,8 @@ export default ( { query } ) => {
 
 		wcpayTracks.recordEvent(
 			submit
-				? 'wcpay_dispute_submit_evidence_success'
-				: 'wcpay_dispute_save_evidence_success'
+				? wcpayTracks.events.DISPUTE_SUBMIT_EVIDENCE_SUCCESS
+				: wcpayTracks.events.DISPUTE_SAVE_EVIDENCE_SUCCESS
 		);
 		/*
 			We rely on WC-Admin Transient notices to display success message.
@@ -645,8 +654,8 @@ export default ( { query } ) => {
 	const handleSaveError = ( err, submit ) => {
 		wcpayTracks.recordEvent(
 			submit
-				? 'wcpay_dispute_submit_evidence_failed'
-				: 'wcpay_dispute_save_evidence_failed'
+				? wcpayTracks.events.DISPUTE_SUBMIT_EVIDENCE_FAILED
+				: wcpayTracks.events.DISPUTE_SAVE_EVIDENCE_FAILED
 		);
 
 		const message = submit
@@ -674,8 +683,8 @@ export default ( { query } ) => {
 		try {
 			wcpayTracks.recordEvent(
 				submit
-					? 'wcpay_dispute_submit_evidence_clicked'
-					: 'wcpay_dispute_save_evidence_clicked'
+					? wcpayTracks.events.DISPUTE_SUBMIT_EVIDENCE_CLICK
+					: wcpayTracks.events.DISPUTE_SAVE_EVIDENCE_CLICK
 			);
 
 			const { metadata } = dispute;
@@ -705,7 +714,10 @@ export default ( { query } ) => {
 		const properties = {
 			selection: newProductType,
 		};
-		wcpayTracks.recordEvent( 'wcpay_dispute_product_selected', properties );
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.DISPUTE_PRODUCT_SELECTED,
+			properties
+		);
 		updateDispute( {
 			metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType },
 		} );

@@ -175,7 +175,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 			saveSettings();
 
 			wcpayTracks.recordEvent(
-				'wcpay_fraud_protection_advanced_settings_saved',
+				wcpayTracks.events.FRAUD_PROTECTION_ADVANCED_SETTINGS_SAVED,
 				{ settings: JSON.stringify( settings ) }
 			);
 		} else {

@@ -56,7 +56,7 @@ export const TransactionsFilters = ( {
 				query={ getQuery() }
 				onAdvancedFilterAction={ ( event ) => {
 					if ( event === 'filter' ) {
-						wcpayTracks.recordEvent( 'page_view', {
+						wcpayTracks.recordEvent( wcpayTracks.events.PAGE_VIEW, {
 							path: 'payments_transactions',
 							filter: 'advanced',
 						} );

@@ -140,7 +140,7 @@ export const RiskReviewList = (): JSX.Element => {
 			);
 
 			wcpayTracks.recordEvent(
-				'wcpay_fraud_outcome_transactions_download',
+				wcpayTracks.events.FRAUD_OUTCOME_TRANSACTIONS_DOWNLOAD,
 				{
 					exported_transactions: rows.length,
 					total_transactions: transactionsSummary.count,
@@ -160,7 +160,7 @@ export const RiskReviewList = (): JSX.Element => {
 	};
 
 	useEffect( () => {
-		wcpayTracks.recordEvent( 'page_view', {
+		wcpayTracks.recordEvent( wcpayTracks.events.PAGE_VIEW, {
 			path: 'payments_transactions_risk_review',
 		} );
 	}, [] );

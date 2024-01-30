@@ -24,7 +24,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( { query } ) => {
 
 	if ( statusIs && typeIs ) {
 		wcpayTracks.recordEvent(
-			'wcpay_fraud_protection_order_details_link_clicked',
+			wcpayTracks.events.FRAUD_PROTECTION_ORDER_DETAILS_LINK_CLICKED,
 			{ status: statusIs, type: typeIs }
 		);
 		// Remove the tracking queries on page load so we don't track refreshes or back button reloads.

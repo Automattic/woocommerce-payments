@@ -72,7 +72,7 @@ const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > =
 		setLoading( true );
 
 		wcpayTracks.recordEvent(
-			'wcpay_merchant_settings_file_upload_started',
+			wcpayTracks.events.SETTINGS_FILE_UPLOAD_STARTED,
 			{
 				type: key,
 			}
@@ -100,15 +100,18 @@ const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > =
 			setUploadError( false );
 
 			wcpayTracks.recordEvent(
-				'wcpay_merchant_settings_file_upload_success',
+				wcpayTracks.events.SETTINGS_FILE_UPLOAD_SUCCESS,
 				{
 					type: key,
 				}
 			);
 		} catch ( { err } ) {
-			wcpayTracks.recordEvent( 'wcpay_merchant_settings_upload_failed', {
-				message: ( err as Error ).message,
-			} );
+			wcpayTracks.recordEvent(
+				wcpayTracks.events.SETTINGS_FILE_UPLOAD_FAILED,
+				{
+					message: ( err as Error ).message,
+				}
+			);
 
 			// Remove file ID
 			updateFileID( '' );
