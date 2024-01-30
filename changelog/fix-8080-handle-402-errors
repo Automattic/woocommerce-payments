@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed parsing of 402 status codes.
