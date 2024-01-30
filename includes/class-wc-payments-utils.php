@@ -591,10 +591,16 @@ class WC_Payments_Utils {
 	 * @return  int
 	 */
 	public static function get_filtered_error_status_code( Exception $e ) : int {
+		$status_code = 400;
 		if ( $e instanceof API_Exception ) {
-			return $e->get_http_code() ?? 400;
+			$status_code = $e->get_http_code() ?? 400;
+			// Sometimes hosting companies hijack this status code and return their own predefined error page.
+			// In this case, we want to return a 400 instead, since it will break the flow of the checkout page.
+			if ( 402 === $status_code ) {
+				$status_code = 400;
+			}
 		}
-		return 400;
+		return $status_code;
 	}
 
 	/**
