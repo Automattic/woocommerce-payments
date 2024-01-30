@@ -53,6 +53,16 @@ export default {
 	INBOX_ACTION_DISMISSED: 'wcpay_inbox_action_dismissed',
 	INBOX_ACTION_CLICK: 'wcpay_inbox_action_click',
 	INBOX_NOTE_VIEW: 'wcpay_inbox_note_view',
+	// Onboarding flow.
+	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
+	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',
+	ONBOARDING_FLOW_STEP_COMPLETED: 'wcpay_onboarding_flow_step_completed',
+	ONBOARDING_FLOW_HIDDEN: 'wcpay_onboarding_flow_hidden',
+	ONBOARDING_FLOW_EXITED: 'wcpay_onboarding_flow_exited',
+	ONBOARDING_FLOW_REDIRECTED: 'wcpay_onboarding_flow_redirected',
+	ONBOARDING_FLOW_RESET: 'wcpay_onboarding_flow_reset',
+	ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED:
+		'wcpay_onboarding_flow_eligibility_modal_closed',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
 		'wcpay_overview_balances_currency_tab_click',
 	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
@@ -119,14 +129,4 @@ export default {
 	WOOPAY_SAVE_MY_INFO_TOOLTIP_CLICK: 'checkout_save_my_info_tooltip_click',
 	WOOPAY_SAVE_MY_INFO_TOOLTIP_LEARN_MORE_CLICK:
 		'checkout_save_my_info_tooltip_learn_more_click',
-	// Onboarding flow.
-	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
-	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',
-	ONBOARDING_FLOW_STEP_COMPLETED: 'wcpay_onboarding_flow_step_completed',
-	ONBOARDING_FLOW_HIDDEN: 'wcpay_onboarding_flow_hidden',
-	ONBOARDING_FLOW_EXITED: 'wcpay_onboarding_flow_exited',
-	ONBOARDING_FLOW_REDIRECTED: 'wcpay_onboarding_flow_redirected',
-	ONBOARDING_FLOW_RESET: 'wcpay_onboarding_flow_reset',
-	ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED:
-		'wcpay_onboarding_flow_eligibility_modal_closed',
 };
