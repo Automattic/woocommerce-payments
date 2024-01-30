@@ -202,7 +202,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'        => [ 'integer', 'null' ],
 					],
 					'reporting_export_language'         => [
-						'description' => __( 'Transactions, deposits and disputes exporting language.', 'woocommerce-payments' ),
+						'description' => __( 'The language for an exported report for transactions, deposits, or disputes.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
 					'is_payment_request_enabled'        => [
