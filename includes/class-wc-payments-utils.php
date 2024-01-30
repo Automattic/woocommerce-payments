@@ -1003,13 +1003,13 @@ class WC_Payments_Utils {
 	public static function get_language_data( $language ) {
 		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
 
-		$transaltions = wp_get_available_translations();
+		$translations = wp_get_available_translations();
 
-		if ( isset( $transaltions[ $language ] ) ) {
+		if ( isset( $translations[ $language ] ) ) {
 			return [
 				'code'         => $language,
-				'english_name' => $transaltions[ $language ]['english_name'] ?? '',
-				'native_name'  => $transaltions[ $language ]['native_name'] ?? '',
+				'english_name' => $translations[ $language ]['english_name'] ?? $language,
+				'native_name'  => $translations[ $language ]['native_name'] ?? $language,
 			];
 		}
 
