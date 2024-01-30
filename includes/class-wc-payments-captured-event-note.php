@@ -172,7 +172,7 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	public function compose_net_string(): string {
 		$data = $this->captured_event['transaction_details'];
-
+		// TODO: check here for the net deposit of the order note.
 		$net = WC_Payments_Utils::interpret_stripe_amount( (int) $data['store_amount'] - $data['store_fee'], $data['store_currency'] );
 
 		return sprintf(
