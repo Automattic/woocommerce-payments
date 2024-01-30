@@ -5,6 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { includes } from 'lodash';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /* eslint-disable max-len */
 const sections = [
@@ -117,10 +118,29 @@ const sections = [
 	{
 		key: 'duplicate_charge_info',
 		title: __( 'Duplicate charge info', 'woocommerce-payments' ),
+		description: interpolateComponents( {
+			mixedString: __(
+				'Click {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+				'woocommerce-payments'
+			),
+			components: {
+				learnMoreLink: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						rel="external noopener noreferrer"
+						target="_blank"
+						href="https://woo.com/document/woopayments/"
+					/>
+				),
+			},
+		} ),
 		fields: [
 			{
 				key: 'duplicate_charge_id',
-				label: __( 'Duplicate charge ID', 'woocommerce-payments' ),
+				label: __(
+					"Duplicate charge ID (starts with 'ch_')",
+					'woocommerce-payments'
+				),
 				type: 'text',
 				description: __(
 					'The charge ID for the previous payment that appears to be a duplicate of the one that is disputed.',
