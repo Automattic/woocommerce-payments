@@ -27,34 +27,6 @@
 				"fee_percentage": 0,
 				"created": 1619395200
 			}
-		],
-		"next_scheduled": [
-			{
-				"id": "wcpay_estimated_weekly_eur_1622678400",
-				"date": 1622678400000,
-				"type": "deposit",
-				"amount": 3343,
-				"status": "estimated",
-				"bankAccount": null,
-				"currency": "eur",
-				"automatic": true,
-				"fee": 0,
-				"fee_percentage": 0,
-				"created": 1622678400
-			},
-			{
-				"id": "wcpay_estimated_weekly_usd_1622678400",
-				"date": 1622678400000,
-				"type": "deposit",
-				"amount": 1656,
-				"status": "estimated",
-				"bankAccount": null,
-				"currency": "usd",
-				"automatic": true,
-				"fee": 0,
-				"fee_percentage": 0,
-				"created": 1622678400
-			}
 		]
 	},
 	"balance": {
@@ -69,7 +41,6 @@
 			{
 				"amount": 1656,
 				"currency": "usd",
-				"deposits_count": 2,
 				"source_types": {
 					"card": 1656
 				}
