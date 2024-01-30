@@ -59,14 +59,13 @@ const filterQuery = {
 	dateAfter: '2020-04-29 23:59:59',
 	dateBetween: [ '2020-04-28 00:00:00', '2020-04-29 23:59:59' ],
 	statusIs: 'paid',
-	statusIsNot: 'estimated',
+	statusIsNot: 'failed',
 	storeCurrencyIs: 'gbp',
 };
 
 describe( 'getDepositsOverview resolver', () => {
 	const successfulResponse = {
 		last_deposit: depositsResponse.data[ 0 ],
-		next_deposit: depositsResponse.data[ 1 ],
 		balance: { pending: { amount: 5500 }, available: { amount: 0 } },
 		deposits_schedule: { interval: 'daily' },
 	};
@@ -149,7 +148,7 @@ describe( 'getDeposits resolver', () => {
 
 	const expectedQueryString =
 		// eslint-disable-next-line max-len
-		'page=1&pagesize=25&match=all&store_currency_is=gbp&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&status_is=paid&status_is_not=estimated';
+		'page=1&pagesize=25&match=all&store_currency_is=gbp&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&status_is=paid&status_is_not=failed';
 
 	beforeEach( () => {
 		generator = getDeposits( query );
@@ -208,7 +207,7 @@ describe( 'getDepositsSummary resolver', () => {
 	const query = filterQuery;
 	const expectedQueryString =
 		// eslint-disable-next-line max-len
-		'match=all&store_currency_is=gbp&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&status_is=paid&status_is_not=estimated';
+		'match=all&store_currency_is=gbp&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&status_is=paid&status_is_not=failed';
 	let generator = null;
 
 	beforeEach( () => {
