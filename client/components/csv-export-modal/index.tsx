@@ -25,7 +25,7 @@ import './styles.scss';
 
 interface CSVExportModalProps {
 	totalItems: number;
-	exportType: string;
+	exportType: 'transactions' | 'deposits' | 'disputes';
 	onClose: () => void;
 	onSubmit: ( language: string ) => void;
 }
