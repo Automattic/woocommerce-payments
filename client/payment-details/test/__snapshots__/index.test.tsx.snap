@@ -531,6 +531,9 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                 >
                   Payment ID: 
                   pi_mock
+                  <br />
+                  Charge ID: 
+                  ch_mock
                 </div>
               </div>
             </div>

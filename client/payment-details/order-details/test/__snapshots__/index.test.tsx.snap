@@ -68,6 +68,9 @@ exports[`Order details page should match the snapshot - Charge without payment i
                 >
                   Payment ID: 
                   776
+                  <br />
+                  Charge ID: 
+                  776
                 </div>
               </div>
             </div>
