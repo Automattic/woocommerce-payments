@@ -449,19 +449,9 @@ jQuery( ( $ ) => {
 								displayItems: response.displayItems,
 							} );
 						} else {
-							/**
-							 * Re init the payment request button.
-							 *
-							 * This ensures that when the customer clicks on the payment button, the available shipping options are
-							 * refetched based on the selected variable product's data and the chosen address.
-							 */
-							wcpayPaymentRequestParams.product.needs_shipping =
-								response.needs_shipping;
-							wcpayPaymentRequestParams.product.total =
-								response.total;
-							wcpayPaymentRequestParams.product.displayItems =
-								response.displayItems;
-							wcpayPaymentRequest.init();
+							wcpayPaymentRequest.reInitPaymentRequest(
+								response
+							);
 						}
 
 						wcpayPaymentRequest.unblockPaymentRequestButton();
@@ -477,32 +467,36 @@ jQuery( ( $ ) => {
 				wcpayPaymentRequest.blockPaymentRequestButton();
 			} );
 
-			$( '.quantity' ).on(
-				'input',
-				'.qty',
-				wcpayPaymentRequest.debounce( 250, () => {
-					wcpayPaymentRequest.blockPaymentRequestButton();
-					paymentRequestError = [];
+			$( '.quantity' )
+				.off( 'input', '.qty' )
+				.on(
+					'input',
+					'.qty',
+					wcpayPaymentRequest.debounce( 250, () => {
+						wcpayPaymentRequest.blockPaymentRequestButton();
+						paymentRequestError = [];
 
-					$.when( wcpayPaymentRequest.getSelectedProductData() ).then(
-						( response ) => {
-							if ( response.error ) {
-								paymentRequestError = [ response.error ];
-								wcpayPaymentRequest.unblockPaymentRequestButton();
-							} else {
-								$.when(
-									paymentRequest.update( {
-										total: response.total,
-										displayItems: response.displayItems,
-									} )
-								).then( () => {
-									wcpayPaymentRequest.unblockPaymentRequestButton();
+						$.when(
+							wcpayPaymentRequest.getSelectedProductData()
+						).then( ( response ) => {
+							if (
+								! wcpayPaymentRequest.paymentAborted &&
+								wcpayPaymentRequestParams.product
+									.needs_shipping === response.needs_shipping
+							) {
+								paymentRequest.update( {
+									total: response.total,
+									displayItems: response.displayItems,
 								} );
+							} else {
+								wcpayPaymentRequest.reInitPaymentRequest(
+									response
+								);
 							}
-						}
-					);
-				} )
-			);
+							wcpayPaymentRequest.unblockPaymentRequestButton();
+						} );
+					} )
+				);
 		},
 
 		attachCartPageEventListeners: ( prButton ) => {
@@ -533,6 +527,13 @@ jQuery( ( $ ) => {
 		},
 
 		showPaymentRequestButton: ( prButton ) => {
+			// Don't remove and re-add the button if it's already on the product page.
+			if (
+				wcpayPaymentRequestParams.is_product_page &&
+				$( '#wcpay-payment-request-button > div' ).length
+			) {
+				return;
+			}
 			if ( $( '#wcpay-payment-request-button' ).length ) {
 				wcpayPaymentRequest.show();
 				prButton.mount( '#wcpay-payment-request-button' );
@@ -554,6 +555,26 @@ jQuery( ( $ ) => {
 		unblockPaymentRequestButton: () => {
 			wcpayPaymentRequest.show();
 			$( '#wcpay-payment-request-button' ).unblock();
+		},
+
+		/**
+		 * Re init the payment request button.
+		 *
+		 * This ensures that when the customer clicks on the payment button, the available shipping options are
+		 * refetched based on the selected variable product's data and the chosen address.
+		 *
+		 *  This is also useful when the customer changes the quantity of a product, as the total and display items
+		 *  need to be updated.
+		 *
+		 * @param {Object} response Response from the server containing the updated product data.
+		 */
+		reInitPaymentRequest: ( response ) => {
+			wcpayPaymentRequestParams.product.needs_shipping =
+				response.needs_shipping;
+			wcpayPaymentRequestParams.product.total = response.total;
+			wcpayPaymentRequestParams.product.displayItems =
+				response.displayItems;
+			wcpayPaymentRequest.init();
 		},
 
 		/**
