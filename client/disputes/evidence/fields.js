@@ -120,7 +120,7 @@ const sections = [
 		title: __( 'Duplicate charge info', 'woocommerce-payments' ),
 		description: interpolateComponents( {
 			mixedString: __(
-				'Click {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+				'Click to {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 				'woocommerce-payments'
 			),
 			components: {
