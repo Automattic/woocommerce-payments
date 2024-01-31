@@ -132,11 +132,19 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 				$product_name = $cart_item['data']->get_name();
 
-				$item_tax = $this->cart_prices_include_tax() ? ( $cart_item['line_subtotal_tax'] ?? 0 ) : 0;
+				$item_tax      = $this->cart_prices_include_tax() ? ( $cart_item['line_subtotal_tax'] ?? 0 ) : 0;
+				$product_total = $amount + $item_tax;
+
+				// Currently deposits and express checkout are not 100% compatible.
+				// Taxes are not calculated correctly when a deposit is used.
+				// Check https://github.com/Automattic/woocommerce-payments/pull/7910 for more details.
+				if ( isset( $cart_item['is_deposit'] ) && $cart_item['is_deposit'] ) {
+					$product_total = $cart_item['deposit_amount'];
+				}
 
 				$item = [
 					'label'  => $product_name . $quantity_label,
-					'amount' => WC_Payments_Utils::prepare_amount( $amount + $item_tax, $currency ),
+					'amount' => WC_Payments_Utils::prepare_amount( $product_total, $currency ),
 				];
 
 				$items[] = $item;
