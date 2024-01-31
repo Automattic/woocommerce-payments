@@ -199,7 +199,7 @@ class WC_Payments_Utils {
 	 */
 	public static function zero_decimal_currencies(): array {
 		return [
-			strtolower( Currency_Code::BRUNEI_DOLLAR ), // Burundian Franc.
+			strtolower( Currency_Code::BURUNDIAN_FRANC ), // Burundian Franc.
 			strtolower( Currency_Code::CHILEAN_PESO ), // Chilean Peso.
 			strtolower( Currency_Code::DJIBOUTIAN_FRANC ), // Djiboutian Franc.
 			strtolower( Currency_Code::GUINEAN_FRANC ), // Guinean Franc.
