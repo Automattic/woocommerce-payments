@@ -220,18 +220,32 @@ const isBaseFeeOnly = ( event ) => {
 };
 
 const formatNetString = ( event ) => {
+	const {
+		amount_captured: amountCaptured,
+		amount,
+		fee,
+		currency,
+		transaction_details: {
+			store_amount_captured: storeAmountCaptured,
+			store_amount: storeAmount,
+			store_fee: storeFee,
+			store_currency: storeCurrency,
+		},
+	} = event;
+
 	if ( ! isFXEvent( event ) ) {
-		return formatExplicitCurrency(
-			event.amount - event.fee,
-			event.currency
-		);
+		const grossAmount = amountCaptured ? amountCaptured : amount;
+		return formatExplicitCurrency( grossAmount - fee, currency );
 	}
 
-	return formatExplicitCurrency(
-		event.transaction_details.store_amount -
-			event.transaction_details.store_fee,
-		event.transaction_details.store_currency
-	);
+	// We need to use the store amount and currency for the net amount calculation in the case of a FX event.
+	// We also need to check if the store amount captured is available, otherwise use the store amount.
+	// This is needed to calculate the net amount for a partial capture.
+	const storeGrossAmount = storeAmountCaptured
+		? storeAmountCaptured
+		: storeAmount;
+
+	return formatExplicitCurrency( storeGrossAmount - storeFee, storeCurrency );
 };
 
 export const composeNetString = ( event ) => {
@@ -295,15 +309,22 @@ export const composeFXString = ( event ) => {
 		transaction_details: {
 			customer_currency: customerCurrency,
 			customer_amount: customerAmount,
+			customer_amount_captured: customerAmountCaptured,
 			store_currency: storeCurrency,
 			store_amount: storeAmount,
+			store_amount_captured: storeAmountCaptured,
 		},
 	} = event;
 	return formatFX(
-		{ currency: customerCurrency, amount: customerAmount },
+		{
+			currency: customerCurrency,
+			amount: customerAmountCaptured
+				? customerAmountCaptured
+				: customerAmount,
+		},
 		{
 			currency: storeCurrency,
-			amount: storeAmount,
+			amount: storeAmountCaptured ? storeAmountCaptured : storeAmount,
 		}
 	);
 };
@@ -681,7 +702,9 @@ const mapEventToTimelineItems = ( event ) => {
 							'A payment of %s was successfully charged.',
 							'woocommerce-payments'
 						),
-						event.amount,
+						event.amount_captured
+							? event.amount_captured
+							: event.amount,
 						true
 					),
 					<CheckmarkIcon className="is-success" />,

@@ -84,12 +84,21 @@ class WC_Payments_Captured_Event_Note {
 			return null;
 		}
 
-		$customer_currency = $this->captured_event['transaction_details']['customer_currency'];
-		$customer_amount   = $this->captured_event['transaction_details']['customer_amount'];
-		$store_currency    = $this->captured_event['transaction_details']['store_currency'];
-		$store_amount      = $this->captured_event['transaction_details']['store_amount'];
+		$customer_currency        = $this->captured_event['transaction_details']['customer_currency'];
+		$customer_amount          = $this->captured_event['transaction_details']['customer_amount'];
+		$customer_amount_captured = $this->captured_event['transaction_details']['customer_amount_captured'];
+		$store_currency           = $this->captured_event['transaction_details']['store_currency'];
+		$store_amount             = $this->captured_event['transaction_details']['store_amount'];
+		$store_amount_captured    = $this->captured_event['transaction_details']['store_amount_captured'];
 
-		return $this->format_fx( $customer_currency, $customer_amount, $store_currency, $store_amount );
+		$from_amount = $customer_amount !== $customer_amount_captured
+			? $customer_amount_captured
+			: $customer_amount;
+		$to_amount   = $store_amount !== $store_amount_captured
+			? $store_amount_captured
+			: $store_amount;
+
+		return $this->format_fx( $customer_currency, $from_amount, $store_currency, $to_amount );
 	}
 
 	/**
@@ -173,14 +182,32 @@ class WC_Payments_Captured_Event_Note {
 	public function compose_net_string(): string {
 		$data = $this->captured_event['transaction_details'];
 
-		$net = WC_Payments_Utils::interpret_stripe_amount( (int) $data['store_amount'] - $data['store_fee'], $data['store_currency'] );
+		// Determine the type of payment and select the appropriate amounts and currencies.
+		if ( $this->is_fx_event() ) {
+			// For fx events, we need the store amount and currency to display the net amount
+			// in the store currency.
+			$amount_key          = 'store_amount';
+			$captured_amount_key = 'store_amount_captured';
+			$fee_key             = 'store_fee';
+			$currency_key        = 'store_currency';
+		} else {
+			$amount_key          = 'customer_amount';
+			$captured_amount_key = 'customer_amount_captured';
+			$fee_key             = 'customer_fee';
+			$currency_key        = 'customer_currency';
+		}
 
+		$gross_amount = isset( $data[ $captured_amount_key ] ) ? $data[ $captured_amount_key ] : $data[ $amount_key ];
+		$net          = WC_Payments_Utils::interpret_stripe_amount( (int) $gross_amount - $data[ $fee_key ], $data[ $currency_key ] );
+
+		// Format and return the net string.
 		return sprintf(
 			/* translators: %s is a monetary amount */
 			__( 'Net deposit: %s', 'woocommerce-payments' ),
-			WC_Payments_Utils::format_explicit_currency( $net, $data['store_currency'] )
+			WC_Payments_Utils::format_explicit_currency( $net, $data[ $currency_key ] )
 		);
 	}
+
 
 	/**
 	 * Returns an associative array containing fee breakdown.
