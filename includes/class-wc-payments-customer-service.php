@@ -520,6 +520,7 @@ class WC_Payments_Customer_Service {
 		$user_email = '';
 		$firstname  = '';
 		$lastname   = '';
+		$billing_country = '';
 
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$order_id = absint( $wp->query_vars['order-pay'] );
@@ -529,6 +530,7 @@ class WC_Payments_Customer_Service {
 				$firstname  = $order->get_billing_first_name();
 				$lastname   = $order->get_billing_last_name();
 				$user_email = $order->get_billing_email();
+				$billing_country = $order->get_billing_country();
 			}
 		}
 
@@ -539,14 +541,15 @@ class WC_Payments_Customer_Service {
 				$firstname  = $user->user_firstname;
 				$lastname   = $user->user_lastname;
 				$user_email = get_user_meta( $user->ID, 'billing_email', true );
-				$user_email = $user_email ? $user_email : $user->user_email;
+				$user_email = $user_email ?: $user->user_email;
+				$billing_country = get_user_meta( $user->ID, 'billing_country', true );
 			}
 		}
-		$prepared_customer_data = [
+
+		return [
 			'name'  => $firstname . ' ' . $lastname,
 			'email' => $user_email,
+			'billing_country' => $billing_country,
 		];
-
-		return $prepared_customer_data;
 	}
 }

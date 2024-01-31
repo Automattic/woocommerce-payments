@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Code;
 use WCPay\WooPay\WooPay_Scheduler;
 use WCPay\WooPay\WooPay_Utilities;
 
@@ -198,7 +199,7 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 			'test-extension',
 			'test-extension-2',
 		];
-		$available_countries = [ 'US', 'BR' ];
+		$available_countries = [ Country_Code::UNITED_STATES, Country_Code::BRAZIL ];
 
 		$this->mock_api_response( [], $adapted_extensions, $available_countries );
 

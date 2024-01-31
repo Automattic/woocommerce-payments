@@ -83,7 +83,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 	>
 		{ interpolateComponents( {
 			mixedString: __(
-				'Your first deposit is held for seven business days. {{whyLink}}Why?{{/whyLink}}',
+				'Your first deposit is held for 7-14 days. {{whyLink}}Why?{{/whyLink}}',
 				'woocommerce-payments'
 			),
 			components: {

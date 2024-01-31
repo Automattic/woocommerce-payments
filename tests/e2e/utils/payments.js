@@ -44,36 +44,6 @@ export async function fillCardDetails( page, card ) {
 		if ( zip !== null ) {
 			await zip.type( '90210', { delay: 20 } );
 		}
-	} else {
-		await page.waitForSelector( '.__PrivateStripeElement' );
-		const frameHandle = await page.waitForSelector(
-			'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
-		);
-		const stripeFrame = await frameHandle.contentFrame();
-
-		const cardNumberInput = await stripeFrame.waitForSelector(
-			'[name="cardnumber"]',
-			{ timeout: 30000 }
-		);
-		await cardNumberInput.type( card.number, { delay: 20 } );
-		await page.waitFor( 1000 );
-
-		const cardDateInput = await stripeFrame.waitForSelector(
-			'[name="exp-date"]',
-			{ timeout: 30000 }
-		);
-
-		await cardDateInput.type( card.expires.month + card.expires.year, {
-			delay: 20,
-		} );
-		await page.waitFor( 1000 );
-
-		const cardCvcInput = await stripeFrame.waitForSelector(
-			'[name="cvc"]',
-			{ timeout: 30000 }
-		);
-		await cardCvcInput.type( card.cvc, { delay: 20 } );
-		await page.waitFor( 1000 );
 	}
 }
 
@@ -298,26 +268,31 @@ export async function setupCheckout( billingDetails ) {
 }
 
 /**
- * Selects the Giropay payment method on the checkout page.
+ * Selects the payment method on the checkout page.
  *
+ * @param {*} paymentMethod The payment method to select.
  * @param {*} page The page reference object.
  */
-export async function selectGiropayOnCheckout( page ) {
-	await page.$( '#payment .payment_method_woocommerce_payments_giropay' );
-	const giropayRadioLabel = await page.waitForSelector(
-		'#payment .payment_method_woocommerce_payments_giropay label'
+export async function selectOnCheckout( paymentMethod, page ) {
+	await page.$(
+		'#payment .payment_method_woocommerce_payments_' + paymentMethod
 	);
-	giropayRadioLabel.click();
+	const radioLabel = await page.waitForSelector(
+		'#payment .payment_method_woocommerce_payments_' +
+			paymentMethod +
+			' label'
+	);
+	radioLabel.click();
 	await page.waitFor( 1000 );
 }
 
 /**
- * Authorizes or fails a Giropay payment.
+ * Authorizes or fails a redirected payment.
  *
  * @param {*} page The page reference object.
  * @param {string} action Either of 'success' or 'failure'.
  */
-export async function completeGiropayPayment( page, action ) {
+export async function completeRedirectedPayment( page, action ) {
 	await page.$( '.actions .common-ButtonGroup' );
 	const actionButton = await page.waitForSelector(
 		`.actions .common-ButtonGroup a[name=${ action }]`

@@ -98,4 +98,31 @@
 
 .payment-details__refund-controls {
 	flex: 0 0 auto;
+
+	.refund-controls__dropdown-menu {
+		/**
+		 * HACK: The following styles are needed to make the dropdown menu
+		 * appear in its expected position. The dropdown menu is positioned absolutely, so we need to make sure
+		 * that the parent container is positioned relatively.
+		 * This should be taken care of by the dropdown menu component's CSS, but we seem to be relying in outdated
+		 * wordpress/components styles.
+		 *
+		 * Github issue: https://github.com/Automattic/woocommerce-payments/issues/8012
+		 */
+		.components-popover {
+			position: fixed;
+		}
+		.components-popover__content {
+			position: absolute;
+			right: 100%;
+		}
+
+		.components-tooltip {
+			.components-popover__content {
+				position: relative;
+				right: 0;
+			}
+		}
+		// END HACK
+	}
 }

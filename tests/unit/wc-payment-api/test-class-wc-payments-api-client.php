@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Code;
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Logger;
@@ -518,7 +519,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->payments_api_client->create_terminal_location(
 			'Example',
 			[
-				'country' => 'US',
+				'country' => Country_Code::UNITED_STATES,
 			]
 		);
 	}
@@ -527,7 +528,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$location = [
 			'display_name' => 'Example',
 			'address'      => [
-				'country' => 'US',
+				'country' => Country_Code::UNITED_STATES,
 				'line1'   => 'Some Str. 2',
 			],
 			'metadata'     => [],
@@ -795,8 +796,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
 			->setMethods( [ 'log' ] )
 			->getMock();
-		$mock_gateway         = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode(), $mock_gateway );
+		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode() );
 		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
 
 		WC_Payments::mode()->dev();
@@ -918,7 +918,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		$po_eligible = $this->payments_api_client->get_onboarding_po_eligible(
 			[
-				'country' => 'US',
+				'country' => Country_Code::UNITED_STATES,
 				'type'    => 'company',
 				'mcc'     => 'most_popular__software_services',
 			],

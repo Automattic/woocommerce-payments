@@ -538,7 +538,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               class="payment-details__refund-controls"
             >
               <div
-                class="components-dropdown components-dropdown-menu"
+                class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
                 tabindex="-1"
               >
                 <button

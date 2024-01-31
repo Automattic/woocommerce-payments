@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPay\Database_Cache;
 
 /**
@@ -40,7 +41,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_business_types = [
 		[
-			'key'   => 'US',
+			'key'   => Country_Code::UNITED_STATES,
 			'name'  => 'United States (US)',
 			'types' => [
 				[
@@ -146,12 +147,12 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_onboarding_required_verification_information' )
-			->with( 'US', 'company', 'sole_propietorship' )
+			->with( Country_Code::UNITED_STATES, 'company', 'sole_propietorship' )
 			->willReturn( $mock_requirements );
 
 		$this->assertEquals(
 			$mock_requirements,
-			$this->onboarding_service->get_required_verification_information( 'US', 'company', 'sole_propietorship' )
+			$this->onboarding_service->get_required_verification_information( Country_Code::UNITED_STATES, 'company', 'sole_propietorship' )
 		);
 	}
 

@@ -11,7 +11,6 @@ interface RecentDeposits {
 
 const useRecentDeposits = ( currency?: string ): RecentDeposits => {
 	const query = {
-		status_is_not: 'estimated',
 		store_currency_is: currency,
 		orderby: 'date',
 		order: 'desc',

@@ -15,7 +15,7 @@ import TestModeConfirmationModal from '../test-mode-confirm-modal';
 const mockOnClose = jest.fn();
 const mockOnConfirm = jest.fn();
 
-describe( 'Dev Mode Confirmation Modal', () => {
+describe( 'Sandbox Mode Confirmation Modal', () => {
 	const renderTestModeConfirmationModal = () => {
 		return render(
 			<TestModeConfirmationModal
@@ -25,7 +25,7 @@ describe( 'Dev Mode Confirmation Modal', () => {
 		);
 	};
 
-	it( 'Dev mode confirmation modal asks confirmation', () => {
+	it( 'Sandbox mode confirmation modal asks confirmation', () => {
 		renderTestModeConfirmationModal();
 		expect(
 			screen.queryByText( 'Are you sure you want to enable test mode?' )

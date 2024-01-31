@@ -173,13 +173,14 @@ const AddCurrenciesTask = () => {
 				);
 		  } );
 
-	const displayCurrencyCheckbox = ( code ) =>
+	const displayCurrencyCheckbox = ( code, testId = '' ) =>
 		availableCurrencyCodes.length && (
 			<EnabledCurrenciesModalCheckbox
 				key={ 'currency-checkbox-' + availableCurrencies[ code ].id }
 				checked={ selectedCurrencyCodes.includes( code ) }
 				onChange={ handleChange }
 				currency={ availableCurrencies[ code ] }
+				testId={ _.isString( testId ) ? testId : null }
 			/>
 		);
 
@@ -284,7 +285,11 @@ const AddCurrenciesTask = () => {
 												</h4>
 											</li>
 											{ visibleRecommendedCurrencyCodes.map(
-												displayCurrencyCheckbox
+												( code ) =>
+													displayCurrencyCheckbox(
+														code,
+														'recommended-currency'
+													)
 											) }
 											<li
 												className={

@@ -404,8 +404,7 @@ export const handleWooPayEmailInput = async (
 				} else if ( data.code !== 'rest_invalid_param' ) {
 					wcpayTracks.recordUserEvent(
 						wcpayTracks.events.WOOPAY_OFFERED,
-						[],
-						true
+						[]
 					);
 				}
 			} )

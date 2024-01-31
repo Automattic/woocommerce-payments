@@ -582,6 +582,10 @@ jQuery( ( $ ) => {
 		 */
 		init: () => {
 			if ( wcpayPaymentRequestParams.is_pay_for_order ) {
+				if ( ! window.wcpayPaymentRequestPayForOrderParams ) {
+					return;
+				}
+
 				const {
 					total: { amount: total },
 					displayItems,

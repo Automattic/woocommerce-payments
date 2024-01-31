@@ -185,6 +185,6 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function manual_deposit( $request ) {
 		$params = $request->get_params();
-		return $this->forward_request( 'manual_deposit', [ $params['type'], $params['transaction_ids'] ] );
+		return $this->forward_request( 'manual_deposit', [ $params['type'], $params['currency'] ] );
 	}
 }
