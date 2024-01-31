@@ -11,7 +11,9 @@ import { getPaymentRequestData } from 'wcpay/payment-request/utils';
  * @return {boolean} True if site tracking is enabled.
  */
 function isEnabled() {
-	return window.wcTracks.isEnabled;
+	return window.wcTracks && window.wcTracks.isEnabled
+		? window.wcTracks.isEnabled
+		: false;
 }
 
 /**
