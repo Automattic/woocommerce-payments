@@ -172,8 +172,14 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	public function compose_net_string(): string {
 		$data = $this->captured_event['transaction_details'];
+
+		// Determine the gross amount: Use captured amount if it exists (for partial captures),
+		// otherwise default to 'store_amount'. This handles cases where the captured amount
+		// may differ from the initially authorized amount.
+		$gross_amount = isset( $data['customer_amount_captured'] ) ? $data['customer_amount_captured'] : $data['store_amount'];
+
 		// TODO: check here for the net deposit of the order note.
-		$net = WC_Payments_Utils::interpret_stripe_amount( (int) $data['store_amount'] - $data['store_fee'], $data['store_currency'] );
+		$net = WC_Payments_Utils::interpret_stripe_amount( (int) $gross_amount - $data['store_fee'], $data['store_currency'] );
 
 		return sprintf(
 			/* translators: %s is a monetary amount */
