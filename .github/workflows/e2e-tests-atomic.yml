@@ -26,15 +26,11 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        test_groups: [ 'wcpay', 'subscriptions', 'upe', 'upeSplit' ]
+        test_groups: [ 'wcpay', 'subscriptions' ]
         test_branches: [ 'merchant', 'shopper' ]
         exclude:
           - test_groups: 'subscriptions'
           - test_groups: 'wcpay'
-            test_branches: 'merchant'
-          - test_groups: 'upe'
-            test_branches: 'merchant'
-          - test_groups: 'upeSplit'
             test_branches: 'merchant'
     
     env:

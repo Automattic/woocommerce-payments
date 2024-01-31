@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Country_Code;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -17,6 +19,7 @@ class WC_Payments_Features {
 	const STRIPE_BILLING_FLAG_NAME          = '_wcpay_feature_stripe_billing';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME = '_wcpay_feature_woopay_first_party_auth';
+	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME  = '_wcpay_feature_woopay_direct_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
@@ -254,6 +257,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether WooPay Direct Checkout is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_direct_checkout_enabled() {
+		return '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '0' ) && self::is_woopay_first_party_auth_enabled();
+	}
+
+	/**
 	 * Checks whether Auth & Capture (uncaptured transactions tab, capture from payment details page) is enabled.
 	 *
 	 * @return bool
@@ -310,7 +322,7 @@ class WC_Payments_Features {
 		}
 
 		$store_base_location = wc_get_base_location();
-		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+		return ! empty( $store_base_location['country'] ) && Country_Code::UNITED_STATES === $store_base_location['country'];
 	}
 
 	/**

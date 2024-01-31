@@ -351,7 +351,7 @@ class WC_Payments_Admin {
 		}
 		try {
 			// Render full payments menu with sub-items only if the merchant completed the KYC (details_submitted = true).
-			$should_render_full_menu = $this->account->is_account_fully_onboarded();
+			$should_render_full_menu = $this->account->is_stripe_connected() && $this->account->is_details_submitted();
 		} catch ( Exception $e ) {
 			// There is an issue with connection, don't render full menu, user will get redirected to the connect page.
 			$should_render_full_menu = false;
@@ -799,6 +799,7 @@ class WC_Payments_Admin {
 		}
 
 		$locale_info = include $path;
+
 		// Get symbols for those currencies without a short one.
 		$symbols       = get_woocommerce_currency_symbols();
 		$currency_data = [];
@@ -828,7 +829,7 @@ class WC_Payments_Admin {
 		try {
 			$dev_mode = WC_Payments::mode()->is_dev();
 		} catch ( Exception $e ) {
-			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if WCPay should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
+			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if WCPay should be in sandbox mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
 		$connect_url       = WC_Payments_Account::get_connect_url();

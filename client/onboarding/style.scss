@@ -106,6 +106,12 @@ body.wcpay-onboarding__body {
 			padding: $gap-small $gap;
 		}
 
+		.onboarding-mode__sandbox {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
 		.personal-details-notice {
 			margin: 0;
 		}
@@ -122,6 +128,44 @@ body.wcpay-onboarding__body {
 
 		.restored-state-banner {
 			margin: $gap 0;
+		}
+	}
+
+	.wcpay-component-onboarding-card {
+		display: block;
+		padding: $gap-large;
+		background-color: #fff;
+		border-radius: 3px;
+		border: 1px solid $light-gray-500;
+		margin-bottom: $gap-large;
+
+		&__label {
+			display: grid;
+			grid-template-columns: 24px 1fr 25px;
+			column-gap: $gap-small;
+			align-items: center;
+			font-weight: bold;
+
+			&:not( :last-child ) {
+				margin-bottom: $gap;
+			}
+
+			svg {
+				fill: #bbb;
+			}
+		}
+
+		&__footer {
+			button {
+				width: 100%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+		}
+
+		p {
+			color: $gray-700;
 		}
 	}
 }

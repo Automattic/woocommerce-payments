@@ -96,12 +96,10 @@ class WC_Payments_Checkout {
 		add_action( 'wc_payments_set_gateway', [ $this, 'set_gateway' ] );
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
 		add_action( 'wp', [ $this->gateway, 'maybe_process_upe_redirect' ] );
-		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 		add_action( 'wp_ajax_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'switch_theme', [ $this->gateway, 'clear_upe_appearance_transient' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this->gateway, 'clear_upe_appearance_transient' ] );
-		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
@@ -179,7 +177,6 @@ class WC_Payments_Checkout {
 			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'logPaymentErrorNonce'           => wp_create_nonce( 'wcpay_log_payment_error_nonce' ),
 			'initWooPayNonce'                => wp_create_nonce( 'wcpay_init_woopay_nonce' ),
 			'saveUPEAppearanceNonce'         => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
 			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),

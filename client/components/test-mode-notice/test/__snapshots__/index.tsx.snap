@@ -108,7 +108,7 @@ exports[`Test mode notification Returns valid component for overview page 1`] = 
        All transactions will be simulated. 
       <a
         data-link-type="wc-admin"
-        href="https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/"
+        href="https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
         rel="noreferrer"
         target="_blank"
       >

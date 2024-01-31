@@ -47,11 +47,11 @@ class Payment_Request_Button_States {
 	// phpcs:disable
 	const STATES = [
 		// Afghanistan.
-		'AF' => [],
+		Country_Code::AFGHANISTAN => [],
 		// Angola.
-		'AO' => [],
+		Country_Code::ANDORRA => [],
 		// Argentina.
-		'AR' => [
+		Country_Code::ARGENTINA => [
 			'C' => [ 'Ciudad Autónoma de Buenos Aires', 'Ciudad Autónoma de Buenos Aires', NULL ],
 			'B' => [ 'Buenos Aires', 'Buenos Aires', NULL ],
 			'K' => [ 'Catamarca', 'Catamarca', NULL ],
@@ -78,9 +78,9 @@ class Payment_Request_Button_States {
 			'T' => [ 'Tucumán', 'Tucumán', NULL ],
 		],
 		// Austria.
-		'AT' => [],
+		Country_Code::AUSTRIA => [],
 		// Australia.
-		'AU' =>[
+		Country_Code::AUSTRALIA =>[
 			'ACT' => [ 'ACT', 'Australian Capital Territory', NULL ],
 			'NSW' => [ 'NSW', 'New South Wales', NULL ],
 			'NT'  => [ 'NT', 'Northern Territory', NULL ],
@@ -94,21 +94,21 @@ class Payment_Request_Button_States {
 		// Aland Islands.
 		'AX' => [],
 		// Bangladesh.
-		'BD' => [],
+		Country_Code::BANGLADESH => [],
 		// Belgium.
-		'BE' => [],
+		Country_Code::BELGIUM => [],
 		// Bulgaria.
-		'BG' => [],
+		Country_Code::BULGARIA => [],
 		// Bahrain.
-		'BH' => [],
+		Country_Code::BAHRAIN => [],
 		// Burundi.
-		'BI' => [],
+		Country_Code::BURUNDI => [],
 		// Benin.
-		'BJ' => [],
+		Country_Code::BENIN => [],
 		// Bolivia.
-		'BO' => [],
+		Country_Code::BOLIVIA => [],
 		// Brazil.
-		'BR' => [
+		Country_Code::BRAZIL => [
 			'AC' => [ 'AC', 'Acre', NULL ],
 			'AL' => [ 'AL', 'Alagoas', NULL ],
 			'AP' => [ 'AP', 'Amapá', NULL ],
@@ -138,7 +138,7 @@ class Payment_Request_Button_States {
 			'TO' => [ 'TO', 'Tocantins', NULL ],
 		],
 		// Canada.
-		'CA' => [
+		Country_Code::CANADA => [
 			'AB' => [ 'AB', 'Alberta', 'Alberta' ],
 			'BC' => [ 'BC', 'British Columbia', 'Colombie-Britannique' ],
 			'MB' => [ 'MB', 'Manitoba', 'Manitoba' ],
@@ -154,9 +154,9 @@ class Payment_Request_Button_States {
 			'YT' => [ 'YT', 'Yukon', 'Yukon' ],
 		],
 		// Switzerland.
-		'CH' => [],
+		Country_Code::SWITZERLAND => [],
 		// China.
-		'CN' => [
+		Country_Code::CHINA => [
 			'CN1'  => [ 'Yunnan Sheng', 'Yunnan Sheng', '云南省' ],
 			'CN2'  => [ 'Beijing Shi', 'Beijing Shi', '北京市' ],
 			'CN3'  => [ 'Tianjin Shi', 'Tianjin Shi', '天津市' ],
@@ -193,19 +193,19 @@ class Payment_Request_Button_States {
 			// [ 'Hong Kong', 'Hong Kong', '香港' ],
 		],
 		// Czech Republic.
-		'CZ' => [],
+		Country_Code::CZECHIA => [],
 		// Germany.
-		'DE' => [],
+		Country_Code::GERMANY => [],
 		// Denmark.
-		'DK' => [],
+		Country_Code::DENMARK => [],
 		// Dominican Republic.
-		'DO' => [],
+		Country_Code::DOMINICAN_REPUBLIC => [],
 		// Algeria.
-		'DZ' => [],
+		Country_Code::ALGERIA => [],
 		// Estonia.
-		'EE' => [],
+		Country_Code::ESTONIA => [],
 		// Egypt.
-		'EG' => [
+		Country_Code::EGYPT => [
 			'EGALX' => [ 'Alexandria Governorate', 'Alexandria Governorate', 'الإسكندرية' ],
 			'EGASN' => [ 'Aswan Governorate', 'Aswan Governorate', 'أسوان' ],
 			'EGAST' => [ 'Asyut Governorate', 'Asyut Governorate', 'أسيوط' ],
@@ -235,7 +235,7 @@ class Payment_Request_Button_States {
 			'EGWAD' => [ 'New Valley Governorate', 'New Valley Governorate', 'الوادي الجديد' ],
 		],
 		// Spain.
-		'ES' => [
+		Country_Code::SPAIN => [
 			'C'  => [ 'A Coruña', 'A Coruña', NULL ],
 			'VI' => [ 'Álava', 'Álava', NULL ],
 			'AB' => [ 'Albacete', 'Albacete', NULL ],
@@ -290,19 +290,19 @@ class Payment_Request_Button_States {
 			'Z'  => [ 'Zaragoza', 'Zaragoza', NULL ],
 		],
 		// Finland.
-		'FI' => [],
+		Country_Code::FINLAND => [],
 		// France.
-		'FR' => [],
+		Country_Code::FRANCE => [],
 		// French Guiana.
 		'GF' => [],
 		// Ghana.
-		'GH' => [],
+		Country_Code::GHANA => [],
 		// Guadeloupe.
 		'GP' => [],
 		// Greece.
-		'GR' => [],
+		Country_Code::GREECE => [],
 		// Guatemala.
-		'GT' => [],
+		Country_Code::GUATEMALA => [],
 		// Hong Kong.
 		'HK' => [
 			'HONG KONG'       => [ 'Hong Kong Island', 'Hong Kong Island', '香港島' ],
@@ -310,9 +310,9 @@ class Payment_Request_Button_States {
 			'NEW TERRITORIES' => [ 'New Territories', 'New Territories', '新界' ],
 		],
 		// Hungary.
-		'HU' => [],
+		Country_Code::HUNGARY => [],
 		// Indonesia.
-		'ID' => [
+		Country_Code::INDONESIA => [
 			'AC' => [ 'Aceh', 'Aceh', NULL ],
 			'SU' => [ 'Sumatera Utara', 'Sumatera Utara', NULL ],
 			'SB' => [ 'Sumatera Barat', 'Sumatera Barat', NULL ],
@@ -351,7 +351,7 @@ class Payment_Request_Button_States {
 			// [ 'Kalimantan Timur', 'Kalimantan Timur', NULL ],
 		],
 		// Ireland.
-		'IE' => [
+		Country_Code::IRELAND => [
 			'CW' => [ 'Co. Carlow', 'Co. Carlow', NULL ],
 			'CN' => [ 'Co. Cavan', 'Co. Cavan', NULL ],
 			'CE' => [ 'Co. Clare', 'Co. Clare', NULL ],
@@ -380,11 +380,11 @@ class Payment_Request_Button_States {
 			'WW' => [ 'Co. Wicklow', 'Co. Wicklow', NULL ],
 		],
 		// Israel.
-		'IL' => [],
+		Country_Code::ISRAEL => [],
 		// Isle of Man.
 		'IM' => [],
 		// India.
-		'IN' => [
+		Country_Code::INDIA => [
 			'AP' => [ 'Andhra Pradesh', 'Andhra Pradesh', NULL ],
 			'AR' => [ 'Arunachal Pradesh', 'Arunachal Pradesh', NULL ],
 			'AS' => [ 'Assam', 'Assam', NULL ],
@@ -424,7 +424,7 @@ class Payment_Request_Button_States {
 			'PY' => [ 'Puducherry', 'Puducherry', NULL ],
 		],
 		// Iran.
-		'IR' => [
+		Country_Code::IRAN => [
 			'KHZ' => [ 'Khuzestan Province', 'Khuzestan Province', 'استان خوزستان' ],
 			'THR' => [ 'Tehran Province', 'Tehran Province', 'استان تهران' ],
 			'ILM' => [ 'Ilam Province', 'Ilam Province', 'استان ایلام' ],
@@ -458,9 +458,9 @@ class Payment_Request_Button_States {
 			'SBN' => [ 'Sistan and Baluchestan Province', 'Sistan and Baluchestan Province', 'استان سیستان و بلوچستان' ],
 		],
 		// Iceland.
-		'IS' => [],
+		Country_Code::ICELAND => [],
 		// Italy.
-		'IT' => [
+		Country_Code::ITALY => [
 			'AG' => [ 'AG', 'Agrigento', NULL ],
 			'AL' => [ 'AL', 'Alessandria', NULL ],
 			'AN' => [ 'AN', 'Ancona', NULL ],
@@ -570,7 +570,7 @@ class Payment_Request_Button_States {
 			'VT' => [ 'VT', 'Viterbo', NULL ],
 		],
 		// Jamaica.
-		'JM' => [
+		Country_Code::JAMAICA => [
 			'JM-01' => [ 'Kingston', 'Kingston', NULL ],
 			'JM-02' => [ 'St. Andrew', 'St. Andrew', NULL ],
 			'JM-03' => [ 'St. Thomas', 'St. Thomas', NULL ],
@@ -587,7 +587,7 @@ class Payment_Request_Button_States {
 			'JM-14' => [ 'St. Catherine', 'St. Catherine', NULL ],
 		],
 		// Japan.
-		'JP' => [
+		Country_Code::JAPAN => [
 			'JP01' => [ 'Hokkaido', 'Hokkaido', '北海道' ],
 			'JP02' => [ 'Aomori', 'Aomori', '青森県' ],
 			'JP03' => [ 'Iwate', 'Iwate', '岩手県' ],
@@ -637,29 +637,29 @@ class Payment_Request_Button_States {
 			'JP47' => [ 'Okinawa', 'Okinawa', '沖縄県' ],
 		],
 		// Kenya.
-		'KE' => [],
+		Country_Code::KENYA => [],
 		// South Korea.
-		'KR' => [],
+		Country_Code::SOUTH_KOREA => [],
 		// Kuwait.
-		'KW' => [],
+		Country_Code::KUWAIT => [],
 		// Laos.
-		'LA' => [],
+		Country_Code::LAOS => [],
 		// Lebanon.
-		'LB' => [],
+		Country_Code::LEBANON => [],
 		// Sri Lanka.
 		'LK' => [],
 		// Liberia.
-		'LR' => [],
+		Country_Code::LIBERIA => [],
 		// Luxembourg.
-		'LU' => [],
+		Country_Code::LUXEMBOURG => [],
 		// Moldova.
-		'MD' => [],
+		Country_Code::MOLDOVA => [],
 		// Martinique.
 		'MQ' => [],
 		// Malta.
-		'MT' => [],
+		Country_Code::MALTA => [],
 		// Mexico.
-		'MX' => [
+		Country_Code::MEXICO => [
 			'DF' => [ 'CDMX', 'Ciudad de México', NULL ],
 			'JA' => [ 'Jal.', 'Jalisco', NULL ],
 			'NL' => [ 'N.L.', 'Nuevo León', NULL ],
@@ -694,7 +694,7 @@ class Payment_Request_Button_States {
 			'ZA' => [ 'Zac.', 'Zacatecas', NULL ],
 		],
 		// Malaysia.
-		'MY' => [
+		Country_Code::MALAYSIA => [
 			'JHR' => [ 'Johor', 'Johor', NULL ],
 			'KDH' => [ 'Kedah', 'Kedah', NULL ],
 			'KTN' => [ 'Kelantan', 'Kelantan', NULL ],
@@ -713,7 +713,7 @@ class Payment_Request_Button_States {
 			'KUL' => [ 'Kuala Lumpur', 'Kuala Lumpur', NULL ],
 		],
 		// Mozambique.
-		'MZ' => [
+		Country_Code::MOZAMBIQUE => [
 			'MZP'   => [ 'Cabo Delgado', 'Cabo Delgado', NULL ],
 			'MZG'   => [ 'Gaza', 'Gaza', NULL ],
 			'MZI'   => [ 'Inhambane', 'Inhambane', NULL ],
@@ -727,9 +727,9 @@ class Payment_Request_Button_States {
 			'MZQ'   => [ 'Zambezia', 'Zambezia', NULL ],
 		],
 		// Namibia.
-		'NA' => [],
+		Country_Code::NAMIBIA => [],
 		// Nigeria.
-		'NG' => [
+		Country_Code::NIGERIA => [
 			'AB' => [ 'Abia', 'Abia', NULL ],
 			'FC' => [ 'Federal Capital Territory', 'Federal Capital Territory', NULL ],
 			'AD' => [ 'Adamawa', 'Adamawa', NULL ],
@@ -769,15 +769,15 @@ class Payment_Request_Button_States {
 			'ZA' => [ 'Zamfara', 'Zamfara', NULL ],
 		],
 		// Netherlands.
-		'NL' => [],
+		Country_Code::NETHERLANDS => [],
 		// Norway.
-		'NO' => [],
+		Country_Code::NORWAY => [],
 		// Nepal.
-		'NP' => [],
+		Country_Code::NEPAL => [],
 		// New Zealand.
-		'NZ' => [],
+		Country_Code::NEW_ZEALAND => [],
 		// Peru.
-		'PE' => [
+		Country_Code::PERU => [
 			'CAL' => [ 'Callao', 'Callao', NULL ],
 			'LMA' => [ 'Municipalidad Metropolitana de Lima', 'Municipalidad Metropolitana de Lima', NULL ],
 			'AMA' => [ 'Amazonas', 'Amazonas', NULL ],
@@ -806,7 +806,7 @@ class Payment_Request_Button_States {
 			'UCA' => [ 'Ucayali', 'Ucayali', NULL ],
 		],
 		// Philippines.
-		'PH' => [
+		Country_Code::PHILIPPINES => [
 			'ABR' => [ 'Abra', 'Abra', NULL ],
 			'AGN' => [ 'Agusan del Norte', 'Agusan del Norte', NULL ],
 			'AGS' => [ 'Agusan del Sur', 'Agusan del Sur', NULL ],
@@ -891,31 +891,31 @@ class Payment_Request_Button_States {
 			'00'  => [ 'Metro Manila', 'Metro Manila', NULL ],
 		],
 		// Pakistan.
-		'PK' => [],
+		Country_Code::PAKISTAN => [],
 		// Poland.
-		'PL' => [],
+		Country_Code::POLAND => [],
 		// Puerto Rico.
 		'PR' => [],
 		// Portugal.
-		'PT' => [],
+		Country_Code::PORTUGAL => [],
 		// Paraguay.
-		'PY' => [],
+		Country_Code::PARAGUAY => [],
 		// Reunion.
 		'RE' => [],
 		// Romania.
-		'RO' => [],
+		Country_Code::ROMANIA => [],
 		// Serbia.
-		'RS' => [],
+		Country_Code::SERBIA => [],
 		// Sweden.
-		'SE' => [],
+		Country_Code::SWEDEN => [],
 		// Singapore.
-		'SG' => [],
+		Country_Code::SINGAPORE => [],
 		// Slovenia.
-		'SI' => [],
+		Country_Code::SLOVENIA => [],
 		// Slovakia.
-		'SK' => [],
+		Country_Code::SLOVAKIA => [],
 		// Thailand.
-		'TH' => [
+		Country_Code::THAILAND => [
 			'TH-37' => [ 'Amnat Charoen', 'Amnat Charoen', 'อำนาจเจริญ' ],
 			'TH-15' => [ 'Ang Thong', 'Ang Thong', 'อ่างทอง' ],
 			'TH-14' => [ 'Phra Nakhon Si Ayutthaya', 'Phra Nakhon Si Ayutthaya', 'พระนครศรีอยุธยา' ],
@@ -995,7 +995,7 @@ class Payment_Request_Button_States {
 			'TH-35' => [ 'Yasothon', 'Yasothon', 'ยโสธร' ],
 		],
 		// Turkey.
-		'TR' => [
+		Country_Code::TURKEY => [
 			'TR01' => [ 'Adana', 'Adana', NULL ],
 			'TR02' => [ 'Adıyaman', 'Adıyaman', NULL ],
 			'TR03' => [ 'Afyon', 'Afyon', NULL ],
@@ -1079,13 +1079,13 @@ class Payment_Request_Button_States {
 			'TR81' => [ 'Düzce', 'Düzce', NULL ],
 		],
 		// Tanzania.
-		'TZ' => [],
+		Country_Code::TANZANIA => [],
 		// Uganda.
-		'UG' => [],
+		Country_Code::UGANDA => [],
 		// United States Minor Outlying Islands.
 		'UM' => [],
 		// United States.
-		'US' => [
+		Country_Code::UNITED_STATES => [
 			'AL' => [ 'AL', 'Alabama', NULL ],
 			'AK' => [ 'AK', 'Alaska', NULL ],
 			'AZ' => [ 'AZ', 'Arizona', NULL ],
@@ -1150,13 +1150,13 @@ class Payment_Request_Button_States {
 			//[ 'VI', 'Virgin Islands', NULL ],
 		],
 		// Vietnam.
-		'VN' => [],
+		Country_Code::VIETNAM => [],
 		// Mayotte.
 		'YT' => [],
 		// South Africa.
-		'ZA' => [],
+		Country_Code::SOUTH_AFRICA => [],
 		// Zambia.
-		'ZM' => [],
+		Country_Code::ZAMBIA => [],
 	];
 	// phpcs:enable
 }

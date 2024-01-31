@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Core\Server\Request\List_Transactions;
 
@@ -200,14 +201,14 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 					'source_identifier' => '3184',
 					'customer_name'     => 'Test Customer1',
 					'customer_email'    => 'test1@woo.com',
-					'customer_country'  => 'US',
+					'customer_country'  => Country_Code::UNITED_STATES,
 					'amount'            => 2583,
 					'net'               => 2426,
 					'fees'              => 157,
 					'currency'          => 'usd',
 					'risk_level'        => 0,
 					'charge_id'         => 'ch_3NVXQQR7Mcmd7SUg0eV2k74L',
-					'deposit_id'        => 'wcpay_estimated_daily_usd_1689897600',
+					'deposit_id'        => null,
 					'available_on'      => '2023-07-21',
 					'exchange_rate'     => 1.12284,
 					'customer_amount'   => 2300,
@@ -216,7 +217,7 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 					'amount_in_usd'     => 2583,
 					'source_device'     => null,
 					'channel'           => null,
-					'deposit_status'    => 'estimated',
+					'deposit_status'    => null,
 					'order'             => [
 						'number'        => '123',
 						'url'           => 'https:\/\/wcpay.test\/wp-admin\/post.php?post=278&action=edit',
@@ -233,14 +234,14 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 					'source_identifier' => '3184',
 					'customer_name'     => 'Test Customer2',
 					'customer_email'    => 'test2@woo.com',
-					'customer_country'  => 'US',
+					'customer_country'  => Country_Code::UNITED_STATES,
 					'amount'            => 2583,
 					'net'               => 2452,
 					'fees'              => 131,
 					'currency'          => 'usd',
 					'risk_level'        => 0,
 					'charge_id'         => 'ch_3NVXQER7Mcmd7SUg1Mk9SsNy',
-					'deposit_id'        => 'wcpay_estimated_daily_usd_1689897600',
+					'deposit_id'        => null,
 					'available_on'      => '2023-07-21',
 					'exchange_rate'     => 1.12284,
 					'customer_amount'   => 2300,
@@ -249,7 +250,7 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 					'amount_in_usd'     => 2583,
 					'source_device'     => null,
 					'channel'           => null,
-					'deposit_status'    => 'estimated',
+					'deposit_status'    => null,
 					'order'             => [
 						'number'        => '275',
 						'url'           => 'https:\/\/wcpay.test\/wp-admin\/post.php?post=275&action=edit',
@@ -282,14 +283,14 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 				'customer'             => [
 					'name'    => 'Test Customer1',
 					'email'   => 'test1@woo.com',
-					'country' => 'US',
+					'country' => Country_Code::UNITED_STATES,
 				],
 				'net_amount'           => 2426,
 				'order_id'             => 123,
 				'risk_level'           => 0,
 				'deposit_date'         => '2023-07-21',
-				'deposit_id'           => 'wcpay_estimated_daily_usd_1689897600',
-				'deposit_status'       => 'estimated',
+				'deposit_id'           => null,
+				'deposit_status'       => null,
 			],
 			[
 				'transaction_id'       => 'txn_345',
@@ -308,14 +309,14 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 				'customer'             => [
 					'name'    => 'Test Customer2',
 					'email'   => 'test2@woo.com',
-					'country' => 'US',
+					'country' => Country_Code::UNITED_STATES,
 				],
 				'net_amount'           => 2452,
 				'order_id'             => 275,
 				'risk_level'           => 0,
 				'deposit_date'         => '2023-07-21',
-				'deposit_id'           => 'wcpay_estimated_daily_usd_1689897600',
-				'deposit_status'       => 'estimated',
+				'deposit_id'           => null,
+				'deposit_status'       => null,
 			],
 		];
 	}

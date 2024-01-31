@@ -281,10 +281,11 @@ export const shopperWCP = {
 			await uiUnblocked();
 		}
 
-		await page.waitForSelector( '.cart-empty.woocommerce-info' );
-		await expect( page ).toMatchElement( '.cart-empty.woocommerce-info', {
-			text: 'Your cart is currently empty.',
-		} );
+		await shopperWCP.waitForErrorBanner(
+			'Your cart is currently empty.',
+			'div.wc-block-components-notice-banner',
+			'.cart-empty.woocommerce-info'
+		);
 	},
 
 	goToProductPageBySlug: async ( productSlug ) => {
@@ -296,6 +297,46 @@ export const shopperWCP = {
 	addToCartBySlug: async ( productSlug ) => {
 		await shopperWCP.goToProductPageBySlug( productSlug );
 		await shopper.addToCart();
+	},
+
+	waitForErrorBanner: async (
+		errorText,
+		noticeSelector,
+		oldNoticeSelector
+	) => {
+		const errorBannerToCheck = ( async () => {
+			await expect( page ).toMatchElement( noticeSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		const oldErrorBannerToCheck = ( async () => {
+			await expect( page ).toMatchElement( oldNoticeSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		await Promise.race( [ errorBannerToCheck, oldErrorBannerToCheck ] );
+	},
+
+	waitForSubscriptionsErrorBanner: async (
+		errorText,
+		errorSelector,
+		oldErrorSelector
+	) => {
+		const errorBannerToCheck = ( async () => {
+			return page.waitForSelector( errorSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		const oldErrorBannerToCheck = ( async () => {
+			return page.waitForSelector( oldErrorSelector, {
+				text: errorText,
+			} );
+		} )();
+
+		await Promise.race( [ errorBannerToCheck, oldErrorBannerToCheck ] );
 	},
 };
 
@@ -472,6 +513,11 @@ export const merchantWCP = {
 			}
 		}, currencyCode );
 
+		await page.waitForSelector(
+			'div.wcpay-confirmation-modal__footer button.components-button.is-primary',
+			{ timeout: 3000 }
+		);
+
 		await page.click(
 			'div.wcpay-confirmation-modal__footer button.components-button.is-primary',
 			{ text: 'Update selected' }
@@ -491,6 +537,7 @@ export const merchantWCP = {
 	},
 
 	removeCurrency: async ( currencyCode ) => {
+		await merchantWCP.openMultiCurrency();
 		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
 		await page.waitForSelector( currencyItemSelector, { timeout: 10000 } );
 		await page.click(
@@ -689,6 +736,31 @@ export const merchantWCP = {
 			await merchantWCP.wcpSettingsSaveChanges();
 		}
 		return wasInitiallyEnabled;
+	},
+
+	disableAllEnabledCurrencies: async () => {
+		await page.goto( WCPAY_MULTI_CURRENCY, { waitUntil: 'networkidle0' } );
+
+		await page.waitForSelector( '.enabled-currencies-list li', {
+			timeout: 10000,
+		} );
+
+		// Select all delete buttons for enabled currencies.
+		const deleteButtons = await page.$$(
+			'.enabled-currency .enabled-currency__action.delete'
+		);
+
+		// Loop through each delete button and click it.
+		for ( const button of deleteButtons ) {
+			await button.click();
+
+			await page.waitForSelector( '.components-snackbar', {
+				text: 'Enabled currencies updated.',
+				timeout: 10000,
+			} );
+
+			await page.waitFor( 1000 );
+		}
 	},
 
 	editCurrency: async ( currencyCode ) => {
