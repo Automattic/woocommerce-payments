@@ -10,7 +10,7 @@ import { TourKit } from '@woocommerce/components';
  */
 import { useSettings } from '../../../data';
 import { steps } from './steps';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 
 const [ firstStep ] = steps;
 const { desktop: firstStepId } = firstStep.referenceElements;
@@ -72,15 +72,9 @@ const FraudProtectionTour: React.FC = () => {
 		setShowTour( false );
 
 		if ( 'done-btn' === element ) {
-			wcpayTracks.recordEvent(
-				wcpayTracks.events.FRAUD_PROTECTION_TOUR_CLICKED_THROUGH,
-				{}
-			);
+			recordEvent( events.FRAUD_PROTECTION_TOUR_CLICKED_THROUGH, {} );
 		} else {
-			wcpayTracks.recordEvent(
-				wcpayTracks.events.FRAUD_PROTECTION_TOUR_ABANDONED,
-				{}
-			);
+			recordEvent( events.FRAUD_PROTECTION_TOUR_ABANDONED, {} );
 		}
 	};
 

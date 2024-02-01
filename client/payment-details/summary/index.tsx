@@ -50,7 +50,7 @@ import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
@@ -430,17 +430,15 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											charge.payment_intent || ''
 										}
 										onClick={ () => {
-											wcpayTracks.recordEvent(
-												wcpayTracks.events
-													.FRAUD_PROTECTION_TRANSACTION_REVIEWED_MERCHANT_BLOCKED,
+											recordEvent(
+												events.FRAUD_PROTECTION_TRANSACTION_REVIEWED_MERCHANT_BLOCKED,
 												{
 													payment_intent_id:
 														charge.payment_intent,
 												}
 											);
-											wcpayTracks.recordEvent(
-												wcpayTracks.events
-													.TRANSACTIONS_DETAILS_CANCEL_CHARGE_BUTTON_CLICK,
+											recordEvent(
+												events.TRANSACTIONS_DETAILS_CANCEL_CHARGE_BUTTON_CLICK,
 												{
 													payment_intent_id:
 														charge.payment_intent,
@@ -459,17 +457,15 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										}
 										buttonIsSmall={ false }
 										onClick={ () => {
-											wcpayTracks.recordEvent(
-												wcpayTracks.events
-													.FRAUD_PROTECTION_TRANSACTION_REVIEWED_MERCHANT_APPROVED,
+											recordEvent(
+												events.FRAUD_PROTECTION_TRANSACTION_REVIEWED_MERCHANT_APPROVED,
 												{
 													payment_intent_id:
 														charge.payment_intent,
 												}
 											);
-											wcpayTracks.recordEvent(
-												wcpayTracks.events
-													.TRANSACTIONS_DETAILS_CAPTURE_CHARGE_BUTTON_CLICK,
+											recordEvent(
+												events.TRANSACTIONS_DETAILS_CAPTURE_CHARGE_BUTTON_CLICK,
 												{
 													payment_intent_id:
 														charge.payment_intent,
@@ -521,9 +517,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 													setIsRefundModalOpen(
 														true
 													);
-													wcpayTracks.recordEvent(
-														wcpayTracks.events
-															.TRANSACTIONS_DETAILS_REFUND_MODAL_OPEN,
+													recordEvent(
+														events.TRANSACTIONS_DETAILS_REFUND_MODAL_OPEN,
 														{
 															payment_intent_id:
 																charge.payment_intent,
@@ -540,9 +535,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											{ isPartiallyRefundable && (
 												<MenuItem
 													onClick={ () => {
-														wcpayTracks.recordEvent(
-															wcpayTracks.events
-																.TRANSACTION_DETAILS_PARTIAL_REFUND,
+														recordEvent(
+															events.TRANSACTION_DETAILS_PARTIAL_REFUND,
 															{
 																payment_intent_id:
 																	charge.payment_intent,
@@ -601,9 +595,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					formattedAmount={ formattedAmount }
 					onModalClose={ () => {
 						setIsRefundModalOpen( false );
-						wcpayTracks.recordEvent(
-							wcpayTracks.events
-								.TRANSACTIONS_DETAILS_REFUND_MODAL_CLOSE,
+						recordEvent(
+							events.TRANSACTIONS_DETAILS_REFUND_MODAL_CLOSE,
 							{
 								payment_intent_id: charge.payment_intent,
 							}
@@ -633,9 +626,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										buttonIsPrimary={ true }
 										buttonIsSmall={ false }
 										onClick={ () => {
-											wcpayTracks.recordEvent(
-												wcpayTracks.events
-													.TRANSACTIONS_DETAILS_CAPTURE_CHARGE_BUTTON_CLICK,
+											recordEvent(
+												events.TRANSACTIONS_DETAILS_CAPTURE_CHARGE_BUTTON_CLICK,
 												{
 													payment_intent_id:
 														charge.payment_intent,

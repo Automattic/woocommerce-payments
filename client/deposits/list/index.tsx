@@ -5,7 +5,7 @@
  */
 import { DepositsTableHeader } from 'wcpay/types/deposits';
 import React, { useState } from 'react';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
@@ -104,11 +104,7 @@ export const DepositsList = (): JSX.Element => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
 				href={ getDetailsURL( deposit.id, 'deposits' ) }
-				onClick={ () =>
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DEPOSITS_ROW_CLICK
-					)
-				}
+				onClick={ () => recordEvent( events.DEPOSITS_ROW_CLICK ) }
 			>
 				{ children }
 			</ClickableCell>
@@ -120,11 +116,7 @@ export const DepositsList = (): JSX.Element => {
 		const dateDisplay = (
 			<Link
 				href={ getDetailsURL( deposit.id, 'deposits' ) }
-				onClick={ () =>
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DEPOSITS_ROW_CLICK
-					)
-				}
+				onClick={ () => recordEvent( events.DEPOSITS_ROW_CLICK ) }
 			>
 				{ dateI18n(
 					'M j, Y',
@@ -275,14 +267,11 @@ export const DepositsList = (): JSX.Element => {
 						)
 					);
 
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DEPOSITS_DOWNLOAD_CSV_CLICK,
-						{
-							exported_deposits: exportedDeposits,
-							total_deposits: exportedDeposits,
-							download_type: 'endpoint',
-						}
-					);
+					recordEvent( events.DEPOSITS_DOWNLOAD_CSV_CLICK, {
+						exported_deposits: exportedDeposits,
+						total_deposits: exportedDeposits,
+						download_type: 'endpoint',
+					} );
 				} catch {
 					createNotice(
 						'error',
@@ -322,14 +311,11 @@ export const DepositsList = (): JSX.Element => {
 				generateCSVDataFromTable( csvColumns, csvRows )
 			);
 
-			wcpayTracks.recordEvent(
-				wcpayTracks.events.DEPOSITS_DOWNLOAD_CSV_CLICK,
-				{
-					exported_deposits: rows.length,
-					total_deposits: depositsSummary.count,
-					download_type: 'browser',
-				}
-			);
+			recordEvent( events.DEPOSITS_DOWNLOAD_CSV_CLICK, {
+				exported_deposits: rows.length,
+				total_deposits: depositsSummary.count,
+				download_type: 'browser',
+			} );
 		}
 
 		setIsDownloading( false );

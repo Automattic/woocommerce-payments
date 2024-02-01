@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
@@ -71,12 +71,9 @@ const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > =
 
 		setLoading( true );
 
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.SETTINGS_FILE_UPLOAD_STARTED,
-			{
-				type: key,
-			}
-		);
+		recordEvent( events.SETTINGS_FILE_UPLOAD_STARTED, {
+			type: key,
+		} );
 
 		const body = new FormData();
 		body.append( 'file', file );
@@ -99,19 +96,13 @@ const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > =
 			setLoading( false );
 			setUploadError( false );
 
-			wcpayTracks.recordEvent(
-				wcpayTracks.events.SETTINGS_FILE_UPLOAD_SUCCESS,
-				{
-					type: key,
-				}
-			);
+			recordEvent( events.SETTINGS_FILE_UPLOAD_SUCCESS, {
+				type: key,
+			} );
 		} catch ( { err } ) {
-			wcpayTracks.recordEvent(
-				wcpayTracks.events.SETTINGS_FILE_UPLOAD_FAILED,
-				{
-					message: ( err as Error ).message,
-				}
-			);
+			recordEvent( events.SETTINGS_FILE_UPLOAD_FAILED, {
+				message: ( err as Error ).message,
+			} );
 
 			// Remove file ID
 			updateFileID( '' );

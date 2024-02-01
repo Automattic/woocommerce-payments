@@ -16,7 +16,7 @@ import {
 /**
  * Internal dependencies
  */
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import { updateWoocommerceUserMeta } from 'utils/update-woocommerce-user-meta';
 import './index.scss';
 
@@ -63,7 +63,7 @@ function hasValidNotes( notes ) {
 }
 
 const onBodyLinkClick = ( note, innerLink ) => {
-	wcpayTracks.recordEvent( wcpayTracks.events.INBOX_ACTION_CLICK, {
+	recordEvent( events.INBOX_ACTION_CLICK, {
 		note_name: note.name,
 		note_title: note.title,
 		note_content_inner_link: innerLink,
@@ -87,7 +87,7 @@ const renderNotes = ( {
 	}
 
 	const onNoteVisible = ( note ) => {
-		wcpayTracks.recordEvent( wcpayTracks.events.INBOX_NOTE_VIEW, {
+		recordEvent( events.INBOX_NOTE_VIEW, {
 			note_content: note.content,
 			note_name: note.name,
 			note_title: note.title,
@@ -207,7 +207,7 @@ const InboxPanel = () => {
 	const closeDismissModal = async ( confirmed = false ) => {
 		const noteNameDismissAll = dismiss.type === 'all';
 
-		wcpayTracks.recordEvent( wcpayTracks.events.INBOX_ACTION_DISMISSED, {
+		recordEvent( events.INBOX_ACTION_DISMISSED, {
 			note_name: dismiss.note.name,
 			note_title: dismiss.note.title,
 			note_name_dismiss_all: noteNameDismissAll,

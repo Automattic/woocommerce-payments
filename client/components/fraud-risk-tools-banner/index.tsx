@@ -11,7 +11,7 @@ import { useDispatch } from '@wordpress/data';
  */
 import { BannerBody, NewPill, BannerActions } from './components';
 import './style.scss';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 
 interface BannerSettings {
 	dontShowAgain: boolean;
@@ -35,9 +35,7 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 	};
 
 	useEffect( () => {
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.FRAUD_PROTECTION_BANNER_RENDERED
-		);
+		recordEvent( events.FRAUD_PROTECTION_BANNER_RENDERED );
 
 		const stringifiedSettings = JSON.stringify( settings );
 

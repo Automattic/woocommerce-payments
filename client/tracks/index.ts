@@ -36,7 +36,7 @@ declare const window: {
  *
  * @return {boolean} True if site tracking is enabled.
  */
-const isEnabled = (): boolean => window.wcTracks.isEnabled;
+export const isEnabled = (): boolean => window.wcTracks.isEnabled;
 
 /**
  * Records site event.
@@ -44,7 +44,7 @@ const isEnabled = (): boolean => window.wcTracks.isEnabled;
  * @param {string}  eventName        Name of the event.
  * @param {Object} [eventProperties] Event properties (optional).
  */
-const recordEvent = (
+export const recordEvent = (
 	eventName: string,
 	eventProperties: Record< string, unknown > = {}
 ): void => {
@@ -67,7 +67,7 @@ const recordEvent = (
  * @param {Object}  [eventProperties] Event properties (optional).
  * @param {boolean} isLegacy Event properties (optional).
  */
-const recordUserEvent = (
+export const recordUserEvent = (
 	eventName: string,
 	eventProperties: Record< string, unknown > = {},
 	isLegacy = false
@@ -90,9 +90,4 @@ const recordUserEvent = (
 	} );
 };
 
-export default {
-	isEnabled,
-	recordEvent,
-	recordUserEvent,
-	events,
-};
+export { events };
