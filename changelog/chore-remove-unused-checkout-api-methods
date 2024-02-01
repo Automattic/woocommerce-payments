@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+chore: remove unused checkout API methods
