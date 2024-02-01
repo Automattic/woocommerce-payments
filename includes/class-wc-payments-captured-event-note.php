@@ -85,20 +85,11 @@ class WC_Payments_Captured_Event_Note {
 		}
 
 		$customer_currency        = $this->captured_event['transaction_details']['customer_currency'];
-		$customer_amount          = $this->captured_event['transaction_details']['customer_amount'];
 		$customer_amount_captured = $this->captured_event['transaction_details']['customer_amount_captured'];
 		$store_currency           = $this->captured_event['transaction_details']['store_currency'];
-		$store_amount             = $this->captured_event['transaction_details']['store_amount'];
 		$store_amount_captured    = $this->captured_event['transaction_details']['store_amount_captured'];
 
-		$from_amount = $customer_amount !== $customer_amount_captured
-			? $customer_amount_captured
-			: $customer_amount;
-		$to_amount   = $store_amount !== $store_amount_captured
-			? $store_amount_captured
-			: $store_amount;
-
-		return $this->format_fx( $customer_currency, $from_amount, $store_currency, $to_amount );
+		return $this->format_fx( $customer_currency, $customer_amount_captured, $store_currency, $store_amount_captured );
 	}
 
 	/**
