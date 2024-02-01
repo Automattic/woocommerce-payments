@@ -10,33 +10,12 @@ import { getPaymentRequestData } from 'wcpay/payment-request/utils';
  */
 import events from './events';
 
-declare const window: {
-	wc: {
-		tracks: {
-			recordEvent: (
-				eventName: string,
-				eventProperties: Record< string, unknown >
-			) => void;
-		};
-	};
-	wcTracks: {
-		isEnabled: boolean;
-		recordEvent: (
-			eventName: string,
-			eventProperties: Record< string, unknown >
-		) => void;
-	};
-	wcpaySettings: {
-		testMode: boolean;
-	};
-} & Window;
-
 /**
  * Checks if site tracking is enabled.
  *
  * @return {boolean} True if site tracking is enabled.
  */
-export const isEnabled = (): boolean => window.wcTracks.isEnabled;
+export const isEnabled = (): boolean => wcTracks.isEnabled;
 
 /**
  * Records site event.
@@ -49,13 +28,12 @@ export const recordEvent = (
 	eventProperties: Record< string, unknown > = {}
 ): void => {
 	// Add `is_test_mode` property to every event.
-	eventProperties.is_test_mode = window.wcpaySettings?.testMode;
+	eventProperties.is_test_mode = wcpaySettings?.testMode;
 
 	// Wc-admin track script is enqueued after ours, wrap in domReady
 	// to make sure we're not too early.
 	domReady( () => {
-		const recordFunction =
-			window.wc?.tracks?.recordEvent ?? window.wcTracks.recordEvent;
+		const recordFunction = wc?.tracks?.recordEvent ?? wcTracks.recordEvent;
 		recordFunction( eventName, eventProperties );
 	} );
 };
