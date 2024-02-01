@@ -298,6 +298,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'create_live_account'         => true,
 						'progressive'                 => false,
 						'collect_payout_requirements' => false,
+						'compatibility_data'          => $this->get_mock_compatibility_data(),
 					]
 				),
 				true,
@@ -1287,5 +1288,30 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'connect_timeout', $data );
 		$this->assertSame( 70, $data['connect_timeout'] );
 
+	}
+
+	/**
+	 * Returns the mock compatibility data.
+	 *
+	 * @param array $args If any values need to be overridden, the values can be added here.
+	 *
+	 * @return array
+	 */
+	private function get_mock_compatibility_data( array $args = [] ): array {
+		return array_merge(
+			[
+				'woopayments_version' => WCPAY_VERSION_NUMBER,
+				'woocommerce_version' => WC_VERSION,
+				'blog_theme'          => 'default',
+				'active_plugins'      => [],
+				'post_types_count'    => [
+					'post'       => 0,
+					'page'       => 0,
+					'attachment' => 0,
+					'product'    => 0,
+				],
+			],
+			$args
+		);
 	}
 }
