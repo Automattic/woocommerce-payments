@@ -1,0 +1,56 @@
+{
+  "title": "FX Payment Partially Captured",
+  "capturedEvent":
+    {
+      "type": "captured",
+      "amount": 3400,
+      "amount_captured": 1700,
+      "fee": 94.05,
+      "fee_rates": {
+          "percentage": 0.039,
+          "fixed": 30,
+          "fixed_currency": "EUR",
+          "history": [
+              {
+                  "type": "base",
+                  "additional_type": "",
+                  "fee_id": "base-us-card-fee",
+                  "percentage_rate": 0.029,
+                  "fixed_rate": 30,
+                  "currency": "usd"
+              },
+              {
+                  "type": "additional",
+                  "additional_type": "fx",
+                  "fee_id": "additional-us-card-fx-fee",
+                  "percentage_rate": 0.01,
+                  "fixed_rate": 0,
+                  "currency": "usd"
+              }
+          ]
+      },
+      "currency": "EUR",
+      "datetime": 1706794290,
+      "deposit": null,
+      "transaction_id": "txn_3Of0MCR7TXHGtwGa2mhTBwkF",
+      "transaction_details": {
+          "customer_currency": "EUR",
+          "customer_amount": 3400,
+          "customer_amount_captured": 1700,
+          "customer_fee": 94.05,
+          "store_currency": "USD",
+          "store_amount": 3676,
+          "store_amount_captured": 1837.53,
+          "store_fee": 101.66
+      }
+    },
+  "expectation": {
+    "fxString": "1.00 EUR → 1.0809 USD: $18.38 USD",
+    "feeString": "Fee (3.9% + €0.30): -$1.02",
+    "feeBreakdown": {
+      "base": "Base fee: 2.9% + $0.30",
+      "additional-fx": "Foreign exchange fee: 1%"
+    },
+    "netString": "Net deposit: $17.36 USD"
+  }
+}
