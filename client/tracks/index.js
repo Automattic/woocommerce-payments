@@ -81,8 +81,6 @@ const events = {
 	OVERVIEW_TASK_CLICK: 'wcpay_overview_task_click',
 	PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED:
 		'wcpay_view_submitted_evidence_clicked',
-	SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK:
-		'wcpay_settings_deposits_manage_in_stripe_click',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
 	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',

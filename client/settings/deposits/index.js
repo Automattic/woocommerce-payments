@@ -228,9 +228,7 @@ const Deposits = () => {
 							href={ accountLink }
 							onClick={ () =>
 								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK,
-									{}
+									'wcpay_settings_deposits_manage_in_stripe_click'
 								)
 							}
 						>
