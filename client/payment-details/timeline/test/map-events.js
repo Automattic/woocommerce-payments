@@ -181,6 +181,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 6300,
+						amount_captured: 6300,
 						currency: 'USD',
 						datetime: 1585751874,
 						deposit: {
@@ -209,6 +210,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 6300,
+						amount_captured: 6300,
 						currency: 'USD',
 						datetime: 1585751874,
 						deposit: {
@@ -242,6 +244,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 6300,
+						amount_captured: 6300,
 						currency: 'USD',
 						datetime: 1585751874,
 						deposit: {
@@ -303,6 +306,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 6300,
+						amount_captured: 6300,
 						currency: 'USD',
 						datetime: 1585751874,
 						deposit: {
@@ -344,6 +348,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 9500,
+						amount_captured: 9500,
 						currency: 'USD',
 						datetime: 1585793174,
 						deposit: null,
@@ -441,6 +446,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 1980,
+						amount_captured: 1980,
 						currency: 'USD',
 						datetime: 1585751874,
 						deposit: {
@@ -491,6 +497,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 1800,
+						amount_captured: 1800,
 						currency: 'EUR',
 						datetime: 1585751874,
 						deposit: {
@@ -519,6 +526,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 1800,
+						amount_captured: 1800,
 						currency: 'EUR',
 						datetime: 1585751874,
 						deposit: {

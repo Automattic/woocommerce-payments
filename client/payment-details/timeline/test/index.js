@@ -100,6 +100,7 @@ describe( 'PaymentDetailsTimeline', () => {
 				},
 				{
 					amount: 6300,
+					amount_captured: 6300,
 					currency: 'USD',
 					datetime: 1585751874,
 					deposit: {
@@ -190,6 +191,7 @@ describe( 'PaymentDetailsTimeline', () => {
 				{
 					type: 'captured',
 					amount: 100,
+					amount_captured: 100,
 					fee: 34,
 					fee_rates: {
 						percentage: 0.039,
