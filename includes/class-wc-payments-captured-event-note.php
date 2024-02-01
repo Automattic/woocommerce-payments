@@ -188,7 +188,7 @@ class WC_Payments_Captured_Event_Note {
 			$currency_key        = 'customer_currency';
 		}
 
-		$gross_amount = isset( $data[ $captured_amount_key ] ) ? $data[ $captured_amount_key ] : $data[ $amount_key ];
+		$gross_amount = $data[ $captured_amount_key ] ?? $data[ $amount_key ];
 		$net          = WC_Payments_Utils::interpret_stripe_amount( (int) $gross_amount - $data[ $fee_key ], $data[ $currency_key ] );
 
 		// Format and return the net string.
