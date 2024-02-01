@@ -5,10 +5,10 @@
       "type": "captured",
       "amount": 3400,
       "amount_captured": 1700,
-      "fee": 94.05,
+      "fee": 94,
       "fee_rates": {
           "percentage": 0.039,
-          "fixed": 30,
+          "fixed": 27.41481,
           "fixed_currency": "EUR",
           "history": [
               {
@@ -30,23 +30,23 @@
           ]
       },
       "currency": "EUR",
-      "datetime": 1706794290,
+      "datetime": 1706826451,
       "deposit": null,
-      "transaction_id": "txn_3Of0MCR7TXHGtwGa2mhTBwkF",
+      "transaction_id": "txn_3Of8iiR7TXHGtwGa2Y1ePXYw",
       "transaction_details": {
           "customer_currency": "EUR",
           "customer_amount": 3400,
           "customer_amount_captured": 1700,
-          "customer_fee": 94.05,
+          "customer_fee": 94,
           "store_currency": "USD",
           "store_amount": 3676,
-          "store_amount_captured": 1837.53,
-          "store_fee": 101.66
+          "store_amount_captured": 1838,
+          "store_fee": 102
       }
-    },
+  },
   "expectation": {
-    "fxString": "1.00 EUR → 1.0809 USD: $18.38 USD",
-    "feeString": "Fee (3.9% + €0.30): -$1.02",
+    "fxString": "1.00 EUR → 1.08118 USD: $18.38 USD",
+    "feeString": "Fee (3.9% + 0,27 €): -$1.02",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-fx": "Foreign exchange fee: 1%"
