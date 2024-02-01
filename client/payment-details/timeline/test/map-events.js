@@ -348,7 +348,6 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 9500,
-						amount_captured: 9500,
 						currency: 'USD',
 						datetime: 1585793174,
 						deposit: null,
@@ -570,11 +569,9 @@ describe( 'mapTimelineEvents', () => {
 						type: 'dispute_needs_response',
 						transaction_details: {
 							customer_amount: 1800,
-							customer_amount_captured: 1800,
 							customer_currency: 'EUR',
 							customer_fee: null,
 							store_amount: -2160,
-							store_amount_captured: -2160,
 							store_currency: 'USD',
 							store_fee: 1500,
 						},
