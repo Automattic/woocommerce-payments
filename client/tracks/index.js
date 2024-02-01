@@ -78,10 +78,6 @@ const events = {
 	GOOGLEPAY_BUTTON_LOAD: 'gpay_button_load',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
 		'wcpay_overview_balances_currency_tab_click',
-	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
-		'wcpay_overview_deposits_view_history_click',
-	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:
-		'wcpay_overview_deposits_change_schedule_click',
 	OVERVIEW_TASK_CLICK: 'wcpay_overview_task_click',
 	PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED:
 		'wcpay_view_submitted_evidence_clicked',

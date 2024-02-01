@@ -161,8 +161,7 @@ const DepositsOverview: React.FC = () => {
 							} ) }
 							onClick={ () =>
 								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+									'wcpay_overview_deposits_view_history_click'
 								)
 							}
 						>
@@ -185,8 +184,7 @@ const DepositsOverview: React.FC = () => {
 							}
 							onClick={ () =>
 								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
+									'OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK'
 								)
 							}
 						>
