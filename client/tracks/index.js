@@ -67,20 +67,11 @@ const events = {
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
 	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
-	DISPUTES_ROW_ACTION_CLICK: 'wcpay_disputes_row_action_click',
-	DISPUTE_CHALLENGE_CLICKED: 'wcpay_dispute_challenge_clicked',
-	DISPUTE_ACCEPT_CLICK: 'wcpay_dispute_accept_click',
-	DISPUTE_ACCEPT_MODAL_VIEW: 'wcpay_dispute_accept_modal_view',
-	DISPUTE_INQUIRY_REFUND_CLICK: 'wcpay_dispute_inquiry_refund_click',
-	DISPUTE_INQUIRY_REFUND_MODAL_VIEW:
-		'wcpay_dispute_inquiry_refund_modal_view',
 	GOOGLEPAY_BUTTON_CLICK: 'gpay_button_click',
 	GOOGLEPAY_BUTTON_LOAD: 'gpay_button_load',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
 		'wcpay_overview_balances_currency_tab_click',
 	OVERVIEW_TASK_CLICK: 'wcpay_overview_task_click',
-	PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED:
-		'wcpay_view_submitted_evidence_clicked',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
 	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',

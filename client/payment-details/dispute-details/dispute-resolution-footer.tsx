@@ -69,8 +69,7 @@ const DisputeUnderReviewFooter: React.FC< {
 							variant="secondary"
 							onClick={ () => {
 								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
+									'wcpay_view_submitted_evidence_clicked',
 									{
 										dispute_status: dispute.status,
 										on_page: 'transaction_details',
@@ -141,8 +140,7 @@ const DisputeWonFooter: React.FC< {
 							variant="secondary"
 							onClick={ () => {
 								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
+									'wcpay_view_submitted_evidence_clicked',
 									{
 										dispute_status: dispute.status,
 										on_page: 'transaction_details',
@@ -251,8 +249,7 @@ const DisputeLostFooter: React.FC< {
 								variant="secondary"
 								onClick={ () => {
 									wcpayTracks.recordEvent(
-										wcpayTracks.events
-											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
+										'wcpay_view_submitted_evidence_clicked',
 										{
 											dispute_status: dispute.status,
 											on_page: 'transaction_details',
@@ -324,8 +321,7 @@ const InquiryUnderReviewFooter: React.FC< {
 							variant="secondary"
 							onClick={ () => {
 								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
+									'wcpay_view_submitted_evidence_clicked',
 									{
 										dispute_status: dispute.status,
 										on_page: 'transaction_details',
@@ -399,8 +395,7 @@ const InquiryClosedFooter: React.FC< {
 								variant="secondary"
 								onClick={ () => {
 									wcpayTracks.recordEvent(
-										wcpayTracks.events
-											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
+										'wcpay_view_submitted_evidence_clicked',
 										{
 											dispute_status: dispute.status,
 											on_page: 'transaction_details',
