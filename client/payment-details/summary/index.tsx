@@ -482,19 +482,32 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									isLoading={ isLoading }
 									placeholder="Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx"
 								>
-									{ `${ __(
-										'Payment ID',
-										'woocommerce-payments'
-									) }: ` }
-									{ charge.payment_intent
-										? charge.payment_intent
-										: charge.id }
-									<br />
-									{ `${ __(
-										'Charge ID',
-										'woocommerce-payments'
-									) }: ` }
-									{ charge.id }
+									{ charge.payment_intent && (
+										<div className="payment-details-summary__id_wrapper">
+											<span className="payment-details-summary__id_label">
+												{ `${ __(
+													'Payment ID',
+													'woocommerce-payments'
+												) }: ` }
+											</span>
+											<span className="payment-details-summary__id_value">
+												{ charge.payment_intent }
+											</span>
+										</div>
+									) }
+									{ charge.id && (
+										<div className="payment-details-summary__id_wrapper">
+											<span className="payment-details-summary__id_label">
+												{ `${ __(
+													'Charge ID',
+													'woocommerce-payments'
+												) }: ` }
+											</span>
+											<span className="payment-details-summary__id_value">
+												{ charge.id }
+											</span>
+										</div>
+									) }
 								</Loadable>
 							</div>
 						</div>
