@@ -12,7 +12,6 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import { NAMESPACE, STORE_NAME } from '../constants';
 import TYPES from './action-types';
-import wcpayTracks from 'tracks';
 import { getPaymentIntent } from '../payment-intents/resolvers';
 
 export function updateDispute( data ) {
@@ -70,7 +69,6 @@ export function* acceptDispute( dispute ) {
 			id,
 		] );
 
-		wcpayTracks.recordEvent( 'wcpay_dispute_accept_success' );
 		const message = updatedDispute.order
 			? sprintf(
 					/* translators: #%s is an order number, e.g. 15 */
@@ -91,7 +89,6 @@ export function* acceptDispute( dispute ) {
 			'There has been an error accepting the dispute. Please try again later.',
 			'woocommerce-payments'
 		);
-		wcpayTracks.recordEvent( 'wcpay_dispute_accept_failed' );
 		yield controls.dispatch( 'core/notices', 'createErrorNotice', message );
 		yield controls.dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
 			id,
