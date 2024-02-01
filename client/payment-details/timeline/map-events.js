@@ -303,19 +303,21 @@ export const composeFXString = ( event ) => {
 	const {
 		transaction_details: {
 			customer_currency: customerCurrency,
+			customer_amount: customerAmount,
 			customer_amount_captured: customerAmountCaptured,
 			store_currency: storeCurrency,
+			store_amount: storeAmount,
 			store_amount_captured: storeAmountCaptured,
 		},
 	} = event;
 	return formatFX(
 		{
 			currency: customerCurrency,
-			amount: customerAmountCaptured,
+			amount: customerAmountCaptured ?? customerAmount,
 		},
 		{
 			currency: storeCurrency,
-			amount: storeAmountCaptured,
+			amount: storeAmountCaptured ?? storeAmount,
 		}
 	);
 };
