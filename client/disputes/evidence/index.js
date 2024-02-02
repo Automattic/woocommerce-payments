@@ -33,7 +33,7 @@ import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 
 const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
@@ -548,7 +548,7 @@ export default ( { query } ) => {
 			return;
 		}
 
-		wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_started', {
+		recordEvent( events.DISPUTE_FILE_UPLOAD_STARTED, {
 			type: key,
 		} );
 
@@ -580,11 +580,11 @@ export default ( { query } ) => {
 			} );
 			updateEvidence( key, uploadedFile.id );
 
-			wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_success', {
+			recordEvent( events.DISPUTE_FILE_UPLOAD_SUCCESS, {
 				type: key,
 			} );
 		} catch ( err ) {
-			wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_failed', {
+			recordEvent( events.DISPUTE_FILE_UPLOAD_FAILED, {
 				message: err.message,
 			} );
 
@@ -609,10 +609,10 @@ export default ( { query } ) => {
 			filter: 'awaiting_response',
 		} );
 
-		wcpayTracks.recordEvent(
+		recordEvent(
 			submit
-				? 'wcpay_dispute_submit_evidence_success'
-				: 'wcpay_dispute_save_evidence_success'
+				? events.DISPUTE_SUBMIT_EVIDENCE_SUCCESS
+				: events.DISPUTE_SAVE_EVIDENCE_SUCCESS
 		);
 		/*
 			We rely on WC-Admin Transient notices to display success message.
@@ -643,10 +643,10 @@ export default ( { query } ) => {
 	};
 
 	const handleSaveError = ( err, submit ) => {
-		wcpayTracks.recordEvent(
+		recordEvent(
 			submit
-				? 'wcpay_dispute_submit_evidence_failed'
-				: 'wcpay_dispute_save_evidence_failed'
+				? events.DISPUTE_SUBMIT_EVIDENCE_FAILED
+				: events.DISPUTE_SAVE_EVIDENCE_FAILED
 		);
 
 		const message = submit
@@ -672,10 +672,10 @@ export default ( { query } ) => {
 		setLoading( true );
 
 		try {
-			wcpayTracks.recordEvent(
+			recordEvent(
 				submit
-					? 'wcpay_dispute_submit_evidence_clicked'
-					: 'wcpay_dispute_save_evidence_clicked'
+					? events.DISPUTE_SUBMIT_EVIDENCE_CLICK
+					: events.DISPUTE_SAVE_EVIDENCE_CLICK
 			);
 
 			const { metadata } = dispute;
@@ -705,7 +705,7 @@ export default ( { query } ) => {
 		const properties = {
 			selection: newProductType,
 		};
-		wcpayTracks.recordEvent( 'wcpay_dispute_product_selected', properties );
+		recordEvent( events.DISPUTE_PRODUCT_SELECTED, properties );
 		updateDispute( {
 			metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType },
 		} );
