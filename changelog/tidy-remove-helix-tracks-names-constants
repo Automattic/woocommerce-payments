@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Refactor dispute & deposits tracks event names inline. `wcpay_disputes_row_action_click` now also fires from row/cell clicks, not just the action button.
