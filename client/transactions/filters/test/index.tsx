@@ -19,6 +19,13 @@ jest.mock( '@woocommerce/settings', () => ( {
 	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.7 : '' ) ),
 } ) );
 
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
+	events: {
+		PAGE_VIEW: 'page_view',
+	},
+} ) );
+
 function addAdvancedFilter( filter: string ) {
 	user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
 	user.click( screen.getByRole( 'button', { name: filter } ) );
