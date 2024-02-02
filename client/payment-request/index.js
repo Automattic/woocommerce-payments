@@ -179,6 +179,10 @@ jQuery( ( $ ) => {
 					.val();
 			}
 
+			if ( $( '.wc-bookings-booking-form' ).length ) {
+				productId = $( '.wc-booking-product-id' ).val();
+			}
+
 			const data = {
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
@@ -187,10 +191,10 @@ jQuery( ( $ ) => {
 					: [],
 			};
 
-			// Add addons data to the POST body
+			// Add extension data to the POST body
 			const formData = $( 'form.cart' ).serializeArray();
 			$.each( formData, ( i, field ) => {
-				if ( /^addon-/.test( field.name ) ) {
+				if ( /^(addon-|wc_)/.test( field.name ) ) {
 					if ( /\[\]$/.test( field.name ) ) {
 						const fieldName = field.name.substring(
 							0,
