@@ -184,7 +184,7 @@ const DepositsOverview: React.FC = () => {
 							}
 							onClick={ () =>
 								wcpayTracks.recordEvent(
-									'OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK'
+									'wcpay_overview_deposits_change_schedule_click'
 								)
 							}
 						>
