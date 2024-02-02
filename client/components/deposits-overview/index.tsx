@@ -15,7 +15,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import { getAdminUrl } from 'wcpay/utils';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import Loadable from 'components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
@@ -160,9 +160,8 @@ const DepositsOverview: React.FC = () => {
 								path: '/payments/deposits',
 							} ) }
 							onClick={ () =>
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+								recordEvent(
+									events.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
 								)
 							}
 						>
@@ -184,9 +183,8 @@ const DepositsOverview: React.FC = () => {
 								} ) + '#deposit-schedule'
 							}
 							onClick={ () =>
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
+								recordEvent(
+									events.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
 								)
 							}
 						>
