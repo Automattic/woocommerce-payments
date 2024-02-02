@@ -516,11 +516,11 @@ describe( 'Suspended Deposit Notice Renders', () => {
 } );
 
 describe( 'Paused Deposit notice Renders', () => {
-	test( 'When available balance is negative', () => {
+	test( 'When total balance is negative', () => {
 		const accountOverview = createMockNewAccountOverview(
 			'usd',
-			100,
-			-100 // Negative 100 available balance
+			50, // Pending and available balance total to -50
+			-100
 		);
 		mockOverviews( [ accountOverview ] );
 		mockDepositOverviews( [ accountOverview ] );
@@ -540,6 +540,18 @@ describe( 'Paused Deposit notice Renders', () => {
 			'usd',
 			100,
 			100 // Positive 100 available balance
+		);
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
+
+		const { queryByText } = render( <DepositsOverview /> );
+		expect( queryByText( /Deposits may be interrupted/ ) ).toBeFalsy();
+	} );
+	test( 'When available balance is negative', () => {
+		const accountOverview = createMockNewAccountOverview(
+			'usd',
+			100,
+			-100 // Negative 100 available balance
 		);
 		mockOverviews( [ accountOverview ] );
 		mockDepositOverviews( [ accountOverview ] );

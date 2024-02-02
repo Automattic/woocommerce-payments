@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Negative balance notice will only show when total balance is below 0.
+
+
