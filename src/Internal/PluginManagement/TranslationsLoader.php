@@ -81,6 +81,7 @@ class TranslationsLoader {
 	 * Get translations updates information.
 	 *
 	 * @return array Update data {product_id => data}
+	 * @throws \Exception If something goes wrong with fetching info about translation packages from WordPress.com.
 	 */
 	public function get_translations_update_data() {
 		$installed_translations = wp_get_installed_translations( 'plugins' );
@@ -122,17 +123,24 @@ class TranslationsLoader {
 			]
 		);
 
-		// Something wrong happened on the translate server side.
 		$response_code = wp_remote_retrieve_response_code( $raw_response );
 		if ( 200 !== $response_code ) {
-			return [];
+			$this->logger->debug(
+				sprintf( 'Raw response: %s', var_export( $raw_response ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- That's debug message which will only be logged when debuging is enabled.
+			);
+			throw new \Exception(
+				sprintf( 'Request failed. HTTP response code: %s', $response_code )
+			);
 		}
 
 		$response = json_decode( wp_remote_retrieve_body( $raw_response ), true );
 
-		// API error, api returned but something was wrong.
 		if ( array_key_exists( 'success', $response ) && false === $response['success'] ) {
-			return [];
+			// The shape of response is not known, so more specific error message can't be provided in exception. Logging the response body for debuggin purposes.
+			$this->logger->debug(
+				sprintf( 'Unexpected response body: %s', var_export( $response, true ) ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- That's debug message which will only be logged when debuging is enabled.
+			);
+			throw new \Exception( 'Unexpected response body.' );
 		}
 
 		$language_packs = $response['data'][ $plugin_name ];
