@@ -50,6 +50,13 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 	private $mock_woopay_utilities;
 
 	/**
+	 * Express Checkout Helper instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Helper
+	 */
+	private $mock_express_checkout_helper;
+
+	/**
 	 * Sets up things all tests need.
 	 */
 	public function set_up() {
@@ -79,21 +86,35 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->setMethods( [ 'is_country_available' ] )
 			->getMock();
 
+		$this->mock_express_checkout_helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_gateway,
+					$this->mock_wcpay_account,
+				]
+			)
+			->setMethods(
+				[
+					'is_cart',
+					'is_checkout',
+					'is_product',
+					'is_available_at',
+				]
+			)
+			->getMock();
+
 		$this->mock_pr = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
 			->setConstructorArgs(
 				[
 					$this->mock_wcpay_account,
 					$this->mock_wcpay_gateway,
 					$this->mock_woopay_utilities,
+					$this->mock_express_checkout_helper,
 				]
 			)
 			->setMethods(
 				[
 					'is_woopay_enabled',
-					'is_cart',
-					'is_checkout',
-					'is_product',
-					'is_available_at',
 				]
 			)
 			->getMock();
@@ -156,11 +177,11 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_woopay_enabled' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_cart' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
 			->method( 'is_available_at' )
 			->with( 'cart' )
@@ -179,11 +200,11 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_cart' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
 			->method( 'is_available_at' )
 			->with( 'cart' )
@@ -204,11 +225,11 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
 			->method( 'is_available_at' )
 			->with( 'checkout' )
@@ -229,11 +250,11 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
 			->method( 'is_available_at' )
 			->with( 'checkout' )
@@ -254,11 +275,11 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
 			->method( 'is_available_at' )
 			->with( 'product' )
@@ -279,11 +300,11 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
 			->method( 'is_available_at' )
 			->with( 'product' )
@@ -304,11 +325,11 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
 			->method( 'is_available_at' )
 			->with( 'product' )
@@ -322,19 +343,19 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'is_country_available' );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( false );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_cart' )
 			->willReturn( false );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( false );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->never() )
 			->method( 'is_available_at' );
 
@@ -351,19 +372,19 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( false );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_cart' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->never() )
 			->method( 'is_available_at' );
 
@@ -377,7 +398,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'is_country_available' );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->never() )
 			->method( 'is_product' );
 
@@ -393,15 +414,32 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'is_country_available' );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->never() )
 			->method( 'is_cart' );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->never() )
 			->method( 'is_available_at' )
 			->with( 'cart' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+	}
+
+	public function test_get_button_settings() {
+		$this->mock_express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'type'    => 'buy',
+				'theme'   => 'dark',
+				'height'  => '48',
+				'size'    => 'medium',
+				'context' => 'product',
+			],
+			$this->mock_pr->get_button_settings()
+		);
 	}
 }
