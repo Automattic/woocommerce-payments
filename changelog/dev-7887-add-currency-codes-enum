@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Added ENUM class for currency codes
