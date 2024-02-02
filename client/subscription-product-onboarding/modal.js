@@ -12,7 +12,7 @@ import {
 import { registerPlugin } from '@wordpress/plugins';
 import { removeQueryArgs } from '@wordpress/url';
 import { __, sprintf } from '@wordpress/i18n';
-import wcpayTracks from '../tracks';
+import { recordEvent, events } from '../tracks';
 
 import './style.scss';
 
@@ -31,9 +31,8 @@ const FinishSetupButton = () => {
 			isBusy={ isFinishingSetup }
 			isPrimary
 			onClick={ () => {
-				wcpayTracks.recordEvent(
-					wcpayTracks.events
-						.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_FINISH_SETUP
+				recordEvent(
+					events.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_FINISH_SETUP
 				);
 				setIsFinishingSetup( true );
 			} }
@@ -47,9 +46,8 @@ const SubscriptionProductOnboardingModalContent = ( {
 	onRequestClose = () => {},
 } ) => {
 	useEffect( () => {
-		wcpayTracks.recordEvent(
-			wcpayTracks.events
-				.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_VIEW
+		recordEvent(
+			events.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_VIEW
 		);
 	}, [] );
 
@@ -57,9 +55,8 @@ const SubscriptionProductOnboardingModalContent = ( {
 		<Modal
 			className="wcpay-subscription-product-modal"
 			onRequestClose={ () => {
-				wcpayTracks.recordEvent(
-					wcpayTracks.events
-						.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS
+				recordEvent(
+					events.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS
 				);
 				onRequestClose();
 			} }
