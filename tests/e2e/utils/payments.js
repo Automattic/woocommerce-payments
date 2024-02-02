@@ -235,6 +235,7 @@ export async function setupProductCheckout(
 	);
 
 	// Add items to the cart
+	console.log( 'Adding line items', lineItems );
 	for ( const line of lineItems ) {
 		let [ productTitle, qty ] = line;
 
