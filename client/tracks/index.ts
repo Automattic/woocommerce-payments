@@ -30,6 +30,8 @@ export const recordEvent = (
 	// Add `is_test_mode` property to every event.
 	eventProperties.is_test_mode = wcpaySettings?.testMode;
 	eventProperties.url = wcSettings?.homeUrl;
+	eventProperties.jetpack_connected = wcpaySettings.isJetpackConnected;
+	eventProperties.woo_country_code = wcpaySettings.connect.country;
 
 	// Add the Woo store ID, if available.
 	const wooStoreId = wcpaySettings?.wooStoreId ?? false;
@@ -45,24 +47,6 @@ export const recordEvent = (
 	} );
 };
 
-/**
- * Records events related to onboarding. This is a wrapper around `recordEvent`
- * which attaches a few more params relating to the user's Jetpack connection state,
- * country code, etc.
- *
- * @param {string}  eventName        Name of the event.
- * @param {Object} [eventProperties] Event properties (optional).
- */
-export const recordOnboardingEvent = (
-	eventName: string,
-	eventProperties: Record< string, unknown > = {}
-): void => {
-	recordEvent( eventName, {
-		jetpack_connected: wcpaySettings.isJetpackConnected,
-		woo_country_code: wcpaySettings.connect.country,
-		...eventProperties,
-	} );
-};
 /**
  * Records events from buyers (aka shoppers).
  *
