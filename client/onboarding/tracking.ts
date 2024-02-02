@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 import { useStepperContext } from 'components/stepper';
 import { useOnboardingContext } from './context';
 import { OnboardingFields } from './types';
-import { recordEvent, events } from 'tracks';
+import { recordOnboardingEvent, events } from 'tracks';
 
 const trackedSteps: Set< string > = new Set();
 let startTime: number;
@@ -26,11 +26,11 @@ const stepElapsed = () => {
 export const trackStarted = (): void => {
 	startTime = stepStartTime = Date.now();
 
-	recordEvent( events.ONBOARDING_FLOW_STARTED, {} );
+	recordOnboardingEvent( events.ONBOARDING_FLOW_STARTED );
 };
 
 export const trackModeSelected = ( mode: string ): void => {
-	recordEvent( events.ONBOARDING_FLOW_MODE_SELECTED, {
+	recordOnboardingEvent( events.ONBOARDING_FLOW_MODE_SELECTED, {
 		mode,
 		elapsed: stepElapsed(),
 	} );
@@ -40,7 +40,7 @@ export const trackStepCompleted = ( step: string ): void => {
 	// We only track a completed step once.
 	if ( trackedSteps.has( step ) ) return;
 
-	recordEvent( events.ONBOARDING_FLOW_STEP_COMPLETED, {
+	recordOnboardingEvent( events.ONBOARDING_FLOW_STEP_COMPLETED, {
 		step,
 		elapsed: stepElapsed(),
 	} );
@@ -48,19 +48,21 @@ export const trackStepCompleted = ( step: string ): void => {
 };
 
 export const trackRedirected = ( isEligible: boolean ): void => {
-	recordEvent( events.ONBOARDING_FLOW_REDIRECTED, {
+	recordOnboardingEvent( events.ONBOARDING_FLOW_REDIRECTED, {
 		is_po_eligible: isEligible,
 		elapsed: elapsed( startTime ),
 	} );
 };
 
 export const trackAccountReset = (): void =>
-	recordEvent( events.ONBOARDING_FLOW_RESET, {} );
+	recordOnboardingEvent( events.ONBOARDING_FLOW_RESET, {} );
 
 export const trackEligibilityModalClosed = (
 	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only'
 ): void =>
-	recordEvent( events.ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED, { action } );
+	recordOnboardingEvent( events.ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED, {
+		action,
+	} );
 
 export const useTrackAbandoned = (): {
 	trackAbandoned: ( method: 'hide' | 'exit' ) => void;
@@ -78,7 +80,7 @@ export const useTrackAbandoned = (): {
 			( field ) => touched[ field as keyof OnboardingFields ]
 		);
 
-		recordEvent( event, {
+		recordOnboardingEvent( event, {
 			step,
 			errored,
 			elapsed: elapsed( startTime ),

@@ -893,6 +893,7 @@ class WC_Payments_Admin {
 			'storeCurrency'                 => get_option( 'woocommerce_currency' ),
 			'isBnplAffirmAfterpayEnabled'   => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
 			'isWooPayStoreCountryAvailable' => WooPay_Utilities::is_store_country_available(),
+			'wooStoreId'                    => $this->account->get_woocommerce_store_id(),
 			'woopayLastDisableDate'         => $this->wcpay_gateway->get_option( 'platform_checkout_last_disable_date' ),
 			'isStripeBillingEnabled'        => WC_Payments_Features::is_stripe_billing_enabled(),
 			'isStripeBillingEligible'       => WC_Payments_Features::is_stripe_billing_eligible(),

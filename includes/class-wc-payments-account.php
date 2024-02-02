@@ -28,12 +28,15 @@ class WC_Payments_Account {
 
 	// ACCOUNT_OPTION is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
 	const ACCOUNT_OPTION                                        = 'wcpay_account_data';
+	const WOOCOMMERCE_STORE_ID_OPTION                           = 'woocommerce_store_id';
 	const ON_BOARDING_DISABLED_TRANSIENT                        = 'wcpay_on_boarding_disabled';
 	const ON_BOARDING_STARTED_TRANSIENT                         = 'wcpay_on_boarding_started';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
+	const TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START   = 'wcpay_account_connect_wpcom_connection_start';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS = 'wcpay_account_connect_wpcom_connection_success';
+	const TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE = 'wcpay_account_connect_wpcom_connection_failure';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED                 = 'wcpay_account_connect_finished';
 	const TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED           = 'wcpay_kyc_reminder_merchant_returned';
 
@@ -883,6 +886,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get the WooCommerce store ID option.
+	 * TODO: Ideally this would be exposed through WC Core rather than needing to be fetched from the options table.
+	 *
+	 * @return string
+	 */
+	public function get_woocommerce_store_id(): string {
+		return get_option( self::WOOCOMMERCE_STORE_ID_OPTION, '' );
+	}
+
+	/**
 	 * Redirects onboarding flow page (payments/onboarding) to the overview page for accounts that have Stripe connected.
 	 *
 	 * Payments onboarding flow page is already hidden for those who has Stripe account connected, but merchants can still access
@@ -998,7 +1011,6 @@ class WC_Payments_Account {
 				$event_properties = [
 					'incentive'              => $incentive,
 					'is_new_onboarding_flow' => $progressive,
-					'woo_country_code'       => WC()->countries->get_base_country(),
 					'mode'                   => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 				$this->tracks_event(
@@ -1051,6 +1063,12 @@ class WC_Payments_Account {
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
 				if ( ! $this->payments_api_client->is_server_connected() ) {
+					// Track unsuccessful Jetpack connection.
+					$this->tracks_event(
+						self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE,
+						$event_properties
+					);
+
 					$this->redirect_to_onboarding_welcome_page(
 						sprintf(
 						/* translators: %s: WooPayments */
@@ -1067,7 +1085,6 @@ class WC_Payments_Account {
 				$event_properties = [
 					'incentive'              => $incentive,
 					'is_new_onboarding_flow' => $progressive,
-					'woo_country_code'       => WC()->countries->get_base_country(),
 					'mode'                   => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 				$this->tracks_event(
@@ -1163,6 +1180,21 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get Connect page url.
+	 *
+	 * @return string
+	 */
+	public static function get_connect_page_url(): string {
+		return add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => '/payments/connect',
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
 	 * Get overview page url
 	 *
 	 * @return string overview page url
@@ -1240,6 +1272,9 @@ class WC_Payments_Account {
 		if ( $is_jetpack_fully_connected ) {
 			return;
 		}
+
+		// Track the Jetpack connection start.
+		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
 
 		$redirect = add_query_arg(
 			array_merge(
@@ -1480,7 +1515,6 @@ class WC_Payments_Account {
 		$event_properties = [
 			'incentive'              => $incentive,
 			'is_new_onboarding_flow' => $progressive,
-			'woo_country_code'       => WC()->countries->get_base_country(),
 			'mode'                   => 'test' === $mode ? 'test' : 'live',
 		];
 		$this->tracks_event(
@@ -1935,6 +1969,28 @@ class WC_Payments_Account {
 	 * @return void
 	 */
 	private function tracks_event( string $name, array $properties = [] ) {
+		// Attach some additional properties to help us attribute stores properly.
+		$extra_props = [
+			'woo_country_code'  => WC()->countries->get_base_country(),
+			'url'               => get_home_url(),
+			'jetpack_connected' => $this->payments_api_client->is_server_connected(),
+		];
+
+		$blog_id = \Jetpack_Options::get_option( 'id', false );
+		if ( $blog_id ) {
+			$extra_props['blog_id'] = $blog_id;
+		}
+
+		$store_id = $this->get_woocommerce_store_id();
+		if ( ! empty( $store_id ) ) {
+			$extra_props['store_id'] = $store_id;
+		}
+
+		$properties = array_merge(
+			$extra_props,
+			$properties
+		);
+
 		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
 			return;
 		}
