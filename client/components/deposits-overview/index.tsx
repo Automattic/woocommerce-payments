@@ -54,7 +54,7 @@ const DepositsOverview: React.FC = () => {
 
 	const minimumDepositAmount =
 		wcpaySettings.accountStatus.deposits
-			?.automatic_deposit_minimum_amounts?.[ selectedCurrency ] ?? 0;
+			?.minimum_scheduled_deposit_amounts?.[ selectedCurrency ] ?? 0;
 	const isAboveMinimumDepositAmount = availableFunds >= minimumDepositAmount;
 	// If the available balance is negative, deposits may be paused.
 	const isNegativeBalanceDepositsPaused = availableFunds < 0;

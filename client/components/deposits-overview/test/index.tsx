@@ -53,7 +53,7 @@ declare const global: {
 			deposits: {
 				restrictions: string;
 				completed_waiting_period: boolean;
-				automatic_deposit_minimum_amounts: {
+				minimum_scheduled_deposit_amounts: {
 					[ currencyCode: string ]: number;
 				};
 			};
@@ -198,7 +198,7 @@ describe( 'Deposits Overview information', () => {
 				deposits: {
 					restrictions: 'deposits_unrestricted',
 					completed_waiting_period: true,
-					automatic_deposit_minimum_amounts: {
+					minimum_scheduled_deposit_amounts: {
 						eur: 500,
 						usd: 500,
 					},
