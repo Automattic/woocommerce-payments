@@ -126,7 +126,7 @@ class TranslationsLoader {
 		$response_code = wp_remote_retrieve_response_code( $raw_response );
 		if ( 200 !== $response_code ) {
 			$this->logger->debug(
-				sprintf( 'Raw response: %s', var_export( $raw_response ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- That's debug message which will only be logged when debuging is enabled.
+				sprintf( 'Raw response: %s', var_export( $raw_response, true ) ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- That's debug message which will only be logged when debuging is enabled.
 			);
 			throw new \Exception(
 				sprintf( 'Request failed. HTTP response code: %s', $response_code )
