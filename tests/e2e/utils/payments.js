@@ -197,7 +197,7 @@ export async function confirmCardAuthentication(
 	);
 	let challengeFrame = await challengeFrameHandle.contentFrame();
 	// 3DS 1 cards have another iframe enclosing the authorize form
-	if ( cardType.toUpperCase() === '3DS' ) {
+	if ( cardType.toUpperCase() === '3DS1' ) {
 		const acsFrameHandle = await challengeFrame.waitForSelector(
 			'iframe[name="acsFrame"]'
 		);
