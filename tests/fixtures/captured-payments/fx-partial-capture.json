@@ -3,13 +3,13 @@
   "capturedEvent":
     {
       "type": "captured",
-      "amount": 3400,
-      "amount_captured": 1700,
-      "fee": 94,
+      "amount": 2800,
+      "amount_captured": 1400,
+      "fee": 70,
       "fee_rates": {
-          "percentage": 0.039,
-          "fixed": 27.41481,
-          "fixed_currency": "EUR",
+          "percentage": 0.0351,
+          "fixed": 20.557314,
+          "fixed_currency": "GBP",
           "history": [
               {
                   "type": "base",
@@ -26,31 +26,44 @@
                   "percentage_rate": 0.01,
                   "fixed_rate": 0,
                   "currency": "usd"
+              },
+              {
+                  "type": "discount",
+                  "additional_type": "",
+                  "fee_id": "wcpay-promo-2023-incentive-10off3m-us",
+                  "percentage_rate": -0.0039,
+                  "fixed_rate": -3,
+                  "currency": "usd"
               }
           ]
       },
-      "currency": "EUR",
-      "datetime": 1706826451,
+      "currency": "GBP",
+      "datetime": 1706898645,
       "deposit": null,
-      "transaction_id": "txn_3Of8iiR7TXHGtwGa2Y1ePXYw",
+      "transaction_id": "txn_3OfRUdR7TXHGtwGa0K754mkQ",
       "transaction_details": {
-          "customer_currency": "EUR",
-          "customer_amount": 3400,
-          "customer_amount_captured": 1700,
-          "customer_fee": 94,
+          "customer_currency": "GBP",
+          "customer_amount": 2800,
+          "customer_amount_captured": 1400,
+          "customer_fee": 70,
           "store_currency": "USD",
-          "store_amount": 3676,
-          "store_amount_captured": 1838,
-          "store_fee": 102
+          "store_amount": 3534,
+          "store_amount_captured": 1767,
+          "store_fee": 88
       }
   },
   "expectation": {
-    "fxString": "1.00 EUR → 1.08118 USD: $18.38 USD",
-    "feeString": "Fee (3.9% + 0,27 €): -$1.02",
+    "fxString": "1.00 GBP → 1.26214 USD: $17.67 USD",
+    "feeString": "Fee (3.51% + £0.20): -$0.88",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
-      "additional-fx": "Foreign exchange fee: 1%"
+      "additional-fx": "Foreign exchange fee: 1%",
+      "discount": {
+        "label": "Discount",
+        "variable": "Variable fee: -0.39%",
+        "fixed": "Fixed fee: -$0.03"
+      }
     },
-    "netString": "Net deposit: $17.36 USD"
+    "netString": "Net deposit: $16.79 USD"
   }
 }
