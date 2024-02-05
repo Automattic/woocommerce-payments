@@ -50,7 +50,7 @@ describe( 'Payment Methods', () => {
 					text: 'Add payment method',
 				} );
 				if ( cardType === 'declined-3ds' ) {
-					await confirmCardAuthentication( page, '3DS2' );
+					await confirmCardAuthentication( page );
 				}
 				await expect( page ).toMatchElement( '.woocommerce-error', {
 					timeout: 30000,

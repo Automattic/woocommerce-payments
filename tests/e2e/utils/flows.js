@@ -191,7 +191,7 @@ export const shopperWCP = {
 			! cardType.toLowerCase().includes( 'declined' );
 
 		if ( cardIs3DS ) {
-			await confirmCardAuthentication( page, cardType );
+			await confirmCardAuthentication( page );
 		}
 
 		await page.waitForNavigation( {

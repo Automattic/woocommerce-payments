@@ -177,11 +177,7 @@ export async function clearWCBCardDetails() {
 	await page.keyboard.press( 'Backspace' );
 }
 
-export async function confirmCardAuthentication(
-	page,
-	cardType = '3DS',
-	authorize = true
-) {
+export async function confirmCardAuthentication( page, authorize = true ) {
 	const target = authorize
 		? '#test-source-authorize-3ds'
 		: '#test-source-fail-3ds';
@@ -195,14 +191,7 @@ export async function confirmCardAuthentication(
 	const challengeFrameHandle = await stripeFrame.waitForSelector(
 		'iframe#challengeFrame'
 	);
-	let challengeFrame = await challengeFrameHandle.contentFrame();
-	// 3DS 1 cards have another iframe enclosing the authorize form
-	if ( cardType.toUpperCase() === '3DS1' ) {
-		const acsFrameHandle = await challengeFrame.waitForSelector(
-			'iframe[name="acsFrame"]'
-		);
-		challengeFrame = await acsFrameHandle.contentFrame();
-	}
+	const challengeFrame = await challengeFrameHandle.contentFrame();
 	// Need to wait for the CSS animations to complete.
 	await page.waitFor( 500 );
 	const button = await challengeFrame.waitForSelector( target );
