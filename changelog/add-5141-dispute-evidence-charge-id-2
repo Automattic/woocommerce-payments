@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Show charge id on payments details page, so merchants can grab it to fill out the dispute evidence form when needed.
