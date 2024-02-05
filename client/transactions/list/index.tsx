@@ -52,7 +52,7 @@ import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import DownloadButton from 'components/download-button';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
@@ -595,15 +595,12 @@ export const TransactionsList = (
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.TRANSACTIONS_DOWNLOAD_CSV_CLICK,
-			{
-				location: props.depositId ? 'deposit_details' : 'transactions',
-				download_type: downloadType,
-				exported_transactions: rows.length,
-				total_transactions: transactionsSummary.count,
-			}
-		);
+		recordEvent( events.TRANSACTIONS_DOWNLOAD_CSV_CLICK, {
+			location: props.depositId ? 'deposit_details' : 'transactions',
+			download_type: downloadType,
+			exported_transactions: rows.length,
+			total_transactions: transactionsSummary.count,
+		} );
 
 		if ( 'endpoint' === downloadType ) {
 			const {
