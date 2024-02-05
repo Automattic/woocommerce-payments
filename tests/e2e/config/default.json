@@ -84,6 +84,7 @@
           "addressfirstline": "Rue de l’Étuve, 1000",
           "addresssecondline": "billing-be",
           "city": "Bruxelles",
+          "postcode": "1000",
           "phone": "123456789",
           "email": "e2e-wcpay-customer@woo.com"
         },
@@ -95,6 +96,7 @@
           "addressfirstline": "Petuelring 130",
           "addresssecondline": "billing-de",
           "city": "München",
+          "postcode": "80809",
           "state": "DE-BY",
           "phone": "123456789",
           "email": "e2e-wcpay-customer@woo.com"
