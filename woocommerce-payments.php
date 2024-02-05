@@ -39,6 +39,8 @@ function wcpay_activated() {
 		return;
 	}
 
+	// TODO: Can we put something here to track the plugin install?
+
 	if (
 		// Only redirect to onboarding when activated on its own. Either with a link...
 		isset( $_GET['action'] ) && 'activate' === $_GET['action'] // phpcs:ignore WordPress.Security.NonceVerification
