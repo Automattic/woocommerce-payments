@@ -11,6 +11,7 @@ import { SelectControl, ExternalLink } from '@wordpress/components';
  */
 import interpolateComponents from '@automattic/interpolate-components';
 import { ReportingExportLanguageHook } from '../../interfaces';
+import { exportLanguageOptions } from '../../constants';
 import { useReportingExportLanguage } from 'wcpay/data';
 
 const ExportLanguage: React.FC = () => {
@@ -22,19 +23,6 @@ const ExportLanguage: React.FC = () => {
 	const handleExportLanguageChange = ( language: string ) => {
 		updateExportLanguage( language );
 	};
-
-	const exportLanguageOptions = [
-		{
-			label: __( 'English (United States)', 'woocommerce-payments' ),
-			value: 'en_US',
-		},
-		{
-			label:
-				__( 'Site Language - ', 'woocommerce-payments' ) +
-				wcpaySettings.locale.native_name,
-			value: wcpaySettings.locale.code,
-		},
-	];
 
 	return (
 		<div className="reporting-export-language">

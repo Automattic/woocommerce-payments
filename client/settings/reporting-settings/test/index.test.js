@@ -15,7 +15,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useReportingExportLanguage: jest.fn(),
 } ) );
 
-describe( 'Deposits', () => {
+describe( 'Reporting Settings', () => {
 	beforeEach( () => {
 		useReportingExportLanguage.mockReturnValue( [ 'en_US', jest.fn() ] );
 

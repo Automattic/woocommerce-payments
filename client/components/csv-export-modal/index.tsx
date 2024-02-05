@@ -18,6 +18,7 @@ import DomainsIcon from 'gridicons/dist/domains';
  * Internal dependencies
  */
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
+import { exportLanguageOptions } from 'wcpay/settings/reporting-settings/constants';
 import { useReportingExportLanguage, useSettings } from 'wcpay/data';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import { getAdminUrl } from 'wcpay/utils';
@@ -142,19 +143,6 @@ const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 				return __( 'Export report in', 'woocommerce-payments' );
 		}
 	};
-
-	const exportLanguageOptions = [
-		{
-			label: __( 'English (United States)', 'woocommerce-payments' ),
-			value: 'en_US',
-		},
-		{
-			label:
-				__( 'Site Language - ', 'woocommerce-payments' ) +
-				wcpaySettings.locale.native_name,
-			value: wcpaySettings.locale.code,
-		},
-	];
 
 	const handleExportLanguageChange = ( language: string ) => {
 		setModalLanguage( language );
