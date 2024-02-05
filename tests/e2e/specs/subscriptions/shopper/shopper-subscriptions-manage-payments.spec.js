@@ -24,7 +24,8 @@ const testSelectors = {
 	subscriptionIdField: '.woocommerce-orders-table__cell-subscription-id > a',
 	subscriptionChangePaymentButton:
 		'.subscription_details a.button.change_payment_method',
-	wcNotice: '.woocommerce .woocommerce-message',
+	wcNotice: 'div.wc-block-components-notice-banner',
+	wcOldNotice: '.woocommerce .woocommerce-message',
 	pageTitle: 'h1.entry-title',
 	newPaymentMethodCheckbox: 'input#wc-woocommerce_payments-payment-token-new',
 	subscriptionPaymentMethod: '.subscription-payment-method',
@@ -93,10 +94,11 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await fillCardDetails( page, newCard );
 
 			await shopper.placeOrder();
-			await page.waitForSelector( testSelectors.wcNotice, {
-				text: 'Payment method updated.',
-			} );
-
+			await shopperWCP.waitForSubscriptionsErrorBanner(
+				'Payment method updated.',
+				testSelectors.wcNotice,
+				testSelectors.wcOldNotice
+			);
 			// Verify the new payment method has been set
 			await page.waitForSelector(
 				testSelectors.subscriptionPaymentMethod,
@@ -133,9 +135,11 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			);
 			await checkboxes[ 0 ].click();
 			await shopper.placeOrder();
-			await page.waitForSelector( testSelectors.wcNotice, {
-				text: 'Payment method updated.',
-			} );
+			await shopperWCP.waitForSubscriptionsErrorBanner(
+				'Payment method updated.',
+				testSelectors.wcNotice,
+				testSelectors.wcOldNotice
+			);
 
 			// Verify the new payment method has been set
 			await page.waitForSelector(

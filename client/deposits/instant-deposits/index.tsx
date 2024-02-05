@@ -33,9 +33,7 @@ const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
 } ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	const buttonDisabled = isButtonDisabled( instantBalance );
-	const { inProgress, submit } = useInstantDeposit(
-		instantBalance.transaction_ids
-	);
+	const { inProgress, submit } = useInstantDeposit( instantBalance.currency );
 	const onClose = () => {
 		setModalOpen( false );
 	};

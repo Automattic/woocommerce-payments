@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix network error that occurs when viewing an test mode order with test mode disabled, and vice versa.

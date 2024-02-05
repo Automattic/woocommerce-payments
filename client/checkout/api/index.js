@@ -85,6 +85,7 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			let betas = [ 'card_country_event_beta_1' ];
 			if ( isStripeLinkEnabled ) {
+				// https://stripe.com/docs/payments/link/autofill-modal
 				betas = betas.concat( [ 'link_autofill_modal_beta_1' ] );
 			}
 
@@ -206,7 +207,7 @@ export default class WCPayAPI {
 	 *
 	 * @param {string} redirectUrl The redirect URL, returned from the server.
 	 * @param {string} paymentMethodToSave The ID of a Payment Method if it should be saved (optional).
-	 * @return {mixed} A redirect URL on success, or `true` if no confirmation is needed.
+	 * @return {Promise<string>|boolean} A redirect URL on success, or `true` if no confirmation is needed.
 	 */
 	confirmIntent( redirectUrl, paymentMethodToSave ) {
 		const partials = redirectUrl.match(
@@ -278,61 +279,56 @@ export default class WCPayAPI {
 			);
 		};
 
-		const confirmAction = confirmPaymentOrSetup();
+		return (
+			confirmPaymentOrSetup()
+				// ToDo: Switch to an async function once it works with webpack.
+				.then( ( result ) => {
+					const intentId =
+						( result.paymentIntent && result.paymentIntent.id ) ||
+						( result.setupIntent && result.setupIntent.id ) ||
+						( result.error &&
+							result.error.payment_intent &&
+							result.error.payment_intent.id ) ||
+						( result.error.setup_intent &&
+							result.error.setup_intent.id );
 
-		const request = confirmAction
-			// ToDo: Switch to an async function once it works with webpack.
-			.then( ( result ) => {
-				const intentId =
-					( result.paymentIntent && result.paymentIntent.id ) ||
-					( result.setupIntent && result.setupIntent.id ) ||
-					( result.error &&
-						result.error.payment_intent &&
-						result.error.payment_intent.id ) ||
-					( result.error.setup_intent &&
-						result.error.setup_intent.id );
+					// In case this is being called via payment request button from a product page,
+					// the getConfig function won't work, so fallback to getPaymentRequestData.
+					const ajaxUrl =
+						getPaymentRequestData( 'ajax_url' ) ??
+						getConfig( 'ajaxUrl' );
 
-				// In case this is being called via payment request button from a product page,
-				// the getConfig function won't work, so fallback to getPaymentRequestData.
-				const ajaxUrl =
-					getPaymentRequestData( 'ajax_url' ) ??
-					getConfig( 'ajaxUrl' );
+					const ajaxCall = this.request( ajaxUrl, {
+						action: 'update_order_status',
+						order_id: orderId,
+						// Update the current order status nonce with the new one to ensure that the update
+						// order status call works when a guest user creates an account during checkout.
+						_ajax_nonce: nonce,
+						intent_id: intentId,
+						payment_method_id: paymentMethodToSave || null,
+					} );
 
-				const ajaxCall = this.request( ajaxUrl, {
-					action: 'update_order_status',
-					order_id: orderId,
-					// Update the current order status nonce with the new one to ensure that the update
-					// order status call works when a guest user creates an account during checkout.
-					_ajax_nonce: nonce,
-					intent_id: intentId,
-					payment_method_id: paymentMethodToSave || null,
-				} );
-
-				return [ ajaxCall, result.error ];
-			} )
-			.then( ( [ verificationCall, originalError ] ) => {
-				if ( originalError ) {
-					throw originalError;
-				}
-
-				return verificationCall.then( ( response ) => {
-					const result =
-						typeof response === 'string'
-							? JSON.parse( response )
-							: response;
-
-					if ( result.error ) {
-						throw result.error;
+					return [ ajaxCall, result.error ];
+				} )
+				.then( ( [ verificationCall, originalError ] ) => {
+					if ( originalError ) {
+						throw originalError;
 					}
 
-					return result.return_url;
-				} );
-			} );
+					return verificationCall.then( ( response ) => {
+						const result =
+							typeof response === 'string'
+								? JSON.parse( response )
+								: response;
 
-		return {
-			request,
-			isOrderPage,
-		};
+						if ( result.error ) {
+							throw result.error;
+						}
+
+						return result.return_url;
+					} );
+				} )
+		);
 	}
 
 	/**
@@ -563,50 +559,5 @@ export default class WCPayAPI {
 			order,
 			...paymentData,
 		} );
-	}
-
-	/**
-	 * Log Payment Errors via Ajax.
-	 *
-	 * @param {string} chargeId Stripe Charge ID
-	 * @return {boolean} Returns true irrespective of result.
-	 */
-	logPaymentError( chargeId ) {
-		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'log_payment_error' ),
-			{
-				charge_id: chargeId,
-				_ajax_nonce: getConfig( 'logPaymentErrorNonce' ),
-			}
-		).then( () => {
-			// There is not any action to take or harm caused by a failed update, so just returning true.
-			return true;
-		} );
-	}
-
-	/**
-	 * Redirect to the order-received page for duplicate payments.
-	 *
-	 * @param {Object} response Response data to check if doing the redirect.
-	 * @return {boolean} Returns true if doing the redirection.
-	 */
-	handleDuplicatePayments( {
-		wcpay_upe_paid_for_previous_order: previouslyPaid,
-		wcpay_upe_previous_successful_intent: previousSuccessfulIntent,
-		redirect,
-	} ) {
-		if ( redirect ) {
-			// Another order has the same cart content and was paid.
-			if ( previouslyPaid ) {
-				return ( window.location = redirect );
-			}
-
-			// Another intent has the equivalent successful status for the order.
-			if ( previousSuccessfulIntent ) {
-				return ( window.location = redirect );
-			}
-		}
-
-		return false;
 	}
 }

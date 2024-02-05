@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update REST API documentation for deposits endpoints with changes to estimated and instant deposits

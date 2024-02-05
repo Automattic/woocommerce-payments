@@ -28,7 +28,6 @@ const mockInstantBalance = {
 	fee: 123.45,
 	net: 12221.55,
 	fee_percentage: 1.5,
-	transaction_ids: [ 'txn_ABC123', 'txn_DEF456' ],
 	currency: 'USD',
 } as AccountOverview.InstantBalance;
 
@@ -37,7 +36,6 @@ const mockZeroInstantBalance = {
 	fee: 0,
 	net: 0,
 	fee_percentage: 1.5,
-	transaction_ids: [],
 	currency: 'USD',
 } as AccountOverview.InstantBalance;
 

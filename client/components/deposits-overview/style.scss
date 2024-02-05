@@ -30,8 +30,12 @@
 	// so table CardDivider is full width.
 	.components-card__body.wcpay-deposits-overview__table__container,
 	.components-card__body.wcpay-deposits-overview__notices__container {
-		padding-bottom: 0;
 		padding-top: 0;
+
+		// If the CardFooter is rendered, remove the bottom padding
+		&:not( :last-child ) {
+			padding-bottom: 0;
+		}
 	}
 
 	// Override display:block on the first FlexItem with the date and icon

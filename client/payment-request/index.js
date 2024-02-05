@@ -17,7 +17,7 @@ import {
 	payForOrderHandler,
 } from './event-handlers.js';
 import '../checkout/express-checkout-buttons.scss';
-import wcpayTracks from 'tracks';
+import { recordUserEvent, events } from 'tracks';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
@@ -56,26 +56,26 @@ jQuery( ( $ ) => {
 	// Track the payment request button click event.
 	const trackPaymentRequestButtonClick = ( source ) => {
 		const paymentRequestTypeEvents = {
-			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
-			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+			google_pay: events.GOOGLEPAY_BUTTON_CLICK,
+			apple_pay: events.APPLEPAY_BUTTON_CLICK,
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
 			const event = paymentRequestTypeEvents[ paymentRequestType ];
-			wcpayTracks.recordUserEvent( event, { source } );
+			recordUserEvent( event, { source } );
 		}
 	};
 
 	// Track the payment request button load event.
 	const trackPaymentRequestButtonLoad = debounce( ( source ) => {
 		const paymentRequestTypeEvents = {
-			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_LOAD,
-			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_LOAD,
+			google_pay: events.GOOGLEPAY_BUTTON_LOAD,
+			apple_pay: events.APPLEPAY_BUTTON_LOAD,
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
 			const event = paymentRequestTypeEvents[ paymentRequestType ];
-			wcpayTracks.recordUserEvent( event, { source } );
+			recordUserEvent( event, { source } );
 		}
 	}, 1000 );
 
@@ -566,6 +566,10 @@ jQuery( ( $ ) => {
 		 */
 		init: ( showButtonOnStart ) => {
 			if ( wcpayPaymentRequestParams.is_pay_for_order ) {
+				if ( ! window.wcpayPaymentRequestPayForOrderParams ) {
+					return;
+				}
+
 				const {
 					total: { amount: total },
 					displayItems,
