@@ -1,5 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`RefundModal do not show modal when the modal dismiss checkbox is checked 1`] = `
+<div
+  aria-hidden="true"
+/>
+`;
+
 exports[`RefundModal it renders correctly 1`] = `
 <div
   aria-hidden="true"
