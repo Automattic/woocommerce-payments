@@ -40,7 +40,7 @@ describe( 'Successful purchase', () => {
 		const card = config.get( 'cards.3ds' );
 		await fillCardDetails( page, card );
 		await expect( page ).toClick( '#place_order' );
-		await confirmCardAuthentication( page, '3DS' );
+		await confirmCardAuthentication( page );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
