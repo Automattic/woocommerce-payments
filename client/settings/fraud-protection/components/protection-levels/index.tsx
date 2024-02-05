@@ -18,7 +18,7 @@ import { FraudProtectionHelpText, BasicFraudProtectionModal } from '../index';
 import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';
 import InlineNotice from 'components/inline-notice';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import { CurrentProtectionLevelHook } from '../../interfaces';
 
 const ProtectionLevels: React.FC = () => {
@@ -38,18 +38,14 @@ const ProtectionLevels: React.FC = () => {
 		0 < advancedFraudProtectionSettings.length;
 
 	const handleLevelChange = ( level: string ) => () => {
-		wcpayTracks.recordEvent(
-			'wcpay_fraud_protection_risk_level_preset_enabled',
-			{ preset: level }
-		);
+		recordEvent( events.FRAUD_PROTECTION_RISK_LEVEL_PRESET_ENABLED, {
+			preset: level,
+		} );
 		updateProtectionLevel( level );
 	};
 
 	const handleBasicModalOpen = () => {
-		wcpayTracks.recordEvent(
-			'wcpay_fraud_protection_basic_modal_viewed',
-			{}
-		);
+		recordEvent( events.FRAUD_PROTECTION_BASIC_MODAL_VIEWED, {} );
 		setBasicModalOpen( true );
 	};
 

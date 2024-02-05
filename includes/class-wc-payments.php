@@ -404,6 +404,7 @@ class WC_Payments {
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
+		include_once __DIR__ . '/class-wc-payments-woopay-direct-checkout.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-large-exception.php';
@@ -417,6 +418,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-country-code.php';
+		include_once __DIR__ . '/constants/class-currency-code.php';
 		include_once __DIR__ . '/constants/class-fraud-meta-box-type.php';
 		include_once __DIR__ . '/constants/class-order-mode.php';
 		include_once __DIR__ . '/constants/class-order-status.php';
@@ -555,6 +557,8 @@ class WC_Payments {
 
 		self::maybe_display_express_checkout_buttons();
 
+		self::maybe_enable_woopay_direct_checkout();
+
 		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
 		$enabled_bnpl_payment_methods = array_intersect(
 			Payment_Method::BNPL_PAYMENT_METHODS,
@@ -652,6 +656,8 @@ class WC_Payments {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
+
+		wcpay_get_container()->get( \WCPay\Internal\PluginManagement\TranslationsLoader::class )->init_hooks();
 	}
 
 	/**
@@ -1455,6 +1461,20 @@ class WC_Payments {
 
 			new WooPay_Order_Status_Sync( self::$api_client );
 		}
+	}
+
+	/**
+	 * Initializes woopay direct checkout if the woopay feature flag is enabled.
+	 *
+	 * @return void
+	 */
+	public static function maybe_enable_woopay_direct_checkout() {
+		if ( ! WC_Payments_Features::is_woopay_enabled() || ! WC_Payments_Features::is_woopay_direct_checkout_enabled() ) {
+			return;
+		}
+
+		$woopay_direct_checkout = new WC_Payments_WooPay_Direct_Checkout();
+		$woopay_direct_checkout->init();
 	}
 
 	/**

@@ -131,7 +131,22 @@ declare global {
 		};
 	};
 
-	const wcTracks: any;
+	const wc: {
+		tracks: {
+			recordEvent: (
+				eventName: string,
+				eventProperties: Record< string, unknown >
+			) => void;
+		};
+	};
+
+	const wcTracks: {
+		isEnabled: boolean;
+		recordEvent: (
+			eventName: string,
+			eventProperties: Record< string, unknown >
+		) => void;
+	};
 
 	const wcSettings: Record< string, any >;
 }

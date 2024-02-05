@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
@@ -336,9 +336,7 @@ export const DisputesList = (): JSX.Element => {
 						) => {
 							// Use client-side routing to avoid page refresh.
 							e.preventDefault();
-							wcpayTracks.recordEvent(
-								wcpayTracks.events.DISPUTES_ROW_ACTION_CLICK
-							);
+							recordEvent( events.DISPUTES_ROW_ACTION_CLICK );
 							const history = getHistory();
 							history.push(
 								getDetailsURL(
@@ -426,7 +424,7 @@ export const DisputesList = (): JSX.Element => {
 					)
 				);
 
-				wcpayTracks.recordEvent( 'wcpay_disputes_download', {
+				recordEvent( events.DISPUTE_DOWNLOAD_CSV_CLICK, {
 					exported_disputes: exportedDisputes,
 					total_disputes: exportedDisputes,
 					download_type: 'endpoint',
@@ -505,7 +503,7 @@ export const DisputesList = (): JSX.Element => {
 				generateCSVDataFromTable( csvColumns, csvRows )
 			);
 
-			wcpayTracks.recordEvent( 'wcpay_disputes_download', {
+			recordEvent( events.DISPUTE_DOWNLOAD_CSV_CLICK, {
 				exported_disputes: csvRows.length,
 				total_disputes: disputesSummary.count,
 				download_type: 'browser',

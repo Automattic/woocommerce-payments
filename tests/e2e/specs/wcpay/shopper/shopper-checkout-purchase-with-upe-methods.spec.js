@@ -41,8 +41,9 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 	describe( 'Enabled UPE with deferred intent creation', () => {
 		it( 'should successfully place order with Giropay', async () => {
 			await setupProductCheckout(
-				config.get( 'addresses.customer.billing' )
+				config.get( 'addresses.upe-customer.billing.de' )
 			);
+			page.waitFor( 1000 );
 			await selectOnCheckout( 'giropay', page );
 			await shopper.placeOrder();
 			await completeRedirectedPayment( page, 'success' );
@@ -54,8 +55,9 @@ describe( 'Enabled UPE with deferred intent creation', () => {
 
 		it( 'should successfully place order with Bancontact', async () => {
 			await setupProductCheckout(
-				config.get( 'addresses.customer.billing' )
+				config.get( 'addresses.upe-customer.billing.be' )
 			);
+			page.waitFor( 1000 );
 			await selectOnCheckout( 'bancontact', page );
 			await shopper.placeOrder();
 			await completeRedirectedPayment( page, 'success' );
