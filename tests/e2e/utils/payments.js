@@ -177,11 +177,7 @@ export async function clearWCBCardDetails() {
 	await page.keyboard.press( 'Backspace' );
 }
 
-export async function confirmCardAuthentication(
-	page,
-	cardType = '3DS',
-	authorize = true
-) {
+export async function confirmCardAuthentication( page, authorize = true ) {
 	const target = authorize
 		? '#test-source-authorize-3ds'
 		: '#test-source-fail-3ds';
@@ -195,14 +191,7 @@ export async function confirmCardAuthentication(
 	const challengeFrameHandle = await stripeFrame.waitForSelector(
 		'iframe#challengeFrame'
 	);
-	let challengeFrame = await challengeFrameHandle.contentFrame();
-	// 3DS 1 cards have another iframe enclosing the authorize form
-	if ( cardType.toUpperCase() === '3DS' ) {
-		const acsFrameHandle = await challengeFrame.waitForSelector(
-			'iframe[name="acsFrame"]'
-		);
-		challengeFrame = await acsFrameHandle.contentFrame();
-	}
+	const challengeFrame = await challengeFrameHandle.contentFrame();
 	// Need to wait for the CSS animations to complete.
 	await page.waitFor( 500 );
 	const button = await challengeFrame.waitForSelector( target );
@@ -256,7 +245,7 @@ export async function setupProductCheckout(
 export async function setupCheckout( billingDetails ) {
 	await shopper.goToCheckout();
 	await uiUnblocked();
-	await shopper.fillBillingDetails( billingDetails );
+	await fillBillingDetails( billingDetails );
 
 	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
@@ -264,6 +253,55 @@ export async function setupCheckout( billingDetails ) {
 	await uiUnblocked();
 	await expect( page ).toClick(
 		'.wc_payment_method.payment_method_woocommerce_payments'
+	);
+}
+
+// Copy of the fillBillingDetails function from woocommerce/e2e-utils/src/flows/shopper.js
+// Supporting countries that do not have a state select input.
+// Remove after https://github.com/woocommerce/woocommerce/pull/44090 is merged.
+async function fillBillingDetails( customerBillingDetails ) {
+	await expect( page ).toFill(
+		'#billing_first_name',
+		customerBillingDetails.firstname
+	);
+	await expect( page ).toFill(
+		'#billing_last_name',
+		customerBillingDetails.lastname
+	);
+	await expect( page ).toFill(
+		'#billing_company',
+		customerBillingDetails.company
+	);
+	await expect( page ).toSelect(
+		'#billing_country',
+		customerBillingDetails.country
+	);
+	await expect( page ).toFill(
+		'#billing_address_1',
+		customerBillingDetails.addressfirstline
+	);
+	await expect( page ).toFill(
+		'#billing_address_2',
+		customerBillingDetails.addresssecondline
+	);
+	await expect( page ).toFill( '#billing_city', customerBillingDetails.city );
+	if ( customerBillingDetails.state ) {
+		await expect( page ).toSelect(
+			'#billing_state',
+			customerBillingDetails.state
+		);
+	}
+	await expect( page ).toFill(
+		'#billing_postcode',
+		customerBillingDetails.postcode
+	);
+	await expect( page ).toFill(
+		'#billing_phone',
+		customerBillingDetails.phone
+	);
+	await expect( page ).toFill(
+		'#billing_email',
+		customerBillingDetails.email
 	);
 }
 

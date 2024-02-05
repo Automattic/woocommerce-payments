@@ -73,6 +73,7 @@ const mockUseAuthorization = useAuthorization as jest.MockedFunction<
 const getBaseCharge = (): Charge =>
 	( {
 		id: 'ch_38jdHA39KKA',
+		payment_intent: 'pi_abc',
 		/* Stripe data comes in seconds, instead of the default Date milliseconds */
 		created: Date.parse( 'Sep 19, 2019, 5:24 pm' ) / 1000,
 		amount: 2000,
@@ -223,6 +224,12 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( console ).toHaveWarnedWith(
 			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
 		);
+	} );
+
+	test( 'correctly renders when payment intent is missing', () => {
+		const baseCharge = getBaseCharge();
+		baseCharge.payment_intent = null;
+		expect( renderCharge( baseCharge ) ).toMatchSnapshot();
 	} );
 
 	test( 'renders partially refunded information for a charge', () => {
