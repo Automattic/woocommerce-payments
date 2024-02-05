@@ -1,5 +1,31 @@
 *** WooPayments Changelog ***
 
+= 7.2.0-test-2 - 2024-xx-xx =
+* Add - Add compatibility data to onboarding init payload.
+* Add - Add WooPay direct checkout flow behind a feature flag.
+* Add - Displaying Clearpay instead of Afterpay for UK based stores
+* Add - Enhance WooPay session validation
+* Add - Filtering APMs by billing country
+* Add - Show charge id on payments details page, so merchants can grab it to fill out the dispute evidence form when needed.
+* Add - Support Stripe Link payments with 3DS cards.
+* Fix - Don't instantiate `Fraud_Prevention_Service` in checkout if processing an authorized WooPay request.
+* Fix - fix: pay-for-order compatibility with other gateways
+* Fix - Fix losing cart contents during the login at checkout.
+* Fix - Merge duplicated Payment Request and WooPay button functionality .
+* Fix - Prevent coupon usage increase in a WooPay preflight check.
+* Update - Stop relying on Woo core for loading plugin translations.
+* Dev - Added ENUM class for currency codes
+* Dev - chore: removed deprecated functions since 5.0.0
+* Dev - chore: remove unused checkout API methods
+* Dev - chore: remove unused gateway class methods
+* Dev - chore: remove unused isOrderPage return value from confirmIntent
+* Dev - chore: update colors on documentation pages
+* Dev - Comment: Bump qit-cli dependency to version 0.4.0.
+* Dev - E2E test - Merchant facing multi-currency on-boarding screen.
+* Dev - Refactoring the tracking logic
+* Dev - Remove unnecessary tracks events for dispute accept success/error.
+* Dev - Update REST API documentation for deposits endpoints with changes to estimated and instant deposits
+
 = 7.1.0 - 2024-01-25 =
 * Add - Add active plugins array to compatibility data.
 * Add - Add post_types and their counts as an array to compatibility data.
