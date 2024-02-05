@@ -29,10 +29,9 @@ export default async function confirmCardPayment(
 			};
 		}
 
-		const finalRedirect = await confirmationRequest;
 		return {
 			type: 'success',
-			redirectUrl: finalRedirect,
+			redirectUrl: await confirmationRequest,
 		};
 	} catch ( error ) {
 		return {

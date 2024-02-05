@@ -111,6 +111,8 @@ class WooPay_Session {
 			wp_die( esc_html__( 'WooPay request is not signed correctly.', 'woocommerce-payments' ), 401 );
 		}
 
+		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+
 		$cart_token_user_id = self::get_user_id_from_cart_token();
 		if ( null === $cart_token_user_id ) {
 			return $user;

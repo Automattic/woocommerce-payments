@@ -27,7 +27,7 @@ import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
-import wcpayTracks from 'tracks';
+import { recordUserEvent, events } from 'tracks';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -82,7 +82,7 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		wcpayTracks.recordUserEvent( wcpayTracks.events.PLACE_ORDER_CLICK );
+		recordUserEvent( events.PLACE_ORDER_CLICK );
 	} );
 
 	window.addEventListener( 'hashchange', () => {
@@ -128,6 +128,14 @@ jQuery( function ( $ ) {
 	} );
 
 	$payForOrderForm.on( 'submit', function () {
+		if (
+			$payForOrderForm
+				.find( "input:checked[name='payment_method']" )
+				.val() !== 'woocommerce_payments'
+		) {
+			return;
+		}
+
 		return processPaymentIfNotUsingSavedMethod( $payForOrderForm );
 	} );
 

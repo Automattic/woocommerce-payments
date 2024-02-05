@@ -27,10 +27,7 @@
       },
       "currency": "VND",
       "datetime": 1651215552,
-      "deposit": {
-        "id": "wcpay_estimated_daily_usd_1651795200",
-        "arrival_date": "1651795200"
-      },
+      "deposit": null,
       "transaction_id": "txn_3KtnnI2EFxam75ai06EEZYXQ",
       "transaction_details": {
         "customer_currency": "VND",

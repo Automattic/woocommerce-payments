@@ -207,7 +207,7 @@ export default class WCPayAPI {
 	 *
 	 * @param {string} redirectUrl The redirect URL, returned from the server.
 	 * @param {string} paymentMethodToSave The ID of a Payment Method if it should be saved (optional).
-	 * @return {mixed} A redirect URL on success, or `true` if no confirmation is needed.
+	 * @return {Promise<string>|boolean} A redirect URL on success, or `true` if no confirmation is needed.
 	 */
 	confirmIntent( redirectUrl, paymentMethodToSave ) {
 		const partials = redirectUrl.match(
@@ -252,9 +252,9 @@ export default class WCPayAPI {
 			// If this is a setup intent we're not processing a woopay payment so we can
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
-				return this.getStripe().confirmCardSetup(
-					decryptClientSecret( clientSecret )
-				);
+				return this.getStripe().handleNextAction( {
+					clientSecret: decryptClientSecret( clientSecret ),
+				} );
 			}
 
 			// For woopay we need the capability to switch up the account ID specifically for
@@ -274,9 +274,9 @@ export default class WCPayAPI {
 
 			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
-			return this.getStripe( true ).confirmCardPayment(
-				decryptClientSecret( clientSecret )
-			);
+			return this.getStripe( true ).handleNextAction( {
+				clientSecret: decryptClientSecret( clientSecret ),
+			} );
 		};
 
 		return (
@@ -287,12 +287,6 @@ export default class WCPayAPI {
 						return [ true, result.error ];
 					}
 
-					// In case this is being called via payment request button from a product page,
-					// the getConfig function won't work, so fallback to getPaymentRequestData.
-					const ajaxUrl =
-						getPaymentRequestData( 'ajax_url' ) ??
-						getConfig( 'ajaxUrl' );
-
 					const intentId =
 						( result.paymentIntent && result.paymentIntent.id ) ||
 						( result.setupIntent && result.setupIntent.id ) ||
@@ -301,6 +295,12 @@ export default class WCPayAPI {
 							result.error.payment_intent.id ) ||
 						( result.error.setup_intent &&
 							result.error.setup_intent.id );
+
+					// In case this is being called via payment request button from a product page,
+					// the getConfig function won't work, so fallback to getPaymentRequestData.
+					const ajaxUrl =
+						getPaymentRequestData( 'ajax_url' ) ??
+						getConfig( 'ajaxUrl' );
 
 					const orderUpdateCall = this.request( ajaxUrl, {
 						action: 'update_order_status',
@@ -314,9 +314,9 @@ export default class WCPayAPI {
 
 					return [ orderUpdateCall, result.error ];
 				} )
-				.then( ( [ orderUpdateCall, confirmationError ] ) => {
-					if ( confirmationError ) {
-						throw confirmationError;
+				.then( ( [ orderUpdateCall, originalError ] ) => {
+					if ( originalError ) {
+						throw originalError;
 					}
 
 					if ( orderUpdateCall === true ) {
@@ -337,6 +337,42 @@ export default class WCPayAPI {
 					} );
 				} )
 		);
+	}
+
+	/**
+	 * Sets up an intent based on a payment method.
+	 *
+	 * @param {string} paymentMethodId The ID of the payment method.
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	setupIntent( paymentMethodId ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			action: 'create_setup_intent',
+			'wcpay-payment-method': paymentMethodId,
+			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+		} ).then( ( response ) => {
+			if ( ! response.success ) {
+				throw response.data.error;
+			}
+
+			if ( response.data.status === 'succeeded' ) {
+				// No need for further authentication.
+				return response.data;
+			}
+
+			return this.getStripe()
+				.confirmCardSetup(
+					decryptClientSecret( response.data.client_secret )
+				)
+				.then( ( confirmedSetupIntent ) => {
+					const { setupIntent, error } = confirmedSetupIntent;
+					if ( error ) {
+						throw error;
+					}
+
+					return setupIntent;
+				} );
+		} );
 	}
 
 	/**

@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
-import wcpayTracks from 'tracks';
+import { recordUserEvent, events } from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from '../../payment-request/utils';
 import {
@@ -340,7 +340,7 @@ export const handleWooPayEmailInput = async (
 			parentDiv.removeChild( errorMessage );
 		}
 
-		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_EMAIL_CHECK );
+		recordUserEvent( events.WOOPAY_EMAIL_CHECK );
 
 		request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_signature' ),
@@ -402,10 +402,7 @@ export const handleWooPayEmailInput = async (
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
 				} else if ( data.code !== 'rest_invalid_param' ) {
-					wcpayTracks.recordUserEvent(
-						wcpayTracks.events.WOOPAY_OFFERED,
-						[]
-					);
+					recordUserEvent( events.WOOPAY_OFFERED );
 				}
 			} )
 			.catch( ( err ) => {
@@ -502,9 +499,7 @@ export const handleWooPayEmailInput = async (
 								'woopay-login-session-iframe-wrapper'
 							);
 							loginSessionIframe.classList.add( 'open' );
-							wcpayTracks.recordUserEvent(
-								wcpayTracks.events.WOOPAY_AUTO_REDIRECT
-							);
+							recordUserEvent( events.WOOPAY_AUTO_REDIRECT );
 							spinner.remove();
 							// Do nothing if the iframe has been closed.
 							if (
@@ -625,11 +620,7 @@ export const handleWooPayEmailInput = async (
 			dispatchUserExistEvent( true );
 		}, 2000 );
 
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_SKIPPED,
-			[],
-			true
-		);
+		recordUserEvent( events.WOOPAY_SKIPPED, {}, true );
 
 		searchParams.delete( 'skip_woopay' );
 

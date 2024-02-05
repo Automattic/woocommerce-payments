@@ -66,8 +66,20 @@ exports[`Order details page should match the snapshot - Charge without payment i
                 <div
                   class="payment-details-summary__id"
                 >
-                  Payment ID: 
-                  776
+                  <div
+                    class="payment-details-summary__id_wrapper"
+                  >
+                    <span
+                      class="payment-details-summary__id_label"
+                    >
+                      Charge ID: 
+                    </span>
+                    <span
+                      class="payment-details-summary__id_value"
+                    >
+                      776
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
