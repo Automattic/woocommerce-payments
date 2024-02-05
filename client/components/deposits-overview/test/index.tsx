@@ -601,7 +601,7 @@ describe( 'Minimum Deposit Amount Notice', () => {
 		const { queryByText } = render( <DepositsOverview /> );
 		expect(
 			queryByText(
-				/Deposits are paused while your available funds balance remains below €5.00/
+				/Deposits are paused while your available funds balance remains below/
 			)
 		).toBeFalsy();
 	} );
