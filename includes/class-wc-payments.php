@@ -656,6 +656,8 @@ class WC_Payments {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
+
+		wcpay_get_container()->get( \WCPay\Internal\PluginManagement\TranslationsLoader::class )->init_hooks();
 	}
 
 	/**

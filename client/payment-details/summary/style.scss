@@ -86,8 +86,19 @@
 		display: flex;
 		align-items: start;
 		justify-content: initial;
+		flex-direction: column;
+		flex-wrap: nowrap;
 		@include breakpoint( '>660px' ) {
-			justify-content: flex-end;
+			justify-content: flex-start;
+			align-items: flex-end;
+		}
+
+		.payment-details-summary__id_wrapper {
+			white-space: nowrap;
+		}
+
+		.payment-details-summary__id_value {
+			font-family: monospace;
 		}
 	}
 }
