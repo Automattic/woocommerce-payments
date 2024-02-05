@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
@@ -74,12 +74,9 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 
 		setLoading( true );
 
-		wcpayTracks.recordEvent(
-			'wcpay_merchant_settings_file_upload_started',
-			{
-				type: key,
-			}
-		);
+		recordEvent( events.SETTINGS_FILE_UPLOAD_STARTED, {
+			type: key,
+		} );
 
 		const body = new FormData();
 		body.append( 'file', file );
@@ -100,14 +97,11 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 			setLoading( false );
 			setUploadError( false );
 
-			wcpayTracks.recordEvent(
-				'wcpay_merchant_settings_file_upload_success',
-				{
-					type: key,
-				}
-			);
+			recordEvent( events.SETTINGS_FILE_UPLOAD_SUCCESS, {
+				type: key,
+			} );
 		} catch ( { err } ) {
-			wcpayTracks.recordEvent( 'wcpay_merchant_settings_upload_failed', {
+			recordEvent( events.SETTINGS_FILE_UPLOAD_FAILED, {
 				message: ( err as Error ).message,
 			} );
 
