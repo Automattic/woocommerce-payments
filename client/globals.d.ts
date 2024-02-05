@@ -40,7 +40,8 @@ declare global {
 				monthly_anchor: null | number;
 				delay_days: null | number;
 				completed_waiting_period: boolean;
-				minimum_deposit_amounts: Record< string, number >;
+				minimum_manual_deposit_amounts: Record< string, number >;
+				minimum_scheduled_deposit_amounts: Record< string, number >;
 			};
 			depositsStatus?: string;
 			currentDeadline?: bigint;
