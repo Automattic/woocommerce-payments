@@ -61,9 +61,23 @@ jQuery( function ( $ ) {
 	);
 
 	blockUI( $forms );
-	showAuthenticationModalIfRequired( api ).finally( () => {
-		unblockUI( $forms );
-	} );
+	showAuthenticationModalIfRequired( api )
+		.then( ( setupIntent ) => {
+			if ( typeof setupIntent !== 'object' ) return;
+
+			const input = document.createElement( 'input' );
+			input.type = 'hidden';
+			input.id = 'wcpay-setup-intent';
+			input.name = 'wcpay-setup-intent';
+			input.value = setupIntent.id;
+
+			$addPaymentMethodForm.append( input );
+			// submit again to show success message and add confirmed intent to the WC customer
+			$addPaymentMethodForm.submit();
+		} )
+		.finally( () => {
+			unblockUI( $forms );
+		} );
 
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement();
@@ -113,6 +127,10 @@ jQuery( function ( $ ) {
 				.find( "input:checked[name='payment_method']" )
 				.val() !== 'woocommerce_payments'
 		) {
+			return;
+		}
+
+		if ( window.location.href.indexOf( 'wcpay-confirm-intent' ) > -1 ) {
 			return;
 		}
 

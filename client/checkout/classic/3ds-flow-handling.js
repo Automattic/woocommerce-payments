@@ -39,9 +39,12 @@ export const showAuthenticationModalIfRequired = async ( api ) => {
 
 	try {
 		const confirmationResult = await confirmationRequest;
-		if ( confirmationResult ) {
+		if ( typeof confirmationResult === 'string' ) {
 			window.location = confirmationResult;
+			return;
 		}
+
+		return confirmationResult;
 	} catch ( error ) {
 		let errorMessage = error.message;
 

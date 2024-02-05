@@ -497,9 +497,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	public function init_hooks() {
+
+
 		add_action( 'init', [ $this, 'maybe_update_properties_with_country' ] );
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
+			add_filter( 'woocommerce_available_payment_gateways', [$this, 'filter_all_but_card_gateway'] );
+
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
@@ -544,6 +548,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Displays HTML tags for WC payment gateway radio button content.
 	 */
 	public function display_gateway_html() {
+		if( isset( $_GET['wcpay-confirm-intent'] )) return;
 		?>
 			<div class="wcpay-upe-element" data-payment-method-type="<?php echo esc_attr( $this->stripe_id ); ?>"></div>
 		<?php
@@ -3469,70 +3474,159 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Create a setup intent when adding cards using the my account page.
+	 *
+	 * @return WC_Payments_API_Setup_Intention
+	 *
+	 * @throws API_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
+	 */
+	public function create_and_confirm_setup_intent() {
+		$payment_information             = Payment_Information::from_payment_request( $_POST, null, null, null, null, $this->get_payment_method_to_use_for_intent() ); // phpcs:ignore WordPress.Security.NonceVerification
+		$should_save_in_platform_account = false;
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! empty( $_POST['save_payment_method_in_platform_account'] ) && filter_var( wp_unslash( $_POST['save_payment_method_in_platform_account'] ), FILTER_VALIDATE_BOOLEAN ) ) {
+			$should_save_in_platform_account = true;
+		}
+
+		// Determine the customer adding the payment method, create one if we don't have one already.
+		$user        = wp_get_current_user();
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
+		}
+
+		$request = Create_And_Confirm_Setup_Intention::create();
+		$request->set_customer( $customer_id );
+		$request->set_payment_method( $payment_information->get_payment_method() );
+		$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
+		$request->set_hook_args( $payment_information, $should_save_in_platform_account, false );
+		return $request->send();
+	}
+
+	/**
+	 * Returns only the WooPayments card gateway.
+	 *
+	 * @return array
+	 */
+	public function filter_all_but_card_gateway( $gateways ) {
+		if ( ! isset( $_GET['wcpay-confirm-intent'] ) ) {
+			return $gateways;
+		}
+
+		return [ 'woocommerce_payments', $this ];
+	}
+
+	/**
 	 * Add payment method via account screen.
 	 *
 	 * @throws Add_Payment_Method_Exception If payment method is missing.
 	 */
 	public function add_payment_method() {
 		try {
-			$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
-
-			if ( null === $customer_id ) {
-				throw new Add_Payment_Method_Exception(
-					__( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ),
-					'invalid_setup_intent_id'
-				);
+			$setup_intent = null;
+			// adding a new saved card?
+			if ( ! empty( $_POST['wcpay-setup-intent'] ) ) {
+				// we might be adding a 3DS card to the customer
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+				$setup_intent_id      = wc_clean( $_POST['wcpay-setup-intent'] );
+				$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
+				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				$setup_intent = $setup_intent_request->send();
+			} else {
+				// otherwise, let's create it!
+				$setup_intent = $this->create_and_confirm_setup_intent();
 			}
 
-			// TODO: ~fr
-			$payment_method_stripe_id = $this->get_payment_method_to_use_for_intent();
-			$payment_information      = Payment_Information::from_payment_request( $_POST, null, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type(), $payment_method_stripe_id );
-			$payment_information->must_save_payment_method_to_store();
-
-			$request = Create_And_Confirm_Setup_Intention::create();
-			$request->set_customer( $customer_id );
-			$request->set_payment_method( $payment_information->get_payment_method() );
-			// TODO: ~fr
-			// $request->set_metadata( $metadata );
-			$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
-			$request->set_hook_args( $payment_information, false, false );
-
-			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-			$setup_intent = $request->send();
-
-			if ( in_array( $setup_intent->get_status(), Intent_Status::AUTHORIZED_STATUSES, true ) ) {
-				$payment_method = $setup_intent->get_payment_method_id();
-				$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
+			// has the 3DS card not been confirmed? let's have the customer confirm it
+			if ( Intent_Status::SUCCEEDED !== $setup_intent->get_status() ) {
+				wc_add_notice( __( "Almost there!\n\nYour payment method almost saved, the only thing that still needs to be done is for you to authorize it with your bank.", 'woocommerce-payments' ), 'notice' );
 
 				return [
-					'result'   => 'success',
-					'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
+					'redirect' => add_query_arg(
+						'wcpay-confirm-intent',
+						'1',
+						sprintf(
+							'#wcpay-confirm-%s:%s:%s:%s',
+							'si',
+							'',
+							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $setup_intent->get_client_secret() ),
+							''
+						)
+					),
 				];
 			}
 
 			$payment_method = $setup_intent->get_payment_method_id();
 			$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
 
-			// TODO: handle "require action" and "failed"
-			return [
-//				'result'         => 'success',
-				// Include a new nonce for update_order_status to ensure the update order
-				// status call works when a guest user creates an account during checkout.
-				'redirect'       => sprintf(
-					'#wcpay-confirm-%s:%s:%s:%s',
-					'si',
-					null,
-					WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $setup_intent->get_client_secret() ),
-					''
-				),
-				// Include the payment method ID so the Blocks integration can save cards.
-				'payment_method' => $payment_information->get_payment_method(),
-			];
-
 			return [
 				'result'   => 'success',
 				'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
 			];
+
+			// $customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
+			//
+			// if ( null === $customer_id ) {
+			// throw new Add_Payment_Method_Exception(
+			// __( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ),
+			// 'invalid_setup_intent_id'
+			// );
+			// }
+			//
+			// TODO: ~fr
+			// $payment_method_stripe_id = $this->get_payment_method_to_use_for_intent();
+			// $payment_information      = Payment_Information::from_payment_request( $_POST, null, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type(), $payment_method_stripe_id );
+			// $payment_information->must_save_payment_method_to_store();
+			//
+			// $request = Create_And_Confirm_Setup_Intention::create();
+			// $request->set_customer( $customer_id );
+			// $request->set_payment_method( $payment_information->get_payment_method() );
+			// TODO: ~fr
+			// $request->set_metadata( $metadata );
+			// $request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
+			// $request->set_hook_args( $payment_information, false, false );
+			//
+			// ** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			// $setup_intent = $request->send();
+			//
+			// if ( in_array( $setup_intent->get_status(), Intent_Status::AUTHORIZED_STATUSES, true ) ) {
+			// $payment_method = $setup_intent->get_payment_method_id();
+			// $this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
+			//
+			// return [
+			// 'result'   => 'success',
+			// 'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
+			// ];
+			// }
+			//
+			// $payment_method = $setup_intent->get_payment_method_id();
+			// $this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
+			//
+			// TODO: handle "require action" and "failed"
+			// return [
+			// 'result'         => 'success',
+			// Include a new nonce for update_order_status to ensure the update order
+			// status call works when a guest user creates an account during checkout.
+			// 'redirect'       => sprintf(
+			// '#wcpay-confirm-%s:%s:%s:%s',
+			// 'si',
+			// null,
+			// WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $setup_intent->get_client_secret() ),
+			// ''
+			// ),
+			// Include the payment method ID so the Blocks integration can save cards.
+			// 'payment_method' => $payment_information->get_payment_method(),
+			// ];
+			//
+			// return [
+			// 'result'   => 'success',
+			// 'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
+			// ];
 		} catch ( Exception $e ) {
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 

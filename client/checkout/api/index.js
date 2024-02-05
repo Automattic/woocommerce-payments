@@ -283,18 +283,22 @@ export default class WCPayAPI {
 			confirmPaymentOrSetup()
 				// ToDo: Switch to an async function once it works with webpack.
 				.then( ( result ) => {
-					if ( ! orderId ) {
-						return [ true, result.error ];
+					// in case we're verifying an intent on the "add payment method" page there's no order ID
+					// - so we don't need to change the order status.
+					if ( ! orderIdPartials ) {
+						return [
+							Promise.resolve( {
+								setupIntent: result.setupIntent,
+							} ),
+							result.error,
+						];
 					}
 
 					const intentId =
-						( result.paymentIntent && result.paymentIntent.id ) ||
-						( result.setupIntent && result.setupIntent.id ) ||
-						( result.error &&
-							result.error.payment_intent &&
-							result.error.payment_intent.id ) ||
-						( result.error.setup_intent &&
-							result.error.setup_intent.id );
+						result.paymentIntent?.id ||
+						result.setupIntent?.id ||
+						result.error?.payment_intent?.id ||
+						result.error.setup_intent?.id;
 
 					// In case this is being called via payment request button from a product page,
 					// the getConfig function won't work, so fallback to getPaymentRequestData.
@@ -319,10 +323,6 @@ export default class WCPayAPI {
 						throw originalError;
 					}
 
-					if ( orderUpdateCall === true ) {
-						return '';
-					}
-
 					return orderUpdateCall.then( ( response ) => {
 						const result =
 							typeof response === 'string'
@@ -331,6 +331,10 @@ export default class WCPayAPI {
 
 						if ( result.error ) {
 							throw result.error;
+						}
+
+						if ( result.setupIntent ) {
+							return result.setupIntent;
 						}
 
 						return result.return_url;
