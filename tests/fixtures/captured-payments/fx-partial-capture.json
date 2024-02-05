@@ -54,7 +54,7 @@
   },
   "expectation": {
     "fxString": "1.00 GBP → 1.26214 USD: $17.67 USD",
-    "feeString": "Fee (3.51% + £0.20): -$0.88",
+    "feeString": "Fee (3.51% + £0.21): -$0.88",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-fx": "Foreign exchange fee: 1%",
