@@ -177,25 +177,25 @@ class WC_Payments_Captured_Event_Note {
 		if ( $this->is_fx_event() ) {
 			// For fx events, we need the store amount and currency to display the net amount
 			// in the store currency.
-			$amount_key          = 'store_amount';
-			$captured_amount_key = 'store_amount_captured';
-			$fee_key             = 'store_fee';
-			$currency_key        = 'store_currency';
+			$amount          = $data['store_amount'];
+			$captured_amount = $data['store_amount_captured'];
+			$fee             = $data['store_fee'];
+			$currency        = $data['store_currency'];
 		} else {
-			$amount_key          = 'customer_amount';
-			$captured_amount_key = 'customer_amount_captured';
-			$fee_key             = 'customer_fee';
-			$currency_key        = 'customer_currency';
+			$amount          = $data['customer_amount'];
+			$captured_amount = $data['customer_amount_captured'];
+			$fee             = $data['customer_fee'];
+			$currency        = $data['customer_currency'];
 		}
 
-		$gross_amount = $data[ $captured_amount_key ] ?? $data[ $amount_key ];
-		$net          = WC_Payments_Utils::interpret_stripe_amount( (int) $gross_amount - $data[ $fee_key ], $data[ $currency_key ] );
+		$gross_amount = $captured_amount ?? $amount;
+		$net          = WC_Payments_Utils::interpret_stripe_amount( (int) $gross_amount - $fee, $currency );
 
 		// Format and return the net string.
 		return sprintf(
 			/* translators: %s is a monetary amount */
 			__( 'Net deposit: %s', 'woocommerce-payments' ),
-			WC_Payments_Utils::format_explicit_currency( $net, $data[ $currency_key ] )
+			WC_Payments_Utils::format_explicit_currency( $net, $currency )
 		);
 	}
 
