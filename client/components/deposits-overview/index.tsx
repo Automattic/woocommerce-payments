@@ -15,12 +15,14 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import { getAdminUrl } from 'wcpay/utils';
+import { formatExplicitCurrency } from 'wcpay/utils/currency';
 import { recordEvent, events } from 'tracks';
 import Loadable from 'components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
 import {
+	DepositMinimumBalanceNotice,
 	DepositTransitDaysNotice,
 	NegativeBalanceDepositsPausedNotice,
 	NewAccountWaitingPeriodNotice,
@@ -50,6 +52,10 @@ const DepositsOverview: React.FC = () => {
 	const availableFunds = overview?.available?.amount ?? 0;
 	const pendingFunds = overview?.pending?.amount ?? 0;
 
+	const minimumDepositAmount =
+		wcpaySettings.accountStatus.deposits
+			?.minimum_scheduled_deposit_amounts?.[ selectedCurrency ] ?? 0;
+	const isAboveMinimumDepositAmount = availableFunds >= minimumDepositAmount;
 	// If the available balance is negative, deposits may be paused.
 	const isNegativeBalanceDepositsPaused = availableFunds < 0;
 	// When there are funds pending but no available funds, deposits are paused.
@@ -135,6 +141,15 @@ const DepositsOverview: React.FC = () => {
 						{ isNegativeBalanceDepositsPaused && (
 							<NegativeBalanceDepositsPausedNotice />
 						) }
+						{ availableFunds > 0 &&
+							! isAboveMinimumDepositAmount && (
+								<DepositMinimumBalanceNotice
+									minimumDepositAmountFormatted={ formatExplicitCurrency(
+										minimumDepositAmount,
+										selectedCurrency
+									) }
+								/>
+							) }
 					</>
 				) }
 			</CardBody>
