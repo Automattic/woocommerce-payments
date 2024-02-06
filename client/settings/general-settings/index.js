@@ -14,6 +14,7 @@ import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/overview/modal/setup-live-payments';
 import TestModeConfirmationModal from './test-mode-confirm-modal';
+import { recordEvent, events } from 'wcpay/tracks';
 
 const GeneralSettings = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
@@ -22,13 +23,22 @@ const GeneralSettings = () => {
 	const isDevModeEnabled = useDevMode();
 	const [ testModeModalVisible, setTestModeModalVisible ] = useState( false );
 
+	const handleWcpayEnabledChange = ( enableWCPay ) => {
+		setIsWCPayEnabled( enableWCPay );
+
+		recordEvent( events.GATEWAY_TOGGLE, {
+			action: enableWCPay ? 'enable' : 'disable',
+			context: 'wcpay-settings',
+		} );
+	};
+
 	return (
 		<>
 			<Card>
 				<CardBody>
 					<CheckboxControl
 						checked={ isWCPayEnabled }
-						onChange={ setIsWCPayEnabled }
+						onChange={ handleWcpayEnabledChange }
 						label={ sprintf(
 							/* translators: %s: WooPayments */
 							__( 'Enable %s', 'woocommerce-payments' ),
