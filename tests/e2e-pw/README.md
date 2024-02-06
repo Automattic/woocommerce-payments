@@ -10,8 +10,8 @@ Playwright e2e tests can be found in the `./tests/e2e-pw/specs` directory. These
 ## Running Playwright e2e tests
 
 -   `npm run test:e2e-pw` (usual, headless run)
--   `npm run test:e2e-pw -- --headed` (headed -- displaying browser window and test interactions)
--   `npm run test:e2e-pw -- --ui` (runs tests in interactive UI mode)
+-   `npm run test:e2e-pw -- --ui` (runs tests in interactive UI mode – recommended for authoring tests and re-running failed tests)
+-   `npm run test:e2e-pw -- --headed` (displays browser windows and test interactions)
 -   `npm run test:e2e-pw -- --debug` (runs tests in debug mode)
 -   `npm run test:e2e-pw -- --update-snapshots` (updates snapshots)
 
