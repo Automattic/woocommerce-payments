@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix for E2E shopper tests around 3DS and UPE settings

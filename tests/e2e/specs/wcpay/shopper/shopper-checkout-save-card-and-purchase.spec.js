@@ -45,7 +45,7 @@ describe( 'Saved cards ', () => {
 					await shopper.placeOrder();
 				} else {
 					await expect( page ).toClick( '#place_order' );
-					await confirmCardAuthentication( page, cardType );
+					await confirmCardAuthentication( page );
 					await page.waitForNavigation( {
 						waitUntil: 'networkidle0',
 					} );
@@ -73,7 +73,7 @@ describe( 'Saved cards ', () => {
 					await shopper.placeOrder();
 				} else {
 					await expect( page ).toClick( '#place_order' );
-					await confirmCardAuthentication( page, cardType );
+					await confirmCardAuthentication( page );
 					await page.waitForNavigation( {
 						waitUntil: 'networkidle0',
 					} );
@@ -86,6 +86,17 @@ describe( 'Saved cards ', () => {
 				await shopperWCP.goToPaymentMethods();
 				await shopperWCP.deleteSavedPaymentMethod( card.label );
 				await expect( page ).toMatch( 'Payment method deleted' );
+			} );
+
+			it( 'should not allow guest user to save the card', async () => {
+				await shopperWCP.logout();
+				await setupProductCheckout(
+					config.get( 'addresses.customer.billing' )
+				);
+
+				await expect( page ).not.toMatchElement(
+					'input#wc-woocommerce_payments-new-payment-method'
+				);
 			} );
 		}
 	);

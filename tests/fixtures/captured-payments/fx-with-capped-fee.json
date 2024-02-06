@@ -35,10 +35,7 @@
     },
     "currency": "EUR",
     "datetime": 1651998676,
-    "deposit": {
-      "id": "wcpay_estimated_weekly_usd_1652659200",
-      "arrival_date": "1652659200"
-    },
+    "deposit": null,
     "transaction_id": "txn_3Kx5WG2HDHuit9Eg0ZrUH90z",
     "transaction_details": {
       "customer_currency": "EUR",

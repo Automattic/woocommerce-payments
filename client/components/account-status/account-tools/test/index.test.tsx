@@ -31,7 +31,7 @@ describe( 'AccountTools', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	it( 'should not render in dev mode', () => {
+	it( 'should not render in sandbox mode', () => {
 		global.wcpaySettings = {
 			devMode: true,
 		};

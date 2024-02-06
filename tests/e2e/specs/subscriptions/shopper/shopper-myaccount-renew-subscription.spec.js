@@ -19,7 +19,9 @@ let subscriptionId;
 const testSelectors = {
 	subscriptionIdField: '.woocommerce-orders-table__cell-subscription-id > a',
 	subscriptionRenewButton: 'a.button.subscription_renewal_early',
-	wcNotice: '.woocommerce .woocommerce-notices-wrapper .woocommerce-message',
+	wcNotice: 'div.wc-block-components-notice-banner',
+	wcOldNotice:
+		'.woocommerce .woocommerce-notices-wrapper .woocommerce-message',
 };
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
@@ -65,10 +67,11 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			);
 
 			// Place an order to renew a subscription
-			await page.waitForSelector( testSelectors.wcNotice );
-			await expect( page ).toMatchElement( testSelectors.wcNotice, {
-				text: 'Complete checkout to renew now.',
-			} );
+			await shopperWCP.waitForSubscriptionsErrorBanner(
+				'Complete checkout to renew now.',
+				testSelectors.wcNotice,
+				testSelectors.wcOldNotice
+			);
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			await shopper.placeOrder();

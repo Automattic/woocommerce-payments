@@ -9,7 +9,6 @@ namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
 use WC_Payments_Account;
 use WC_Payments_Order_Service;
-use WC_Payment_Gateway_WCPay;
 use WCPay\Core\Mode;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Logger;
@@ -18,6 +17,7 @@ use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\SessionService;
+use WCPay\Internal\PluginManagement\TranslationsLoader;
 
 /**
  * WCPay payments generic service provider.
@@ -32,6 +32,7 @@ class GenericServiceProvider extends AbstractServiceProvider {
 		Logger::class,
 		OrderService::class,
 		Level3Service::class,
+		TranslationsLoader::class,
 	];
 
 	/**
@@ -44,8 +45,7 @@ class GenericServiceProvider extends AbstractServiceProvider {
 		$container->add( 'wc_get_logger', 'wc_get_logger' );
 		$container->addShared( Logger::class )
 			->addArgument( 'wc_get_logger' )
-			->addArgument( Mode::class )
-			->addArgument( WC_Payment_Gateway_WCPay::class );
+			->addArgument( Mode::class );
 
 		$container->addShared( OrderService::class )
 			->addArgument( WC_Payments_Order_Service::class )
@@ -60,5 +60,9 @@ class GenericServiceProvider extends AbstractServiceProvider {
 
 		$container->addShared( SessionService::class )
 			->addArgument( LegacyProxy::class );
+
+		$container->addShared( TranslationsLoader::class )
+			->addArgument( Logger::class )
+			->addArgument( HooksProxy::class );
 	}
 }

@@ -83,7 +83,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 	>
 		{ interpolateComponents( {
 			mixedString: __(
-				'Your first deposit is held for seven business days. {{whyLink}}Why?{{/whyLink}}',
+				'Your first deposit is held for 7-14 days. {{whyLink}}Why?{{/whyLink}}',
 				'woocommerce-payments'
 			),
 			components: {
@@ -150,6 +150,42 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
 		} ) }
 	</InlineNotice>
 );
+
+/**
+ * Renders a notice informing the user that their available balance is below the minimum deposit threshold.
+ */
+export const DepositMinimumBalanceNotice: React.FC< {
+	/**
+	 * The minimum deposit amount formatted as a currency string (e.g. $5.00 USD).
+	 */
+	minimumDepositAmountFormatted: string;
+} > = ( { minimumDepositAmountFormatted } ) => {
+	return (
+		<InlineNotice status="warning" icon isDismissible={ false }>
+			{ interpolateComponents( {
+				mixedString: sprintf(
+					/* translators: %s: a formatted currency amount, e.g. $5.00 USD */
+					__(
+						'Deposits are paused while your available funds balance remains below %s. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'woocommerce-payments'
+					),
+					minimumDepositAmountFormatted
+				),
+				components: {
+					learnMoreLink: (
+						// Link content is in the format string above.
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							target="_blank"
+							rel="noopener noreferrer"
+							href="https://woo.com/document/woopayments/deposits/deposit-schedule/#minimum-deposit-amounts"
+						/>
+					),
+				},
+			} ) }
+		</InlineNotice>
+	);
+};
 
 /**
  * Renders a notice informing the user that deposits only occur when there are funds available.

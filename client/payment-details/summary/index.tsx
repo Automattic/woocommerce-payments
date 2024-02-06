@@ -21,10 +21,6 @@ import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
 
-// This is a workaround for the position of the dropdown menu. At the same time underlines the need for a better solution.
-import '../../../node_modules/@wordpress/components/src/dropdown-menu/style.scss';
-import '../../../node_modules/@wordpress/components/src/popover/style.scss';
-
 /**
  * Internal dependencies.
  */
@@ -54,7 +50,7 @@ import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
-import wcpayTracks from 'tracks';
+import { recordEvent, events } from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
@@ -434,15 +430,15 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											charge.payment_intent || ''
 										}
 										onClick={ () => {
-											wcpayTracks.recordEvent(
-												'wcpay_fraud_protection_transaction_reviewed_merchant_blocked',
+											recordEvent(
+												events.FRAUD_PROTECTION_TRANSACTION_REVIEWED_MERCHANT_BLOCKED,
 												{
 													payment_intent_id:
 														charge.payment_intent,
 												}
 											);
-											wcpayTracks.recordEvent(
-												'payments_transactions_details_cancel_charge_button_click',
+											recordEvent(
+												events.TRANSACTIONS_DETAILS_CANCEL_CHARGE_BUTTON_CLICK,
 												{
 													payment_intent_id:
 														charge.payment_intent,
@@ -461,15 +457,15 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										}
 										buttonIsSmall={ false }
 										onClick={ () => {
-											wcpayTracks.recordEvent(
-												'wcpay_fraud_protection_transaction_reviewed_merchant_approved',
+											recordEvent(
+												events.FRAUD_PROTECTION_TRANSACTION_REVIEWED_MERCHANT_APPROVED,
 												{
 													payment_intent_id:
 														charge.payment_intent,
 												}
 											);
-											wcpayTracks.recordEvent(
-												'payments_transactions_details_capture_charge_button_click',
+											recordEvent(
+												events.TRANSACTIONS_DETAILS_CAPTURE_CHARGE_BUTTON_CLICK,
 												{
 													payment_intent_id:
 														charge.payment_intent,
@@ -486,13 +482,32 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									isLoading={ isLoading }
 									placeholder="Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx"
 								>
-									{ `${ __(
-										'Payment ID',
-										'woocommerce-payments'
-									) }: ` }
-									{ charge.payment_intent
-										? charge.payment_intent
-										: charge.id }
+									{ charge.payment_intent && (
+										<div className="payment-details-summary__id_wrapper">
+											<span className="payment-details-summary__id_label">
+												{ `${ __(
+													'Payment ID',
+													'woocommerce-payments'
+												) }: ` }
+											</span>
+											<span className="payment-details-summary__id_value">
+												{ charge.payment_intent }
+											</span>
+										</div>
+									) }
+									{ charge.id && (
+										<div className="payment-details-summary__id_wrapper">
+											<span className="payment-details-summary__id_label">
+												{ `${ __(
+													'Charge ID',
+													'woocommerce-payments'
+												) }: ` }
+											</span>
+											<span className="payment-details-summary__id_value">
+												{ charge.id }
+											</span>
+										</div>
+									) }
 								</Loadable>
 							</div>
 						</div>
@@ -512,6 +527,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									popoverProps={ {
 										position: 'bottom left',
 									} }
+									className="refund-controls__dropdown-menu"
 								>
 									{ ( { onClose } ) => (
 										<MenuGroup>
@@ -520,8 +536,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 													setIsRefundModalOpen(
 														true
 													);
-													wcpayTracks.recordEvent(
-														'payments_transactions_details_refund_modal_open',
+													recordEvent(
+														events.TRANSACTIONS_DETAILS_REFUND_MODAL_OPEN,
 														{
 															payment_intent_id:
 																charge.payment_intent,
@@ -538,8 +554,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											{ isPartiallyRefundable && (
 												<MenuItem
 													onClick={ () => {
-														wcpayTracks.recordEvent(
-															'payments_transactions_details_partial_refund',
+														recordEvent(
+															events.TRANSACTION_DETAILS_PARTIAL_REFUND,
 															{
 																payment_intent_id:
 																	charge.payment_intent,
@@ -598,8 +614,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					formattedAmount={ formattedAmount }
 					onModalClose={ () => {
 						setIsRefundModalOpen( false );
-						wcpayTracks.recordEvent(
-							'payments_transactions_details_refund_modal_close',
+						recordEvent(
+							events.TRANSACTIONS_DETAILS_REFUND_MODAL_CLOSE,
 							{
 								payment_intent_id: charge.payment_intent,
 							}
@@ -629,8 +645,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										buttonIsPrimary={ true }
 										buttonIsSmall={ false }
 										onClick={ () => {
-											wcpayTracks.recordEvent(
-												'payments_transactions_details_capture_charge_button_click',
+											recordEvent(
+												events.TRANSACTIONS_DETAILS_CAPTURE_CHARGE_BUTTON_CLICK,
 												{
 													payment_intent_id:
 														charge.payment_intent,

@@ -12,6 +12,7 @@ import './style.scss';
 import {
 	AffirmIcon,
 	AfterpayIcon,
+	ClearpayIcon,
 	AmericanExpressIcon,
 	ApplePayIcon,
 	DinersClubIcon,
@@ -38,7 +39,11 @@ const PaymentMethods: React.FC = () => {
 				<UnionPayIcon />
 				<JCBIcon />
 				<AffirmIcon />
-				<AfterpayIcon />
+				{ 'GB' === wcpaySettings?.connect?.country ? (
+					<ClearpayIcon />
+				) : (
+					<AfterpayIcon />
+				) }
 				<span>& more.</span>
 			</div>
 		</>

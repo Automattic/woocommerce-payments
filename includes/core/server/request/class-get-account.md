@@ -5,7 +5,7 @@
 ## Description
 
 The `WCPay\Core\Server\Request\Get_Account` class is used to construct the request for retrieving account data.
-Note that this request sends the test_mode flag only when the site is in the dev mode.
+Note that this request sends the test_mode flag only when the site is in sandbox mode.
 
 ## Parameters
 

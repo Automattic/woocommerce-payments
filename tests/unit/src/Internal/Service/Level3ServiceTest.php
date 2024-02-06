@@ -12,6 +12,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WC_Order;
 use WC_Order_Item_Product;
 use WC_Order_Item_Fee;
+use WCPay\Constants\Country_Code;
 use WCPAY_UnitTestCase;
 use WC_Payments_Account;
 use WCPay\Internal\Service\Level3Service;
@@ -235,7 +236,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			->with( 'get_option', 'woocommerce_store_postcode' )
 			->willReturn( '94110' );
 
-		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_level_3_order( '98012', false, false, 1, 1, 30, true );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
@@ -266,7 +267,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			->with( 'get_option', 'woocommerce_store_postcode' )
 			->willReturn( '94110' );
 
-		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_level_3_order( '98012', false, false, 1, 1, 123456789123456 );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
@@ -305,7 +306,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			->with( 'get_option', 'woocommerce_store_postcode' )
 			->willReturn( '94110' );
 
-		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_level_3_order( '98012', true );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
@@ -344,7 +345,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			->with( 'get_option', 'woocommerce_store_postcode' )
 			->willReturn( '94110' );
 
-		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_level_3_order( '98012', false, true, 1, 1 );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
@@ -353,7 +354,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 
 	public function test_us_store_level_3_data() {
 		// Use a non-us customer postcode to ensure it's not included in the level3 data.
-		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_level_3_order( '9000' );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
@@ -384,7 +385,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			->with( 'get_option', 'woocommerce_store_postcode' )
 			->willReturn( '9000' );
 
-		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_level_3_order( '98012' );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
@@ -394,7 +395,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 	public function test_non_us_customer_level_3_data() {
 		$expected_data = [];
 
-		$this->mock_account->method( 'get_account_country' )->willReturn( 'CA' );
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::CANADA );
 		$this->mock_level_3_order( 'K0A' );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
@@ -425,7 +426,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			->with( 'get_option', 'woocommerce_store_postcode' )
 			->willReturn( '94110' );
 
-		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_level_3_order( '98012', false, false, 3.7 );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
@@ -456,7 +457,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 			->with( 'get_option', 'woocommerce_store_postcode' )
 			->willReturn( '94110' );
 
-		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_level_3_order( '98012', false, false, 0.4 );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
@@ -505,7 +506,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_level3_data_bundle_for_orders_with_more_than_200_items() {
-		$this->mock_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_level_3_order( '98012', true, false, 1, 500 );
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 

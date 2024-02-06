@@ -29,13 +29,6 @@ class Mode {
 	private $dev_mode;
 
 	/**
-	 * Holds the gateway class for settings.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $gateway;
-
-	/**
 	 * Indicates the WCPay version which introduced the class.
 	 *
 	 * @var string
@@ -54,15 +47,6 @@ class Mode {
 	];
 
 	/**
-	 * Stores the gateway for later retrieval of options.
-	 *
-	 * @param WC_Payment_Gateway_WCPay $gateway The active gateway.
-	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
-		$this->gateway = $gateway;
-	}
-
-	/**
 	 * Initializes the working mode of WooPayments.
 	 *
 	 * @throws Exception In case the class has not been initialized yet.
@@ -71,11 +55,6 @@ class Mode {
 		// The object is only initialized once.
 		if ( isset( $this->dev_mode ) && isset( $this->test_mode ) ) {
 			return;
-		}
-
-		// We need the gateway settings in order to determine test mode.
-		if ( ! isset( $this->gateway ) || empty( $this->gateway->settings ) ) {
-			throw new Exception( 'WooPayments\' working mode is not initialized yet. Wait for the `init` action.' );
 		}
 
 		$dev_mode = (
@@ -87,18 +66,21 @@ class Mode {
 		);
 
 		/**
-		 * Allows WooCommerce to enter dev mode.
+		 * Allows WooPayments to enter dev (aka sandbox) mode.
 		 *
-		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/
+		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/
 		 * @param bool $dev_mode The pre-determined dev mode.
 		 */
 		$this->dev_mode = (bool) apply_filters( 'wcpay_dev_mode', $dev_mode );
 
-		$test_mode_setting = 'yes' === $this->gateway->get_option( 'test_mode' );
-		$test_mode         = $this->dev_mode || $test_mode_setting;
+		// Getting the gateway settings directly from the database so the gateway doesn't need to be initialized.
+		$settings_option_name = 'woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings';
+		$wcpay_settings       = get_option( $settings_option_name );
+		$test_mode_setting    = 'yes' === ( $wcpay_settings['test_mode'] ?? false );
+		$test_mode            = $this->dev_mode || $test_mode_setting;
 
 		/**
-		 * Allows WooCommerce to enter test mode.
+		 * Allows WooPayments to enter test mode.
 		 *
 		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
 		 * @param bool $test_mode The pre-determined test mode.

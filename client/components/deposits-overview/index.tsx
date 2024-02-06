@@ -15,12 +15,14 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import { getAdminUrl } from 'wcpay/utils';
-import wcpayTracks from 'tracks';
+import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { recordEvent, events } from 'tracks';
 import Loadable from 'components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
 import {
+	DepositMinimumBalanceNotice,
 	DepositTransitDaysNotice,
 	NegativeBalanceDepositsPausedNotice,
 	NewAccountWaitingPeriodNotice,
@@ -50,6 +52,10 @@ const DepositsOverview: React.FC = () => {
 	const availableFunds = overview?.available?.amount ?? 0;
 	const pendingFunds = overview?.pending?.amount ?? 0;
 
+	const minimumDepositAmount =
+		wcpaySettings.accountStatus.deposits
+			?.minimum_scheduled_deposit_amounts?.[ selectedCurrency ] ?? 0;
+	const isAboveMinimumDepositAmount = availableFunds >= minimumDepositAmount;
 	// If the available balance is negative, deposits may be paused.
 	const isNegativeBalanceDepositsPaused = availableFunds < 0;
 	// When there are funds pending but no available funds, deposits are paused.
@@ -57,9 +63,10 @@ const DepositsOverview: React.FC = () => {
 		availableFunds === 0 && pendingFunds > 0;
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
+	const canChangeDepositSchedule =
+		! account?.deposits_blocked && hasCompletedWaitingPeriod;
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
-	const showRecentDeposits =
-		! isLoading && deposits?.length > 0 && !! account;
+	const hasRecentDeposits = ! isLoading && deposits?.length > 0 && !! account;
 
 	// Show a loading state if the page is still loading.
 	if ( isLoading ) {
@@ -88,8 +95,13 @@ const DepositsOverview: React.FC = () => {
 		);
 	}
 
-	// This card isn't shown if there are no deposits, so we can bail early.
-	if ( ! isLoading && deposits.length === 0 ) {
+	if (
+		! hasCompletedWaitingPeriod &&
+		availableFunds === 0 &&
+		pendingFunds === 0
+	) {
+		// If still in new account waiting period and account has no transactions,
+		// don't render deposits card (nothing to show).
 		return null;
 	}
 
@@ -129,11 +141,20 @@ const DepositsOverview: React.FC = () => {
 						{ isNegativeBalanceDepositsPaused && (
 							<NegativeBalanceDepositsPausedNotice />
 						) }
+						{ availableFunds > 0 &&
+							! isAboveMinimumDepositAmount && (
+								<DepositMinimumBalanceNotice
+									minimumDepositAmountFormatted={ formatExplicitCurrency(
+										minimumDepositAmount,
+										selectedCurrency
+									) }
+								/>
+							) }
 					</>
 				) }
 			</CardBody>
 
-			{ showRecentDeposits && (
+			{ hasRecentDeposits && (
 				<>
 					<CardBody className="wcpay-deposits-overview__heading">
 						<span className="wcpay-deposits-overview__heading__title">
@@ -144,50 +165,52 @@ const DepositsOverview: React.FC = () => {
 				</>
 			) }
 
-			<CardFooter className="wcpay-deposits-overview__footer">
-				<Button
-					variant="secondary"
-					href={ getAdminUrl( {
-						page: 'wc-admin',
-						path: '/payments/deposits',
-					} ) }
-					onClick={ () =>
-						wcpayTracks.recordEvent(
-							wcpayTracks.events
-								.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
-						)
-					}
-				>
-					{ __(
-						'View full deposits history',
-						'woocommerce-payments'
+			{ ( hasRecentDeposits || canChangeDepositSchedule ) && (
+				<CardFooter className="wcpay-deposits-overview__footer">
+					{ hasRecentDeposits && (
+						<Button
+							variant="secondary"
+							href={ getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/deposits',
+							} ) }
+							onClick={ () =>
+								recordEvent(
+									events.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+								)
+							}
+						>
+							{ __(
+								'View full deposits history',
+								'woocommerce-payments'
+							) }
+						</Button>
 					) }
-				</Button>
 
-				{ ! account?.deposits_blocked && (
-					<Button
-						variant="tertiary"
-						href={
-							getAdminUrl( {
-								page: 'wc-settings',
-								tab: 'checkout',
-								section: 'woocommerce_payments',
-							} ) + '#deposit-schedule'
-						}
-						onClick={ () =>
-							wcpayTracks.recordEvent(
-								wcpayTracks.events
-									.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
-							)
-						}
-					>
-						{ __(
-							'Change deposit schedule',
-							'woocommerce-payments'
-						) }
-					</Button>
-				) }
-			</CardFooter>
+					{ canChangeDepositSchedule && (
+						<Button
+							variant="tertiary"
+							href={
+								getAdminUrl( {
+									page: 'wc-settings',
+									tab: 'checkout',
+									section: 'woocommerce_payments',
+								} ) + '#deposit-schedule'
+							}
+							onClick={ () =>
+								recordEvent(
+									events.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
+								)
+							}
+						>
+							{ __(
+								'Change deposit schedule',
+								'woocommerce-payments'
+							) }
+						</Button>
+					) }
+				</CardFooter>
+			) }
 		</Card>
 	);
 };

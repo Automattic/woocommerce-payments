@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Remove unnecessary import statement which leads to a warning when first loaded

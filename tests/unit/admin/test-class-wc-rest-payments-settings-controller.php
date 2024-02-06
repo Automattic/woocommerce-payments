@@ -8,6 +8,7 @@
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
@@ -741,7 +742,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			[
 				[
 					'city'    => 'test city',
-					'country' => 'US',
+					'country' => Country_Code::UNITED_STATES,
 				],
 				$request,
 				'account_business_support_address',

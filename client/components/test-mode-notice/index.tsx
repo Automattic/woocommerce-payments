@@ -59,7 +59,7 @@ const getNoticeContent = (
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								'{{strong}}%1$s is in dev mode.{{/strong}} You need to set up a live %1$s account before you can accept real transactions.',
+								'{{strong}}%1$s is in sandbox mode.{{/strong}} You need to set up a live %1$s account before you can accept real transactions.',
 								'woocommerce-payments'
 							),
 							'WooPayments'
@@ -87,7 +87,7 @@ const getNoticeContent = (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content
 								<Link
 									href={
-										'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/'
+										'https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
 									}
 									target="_blank"
 									rel="noreferrer"

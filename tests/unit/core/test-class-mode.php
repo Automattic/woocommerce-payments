@@ -28,11 +28,7 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 	public function setUp() : void {
 		parent::setUp();
 
-		$this->mock_gateway           = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$this->mock_gateway->settings = [ 'empty' => false ];
-
 		$this->mode = $this->getMockBuilder( Mode::class )
-			->setConstructorArgs( [ $this->mock_gateway ] )
 			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type' ] )
 			->getMock();
 	}
@@ -44,17 +40,8 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 		parent::tearDown();
 	}
 
-	public function test_throw_exception_if_uninitialized() {
-		$this->mock_gateway->settings = [];
-		$this->expectException( Exception::class );
-		$this->mode->is_live();
-	}
-
 	public function test_init_defaults_to_live_mode() {
-		$this->mock_gateway->expects( $this->once() )
-			->method( 'get_option' )
-			->with( 'test_mode' )
-			->willReturn( 'no' );
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'test_mode' => 'no' ] );
 
 		$this->assertTrue( $this->mode->is_live() );
 	}
@@ -76,10 +63,7 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_init_enters_test_mode_with_gateway_test_mode_settings() {
-		$this->mock_gateway->expects( $this->once() )
-			->method( 'get_option' )
-			->with( 'test_mode' )
-			->willReturn( 'yes' );
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'test_mode' => 'yes' ] );
 
 		// Reset and check.
 		$this->assertFalse( $this->mode->is_dev() );

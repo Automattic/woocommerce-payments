@@ -15,6 +15,7 @@ interface PhoneNumberInputProps {
 	value: string;
 	onValidationChange: ( isValid: boolean ) => void;
 	onValueChange: ( value: string ) => void;
+	onCountryDropdownClick?: () => void;
 	inputProps: {
 		label: string;
 		ariaLabel: string;
@@ -27,6 +28,7 @@ const PhoneNumberInput = ( {
 	onValueChange,
 	value,
 	onValidationChange = ( validation ) => validation,
+	onCountryDropdownClick,
 	inputProps = {
 		label: '',
 		ariaLabel: '',
@@ -101,6 +103,13 @@ const PhoneNumberInput = ( {
 			setInputInstance( iti );
 
 			currentRef.addEventListener( 'countrychange', handleCountryChange );
+
+			const countryList = currentRef
+				.closest( '.iti' )
+				?.querySelector( '.iti__flag-container' );
+			if ( countryList && onCountryDropdownClick ) {
+				countryList.addEventListener( 'click', onCountryDropdownClick );
+			}
 		}
 
 		return () => {
@@ -113,9 +122,20 @@ const PhoneNumberInput = ( {
 						handleCountryChange
 					);
 				}
+
+				// Cleanup for country dropdown click event
+				const countryList = currentRef
+					?.closest( '.iti' )
+					?.querySelector( '.iti__flag-container' );
+				if ( countryList && onCountryDropdownClick ) {
+					countryList.removeEventListener(
+						'click',
+						onCountryDropdownClick
+					);
+				}
 			}
 		};
-	}, [ onValueChange, onValidationChange ] );
+	}, [ onValueChange, onValidationChange, onCountryDropdownClick ] );
 
 	useEffect( () => {
 		if ( inputInstance && inputRef.current ) {

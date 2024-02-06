@@ -6,7 +6,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
-import wcpayTracks from 'tracks';
 
 /**
  * Internal dependencies
@@ -36,7 +35,27 @@ jest.mock( '@wordpress/data', () => ( {
 } ) );
 
 jest.mock( 'tracks', () => ( {
-	recordUserEvent: jest.fn(),
+	recordUserEvent: jest.fn().mockReturnValue( true ),
+	events: {
+		WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
+		WOOPAY_OFFERED: 'checkout_woopay_save_my_info_offered',
+		WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
+		WOOPAY_SKIPPED: 'woopay_skipped',
+		WOOPAY_BUTTON_LOAD: 'woopay_button_load',
+		WOOPAY_BUTTON_CLICK: 'woopay_button_click',
+		WOOPAY_SAVE_MY_INFO_COUNTRY_CLICK:
+			'checkout_woopay_save_my_info_country_click',
+		WOOPAY_SAVE_MY_INFO_CLICK: 'checkout_save_my_info_click',
+		WOOPAY_SAVE_MY_INFO_MOBILE_ENTER:
+			'checkout_woopay_save_my_info_mobile_enter',
+		WOOPAY_SAVE_MY_INFO_TOS_CLICK: 'checkout_save_my_info_tos_click',
+		WOOPAY_SAVE_MY_INFO_PRIVACY_CLICK:
+			'checkout_save_my_info_privacy_policy_click',
+		WOOPAY_SAVE_MY_INFO_TOOLTIP_CLICK:
+			'checkout_save_my_info_tooltip_click',
+		WOOPAY_SAVE_MY_INFO_TOOLTIP_LEARN_MORE_CLICK:
+			'checkout_save_my_info_tooltip_learn_more_click',
+	},
 } ) );
 
 const BlocksCheckoutEnvironmentMock = ( { children } ) => (
@@ -64,11 +83,6 @@ describe( 'CheckoutPageSaveUser', () => {
 		getConfig.mockImplementation(
 			( setting ) => setting === 'forceNetworkSavedCards'
 		);
-
-		wcpayTracks.recordUserEvent.mockReturnValue( true );
-		wcpayTracks.events = {
-			WOOPAY_SAVE_MY_INFO_CLICK: 'woopay_express_button_offered',
-		};
 
 		window.wcpaySettings = {
 			accountStatus: {

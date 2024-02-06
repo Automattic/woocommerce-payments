@@ -34,7 +34,7 @@ describe( 'DebugMode', () => {
 
 		expect(
 			screen.queryByText(
-				'Dev mode is active so logging is on by default.'
+				'Sandbox mode is active so logging is on by default.'
 			)
 		).not.toBeInTheDocument();
 		expect( loggingCheckbox ).not.toBeChecked();
@@ -45,13 +45,13 @@ describe( 'DebugMode', () => {
 		expect( setDebugLogMock ).toHaveBeenCalledWith( true );
 	} );
 
-	it( 'prevents toggling the logging checkbox when dev mode is active', () => {
+	it( 'prevents toggling the logging checkbox when sandbox mode is active', () => {
 		useDevMode.mockReturnValue( true );
 
 		render( <DebugMode /> );
 
 		const loggingCheckbox = screen.queryByRole( 'checkbox', {
-			name: 'Dev mode is active so logging is on by default.',
+			name: 'Sandbox mode is active so logging is on by default.',
 		} );
 
 		expect(

@@ -529,8 +529,34 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                 <div
                   class="payment-details-summary__id"
                 >
-                  Payment ID: 
-                  pi_mock
+                  <div
+                    class="payment-details-summary__id_wrapper"
+                  >
+                    <span
+                      class="payment-details-summary__id_label"
+                    >
+                      Payment ID: 
+                    </span>
+                    <span
+                      class="payment-details-summary__id_value"
+                    >
+                      pi_mock
+                    </span>
+                  </div>
+                  <div
+                    class="payment-details-summary__id_wrapper"
+                  >
+                    <span
+                      class="payment-details-summary__id_label"
+                    >
+                      Charge ID: 
+                    </span>
+                    <span
+                      class="payment-details-summary__id_value"
+                    >
+                      ch_mock
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -538,7 +564,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               class="payment-details__refund-controls"
             >
               <div
-                class="components-dropdown components-dropdown-menu"
+                class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
                 tabindex="-1"
               >
                 <button
