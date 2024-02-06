@@ -15,12 +15,14 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import { getAdminUrl } from 'wcpay/utils';
-import wcpayTracks from 'tracks';
+import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { recordEvent, events } from 'tracks';
 import Loadable from 'components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
 import {
+	DepositMinimumBalanceNotice,
 	DepositTransitDaysNotice,
 	NegativeBalanceDepositsPausedNotice,
 	NewAccountWaitingPeriodNotice,
@@ -51,6 +53,10 @@ const DepositsOverview: React.FC = () => {
 	const pendingFunds = overview?.pending?.amount ?? 0;
 	const totalFunds = availableFunds + pendingFunds;
 
+	const minimumDepositAmount =
+		wcpaySettings.accountStatus.deposits
+			?.minimum_scheduled_deposit_amounts?.[ selectedCurrency ] ?? 0;
+	const isAboveMinimumDepositAmount = availableFunds >= minimumDepositAmount;
 	// If the total balance is negative, deposits may be paused.
 	const isNegativeBalanceDepositsPaused = totalFunds < 0;
 	// When there are funds pending but no available funds, deposits are paused.
@@ -136,6 +142,15 @@ const DepositsOverview: React.FC = () => {
 						{ isNegativeBalanceDepositsPaused && (
 							<NegativeBalanceDepositsPausedNotice />
 						) }
+						{ availableFunds > 0 &&
+							! isAboveMinimumDepositAmount && (
+								<DepositMinimumBalanceNotice
+									minimumDepositAmountFormatted={ formatExplicitCurrency(
+										minimumDepositAmount,
+										selectedCurrency
+									) }
+								/>
+							) }
 					</>
 				) }
 			</CardBody>
@@ -161,9 +176,8 @@ const DepositsOverview: React.FC = () => {
 								path: '/payments/deposits',
 							} ) }
 							onClick={ () =>
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+								recordEvent(
+									events.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
 								)
 							}
 						>
@@ -185,9 +199,8 @@ const DepositsOverview: React.FC = () => {
 								} ) + '#deposit-schedule'
 							}
 							onClick={ () =>
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
+								recordEvent(
+									events.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
 								)
 							}
 						>
