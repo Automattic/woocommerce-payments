@@ -24,8 +24,9 @@ const isAuthStateStale = ( authStateFile: string ) => {
 	}
 
 	const authStateMtimeMs = fs.statSync( authStateFile ).mtimeMs;
-	const dayInMs = 1000 * 60 * 60 * 24;
-	const isStale = Date.now() - authStateMtimeMs > dayInMs;
+	const hourInMs = 1000 * 60 * 60;
+	// Invalidate auth state if it's older than a 3 hours.
+	const isStale = Date.now() - authStateMtimeMs > hourInMs * 3;
 	return isStale;
 };
 
