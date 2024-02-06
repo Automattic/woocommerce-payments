@@ -77,7 +77,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				'.wc-block-components-main button:not(:disabled)'
 			);
 			await expect( page ).toClick( 'button', { text: 'Place Order' } );
-			await confirmCardAuthentication( page, '3DS' );
+			await confirmCardAuthentication( page );
 			await page.waitForNavigation( {
 				waitUntil: 'networkidle0',
 			} );

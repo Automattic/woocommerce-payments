@@ -191,7 +191,7 @@ export const shopperWCP = {
 			! cardType.toLowerCase().includes( 'declined' );
 
 		if ( cardIs3DS ) {
-			await confirmCardAuthentication( page, cardType );
+			await confirmCardAuthentication( page );
 		}
 
 		await page.waitForNavigation( {
@@ -426,7 +426,17 @@ export const merchantWCP = {
 					button.click()
 				);
 			}
-			await page.$eval( paymentMethod, ( method ) => method.click() );
+			// Check if paymentMethod is an XPath
+			if ( paymentMethod.startsWith( '//' ) ) {
+				// Find the element using XPath and click it
+				const elements = await page.$x( paymentMethod );
+				if ( elements.length > 0 ) {
+					await elements[ 0 ].click();
+				}
+			} else {
+				// If it's a CSS selector, use $eval
+				await page.$eval( paymentMethod, ( method ) => method.click() );
+			}
 			await expect( page ).toClick( 'button', {
 				text: 'Remove',
 			} );
