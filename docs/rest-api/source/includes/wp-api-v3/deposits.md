@@ -76,6 +76,7 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
         -   `weekly_anchor` _string_ | _undefined_ - The day of the week that payments are paid out, e.g. `monday`.
         -   `monthly_anchor` _int_ | _undefined_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
     -   `default_currency` _string_ - The default currency for the account.
+-   `next_approximate_deposit_date` _int_ - A unix timestamp (in UTC) estimate for when the next scheduled deposit will be initiated. -1 if unknown or no schedule.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
