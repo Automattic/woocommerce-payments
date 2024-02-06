@@ -1964,32 +1964,23 @@ class WC_Payments_Account {
 	/**
 	 * Send a Tracks event.
 	 *
+	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
+	 * properties to every event.
+	 *
 	 * @param string $name       The event name.
 	 * @param array  $properties Optional. The event custom properties.
 	 *
 	 * @return void
 	 */
 	private function tracks_event( string $name, array $properties = [] ) {
-		// Attach some additional properties to help us attribute stores properly.
-		$extra_props = [
-			'woo_country_code'  => WC()->countries->get_base_country(),
-			'url'               => get_home_url(),
-			'jetpack_connected' => $this->payments_api_client->is_server_connected(),
-		];
-
-		$blog_id = \Jetpack_Options::get_option( 'id', false );
-		if ( $blog_id ) {
-			$extra_props['blog_id'] = $blog_id;
-		}
-
-		$store_id = $this->get_woocommerce_store_id();
-		if ( ! empty( $store_id ) ) {
-			$extra_props['store_id'] = $store_id;
-		}
-
+		// Add default properties to every event.
 		$properties = array_merge(
-			$extra_props,
-			$properties
+			$properties,
+			[
+				'is_test_mode'      => WC_Payments::mode()->is_test(),
+				'jetpack_connected' => $this->payments_api_client->is_server_connected(),
+				'woo_country_code'  => WC()->countries->get_base_country(),
+			]
 		);
 
 		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {

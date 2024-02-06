@@ -20,6 +20,9 @@ export const isEnabled = (): boolean => wcTracks.isEnabled;
 /**
  * Records site event.
  *
+ * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
+ * properties to every event.
+ *
  * @param {string}  eventName        Name of the event.
  * @param {Object} [eventProperties] Event properties (optional).
  */
@@ -27,17 +30,12 @@ export const recordEvent = (
 	eventName: string,
 	eventProperties: Record< string, unknown > = {}
 ): void => {
-	// Add `is_test_mode` property to every event.
-	eventProperties.is_test_mode = wcpaySettings?.testMode;
-	eventProperties.url = wcSettings?.homeUrl;
-	eventProperties.jetpack_connected = wcpaySettings.isJetpackConnected;
-	eventProperties.woo_country_code = wcpaySettings.connect.country;
-
-	// Add the Woo store ID, if available.
-	const wooStoreId = wcpaySettings?.wooStoreId ?? false;
-	if ( wooStoreId ) {
-		eventProperties.store_id = wooStoreId;
-	} // TODO: Can we also add blog ID here?
+	// Add default properties to every event.
+	Object.assign( eventProperties, {
+		is_test_mode: wcpaySettings.testMode,
+		jetpack_connected: wcpaySettings.isJetpackConnected,
+		woo_country_code: wcpaySettings.connect.country,
+	} );
 
 	// Wc-admin track script is enqueued after ours, wrap in domReady
 	// to make sure we're not too early.
