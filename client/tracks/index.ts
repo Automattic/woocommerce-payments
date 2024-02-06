@@ -30,14 +30,17 @@ export const recordEvent = (
 	eventName: string,
 	eventProperties: Record< string, unknown > = {}
 ): void => {
-	// Add default properties to every event.
-	Object.assign( eventProperties, {
-		is_test_mode: wcpaySettings.testMode,
-		jetpack_connected: wcpaySettings.isJetpackConnected,
-		wcpay_version: wcpaySettings.version,
-		woo_country_code: wcpaySettings.connect.country,
-	} );
-
+	// TODO: Load these properties in a new script to ensure it's available everywhere.
+	// wcpaySettings is not available outside of WCPay pages.
+	if ( window.wcpaySettings ) {
+		// Add default properties to every event.
+		Object.assign( eventProperties, {
+			is_test_mode: wcpaySettings.testMode,
+			jetpack_connected: wcpaySettings.isJetpackConnected,
+			wcpay_version: wcpaySettings.version,
+			woo_country_code: wcpaySettings.connect.country,
+		} );
+	}
 	// Wc-admin track script is enqueued after ours, wrap in domReady
 	// to make sure we're not too early.
 	domReady( () => {
