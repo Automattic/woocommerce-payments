@@ -1979,6 +1979,7 @@ class WC_Payments_Account {
 			[
 				'is_test_mode'      => WC_Payments::mode()->is_test(),
 				'jetpack_connected' => $this->payments_api_client->is_server_connected(),
+				'wcpay_version'     => WCPAY_VERSION_NUMBER,
 				'woo_country_code'  => WC()->countries->get_base_country(),
 			]
 		);

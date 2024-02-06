@@ -840,6 +840,7 @@ class WC_Payments_Admin {
 		}
 
 		$this->wcpay_js_settings = [
+			'version'                       => WCPAY_VERSION_NUMBER,
 			'connectUrl'                    => $connect_url,
 			'connect'                       => [
 				'country'            => WC()->countries->get_base_country(),

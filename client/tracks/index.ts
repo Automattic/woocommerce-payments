@@ -34,6 +34,7 @@ export const recordEvent = (
 	Object.assign( eventProperties, {
 		is_test_mode: wcpaySettings.testMode,
 		jetpack_connected: wcpaySettings.isJetpackConnected,
+		wcpay_version: wcpaySettings.version,
 		woo_country_code: wcpaySettings.connect.country,
 	} );
 
