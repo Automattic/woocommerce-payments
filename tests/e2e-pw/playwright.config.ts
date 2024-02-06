@@ -38,6 +38,8 @@ export default defineConfig( {
 	},
 	expect: {
 		toHaveScreenshot: { maxDiffPixelRatio: 0.025 },
+		//=* Increase expect timeout to 10 seconds. See https://playwright.dev/docs/test-timeouts#set-expect-timeout-in-the-config.*/
+		timeout: 10 * 1000,
 	},
 	snapshotPathTemplate:
 		'{testDir}/__snapshots__/{testFilePath}/{arg}_{projectName}{ext}',
