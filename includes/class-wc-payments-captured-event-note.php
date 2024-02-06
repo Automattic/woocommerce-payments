@@ -189,7 +189,7 @@ class WC_Payments_Captured_Event_Note {
 		}
 
 		$gross_amount = $captured_amount ?? $amount;
-		$net          = WC_Payments_Utils::interpret_stripe_amount( (int) $gross_amount - $fee, $currency );
+		$net          = WC_Payments_Utils::interpret_stripe_amount( (int) ( $gross_amount - $fee ), $currency );
 
 		// Format and return the net string.
 		return sprintf(
