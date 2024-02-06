@@ -605,6 +605,13 @@ const mapEventToTimelineItems = ( event ) => {
 		);
 
 	switch ( type ) {
+		case 'started':
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Started', 'woocommerce-payments' )
+				),
+			];
 		case 'authorized':
 			return [
 				getStatusChangeTimelineItem(
