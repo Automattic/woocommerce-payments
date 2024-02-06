@@ -1,5 +1,4 @@
 Significance: patch
 Type: fix
-Comment: Fixed a bug where the 'deposits paused while balance is negative' notice was erroneously shown after an instant deposit.
 
-
+Fixed a bug where the 'deposits paused while balance is negative' notice was erroneously shown after an instant deposit.
