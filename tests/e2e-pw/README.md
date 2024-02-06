@@ -60,8 +60,13 @@ await expect(
 
 A test can act as `shopper` or `merchant` by using the helper function `useShopper` or `useMerchant` from `tests/e2e-pw/utils/helpers.ts`.
 
-**How can I investigate and interact with a GitHub Actions test failure?**
+**How can I investigate and interact with a test failures?**
 
--   View GitHub checks in the "Checks" tab of a PR
--   Click on the "E2E Playwright Tests" job to see the job summary
--   Download the `playwright-report.zip` artifact and open the report in a browser to see the test report
+-   **Github Action test runs**
+    -   View GitHub checks in the "Checks" tab of a PR
+    -   Click on the "E2E Playwright Tests" job to see the job summary
+    -   Download the `playwright-report.zip` artifact, extract and copy the `playwright-report` directory to the root of the WooPayments repository
+    -   Run `npx playwright show-report` to open the report in a browser
+-   **Local test runs**:
+    -   Local test reports will output in the `playwright-report` directory
+    -   Run `npx playwright show-report` to open the report in a browser
