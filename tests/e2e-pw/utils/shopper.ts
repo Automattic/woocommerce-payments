@@ -98,34 +98,20 @@ export const confirmCardAuthentication = async (
 	cardType = '3DS',
 	authorize = true
 ): Promise< void > => {
-	const target = authorize
-		? '#test-source-authorize-3ds'
-		: '#test-source-fail-3ds';
-
 	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
 	// appears at the top of the DOM.
-	const frameHandle = await page.waitForSelector(
+	const stripeFrame = page.frameLocator(
 		'body>div>iframe[name^="__privateStripeFrame"]'
 	);
-	const stripeFrame = await frameHandle.contentFrame();
 	if ( ! stripeFrame ) return;
 
-	const challengeFrameHandle = await stripeFrame.waitForSelector(
-		'iframe#challengeFrame'
+	const challengeFrame = stripeFrame.frameLocator(
+		'iframe[name="stripe-challenge-frame"]'
 	);
-	let challengeFrame = await challengeFrameHandle.contentFrame();
 	if ( ! challengeFrame ) return;
 
-	// 3DS 1 cards have another iframe enclosing the authorize form
-	if ( cardType.toUpperCase() === '3DS' ) {
-		const acsFrameHandle = await challengeFrame.waitForSelector(
-			'iframe[name="acsFrame"]'
-		);
-		challengeFrame = await acsFrameHandle.contentFrame();
-	}
-	if ( ! challengeFrame ) return;
-	// Need to wait for the CSS animations to complete.
-	await page.waitForTimeout( 500 );
-	const button = await challengeFrame.waitForSelector( target );
+	const button = challengeFrame.getByRole( 'button', {
+		name: authorize ? 'Complete' : 'Fail',
+	} );
 	await button.click();
 };
