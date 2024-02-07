@@ -241,12 +241,38 @@ const AccountBalances: React.FC = () => {
 					/>
 				);
 
+				const totalBalance = tab.availableFunds + tab.pendingFunds;
 				const totalBalanceBlock = (
 					<BalanceBlock
 						id={ `wcpay-account-balances-${ tab.currencyCode }-total` }
 						title={ fundLabelStrings.total }
-						amount={ tab.availableFunds + tab.pendingFunds }
+						amount={ totalBalance }
 						currencyCode={ tab.currencyCode }
+						tooltip={
+							totalBalance < 0 ? (
+								<BalanceTooltip
+									label={ `${ fundLabelStrings.total } tooltip` }
+									content={ interpolateComponents( {
+										mixedString: __(
+											'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+											'woocommerce-payments'
+										),
+										components: {
+											learnMoreLink: (
+												// eslint-disable-next-line jsx-a11y/anchor-has-content
+												<a
+													rel="external noopener noreferrer"
+													target="_blank"
+													href={
+														documentationUrls.negativeBalance
+													}
+												/>
+											),
+										},
+									} ) }
+								/>
+							) : undefined
+						}
 					/>
 				);
 
