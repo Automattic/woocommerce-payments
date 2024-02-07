@@ -9,7 +9,6 @@ namespace WCPay\Fraud_Prevention;
 
 use WC_Payment_Gateway_WCPay;
 use WC_Payments;
-use WC_Session;
 
 /**
  * Class Fraud_Prevention_Service
