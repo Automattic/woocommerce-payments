@@ -35,8 +35,7 @@ export const normalizeOrderData = ( paymentData ) => {
 	const phone = paymentData?.paymentMethod?.billing_details?.phone ?? '';
 	const billing = paymentData?.paymentMethod?.billing_details?.address ?? {};
 	const shipping = paymentData?.shippingAddress ?? {};
-	const fraudPreventionTokenValue =
-		window.wcpayConfig?.fraudPreventionToken ?? '';
+	const fraudPreventionTokenValue = window.wcpayFraudPreventionToken ?? '';
 
 	let paymentRequestType = 'payment_request_api';
 	if ( paymentData?.walletName === 'applePay' ) {

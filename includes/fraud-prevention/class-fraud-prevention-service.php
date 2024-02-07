@@ -81,8 +81,7 @@ class Fraud_Prevention_Service {
 		// Add the fraud prevention token to the checkout configuration.
 		wp_add_inline_script(
 			self::TOKEN_NAME,
-			"window.wcpayConfig = window.wcpayConfig || {};
-			window.wcpayConfig.fraudPreventionToken = '" . esc_js( $this->get_token() ) . "';",
+			"window.wcpayFraudPreventionToken = '" . esc_js( $this->get_token() ) . "';",
 			'after'
 		);
 	}

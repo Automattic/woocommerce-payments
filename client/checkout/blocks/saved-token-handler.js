@@ -21,7 +21,7 @@ export const SavedTokenHandler = ( {
 	useEffect( () => {
 		return onPaymentSetup( () => {
 			const fraudPreventionToken =
-				window.wcpayConfig?.fraudPreventionToken ?? null;
+				window.wcpayFraudPreventionToken ?? null;
 
 			return {
 				type: 'success',
