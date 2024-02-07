@@ -348,13 +348,13 @@ describe( 'AccountBalances', () => {
 		);
 	} );
 
-	test( 'renders the correct tooltip text for a negative pending balance', () => {
-		mockOverviews( [ createMockOverview( 'usd', -10000, 20000, 0 ) ] );
+	test( 'renders the correct tooltip text for a negative total balance', () => {
+		mockOverviews( [ createMockOverview( 'usd', -30000, 20000, 0 ) ] );
 		render( <AccountBalances /> );
 
 		// Check the tooltips are rendered correctly.
 		const tooltipButton = screen.getByRole( 'button', {
-			name: 'Pending funds tooltip',
+			name: 'Total balance tooltip',
 		} );
 		fireEvent.click( tooltipButton );
 		const tooltip = screen.getByRole( 'tooltip', {
@@ -387,6 +387,13 @@ describe( 'AccountBalances', () => {
 			'href',
 			'https://woo.com/document/woopayments/deposits/deposit-schedule/'
 		);
+	} );
+
+	test( 'renders total balance when pending balance is negative', () => {
+		mockOverviews( [ createMockOverview( 'usd', -10000, 20000, 0 ) ] );
+		render( <AccountBalances /> );
+
+		expect( screen.queryByText( 'Pending funds' ) ).not.toBeInTheDocument();
 	} );
 
 	test( 'renders instant deposit button correctly', () => {
