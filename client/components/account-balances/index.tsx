@@ -131,8 +131,6 @@ const AccountBalances: React.FC = () => {
 			}
 		>
 			{ ( tab: BalanceTabProps ) => {
-				tab.availableFunds = 100000;
-				tab.pendingFunds = -150000;
 				const availableBalanceBlock = (
 					<BalanceBlock
 						id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
