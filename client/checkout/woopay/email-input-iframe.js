@@ -461,9 +461,7 @@ export const handleWooPayEmailInput = async (
 
 	woopayEmailInput.addEventListener( 'input', ( e ) => {
 		if ( ! hasCheckedLoginSession && ! customerClickedBackButton ) {
-			if ( customerClickedBackButton ) {
-				openLoginSessionIframe( woopayEmailInput.value );
-			}
+			openLoginSessionIframe( woopayEmailInput.value );
 
 			return;
 		}
@@ -611,7 +609,10 @@ export const handleWooPayEmailInput = async (
 
 	if ( ! customerClickedBackButton ) {
 		// Check if user already has a WooPay login session.
-		if ( ! hasCheckedLoginSession ) {
+		if (
+			! hasCheckedLoginSession &&
+			! getConfig( 'isWooPayDirectCheckoutEnabled' )
+		) {
 			openLoginSessionIframe( woopayEmailInput.value );
 		}
 	} else {
