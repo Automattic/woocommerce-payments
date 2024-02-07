@@ -1021,9 +1021,9 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_payment_capture_completed( $order, $intent ) {
-		$intent_id     = $intent->get_id();
-		$fraud_outcome = $intent->get_metadata()['fraud_outcome'] ?? '';
-		$note          = $this->generate_capture_success_note( $order, $intent_id, $intent->get_charge()->get_id() );
+		$intent_id = $intent->get_id();
+		$note      = $this->generate_capture_success_note( $order, $intent_id, $intent->get_charge()->get_id() );
+
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -1036,6 +1036,7 @@ class WC_Payments_Order_Service {
 		 * If auth/capture is enabled and the transaction is allowed, it will be 'allow'.
 		 * If it was held for review for any reason, it will be 'review'.
 		 */
+		$fraud_outcome = $intent->get_metadata()['fraud_outcome'] ?? '';
 		if ( '' !== $fraud_outcome && Rule::is_valid_fraud_outcome_status( $fraud_outcome ) ) {
 			$fraud_meta_box_type = Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
 			$this->set_fraud_outcome_status_for_order( $order, $fraud_outcome );
