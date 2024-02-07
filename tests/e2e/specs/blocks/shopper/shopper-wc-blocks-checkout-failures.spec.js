@@ -197,7 +197,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
-			await confirmCardAuthentication( page, '3DS' );
+			await confirmCardAuthentication( page );
 			await page.waitForSelector( 'div.wc-block-components-notices' );
 			const declined3dsCardError = await page.$eval(
 				'div.wc-block-components-notices > div > div.components-notice__content',

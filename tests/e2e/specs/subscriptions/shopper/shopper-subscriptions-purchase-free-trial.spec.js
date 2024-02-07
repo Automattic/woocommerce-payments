@@ -116,7 +116,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await expect( page ).toClick(
 				testSelectors.checkoutPlaceOrderButton
 			);
-			await confirmCardAuthentication( page, '3DS', true );
+			await confirmCardAuthentication( page, true );
 			await page.waitForNavigation( {
 				waitUntil: 'networkidle0',
 			} );
