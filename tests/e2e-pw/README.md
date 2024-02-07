@@ -32,7 +32,7 @@ In some cases, you may need to wait for the page to reach a certain load state b
 
 **What is the best way to target elements in the page?**
 
-Prefer the use of [user-facing attribute locators or test-ids](https://playwright.dev/docs/locators#locating-elements) to target elements in the page. This will make the tests more resilient to changes to implementation details, such as class names.
+Prefer the use of [user-facing attribute or test-id locators](https://playwright.dev/docs/locators#locating-elements) to target elements in the page. This will make the tests more resilient to changes to implementation details, such as class names.
 
 ```ts
 // Prefer locating by role, label, text, or test id when possible. See https://playwright.dev/docs/locators
