@@ -116,3 +116,10 @@ global.ResizeObserver = jest.fn().mockImplementation( () => ( {
 	unobserve: jest.fn(),
 	disconnect: jest.fn(),
 } ) );
+
+// Mock the tracks module to avoid the need to mock wcpaySettings in every test.
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
+	isEnabled: jest.fn(),
+	events: {},
+} ) );
