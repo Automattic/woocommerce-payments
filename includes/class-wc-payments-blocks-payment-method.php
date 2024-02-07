@@ -105,7 +105,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	/**
 	 * Attempts to add the fraud prevention token to the browser context.
 	 *
-	 * @return  string
+	 * @return  void
 	 */
 	public function maybe_add_card_testing_token() {
 		if ( ! wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) || ! WC()->session ) {
