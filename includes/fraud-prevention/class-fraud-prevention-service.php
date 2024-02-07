@@ -9,6 +9,7 @@ namespace WCPay\Fraud_Prevention;
 
 use WC_Payment_Gateway_WCPay;
 use WC_Payments;
+use WC_Session;
 
 /**
  * Class Fraud_Prevention_Service
@@ -62,6 +63,28 @@ class Fraud_Prevention_Service {
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * Appends the fraud prevention token to the JS context if enabled.
+	 *
+	 * @return  void
+	 */
+	public function append_fraud_prevention_token() {
+
+		// Don't add the token if the prevention is not enabled.
+		if ( ! $this->is_enabled() ) {
+			return;
+		}
+		wp_register_script( self::TOKEN_NAME, '', [], time(), true );
+		wp_enqueue_script( self::TOKEN_NAME );
+		// Add the fraud prevention token to the checkout configuration.
+		wp_add_inline_script(
+			self::TOKEN_NAME,
+			"window.wcpayConfig = window.wcpayConfig || {};
+			window.wcpayConfig.fraudPreventionToken = '" . esc_js( $this->get_token() ) . "';",
+			'after'
+		);
 	}
 
 	/**

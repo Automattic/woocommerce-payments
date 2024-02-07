@@ -35,8 +35,6 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 		$this->name                 = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$this->gateway              = WC_Payments::get_gateway();
 		$this->wc_payments_checkout = WC_Payments::get_wc_payments_checkout();
-
-		add_filter( 'the_content', [ $this, 'maybe_add_card_testing_token' ] );
 	}
 
 	/**
@@ -72,6 +70,8 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 		WC_Payments::register_script_with_dependencies( 'WCPAY_BLOCKS_CHECKOUT', 'dist/blocks-checkout', [ 'stripe' ] );
 		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
 
+		$this->maybe_add_card_testing_token();
+
 		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
 	}
 
@@ -103,22 +103,16 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	}
 
 	/**
-	 * Adds the hidden input containing the card testing prevention token to the blocks checkout page.
-	 *
-	 * @param   string $content  The content that's going to be flushed to the browser.
+	 * Attempts to add the fraud prevention token to the browser context.
 	 *
 	 * @return  string
 	 */
-	public function maybe_add_card_testing_token( $content ) {
+	public function maybe_add_card_testing_token() {
 		if ( ! wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) || ! WC()->session ) {
-			return $content;
+			return;
 		}
 
 		$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( $fraud_prevention_service->is_enabled() ) {
-			$content .= '<input type="hidden" name="wcpay-fraud-prevention-token" id="wcpay-fraud-prevention-token" value="' . esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ) . '">';
-		}
-		return $content;
+		$fraud_prevention_service->append_fraud_prevention_token();
 	}
 }
