@@ -409,13 +409,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param string $id    Gateway ID.
 	 */
 	public function filter_gateway_title( $title, $id ) {
-		global $post;
-
-		if ( ! is_object( $post ) ) {
-			return $title;
-		}
-
-		$order        = wc_get_order( $post->ID );
+		$order        = $this->get_current_order();
 		$method_title = is_object( $order ) ? $order->get_payment_method_title() : '';
 
 		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) ) {
@@ -429,6 +423,26 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return $title;
+	}
+
+	/**
+	 * Used to get the order in admin edit page.
+	 *
+	 * @return WC_Order|WC_Order_Refund|false
+	 */
+	private function get_current_order() {
+		global $theorder;
+		global $post;
+
+		if ( is_object( $theorder ) ) {
+			return $theorder;
+		}
+
+		if ( is_object( $post ) ) {
+			return wc_get_order( $post->ID );
+		}
+
+		return false;
 	}
 
 	/**
