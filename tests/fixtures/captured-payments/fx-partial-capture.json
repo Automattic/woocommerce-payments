@@ -8,7 +8,7 @@
       "fee": 70,
       "fee_rates": {
           "percentage": 0.0351,
-          "fixed": 20.557314,
+          "fixed": 21,
           "fixed_currency": "GBP",
           "history": [
               {
