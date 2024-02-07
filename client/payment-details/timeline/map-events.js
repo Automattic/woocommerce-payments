@@ -236,7 +236,6 @@ const formatNetString = ( event ) => {
 	}
 
 	// We need to use the store amount and currency for the net amount calculation in the case of a FX event.
-
 	return formatExplicitCurrency(
 		storeAmountCaptured - storeFee,
 		storeCurrency
