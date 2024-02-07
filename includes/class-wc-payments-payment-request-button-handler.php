@@ -722,9 +722,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		wp_enqueue_script( 'WCPAY_PAYMENT_REQUEST' );
 
-		if ( WC()->session ) {
-			Fraud_Prevention_Service::get_instance()->append_fraud_prevention_token();
-		}
+		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( isset( $gateways['woocommerce_payments'] ) ) {

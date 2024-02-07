@@ -129,9 +129,7 @@ class WC_Payments_Checkout {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
 
-		if ( WC()->session ) {
-			Fraud_Prevention_Service::get_instance()->append_fraud_prevention_token();
-		}
+		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
 		$script = 'dist/checkout';
 

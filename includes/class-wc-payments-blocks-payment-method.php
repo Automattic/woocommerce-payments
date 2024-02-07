@@ -70,7 +70,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 		WC_Payments::register_script_with_dependencies( 'WCPAY_BLOCKS_CHECKOUT', 'dist/blocks-checkout', [ 'stripe' ] );
 		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
 
-		$this->maybe_add_card_testing_token();
+		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
 		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
 	}
@@ -100,19 +100,5 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			$woopay_config,
 			$this->wc_payments_checkout->get_payment_fields_js_config()
 		);
-	}
-
-	/**
-	 * Attempts to add the fraud prevention token to the browser context.
-	 *
-	 * @return  void
-	 */
-	public function maybe_add_card_testing_token() {
-		if ( ! wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) || ! WC()->session ) {
-			return;
-		}
-
-		$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-		$fraud_prevention_service->append_fraud_prevention_token();
 	}
 }

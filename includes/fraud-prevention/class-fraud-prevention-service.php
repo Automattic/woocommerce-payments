@@ -65,13 +65,20 @@ class Fraud_Prevention_Service {
 	}
 
 	/**
-	 * Appends the fraud prevention token to the JS context if enabled.
+	 * Appends the fraud prevention token to the JS context if the protection is enabled, and a session exists.
 	 *
 	 * @return  void
 	 */
-	public function append_fraud_prevention_token() {
+	public static function maybe_append_fraud_prevention_token() {
+		// Check session first before trying to append the token.
+		if ( ! WC()->session ) {
+			return;
+		}
+
+		$instance = self::get_instance();
+
 		// Don't add the token if the prevention is not enabled.
-		if ( ! $this->is_enabled() ) {
+		if ( ! $instance->is_enabled() ) {
 			return;
 		}
 
@@ -86,7 +93,7 @@ class Fraud_Prevention_Service {
 		// Add the fraud prevention token to the checkout configuration.
 		wp_add_inline_script(
 			self::TOKEN_NAME,
-			"window.wcpayFraudPreventionToken = '" . esc_js( $this->get_token() ) . "';",
+			"window.wcpayFraudPreventionToken = '" . esc_js( $instance->get_token() ) . "';",
 			'after'
 		);
 	}
