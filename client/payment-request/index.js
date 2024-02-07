@@ -299,6 +299,10 @@ jQuery( ( $ ) => {
 					.val();
 			}
 
+			if ( $( '.wc-bookings-booking-form' ).length ) {
+				productId = $( '.wc-booking-product-id' ).val();
+			}
+
 			const addons =
 				$( '#product-addons-total' ).data( 'price_data' ) || [];
 			const addonValue = addons.reduce(
@@ -619,5 +623,35 @@ jQuery( ( $ ) => {
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
 		wcpayPaymentRequest.init();
+	} );
+
+	// Handle bookable products on the product page.
+	let wcBookingFormChanged = false;
+
+	$( document.body )
+		.off( 'wc_booking_form_changed' )
+		.on( 'wc_booking_form_changed', () => {
+			wcBookingFormChanged = true;
+		} );
+
+	// Listen for the WC Bookings wc_bookings_calculate_costs event to complete
+	// and add the bookable product to the cart, using the response to update the
+	// payment request request params with correct totals.
+	$( document ).ajaxComplete( function ( event, xhr, settings ) {
+		if ( wcBookingFormChanged ) {
+			if (
+				settings.url === window.booking_form_params.ajax_url &&
+				settings.data.includes( 'wc_bookings_calculate_costs' ) &&
+				xhr.responseText.includes( 'SUCCESS' )
+			) {
+				wcBookingFormChanged = false;
+				return wcpayPaymentRequest.addToCart().then( ( response ) => {
+					wcpayPaymentRequestParams.product.total = response.total;
+					wcpayPaymentRequestParams.product.displayItems =
+						response.displayItems;
+					wcpayPaymentRequest.init();
+				} );
+			}
+		}
 	} );
 } );
