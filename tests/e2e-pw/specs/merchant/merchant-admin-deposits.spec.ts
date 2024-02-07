@@ -5,6 +5,7 @@ import { test, expect } from '@playwright/test';
 import { useMerchant } from '../../utils/helpers';
 
 test.describe( 'Merchant deposits', () => {
+	// Use the merchant user for this test suite.
 	useMerchant();
 
 	test( 'Load the deposits list page', async ( { page } ) => {
