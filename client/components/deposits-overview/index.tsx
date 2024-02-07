@@ -51,13 +51,14 @@ const DepositsOverview: React.FC = () => {
 
 	const availableFunds = overview?.available?.amount ?? 0;
 	const pendingFunds = overview?.pending?.amount ?? 0;
+	const totalFunds = availableFunds + pendingFunds;
 
 	const minimumDepositAmount =
 		wcpaySettings.accountStatus.deposits
 			?.minimum_scheduled_deposit_amounts?.[ selectedCurrency ] ?? 0;
 	const isAboveMinimumDepositAmount = availableFunds >= minimumDepositAmount;
-	// If the available balance is negative, deposits may be paused.
-	const isNegativeBalanceDepositsPaused = availableFunds < 0;
+	// If the total balance is negative, deposits may be paused.
+	const isNegativeBalanceDepositsPaused = totalFunds < 0;
 	// When there are funds pending but no available funds, deposits are paused.
 	const isDepositAwaitingPendingFunds =
 		availableFunds === 0 && pendingFunds > 0;
