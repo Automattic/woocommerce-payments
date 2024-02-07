@@ -23,7 +23,7 @@ import {
 	useDepositRestrictions,
 } from '../../data';
 import './style.scss';
-import { recordEvent, events } from 'wcpay/tracks';
+import { recordEvent, events } from 'tracks';
 import InlineNotice from 'components/inline-notice';
 
 const daysOfWeek = [

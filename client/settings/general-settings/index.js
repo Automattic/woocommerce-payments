@@ -14,7 +14,7 @@ import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/overview/modal/setup-live-payments';
 import TestModeConfirmationModal from './test-mode-confirm-modal';
-import { recordEvent, events } from 'wcpay/tracks';
+import { recordEvent, events } from 'tracks';
 
 const GeneralSettings = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();

@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
  */
 import DisableConfirmationModal from './disable-confirmation-modal';
 import { useSettings } from 'wcpay/data';
-import { recordEvent, events } from 'wcpay/tracks';
+import { recordEvent, events } from 'tracks';
 
 const PaymentGatewaysConfirmation = () => {
 	// pre-fetching the settings (and available payment methods) _before_ the modal is displayed,
