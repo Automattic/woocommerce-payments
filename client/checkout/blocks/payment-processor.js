@@ -46,7 +46,7 @@ const getBillingDetails = ( billingData ) => {
 };
 
 const getFraudPreventionToken = () => {
-	return window.wcpayConfig.fraudPreventionToken;
+	return window.wcpayConfig?.fraudPreventionToken ?? null;
 };
 
 const PaymentProcessor = ( {
