@@ -72,6 +72,11 @@ test.describe(
 					{ exact: true }
 				)
 			).toBeVisible();
+
+			// Visual regression test for the dispute notice.
+			await expect(
+				merchantPage.locator( '.dispute-notice' )
+			).toHaveScreenshot();
 		} );
 	}
 );
