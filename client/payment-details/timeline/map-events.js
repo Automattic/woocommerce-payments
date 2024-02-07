@@ -262,12 +262,10 @@ export const composeFeeString = ( event ) => {
 
 	const {
 		percentage,
+		fixed,
 		fixed_currency: fixedCurrency,
 		history,
 	} = event.fee_rates;
-	// The fixed part of the fee is a float in cents, so we need to prevent rounding issues.
-	const fixed = Math.round( event.fee_rates.fixed );
-
 	let feeAmount = event.fee;
 	let feeCurrency = event.currency;
 
