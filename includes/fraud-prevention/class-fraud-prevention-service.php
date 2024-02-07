@@ -71,11 +71,17 @@ class Fraud_Prevention_Service {
 	 * @return  void
 	 */
 	public function append_fraud_prevention_token() {
-
 		// Don't add the token if the prevention is not enabled.
 		if ( ! $this->is_enabled() ) {
 			return;
 		}
+
+		// Don't add the token if the user isn't on the cart or checkout page.
+		// Checking the cart page too because the user can pay quickly via the payment buttons on that page.
+		if ( ! is_checkout() && ! is_cart() ) {
+			return;
+		}
+
 		wp_register_script( self::TOKEN_NAME, '', [], time(), true );
 		wp_enqueue_script( self::TOKEN_NAME );
 		// Add the fraud prevention token to the checkout configuration.
