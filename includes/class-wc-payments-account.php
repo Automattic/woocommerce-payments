@@ -103,6 +103,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect_or_overview' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_flow_to_overview' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_flow_to_connect' ] );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 
 		// Add handlers for inbox notes and reminders.
@@ -948,6 +949,51 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Prevent access to onboarding flow if the server is not connected.
+	 * Redirect back to the connect page with an error message.
+	 *
+	 * @return void
+	 */
+	public function maybe_redirect_onboarding_flow_to_connect(): void {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/onboarding',
+		];
+
+		// We're not in the onboarding flow page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		// Server is connected, don't redirect.
+		if ( $this->payments_api_client->is_server_connected() ) {
+			return;
+		}
+
+		$referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
+
+		// Track unsuccessful Jetpack connection.
+		if ( strpos( $referer, 'wordpress.com' ) ) {
+			$this->tracks_event(
+				self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE,
+				[ 'mode' => WC_Payments::mode()->is_test() ? 'test' : 'live' ]
+			);
+		}
+
+		$this->redirect_to_onboarding_welcome_page(
+			sprintf(
+			/* translators: %s: WooPayments */
+				__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
+				'WooPayments'
+			)
+		);
+	}
+
+	/**
 	 * Filter function to add Stripe to the list of allowed redirect hosts
 	 *
 	 * @param array $hosts - array of allowed hosts.
@@ -997,6 +1043,9 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-reconnect-wpcom'] ) && check_admin_referer( 'wcpay-reconnect-wpcom' ) ) {
+			// Track the Jetpack connection start.
+			$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
+
 			$this->payments_api_client->start_server_connection( WC_Payments_Admin_Settings::get_settings_url() );
 			return;
 		}
@@ -1951,6 +2000,9 @@ class WC_Payments_Account {
 		if ( ! WC_Payments_Utils::should_use_new_onboarding_flow() ) {
 			return;
 		}
+
+		// Track the Jetpack connection start.
+		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
 
 		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
 
