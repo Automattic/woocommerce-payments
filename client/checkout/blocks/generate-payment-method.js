@@ -39,7 +39,7 @@ const generatePaymentMethod = async (
 			paymentMethod: { id },
 		} = await request.send();
 
-		const fraudPreventionToken = window.wcpayFraudPreventionToken ?? null;
+		const fraudPreventionToken = window.wcpayFraudPreventionToken;
 
 		return {
 			type: 'success',
