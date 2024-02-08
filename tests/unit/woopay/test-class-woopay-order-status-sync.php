@@ -20,8 +20,9 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		$this->account_mock      = $this->createMock( WC_Payments_Account::class );
 		$this->api_client_mock   = $this->createMock( WC_Payments_API_Client::class );
-		$this->webhook_sync_mock = new WCPay\WooPay\WooPay_Order_Status_Sync( $this->api_client_mock );
+		$this->webhook_sync_mock = new WCPay\WooPay\WooPay_Order_Status_Sync( $this->api_client_mock, $this->account_mock );
 
 		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();
@@ -45,6 +46,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 
 	/**
 	 * Tests that WooPay-specific webhooks are modified as expected.
+	 * @group webhook
 	 */
 	public function test_woopay_specific_webhook_payload_is_updated() {
 		wp_set_current_user( self::$admin_user->ID );
@@ -117,6 +119,20 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		$this->webhook_sync_mock->maybe_create_woopay_order_webhook();
 
 		$this->assertNotEmpty( WooPay_Order_Status_Sync::get_webhook() );
+	}
+
+	/**
+	 * Tests that the webhook is not created for rejected WCPay accounts.
+	 */
+	public function test_webhook_is_created_for_rejected() {
+		wp_set_current_user( self::$admin_user->ID );
+		$this->account_mock->method( 'is_account_rejected' )->willReturn( true );
+
+		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
+
+		$this->webhook_sync_mock->maybe_create_woopay_order_webhook();
+
+		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
 	}
 
 	/**
