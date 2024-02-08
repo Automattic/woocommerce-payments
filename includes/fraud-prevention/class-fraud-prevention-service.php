@@ -88,14 +88,7 @@ class Fraud_Prevention_Service {
 			return;
 		}
 
-		wp_register_script( self::TOKEN_NAME, '', [], time(), true );
-		wp_enqueue_script( self::TOKEN_NAME );
-		// Add the fraud prevention token to the checkout configuration.
-		wp_add_inline_script(
-			self::TOKEN_NAME,
-			"window.wcpayFraudPreventionToken = '" . esc_js( $instance->get_token() ) . "';",
-			'after'
-		);
+		echo "<script>window.wcpayFraudPreventionToken = '" . esc_js( $instance->get_token() ) . "';</script>";
 	}
 
 	/**
