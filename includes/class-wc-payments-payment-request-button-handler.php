@@ -428,7 +428,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Used to get the order in admin edit page.
 	 *
-	 * @return WC_Order|WC_Order_Refund|false
+	 * @return WC_Order|WC_Order_Refund|bool
 	 */
 	private function get_current_order() {
 		global $theorder;
