@@ -441,19 +441,25 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 1 );
 		$_GET = $get_params;
 
+		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->mock_api_client
 			->method( 'is_server_connected' )
 			->willReturn( $is_server_connected );
 
 		// Mock WC_Payments_Account without redirect_to_onboarding_welcome_page to prevent headers already sent error.
-		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setMethods( [ 'redirect_to_onboarding_welcome_page' ] )
+		$this->wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
+			->onlyMethods( [ 'redirect_to_onboarding_welcome_page' ] )
 			->getMock();
 
-		$mock_wcpay_account->expects( $this->exactly( $expected_times_redirect_called ) )->method( 'redirect_to_onboarding_welcome_page' );
+		$this->wcpay_account
+			->expects( $this->exactly( $expected_times_redirect_called ) )
+			->method( 'redirect_to_onboarding_welcome_page' );
 
-		$mock_wcpay_account->maybe_redirect_onboarding_flow_to_connect();
+		$this->wcpay_account->maybe_redirect_onboarding_flow_to_connect();
 	}
 
 	/**
