@@ -3,7 +3,7 @@
  */
 import * as React from 'react';
 import { Flex, TabPanel } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
