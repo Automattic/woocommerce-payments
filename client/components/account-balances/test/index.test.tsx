@@ -161,15 +161,15 @@ describe( 'AccountBalances', () => {
 		const { getByText, getByLabelText } = render( <AccountBalances /> );
 
 		// Check the tab title is rendered correctly.
+		getByText( 'Total balance' );
 		getByText( 'Available funds' );
-		getByText( 'Pending funds' );
 
+		const totalAmount = getByLabelText( 'Total balance' );
 		const availableAmount = getByLabelText( 'Available funds' );
-		const pendingAmount = getByLabelText( 'Pending funds' );
 
-		// Check the available and pending amounts are rendered correctly.
+		// Check the total and available amounts are rendered correctly.
+		expect( totalAmount ).toHaveTextContent( '$300.00' );
 		expect( availableAmount ).toHaveTextContent( '$200.00' );
-		expect( pendingAmount ).toHaveTextContent( '$100.00' );
 	} );
 
 	test( 'renders JPY currency correctly', () => {
@@ -179,15 +179,15 @@ describe( 'AccountBalances', () => {
 		const { getByText, getByLabelText } = render( <AccountBalances /> );
 
 		// Check the tab title is rendered correctly.
+		getByText( 'Total balance' );
 		getByText( 'Available funds' );
-		getByText( 'Pending funds' );
 
+		const totalAmount = getByLabelText( 'Total balance' );
 		const availableAmount = getByLabelText( 'Available funds' );
-		const pendingAmount = getByLabelText( 'Pending funds' );
 
-		// Check the available and pending amounts are rendered correctly.
+		// Check the total and available amounts are rendered correctly.
+		expect( totalAmount ).toHaveTextContent( '¥169' );
 		expect( availableAmount ).toHaveTextContent( '¥46' );
-		expect( pendingAmount ).toHaveTextContent( '¥123' );
 	} );
 
 	test( 'renders with selected currency correctly', () => {
@@ -214,11 +214,11 @@ describe( 'AccountBalances', () => {
 			name: /JPY Balance/,
 		} );
 
-		const pendingAmount = getByLabelText( 'Pending funds' );
+		const totalAmount = getByLabelText( 'Total balance' );
 		const availableAmount = getByLabelText( 'Available funds' );
 
-		// Check the available and pending amounts are rendered correctly.
-		expect( pendingAmount ).toHaveTextContent( '¥20' );
+		// Check the total and available amounts are rendered correctly.
+		expect( totalAmount ).toHaveTextContent( '¥110' );
 		expect( availableAmount ).toHaveTextContent( '¥90' );
 	} );
 
@@ -247,11 +247,11 @@ describe( 'AccountBalances', () => {
 			name: /EUR Balance/,
 		} );
 
-		const pendingAmount = getByLabelText( 'Pending funds' );
+		const totalAmount = getByLabelText( 'Total balance' );
 		const availableAmount = getByLabelText( 'Available funds' );
 
-		// Check the available and pending amounts are rendered correctly.
-		expect( pendingAmount ).toHaveTextContent( '€76.60' );
+		// Check the total and available amounts are rendered correctly.
+		expect( totalAmount ).toHaveTextContent( '€103.99' );
 		expect( availableAmount ).toHaveTextContent( '€27.39' );
 	} );
 
@@ -277,12 +277,12 @@ describe( 'AccountBalances', () => {
 		expect( tabTitles[ 2 ] ).toHaveTextContent( 'JPY Balance' );
 
 		// Check the first tab (EUR).
+		const eurTotalAmount = getByLabelText( 'Total balance' );
 		const eurAvailableAmount = getByLabelText( 'Available funds' );
-		const eurPendingAmount = getByLabelText( 'Pending funds' );
 
-		// Check the available and pending amounts are rendered correctly for the first tab.
+		// Check the total and available amounts are rendered correctly for the first tab.
+		expect( eurTotalAmount ).toHaveTextContent( '€103.99' );
 		expect( eurAvailableAmount ).toHaveTextContent( '€27.39' );
-		expect( eurPendingAmount ).toHaveTextContent( '€76.60' );
 
 		/**
 		 * Change the tab to the second tab (USD).
@@ -290,12 +290,12 @@ describe( 'AccountBalances', () => {
 		fireEvent.click( tabTitles[ 1 ] );
 		expect( mockSetSelectedCurrency ).toHaveBeenCalledTimes( 1 );
 		expect( mockSetSelectedCurrency ).toHaveBeenCalledWith( 'usd' );
+		const usdTotalAmount = getByLabelText( 'Total balance' );
 		const usdAvailableAmount = getByLabelText( 'Available funds' );
-		const usdPendingAmount = getByLabelText( 'Pending funds' );
 
-		// Check the available and pending amounts are rendered correctly for the first tab.
+		// Check the total and available amounts are rendered correctly for the first tab.
+		expect( usdTotalAmount ).toHaveTextContent( '$1,328.16' );
 		expect( usdAvailableAmount ).toHaveTextContent( '$479.41' );
-		expect( usdPendingAmount ).toHaveTextContent( '$848.75' );
 
 		/**
 		 * Change the tab to the third tab (JPY).
@@ -303,12 +303,12 @@ describe( 'AccountBalances', () => {
 		fireEvent.click( tabTitles[ 2 ] );
 		expect( mockSetSelectedCurrency ).toHaveBeenCalledTimes( 2 );
 		expect( mockSetSelectedCurrency ).toHaveBeenLastCalledWith( 'jpy' );
+		const jpyTotalAmount = getByLabelText( 'Total balance' );
 		const jpyAvailableAmount = getByLabelText( 'Available funds' );
-		const jpyPendingAmount = getByLabelText( 'Pending funds' );
 
-		// Check the available and pending amounts are rendered correctly for the first tab.
+		// Check the total and available amounts are rendered correctly for the first tab.
+		expect( jpyTotalAmount ).toHaveTextContent( '¥110' );
 		expect( jpyAvailableAmount ).toHaveTextContent( '¥90' );
-		expect( jpyPendingAmount ).toHaveTextContent( '¥20' );
 	} );
 
 	test( 'renders the correct tooltip text for the available balance', () => {
@@ -367,33 +367,10 @@ describe( 'AccountBalances', () => {
 		);
 	} );
 
-	test( 'renders the correct tooltip text for the pending balance', () => {
+	test( 'renders the correct tooltip text for the total balance', () => {
 		const delayDays = mockAccount.deposits_schedule.delay_days;
 		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 0 ) ] );
-		render( <AccountBalances /> );
-
-		// Check the tooltips are rendered correctly.
-		const tooltipButton = screen.getByRole( 'button', {
-			name: 'Pending funds tooltip',
-		} );
-		fireEvent.click( tooltipButton );
-		const tooltip = screen.getByRole( 'tooltip', {
-			// Using a regex here to allow partial matching of the tooltip text.
-			name: new RegExp(
-				`The amount of funds still in the ${ delayDays } day pending period.`
-			),
-		} );
-		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
-			'href',
-			'https://woo.com/document/woopayments/deposits/deposit-schedule/'
-		);
-	} );
-
-	test( 'renders total balance when pending balance is negative', () => {
-		mockOverviews( [ createMockOverview( 'usd', -10000, 20000, 0 ) ] );
-		render( <AccountBalances /> );
-
-		expect( screen.queryByText( 'Pending funds' ) ).not.toBeInTheDocument();
+		expect( render( <AccountBalances /> ) ).toMatchSnapshot();
 	} );
 
 	test( 'renders instant deposit button correctly', () => {
