@@ -21,10 +21,10 @@ describe( 'Klarna checkout', () => {
 		await merchant.login();
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
+		await shopper.login();
 	} );
 
 	beforeEach( async () => {
-		await shopper.login();
 		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 	} );
 
@@ -51,7 +51,7 @@ describe( 'Klarna checkout', () => {
 	} );
 
 	it( 'should show the product messaging on the product page', async () => {
-		await shopper.goToProductPageBySlug( 'belt' );
+		await shopperWCP.goToProductPageBySlug( 'belt' );
 
 		// waiting for the "product messaging" component to be rendered, so we can click on it.
 		await page.waitForSelector(
