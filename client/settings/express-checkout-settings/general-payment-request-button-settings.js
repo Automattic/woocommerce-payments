@@ -194,7 +194,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					'woocommerce-payments'
 				) }
 				hideLabelFromVision
-				selected={ buttonType }
+				value={ buttonType }
 				options={ buttonActionOptions }
 				onChange={ setButtonType }
 			/>
