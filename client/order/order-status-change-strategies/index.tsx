@@ -13,27 +13,20 @@ import { getConfig } from 'utils/order';
 import CancelConfirmationModal from '../cancel-confirm-modal';
 import CancelAuthorizationConfirmationModal from '../cancel-authorization-confirm-modal';
 import GenericConfirmationModal from '../generic-confirmation-modal';
+import React from 'react';
 
-// Map status changes to strategies
-export const statusChangeStrategies = {
-	'wc-refunded': handleRefundedStatus,
-	'wc-cancelled': handleCancelledStatus,
-	'wc-processing': handleProcessingStatus,
-	'wc-failed': handleFailedStatus,
-	'wc-completed': handleCompletedStatus,
-	'wc-pending': handlePendingStatus,
-	'wc-checkout-draft': handleCheckoutDraftStatus,
-	// Add other specific status changes if needed
-};
+interface StatusChangeStrategies {
+	[ key: string ]: ( orderStatus: string ) => void;
+}
 
-function renderModal( modalToRender ) {
+function renderModal( modalToRender: JSX.Element ) {
 	const container = document.createElement( 'div' );
 	container.id = 'wcpay-orderstatus-confirm-container';
 	document.body.appendChild( container );
 	ReactDOM.render( modalToRender, container );
 }
 
-function cancelAuthorization( orderStatus ) {
+function cancelAuthorization( orderStatus: string ) {
 	renderModal(
 		<CancelAuthorizationConfirmationModal
 			originalOrderStatus={ orderStatus }
@@ -41,7 +34,7 @@ function cancelAuthorization( orderStatus ) {
 	);
 }
 
-function captureAuthorization( originalOrderStatus ) {
+function captureAuthorization( originalOrderStatus: string ) {
 	renderModal(
 		<GenericConfirmationModal
 			title={ __( 'Capture Authorization', 'woocommerce-payments' ) }
@@ -52,7 +45,7 @@ function captureAuthorization( originalOrderStatus ) {
 				'woocommerce-payments'
 			) }
 			onConfirm={ () => {
-				const orderEditForm =
+				const orderEditForm: HTMLFormElement | null =
 					document
 						.querySelector( '#order_status' )
 						?.closest( 'form' ) || null;
@@ -61,7 +54,7 @@ function captureAuthorization( originalOrderStatus ) {
 				}
 			} }
 			onCancel={ () => {
-				const orderStatusElement = document.querySelector(
+				const orderStatusElement: HTMLInputElement | null = document.querySelector(
 					'#order_status'
 				);
 				if ( orderStatusElement !== null ) {
@@ -69,18 +62,20 @@ function captureAuthorization( originalOrderStatus ) {
 					orderStatusElement.dispatchEvent( new Event( 'change' ) );
 				}
 			} }
+			confirmButtonLink={ '' }
+			cancelButtonLink={ '' }
 		/>
 	);
 }
 
-function maybeCancelAuthorization( orderStatus ) {
+function maybeCancelAuthorization( orderStatus: string ): void {
 	const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
 	if ( hasOpenAuthorization ) {
 		cancelAuthorization( orderStatus );
 	}
 }
 
-function maybeCaptureAuthorization( orderStatus ) {
+function maybeCaptureAuthorization( orderStatus: string ): void {
 	const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
 	if ( hasOpenAuthorization ) {
 		captureAuthorization( orderStatus );
@@ -88,10 +83,10 @@ function maybeCaptureAuthorization( orderStatus ) {
 }
 
 export function renderRefundConfirmationModal(
-	orderStatus,
-	canRefund,
-	refundAmount
-) {
+	orderStatus: string,
+	canRefund: boolean,
+	refundAmount: number
+): void {
 	if ( ! canRefund ) {
 		dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Order cannot be refunded', 'woocommerce-payments' )
@@ -114,7 +109,7 @@ export function renderRefundConfirmationModal(
 	);
 }
 
-export function handleRefundedStatus( orderStatus ) {
+export function handleRefundedStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-refunded' ) {
 		return;
 	}
@@ -124,7 +119,7 @@ export function handleRefundedStatus( orderStatus ) {
 	renderRefundConfirmationModal( orderStatus, canRefund, refundAmount );
 }
 
-export function handleCancelledStatus( orderStatus ) {
+export function handleCancelledStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-cancelled' ) {
 		return;
 	}
@@ -147,14 +142,14 @@ export function handleCancelledStatus( orderStatus ) {
 	}
 }
 
-export function handleProcessingStatus( orderStatus ) {
+export function handleProcessingStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-processing' ) {
 		return;
 	}
 	maybeCaptureAuthorization( orderStatus );
 }
 
-export function handleFailedStatus( orderStatus ) {
+export function handleFailedStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-failed' ) {
 		return;
 	}
@@ -162,14 +157,14 @@ export function handleFailedStatus( orderStatus ) {
 	maybeCancelAuthorization( orderStatus );
 }
 
-export function handleCompletedStatus( orderStatus ) {
+export function handleCompletedStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-completed' ) {
 		return;
 	}
 	maybeCaptureAuthorization( orderStatus );
 }
 
-export function handlePendingStatus( orderStatus ) {
+export function handlePendingStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-pending' ) {
 		return;
 	}
@@ -177,7 +172,7 @@ export function handlePendingStatus( orderStatus ) {
 	maybeCancelAuthorization( orderStatus );
 }
 
-export function handleCheckoutDraftStatus( orderStatus ) {
+export function handleCheckoutDraftStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-checkout-draft' ) {
 		return;
 	}
@@ -185,7 +180,20 @@ export function handleCheckoutDraftStatus( orderStatus ) {
 	maybeCancelAuthorization( orderStatus );
 }
 
-export function handleGenericStatusChange() {
+export function handleGenericStatusChange(): void {
 	// Generic handler for any other status changes
+	// eslint-disable-next-line no-console
 	console.log( 'No specific action defined for this status change.' );
 }
+
+// Map status changes to strategies
+export const statusChangeStrategies: StatusChangeStrategies = {
+	'wc-refunded': handleRefundedStatus,
+	'wc-cancelled': handleCancelledStatus,
+	'wc-processing': handleProcessingStatus,
+	'wc-failed': handleFailedStatus,
+	'wc-completed': handleCompletedStatus,
+	'wc-pending': handlePendingStatus,
+	'wc-checkout-draft': handleCheckoutDraftStatus,
+	// Add other specific status changes if needed
+};
