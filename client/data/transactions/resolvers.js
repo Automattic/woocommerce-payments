@@ -55,6 +55,7 @@ export const formatQueryFilters = ( query ) => ( {
 	customer_currency_is_not: query.customerCurrencyIsNot,
 	search: query.search,
 	user_timezone: getUserTimeZone(),
+	locale: query.locale,
 } );
 
 /**
