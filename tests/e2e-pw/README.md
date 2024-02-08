@@ -4,6 +4,8 @@ Playwright e2e tests can be found in the `./tests/e2e-pw/specs` directory. These
 
 ## Setup local e2e environment
 
+See [tests/e2e/README.md](/tests/e2e/README.md) for detailed e2e environment setup instructions.
+
 1. `npm run test:e2e-setup`
 1. `npm run test:e2e-up`
 
