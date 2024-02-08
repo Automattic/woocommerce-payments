@@ -1059,9 +1059,8 @@ class WC_Payments_Account {
 
 				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 				$event_properties = [
-					'incentive'              => $incentive,
-					'is_new_onboarding_flow' => $progressive,
-					'mode'                   => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
+					'incentive' => $incentive,
+					'mode'      => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_START,
@@ -1133,9 +1132,8 @@ class WC_Payments_Account {
 				// Track successful Jetpack connection.
 				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 				$event_properties = [
-					'incentive'              => $incentive,
-					'is_new_onboarding_flow' => $progressive,
-					'mode'                   => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
+					'incentive' => $incentive,
+					'mode'      => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS,
@@ -1563,9 +1561,8 @@ class WC_Payments_Account {
 		$incentive        = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
 		$progressive      = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 		$event_properties = [
-			'incentive'              => $incentive,
-			'is_new_onboarding_flow' => $progressive,
-			'mode'                   => 'test' === $mode ? 'test' : 'live',
+			'incentive' => $incentive,
+			'mode'      => 'test' === $mode ? 'test' : 'live',
 		];
 		$this->tracks_event(
 			self::TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED,
