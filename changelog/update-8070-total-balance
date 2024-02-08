@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-On Payments Overview page, when pending balance is negative, hide it and show total balance (pending + available) instead.
+On Payments Overview page, show total balance (pending + available) instead of pending balance.
