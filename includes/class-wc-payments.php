@@ -1459,7 +1459,7 @@ class WC_Payments {
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
 
-			new WooPay_Order_Status_Sync( self::$api_client );
+			new WooPay_Order_Status_Sync( self::$api_client, self::$account );
 		}
 	}
 
