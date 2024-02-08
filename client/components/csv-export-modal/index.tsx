@@ -18,10 +18,9 @@ import DomainsIcon from 'gridicons/dist/domains';
  * Internal dependencies
  */
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
-import { exportLanguageOptions } from 'wcpay/settings/reporting-settings/constants';
 import { useReportingExportLanguage, useSettings } from 'wcpay/data';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
-import { getAdminUrl } from 'wcpay/utils';
+import { getAdminUrl, exportLanguageOptions } from 'wcpay/utils';
 import './styles.scss';
 
 interface CSVExportModalProps {
@@ -186,7 +185,7 @@ const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 							label={ '' }
 							value={ modalLanguage }
 							onChange={ handleExportLanguageChange }
-							options={ exportLanguageOptions }
+							options={ exportLanguageOptions() }
 						/>
 					</div>
 				</div>

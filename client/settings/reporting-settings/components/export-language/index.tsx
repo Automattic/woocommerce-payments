@@ -11,8 +11,8 @@ import { SelectControl, ExternalLink } from '@wordpress/components';
  */
 import interpolateComponents from '@automattic/interpolate-components';
 import { ReportingExportLanguageHook } from '../../interfaces';
-import { exportLanguageOptions } from '../../constants';
 import { useReportingExportLanguage } from 'wcpay/data';
+import { exportLanguageOptions } from 'wcpay/utils';
 
 const ExportLanguage: React.FC = () => {
 	const [
@@ -30,7 +30,7 @@ const ExportLanguage: React.FC = () => {
 				label={ __( 'Language', 'woocommerce-payments' ) }
 				value={ exportLanguage }
 				onChange={ handleExportLanguageChange }
-				options={ exportLanguageOptions }
+				options={ exportLanguageOptions() }
 			/>
 			<p className="reporting-settings__text--help-text">
 				{ interpolateComponents( {

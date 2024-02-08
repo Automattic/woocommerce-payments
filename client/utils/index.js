@@ -7,6 +7,7 @@ import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
 import { NAMESPACE } from 'wcpay/data/constants';
 import { numberFormat } from '@woocommerce/number';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Returns true if WooPayments is in test mode, false otherwise.
@@ -211,4 +212,24 @@ export const getExportLanguage = ( language, storedLanguage ) => {
 
 	// When modal is dismissed use the default language locale.
 	return language !== '' ? language : defaultLanguage;
+};
+
+/**
+ * Returns the language options for CSV exports language selector.
+ *
+ * @return {Array} Language options.
+ */
+export const exportLanguageOptions = () => {
+	return [
+		{
+			label: __( 'English (United States)', 'woocommerce-payments' ),
+			value: 'en_US',
+		},
+		{
+			label:
+				__( 'Site Language - ', 'woocommerce-payments' ) +
+				wcpaySettings.locale.native_name,
+			value: wcpaySettings.locale.code,
+		},
+	];
 };
