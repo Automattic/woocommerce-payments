@@ -208,8 +208,16 @@ describe( 'PaymentRequestSettings', () => {
 		userEvent.click( screen.getByLabelText( /Light/ ) );
 		expect( setButtonThemeMock ).toHaveBeenCalledWith( 'light' );
 
-		userEvent.click( screen.getByLabelText( 'Book with' ) );
-		expect( setButtonTypeMock ).toHaveBeenCalledWith( 'book' );
+		userEvent.selectOptions(
+			screen.getByRole( 'combobox', {
+				name: 'Call to action',
+			} ),
+			'book'
+		);
+		expect( setButtonTypeMock ).toHaveBeenCalledWith(
+			'book',
+			expect.anything()
+		);
 
 		userEvent.click( screen.getByLabelText( 'Large (56 px)' ) );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );
