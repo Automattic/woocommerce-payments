@@ -219,7 +219,7 @@ export const getExportLanguage = ( language, storedLanguage ) => {
  *
  * @return {Array} Language options.
  */
-export const exportLanguageOptions = () => {
+export const getExportLanguageOptions = () => {
 	return [
 		{
 			label: __( 'English (United States)', 'woocommerce-payments' ),

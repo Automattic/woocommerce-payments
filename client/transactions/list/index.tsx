@@ -714,6 +714,7 @@ export const TransactionsList = (
 		setIsDownloading( true );
 
 		// We destructure page and path to get the right params.
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
