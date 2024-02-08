@@ -258,14 +258,7 @@ export const formatAccountFeesDescription = (
 	accountFees: FeeStructure,
 	customFormats = {}
 ): string | JSX.Element => {
-	const defaultFee = {
-		fixed_rate: 0,
-		percentage_rate: 0,
-		currency: 'USD',
-	};
 	const baseFee = accountFees.base;
-	const additionalFee = accountFees.additional ?? defaultFee;
-	const fxFee = accountFees.fx ?? defaultFee;
 	const currentBaseFee = getCurrentBaseFee( accountFees );
 
 	// Default formats will be used if no matching field was passed in the `formats` parameter.
@@ -282,17 +275,9 @@ export const formatAccountFeesDescription = (
 		...customFormats,
 	};
 
-	// Some payment methods doesn't have base percentage rate. In this case, the lowest rate will be shown as a start value
-	let displayFeePercentageRate = baseFee.percentage_rate;
-	if ( displayFeePercentageRate <= 0 ) {
-		displayFeePercentageRate =
-			additionalFee.percentage_rate < fxFee.percentage_rate
-				? additionalFee.percentage_rate
-				: fxFee.percentage_rate;
-	}
 	const feeDescription = sprintf(
 		formats.fee,
-		formatFee( displayFeePercentageRate ),
+		formatFee( baseFee.percentage_rate ),
 		formatCurrency( baseFee.fixed_rate, baseFee.currency )
 	);
 	const isFormattingWithDiscount =
