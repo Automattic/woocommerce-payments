@@ -118,7 +118,6 @@ declare global {
 			task_badge?: string;
 		};
 		isWooPayStoreCountryAvailable: boolean;
-		wooStoreId: string;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
 		capabilityRequestNotices: Record< string, boolean >;

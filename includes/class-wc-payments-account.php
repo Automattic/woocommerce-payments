@@ -29,7 +29,6 @@ class WC_Payments_Account {
 
 	// ACCOUNT_OPTION is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
 	const ACCOUNT_OPTION                                        = 'wcpay_account_data';
-	const WOOCOMMERCE_STORE_ID_OPTION                           = 'woocommerce_store_id';
 	const ON_BOARDING_DISABLED_TRANSIENT                        = 'wcpay_on_boarding_disabled';
 	const ON_BOARDING_STARTED_TRANSIENT                         = 'wcpay_on_boarding_started';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
@@ -885,16 +884,6 @@ class WC_Payments_Account {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Get the WooCommerce store ID option.
-	 * TODO: Ideally this would be exposed through WC Core rather than needing to be fetched from the options table.
-	 *
-	 * @return string
-	 */
-	public function get_woocommerce_store_id(): string {
-		return get_option( self::WOOCOMMERCE_STORE_ID_OPTION, '' );
 	}
 
 	/**
