@@ -41,7 +41,8 @@ declare global {
 				monthly_anchor: null | number;
 				delay_days: null | number;
 				completed_waiting_period: boolean;
-				minimum_deposit_amounts: Record< string, number >;
+				minimum_manual_deposit_amounts: Record< string, number >;
+				minimum_scheduled_deposit_amounts: Record< string, number >;
 			};
 			depositsStatus?: string;
 			currentDeadline?: bigint;
@@ -123,6 +124,14 @@ declare global {
 		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
+		reporting: {
+			exportModalDismissed?: boolean;
+		};
+		locale: {
+			code: string;
+			english_name: string;
+			native_name: string;
+		};
 	};
 
 	const wc: {

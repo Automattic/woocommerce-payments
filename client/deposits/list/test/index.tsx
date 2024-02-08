@@ -14,7 +14,11 @@ import os from 'os';
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import { useDeposits, useDepositsSummary } from 'wcpay/data';
+import {
+	useDeposits,
+	useDepositsSummary,
+	useReportingExportLanguage,
+} from 'wcpay/data';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 import {
 	CachedDeposit,
@@ -26,6 +30,7 @@ import React from 'react';
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
+	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -68,6 +73,9 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		reporting?: {
+			exportModalDismissed: boolean;
+		};
 	};
 };
 
@@ -100,12 +108,18 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
 
+const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
+	typeof useReportingExportLanguage
+>;
+
 describe( 'Deposits list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
+
+		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
@@ -122,6 +136,9 @@ describe( 'Deposits list', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
+			},
+			reporting: {
+				exportModalDismissed: true,
 			},
 		};
 	} );
@@ -329,7 +346,7 @@ describe( 'Deposits list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
 					path:
-						'/wc/v3/payments/deposits/download?user_email=mock%40example.com',
+						'/wc/v3/payments/deposits/download?user_email=mock%40example.com&locale=en',
 				} );
 			} );
 		} );
