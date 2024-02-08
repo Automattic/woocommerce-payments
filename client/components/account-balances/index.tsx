@@ -84,16 +84,16 @@ const AccountBalances: React.FC = () => {
 						className="wcpay-account-balances__balances"
 					>
 						<BalanceBlock
-							id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
-							title=""
-							amount={ tab.availableFunds }
+							id={ `wcpay-account-balances-${ tab.currencyCode }-total` }
+							title={ fundLabelStrings.total }
+							amount={ 0 }
 							currencyCode={ tab.currencyCode }
 							isLoading
 						/>
 						<BalanceBlock
-							id={ `wcpay-account-balances-${ tab.currencyCode }-pending` }
-							title=""
-							amount={ tab.pendingFunds }
+							id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
+							title={ fundLabelStrings.available }
+							amount={ 0 }
 							currencyCode={ tab.currencyCode }
 							isLoading
 						/>
@@ -131,150 +131,7 @@ const AccountBalances: React.FC = () => {
 			}
 		>
 			{ ( tab: BalanceTabProps ) => {
-				const availableBalanceBlock = (
-					<BalanceBlock
-						id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
-						title={ fundLabelStrings.available }
-						amount={ tab.availableFunds }
-						currencyCode={ tab.currencyCode }
-						tooltip={
-							<BalanceTooltip
-								label={ `${ fundLabelStrings.available } tooltip` }
-								content={
-									tab.availableFunds < 0
-										? interpolateComponents( {
-												mixedString: __(
-													'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
-													'woocommerce-payments'
-												),
-												components: {
-													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<a
-															rel="external noopener noreferrer"
-															target="_blank"
-															href={
-																documentationUrls.negativeBalance
-															}
-														/>
-													),
-												},
-										  } )
-										: interpolateComponents( {
-												mixedString: __(
-													'The amount of funds available to be deposited. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
-													'woocommerce-payments'
-												),
-												components: {
-													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<a
-															rel="external noopener noreferrer"
-															target="_blank"
-															href={
-																documentationUrls.depositSchedule
-															}
-														/>
-													),
-												},
-										  } )
-								}
-							/>
-						}
-					/>
-				);
-
-				const pendingBalanceBlock = (
-					<BalanceBlock
-						id={ `wcpay-account-balances-${ tab.currencyCode }-pending` }
-						title={ fundLabelStrings.pending }
-						amount={ tab.pendingFunds }
-						currencyCode={ tab.currencyCode }
-						tooltip={
-							<BalanceTooltip
-								label={ `${ fundLabelStrings.pending } tooltip` }
-								content={
-									tab.pendingFunds < 0
-										? interpolateComponents( {
-												mixedString: __(
-													'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
-													'woocommerce-payments'
-												),
-												components: {
-													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<a
-															rel="external noopener noreferrer"
-															target="_blank"
-															href={
-																documentationUrls.negativeBalance
-															}
-														/>
-													),
-												},
-										  } )
-										: interpolateComponents( {
-												mixedString: sprintf(
-													// Translators: %d is the number of days, e.g. 1, 2, 3, etc.
-													__(
-														'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
-														'woocommerce-payments'
-													),
-													tab.delayDays
-												),
-												components: {
-													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<a
-															rel="external noopener noreferrer"
-															target="_blank"
-															href={
-																documentationUrls.depositSchedule
-															}
-														/>
-													),
-												},
-										  } )
-								}
-							/>
-						}
-					/>
-				);
-
 				const totalBalance = tab.availableFunds + tab.pendingFunds;
-				const totalBalanceBlock = (
-					<BalanceBlock
-						id={ `wcpay-account-balances-${ tab.currencyCode }-total` }
-						title={ fundLabelStrings.total }
-						amount={ totalBalance }
-						currencyCode={ tab.currencyCode }
-						tooltip={
-							totalBalance < 0 ? (
-								<BalanceTooltip
-									label={ `${ fundLabelStrings.total } tooltip` }
-									content={ interpolateComponents( {
-										mixedString: __(
-											'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
-											'woocommerce-payments'
-										),
-										components: {
-											learnMoreLink: (
-												// eslint-disable-next-line jsx-a11y/anchor-has-content
-												<a
-													rel="external noopener noreferrer"
-													target="_blank"
-													href={
-														documentationUrls.negativeBalance
-													}
-												/>
-											),
-										},
-									} ) }
-								/>
-							) : undefined
-						}
-					/>
-				);
 
 				return (
 					<>
@@ -282,17 +139,87 @@ const AccountBalances: React.FC = () => {
 							gap={ 0 }
 							className="wcpay-account-balances__balances"
 						>
-							{ tab.pendingFunds < 0 ? (
-								<>
-									{ totalBalanceBlock }
-									{ availableBalanceBlock }
-								</>
-							) : (
-								<>
-									{ availableBalanceBlock }
-									{ pendingBalanceBlock }
-								</>
-							) }
+							<BalanceBlock
+								id={ `wcpay-account-balances-${ tab.currencyCode }-total` }
+								title={ fundLabelStrings.total }
+								amount={ totalBalance }
+								currencyCode={ tab.currencyCode }
+								tooltip={
+									totalBalance < 0 ? (
+										<BalanceTooltip
+											label={ `${ fundLabelStrings.total } tooltip` }
+											content={ interpolateComponents( {
+												mixedString: __(
+													'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+													'woocommerce-payments'
+												),
+												components: {
+													learnMoreLink: (
+														// eslint-disable-next-line jsx-a11y/anchor-has-content
+														<a
+															rel="external noopener noreferrer"
+															target="_blank"
+															href={
+																documentationUrls.negativeBalance
+															}
+														/>
+													),
+												},
+											} ) }
+										/>
+									) : undefined
+								}
+							/>
+							<BalanceBlock
+								id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
+								title={ fundLabelStrings.available }
+								amount={ tab.availableFunds }
+								currencyCode={ tab.currencyCode }
+								tooltip={
+									<BalanceTooltip
+										label={ `${ fundLabelStrings.available } tooltip` }
+										content={
+											tab.availableFunds < 0
+												? interpolateComponents( {
+														mixedString: __(
+															'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+															'woocommerce-payments'
+														),
+														components: {
+															learnMoreLink: (
+																// eslint-disable-next-line jsx-a11y/anchor-has-content
+																<a
+																	rel="external noopener noreferrer"
+																	target="_blank"
+																	href={
+																		documentationUrls.negativeBalance
+																	}
+																/>
+															),
+														},
+												  } )
+												: interpolateComponents( {
+														mixedString: __(
+															'The amount of funds available to be deposited. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
+															'woocommerce-payments'
+														),
+														components: {
+															learnMoreLink: (
+																// eslint-disable-next-line jsx-a11y/anchor-has-content
+																<a
+																	rel="external noopener noreferrer"
+																	target="_blank"
+																	href={
+																		documentationUrls.depositSchedule
+																	}
+																/>
+															),
+														},
+												  } )
+										}
+									/>
+								}
+							/>
 						</Flex>
 						{ tab.instantBalance && tab.instantBalance.amount > 0 && (
 							<Flex
