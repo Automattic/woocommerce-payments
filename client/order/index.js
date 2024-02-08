@@ -13,6 +13,7 @@ import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
 import CancelAuthorizationConfirmationModal from './cancel-authorization-confirm-modal';
+import GenericConfirmationModal from './generic-confirmation-modal';
 import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
 
@@ -55,6 +56,168 @@ function disableWooOrderRefundButton( disputeStatus ) {
 		// Regenerate the tipTip tooltip.
 		.tipTip();
 }
+
+function renderModal( modalToRender ) {
+	const container = document.createElement( 'div' );
+	container.id = 'wcpay-orderstatus-confirm-container';
+	document.body.appendChild( container );
+	ReactDOM.render( modalToRender, container );
+}
+
+function renderRefundConfirmationModal(
+	originalStatus,
+	canRefund,
+	refundAmount
+) {
+	if ( ! canRefund ) {
+		dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Order cannot be refunded', 'woocommerce-payments' )
+		);
+		return;
+	}
+	if ( refundAmount <= 0 ) {
+		dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Invalid Refund Amount', 'woocommerce-payments' )
+		);
+		return;
+	}
+	renderModal(
+		<RefundConfirmationModal
+			orderStatus={ originalStatus }
+			refundAmount={ refundAmount }
+			formattedRefundAmount={ getConfig( 'formattedRefundAmount' ) }
+			refundedAmount={ getConfig( 'refundedAmount' ) }
+		/>
+	);
+}
+
+function handleRefundedStatus( originalStatus ) {
+	if ( originalStatus === 'wc-refunded' ) {
+		return;
+	}
+	const canRefund = getConfig( 'canRefund' );
+	const refundAmount = getConfig( 'refundAmount' );
+
+	renderRefundConfirmationModal( originalStatus, canRefund, refundAmount );
+}
+
+function handleCancelledStatus( originalStatus ) {
+	if ( originalStatus === 'wc-cancelled' ) {
+		return;
+	}
+	const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
+	const canRefund = getConfig( 'canRefund' );
+	const refundAmount = getConfig( 'refundAmount' );
+
+	// If order has an uncaptured authorization, confirm
+	// that merchant indeed wants to cancel both the order
+	// and the authorization.
+	if ( hasOpenAuthorization ) {
+		cancelAuthorization( originalStatus );
+	}
+
+	// If it is possible to refund an order, double check that
+	// merchants indeed wants to cancel, or if they just want to
+	// refund.
+	if ( ! hasOpenAuthorization && canRefund && refundAmount > 0 ) {
+		renderModal(
+			<CancelConfirmationModal originalOrderStatus={ originalStatus } />
+		);
+	}
+}
+
+function handleProcessingStatus() {
+	const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
+	if ( hasOpenAuthorization ) {
+		captureAuthorization();
+	}
+}
+
+function captureAuthorization( originalOrderStatus ) {
+	renderModal(
+		<GenericConfirmationModal
+			title={ __( 'Capture Authorization', 'woocommerce-payments' ) }
+			confirmButtonText={ __( 'Capture', 'woocommerce-payments' ) }
+			cancelButtonText={ __( 'Cancel', 'woocommerce-payments' ) }
+			confirmationMessage={ __(
+				'Are you sure you want to capture the authorization?',
+				'woocommerce-payments'
+			) }
+			onConfirm={ () => {
+				const orderEditForm =
+					document
+						.querySelector( '#order_status' )
+						?.closest( 'form' ) || null;
+				if ( orderEditForm !== null ) {
+					orderEditForm.submit();
+				}
+			} }
+			onCancel={ () => {
+				const orderStatusElement = document.querySelector(
+					'#order_status'
+				);
+				if ( orderStatusElement !== null ) {
+					orderStatusElement.value = originalOrderStatus;
+					orderStatusElement.dispatchEvent( new Event( 'change' ) );
+				}
+			} }
+		/>
+	);
+}
+
+function cancelAuthorization( originalStatus ) {
+	renderModal(
+		<CancelAuthorizationConfirmationModal
+			originalOrderStatus={ originalStatus }
+		/>
+	);
+}
+
+function handleGenericStatusChange() {
+	// Generic handler for any other status changes
+	console.log( 'No specific action defined for this status change.' );
+}
+
+function handleFailedStatus( originalStatus ) {
+	if ( originalStatus === 'wc-failed' ) {
+		return;
+	}
+	const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
+	if ( hasOpenAuthorization ) {
+		cancelAuthorization( originalStatus );
+	}
+}
+
+function handleCompletedStatus( originalStatus ) {
+	if ( originalStatus === 'wc-completed' ) {
+		return;
+	}
+	const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
+	if ( hasOpenAuthorization ) {
+		captureAuthorization( originalStatus );
+	}
+}
+
+function handlePendingStatus( originalStatus ) {
+	if ( originalStatus === 'wc-pending' ) {
+		return;
+	}
+	const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
+	if ( hasOpenAuthorization ) {
+		cancelAuthorization( originalStatus );
+	}
+}
+
+// Map status changes to strategies
+const statusChangeStrategies = {
+	'wc-refunded': handleRefundedStatus,
+	'wc-cancelled': handleCancelledStatus,
+	'wc-processing': handleProcessingStatus,
+	'wc-failed': handleFailedStatus,
+	'wc-completed': handleCompletedStatus,
+	'wc-pending': handlePendingStatus,
+	// Add other specific status changes if needed
+};
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
@@ -99,79 +262,10 @@ jQuery( function ( $ ) {
 			originalStatus = 'wc-' + originalStatus;
 		}
 
-		const canRefund = getConfig( 'canRefund' );
-		const refundAmount = getConfig( 'refundAmount' );
-		const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
-		if (
-			this.value === 'wc-refunded' &&
-			originalStatus !== 'wc-refunded'
-		) {
-			renderRefundConfirmationModal(
-				originalStatus,
-				canRefund,
-				refundAmount
-			);
-		} else if (
-			this.value === 'wc-cancelled' &&
-			originalStatus !== 'wc-cancelled'
-		) {
-			// If order has an uncaptured authorization, confirm
-			// that merchant indeed wants to cancel both the order
-			// and the authorization.
-			if ( hasOpenAuthorization ) {
-				renderModal(
-					<CancelAuthorizationConfirmationModal
-						originalOrderStatus={ originalStatus }
-					/>
-				);
-				return;
-			}
-			// If it is possible to refund an order, double check that
-			// merchants indeed wants to cancel, or if they just want to
-			// refund.
-			if ( canRefund && refundAmount > 0 ) {
-				renderModal(
-					<CancelConfirmationModal
-						originalOrderStatus={ originalStatus }
-					/>
-				);
-			}
-		}
+		const handleOrderStatusChange =
+			statusChangeStrategies[ this.value ] || handleGenericStatusChange;
+		handleOrderStatusChange( originalStatus );
 	} );
-
-	function renderRefundConfirmationModal(
-		originalStatus,
-		canRefund,
-		refundAmount
-	) {
-		if ( ! canRefund ) {
-			dispatch( 'core/notices' ).createErrorNotice(
-				__( 'Order cannot be refunded', 'woocommerce-payments' )
-			);
-			return;
-		}
-		if ( refundAmount <= 0 ) {
-			dispatch( 'core/notices' ).createErrorNotice(
-				__( 'Invalid Refund Amount', 'woocommerce-payments' )
-			);
-			return;
-		}
-		renderModal(
-			<RefundConfirmationModal
-				orderStatus={ originalStatus }
-				refundAmount={ refundAmount }
-				formattedRefundAmount={ getConfig( 'formattedRefundAmount' ) }
-				refundedAmount={ getConfig( 'refundedAmount' ) }
-			/>
-		);
-	}
-
-	function renderModal( modalToRender ) {
-		const container = document.createElement( 'div' );
-		container.id = 'wcpay-orderstatus-confirm-container';
-		document.body.appendChild( container );
-		ReactDOM.render( modalToRender, container );
-	}
 
 	function maybeShowOrderNotices() {
 		const container = document.querySelector(
