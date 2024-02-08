@@ -272,6 +272,16 @@ export const useDepositScheduleMonthlyAnchor = () => {
 	return [ depositScheduleMonthlyAnchor, updateDepositScheduleMonthlyAnchor ];
 };
 
+export const useReportingExportLanguage = () => {
+	const { updateExportLanguage } = useDispatch( STORE_NAME );
+
+	const exportLanguage = useSelect( ( select ) =>
+		select( STORE_NAME ).getExportLanguage()
+	);
+
+	return [ exportLanguage, updateExportLanguage ];
+};
+
 export const useDepositDelayDays = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getDepositDelayDays(), [] );
 

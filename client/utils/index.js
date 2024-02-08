@@ -7,6 +7,7 @@ import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
 import { NAMESPACE } from 'wcpay/data/constants';
 import { numberFormat } from '@woocommerce/number';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Returns true if WooPayments is in test mode, false otherwise.
@@ -157,4 +158,78 @@ export const applyThousandSeparator = ( trxCount ) => {
 
 	const formattedNumber = partial( numberFormat, siteNumberOptions );
 	return formattedNumber( trxCount );
+};
+
+/**
+ * Returns true if Export Modal is dismissed, false otherwise.
+ *
+ * @return {boolean} True if dismissed, false otherwise.
+ */
+export const isExportModalDismissed = () => {
+	if ( typeof wcpaySettings === 'undefined' ) {
+		return true;
+	}
+
+	return wcpaySettings?.reporting?.exportModalDismissed ?? false;
+};
+
+/**
+ * Returns true if Export Modal is dismissed, false otherwise.
+ *
+ * @return {boolean} True if dismissed, false otherwise.
+ */
+
+export const isDefaultSiteLanguage = () => {
+	if ( typeof wcpaySettings === 'undefined' ) {
+		return true;
+	}
+
+	return wcpaySettings.locale?.code === 'en_US';
+};
+
+/**
+ * Returns the language code for CSV exports.
+ *
+ * @param {string} language Selected language code.
+ * @param {string} storedLanguage Stored language code.
+ *
+ * @return {string} Language code.
+ */
+export const getExportLanguage = ( language, storedLanguage ) => {
+	let siteLanguage = 'en_US';
+
+	// If the default site language is en_US, skip
+	if ( isDefaultSiteLanguage() ) {
+		return siteLanguage;
+	}
+
+	if ( typeof wcpaySettings !== 'undefined' ) {
+		siteLanguage = wcpaySettings?.locale?.code ?? siteLanguage;
+	}
+
+	// In case the default export setting is not present, use the site locale.
+	const defaultLanguage = storedLanguage ?? siteLanguage;
+
+	// When modal is dismissed use the default language locale.
+	return language !== '' ? language : defaultLanguage;
+};
+
+/**
+ * Returns the language options for CSV exports language selector.
+ *
+ * @return {Array} Language options.
+ */
+export const getExportLanguageOptions = () => {
+	return [
+		{
+			label: __( 'English (United States)', 'woocommerce-payments' ),
+			value: 'en_US',
+		},
+		{
+			label:
+				__( 'Site Language - ', 'woocommerce-payments' ) +
+				wcpaySettings.locale.native_name,
+			value: wcpaySettings.locale.code,
+		},
+	];
 };
