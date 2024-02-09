@@ -26,7 +26,7 @@ function renderModal( modalToRender: JSX.Element ) {
 	ReactDOM.render( modalToRender, container );
 }
 
-function triggerCancelAuthorizationModal( orderStatus: string ) {
+function triggerCancelAuthorizationModal( orderStatus: string ): void {
 	renderModal(
 		<CancelAuthorizationConfirmationModal
 			originalOrderStatus={ orderStatus }
@@ -34,7 +34,7 @@ function triggerCancelAuthorizationModal( orderStatus: string ) {
 	);
 }
 
-function triggerCaptureAuthorizationModal( originalOrderStatus: string ) {
+function triggerCaptureAuthorizationModal( originalOrderStatus: string ): void {
 	renderModal(
 		<GenericConfirmationModal
 			title={ __( 'Capture Authorization', 'woocommerce-payments' ) }
@@ -68,7 +68,7 @@ function triggerCaptureAuthorizationModal( originalOrderStatus: string ) {
 	);
 }
 
-export function renderRefundConfirmationModal(
+function renderRefundConfirmationModal(
 	orderStatus: string,
 	canRefund: boolean,
 	refundAmount: number
@@ -95,7 +95,7 @@ export function renderRefundConfirmationModal(
 	);
 }
 
-export function handleRefundedStatus( orderStatus: string ): void {
+function handleRefundedStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-refunded' ) {
 		return;
 	}
@@ -105,7 +105,7 @@ export function handleRefundedStatus( orderStatus: string ): void {
 	renderRefundConfirmationModal( orderStatus, canRefund, refundAmount );
 }
 
-export function handleCancelledStatus( orderStatus: string ): void {
+function handleCancelledStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-cancelled' ) {
 		return;
 	}
@@ -129,7 +129,7 @@ export function handleCancelledStatus( orderStatus: string ): void {
 	}
 }
 
-export function handleGenericStatusChange(): void {
+function handleGenericStatusChange(): void {
 	// Generic handler for any other status changes
 	// eslint-disable-next-line no-console
 	console.log( 'No specific action defined for this status change.' );
@@ -147,9 +147,10 @@ function maybeTriggerCaptureAuthorizationModal( orderStatus: string ): void {
 	}
 }
 
-// Map status changes to strategies
-// Add other specific status changes if needed.
-export const statusChangeStrategies: StatusChangeStrategies = {
+// Map status changes to strategies.
+// If some status needs more complex logic, feel free to create a new function
+// and add it to the map.
+const statusChangeStrategies: StatusChangeStrategies = {
 	'wc-refunded': handleRefundedStatus,
 	'wc-cancelled': handleCancelledStatus,
 	'wc-processing': maybeTriggerCaptureAuthorizationModal,
@@ -158,3 +159,9 @@ export const statusChangeStrategies: StatusChangeStrategies = {
 	'wc-pending': maybeTriggerCancelAuthorizationModal,
 	'wc-checkout-draft': maybeTriggerCancelAuthorizationModal,
 };
+
+export default function getStatusChangeStrategy(
+	orderStatus: string
+): ( orderStatus: string ) => void {
+	return statusChangeStrategies[ orderStatus ] || handleGenericStatusChange;
+}

@@ -12,10 +12,7 @@ import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 
 import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
-import {
-	statusChangeStrategies,
-	handleGenericStatusChange,
-} from './order-status-change-strategies';
+import getStatusChangeStrategy from './order-status-change-strategies';
 
 function disableWooOrderRefundButton( disputeStatus ) {
 	const refundButton = document.querySelector( 'button.refund-items' );
@@ -100,8 +97,7 @@ jQuery( function ( $ ) {
 			originalStatus = 'wc-' + originalStatus;
 		}
 
-		const handleOrderStatusChange =
-			statusChangeStrategies[ this.value ] || handleGenericStatusChange;
+		const handleOrderStatusChange = getStatusChangeStrategy( this.value );
 		handleOrderStatusChange( originalStatus );
 	} );
 
