@@ -23,10 +23,12 @@ const stepElapsed = () => {
 	return result;
 };
 
-export const trackStarted = (): void => {
+export const trackStarted = ( source: string ): void => {
 	startTime = stepStartTime = Date.now();
 
-	recordEvent( 'wcpay_onboarding_flow_started' );
+	recordEvent( 'wcpay_onboarding_flow_started', {
+		source,
+	} );
 };
 
 export const trackModeSelected = ( mode: string ): void => {
