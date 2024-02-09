@@ -376,6 +376,45 @@ export const merchantWCP = {
 		} );
 	},
 
+	enableCardTestingProtection: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if (
+			! ( await page.$(
+				'#wcpaydev_force_card_testing_protection_on:checked'
+			) )
+		) {
+			await expect( page ).toClick(
+				'label[for="wcpaydev_force_card_testing_protection_on"]'
+			);
+		}
+
+		await expect( page ).toClick( 'input#submit' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	disableCardTestingProtection: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if (
+			await page.$( '#wcpaydev_force_card_testing_protection_on:checked' )
+		) {
+			await expect( page ).toClick(
+				'label[for="wcpaydev_force_card_testing_protection_on"]'
+			);
+		}
+		await expect( page ).toClick( 'input#submit' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
 	enablePaymentMethod: async ( paymentMethods ) => {
 		await page.goto( WCPAY_PAYMENT_SETTINGS, {
 			waitUntil: 'networkidle0',
