@@ -503,9 +503,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
-			add_action( 'woocommerce_order_status_cancelled', [ $this, 'cancel_authorizations_on_order_cancel' ] );
-			add_action( 'woocommerce_order_status_failed', [ $this, 'cancel_authorizations_on_order_cancel' ] );
-			add_action( 'woocommerce_order_status_pending', [ $this, 'cancel_authorizations_on_order_cancel' ] );
+			add_action( 'woocommerce_order_status_cancelled', [ $this, 'cancel_authorizations_on_order_status_change' ] );
+			add_action( 'woocommerce_order_status_failed', [ $this, 'cancel_authorizations_on_order_status_change' ] );
+			add_action( 'woocommerce_order_status_pending', [ $this, 'cancel_authorizations_on_order_status_change' ] );
 			add_action( 'woocommerce_order_status_completed', [ $this, 'capture_authorization_on_order_status_change' ], 10, 3 );
 			add_action( 'woocommerce_order_status_processing', [ $this, 'capture_authorization_on_order_status_change' ], 10, 3 );
 
@@ -3268,7 +3268,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param int $order_id - Order ID.
 	 */
-	public function cancel_authorizations_on_order_cancel( $order_id ) {
+	public function cancel_authorizations_on_order_status_change( $order_id ) {
 		$order = new WC_Order( $order_id );
 		if ( null !== $order ) {
 			$intent_id = $this->order_service->get_intent_id_for_order( $order );
