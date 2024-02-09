@@ -136,12 +136,24 @@ function handleGenericStatusChange(): void {
 }
 
 function maybeTriggerCancelAuthorizationModal( orderStatus: string ): void {
+	if (
+		orderStatus === 'wc-checkout-draft' ||
+		orderStatus === 'wc-failed' ||
+		orderStatus === 'wc-pending'
+	) {
+		return;
+	}
+
 	if ( getConfig( 'hasOpenAuthorization' ) ) {
 		triggerCancelAuthorizationModal( orderStatus );
 	}
 }
 
 function maybeTriggerCaptureAuthorizationModal( orderStatus: string ): void {
+	if ( orderStatus === 'wc-processing' || orderStatus === 'wc-completed' ) {
+		return;
+	}
+
 	if ( getConfig( 'hasOpenAuthorization' ) ) {
 		triggerCaptureAuthorizationModal( orderStatus );
 	}
@@ -151,13 +163,13 @@ function maybeTriggerCaptureAuthorizationModal( orderStatus: string ): void {
 // If some status needs more complex logic, feel free to create a new function
 // and add it to the map.
 const statusChangeStrategies: StatusChangeStrategies = {
-	'wc-refunded': handleRefundedStatus,
 	'wc-cancelled': handleCancelledStatus,
-	'wc-processing': maybeTriggerCaptureAuthorizationModal,
-	'wc-failed': maybeTriggerCancelAuthorizationModal,
-	'wc-completed': maybeTriggerCaptureAuthorizationModal,
-	'wc-pending': maybeTriggerCancelAuthorizationModal,
 	'wc-checkout-draft': maybeTriggerCancelAuthorizationModal,
+	'wc-completed': maybeTriggerCaptureAuthorizationModal,
+	'wc-failed': maybeTriggerCancelAuthorizationModal,
+	'wc-pending': maybeTriggerCancelAuthorizationModal,
+	'wc-processing': maybeTriggerCaptureAuthorizationModal,
+	'wc-refunded': handleRefundedStatus,
 };
 
 export default function getStatusChangeStrategy(
