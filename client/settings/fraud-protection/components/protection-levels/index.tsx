@@ -45,7 +45,7 @@ const ProtectionLevels: React.FC = () => {
 	};
 
 	const handleBasicModalOpen = () => {
-		recordEvent( 'wcpay_fraud_protection_basic_modal_viewed', {} );
+		recordEvent( 'wcpay_fraud_protection_basic_modal_viewed' );
 		setBasicModalOpen( true );
 	};
 
