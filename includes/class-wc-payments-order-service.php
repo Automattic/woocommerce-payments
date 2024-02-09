@@ -11,6 +11,9 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
+use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Cancel_Intention;
+use WCPay\Core\Server\Request\Capture_Intention;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -1128,6 +1131,105 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Cancels uncaptured authorizations on order cancel.
+	 *
+	 * @param int $order_id - Order ID.
+	 */
+	public function cancel_authorizations_on_order_status_change( $order_id ) {
+		$order = new WC_Order( $order_id );
+		if ( null !== $order ) {
+			$intent_id = $this->get_intent_id_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id ) {
+				try {
+					$request = Get_Intention::create( $intent_id );
+					$request->set_hook_args( $order );
+					$intent = $request->send();
+					$charge = $intent->get_charge();
+
+					/**
+					 * Successful but not captured Charge is an authorization
+					 * that needs to be cancelled.
+					 */
+					if ( null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+					) {
+							$request = Cancel_Intention::create( $intent_id );
+							$request->set_hook_args( $order );
+							$intent = $request->send();
+
+							$this->post_unique_capture_cancelled_note( $order );
+					}
+
+					$this->set_intention_status_for_order( $order, $intent->get_status() );
+					$order->save();
+				} catch ( \Exception $e ) {
+					$order->add_order_note(
+						WC_Payments_Utils::esc_interpolated_html(
+							__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+							[ 'strong' => '<strong>' ]
+						)
+					);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Handles the change of an order status.
+	 *
+	 * This function is triggered when the status of an order is changed.
+	 * It performs necessary actions based on the new status of the order.
+	 *
+	 * @param int $order_id The ID of the order.
+	 * @return void
+	 */
+	public function capture_authorization_on_order_status_change( int $order_id ) {
+		$order = new WC_Order( $order_id );
+
+		if ( null !== $order ) {
+			$intent_id = $this->get_intent_id_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id ) {
+				try {
+					$request = Get_Intention::create( $intent_id );
+					$request->set_hook_args( $order );
+					$intent = $request->send();
+					$charge = $intent->get_charge();
+
+					/**
+					 * Successful but not captured Charge is an authorization
+					 * that needs to be captured.
+					 */
+					if ( null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+					) {
+							$request = Capture_Intention::create( $intent_id );
+							$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+							$request->set_hook_args( $order );
+							$intent = $request->send();
+
+							$this->post_unique_capture_complete_note( $order, $intent_id, $charge->get_id() );
+							$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
+					}
+
+					$this->set_intention_status_for_order( $order, $intent->get_status() );
+					$order->save();
+				} catch ( \Exception $e ) {
+					$order->add_order_note(
+						WC_Payments_Utils::esc_interpolated_html(
+							__( 'Capture authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+							[ 'strong' => '<strong>' ]
+						)
+					);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Get content for the success order note.
 	 *
 	 * @param string $intent_id        The payment intent ID related to the intent/order.
@@ -1671,7 +1773,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	public function enqueue_add_fee_breakdown_to_order_notes( WC_Order $order, string $intent_id ) {
+	private function enqueue_add_fee_breakdown_to_order_notes( WC_Order $order, string $intent_id ) {
 		WC_Payments::get_action_scheduler_service()->schedule_job(
 			time(),
 			self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES,
