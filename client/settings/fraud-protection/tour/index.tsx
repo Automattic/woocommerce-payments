@@ -72,9 +72,9 @@ const FraudProtectionTour: React.FC = () => {
 		setShowTour( false );
 
 		if ( 'done-btn' === element ) {
-			recordEvent( 'wcpay_fraud_protection_tour_clicked_through', {} );
+			recordEvent( 'wcpay_fraud_protection_tour_clicked_through' );
 		} else {
-			recordEvent( 'wcpay_fraud_protection_tour_abandoned', {} );
+			recordEvent( 'wcpay_fraud_protection_tour_abandoned' );
 		}
 	};
 
