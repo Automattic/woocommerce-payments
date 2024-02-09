@@ -142,8 +142,7 @@ export const WoopayExpressCheckoutButton = ( {
 		[ canAddProductToCart ]
 	);
 
-	const onClickFallback = useCallback(
-		// OTP flow
+	const onClickOtpFlow = useCallback(
 		( e ) => {
 			e?.preventDefault();
 
@@ -219,7 +218,7 @@ export const WoopayExpressCheckoutButton = ( {
 		iframe.style.top = '0';
 
 		iframe.addEventListener( 'error', () => {
-			onClickCallbackRef.current = onClickFallback;
+			onClickCallbackRef.current = onClickOtpFlow;
 		} );
 
 		iframe.addEventListener( 'load', () => {
@@ -288,8 +287,7 @@ export const WoopayExpressCheckoutButton = ( {
 										getConfig( 'woopayHost' )
 									);
 								} else {
-									// Set button's default onClick handle to use modal checkout flow.
-									onClickCallbackRef.current = onClickFallback;
+									onClickCallbackRef.current = onClickOtpFlow;
 									throw new Error( response?.data );
 								}
 							} )
@@ -329,8 +327,7 @@ export const WoopayExpressCheckoutButton = ( {
 									getConfig( 'woopayHost' )
 								);
 							} else {
-								// Set button's default onClick handle to use modal checkout flow.
-								onClickCallbackRef.current = onClickFallback;
+								onClickCallbackRef.current = onClickOtpFlow;
 								throw new Error( response?.data );
 							}
 						} )
@@ -358,7 +355,7 @@ export const WoopayExpressCheckoutButton = ( {
 		context,
 		isPreview,
 		listenForCartChanges,
-		onClickFallback,
+		onClickOtpFlow,
 		canAddProductToCart,
 	] );
 
@@ -389,10 +386,9 @@ export const WoopayExpressCheckoutButton = ( {
 					event.data.value.redirect_url
 				);
 			} else if ( isSessionDataError ) {
-				onClickFallback( null );
+				onClickOtpFlow( null );
 
-				// Set button's default onClick handle to use modal checkout flow.
-				onClickCallbackRef.current = onClickFallback;
+				onClickCallbackRef.current = onClickOtpFlow;
 				isLoadingRef.current = false;
 				setIsLoading( false );
 			}
@@ -404,15 +400,15 @@ export const WoopayExpressCheckoutButton = ( {
 			window.removeEventListener( 'message', onMessage );
 		};
 		// Note: Any changes to this dependency array may cause a duplicate iframe to be appended.
-	}, [ context, onClickFallback, isPreview, isProductPage, newIframe ] );
+	}, [ context, onClickOtpFlow, isPreview, isProductPage, newIframe ] );
 
 	useEffect( () => {
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			onClickCallbackRef.current = defaultOnClick;
 		} else {
-			onClickCallbackRef.current = onClickFallback;
+			onClickCallbackRef.current = onClickOtpFlow;
 		}
-	}, [ defaultOnClick, onClickFallback ] );
+	}, [ defaultOnClick, onClickOtpFlow ] );
 
 	useEffect( () => {
 		const handlePageShow = ( event ) => {
