@@ -41,7 +41,7 @@ export const WoopayExpressCheckoutButton = ( {
 		narrow: 'narrow',
 		wide: 'wide',
 	};
-	const initWoopayRef = useRef( null );
+	const onClickCallbackRef = useRef( null );
 	const buttonRef = useRef( null );
 	const initialOnClickEventRef = useRef( null );
 	const isLoadingRef = useRef( false );
@@ -219,12 +219,12 @@ export const WoopayExpressCheckoutButton = ( {
 		iframe.style.top = '0';
 
 		iframe.addEventListener( 'error', () => {
-			initWoopayRef.current = onClickFallback;
+			onClickCallbackRef.current = onClickFallback;
 		} );
 
 		iframe.addEventListener( 'load', () => {
 			// Change button's onClick handle to use express checkout flow.
-			initWoopayRef.current = ( e ) => {
+			onClickCallbackRef.current = ( e ) => {
 				e.preventDefault();
 
 				if (
@@ -289,7 +289,7 @@ export const WoopayExpressCheckoutButton = ( {
 									);
 								} else {
 									// Set button's default onClick handle to use modal checkout flow.
-									initWoopayRef.current = onClickFallback;
+									onClickCallbackRef.current = onClickFallback;
 									throw new Error( response?.data );
 								}
 							} )
@@ -330,7 +330,7 @@ export const WoopayExpressCheckoutButton = ( {
 								);
 							} else {
 								// Set button's default onClick handle to use modal checkout flow.
-								initWoopayRef.current = onClickFallback;
+								onClickCallbackRef.current = onClickFallback;
 								throw new Error( response?.data );
 							}
 						} )
@@ -348,7 +348,7 @@ export const WoopayExpressCheckoutButton = ( {
 
 			// Trigger first party auth flow if button was clicked before iframe was loaded.
 			if ( initialOnClickEventRef.current ) {
-				initWoopayRef.current( initialOnClickEventRef.current );
+				onClickCallbackRef.current( initialOnClickEventRef.current );
 			}
 		} );
 
@@ -392,7 +392,7 @@ export const WoopayExpressCheckoutButton = ( {
 				onClickFallback( null );
 
 				// Set button's default onClick handle to use modal checkout flow.
-				initWoopayRef.current = onClickFallback;
+				onClickCallbackRef.current = onClickFallback;
 				isLoadingRef.current = false;
 				setIsLoading( false );
 			}
@@ -408,9 +408,9 @@ export const WoopayExpressCheckoutButton = ( {
 
 	useEffect( () => {
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
-			initWoopayRef.current = defaultOnClick;
+			onClickCallbackRef.current = defaultOnClick;
 		} else {
-			initWoopayRef.current = onClickFallback;
+			onClickCallbackRef.current = onClickFallback;
 		}
 	}, [ defaultOnClick, onClickFallback ] );
 
@@ -435,7 +435,7 @@ export const WoopayExpressCheckoutButton = ( {
 			ref={ buttonRef }
 			key={ `${ buttonType }-${ theme }-${ size }` }
 			aria-label={ buttonText }
-			onClick={ ( e ) => initWoopayRef.current( e ) }
+			onClick={ ( e ) => onClickCallbackRef.current( e ) }
 			className={ classNames( 'woopay-express-button', {
 				'is-loading': isLoading,
 			} ) }
