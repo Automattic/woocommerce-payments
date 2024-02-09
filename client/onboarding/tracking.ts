@@ -23,10 +23,12 @@ const stepElapsed = () => {
 	return result;
 };
 
-export const trackStarted = (): void => {
+export const trackStarted = ( source: string | null ): void => {
 	startTime = stepStartTime = Date.now();
 
-	recordEvent( events.ONBOARDING_FLOW_STARTED );
+	recordEvent( events.ONBOARDING_FLOW_STARTED, {
+		source,
+	} );
 };
 
 export const trackModeSelected = ( mode: string ): void => {
