@@ -37,13 +37,31 @@ test.describe( 'payment gateways disable confirmation', () => {
 		await page.goto(
 			'/wp-admin/admin.php?page=wc-settings&tab=checkout&section'
 		);
+
+		// If WCPay enabled, disable it
+		if ( ( await getToggle( page ).innerText() ) === 'Yes' ) {
+			// Click the "Disable WCPay" toggle button
+			await getToggle( page ).click();
+
+			// Modal should be displayed
+			await expect( getModalHeading( page ) ).toBeVisible();
+		}
+	} );
+
+	test.afterAll( async ( { browser } ) => {
+		// Ensure WCPay is enabled after the tests, even if they fail
+		const page = await browser.newPage();
+		await page.goto(
+			'/wp-admin/admin.php?page=wc-settings&tab=checkout&section'
+		);
+
+		if ( ( await getToggle( page ).innerText() ) === 'No' ) {
+			await getToggle( page ).click();
+			await waitForToggleLoading( page );
+			await getSaveButton( page ).click();
+		}
+
 		await expect( getToggle( page ) ).toHaveText( 'Yes' );
-
-		// Click the "Disable WCPay" toggle button
-		await getToggle( page ).click();
-
-		// Modal should be displayed
-		await expect( getModalHeading( page ) ).toBeVisible();
 	} );
 
 	test( 'should show the confirmation modal when disabling WCPay', async ( {
