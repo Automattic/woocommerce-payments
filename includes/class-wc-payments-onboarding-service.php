@@ -304,10 +304,10 @@ class WC_Payments_Onboarding_Service {
 		if ( false !== strpos( $referer, 'path=%2Fpayments%2Fconnect' ) ) {
 			return self::SOURCE_WCPAY_CONNECT_PAGE;
 		}
-		if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $get_params['wcpay-disable-onboarding-test-mode'] ) ) {
 			return self::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS;
 		}
-		if ( isset( $_GET['wcpay-reset-account'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $get_params['wcpay-reset-account'] ) ) {
 			return self::SOURCE_WCPAY_RESET_ACCOUNT;
 		}
 		return '';
