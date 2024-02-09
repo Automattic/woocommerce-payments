@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { WooPayConnectIframe } from 'wcpay/checkout/woopay/direct-checkout/woopay-connect-iframe';
+import { WooPayConnectIframe } from 'wcpay/checkout/woopay/connect/woopay-connect-iframe';
 import ReactDOM from 'react-dom';
 import { getConfig } from 'wcpay/utils/checkout';
 
