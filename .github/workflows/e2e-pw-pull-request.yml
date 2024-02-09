@@ -5,6 +5,7 @@ on:
         branches:
             - develop
             - trunk
+            - 'try/playwright*' # Temporarily run tests on try branches
     workflow_dispatch:
     workflow_call:
         inputs:
