@@ -1064,7 +1064,7 @@ class WC_Payments_Account {
 					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
 					WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
 					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
-					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENTS_WELCOME_PAGE,
+					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
 				],
 				true
 			) ) {
@@ -1999,7 +1999,10 @@ class WC_Payments_Account {
 		// Track the Jetpack connection start.
 		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
 
-		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding&source=' . $source );
+		$onboarding_url = add_query_arg(
+			[ 'source' => $source ],
+			admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' )
+		);
 
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			$this->payments_api_client->start_server_connection( $onboarding_url );

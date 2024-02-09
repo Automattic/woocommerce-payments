@@ -23,7 +23,7 @@ const stepElapsed = () => {
 	return result;
 };
 
-export const trackStarted = ( source: string | null ): void => {
+export const trackStarted = ( source?: string ): void => {
 	startTime = stepStartTime = Date.now();
 
 	recordEvent( events.ONBOARDING_FLOW_STARTED, {

@@ -251,7 +251,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		return [
 			[ 'wcadmin-payment-task', 'any', [ 'wcpay-connect' => 'WCADMIN_PAYMENT_TASK' ] ],
 			[ 'wcadmin-settings-page', '/wp-admin/admin.php?page=wc-settings&tab=checkout', [ 'wcpay-connect' => '1' ] ],
-			[ 'wcadmin-payments-welcome-page', '/wp-admin/admin.php?page=wc-admin&path=%2Fwc-pay-welcome-page', [ 'wcpay-connect' => '1' ] ],
+			[ 'wcadmin-incentive-page', '/wp-admin/admin.php?page=wc-admin&path=%2Fwc-pay-welcome-page', [ 'wcpay-connect' => '1' ] ],
 			[ 'wcpay-connect-page', '/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect', [ 'wcpay-connect' => '1' ] ],
 			[
 				'wcpay-setup-live-payments',

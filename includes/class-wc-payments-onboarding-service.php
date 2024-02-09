@@ -17,15 +17,15 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Onboarding_Service {
 
-	const TEST_MODE_OPTION                     = 'wcpay_onboarding_test_mode';
-	const ONBOARDING_FLOW_STATE_OPTION         = 'wcpay_onboarding_flow_state';
-	const ONBOARDING_ELIGIBILITY_MODAL_OPTION  = 'wcpay_onboarding_eligibility_modal_dismissed';
-	const SOURCE_WCADMIN_PAYMENT_TASK          = 'wcadmin-payment-task';
-	const SOURCE_WCADMIN_SETTINGS_PAGE         = 'wcadmin-settings-page';
-	const SOURCE_WCADMIN_PAYMENTS_WELCOME_PAGE = 'wcadmin-payments-welcome-page';
-	const SOURCE_WCPAY_CONNECT_PAGE            = 'wcpay-connect-page';
-	const SOURCE_WCPAY_RESET_ACCOUNT           = 'wcpay-reset-account';
-	const SOURCE_WCPAY_SETUP_LIVE_PAYMENTS     = 'wcpay-setup-live-payments';
+	const TEST_MODE_OPTION                    = 'wcpay_onboarding_test_mode';
+	const ONBOARDING_FLOW_STATE_OPTION        = 'wcpay_onboarding_flow_state';
+	const ONBOARDING_ELIGIBILITY_MODAL_OPTION = 'wcpay_onboarding_eligibility_modal_dismissed';
+	const SOURCE_WCADMIN_PAYMENT_TASK         = 'wcadmin-payment-task';
+	const SOURCE_WCADMIN_SETTINGS_PAGE        = 'wcadmin-settings-page';
+	const SOURCE_WCADMIN_INCENTIVE_PAGE       = 'wcadmin-incentive-page';
+	const SOURCE_WCPAY_CONNECT_PAGE           = 'wcpay-connect-page';
+	const SOURCE_WCPAY_RESET_ACCOUNT          = 'wcpay-reset-account';
+	const SOURCE_WCPAY_SETUP_LIVE_PAYMENTS    = 'wcpay-setup-live-payments';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -299,7 +299,7 @@ class WC_Payments_Onboarding_Service {
 		}
 		// Payments tab in the sidebar.
 		if ( false !== strpos( $referer, 'path=%2Fwc-pay-welcome-page' ) ) {
-			return self::SOURCE_WCADMIN_PAYMENTS_WELCOME_PAGE;
+			return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		}
 		if ( false !== strpos( $referer, 'path=%2Fpayments%2Fconnect' ) ) {
 			return self::SOURCE_WCPAY_CONNECT_PAGE;
