@@ -48,6 +48,7 @@ export default {
 	FRAUD_PROTECTION_TOUR_ABANDONED: 'wcpay_fraud_protection_tour_abandoned',
 	FRAUD_OUTCOME_TRANSACTIONS_DOWNLOAD:
 		'wcpay_fraud_outcome_transactions_download',
+	GATEWAY_TOGGLE: 'wcpay_gateway_toggle',
 	GOOGLEPAY_BUTTON_CLICK: 'gpay_button_click',
 	GOOGLEPAY_BUTTON_LOAD: 'gpay_button_load',
 	INBOX_ACTION_DISMISSED: 'wcpay_inbox_action_dismissed',

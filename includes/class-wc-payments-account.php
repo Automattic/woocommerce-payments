@@ -34,7 +34,9 @@ class WC_Payments_Account {
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
+	const TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START   = 'wcpay_account_connect_wpcom_connection_start';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS = 'wcpay_account_connect_wpcom_connection_success';
+	const TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE = 'wcpay_account_connect_wpcom_connection_failure';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED                 = 'wcpay_account_connect_finished';
 	const TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED           = 'wcpay_kyc_reminder_merchant_returned';
 
@@ -100,6 +102,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_settings_to_connect_or_overview' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_flow_to_overview' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_flow_to_connect' ] );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 
 		// Add handlers for inbox notes and reminders.
@@ -935,6 +938,51 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Prevent access to onboarding flow if the server is not connected.
+	 * Redirect back to the connect page with an error message.
+	 *
+	 * @return void
+	 */
+	public function maybe_redirect_onboarding_flow_to_connect(): void {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/onboarding',
+		];
+
+		// We're not in the onboarding flow page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		// Server is connected, don't redirect.
+		if ( $this->payments_api_client->is_server_connected() ) {
+			return;
+		}
+
+		$referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
+
+		// Track unsuccessful Jetpack connection.
+		if ( strpos( $referer, 'wordpress.com' ) ) {
+			$this->tracks_event(
+				self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE,
+				[ 'mode' => WC_Payments::mode()->is_test() ? 'test' : 'live' ]
+			);
+		}
+
+		$this->redirect_to_onboarding_welcome_page(
+			sprintf(
+			/* translators: %s: WooPayments */
+				__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
+				'WooPayments'
+			)
+		);
+	}
+
+	/**
 	 * Filter function to add Stripe to the list of allowed redirect hosts
 	 *
 	 * @param array $hosts - array of allowed hosts.
@@ -984,6 +1032,9 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-reconnect-wpcom'] ) && check_admin_referer( 'wcpay-reconnect-wpcom' ) ) {
+			// Track the Jetpack connection start.
+			$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
+
 			$this->payments_api_client->start_server_connection( WC_Payments_Admin_Settings::get_settings_url() );
 			return;
 		}
@@ -997,10 +1048,8 @@ class WC_Payments_Account {
 
 				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 				$event_properties = [
-					'incentive'              => $incentive,
-					'is_new_onboarding_flow' => $progressive,
-					'woo_country_code'       => WC()->countries->get_base_country(),
-					'mode'                   => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
+					'incentive' => $incentive,
+					'mode'      => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_START,
@@ -1052,6 +1101,12 @@ class WC_Payments_Account {
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
 				if ( ! $this->payments_api_client->is_server_connected() ) {
+					// Track unsuccessful Jetpack connection.
+					$this->tracks_event(
+						self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE,
+						$event_properties
+					);
+
 					$this->redirect_to_onboarding_welcome_page(
 						sprintf(
 						/* translators: %s: WooPayments */
@@ -1066,10 +1121,8 @@ class WC_Payments_Account {
 				// Track successful Jetpack connection.
 				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 				$event_properties = [
-					'incentive'              => $incentive,
-					'is_new_onboarding_flow' => $progressive,
-					'woo_country_code'       => WC()->countries->get_base_country(),
-					'mode'                   => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
+					'incentive' => $incentive,
+					'mode'      => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS,
@@ -1164,6 +1217,21 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get Connect page url.
+	 *
+	 * @return string
+	 */
+	public static function get_connect_page_url(): string {
+		return add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => '/payments/connect',
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
 	 * Get overview page url
 	 *
 	 * @return string overview page url
@@ -1241,6 +1309,9 @@ class WC_Payments_Account {
 		if ( $is_jetpack_fully_connected ) {
 			return;
 		}
+
+		// Track the Jetpack connection start.
+		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
 
 		$redirect = add_query_arg(
 			array_merge(
@@ -1479,10 +1550,8 @@ class WC_Payments_Account {
 		$incentive        = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
 		$progressive      = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 		$event_properties = [
-			'incentive'              => $incentive,
-			'is_new_onboarding_flow' => $progressive,
-			'woo_country_code'       => WC()->countries->get_base_country(),
-			'mode'                   => 'test' === $mode ? 'test' : 'live',
+			'incentive' => $incentive,
+			'mode'      => 'test' === $mode ? 'test' : 'live',
 		];
 		$this->tracks_event(
 			self::TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED,
@@ -1918,6 +1987,9 @@ class WC_Payments_Account {
 			return;
 		}
 
+		// Track the Jetpack connection start.
+		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
+
 		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
 
 		if ( ! $this->payments_api_client->is_server_connected() ) {
@@ -1930,12 +2002,26 @@ class WC_Payments_Account {
 	/**
 	 * Send a Tracks event.
 	 *
+	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
+	 * properties to every event.
+	 *
 	 * @param string $name       The event name.
 	 * @param array  $properties Optional. The event custom properties.
 	 *
 	 * @return void
 	 */
 	private function tracks_event( string $name, array $properties = [] ) {
+		// Add default properties to every event.
+		$properties = array_merge(
+			$properties,
+			[
+				'is_test_mode'      => WC_Payments::mode()->is_test(),
+				'jetpack_connected' => $this->payments_api_client->is_server_connected(),
+				'wcpay_version'     => WCPAY_VERSION_NUMBER,
+				'woo_country_code'  => WC()->countries->get_base_country(),
+			]
+		);
+
 		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
 			return;
 		}

@@ -26,7 +26,7 @@ const stepElapsed = () => {
 export const trackStarted = (): void => {
 	startTime = stepStartTime = Date.now();
 
-	recordEvent( events.ONBOARDING_FLOW_STARTED, {} );
+	recordEvent( events.ONBOARDING_FLOW_STARTED );
 };
 
 export const trackModeSelected = ( mode: string ): void => {
@@ -55,12 +55,14 @@ export const trackRedirected = ( isEligible: boolean ): void => {
 };
 
 export const trackAccountReset = (): void =>
-	recordEvent( events.ONBOARDING_FLOW_RESET, {} );
+	recordEvent( events.ONBOARDING_FLOW_RESET );
 
 export const trackEligibilityModalClosed = (
 	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only'
 ): void =>
-	recordEvent( events.ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED, { action } );
+	recordEvent( events.ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED, {
+		action,
+	} );
 
 export const useTrackAbandoned = (): {
 	trackAbandoned: ( method: 'hide' | 'exit' ) => void;

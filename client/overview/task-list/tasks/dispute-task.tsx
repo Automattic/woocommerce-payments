@@ -13,7 +13,7 @@ import type { TaskItemProps } from '../types';
 import type { CachedDispute } from 'wcpay/types/disputes';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getAdminUrl } from 'wcpay/utils';
-import { recordEvent, events } from 'wcpay/tracks';
+import { recordEvent, events } from 'tracks';
 import { isDueWithin } from 'wcpay/disputes/utils';
 
 /**
