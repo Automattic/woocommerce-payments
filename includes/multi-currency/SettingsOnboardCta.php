@@ -53,11 +53,7 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 	 * Output the call to action button if needing to onboard.
 	 */
 	public function currencies_settings_onboarding_cta() {
-		$params = [
-			'page' => 'wc-admin',
-			'path' => '/payments/connect',
-		];
-		$href   = admin_url( add_query_arg( $params, 'admin.php' ) );
+		$href = \WC_Payments_Account::get_connect_page_url();
 		?>
 			<div>
 				<p>

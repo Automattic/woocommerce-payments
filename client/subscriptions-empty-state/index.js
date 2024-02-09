@@ -6,7 +6,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement, render, useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 
-import { recordEvent, events } from '../tracks';
+import { recordEvent } from '../tracks';
 import UnconnectedImage from 'assets/images/subscriptions-empty-state-unconnected.svg?asset';
 
 import './style.scss';
@@ -65,7 +65,7 @@ const ActionButtons = () => {
 				isPrimary
 				onClick={ () => {
 					recordEvent(
-						events.SUBSCRIPTIONS_EMPTY_STATE_FINISH_SETUP
+						'wcpay_subscriptions_empty_state_finish_setup'
 					);
 					setIsFinishingSetup( true );
 				} }
@@ -79,7 +79,7 @@ const ActionButtons = () => {
 				isSecondary
 				onClick={ () => {
 					recordEvent(
-						events.SUBSCRIPTIONS_EMPTY_STATE_CREATE_PRODUCT
+						'wcpay_subscriptions_empty_state_create_product'
 					);
 					setIsCreatingProduct( true );
 				} }
@@ -106,7 +106,7 @@ const emptyStateContainer = document.querySelector(
 );
 
 if ( emptyStateContainer ) {
-	recordEvent( events.SUBSCRIPTIONS_EMPTY_STATE_VIEW, {
+	recordEvent( 'wcpay_subscriptions_empty_state_view', {
 		is_connected: isConnected ? 'yes' : 'no',
 	} );
 
