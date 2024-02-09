@@ -101,6 +101,16 @@ global.wpApiSettings = {
 	nonce: 'random_wp_rest_nonce',
 };
 
+global.wcpaySettings = {
+	locale: {
+		code: 'es_ES',
+		native_name: 'Spanish',
+	},
+	accountLoans: {
+		loans: [ 'flxln_123456|active' ],
+	},
+};
+
 // const config = require( '../../config/development.json' );
 // window.wcAdminFeatures = config && config.features ? config.features : {};
 
