@@ -3326,6 +3326,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		if ( null !== $order ) {
+			// TODO move to order service.
 			// If the order is being marked as completed or processing, and it has an authorized charge, capture it.
 			if ( in_array( $new_status, $capturable_statuses, true ) ) {
 				$intent_id = $this->order_service->get_intent_id_for_order( $order );
@@ -3351,6 +3352,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								$intent = $request->send();
 
 								$this->order_service->post_unique_capture_complete_note( $order, $intent_id, $charge->get_id() );
+								$this->order_service->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
 						}
 
 						$this->order_service->set_intention_status_for_order( $order, $intent->get_status() );

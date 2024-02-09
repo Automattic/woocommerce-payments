@@ -1671,7 +1671,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	private function enqueue_add_fee_breakdown_to_order_notes( WC_Order $order, string $intent_id ) {
+	public function enqueue_add_fee_breakdown_to_order_notes( WC_Order $order, string $intent_id ) {
 		WC_Payments::get_action_scheduler_service()->schedule_job(
 			time(),
 			self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES,
