@@ -18,7 +18,7 @@ import {
 	isUnderReview,
 } from 'wcpay/disputes/utils';
 import { useCharge } from 'wcpay/data';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 import './style.scss';
 
 const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
@@ -201,7 +201,7 @@ const DisputeNeedsResponseNotice = ( {
 	disputeDetailsUrl,
 } ) => {
 	useEffect( () => {
-		recordEvent( events.DISPUTE_NOTICE_VIEW, {
+		recordEvent( 'wcpay_order_dispute_notice_view', {
 			is_inquiry: isPreDisputeInquiry,
 			dispute_reason: disputeReason,
 			due_by_days: countdownDays,
@@ -241,9 +241,12 @@ const DisputeNeedsResponseNotice = ( {
 					label: buttonLabel,
 					variant: 'secondary',
 					onClick: () => {
-						recordEvent( events.DISPUTE_NOTICE_CLICK, {
-							due_by_days: countdownDays,
-						} );
+						recordEvent(
+							'wcpay_order_dispute_notice_action_click',
+							{
+								due_by_days: countdownDays,
+							}
+						);
 						window.location = disputeDetailsUrl;
 					},
 				},

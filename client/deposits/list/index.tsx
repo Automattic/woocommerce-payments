@@ -5,7 +5,7 @@
  */
 import { DepositsTableHeader } from 'wcpay/types/deposits';
 import React, { useState } from 'react';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
@@ -118,7 +118,7 @@ export const DepositsList = (): JSX.Element => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
 				href={ getDetailsURL( deposit.id, 'deposits' ) }
-				onClick={ () => recordEvent( events.DEPOSITS_ROW_CLICK ) }
+				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
 				{ children }
 			</ClickableCell>
@@ -130,7 +130,7 @@ export const DepositsList = (): JSX.Element => {
 		const dateDisplay = (
 			<Link
 				href={ getDetailsURL( deposit.id, 'deposits' ) }
-				onClick={ () => recordEvent( events.DEPOSITS_ROW_CLICK ) }
+				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
 				{ dateI18n(
 					'M j, Y',
@@ -283,7 +283,7 @@ export const DepositsList = (): JSX.Element => {
 					)
 				);
 
-				recordEvent( events.DEPOSITS_DOWNLOAD_CSV_CLICK, {
+				recordEvent( 'wcpay_deposits_download', {
 					exported_deposits: exportedDeposits,
 					total_deposits: exportedDeposits,
 					download_type: 'endpoint',
@@ -339,7 +339,7 @@ export const DepositsList = (): JSX.Element => {
 				generateCSVDataFromTable( csvColumns, csvRows )
 			);
 
-			recordEvent( events.DEPOSITS_DOWNLOAD_CSV_CLICK, {
+			recordEvent( 'wcpay_deposits_download', {
 				exported_deposits: rows.length,
 				total_deposits: depositsSummary.count,
 				download_type: 'browser',
