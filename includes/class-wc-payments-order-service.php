@@ -922,6 +922,23 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Creates an "authorization captured" order note if not already present.
+	 *
+	 * @param WC_Order $order The order.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @return boolean        True if the note was added, false otherwise.
+	 */
+	public function post_unique_capture_complete_note( $order, $intent_id, $charge_id ) {
+		$note = $this->generate_capture_success_note( $order, $intent_id, $charge_id );
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.

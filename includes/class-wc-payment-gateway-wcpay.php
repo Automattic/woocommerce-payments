@@ -504,6 +504,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
 			add_action( 'woocommerce_order_status_cancelled', [ $this, 'cancel_authorizations_on_order_cancel' ] );
+			add_action( 'woocommerce_order_status_changed', [ $this, 'handle_order_status_change' ], 10, 3 );
 
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
@@ -3300,6 +3301,68 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							[ 'strong' => '<strong>' ]
 						)
 					);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Handles the change of an order status.
+	 *
+	 * This function is triggered when the status of an order is changed.
+	 * It performs necessary actions based on the new status of the order.
+	 *
+	 * @param int    $order_id The ID of the order.
+	 * @param string $old_status The old status of the order.
+	 * @param string $new_status The new status of the order.
+	 * @return void
+	 */
+	public function handle_order_status_change( int $order_id, string $old_status, string $new_status ) {
+		// TODO hook into more granular status changes: processing, completed...
+		$order               = new WC_Order( $order_id );
+		$capturable_statuses = [
+			'processing',
+			'completed',
+		];
+
+		if ( null !== $order ) {
+			// If the order is being marked as completed or processing, and it has an authorized charge, capture it.
+			if ( in_array( $new_status, $capturable_statuses, true ) ) {
+				$intent_id = $this->order_service->get_intent_id_for_order( $order );
+				if ( null !== $intent_id && '' !== $intent_id ) {
+					try {
+						$request = Get_Intention::create( $intent_id );
+						$request->set_hook_args( $order );
+						$intent = $request->send();
+						$charge = $intent->get_charge();
+
+						/**
+						 * Successful but not captured Charge is an authorization
+						 * that needs to be captured.
+						 */
+						if ( null !== $charge
+							&& false === $charge->is_captured()
+							&& Intent_Status::SUCCEEDED === $charge->get_status()
+							&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+						) {
+								$request = Capture_Intention::create( $intent_id );
+								$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+								$request->set_hook_args( $order );
+								$intent = $request->send();
+
+								$this->order_service->post_unique_capture_complete_note( $order, $intent_id, $charge->get_id() );
+						}
+
+						$this->order_service->set_intention_status_for_order( $order, $intent->get_status() );
+						$order->save();
+					} catch ( \Exception $e ) {
+						$order->add_order_note(
+							WC_Payments_Utils::esc_interpolated_html(
+								__( 'Capture authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+								[ 'strong' => '<strong>' ]
+							)
+						);
+					}
 				}
 			}
 		}
