@@ -14,7 +14,7 @@ import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/overview/modal/setup-live-payments';
 import TestModeConfirmationModal from './test-mode-confirm-modal';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 
 const GeneralSettings = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
@@ -26,7 +26,7 @@ const GeneralSettings = () => {
 	const handleWcpayEnabledChange = ( enableWCPay ) => {
 		setIsWCPayEnabled( enableWCPay );
 
-		recordEvent( events.GATEWAY_TOGGLE, {
+		recordEvent( 'wcpay_gateway_toggle', {
 			action: enableWCPay ? 'enable' : 'disable',
 			context: 'wcpay-settings',
 		} );

@@ -4,7 +4,7 @@
  * External dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { isEnabled, recordEvent, events } from 'tracks';
+import { isEnabled, recordEvent } from 'tracks';
 
 export const makeTosAcceptanceRequest = async ( { accept } ) =>
 	apiFetch( {
@@ -29,7 +29,7 @@ export const maybeTrackStripeConnected = async () => {
 		return;
 	}
 
-	recordEvent( events.CONNECT_ACCOUNT_STRIPE_CONNECTED, {
+	recordEvent( 'wcpay_stripe_connected', {
 		is_existing_stripe_account:
 			trackStripeConnected.is_existing_stripe_account,
 	} );
