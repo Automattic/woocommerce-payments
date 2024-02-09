@@ -198,14 +198,14 @@ export const WoopayExpressCheckoutButton = ( {
 					return;
 				}
 
-				if ( typeof listenForCartChanges.stop === 'function' ) {
+				if ( typeof listenForCartChanges?.stop === 'function' ) {
 					// Temporarily stop listening for cart changes to prevent
 					// rendering a new button + iFrame when the cart is updated.
 					listenForCartChanges.stop();
 				}
 
 				addToCartRef.current( productData ).then( () => {
-					if ( typeof listenForCartChanges.start === 'function' ) {
+					if ( typeof listenForCartChanges?.start === 'function' ) {
 						// Start listening for cart changes, again.
 						listenForCartChanges.start();
 					}
