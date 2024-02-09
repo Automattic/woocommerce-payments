@@ -644,12 +644,18 @@ jQuery( ( $ ) => {
 				settings.data.includes( 'wc_bookings_calculate_costs' ) &&
 				xhr.responseText.includes( 'SUCCESS' )
 			) {
+				wcpayPaymentRequest.blockPaymentRequestButton();
 				wcBookingFormChanged = false;
 				return wcpayPaymentRequest.addToCart().then( ( response ) => {
 					wcpayPaymentRequestParams.product.total = response.total;
 					wcpayPaymentRequestParams.product.displayItems =
 						response.displayItems;
+					// Empty the cart to avoid having 2 products in the cart when payment request is not used.
+					api.paymentRequestEmptyCart( response.bookingId );
+
 					wcpayPaymentRequest.init();
+
+					wcpayPaymentRequest.unblockPaymentRequestButton();
 				} );
 			}
 		}

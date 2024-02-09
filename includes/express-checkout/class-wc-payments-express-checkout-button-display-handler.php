@@ -64,6 +64,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 
 		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
 			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_helper, 'ajax_add_to_cart' ] );
+			add_action( 'wc_ajax_wcpay_empty_cart', [ $this->express_checkout_helper, 'ajax_empty_cart' ] );
 
 			add_action( 'woocommerce_after_add_to_cart_form', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 21 );

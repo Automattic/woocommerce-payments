@@ -496,6 +496,19 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Empty the cart.
+	 *
+	 * @param {number} bookingId Booking ID (optional).
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestEmptyCart( bookingId ) {
+		return this.request( getPaymentRequestAjaxURL( 'empty_cart' ), {
+			security: getPaymentRequestData( 'nonce' )?.empty_cart,
+			booking_id: bookingId,
+		} );
+	}
+
+	/**
 	 * Get selected product data from variable product page.
 	 *
 	 * @param {Object} productData Product data.
