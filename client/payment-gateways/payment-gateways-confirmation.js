@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
  */
 import DisableConfirmationModal from './disable-confirmation-modal';
 import { useSettings } from 'wcpay/data';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 
 const PaymentGatewaysConfirmation = () => {
 	// pre-fetching the settings (and available payment methods) _before_ the modal is displayed,
@@ -29,7 +29,7 @@ const PaymentGatewaysConfirmation = () => {
 			'tr[data-gateway_id="woocommerce_payments"] .wc-payment-gateway-method-toggle-enabled'
 		).trigger( 'click' );
 
-		recordEvent( events.GATEWAY_TOGGLE, {
+		recordEvent( 'wcpay_gateway_toggle', {
 			action: 'disable',
 			context: 'wc-payments-settings',
 		} );
