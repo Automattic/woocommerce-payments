@@ -11,7 +11,7 @@ import PaymentCardReaderChargeDetails from './readers';
 import { PaymentDetailsProps } from './types';
 import PaymentOrderDetails from './order-details';
 import PaymentChargeDetails from './charge-details';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 
 const PaymentDetails: React.FC< PaymentDetailsProps > = ( { query } ) => {
 	const {
@@ -23,7 +23,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( { query } ) => {
 	const { status_is: statusIs, type_is: typeIs } = getQuery();
 
 	if ( statusIs && typeIs ) {
-		recordEvent( events.FRAUD_PROTECTION_ORDER_DETAILS_LINK_CLICKED, {
+		recordEvent( 'wcpay_fraud_protection_order_details_link_clicked', {
 			status: statusIs,
 			type: typeIs,
 		} );
