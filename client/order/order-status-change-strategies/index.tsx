@@ -129,70 +129,32 @@ export function handleCancelledStatus( orderStatus: string ): void {
 	}
 }
 
-export function handleProcessingStatus( orderStatus: string ): void {
-	if ( orderStatus === 'wc-processing' ) {
-		return;
-	}
-
-	if ( getConfig( 'hasOpenAuthorization' ) ) {
-		triggerCaptureAuthorizationModal( orderStatus );
-	}
-}
-
-export function handleFailedStatus( orderStatus: string ): void {
-	if ( orderStatus === 'wc-failed' ) {
-		return;
-	}
-
-	if ( getConfig( 'hasOpenAuthorization' ) ) {
-		triggerCancelAuthorizationModal( orderStatus );
-	}
-}
-
-export function handleCompletedStatus( orderStatus: string ): void {
-	if ( orderStatus === 'wc-completed' ) {
-		return;
-	}
-
-	if ( getConfig( 'hasOpenAuthorization' ) ) {
-		triggerCaptureAuthorizationModal( orderStatus );
-	}
-}
-
-export function handlePendingStatus( orderStatus: string ): void {
-	if ( orderStatus === 'wc-pending' ) {
-		return;
-	}
-
-	if ( getConfig( 'hasOpenAuthorization' ) ) {
-		triggerCancelAuthorizationModal( orderStatus );
-	}
-}
-
-export function handleCheckoutDraftStatus( orderStatus: string ): void {
-	if ( orderStatus === 'wc-checkout-draft' ) {
-		return;
-	}
-
-	if ( getConfig( 'hasOpenAuthorization' ) ) {
-		triggerCancelAuthorizationModal( orderStatus );
-	}
-}
-
 export function handleGenericStatusChange(): void {
 	// Generic handler for any other status changes
 	// eslint-disable-next-line no-console
 	console.log( 'No specific action defined for this status change.' );
 }
 
+function maybeTriggerCancelAuthorizationModal( orderStatus: string ): void {
+	if ( getConfig( 'hasOpenAuthorization' ) ) {
+		triggerCancelAuthorizationModal( orderStatus );
+	}
+}
+
+function maybeTriggerCaptureAuthorizationModal( orderStatus: string ): void {
+	if ( getConfig( 'hasOpenAuthorization' ) ) {
+		triggerCaptureAuthorizationModal( orderStatus );
+	}
+}
+
 // Map status changes to strategies
+// Add other specific status changes if needed.
 export const statusChangeStrategies: StatusChangeStrategies = {
 	'wc-refunded': handleRefundedStatus,
 	'wc-cancelled': handleCancelledStatus,
-	'wc-processing': handleProcessingStatus,
-	'wc-failed': handleFailedStatus,
-	'wc-completed': handleCompletedStatus,
-	'wc-pending': handlePendingStatus,
-	'wc-checkout-draft': handleCheckoutDraftStatus,
-	// Add other specific status changes if needed
+	'wc-processing': maybeTriggerCaptureAuthorizationModal,
+	'wc-failed': maybeTriggerCancelAuthorizationModal,
+	'wc-completed': maybeTriggerCaptureAuthorizationModal,
+	'wc-pending': maybeTriggerCancelAuthorizationModal,
+	'wc-checkout-draft': maybeTriggerCancelAuthorizationModal,
 };
