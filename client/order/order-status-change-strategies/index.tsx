@@ -26,7 +26,7 @@ function renderModal( modalToRender: JSX.Element ) {
 	ReactDOM.render( modalToRender, container );
 }
 
-function cancelAuthorization( orderStatus: string ) {
+function triggerCancelAuthorizationModal( orderStatus: string ) {
 	renderModal(
 		<CancelAuthorizationConfirmationModal
 			originalOrderStatus={ orderStatus }
@@ -34,7 +34,7 @@ function cancelAuthorization( orderStatus: string ) {
 	);
 }
 
-function captureAuthorization( originalOrderStatus: string ) {
+function triggerCaptureAuthorizationModal( originalOrderStatus: string ) {
 	renderModal(
 		<GenericConfirmationModal
 			title={ __( 'Capture Authorization', 'woocommerce-payments' ) }
@@ -66,20 +66,6 @@ function captureAuthorization( originalOrderStatus: string ) {
 			cancelButtonLink={ '' }
 		/>
 	);
-}
-
-function maybeCancelAuthorization( orderStatus: string ): void {
-	const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
-	if ( hasOpenAuthorization ) {
-		cancelAuthorization( orderStatus );
-	}
-}
-
-function maybeCaptureAuthorization( orderStatus: string ): void {
-	const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
-	if ( hasOpenAuthorization ) {
-		captureAuthorization( orderStatus );
-	}
 }
 
 export function renderRefundConfirmationModal(
@@ -127,10 +113,11 @@ export function handleCancelledStatus( orderStatus: string ): void {
 	const canRefund = getConfig( 'canRefund' );
 	const refundAmount = getConfig( 'refundAmount' );
 
-	// If order has an uncaptured authorization, confirm
-	// that merchant indeed wants to cancel both the order
+	// Confirm that merchant indeed wants to cancel both the order
 	// and the authorization.
-	maybeCancelAuthorization( orderStatus );
+	if ( hasOpenAuthorization ) {
+		triggerCancelAuthorizationModal( orderStatus );
+	}
 
 	// If it is possible to refund an order, double check that
 	// merchants indeed wants to cancel, or if they just want to
@@ -146,7 +133,10 @@ export function handleProcessingStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-processing' ) {
 		return;
 	}
-	maybeCaptureAuthorization( orderStatus );
+
+	if ( getConfig( 'hasOpenAuthorization' ) ) {
+		triggerCaptureAuthorizationModal( orderStatus );
+	}
 }
 
 export function handleFailedStatus( orderStatus: string ): void {
@@ -154,14 +144,19 @@ export function handleFailedStatus( orderStatus: string ): void {
 		return;
 	}
 
-	maybeCancelAuthorization( orderStatus );
+	if ( getConfig( 'hasOpenAuthorization' ) ) {
+		triggerCancelAuthorizationModal( orderStatus );
+	}
 }
 
 export function handleCompletedStatus( orderStatus: string ): void {
 	if ( orderStatus === 'wc-completed' ) {
 		return;
 	}
-	maybeCaptureAuthorization( orderStatus );
+
+	if ( getConfig( 'hasOpenAuthorization' ) ) {
+		triggerCaptureAuthorizationModal( orderStatus );
+	}
 }
 
 export function handlePendingStatus( orderStatus: string ): void {
@@ -169,7 +164,9 @@ export function handlePendingStatus( orderStatus: string ): void {
 		return;
 	}
 
-	maybeCancelAuthorization( orderStatus );
+	if ( getConfig( 'hasOpenAuthorization' ) ) {
+		triggerCancelAuthorizationModal( orderStatus );
+	}
 }
 
 export function handleCheckoutDraftStatus( orderStatus: string ): void {
@@ -177,7 +174,9 @@ export function handleCheckoutDraftStatus( orderStatus: string ): void {
 		return;
 	}
 
-	maybeCancelAuthorization( orderStatus );
+	if ( getConfig( 'hasOpenAuthorization' ) ) {
+		triggerCancelAuthorizationModal( orderStatus );
+	}
 }
 
 export function handleGenericStatusChange(): void {
