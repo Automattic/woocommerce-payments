@@ -164,7 +164,6 @@ function maybeTriggerCaptureAuthorizationModal( orderStatus: string ): void {
 // and add it to the map.
 const statusChangeStrategies: StatusChangeStrategies = {
 	'wc-cancelled': handleCancelledStatus,
-	'wc-checkout-draft': maybeTriggerCancelAuthorizationModal,
 	'wc-completed': maybeTriggerCaptureAuthorizationModal,
 	'wc-failed': maybeTriggerCancelAuthorizationModal,
 	'wc-pending': maybeTriggerCancelAuthorizationModal,
