@@ -78,7 +78,8 @@ const initialData = wcpaySettings.onboardingFlowState?.data ?? {
 const OnboardingPage: React.FC = () => {
 	useEffect( () => {
 		const urlParams = new URLSearchParams( window.location.search );
-		trackStarted( urlParams.get( 'source' ) || undefined );
+		const source = urlParams.get( 'source' ) || '';
+		trackStarted( source.replace( /[^\w-]+/g, '' ) );
 
 		// Remove loading class and add those required for full screen.
 		document.body.classList.remove( 'woocommerce-admin-is-loading' );

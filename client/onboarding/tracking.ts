@@ -23,7 +23,7 @@ const stepElapsed = () => {
 	return result;
 };
 
-export const trackStarted = ( source?: string ): void => {
+export const trackStarted = ( source: string ): void => {
 	startTime = stepStartTime = Date.now();
 
 	recordEvent( 'wcpay_onboarding_flow_started', {
