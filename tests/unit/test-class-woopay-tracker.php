@@ -61,7 +61,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->set_account_connected( true );
 		WC_Payments::set_account_service( $this->mock_account );
 		$this->set_is_woopay_eligible( false );
-		$this->assertFalse( $this->tracker->should_enable_tracking( null, null ) );
+		$this->assertFalse( $this->tracker->should_enable_tracking( null ) );
 	}
 
 	public function test_does_not_track_admin_pages() {
@@ -70,7 +70,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->set_account_connected( true );
 		WC_Payments::set_account_service( $this->mock_account );
 		$this->set_is_admin( true );
-		$this->assertFalse( $this->tracker->should_enable_tracking( null, null ) );
+		$this->assertFalse( $this->tracker->should_enable_tracking( null ) );
 	}
 
 	public function test_does_track_non_admins() {
@@ -87,7 +87,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 
 		foreach ( $all_roles as $role ) {
 			wp_get_current_user()->set_role( $role );
-			$this->assertTrue( $this->tracker->should_enable_tracking( null, null ) );
+			$this->assertTrue( $this->tracker->should_enable_tracking( null ) );
 		}
 	}
 
@@ -96,9 +96,8 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->set_is_woopay_eligible( true );
 		$this->set_account_connected( false );
 		WC_Payments::set_account_service( $this->mock_account );
-		$is_admin_event      = false;
-		$track_on_all_stores = true;
-		$this->assertFalse( $this->tracker->should_enable_tracking( $is_admin_event, $track_on_all_stores ) );
+		$is_admin_event = false;
+		$this->assertFalse( $this->tracker->should_enable_tracking( $is_admin_event ) );
 	}
 
 	/**
