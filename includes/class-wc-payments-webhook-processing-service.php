@@ -133,10 +133,25 @@ class WC_Payments_Webhook_Processing_Service {
 		// Extract information about the webhook event.
 		$event_type = $this->read_webhook_property( $event_body, 'type' );
 
-		Logger::debug( 'Webhook received: ' . $event_type );
 		Logger::debug(
-			'Webhook body: '
-			. var_export( WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			sprintf(
+				/* translators: %s: The webhook event type */
+				__(
+					'Webhook received: %s',
+					'woocommerce-payments'
+				),
+				$event_type
+			)
+		);
+		Logger::log(
+			sprintf(
+				/* translators: %s: The webhook body */
+				__(
+					'Webhook body: %s',
+					'woocommerce-payments'
+				),
+				var_export( WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			)
 		);
 
 		if ( $this->is_webhook_mode_mismatch( $event_body ) ) {
@@ -225,7 +240,8 @@ class WC_Payments_Webhook_Processing_Service {
 
 			Logger::error(
 				sprintf(
-					'Webhook event mode did not match the gateway mode (event ID: %s)',
+					/* translators: %s: The event id */
+					__( 'Webhook event mode did not match the gateway mode (event ID: %s)', 'woocommerce-payments' ),
 					$event_id
 				)
 			);
