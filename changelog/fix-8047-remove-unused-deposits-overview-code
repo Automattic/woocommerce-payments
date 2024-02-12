@@ -1,0 +1,4 @@
+Significance: major
+Type: fix
+
+Remove unused `/deposits/overview` REST API endpoint and related data-fetching code.
