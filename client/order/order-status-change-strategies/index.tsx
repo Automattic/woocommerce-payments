@@ -11,7 +11,6 @@ import { __ } from '@wordpress/i18n';
  */
 import RefundConfirmationModal from '../refund-confirm-modal';
 import { getConfig } from 'utils/order';
-import CancelConfirmationModal from '../cancel-confirm-modal';
 import GenericConfirmationModal from '../generic-confirmation-modal';
 import React from 'react';
 
@@ -221,8 +220,62 @@ function handleCancelledStatus(
 	// merchants indeed wants to cancel, or if they just want to
 	// refund.
 	if ( ! hasOpenAuthorization && canRefund && refundAmount > 0 ) {
+		const confirmationMessage = interpolateComponents( {
+			mixedString: __(
+				'Are you trying to issue a refund for this order? If so, please click ' +
+					'{{doNothingBold/}} and see our documentation on {{howtoIssueRefunds/}}. If you want ' +
+					'to mark this order as Cancelled without issuing a refund, click {{cancelOrderBold/}}.',
+				'woocommerce-payments'
+			),
+			components: {
+				doNothingBold: (
+					<b>{ __( 'Do Nothing', 'woocommerce-payments' ) }</b>
+				),
+				cancelOrderBold: (
+					<b>{ __( 'Cancel order', 'woocommerce-payments' ) }</b>
+				),
+				howtoIssueRefunds: (
+					<a
+						target="_blank"
+						href="https://woo.com/document/woopayments/managing-money/#refunds"
+						rel="noopener noreferrer"
+					>
+						{ __( 'how to issue refunds', 'woocommerce-payments' ) }
+					</a>
+				),
+			},
+		} );
+
 		renderModal(
-			<CancelConfirmationModal originalOrderStatus={ orderStatus } />
+			<GenericConfirmationModal
+				title={ __( 'Cancel order', 'woocommerce-payments' ) }
+				confirmButtonText={ __(
+					'Cancel order',
+					'woocommerce-payments'
+				) }
+				cancelButtonText={ __( 'Do Nothing', 'woocommerce-payments' ) }
+				confirmationMessage={ confirmationMessage }
+				onConfirm={ () => {
+					const orderEditForm: HTMLFormElement | null =
+						document
+							.querySelector( '#order_status' )
+							?.closest( 'form' ) || null;
+					if ( orderEditForm !== null ) {
+						orderEditForm.submit();
+					}
+				} }
+				onCancel={ () => {
+					const orderStatusElement: HTMLInputElement | null = document.querySelector(
+						'#order_status'
+					);
+					if ( orderStatusElement !== null ) {
+						orderStatusElement.value = orderStatus;
+						orderStatusElement.dispatchEvent(
+							new Event( 'change' )
+						);
+					}
+				} }
+			/>
 		);
 	}
 }
