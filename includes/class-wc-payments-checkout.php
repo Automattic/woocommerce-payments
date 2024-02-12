@@ -190,6 +190,7 @@ class WC_Payments_Checkout {
 			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isWoopayFirstPartyAuthEnabled'  => $this->woopay_util->is_woopay_first_party_auth_enabled(),
 			'isWooPayEmailInputEnabled'      => $this->woopay_util->is_woopay_email_input_enabled(),
+			'isWooPayDirectCheckoutEnabled'  => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
 			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
 			'woopayHost'                     => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
@@ -199,7 +200,6 @@ class WC_Payments_Checkout {
 			'woopaySessionNonce'             => wp_create_nonce( 'woopay_session_nonce' ),
 			'woopayMerchantId'               => Jetpack_Options::get_option( 'id' ),
 			'icon'                           => $this->gateway->get_icon_url(),
-			'tracksUserIdentity'             => WC_Payments::woopay_tracker()->tracks_get_identity( get_current_user_id() ),
 		];
 
 		/**
@@ -229,6 +229,10 @@ class WC_Payments_Checkout {
 			}
 		}
 		$payment_fields['enabledBillingFields'] = $enabled_billing_fields;
+
+		if ( WC_Payments::woopay_tracker()->should_enable_tracking() ) {
+			$payment_fields['tracksUserIdentity'] = WC_Payments::woopay_tracker()->tracks_get_identity( get_current_user_id() );
+		}
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->gateway->is_subscriptions_enabled() && $this->gateway->is_changing_payment_method_for_subscription() ) {

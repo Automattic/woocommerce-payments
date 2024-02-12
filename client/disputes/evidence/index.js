@@ -33,7 +33,7 @@ import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 
 const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
@@ -548,7 +548,7 @@ export default ( { query } ) => {
 			return;
 		}
 
-		recordEvent( events.DISPUTE_FILE_UPLOAD_STARTED, {
+		recordEvent( 'wcpay_dispute_file_upload_started', {
 			type: key,
 		} );
 
@@ -580,11 +580,11 @@ export default ( { query } ) => {
 			} );
 			updateEvidence( key, uploadedFile.id );
 
-			recordEvent( events.DISPUTE_FILE_UPLOAD_SUCCESS, {
+			recordEvent( 'wcpay_dispute_file_upload_success', {
 				type: key,
 			} );
 		} catch ( err ) {
-			recordEvent( events.DISPUTE_FILE_UPLOAD_FAILED, {
+			recordEvent( 'wcpay_dispute_file_upload_failed', {
 				message: err.message,
 			} );
 
@@ -611,8 +611,8 @@ export default ( { query } ) => {
 
 		recordEvent(
 			submit
-				? events.DISPUTE_SUBMIT_EVIDENCE_SUCCESS
-				: events.DISPUTE_SAVE_EVIDENCE_SUCCESS
+				? 'wcpay_dispute_submit_evidence_success'
+				: 'wcpay_dispute_save_evidence_success'
 		);
 		/*
 			We rely on WC-Admin Transient notices to display success message.
@@ -645,8 +645,8 @@ export default ( { query } ) => {
 	const handleSaveError = ( err, submit ) => {
 		recordEvent(
 			submit
-				? events.DISPUTE_SUBMIT_EVIDENCE_FAILED
-				: events.DISPUTE_SAVE_EVIDENCE_FAILED
+				? 'wcpay_dispute_submit_evidence_failed'
+				: 'wcpay_dispute_save_evidence_failed'
 		);
 
 		const message = submit
@@ -674,8 +674,8 @@ export default ( { query } ) => {
 		try {
 			recordEvent(
 				submit
-					? events.DISPUTE_SUBMIT_EVIDENCE_CLICK
-					: events.DISPUTE_SAVE_EVIDENCE_CLICK
+					? 'wcpay_dispute_submit_evidence_clicked'
+					: 'wcpay_dispute_save_evidence_clicked'
 			);
 
 			const { metadata } = dispute;
@@ -705,7 +705,7 @@ export default ( { query } ) => {
 		const properties = {
 			selection: newProductType,
 		};
-		recordEvent( events.DISPUTE_PRODUCT_SELECTED, properties );
+		recordEvent( 'wcpay_dispute_product_selected', properties );
 		updateDispute( {
 			metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType },
 		} );
