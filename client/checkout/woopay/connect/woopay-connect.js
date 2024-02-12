@@ -4,6 +4,11 @@
 import { WooPayConnectIframe } from 'wcpay/checkout/woopay/connect/woopay-connect-iframe';
 import ReactDOM from 'react-dom';
 import { getConfig } from 'wcpay/utils/checkout';
+import {
+	INJECTED_STATE,
+	getConnectIframeInjectedState,
+	setConnectIframeInjectedState,
+} from 'wcpay/checkout/woopay/connect/connect-utils';
 
 class WoopayConnect {
 	iframePostMessage = null;
@@ -59,17 +64,32 @@ class WoopayConnect {
 	 * Injects the WooPayConnectIframe into the page.
 	 */
 	injectWooPayConnectIframe() {
-		const iframe = document.querySelector( '#woopay-connect-iframe' );
-		if ( iframe ) {
-			this.iframePostMessage = Promise.resolve( ( value ) => {
-				iframe.contentWindow.postMessage(
-					value,
-					getConfig( 'woopayHost' )
-				);
+		const injectedState = getConnectIframeInjectedState();
+
+		if ( injectedState === INJECTED_STATE.INJECTED ) {
+			// iFrame is already injected, get the postMessage function directly.
+			const iframe = document.querySelector( '#woopay-connect-iframe' );
+			if ( iframe ) {
+				this.iframePostMessage = Promise.resolve( ( value ) => {
+					iframe.contentWindow.postMessage(
+						value,
+						getConfig( 'woopayHost' )
+					);
+				} );
+			}
+
+			return;
+		} else if ( injectedState === INJECTED_STATE.INJECTING ) {
+			// iFrame is being injected, expect the postMessage to be set by an event callback when iFrame loads.
+			this.iframePostMessage = new Promise( ( resolve ) => {
+				this.listeners.getIframePostMessageCallback = resolve;
 			} );
 
 			return;
 		}
+
+		// iFrame is not injected, let's inject it.
+		setConnectIframeInjectedState( INJECTED_STATE.INJECTING );
 
 		const hiddenDiv = document.createElement( 'div' );
 		hiddenDiv.style.visibility = 'hidden';

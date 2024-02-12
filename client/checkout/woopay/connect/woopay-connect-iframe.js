@@ -7,6 +7,10 @@ import React, { useEffect, useRef } from 'react';
  * Internal dependencies
  */
 import { getConfig } from 'wcpay/utils/checkout';
+import {
+	INJECTED_STATE,
+	setConnectIframeInjectedState,
+} from 'wcpay/checkout/woopay/connect/connect-utils';
 
 export const WooPayConnectIframe = () => {
 	const iframeRef = useRef();
@@ -31,6 +35,8 @@ export const WooPayConnectIframe = () => {
 
 		const iframe = iframeRef.current;
 		iframe.addEventListener( 'load', () => {
+			setConnectIframeInjectedState( INJECTED_STATE.INJECTED );
+
 			window.dispatchEvent(
 				new MessageEvent( 'message', {
 					source: window,
