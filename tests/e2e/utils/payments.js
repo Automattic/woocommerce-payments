@@ -2,6 +2,7 @@
  * External dependencies
  */
 import config from 'config';
+import { shopperWCP } from './flows';
 
 const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
@@ -235,6 +236,24 @@ export async function setupProductCheckout(
 				text: new RegExp( `${ ++cartSize } items?` ),
 				timeout: 30000,
 			} );
+		}
+	}
+
+	await setupCheckout( billingDetails );
+}
+
+export async function setupProductCheckoutNoMiniCart(
+	billingDetails,
+	lineItems = [ [ config.get( 'products.simple.name' ), 1 ] ]
+) {
+	await shopper.goToShop();
+
+	// Add items to the cart
+	for ( const line of lineItems ) {
+		let [ productSlug, qty ] = line;
+
+		while ( qty-- ) {
+			await shopperWCP.addToCartBySlug( productSlug );
 		}
 	}
 

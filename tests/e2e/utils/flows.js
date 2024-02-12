@@ -47,6 +47,7 @@ const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
 const WP_ADMIN_PAGES = baseUrl + 'wp-admin/edit.php?post_type=page';
+const WP_THEMES_PAGE = baseUrl + 'wp-admin/themes.php';
 const WCB_CHECKOUT = baseUrl + 'checkout-wcb/';
 const WCPAY_DEV_TOOLS = baseUrl + 'wp-admin/admin.php?page=wcpaydev';
 const SHOP_CART_PAGE = baseUrl + 'cart/';
@@ -422,6 +423,21 @@ export const merchantWCP = {
 			);
 		}
 		await expect( page ).toClick( 'input#submit' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	changeTheme: async ( themeSlug ) => {
+		await page.goto( WP_THEMES_PAGE, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( await page.$( `.theme[data-slug="${ themeSlug }"]` ) ) {
+			await expect( page ).toClick(
+				`.theme[data-slug="${ themeSlug }"] .theme-actions .button.activate`
+			);
+		}
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
