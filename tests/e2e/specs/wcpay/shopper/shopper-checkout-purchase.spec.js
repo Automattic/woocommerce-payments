@@ -17,9 +17,14 @@ import {
 
 import { shopperWCP, merchantWCP } from '../../../utils';
 
-describe.each( [ [ true ], [ false ] ] )(
+const cardTestingPreventionStates = [
+	{ cardTestingPreventionEnabled: false },
+	{ cardTestingPreventionEnabled: true },
+];
+
+describe.each( cardTestingPreventionStates )(
 	'Successful purchase, CT enabled: %s',
-	( cardTestingPreventionEnabled ) => {
+	( { cardTestingPreventionEnabled } ) => {
 		beforeAll( async () => {
 			if ( cardTestingPreventionEnabled ) {
 				await merchant.login();
@@ -45,6 +50,12 @@ describe.each( [ [ true ], [ false ] ] )(
 		} );
 
 		it( 'using a basic card', async () => {
+			if ( cardTestingPreventionEnabled ) {
+				const token = await page.evaluate( () => {
+					return window.wcpayFraudPreventionToken;
+				} );
+				expect( token ).not.toBeUndefined();
+			}
 			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
@@ -52,6 +63,12 @@ describe.each( [ [ true ], [ false ] ] )(
 		} );
 
 		it( 'using a 3DS card', async () => {
+			if ( cardTestingPreventionEnabled ) {
+				const token = await page.evaluate( () => {
+					return window.wcpayFraudPreventionToken;
+				} );
+				expect( token ).not.toBeUndefined();
+			}
 			const card = config.get( 'cards.3ds' );
 			await fillCardDetails( page, card );
 			await expect( page ).toClick( '#place_order' );
