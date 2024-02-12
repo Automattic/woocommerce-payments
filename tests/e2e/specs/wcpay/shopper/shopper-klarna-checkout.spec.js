@@ -62,6 +62,7 @@ describe( 'Klarna checkout', () => {
 			'button[aria-label="Open Learn More Modal"]',
 			{ timeout: 30000 }
 		);
+		await productMessaging.scrollIntoViewIfNeeded();
 		// const [ productMessaging ] = await paymentMethodMessageIframe.$(
 		// 	'button[aria-label="Open Learn More Modal"]'
 		// );
