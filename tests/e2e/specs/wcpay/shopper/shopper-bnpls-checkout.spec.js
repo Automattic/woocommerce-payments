@@ -23,7 +23,10 @@ describe( 'BNPL checkout', () => {
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
-		await shopperWCP.changeAccountCurrencyTo( 'USD' );
+		await shopperWCP.changeAccountCurrencyTo(
+			config.get( 'addresses.customer.billing' ),
+			'USD'
+		);
 	} );
 
 	afterAll( async () => {

@@ -22,9 +22,14 @@ const card = config.get( 'cards.basic' );
 const card2 = config.get( 'cards.basic2' );
 const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
 
-describe.each( [ [ true ], [ false ] ] )(
-	'Enabled UPE with deferred intent creation, card testing prevention enabled: %s',
-	( cardTestingPreventionEnabled ) => {
+const cardTestingPreventionStates = [
+	{ cardTestingPreventionEnabled: false },
+	{ cardTestingPreventionEnabled: true },
+];
+
+describe.each( cardTestingPreventionStates )(
+	'Enabled UPE with deferred intent creation',
+	( { cardTestingPreventionEnabled } ) => {
 		beforeAll( async () => {
 			await merchant.login();
 			await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
@@ -33,7 +38,11 @@ describe.each( [ [ true ], [ false ] ] )(
 			}
 			await merchant.logout();
 			await shopper.login();
-			await shopperWCP.changeAccountCurrencyTo( 'EUR' );
+			await shopperWCP.changeAccountCurrencyTo(
+				config.get( 'addresses.upe-customer.billing.de' ),
+				'EUR'
+			);
+			await shopperWCP.emptyCart();
 		} );
 
 		afterAll( async () => {
@@ -47,11 +56,17 @@ describe.each( [ [ true ], [ false ] ] )(
 		} );
 
 		describe( 'Enabled UPE with deferred intent creation', () => {
-			it( 'should successfully place order with Giropay', async () => {
+			it( `should successfully place order with Giropay, CTP enabled: ${ cardTestingPreventionEnabled }`, async () => {
 				await setupProductCheckout(
 					config.get( 'addresses.upe-customer.billing.de' )
 				);
 				page.waitFor( 1000 );
+				if ( cardTestingPreventionEnabled ) {
+					const token = await page.evaluate( () => {
+						return window.wcpayFraudPreventionToken;
+					} );
+					expect( token ).not.toBeUndefined();
+				}
 				await selectOnCheckout( 'giropay', page );
 				await shopper.placeOrder();
 				await completeRedirectedPayment( page, 'success' );
@@ -61,11 +76,17 @@ describe.each( [ [ true ], [ false ] ] )(
 				await expect( page ).toMatch( 'Order received' );
 			} );
 
-			it( 'should successfully place order with Bancontact', async () => {
+			it( `should successfully place order with Bancontact, CTP enabled: ${ cardTestingPreventionEnabled }`, async () => {
 				await setupProductCheckout(
 					config.get( 'addresses.upe-customer.billing.be' )
 				);
 				page.waitFor( 1000 );
+				if ( cardTestingPreventionEnabled ) {
+					const token = await page.evaluate( () => {
+						return window.wcpayFraudPreventionToken;
+					} );
+					expect( token ).not.toBeUndefined();
+				}
 				await selectOnCheckout( 'bancontact', page );
 				await shopper.placeOrder();
 				await completeRedirectedPayment( page, 'success' );

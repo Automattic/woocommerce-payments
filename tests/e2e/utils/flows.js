@@ -147,10 +147,22 @@ export const shopperWCP = {
 		} );
 	},
 
-	changeAccountCurrencyTo: async ( currencyToSet ) => {
+	changeAccountCurrencyTo: async ( customerDetails, currencyToSet ) => {
 		await page.goto( MY_ACCOUNT_EDIT, {
 			waitUntil: 'networkidle0',
 		} );
+
+		// In some cases (when running tests independently), when these fields are empty, the saving
+		// fails. So ensuring these fields are filled before setting the currency.
+		await clearAndFillInput(
+			'#account_first_name',
+			customerDetails.firstname
+		);
+
+		await clearAndFillInput(
+			'#account_last_name',
+			customerDetails.lastname
+		);
 
 		await page.select( '#wcpay_selected_currency', currencyToSet );
 		await expect( page ).toClick( 'button', {
