@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Displaying the correct method name in Order Edit page for HPOS

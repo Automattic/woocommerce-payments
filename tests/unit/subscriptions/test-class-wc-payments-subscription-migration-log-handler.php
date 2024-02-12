@@ -72,6 +72,14 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 	 * Confirms that log files are not deleted by WC's log cleanup and that mock log files are deleted.
 	 */
 	public function test_extend_life_of_migration_file_logs() {
+
+		// WC 8.6 changed the way log files are cleaned up, this test which uses the `touch()` method is no longer valid.
+		if ( version_compare( WC_VERSION, '8.6.0', '>=' ) ) {
+			$this->markTestSkipped(
+				'This test only applies on WC versions prior to 8.6.0.'
+			);
+		}
+
 		$message = 'Test message 1234567890';
 
 		// Log messages - Log to the migration file and a dummy log.

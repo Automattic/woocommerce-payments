@@ -1,0 +1,151 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Reporting Settings should render correctly 1`] = `
+<div>
+  <div
+    class="components-surface components-card reporting-settings css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
+  >
+    <div
+      class="css-mgwsf4-View-Content em57xhy0"
+    >
+      <div
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <h4>
+          <span
+            id="reporting-card-title"
+          >
+            Report exporting default language
+          </span>
+        </h4>
+        <div
+          class="reporting-export-language"
+        >
+          <div
+            class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+          >
+            <div
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+            >
+              <div
+                class="components-flex components-select-control em5sgkm7 css-c0mqng-View-Flex-sx-Base-sx-Items-ItemsColumn-Root-rootLabelPositionStyles em57xhy0"
+                data-wp-c16t="true"
+                data-wp-component="Flex"
+              >
+                <div
+                  class="components-flex-item em5sgkm3 css-1fmchc6-View-Item-sx-Base-LabelWrapper em57xhy0"
+                  data-wp-c16t="true"
+                  data-wp-component="FlexItem"
+                >
+                  <label
+                    class="components-truncate components-text components-input-control__label em5sgkm4 css-evqk1-View-Text-sx-Base-BaseLabel-labelMargin em57xhy0"
+                    data-wp-c16t="true"
+                    data-wp-component="Text"
+                    for="inspector-select-control-0"
+                  >
+                    Language
+                  </label>
+                </div>
+                <div
+                  class="components-input-control__container css-1t6cb2b-Container-containerDisabledStyles-containerWidthStyles em5sgkm6"
+                >
+                  <select
+                    class="components-select-control__input css-t4qksx-Select-fontSizeStyles-sizeStyles e1mv6sxx1"
+                    id="inspector-select-control-0"
+                  >
+                    <option
+                      value="en_US"
+                    >
+                      English (United States)
+                    </option>
+                    <option
+                      value="es_ES"
+                    >
+                      Site Language - Spanish
+                    </option>
+                  </select>
+                  <span
+                    class="components-input-control__suffix css-oobb1x-Suffix em5sgkm0"
+                  >
+                    <div
+                      class="css-1einvap-DownArrowWrapper e1mv6sxx0"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                    </div>
+                  </span>
+                  <div
+                    aria-hidden="true"
+                    class="components-input-control__backdrop css-1gb9p1j-BackdropUI-backdropFocusedStyles em5sgkm2"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <p
+            class="reporting-settings__text--help-text"
+          >
+            You can change your global site language preferences in 
+            <a
+              class="components-external-link"
+              href="options-general.php"
+              rel="external noreferrer noopener"
+              target="_blank"
+            >
+              General Settings
+              <span
+                class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                data-wp-c16t="true"
+                data-wp-component="VisuallyHidden"
+                style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+              >
+                (opens in a new tab)
+              </span>
+              <svg
+                aria-hidden="true"
+                class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                focusable="false"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                />
+              </svg>
+            </a>
+            .
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+  </div>
+</div>
+`;
