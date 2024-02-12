@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 7.2.0 - 2024-02-14 =
+= 7.2.0-test-3 - unreleased =
 * Add - Add compatibility data to onboarding init payload.
 * Add - Add WooPay direct checkout flow behind a feature flag.
 * Add - Apply localization to CSV exports for transactions, deposits, and disputes sent via email.
