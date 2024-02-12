@@ -16,7 +16,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'wcpay/utils/currency';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 import Loadable from 'components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
@@ -51,13 +51,14 @@ const DepositsOverview: React.FC = () => {
 
 	const availableFunds = overview?.available?.amount ?? 0;
 	const pendingFunds = overview?.pending?.amount ?? 0;
+	const totalFunds = availableFunds + pendingFunds;
 
 	const minimumDepositAmount =
 		wcpaySettings.accountStatus.deposits
 			?.minimum_scheduled_deposit_amounts?.[ selectedCurrency ] ?? 0;
 	const isAboveMinimumDepositAmount = availableFunds >= minimumDepositAmount;
-	// If the available balance is negative, deposits may be paused.
-	const isNegativeBalanceDepositsPaused = availableFunds < 0;
+	// If the total balance is negative, deposits may be paused.
+	const isNegativeBalanceDepositsPaused = totalFunds < 0;
 	// When there are funds pending but no available funds, deposits are paused.
 	const isDepositAwaitingPendingFunds =
 		availableFunds === 0 && pendingFunds > 0;
@@ -176,7 +177,7 @@ const DepositsOverview: React.FC = () => {
 							} ) }
 							onClick={ () =>
 								recordEvent(
-									events.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+									'wcpay_overview_deposits_view_history_click'
 								)
 							}
 						>
@@ -199,7 +200,7 @@ const DepositsOverview: React.FC = () => {
 							}
 							onClick={ () =>
 								recordEvent(
-									events.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
+									'wcpay_overview_deposits_change_schedule_click'
 								)
 							}
 						>

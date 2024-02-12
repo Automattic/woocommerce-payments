@@ -8,7 +8,7 @@ import { getPaymentRequestData } from 'wcpay/payment-request/utils';
 /**
  * Internal dependencies
  */
-import events from './events';
+import { Event } from './event';
 
 /**
  * Checks if site tracking is enabled.
@@ -20,16 +20,27 @@ export const isEnabled = (): boolean => wcTracks.isEnabled;
 /**
  * Records site event.
  *
- * @param {string}  eventName        Name of the event.
+ * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
+ * properties to every event.
+ *
+ * @param {Event}  eventName         Name of the event.
  * @param {Object} [eventProperties] Event properties (optional).
  */
 export const recordEvent = (
-	eventName: string,
+	eventName: Event,
 	eventProperties: Record< string, unknown > = {}
 ): void => {
-	// Add `is_test_mode` property to every event.
-	eventProperties.is_test_mode = wcpaySettings?.testMode;
-
+	// TODO: Load these properties in a new script to ensure it's available everywhere.
+	// wcpaySettings is not available outside of WCPay pages.
+	if ( window.wcpaySettings ) {
+		// Add default properties to every event.
+		Object.assign( eventProperties, {
+			is_test_mode: wcpaySettings.testMode,
+			jetpack_connected: wcpaySettings.isJetpackConnected,
+			wcpay_version: wcpaySettings.version,
+			woo_country_code: wcpaySettings.connect.country,
+		} );
+	}
 	// Wc-admin track script is enqueued after ours, wrap in domReady
 	// to make sure we're not too early.
 	domReady( () => {
@@ -67,5 +78,3 @@ export const recordUserEvent = (
 		body,
 	} );
 };
-
-export { events };

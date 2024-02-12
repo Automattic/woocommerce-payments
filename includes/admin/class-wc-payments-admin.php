@@ -205,7 +205,6 @@ class WC_Payments_Admin {
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_redirect_overview_to_connect' ], 1 ); // Run this late (after `admin_init`) but before any scripts are actually enqueued.
-		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_redirect_onboarding_flow_to_connect' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ], 9 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 9 );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
@@ -840,6 +839,7 @@ class WC_Payments_Admin {
 		}
 
 		$this->wcpay_js_settings = [
+			'version'                       => WCPAY_VERSION_NUMBER,
 			'connectUrl'                    => $connect_url,
 			'connect'                       => [
 				'country'            => WC()->countries->get_base_country(),
@@ -899,6 +899,10 @@ class WC_Payments_Admin {
 			'capabilityRequestNotices'      => get_option( 'wcpay_capability_request_dismissed_notices ', [] ),
 			'storeName'                     => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'  => WC_Payments_Features::is_next_deposit_notice_dismissed(),
+			'reporting'                     => [
+				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
+			],
+			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
@@ -1143,28 +1147,6 @@ class WC_Payments_Admin {
 		}
 
 		$this->account->redirect_to_onboarding_welcome_page();
-	}
-
-	/**
-	 * Prevent access to onboarding flow if the server is not connected.
-	 * Redirect back to the connect page with an error message.
-	 */
-	public function maybe_redirect_onboarding_flow_to_connect(): void {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return;
-		}
-		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
-		if ( isset( $url_params['page'] ) && 'wc-admin' === $url_params['page']
-			&& isset( $url_params['path'] ) && '/payments/onboarding' === $url_params['path'] && ! $this->payments_api_client->is_server_connected() ) {
-				$this->account->redirect_to_onboarding_welcome_page(
-					sprintf(
-					/* translators: %s: WooPayments */
-						__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
-						'WooPayments'
-					)
-				);
-			return;
-		}
 	}
 
 	/**
