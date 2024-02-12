@@ -50,22 +50,37 @@ describe( 'Klarna checkout', () => {
 		expect( await page.$x( checkoutPaymentMethodSelector ) ).toBeNull();
 	} );
 
-	it( 'should show the product messaging on the product page', async () => {
+	it.only( 'should show the product messaging on the product page', async () => {
 		await shopperWCP.goToProductPageBySlug( 'belt' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 		// waiting for the "product messaging" component to be rendered, so we can click on it.
-		await page.waitForSelector(
-			'button[aria-label="Open Learn More Modal"]'
+		const paymentMethodMessageIframeHandle = await page.waitForSelector(
+			'#payment-method-message iframe'
 		);
-		const [ productMessaging ] = await page.$(
+		const paymentMethodMessageIframe = await paymentMethodMessageIframeHandle.contentFrame();
+		await paymentMethodMessageIframe.waitForSelector(
+			'button[aria-label="Open Learn More Modal"]',
+			{ timeout: 30000 }
+		);
+		const [ productMessaging ] = await paymentMethodMessageIframe.$(
 			'button[aria-label="Open Learn More Modal"]'
 		);
 		await productMessaging.click();
 
-		await expect( page ).toMatchElement( '[data-testid="ModalHeader"]', {
-			text: 'Buy Now. Pay Later.',
-		} );
-		await expect( page ).toMatchElement(
+		const paymentMethodMessageModalIframeHandle = await page.waitForSelector(
+			'iframe[src*="js.stripe.com/v3/elements-inner-payment-method-messaging-modal"]',
+			{ timeout: 30000 }
+		);
+		const paymentMethodMessageModalIframe = await paymentMethodMessageModalIframeHandle.contentFrame();
+
+		await expect( paymentMethodMessageModalIframe ).toMatchElement(
+			'[data-testid="ModalHeader"]',
+			{
+				text: 'Buy Now. Pay Later.',
+			}
+		);
+		await expect( paymentMethodMessageModalIframe ).toMatchElement(
 			'[data-testid="ModalDescription"]',
 			{
 				text:
