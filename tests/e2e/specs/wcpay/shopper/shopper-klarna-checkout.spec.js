@@ -87,12 +87,18 @@ describe( 'Klarna checkout', () => {
 			return await klarnaFrameHandle.contentFrame();
 		};
 		await setupProductCheckout(
-			config.get( 'addresses.customer.billing' ),
+			{
+				...config.get( 'addresses.customer.billing' ),
+				// these are Klarna-specific values:
+				// https://docs.klarna.com/resources/test-environment/sample-customer-data/#united-states-of-america
+				email: 'customer@email.us',
+				phone: '+13106683312',
+			},
 			[ [ 'Beanie', 3 ] ]
 		);
 
 		await uiUnblocked();
-		// Select BNPL provider as payment method.
+
 		await page.waitForXPath( checkoutPaymentMethodSelector );
 		const [ paymentMethodLabel ] = await page.$x(
 			checkoutPaymentMethodSelector
@@ -101,6 +107,15 @@ describe( 'Klarna checkout', () => {
 		await shopper.placeOrder();
 
 		// waiting for the redirect & the Klarna iframe to load within the Stripe test page
+		(
+			await ( await getNewKlarnaIframe() ).waitForSelector(
+				'[data-testid="kaf-button"]'
+			)
+		 ).click();
+		await expect( await getNewKlarnaIframe() ).toFill(
+			'[data-testid="kaf-field"]',
+			'000000'
+		);
 		(
 			await ( await getNewKlarnaIframe() ).waitForSelector(
 				'[data-testid="select-payment-category"]'
