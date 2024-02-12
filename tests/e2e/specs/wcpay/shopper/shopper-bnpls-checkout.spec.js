@@ -18,8 +18,8 @@ const UPE_METHOD_CHECKBOXES = [
 ];
 
 const cardTestingPreventionStates = [
-	{ cardTestingPreventionEnabled: true },
 	{ cardTestingPreventionEnabled: false },
+	{ cardTestingPreventionEnabled: true },
 ];
 
 describe.each( cardTestingPreventionStates )(
