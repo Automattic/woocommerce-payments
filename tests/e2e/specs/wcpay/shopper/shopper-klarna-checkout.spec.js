@@ -86,6 +86,7 @@ describe( 'Klarna checkout', () => {
 			);
 			return await klarnaFrameHandle.contentFrame();
 		};
+
 		await setupProductCheckout(
 			{
 				...config.get( 'addresses.customer.billing' ),
@@ -116,6 +117,12 @@ describe( 'Klarna checkout', () => {
 			'[data-testid="kaf-field"]',
 			'000000'
 		);
+
+		// at this point, there's a page refresh, and a new iframe is loaded
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+
 		(
 			await ( await getNewKlarnaIframe() ).waitForSelector(
 				'[data-testid="select-payment-category"]'
