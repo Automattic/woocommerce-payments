@@ -58,14 +58,13 @@ describe( 'Klarna checkout', () => {
 			'#payment-method-message iframe'
 		);
 		const paymentMethodMessageIframe = await paymentMethodMessageFrameHandle.contentFrame();
-		const productMessaging = await paymentMethodMessageIframe.waitForSelector(
+		await paymentMethodMessageIframe.waitForSelector(
 			'button[aria-label="Open Learn More Modal"]',
 			{ timeout: 30000 }
 		);
-		await productMessaging.scrollIntoViewIfNeeded();
-		// const [ productMessaging ] = await paymentMethodMessageIframe.$(
-		// 	'button[aria-label="Open Learn More Modal"]'
-		// );
+		const productMessaging = await paymentMethodMessageIframe.$(
+			'button[aria-label="Open Learn More Modal"]'
+		);
 		await productMessaging.click();
 
 		const paymentMethodMessageModalIframeHandle = await page.waitForSelector(
