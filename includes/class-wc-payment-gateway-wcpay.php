@@ -822,7 +822,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			return $this->account->is_card_present_eligible();
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account card present eligible. ' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get account card present eligible. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 			return false;
 		}
 	}
@@ -836,7 +845,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			return $this->account->is_card_testing_protection_eligible();
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account card testing protection eligible. ' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get account card testing protection eligible. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 			return false;
 		}
 	}
@@ -1353,7 +1371,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_method, $order );
 		} catch ( Exception $e ) {
 			// If updating the payment method fails, log the error message.
-			Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
+			Logger::log(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Error when updating saved payment method: %s',
+						'woocommerce-payments'
+					),
+					$e->getMessage()
+				)
+			);
 		}
 	}
 
@@ -1660,7 +1687,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_information->set_token( $token );
 				} catch ( Exception $e ) {
 					// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
-					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+					Logger::log(
+						sprintf(
+							/* translators: %s: The error message */
+							__(
+								'Error when saving payment method: %s',
+								'woocommerce-payments'
+							),
+							$e->getMessage()
+						)
+					);
 				}
 			}
 
@@ -2519,7 +2555,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_statement_descriptor();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account statement descriptor.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get account statement descriptor. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 		return $empty_value;
 	}
@@ -2582,7 +2627,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_name();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get account business name. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 
 		return $default_value;
@@ -2601,7 +2655,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_url();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get account business URL. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 
 		return $default_value;
@@ -2620,7 +2683,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_address();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get account business support address. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 
 		return $default_value;
@@ -2639,7 +2711,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_email();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get account business support email. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 
 		return $default_value;
@@ -2658,7 +2739,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_phone();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get account business support phone. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 
 		return $default_value;
@@ -2677,7 +2767,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_logo();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get account branding logo. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 
 		return $default_value;
@@ -2696,7 +2795,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_icon();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get account branding icon. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 
 		return $default_value;
@@ -2715,7 +2823,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_primary_color();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						"Failed to get the account's branding primary color: %s",
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 
 		return $default_value;
@@ -2734,7 +2851,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_secondary_color();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						"Failed to get the account's branding secondary color: %s",
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 
 		return $default_value;
@@ -2777,7 +2903,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_deposit_schedule_interval();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit schedule interval.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get deposit schedule interval. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 		return $empty_value;
 	}
@@ -2795,7 +2930,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_deposit_schedule_weekly_anchor();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit schedule weekly anchor.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get deposit schedule weekly anchor. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 		return $empty_value;
 	}
@@ -2813,7 +2957,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_deposit_schedule_monthly_anchor();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get deposit schedule monthly anchor. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 		return null === $empty_value ? null : (int) $empty_value;
 	}
@@ -2831,7 +2984,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_deposit_delay_days() ?? $default_value;
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit delay days.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get deposit delay days. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 		return $default_value;
 	}
@@ -2867,7 +3029,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_deposit_status();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit status.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get deposit status. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 		return $empty_value;
 	}
@@ -2903,7 +3074,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_deposit_completed_waiting_period();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Failed to get the deposit waiting period value. %s',
+						'woocommerce-payments'
+					),
+					$e
+				)
+			);
 		}
 		return $empty_value;
 	}
@@ -3417,7 +3597,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$this->add_token_to_order( $order, $token );
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
-						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+						Logger::error(
+							sprintf(
+								/* translators: %s: The error message */
+								__(
+									'Error when saving payment method: %s',
+									'woocommerce-payments'
+								),
+								$e->getMessage()
+							)
+						);
 					}
 				}
 
@@ -3523,7 +3712,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		} catch ( Exception $e ) {
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
-			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
+			Logger::error(
+				sprintf(
+					/* translators: %s: The error message */
+					__(
+						'Error when adding payment method: %s',
+						'woocommerce-payments'
+					),
+					$e->getMessage()
+				)
+			);
 			return [
 				'result' => 'error',
 			];
