@@ -56,7 +56,7 @@ describe.each( cardTestingPreventionStates )(
 		} );
 
 		describe( 'Enabled UPE with deferred intent creation', () => {
-			it( `should successfully place order with Giropay, CTP enabled: ${ cardTestingPreventionEnabled }`, async () => {
+			it( `should successfully place order with Giropay, carding prevention: ${ cardTestingPreventionEnabled }`, async () => {
 				await setupProductCheckout(
 					config.get( 'addresses.upe-customer.billing.de' )
 				);
@@ -76,7 +76,7 @@ describe.each( cardTestingPreventionStates )(
 				await expect( page ).toMatch( 'Order received' );
 			} );
 
-			it( `should successfully place order with Bancontact, CTP enabled: ${ cardTestingPreventionEnabled }`, async () => {
+			it( `should successfully place order with Bancontact, carding prevention: ${ cardTestingPreventionEnabled }`, async () => {
 				await setupProductCheckout(
 					config.get( 'addresses.upe-customer.billing.be' )
 				);

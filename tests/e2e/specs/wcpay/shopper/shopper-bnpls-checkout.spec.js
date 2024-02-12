@@ -50,7 +50,7 @@ describe.each( cardTestingPreventionStates )(
 		} );
 
 		describe.each( bnplProviders )(
-			`Checkout with %s, CT enabled: ${ cardTestingPreventionEnabled }`,
+			`Checkout with %s, carding protection ${ cardTestingPreventionEnabled }`,
 			( providerName ) => {
 				it( `should successfully place order with ${ providerName }`, async () => {
 					await shopperWCP.emptyCart();

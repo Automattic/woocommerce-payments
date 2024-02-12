@@ -23,7 +23,7 @@ const cardTestingPreventionStates = [
 ];
 
 describe.each( cardTestingPreventionStates )(
-	'Successful purchase, CT enabled: %s',
+	'Successful purchase, non-site builder theme',
 	( { cardTestingPreventionEnabled } ) => {
 		beforeAll( async () => {
 			if ( cardTestingPreventionEnabled ) {
@@ -49,7 +49,7 @@ describe.each( cardTestingPreventionStates )(
 			}
 		} );
 
-		it( 'using a basic card', async () => {
+		it( `using a basic card, carding protection ${ cardTestingPreventionEnabled }`, async () => {
 			if ( cardTestingPreventionEnabled ) {
 				const token = await page.evaluate( () => {
 					return window.wcpayFraudPreventionToken;
@@ -62,7 +62,68 @@ describe.each( cardTestingPreventionStates )(
 			await expect( page ).toMatch( 'Order received' );
 		} );
 
-		it( 'using a 3DS card', async () => {
+		it( `using a 3DS card, carding protection ${ cardTestingPreventionEnabled }`, async () => {
+			if ( cardTestingPreventionEnabled ) {
+				const token = await page.evaluate( () => {
+					return window.wcpayFraudPreventionToken;
+				} );
+				expect( token ).not.toBeUndefined();
+			}
+			const card = config.get( 'cards.3ds' );
+			await fillCardDetails( page, card );
+			await expect( page ).toClick( '#place_order' );
+			await confirmCardAuthentication( page );
+			await page.waitForNavigation( {
+				waitUntil: 'networkidle0',
+			} );
+			await expect( page ).toMatch( 'Order received' );
+		} );
+	}
+);
+
+describe.each( cardTestingPreventionStates )(
+	'Successful purchase, site builder theme',
+	( { cardTestingPreventionEnabled } ) => {
+		beforeAll( async () => {
+			if ( cardTestingPreventionEnabled ) {
+				await merchant.login();
+				await merchantWCP.enableCardTestingProtection();
+				await merchantWCP.changeTheme( 'twenty-twenty-four' );
+				await merchant.logout();
+			}
+		} );
+
+		beforeEach( async () => {
+			await setupProductCheckout(
+				config.get( 'addresses.customer.billing' )
+			);
+		} );
+
+		afterAll( async () => {
+			// Clear the cart at the end so it's ready for another test
+			await shopperWCP.emptyCart();
+			if ( cardTestingPreventionEnabled ) {
+				await merchant.login();
+				await merchantWCP.disableCardTestingProtection();
+				await merchantWCP.changeTheme( 'storefront' );
+				await merchant.logout();
+			}
+		} );
+
+		it( `using a basic card, carding prevention ${ cardTestingPreventionEnabled }`, async () => {
+			if ( cardTestingPreventionEnabled ) {
+				const token = await page.evaluate( () => {
+					return window.wcpayFraudPreventionToken;
+				} );
+				expect( token ).not.toBeUndefined();
+			}
+			const card = config.get( 'cards.basic' );
+			await fillCardDetails( page, card );
+			await shopper.placeOrder();
+			await expect( page ).toMatch( 'Order received' );
+		} );
+
+		it( `using a 3DS card, carding prevention ${ cardTestingPreventionEnabled }`, async () => {
 			if ( cardTestingPreventionEnabled ) {
 				const token = await page.evaluate( () => {
 					return window.wcpayFraudPreventionToken;
