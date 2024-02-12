@@ -3,6 +3,7 @@
  */
 import ReactDOM from 'react-dom';
 import { dispatch } from '@wordpress/data';
+import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -16,7 +17,7 @@ import GenericConfirmationModal from '../generic-confirmation-modal';
 import React from 'react';
 
 interface StatusChangeStrategies {
-	[ key: string ]: ( orderStatus: string ) => void;
+	[ key: string ]: ( orderStatus: string, newOrderStatus: string ) => void;
 }
 
 function renderModal( modalToRender: JSX.Element ) {
@@ -34,16 +35,52 @@ function triggerCancelAuthorizationModal( orderStatus: string ): void {
 	);
 }
 
-function triggerCaptureAuthorizationModal( originalOrderStatus: string ): void {
+function triggerCaptureAuthorizationModal(
+	orderStatus: string,
+	newOrderStatus: string
+): void {
+	const interpolatedMessage = interpolateComponents( {
+		mixedString: __(
+			'This order has been {{authorizedNotCaptured/}} yet. Changing the status to ' +
+				'{{newOrderStatus/}} will also {{captureAuthorization/}}. Do you want to continue?',
+			'woocommerce-payments'
+		),
+		components: {
+			authorizedNotCaptured: (
+				<a
+					target="_blank"
+					href={
+						'https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#authorize-vs-capture'
+					}
+					rel="noopener noreferrer"
+				>
+					{ __(
+						'authorized but not captured',
+						'woocommerce-payments'
+					) }
+				</a>
+			),
+			captureAuthorization: (
+				<a
+					target="_blank"
+					href={
+						'https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-payments'
+					}
+					rel="noopener noreferrer"
+				>
+					{ __( 'capture the payment', 'woocommerce-payments' ) }
+				</a>
+			),
+			newOrderStatus: <b>{ newOrderStatus }</b>,
+		},
+	} );
+
 	renderModal(
 		<GenericConfirmationModal
 			title={ __( 'Capture Authorization', 'woocommerce-payments' ) }
 			confirmButtonText={ __( 'Capture', 'woocommerce-payments' ) }
 			cancelButtonText={ __( 'Cancel', 'woocommerce-payments' ) }
-			confirmationMessage={ __(
-				'Are you sure you want to capture the authorization?',
-				'woocommerce-payments'
-			) }
+			confirmationMessage={ interpolatedMessage }
 			onConfirm={ () => {
 				const orderEditForm: HTMLFormElement | null =
 					document
@@ -58,12 +95,10 @@ function triggerCaptureAuthorizationModal( originalOrderStatus: string ): void {
 					'#order_status'
 				);
 				if ( orderStatusElement !== null ) {
-					orderStatusElement.value = originalOrderStatus;
+					orderStatusElement.value = orderStatus;
 					orderStatusElement.dispatchEvent( new Event( 'change' ) );
 				}
 			} }
-			confirmButtonLink={ '' }
-			cancelButtonLink={ '' }
 		/>
 	);
 }
@@ -149,13 +184,16 @@ function maybeTriggerCancelAuthorizationModal( orderStatus: string ): void {
 	}
 }
 
-function maybeTriggerCaptureAuthorizationModal( orderStatus: string ): void {
+function maybeTriggerCaptureAuthorizationModal(
+	orderStatus: string,
+	newOrderStatus: string
+): void {
 	if ( orderStatus === 'wc-processing' || orderStatus === 'wc-completed' ) {
 		return;
 	}
 
 	if ( getConfig( 'hasOpenAuthorization' ) ) {
-		triggerCaptureAuthorizationModal( orderStatus );
+		triggerCaptureAuthorizationModal( orderStatus, newOrderStatus );
 	}
 }
 
@@ -173,6 +211,6 @@ const statusChangeStrategies: StatusChangeStrategies = {
 
 export default function getStatusChangeStrategy(
 	orderStatus: string
-): ( orderStatus: string ) => void {
+): ( orderStatus: string, newOrderStatus: string ) => void {
 	return statusChangeStrategies[ orderStatus ] || handleGenericStatusChange;
 }

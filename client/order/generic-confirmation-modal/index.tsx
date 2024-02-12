@@ -3,9 +3,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import interpolateComponents from '@automattic/interpolate-components';
 import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
@@ -16,11 +14,9 @@ interface GenericConfirmationModalProps {
 	title: string;
 	confirmButtonText: string;
 	cancelButtonText: string;
-	confirmationMessage: string;
+	confirmationMessage: any;
 	onConfirm: () => void;
 	onCancel: () => void;
-	confirmButtonLink: string;
-	cancelButtonLink: string;
 }
 
 const GenericConfirmationModal: React.FunctionComponent< GenericConfirmationModalProps > = ( {
@@ -30,8 +26,6 @@ const GenericConfirmationModal: React.FunctionComponent< GenericConfirmationModa
 	confirmationMessage,
 	onConfirm,
 	onCancel,
-	confirmButtonLink,
-	cancelButtonLink,
 } ) => {
 	const [ isOpen, setIsOpen ] = useState( true );
 
@@ -60,30 +54,6 @@ const GenericConfirmationModal: React.FunctionComponent< GenericConfirmationModa
 		</>
 	);
 
-	const interpolatedMessage = interpolateComponents( {
-		mixedString: confirmationMessage,
-		components: {
-			confirmButtonLink: (
-				<a
-					target="_blank"
-					href={ confirmButtonLink }
-					rel="noopener noreferrer"
-				>
-					{ confirmButtonText }
-				</a>
-			),
-			cancelButtonLink: (
-				<a
-					target="_blank"
-					href={ cancelButtonLink }
-					rel="noopener noreferrer"
-				>
-					{ cancelButtonText }
-				</a>
-			),
-		},
-	} );
-
 	return (
 		<>
 			{ isOpen && (
@@ -94,7 +64,7 @@ const GenericConfirmationModal: React.FunctionComponent< GenericConfirmationModa
 					actions={ buttonContent }
 					onRequestClose={ () => false }
 				>
-					<p>{ interpolatedMessage }</p>
+					<p>{ confirmationMessage }</p>
 				</ConfirmationModal>
 			) }
 		</>

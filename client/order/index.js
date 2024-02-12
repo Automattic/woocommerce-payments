@@ -98,7 +98,7 @@ jQuery( function ( $ ) {
 		}
 
 		const handleOrderStatusChange = getStatusChangeStrategy( this.value );
-		handleOrderStatusChange( originalStatus );
+		handleOrderStatusChange( originalStatus, this.value );
 	} );
 
 	function maybeShowOrderNotices() {
