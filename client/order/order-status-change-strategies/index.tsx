@@ -12,7 +12,6 @@ import { __ } from '@wordpress/i18n';
 import RefundConfirmationModal from '../refund-confirm-modal';
 import { getConfig } from 'utils/order';
 import CancelConfirmationModal from '../cancel-confirm-modal';
-import CancelAuthorizationConfirmationModal from '../cancel-authorization-confirm-modal';
 import GenericConfirmationModal from '../generic-confirmation-modal';
 import React from 'react';
 
@@ -27,10 +26,71 @@ function renderModal( modalToRender: JSX.Element ) {
 	ReactDOM.render( modalToRender, container );
 }
 
-function triggerCancelAuthorizationModal( orderStatus: string ): void {
+function triggerCancelAuthorizationModal(
+	orderStatus: string,
+	newOrderStatus: string
+): void {
+	const interpolatedMessage = interpolateComponents( {
+		mixedString: __(
+			'This order has been {{authorizedNotCaptured/}} yet. Changing the status to ' +
+				'{{newOrderStatus/}} will also {{cancelAuthorization/}}. Do you want to continue?',
+			'woocommerce-payments'
+		),
+		components: {
+			authorizedNotCaptured: (
+				<a
+					target="_blank"
+					href={
+						'https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#authorize-vs-capture'
+					}
+					rel="noopener noreferrer"
+				>
+					{ __(
+						'authorized but not captured',
+						'woocommerce-payments'
+					) }
+				</a>
+			),
+			cancelAuthorization: (
+				<a
+					target="_blank"
+					href="https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#cancelling-authorizations"
+					rel="noopener noreferrer"
+				>
+					{ __( 'cancel the authorization', 'woocommerce-payments' ) }
+				</a>
+			),
+			newOrderStatus: <b>{ newOrderStatus }</b>,
+		},
+	} );
+
 	renderModal(
-		<CancelAuthorizationConfirmationModal
-			originalOrderStatus={ orderStatus }
+		<GenericConfirmationModal
+			title={ __( 'Cancel authorization', 'woocommerce-payments' ) }
+			confirmButtonText={ __(
+				'Cancel order and authorization',
+				'woocommerce-payments'
+			) }
+			cancelButtonText={ __( 'Do Nothing', 'woocommerce-payments' ) }
+			confirmationMessage={ interpolatedMessage }
+			onConfirm={ () => {
+				const orderEditForm: HTMLFormElement | null =
+					document
+						.querySelector( '#order_status' )
+						?.closest( 'form' ) || null;
+				if ( orderEditForm !== null ) {
+					orderEditForm.submit();
+				}
+			} }
+			onCancel={ () => {
+				const orderStatusElement: HTMLInputElement | null = document.querySelector(
+					'#order_status'
+				);
+				if ( orderStatusElement !== null ) {
+					orderStatusElement.value = orderStatus;
+					orderStatusElement.dispatchEvent( new Event( 'change' ) );
+				}
+			} }
 		/>
 	);
 }
@@ -140,7 +200,10 @@ function handleRefundedStatus( orderStatus: string ): void {
 	renderRefundConfirmationModal( orderStatus, canRefund, refundAmount );
 }
 
-function handleCancelledStatus( orderStatus: string ): void {
+function handleCancelledStatus(
+	orderStatus: string,
+	newOrderStatus: string
+): void {
 	if ( orderStatus === 'wc-cancelled' ) {
 		return;
 	}
@@ -151,7 +214,7 @@ function handleCancelledStatus( orderStatus: string ): void {
 	// Confirm that merchant indeed wants to cancel both the order
 	// and the authorization.
 	if ( hasOpenAuthorization ) {
-		triggerCancelAuthorizationModal( orderStatus );
+		triggerCancelAuthorizationModal( orderStatus, newOrderStatus );
 	}
 
 	// If it is possible to refund an order, double check that
@@ -170,7 +233,10 @@ function handleGenericStatusChange(): void {
 	console.log( 'No specific action defined for this status change.' );
 }
 
-function maybeTriggerCancelAuthorizationModal( orderStatus: string ): void {
+function maybeTriggerCancelAuthorizationModal(
+	orderStatus: string,
+	newOrderStatus: string
+): void {
 	if (
 		orderStatus === 'wc-checkout-draft' ||
 		orderStatus === 'wc-failed' ||
@@ -180,7 +246,7 @@ function maybeTriggerCancelAuthorizationModal( orderStatus: string ): void {
 	}
 
 	if ( getConfig( 'hasOpenAuthorization' ) ) {
-		triggerCancelAuthorizationModal( orderStatus );
+		triggerCancelAuthorizationModal( orderStatus, newOrderStatus );
 	}
 }
 

@@ -9,7 +9,6 @@ import { __ } from '@wordpress/i18n';
  */
 import { getConfig } from 'utils/order';
 import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
-
 import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
 import getStatusChangeStrategy from './order-status-change-strategies';
