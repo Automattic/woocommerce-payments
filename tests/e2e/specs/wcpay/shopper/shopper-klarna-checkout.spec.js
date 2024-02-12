@@ -52,20 +52,19 @@ describe( 'Klarna checkout', () => {
 
 	it.only( 'should show the product messaging on the product page', async () => {
 		await shopperWCP.goToProductPageBySlug( 'belt' );
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 		// waiting for the "product messaging" component to be rendered, so we can click on it.
-		const paymentMethodMessageIframeHandle = await page.waitForSelector(
+		const paymentMethodMessageFrameHandle = await page.waitForSelector(
 			'#payment-method-message iframe'
 		);
-		const paymentMethodMessageIframe = await paymentMethodMessageIframeHandle.contentFrame();
-		await paymentMethodMessageIframe.waitForSelector(
+		const paymentMethodMessageIframe = await paymentMethodMessageFrameHandle.contentFrame();
+		const productMessaging = await paymentMethodMessageIframe.waitForSelector(
 			'button[aria-label="Open Learn More Modal"]',
 			{ timeout: 30000 }
 		);
-		const [ productMessaging ] = await paymentMethodMessageIframe.$(
-			'button[aria-label="Open Learn More Modal"]'
-		);
+		// const [ productMessaging ] = await paymentMethodMessageIframe.$(
+		// 	'button[aria-label="Open Learn More Modal"]'
+		// );
 		await productMessaging.click();
 
 		const paymentMethodMessageModalIframeHandle = await page.waitForSelector(

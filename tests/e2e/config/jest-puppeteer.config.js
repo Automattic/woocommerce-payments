@@ -20,7 +20,7 @@ const config = {
 	launch: {
 		...jestPuppeteerConfig.launch,
 		// Devtools must be false to avoid crashing Chromium with `--disable-features=site-per-process`
-		devtools: true,
+		devtools: false,
 		headless: false,
 		// Used for slowing down Puppeteer operations by specified amount of ms, set locally for debugging if needed.
 		slowMo: 0,
