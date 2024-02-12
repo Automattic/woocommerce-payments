@@ -7,6 +7,7 @@
 
 namespace WCPay\WooPay;
 
+use WC_Payments_Account;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
 
@@ -22,6 +23,13 @@ class WooPay_Order_Status_Sync {
 	const WCPAY_WEBHOOK_WOOPAY_ORDER_STATUS_CHANGED = 'wcpay_webhook_platform_checkout_order_status_changed';
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -32,10 +40,12 @@ class WooPay_Order_Status_Sync {
 	 * Setup webhook for the WooPay Order Status Sync.
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_Account    $account - WooCommerce Payments account.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
 
 		$this->payments_api_client = $payments_api_client;
+		$this->account			   = $account;
 
 		add_filter( 'woocommerce_webhook_topic_hooks', [ __CLASS__, 'add_topics' ], 20, 2 );
 		add_filter( 'woocommerce_webhook_payload', [ __CLASS__, 'create_payload' ], 10, 4 );
@@ -60,6 +70,10 @@ class WooPay_Order_Status_Sync {
 	 */
 	public function maybe_create_woopay_order_webhook() {
 		if ( ! current_user_can( 'manage_woocommerce' ) || self::is_webhook_created() ) {
+			return;
+		}
+
+		if ( $this->account->is_account_rejected() ) {
 			return;
 		}
 

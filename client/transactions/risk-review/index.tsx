@@ -29,7 +29,7 @@ import {
 	useFraudOutcomeTransactionsSummary,
 } from 'data/index';
 import Page from '../../components/page';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 import {
 	getRiskReviewListColumns,
 	getRiskReviewListColumnsStructure,
@@ -139,7 +139,7 @@ export const RiskReviewList = (): JSX.Element => {
 				generateCSVDataFromTable( columnsToDisplay, populatedRows )
 			);
 
-			recordEvent( events.FRAUD_OUTCOME_TRANSACTIONS_DOWNLOAD, {
+			recordEvent( 'wcpay_fraud_outcome_transactions_download', {
 				exported_transactions: rows.length,
 				total_transactions: transactionsSummary.count,
 			} );
@@ -157,7 +157,7 @@ export const RiskReviewList = (): JSX.Element => {
 	};
 
 	useEffect( () => {
-		recordEvent( events.PAGE_VIEW, {
+		recordEvent( 'page_view', {
 			path: 'payments_transactions_risk_review',
 		} );
 	}, [] );

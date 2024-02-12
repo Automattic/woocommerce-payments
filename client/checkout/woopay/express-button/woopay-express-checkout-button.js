@@ -12,7 +12,7 @@ import WoopayIcon from './woopay-icon';
 import WoopayIconLight from './woopay-icon-light';
 import { expressCheckoutIframe } from './express-checkout-iframe';
 import useExpressCheckoutProductHandler from './use-express-checkout-product-handler';
-import { recordUserEvent, events } from 'tracks';
+import { recordUserEvent } from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
 import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
@@ -77,7 +77,7 @@ export const WoopayExpressCheckoutButton = ( {
 
 	useEffect( () => {
 		if ( ! isPreview ) {
-			recordUserEvent( events.WOOPAY_BUTTON_LOAD, {
+			recordUserEvent( 'woopay_button_load', {
 				source: context,
 			} );
 		}
@@ -151,7 +151,7 @@ export const WoopayExpressCheckoutButton = ( {
 				return; // eslint-disable-line no-useless-return
 			}
 
-			recordUserEvent( events.WOOPAY_BUTTON_CLICK, {
+			recordUserEvent( 'woopay_button_click', {
 				source: context,
 			} );
 
@@ -234,7 +234,7 @@ export const WoopayExpressCheckoutButton = ( {
 					return;
 				}
 
-				recordUserEvent( events.WOOPAY_BUTTON_CLICK, {
+				recordUserEvent( 'woopay_button_click', {
 					source: context,
 				} );
 

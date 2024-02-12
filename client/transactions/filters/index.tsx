@@ -11,7 +11,7 @@ import { getQuery } from '@woocommerce/navigation';
 import { getFilters, getAdvancedFilters } from './config';
 import { formatCurrencyName } from '../../utils/currency';
 import './style.scss';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 
 interface TransactionsFiltersProps {
 	storeCurrencies: string[];
@@ -56,7 +56,7 @@ export const TransactionsFilters = ( {
 				query={ getQuery() }
 				onAdvancedFilterAction={ ( event ) => {
 					if ( event === 'filter' ) {
-						recordEvent( events.PAGE_VIEW, {
+						recordEvent( 'page_view', {
 							path: 'payments_transactions',
 							filter: 'advanced',
 						} );
