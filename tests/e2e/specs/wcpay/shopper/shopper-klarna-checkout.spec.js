@@ -58,13 +58,14 @@ describe( 'Klarna checkout', () => {
 			'#payment-method-message iframe'
 		);
 		const paymentMethodMessageIframe = await paymentMethodMessageFrameHandle.contentFrame();
-		await paymentMethodMessageIframe.waitForSelector(
+		const productMessaging = await paymentMethodMessageIframe.waitForSelector(
 			'button[aria-label="Open Learn More Modal"]',
 			{ timeout: 30000 }
 		);
-		const productMessaging = await paymentMethodMessageIframe.$(
-			'button[aria-label="Open Learn More Modal"]'
-		);
+		console.log( '###', paymentMethodMessageIframe, productMessaging );
+		// const productMessaging = await paymentMethodMessageIframe.$(
+		// 	'button[aria-label="Open Learn More Modal"]'
+		// );
 		await productMessaging.click();
 
 		const paymentMethodMessageModalIframeHandle = await page.waitForSelector(
@@ -103,12 +104,24 @@ describe( 'Klarna checkout', () => {
 		await paymentMethodLabel.click();
 		await shopper.placeOrder();
 
-		// Authorize payment with Stripe.
-		// This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
-		const xPathAuthorizePaymentButton = `//*[self::button or self::a][contains(text(), 'Authorize Test Payment')]`;
-		await page.waitForXPath( xPathAuthorizePaymentButton );
-		const [ stripeButton ] = await page.$x( xPathAuthorizePaymentButton );
-		await stripeButton.click();
+		// waiting for the redirect & the Klarna iframe to load within the Stripe test page
+		const klarnaFrameHandle = await page.waitForSelector(
+			'#klarna-apf-iframe'
+		);
+		const klarnaIframe = await klarnaFrameHandle.contentFrame();
+		(
+			await klarnaIframe.waitForSelector(
+				'[data-testid="select-payment-category"]'
+			)
+		 ).click();
+		(
+			await klarnaIframe.waitForSelector( '[data-testid="pick-plan"]' )
+		 ).click();
+		(
+			await klarnaIframe.waitForSelector(
+				'[data-testid="confirm-and-pay"]'
+			)
+		 ).click();
 
 		// Wait for the order confirmation page to load.
 		await page.waitForNavigation( {
