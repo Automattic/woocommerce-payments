@@ -107,35 +107,37 @@ describe( 'Klarna checkout', () => {
 		await paymentMethodLabel.click();
 		await shopper.placeOrder();
 
-		// waiting for the redirect & the Klarna iframe to load within the Stripe test page
+		// waiting for the redirect & the Klarna iframe to load within the Stripe test page.
+		// this is the "confirm phone number" page - we just click "continue".
+		await ( await getNewKlarnaIframe() ).waitForSelector(
+			'#collectPhonePurchaseFlow'
+		);
 		(
 			await ( await getNewKlarnaIframe() ).waitForSelector(
-				'[data-testid="kaf-button"]'
+				'#onContinue[data-testid="kaf-button"]'
 			)
 		 ).click();
+		// this is where the OTP code is entered.
+		await ( await getNewKlarnaIframe() ).waitForSelector( '#phoneOtp' );
 		await expect( await getNewKlarnaIframe() ).toFill(
 			'[data-testid="kaf-field"]',
 			'000000'
 		);
 
-		// at this point, there's a page refresh, and a new iframe is loaded
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-
+		// selecting the installment plan.
 		(
 			await ( await getNewKlarnaIframe() ).waitForSelector(
-				'[data-testid="select-payment-category"]'
+				'button[data-testid="select-payment-category"]'
 			)
 		 ).click();
 		(
 			await ( await getNewKlarnaIframe() ).waitForSelector(
-				'[data-testid="pick-plan"]'
+				'button[data-testid="pick-plan"]'
 			)
 		 ).click();
 		(
 			await ( await getNewKlarnaIframe() ).waitForSelector(
-				'[data-testid="confirm-and-pay"]'
+				'button[data-testid="confirm-and-pay"]'
 			)
 		 ).click();
 
