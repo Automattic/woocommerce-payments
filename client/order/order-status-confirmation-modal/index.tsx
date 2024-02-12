@@ -10,7 +10,7 @@ import { useState } from '@wordpress/element';
  */
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 
-interface GenericConfirmationModalProps {
+interface OrderStatusConfirmationModalProps {
 	title: string;
 	confirmButtonText: string;
 	cancelButtonText: string;
@@ -19,7 +19,7 @@ interface GenericConfirmationModalProps {
 	onCancel: () => void;
 }
 
-const GenericConfirmationModal: React.FunctionComponent< GenericConfirmationModalProps > = ( {
+const OrderStatusConfirmationModal: React.FunctionComponent< OrderStatusConfirmationModalProps > = ( {
 	title,
 	confirmButtonText,
 	cancelButtonText,
@@ -71,4 +71,4 @@ const GenericConfirmationModal: React.FunctionComponent< GenericConfirmationModa
 	);
 };
 
-export default GenericConfirmationModal;
+export default OrderStatusConfirmationModal;

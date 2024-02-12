@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import RefundConfirmationModal from '../refund-confirm-modal';
 import { getConfig } from 'utils/order';
-import GenericConfirmationModal from '../generic-confirmation-modal';
+import OrderStatusConfirmationModal from '../order-status-confirmation-modal';
 import React from 'react';
 
 interface StatusChangeStrategies {
@@ -64,7 +64,7 @@ function triggerCancelAuthorizationModal(
 	} );
 
 	renderModal(
-		<GenericConfirmationModal
+		<OrderStatusConfirmationModal
 			title={ __( 'Cancel authorization', 'woocommerce-payments' ) }
 			confirmButtonText={ __(
 				'Cancel order and authorization',
@@ -135,7 +135,7 @@ function triggerCaptureAuthorizationModal(
 	} );
 
 	renderModal(
-		<GenericConfirmationModal
+		<OrderStatusConfirmationModal
 			title={ __( 'Capture Authorization', 'woocommerce-payments' ) }
 			confirmButtonText={ __( 'Capture', 'woocommerce-payments' ) }
 			cancelButtonText={ __( 'Cancel', 'woocommerce-payments' ) }
@@ -247,7 +247,7 @@ function handleCancelledStatus(
 		} );
 
 		renderModal(
-			<GenericConfirmationModal
+			<OrderStatusConfirmationModal
 				title={ __( 'Cancel order', 'woocommerce-payments' ) }
 				confirmButtonText={ __(
 					'Cancel order',
