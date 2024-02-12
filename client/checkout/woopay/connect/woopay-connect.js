@@ -147,14 +147,11 @@ class WoopayConnect {
 			);
 		} );
 
-		const iframeContainer = document.querySelector(
-			'#woopay-connect-iframe-container'
-		);
-		iframeContainer.appendChild( iframe );
+		document.body.appendChild( iframe );
 
 		// Provides a handle to remove the iframe.
 		const removeTemporaryIframe = () => {
-			iframeContainer.removeChild( iframe );
+			document.body.removeChild( iframe );
 		};
 
 		return { resolvePostMessagePromise, removeTemporaryIframe };
