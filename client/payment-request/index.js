@@ -17,7 +17,7 @@ import {
 	payForOrderHandler,
 } from './event-handlers.js';
 import '../checkout/express-checkout-buttons.scss';
-import { recordUserEvent, events } from 'tracks';
+import { recordUserEvent } from 'tracks';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
@@ -56,8 +56,8 @@ jQuery( ( $ ) => {
 	// Track the payment request button click event.
 	const trackPaymentRequestButtonClick = ( source ) => {
 		const paymentRequestTypeEvents = {
-			google_pay: events.GOOGLEPAY_BUTTON_CLICK,
-			apple_pay: events.APPLEPAY_BUTTON_CLICK,
+			google_pay: 'gpay_button_click',
+			apple_pay: 'applepay_button_click',
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
@@ -69,8 +69,8 @@ jQuery( ( $ ) => {
 	// Track the payment request button load event.
 	const trackPaymentRequestButtonLoad = debounce( ( source ) => {
 		const paymentRequestTypeEvents = {
-			google_pay: events.GOOGLEPAY_BUTTON_LOAD,
-			apple_pay: events.APPLEPAY_BUTTON_LOAD,
+			google_pay: 'gpay_button_load',
+			apple_pay: 'applepay_button_load',
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
