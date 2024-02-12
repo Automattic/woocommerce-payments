@@ -204,6 +204,12 @@ export function updateDepositScheduleMonthlyAnchor(
 	} );
 }
 
+export function updateExportLanguage( language ) {
+	return updateSettingsValues( {
+		reporting_export_language: language,
+	} );
+}
+
 export function* saveSettings() {
 	let error = null;
 	try {
