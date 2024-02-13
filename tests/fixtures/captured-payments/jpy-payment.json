@@ -3,6 +3,7 @@
 	"capturedEvent": {
 		"type": "captured",
 		"amount": 3000,
+    "amount_captured": 3000,
 		"fee": 168,
 		"fee_rates": {
 			"percentage": 0.076,
@@ -42,9 +43,11 @@
 		"transaction_details": {
 			"customer_currency": "EUR",
 			"customer_amount": 3000,
+      "customer_amount_captured": 3000,
 			"customer_fee": 168,
 			"store_currency": "JPY",
 			"store_amount": 4774,
+      "store_amount_captured": 4774,
 			"store_fee": 267
 		}
 	},
