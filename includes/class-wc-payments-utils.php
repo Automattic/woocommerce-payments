@@ -1044,7 +1044,6 @@ class WC_Payments_Utils {
 			'ru',     // Russian (Russia).
 			'sv',     // Swedish (Sweden).
 			'tr',     // Turkish (Turkey).
-			'zh',     // Chinese Simplified (China).
 			'zh-cn',  // Simplified, Singapore).
 			'zh-tw',  // Chinese Traditional (Taiwan).
 		];
