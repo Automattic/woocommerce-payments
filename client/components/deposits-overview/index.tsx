@@ -33,6 +33,7 @@ import {
 } from './deposit-notices';
 import useRecentDeposits from './hooks';
 import './style.scss';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const DepositsOverview: React.FC = () => {
 	const {
@@ -108,6 +109,77 @@ const DepositsOverview: React.FC = () => {
 		return null;
 	}
 
+	const nextDepositHelpContent = (
+		<>
+			{ __(
+				'Deposits are initiated based on the following criteria:',
+				'woocommerce-payments'
+			) }
+			<ul>
+				<li>
+					{ interpolateComponents( {
+						mixedString: __(
+							'The {{link}}pending period{{/link}} in your country',
+							'woocommerce-payments'
+						),
+						components: {
+							link: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									rel="external noopener noreferrer"
+									target="_blank"
+									href={
+										'https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-period-chart'
+									}
+								/>
+							),
+						},
+					} ) }
+				</li>
+				<li>
+					{ interpolateComponents( {
+						mixedString: __(
+							"Your account's {{link}}available funds{{/link}}",
+							'woocommerce-payments'
+						),
+						components: {
+							link: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									rel="external noopener noreferrer"
+									target="_blank"
+									href={
+										'https://woo.com/document/woopayments/deposits/deposit-schedule/#available-funds'
+									}
+								/>
+							),
+						},
+					} ) }
+				</li>
+				<li>
+					{ interpolateComponents( {
+						mixedString: __(
+							'Your {{link}}deposit schedule{{/link}} settings',
+							'woocommerce-payments'
+						),
+						components: {
+							link: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									rel="external noopener noreferrer"
+									target="_blank"
+									href={
+										'https://woo.com/document/woopayments/deposits/change-deposit-schedule/'
+									}
+								/>
+							),
+						},
+					} ) }
+				</li>
+			</ul>
+		</>
+	);
+
 	return (
 		<Card className="wcpay-deposits-overview">
 			<CardHeader>
@@ -122,7 +194,7 @@ const DepositsOverview: React.FC = () => {
 						showNextDepositDate={ availableFunds > 0 }
 					/>
 					<ClickTooltip
-						content={ 'YEAH! TODO' }
+						content={ nextDepositHelpContent }
 						className="wcpay-deposits-overview__schedule__tooltip"
 						buttonIcon={ <HelpOutlineIcon /> }
 						buttonLabel={ 'Deposit schedule tooltip' }
