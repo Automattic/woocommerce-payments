@@ -10,8 +10,6 @@ import { controls } from '@wordpress/data';
  * Internal dependencies
  */
 import {
-	updateDepositsOverview,
-	updateErrorForDepositsOverview,
 	updateDeposit,
 	updateDeposits,
 	updateDepositsCount,
@@ -20,12 +18,7 @@ import {
 	updateErrorForDepositsSummary,
 } from '../actions';
 
-import {
-	getDepositsOverview,
-	getDeposit,
-	getDeposits,
-	getDepositsSummary,
-} from '../resolvers';
+import { getDeposit, getDeposits, getDepositsSummary } from '../resolvers';
 
 const depositsResponse = {
 	data: [
@@ -62,49 +55,6 @@ const filterQuery = {
 	statusIsNot: 'failed',
 	storeCurrencyIs: 'gbp',
 };
-
-describe( 'getDepositsOverview resolver', () => {
-	const successfulResponse = {
-		last_deposit: depositsResponse.data[ 0 ],
-		balance: { pending: { amount: 5500 }, available: { amount: 0 } },
-		deposits_schedule: { interval: 'daily' },
-	};
-	let generator = null;
-
-	beforeEach( () => {
-		generator = getDepositsOverview();
-		expect( generator.next().value ).toEqual(
-			apiFetch( { path: '/wc/v3/payments/deposits/overview' } )
-		);
-	} );
-
-	afterEach( () => {
-		expect( generator.next().done ).toStrictEqual( true );
-	} );
-
-	describe( 'on success', () => {
-		test( 'should update state with deposits overview', () => {
-			expect( generator.next( successfulResponse ).value ).toEqual(
-				updateDepositsOverview( successfulResponse )
-			);
-		} );
-	} );
-
-	describe( 'on error', () => {
-		test( 'should update state with error on error', () => {
-			expect( generator.throw( errorResponse ).value ).toEqual(
-				controls.dispatch(
-					'core/notices',
-					'createErrorNotice',
-					expect.any( String )
-				)
-			);
-			expect( generator.next().value ).toEqual(
-				updateErrorForDepositsOverview( errorResponse )
-			);
-		} );
-	} );
-} );
 
 describe( 'getDeposit resolver', () => {
 	let generator = null;
