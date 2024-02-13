@@ -527,13 +527,6 @@ jQuery( ( $ ) => {
 		},
 
 		showPaymentRequestButton: ( prButton ) => {
-			// Don't remove and re-add the button if it's already on the product page.
-			if (
-				wcpayPaymentRequestParams.is_product_page &&
-				$( '#wcpay-payment-request-button > div' ).length
-			) {
-				return;
-			}
 			if ( $( '#wcpay-payment-request-button' ).length ) {
 				wcpayPaymentRequest.show();
 				prButton.mount( '#wcpay-payment-request-button' );
