@@ -130,6 +130,8 @@ describe( 'Klarna checkout', () => {
 				'button[data-testid="select-payment-category"]'
 			)
 		 ).click();
+		// the buttons might be present, but in a "disabled" state.
+		// We need to ensure they can be clickable, before performing the "click" action.
 		(
 			await ( await getNewKlarnaIframe() ).waitForSelector(
 				'button[data-testid="pick-plan"]:not(:disabled)'
