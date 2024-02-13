@@ -45,6 +45,10 @@ describe( 'ModeChoice', () => {
 	} );
 
 	it( 'calls nextStep by clicking continue when `live` is selected', () => {
+		global.wcpaySettings = {
+			connectUrl: 'https://wcpay.test/connect',
+			devMode: true,
+		};
 		nextStep = jest.fn();
 		render( <ModeChoice /> );
 

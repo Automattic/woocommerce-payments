@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
@@ -71,7 +71,7 @@ const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > =
 
 		setLoading( true );
 
-		recordEvent( events.SETTINGS_FILE_UPLOAD_STARTED, {
+		recordEvent( 'wcpay_merchant_settings_file_upload_started', {
 			type: key,
 		} );
 
@@ -96,11 +96,11 @@ const BrandingFileUpload: React.FunctionComponent< CardReaderFileUploadProps > =
 			setLoading( false );
 			setUploadError( false );
 
-			recordEvent( events.SETTINGS_FILE_UPLOAD_SUCCESS, {
+			recordEvent( 'wcpay_merchant_settings_file_upload_success', {
 				type: key,
 			} );
 		} catch ( { err } ) {
-			recordEvent( events.SETTINGS_FILE_UPLOAD_FAILED, {
+			recordEvent( 'wcpay_merchant_settings_file_upload_success', {
 				message: ( err as Error ).message,
 			} );
 
