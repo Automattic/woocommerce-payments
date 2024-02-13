@@ -12,7 +12,7 @@ import WoopayIcon from './woopay-icon';
 import WoopayIconLight from './woopay-icon-light';
 import { expressCheckoutIframe } from './express-checkout-iframe';
 import useExpressCheckoutProductHandler from './use-express-checkout-product-handler';
-import { recordUserEvent } from 'tracks';
+import { recordUserEvent, getTracksIdentity } from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
 import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
@@ -197,14 +197,9 @@ export const WoopayExpressCheckoutButton = ( {
 		}
 
 		const getWoopayOtpUrl = () => {
-			const tracksUserId = JSON.stringify(
-				getConfig( 'tracksUserIdentity' )
-			);
-
 			const urlParams = new URLSearchParams();
 			urlParams.append( 'testMode', getConfig( 'testMode' ) );
 			urlParams.append( 'source_url', window.location.href );
-			urlParams.append( 'tracksUserIdentity', tracksUserId );
 
 			return (
 				getConfig( 'woopayHost' ) + '/connect/?' + urlParams.toString()
@@ -217,6 +212,14 @@ export const WoopayExpressCheckoutButton = ( {
 		iframe.style.visibility = 'hidden';
 		iframe.style.position = 'absolute';
 		iframe.style.top = '0';
+
+		// Append TracksUserID to the iframe if it's available
+		getTracksIdentity().then( ( tracksUserId ) => {
+			if ( ! tracksUserId ) return;
+			const urlParams = new URLSearchParams( iframe.src );
+			urlParams.append( 'tracksUserIdentity', tracksUserId );
+			iframe.src = urlParams.toString();
+		} );
 
 		iframe.addEventListener( 'error', () => {
 			initWoopayRef.current = onClickFallback;

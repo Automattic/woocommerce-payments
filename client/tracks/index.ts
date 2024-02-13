@@ -2,13 +2,13 @@
  * External dependencies
  */
 import domReady from '@wordpress/dom-ready';
-import { getConfig } from 'wcpay/utils/checkout';
-import { getPaymentRequestData } from 'wcpay/payment-request/utils';
 
 /**
  * Internal dependencies
  */
 import { Event } from './event';
+import { getConfig } from 'wcpay/utils/checkout';
+import { getPaymentRequestData } from 'wcpay/payment-request/utils';
 
 /**
  * Checks if site tracking is enabled.
@@ -77,4 +77,54 @@ export const recordUserEvent = (
 		method: 'post',
 		body,
 	} );
+};
+
+const getIdentityCookieValue = (): string | undefined => {
+	const nameEQ = 'tk_ai=';
+	const ca = document.cookie.split( ';' ); // Split cookie string and get all individual name=value pairs in an array
+	for ( let i = 0; i < ca.length; i++ ) {
+		let c = ca[ i ];
+		while ( c.charAt( 0 ) === ' ' ) c = c.substring( 1, c.length ); // Trim leading whitespace
+		if ( c.indexOf( nameEQ ) === 0 )
+			return c.substring( nameEQ.length, c.length ); // Check if it's the right cookie and return its value
+	}
+	return undefined; // Return undefined if the cookie is not found
+};
+
+export const getTracksIdentity = async (): Promise< string | undefined > => {
+	// if cookie is set, get identity from the cookie.
+	// eslint-disable-next-line
+	let _ui = getIdentityCookieValue();
+	// Otherwise get it via an Ajax request.
+	if ( ! _ui ) {
+		const nonce =
+			getConfig( 'platformTrackerNonce' ) ??
+			getPaymentRequestData( 'nonce' )?.platform_tracker;
+		const ajaxUrl =
+			getConfig( 'ajaxUrl' ) ?? getPaymentRequestData( 'ajax_url' );
+		const body = new FormData();
+
+		body.append( 'tracksNonce', nonce );
+		body.append( 'action', 'get_identity' );
+		try {
+			const response = await fetch( ajaxUrl, {
+				method: 'post',
+				body,
+			} );
+			if ( ! response.ok ) {
+				return undefined;
+			}
+
+			const data = await response.json();
+			if ( data.success && data.data ) {
+				_ui = data.data._ui;
+			} else {
+				return undefined;
+			}
+		} catch ( error ) {
+			return undefined;
+		}
+	}
+	const data = { _ut: 'anon', _ui: _ui };
+	return JSON.stringify( data );
 };

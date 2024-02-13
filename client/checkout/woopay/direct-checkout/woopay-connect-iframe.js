@@ -7,19 +7,15 @@ import React, { useEffect, useRef } from 'react';
  * Internal dependencies
  */
 import { getConfig } from 'wcpay/utils/checkout';
+import { getTracksIdentity } from 'tracks';
 
 export const WooPayConnectIframe = ( { listeners, actionCallback } ) => {
 	const iframeRef = useRef();
 
 	const getWoopayConnectUrl = () => {
-		const tracksUserId = JSON.stringify(
-			getConfig( 'tracksUserIdentity' )
-		);
-
 		const urlParams = new URLSearchParams();
 		urlParams.append( 'testMode', getConfig( 'testMode' ) );
 		urlParams.append( 'source_url', window.location.href );
-		urlParams.append( 'tracksUserIdentity', tracksUserId );
 
 		return getConfig( 'woopayHost' ) + '/connect/?' + urlParams.toString();
 	};
@@ -37,6 +33,13 @@ export const WooPayConnectIframe = ( { listeners, actionCallback } ) => {
 					getConfig( 'woopayHost' )
 				);
 			} );
+		} );
+
+		getTracksIdentity().then( ( tracksUserId ) => {
+			if ( ! tracksUserId ) return;
+			const urlParams = new URLSearchParams( iframe.src );
+			urlParams.append( 'tracksUserIdentity', tracksUserId );
+			iframe.src = urlParams.toString();
 		} );
 
 		const onMessage = ( event ) => {
