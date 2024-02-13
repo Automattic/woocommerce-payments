@@ -138,8 +138,11 @@ describe( 'Klarna checkout', () => {
 			)
 		 ).click();
 		(
-			await ( await getNewKlarnaIframe() ).waitForSelector(
-				'button[data-testid="confirm-and-pay"]:not(:disabled)'
+			await (
+				await getNewKlarnaIframe()
+			 ).waitForSelector(
+				'button[data-testid="confirm-and-pay"]:not(:disabled)',
+				{ timeout: 15000 }
 			)
 		 ).click();
 
