@@ -700,6 +700,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
+				'empty_cart'                => wp_create_nonce( 'wcpay-empty-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
 				'platform_tracker'          => wp_create_nonce( 'platform_tracks_nonce' ),
 				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
@@ -736,6 +737,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		wp_enqueue_script( 'WCPAY_PAYMENT_REQUEST' );
 
+		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
+
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( isset( $gateways['woocommerce_payments'] ) ) {
 			WC_Payments::get_wc_payments_checkout()->register_scripts();
@@ -749,9 +752,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! $this->should_show_payment_request_button() ) {
 			return;
 		}
-		if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
-			<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
-		<?php endif; ?>
+		?>
 		<div id="wcpay-payment-request-button">
 			<!-- A Stripe Element will be inserted here. -->
 		</div>
