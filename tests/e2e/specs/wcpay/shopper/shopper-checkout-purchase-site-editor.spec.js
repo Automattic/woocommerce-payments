@@ -3,7 +3,11 @@
  */
 import config from 'config';
 
-const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
+const {
+	shopper,
+	merchant,
+	activateTheme,
+} = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -27,7 +31,7 @@ describe.each( cardTestingPreventionStates )(
 	( { cardTestingPreventionEnabled } ) => {
 		beforeAll( async () => {
 			await merchant.login();
-			await merchantWCP.changeTheme( 'twentytwentyfour' );
+			await activateTheme( 'twentytwentyfour' );
 			if ( cardTestingPreventionEnabled ) {
 				await merchantWCP.enableCardTestingProtection();
 			}
@@ -44,7 +48,7 @@ describe.each( cardTestingPreventionStates )(
 			// Clear the cart at the end so it's ready for another test
 			await shopperWCP.emptyCart();
 			await merchant.login();
-			await merchantWCP.changeTheme( 'storefront' );
+			await activateTheme( 'storefront' );
 			if ( cardTestingPreventionEnabled ) {
 				await merchantWCP.disableCardTestingProtection();
 			}
