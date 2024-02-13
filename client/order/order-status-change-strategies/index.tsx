@@ -286,23 +286,6 @@ function handleGenericStatusChange(): void {
 	console.log( 'No specific action defined for this status change.' );
 }
 
-function maybeTriggerCancelAuthorizationModal(
-	orderStatus: string,
-	newOrderStatus: string
-): void {
-	if (
-		orderStatus === 'wc-checkout-draft' ||
-		orderStatus === 'wc-failed' ||
-		orderStatus === 'wc-pending'
-	) {
-		return;
-	}
-
-	if ( getConfig( 'hasOpenAuthorization' ) ) {
-		triggerCancelAuthorizationModal( orderStatus, newOrderStatus );
-	}
-}
-
 function maybeTriggerCaptureAuthorizationModal(
 	orderStatus: string,
 	newOrderStatus: string
@@ -322,9 +305,6 @@ function maybeTriggerCaptureAuthorizationModal(
 const statusChangeStrategies: StatusChangeStrategies = {
 	'wc-cancelled': handleCancelledStatus,
 	'wc-completed': maybeTriggerCaptureAuthorizationModal,
-	'wc-failed': maybeTriggerCancelAuthorizationModal,
-	'wc-pending': maybeTriggerCancelAuthorizationModal,
-	'wc-processing': maybeTriggerCaptureAuthorizationModal,
 	'wc-refunded': handleRefundedStatus,
 };
 
