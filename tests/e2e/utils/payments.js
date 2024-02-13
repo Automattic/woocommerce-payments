@@ -250,13 +250,14 @@ export async function setupProductCheckoutNoMiniCart(
 
 	// Add items to the cart
 	for ( const line of lineItems ) {
-		let [ productSlug, qty ] = line;
-
-		while ( qty-- ) {
-			await shopperWCP.addToCartBySlug( productSlug );
-		}
+		const [ productTitle ] = line;
+		await shopperWCP.addToCartFromShopPage( productTitle );
 	}
-
+	await shopper.goToCart();
+	for ( const line of lineItems ) {
+		const [ productTitle, qty ] = line;
+		await shopper.setCartQuantity( productTitle, qty );
+	}
 	await setupCheckout( billingDetails );
 }
 
