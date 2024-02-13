@@ -246,12 +246,11 @@ export async function setupProductCheckoutNoMiniCart(
 	billingDetails,
 	lineItems = [ [ config.get( 'products.simple.name' ), 1 ] ]
 ) {
-	await shopper.goToShop();
-
 	// Add items to the cart
 	for ( const line of lineItems ) {
 		const [ productTitle ] = line;
-		await shopperWCP.addToCartFromShopPage( productTitle );
+		await shopper.goToShop();
+		await shopperWCP.addToCartBySlug( productTitle );
 	}
 	await shopper.goToCart();
 	for ( const line of lineItems ) {
