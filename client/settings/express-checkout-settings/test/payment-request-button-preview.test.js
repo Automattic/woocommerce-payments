@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render as baseRender, screen } from '@testing-library/react';
 import { useStripe } from '@stripe/react-stripe-js';
 
 /**
@@ -38,6 +38,19 @@ jest.mock( 'wcpay/data', () => {
 		usePaymentRequestEnabledSettings: () => [ true, jest.fn() ],
 	};
 } );
+
+const render = ( ui, options ) =>
+	baseRender( ui, {
+		wrapper: ( { children } ) => (
+			<div
+				id="wcpay-express-checkout-settings-container"
+				data-method-id="payment_request"
+			>
+				{ children }
+			</div>
+		),
+		...options,
+	} );
 
 describe( 'PaymentRequestButtonPreview', () => {
 	const canMakePaymentMock = jest.fn();

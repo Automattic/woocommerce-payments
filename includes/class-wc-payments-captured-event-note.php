@@ -84,12 +84,12 @@ class WC_Payments_Captured_Event_Note {
 			return null;
 		}
 
-		$customer_currency = $this->captured_event['transaction_details']['customer_currency'];
-		$customer_amount   = $this->captured_event['transaction_details']['customer_amount'];
-		$store_currency    = $this->captured_event['transaction_details']['store_currency'];
-		$store_amount      = $this->captured_event['transaction_details']['store_amount'];
+		$customer_currency        = $this->captured_event['transaction_details']['customer_currency'];
+		$customer_amount_captured = $this->captured_event['transaction_details']['customer_amount_captured'];
+		$store_currency           = $this->captured_event['transaction_details']['store_currency'];
+		$store_amount_captured    = $this->captured_event['transaction_details']['store_amount_captured'];
 
-		return $this->format_fx( $customer_currency, $customer_amount, $store_currency, $store_amount );
+		return $this->format_fx( $customer_currency, $customer_amount_captured, $store_currency, $store_amount_captured );
 	}
 
 	/**
@@ -173,12 +173,29 @@ class WC_Payments_Captured_Event_Note {
 	public function compose_net_string(): string {
 		$data = $this->captured_event['transaction_details'];
 
-		$net = WC_Payments_Utils::interpret_stripe_amount( (int) $data['store_amount'] - $data['store_fee'], $data['store_currency'] );
+		// Determine the type of payment and select the appropriate amounts and currencies.
+		if ( $this->is_fx_event() ) {
+			// For fx events, we need the store amount and currency to display the net amount
+			// in the store currency.
+			$amount          = $data['store_amount'];
+			$captured_amount = $data['store_amount_captured'];
+			$fee             = $data['store_fee'];
+			$currency        = $data['store_currency'];
+		} else {
+			$amount          = $data['customer_amount'];
+			$captured_amount = $data['customer_amount_captured'];
+			$fee             = $data['customer_fee'];
+			$currency        = $data['customer_currency'];
+		}
 
+		$gross_amount = $captured_amount ?? $amount;
+		$net          = WC_Payments_Utils::interpret_stripe_amount( (int) ( $gross_amount - $fee ), $currency );
+
+		// Format and return the net string.
 		return sprintf(
 			/* translators: %s is a monetary amount */
 			__( 'Net deposit: %s', 'woocommerce-payments' ),
-			WC_Payments_Utils::format_explicit_currency( $net, $data['store_currency'] )
+			WC_Payments_Utils::format_explicit_currency( $net, $currency )
 		);
 	}
 
