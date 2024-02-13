@@ -504,10 +504,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
 			add_action( 'woocommerce_order_status_cancelled', [ $this->order_service, 'cancel_authorizations_on_order_status_change' ] );
-			add_action( 'woocommerce_order_status_failed', [ $this->order_service, 'cancel_authorizations_on_order_status_change' ] );
-			add_action( 'woocommerce_order_status_pending', [ $this->order_service, 'cancel_authorizations_on_order_status_change' ] );
 			add_action( 'woocommerce_order_status_completed', [ $this->order_service, 'capture_authorization_on_order_status_change' ], 10, 3 );
-			add_action( 'woocommerce_order_status_processing', [ $this->order_service, 'capture_authorization_on_order_status_change' ], 10, 3 );
 
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
