@@ -10,6 +10,7 @@ import {
 	CardHeader,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies.
@@ -18,6 +19,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'wcpay/utils/currency';
 import { recordEvent } from 'tracks';
 import Loadable from 'components/loadable';
+import { ClickTooltip } from 'components/tooltip';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
@@ -118,6 +120,12 @@ const DepositsOverview: React.FC = () => {
 					<DepositSchedule
 						depositsSchedule={ account.deposits_schedule }
 						showNextDepositDate={ availableFunds > 0 }
+					/>
+					<ClickTooltip
+						content={ 'YEAH! TODO' }
+						className="wcpay-deposits-overview__schedule__tooltip"
+						buttonIcon={ <HelpOutlineIcon /> }
+						buttonLabel={ 'Deposit schedule tooltip' }
 					/>
 				</CardBody>
 			) }
