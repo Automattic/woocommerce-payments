@@ -1032,7 +1032,6 @@ class WC_Payments_Utils {
 		$supported = [
 			'ar',     // Arabic.
 			'de',     // German (Germany).
-			'en',     // English.
 			'es',     // Spanish (Spain).
 			'fr',     // French (France).
 			'he',     // Hebrew (Israel).
