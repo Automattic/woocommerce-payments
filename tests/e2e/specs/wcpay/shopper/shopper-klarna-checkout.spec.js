@@ -132,12 +132,12 @@ describe( 'Klarna checkout', () => {
 		 ).click();
 		(
 			await ( await getNewKlarnaIframe() ).waitForSelector(
-				'button[data-testid="pick-plan"]'
+				'button[data-testid="pick-plan"]:not(:disabled)'
 			)
 		 ).click();
 		(
 			await ( await getNewKlarnaIframe() ).waitForSelector(
-				'button[data-testid="confirm-and-pay"]'
+				'button[data-testid="confirm-and-pay"]:not(:disabled)'
 			)
 		 ).click();
 
