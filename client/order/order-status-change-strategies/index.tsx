@@ -18,6 +18,37 @@ interface StatusChangeStrategies {
 	[ key: string ]: ( orderStatus: string, newOrderStatus: string ) => void;
 }
 
+const OrderStatus = {
+	CANCELLED: __( 'cancelled', 'woocommerce-payments' ),
+	COMPLETED: __( 'completed', 'woocommerce-payments' ),
+	FAILED: __( 'failed', 'woocommerce-payments' ),
+	ON_HOLD: __( 'on-hold', 'woocommerce-payments' ),
+	PENDING: __( 'pending', 'woocommerce-payments' ),
+	PROCESSING: __( 'processing', 'woocommerce-payments' ),
+	REFUNDED: __( 'refunded', 'woocommerce-payments' ),
+	TRASH: __( 'trash', 'woocommerce-payments' ),
+};
+
+const OrderStatusCancelled = 'wc-cancelled';
+const OrderStatusCompleted = 'wc-completed';
+const OrderStatusFailed = 'wc-failed';
+const OrderStatusOnHold = 'wc-on-hold';
+const OrderStatusPending = 'wc-pending';
+const OrderStatusProcessing = 'wc-processing';
+const OrderStatusRefunded = 'wc-refunded';
+const OrderStatusTrash = 'wc-trash';
+
+const OrderStatusLookup: { [ key: string ]: string } = {
+	[ OrderStatusCancelled ]: OrderStatus.CANCELLED,
+	[ OrderStatusCompleted ]: OrderStatus.COMPLETED,
+	[ OrderStatusFailed ]: OrderStatus.FAILED,
+	[ OrderStatusOnHold ]: OrderStatus.ON_HOLD,
+	[ OrderStatusPending ]: OrderStatus.PENDING,
+	[ OrderStatusProcessing ]: OrderStatus.PROCESSING,
+	[ OrderStatusRefunded ]: OrderStatus.REFUNDED,
+	[ OrderStatusTrash ]: OrderStatus.TRASH,
+};
+
 function renderModal( modalToRender: JSX.Element ) {
 	const container = document.createElement( 'div' );
 	container.id = 'wcpay-orderstatus-confirm-container';
@@ -59,7 +90,7 @@ function triggerCancelAuthorizationModal(
 					{ __( 'cancel the authorization', 'woocommerce-payments' ) }
 				</a>
 			),
-			newOrderStatus: <b>{ newOrderStatus }</b>,
+			newOrderStatus: <b>{ OrderStatusLookup[ newOrderStatus ] }</b>,
 		},
 	} );
 
@@ -130,7 +161,7 @@ function triggerCaptureAuthorizationModal(
 					{ __( 'capture the payment', 'woocommerce-payments' ) }
 				</a>
 			),
-			newOrderStatus: <b>{ newOrderStatus }</b>,
+			newOrderStatus: <b>{ OrderStatusLookup[ newOrderStatus ] }</b>,
 		},
 	} );
 
@@ -190,7 +221,7 @@ function renderRefundConfirmationModal(
 }
 
 function handleRefundedStatus( orderStatus: string ): void {
-	if ( orderStatus === 'wc-refunded' ) {
+	if ( orderStatus === OrderStatusRefunded ) {
 		return;
 	}
 	const canRefund = getConfig( 'canRefund' );
@@ -203,7 +234,7 @@ function handleCancelledStatus(
 	orderStatus: string,
 	newOrderStatus: string
 ): void {
-	if ( orderStatus === 'wc-cancelled' ) {
+	if ( orderStatus === OrderStatusCancelled ) {
 		return;
 	}
 	const hasOpenAuthorization = getConfig( 'hasOpenAuthorization' );
@@ -290,7 +321,10 @@ function maybeTriggerCaptureAuthorizationModal(
 	orderStatus: string,
 	newOrderStatus: string
 ): void {
-	if ( orderStatus === 'wc-processing' || orderStatus === 'wc-completed' ) {
+	if (
+		orderStatus === OrderStatusProcessing ||
+		orderStatus === OrderStatusCompleted
+	) {
 		return;
 	}
 
@@ -303,9 +337,9 @@ function maybeTriggerCaptureAuthorizationModal(
 // If some status needs more complex logic, feel free to create a new function
 // and add it to the map.
 const statusChangeStrategies: StatusChangeStrategies = {
-	'wc-cancelled': handleCancelledStatus,
-	'wc-completed': maybeTriggerCaptureAuthorizationModal,
-	'wc-refunded': handleRefundedStatus,
+	[ OrderStatusCancelled ]: handleCancelledStatus,
+	[ OrderStatusCompleted ]: maybeTriggerCaptureAuthorizationModal,
+	[ OrderStatusRefunded ]: handleRefundedStatus,
 };
 
 export default function getStatusChangeStrategy(
