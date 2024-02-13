@@ -150,6 +150,7 @@ describe( 'Klarna checkout', () => {
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
+		await page.reload( { waitUntil: 'networkidle0' } );
 		await expect( page ).toMatch( 'Order received' );
 	} );
 } );
