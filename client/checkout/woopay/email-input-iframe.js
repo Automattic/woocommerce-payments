@@ -11,6 +11,7 @@ import {
 	validateEmail,
 	appendRedirectionParams,
 } from './utils';
+import { select } from '@wordpress/data';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -608,11 +609,16 @@ export const handleWooPayEmailInput = async (
 	} );
 
 	if ( ! customerClickedBackButton ) {
-		// Check if user already has a WooPay login session.
-		if (
-			! hasCheckedLoginSession &&
-			! getConfig( 'isWooPayDirectCheckoutEnabled' )
-		) {
+		const paymentMethods = await select(
+			'wc/store/payment'
+		).getAvailablePaymentMethods();
+
+		const hasWCPayPaymentMethod = paymentMethods.hasOwnProperty(
+			'woocommerce_payments'
+		);
+
+		// Check if user already has a WooPay login session and only open the iframe if there is WCPay.
+		if ( ! hasCheckedLoginSession && hasWCPayPaymentMethod ) {
 			openLoginSessionIframe( woopayEmailInput.value );
 		}
 	} else {
