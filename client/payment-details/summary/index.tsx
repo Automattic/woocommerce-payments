@@ -50,7 +50,7 @@ import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
@@ -430,14 +430,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											charge.payment_intent || ''
 										}
 										onClick={ () => {
-											wcpayTracks.recordEvent(
+											recordEvent(
 												'wcpay_fraud_protection_transaction_reviewed_merchant_blocked',
 												{
 													payment_intent_id:
 														charge.payment_intent,
 												}
 											);
-											wcpayTracks.recordEvent(
+											recordEvent(
 												'payments_transactions_details_cancel_charge_button_click',
 												{
 													payment_intent_id:
@@ -457,14 +457,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										}
 										buttonIsSmall={ false }
 										onClick={ () => {
-											wcpayTracks.recordEvent(
+											recordEvent(
 												'wcpay_fraud_protection_transaction_reviewed_merchant_approved',
 												{
 													payment_intent_id:
 														charge.payment_intent,
 												}
 											);
-											wcpayTracks.recordEvent(
+											recordEvent(
 												'payments_transactions_details_capture_charge_button_click',
 												{
 													payment_intent_id:
@@ -482,13 +482,32 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									isLoading={ isLoading }
 									placeholder="Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx"
 								>
-									{ `${ __(
-										'Payment ID',
-										'woocommerce-payments'
-									) }: ` }
-									{ charge.payment_intent
-										? charge.payment_intent
-										: charge.id }
+									{ charge.payment_intent && (
+										<div className="payment-details-summary__id_wrapper">
+											<span className="payment-details-summary__id_label">
+												{ `${ __(
+													'Payment ID',
+													'woocommerce-payments'
+												) }: ` }
+											</span>
+											<span className="payment-details-summary__id_value">
+												{ charge.payment_intent }
+											</span>
+										</div>
+									) }
+									{ charge.id && (
+										<div className="payment-details-summary__id_wrapper">
+											<span className="payment-details-summary__id_label">
+												{ `${ __(
+													'Charge ID',
+													'woocommerce-payments'
+												) }: ` }
+											</span>
+											<span className="payment-details-summary__id_value">
+												{ charge.id }
+											</span>
+										</div>
+									) }
 								</Loadable>
 							</div>
 						</div>
@@ -517,7 +536,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 													setIsRefundModalOpen(
 														true
 													);
-													wcpayTracks.recordEvent(
+													recordEvent(
 														'payments_transactions_details_refund_modal_open',
 														{
 															payment_intent_id:
@@ -535,7 +554,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											{ isPartiallyRefundable && (
 												<MenuItem
 													onClick={ () => {
-														wcpayTracks.recordEvent(
+														recordEvent(
 															'payments_transactions_details_partial_refund',
 															{
 																payment_intent_id:
@@ -595,7 +614,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					formattedAmount={ formattedAmount }
 					onModalClose={ () => {
 						setIsRefundModalOpen( false );
-						wcpayTracks.recordEvent(
+						recordEvent(
 							'payments_transactions_details_refund_modal_close',
 							{
 								payment_intent_id: charge.payment_intent,
@@ -626,7 +645,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										buttonIsPrimary={ true }
 										buttonIsSmall={ false }
 										onClick={ () => {
-											wcpayTracks.recordEvent(
+											recordEvent(
 												'payments_transactions_details_capture_charge_button_click',
 												{
 													payment_intent_id:

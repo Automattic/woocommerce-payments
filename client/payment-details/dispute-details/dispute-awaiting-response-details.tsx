@@ -25,7 +25,7 @@ import {
  */
 import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
@@ -93,8 +93,7 @@ function getAcceptDisputeProps( {
 	if ( isInquiry( dispute ) ) {
 		return {
 			acceptButtonLabel: __( 'Issue refund', 'woocommerce-payments' ),
-			acceptButtonTracksEvent:
-				wcpayTracks.events.DISPUTE_INQUIRY_REFUND_MODAL_VIEW,
+			acceptButtonTracksEvent: 'wcpay_dispute_inquiry_refund_modal_view',
 			modalTitle: __( 'Issue a refund?', 'woocommerce-payments' ),
 			modalLines: [
 				{
@@ -116,14 +115,13 @@ function getAcceptDisputeProps( {
 				'View order to issue refund',
 				'woocommerce-payments'
 			),
-			modalButtonTracksEvent:
-				wcpayTracks.events.DISPUTE_INQUIRY_REFUND_CLICK,
+			modalButtonTracksEvent: 'wcpay_dispute_inquiry_refund_click',
 		};
 	}
 
 	return {
 		acceptButtonLabel: __( 'Accept dispute', 'woocommerce-payments' ),
-		acceptButtonTracksEvent: wcpayTracks.events.DISPUTE_ACCEPT_MODAL_VIEW,
+		acceptButtonTracksEvent: 'wcpay_dispute_accept_modal_view',
 		modalTitle: __( 'Accept the dispute?', 'woocommerce-payments' ),
 		modalLines: [
 			{
@@ -153,7 +151,7 @@ function getAcceptDisputeProps( {
 		modalButtonLabel: isDisputeAcceptRequestPending
 			? __( 'Accepting…', 'woocommerce-payments' )
 			: __( 'Accept dispute', 'woocommerce-payments' ),
-		modalButtonTracksEvent: wcpayTracks.events.DISPUTE_ACCEPT_CLICK,
+		modalButtonTracksEvent: 'wcpay_dispute_accept_click',
 	};
 }
 
@@ -270,9 +268,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 									data-testid="challenge-dispute-button"
 									disabled={ isDisputeAcceptRequestPending }
 									onClick={ () => {
-										wcpayTracks.recordEvent(
-											wcpayTracks.events
-												.DISPUTE_CHALLENGE_CLICKED,
+										recordEvent(
+											'wcpay_dispute_challenge_clicked',
 											{
 												dispute_status: dispute.status,
 												on_page: 'transaction_details',
@@ -294,7 +291,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 								disabled={ isDisputeAcceptRequestPending }
 								data-testid="open-accept-dispute-modal-button"
 								onClick={ () => {
-									wcpayTracks.recordEvent(
+									recordEvent(
 										disputeAcceptAction.acceptButtonTracksEvent,
 										{
 											dispute_status: dispute.status,
@@ -362,7 +359,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											}
 											data-testid="accept-dispute-button"
 											onClick={ () => {
-												wcpayTracks.recordEvent(
+												recordEvent(
 													disputeAcceptAction.modalButtonTracksEvent,
 													{
 														dispute_status:

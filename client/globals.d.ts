@@ -9,6 +9,7 @@ import type {
 
 declare global {
 	const wcpaySettings: {
+		version: string;
 		connectUrl: string;
 		isSubscriptionsActive: boolean;
 		featureFlags: {
@@ -40,7 +41,8 @@ declare global {
 				monthly_anchor: null | number;
 				delay_days: null | number;
 				completed_waiting_period: boolean;
-				minimum_deposit_amounts: Record< string, number >;
+				minimum_manual_deposit_amounts: Record< string, number >;
+				minimum_scheduled_deposit_amounts: Record< string, number >;
 			};
 			depositsStatus?: string;
 			currentDeadline?: bigint;
@@ -121,9 +123,55 @@ declare global {
 		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
+		reporting: {
+			exportModalDismissed?: boolean;
+		};
+		locale: {
+			code: string;
+			english_name: string;
+			native_name: string;
+		};
 	};
 
-	const wcTracks: any;
+	const wc: {
+		tracks: {
+			recordEvent: (
+				eventName: string,
+				eventProperties: Record< string, unknown >
+			) => void;
+		};
+	};
 
-	const wcSettings: Record< string, any >;
+	const wcTracks: {
+		isEnabled: boolean;
+		recordEvent: (
+			eventName: string,
+			eventProperties: Record< string, unknown >
+		) => void;
+	};
+
+	const wcSettings: {
+		admin: {
+			onboarding: {
+				profile: {
+					wccom_connected: boolean;
+				};
+			};
+			currentUserData: {
+				first_name: string;
+			};
+			preloadSettings: {
+				general: {
+					woocommerce_allowed_countries: string;
+					woocommerce_all_except_countries: string[];
+					woocommerce_specific_allowed_countries: string[];
+					woocommerce_default_country: string;
+				};
+			};
+		};
+		adminUrl: string;
+		countries: Record< string, string >;
+		homeUrl: string;
+		siteTitle: string;
+	};
 }

@@ -95,7 +95,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			WC()->cart->add_to_cart( $product->get_id(), $quantity, $variation_id, $attributes );
 		}
 
-		if ( in_array( $product_type, [ 'simple', 'subscription', 'subscription_variation', 'booking', 'bundle', 'mix-and-match' ], true ) ) {
+		if ( in_array( $product_type, [ 'simple', 'variation', 'subscription', 'subscription_variation', 'booking', 'bundle', 'mix-and-match' ], true ) ) {
 			WC()->cart->add_to_cart( $product->get_id(), $quantity );
 		}
 

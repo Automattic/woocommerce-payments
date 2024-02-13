@@ -36,7 +36,7 @@ import './../style.scss';
 
 import { ProtectionLevel } from './constants';
 import { readRuleset, writeRuleset } from './utils';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import {
 	CurrentProtectionLevelHook,
 	AdvancedFraudPreventionSettingsHook,
@@ -174,10 +174,9 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 			saveSettings();
 
-			wcpayTracks.recordEvent(
-				'wcpay_fraud_protection_advanced_settings_saved',
-				{ settings: JSON.stringify( settings ) }
-			);
+			recordEvent( 'wcpay_fraud_protection_advanced_settings_saved', {
+				settings: JSON.stringify( settings ),
+			} );
 		} else {
 			window.scrollTo( {
 				top: 0,
@@ -208,7 +207,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 				const event = observerEventMapping[ id ] || null;
 
 				if ( event ) {
-					wcpayTracks.recordEvent( event, {} );
+					recordEvent( event );
 				}
 
 				const element = document.getElementById( id );
