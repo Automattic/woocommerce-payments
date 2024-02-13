@@ -79,6 +79,11 @@ export const recordUserEvent = (
 	} );
 };
 
+/**
+ * Retrieves the value of the 'tk_ai' cookie from the document's cookies.
+ *
+ * @return {string | undefined} The value of the 'tk_ai' cookie if found, otherwise undefined.
+ */
 const getIdentityCookieValue = (): string | undefined => {
 	const nameEQ = 'tk_ai=';
 	const ca = document.cookie.split( ';' ); // Split cookie string and get all individual name=value pairs in an array
@@ -91,6 +96,12 @@ const getIdentityCookieValue = (): string | undefined => {
 	return undefined; // Return undefined if the cookie is not found
 };
 
+/**
+ * Asynchronously retrieves the user's Tracks identity, either from a cookie or via an Ajax request.
+ *
+ * @return {Promise<string | undefined>} A promise that resolves to a stringified object containing the user's Tracks identity,
+ *                                        or undefined if the identity cannot be obtained.
+ */
 export const getTracksIdentity = async (): Promise< string | undefined > => {
 	// if cookie is set, get identity from the cookie.
 	// eslint-disable-next-line
