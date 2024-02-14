@@ -1,10 +1,10 @@
-=== WooPayments - Fully Integrated Solution Built and Supported by Woo ===
+=== WooPayments: Integrated WooCommerce Payments ===
 Contributors: woocommerce, automattic
 Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 7.1.0
+Stable tag: 7.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,48 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 7.2.0 - 2024-02-14 =
+* Add - Add compatibility data to onboarding init payload.
+* Add - Add WooPay direct checkout flow behind a feature flag.
+* Add - Apply localization to CSV exports for transactions, deposits, and disputes sent via email.
+* Add - Displaying Clearpay instead of Afterpay for UK based stores
+* Add - Enhance WooPay session validation
+* Add - Filtering APMs by billing country
+* Add - Show a notice to the merchant when the available balance is below the minimum deposit amount.
+* Add - Show charge id on payments details page, so merchants can grab it to fill out the dispute evidence form when needed.
+* Add - Showing "started" event in transaction timeline
+* Add - Support Stripe Link payments with 3DS cards.
+* Fix - Adjust WordPress locale code to match the languages supported by the server.
+* Fix - Displaying the correct method name in Order Edit page for HPOS
+* Fix - Don't instantiate `Fraud_Prevention_Service` in checkout if processing an authorized WooPay request.
+* Fix - fix: help text alignment with Gutenberg plugin enabled
+* Fix - fix: pay-for-order compatibility with other gateways
+* Fix - Fixed a bug where the 'deposits paused while balance is negative' notice was erroneously shown after an instant deposit.
+* Fix - Fixes Pay for Order checkout using non-card payment methods.
+* Fix - Fix losing cart contents during the login at checkout.
+* Fix - Merge duplicated Payment Request and WooPay button functionality .
+* Fix - Prevent coupon usage increase in a WooPay preflight check.
+* Fix - Prevent WooPay webhook creation when account is suspended
+* Update - Add source to the onboarding flow page and track it
+* Update - Refactor the WooPay checkout flow UX
+* Update - Some minor update to tracking parameters to pass additional data like Woo store ID.
+* Update - Stop relying on Woo core for loading plugin translations.
+* Dev - Added ENUM class for currency codes
+* Dev - Bump WC tested up to version to 8.5.2.
+* Dev - chore: removed deprecated functions since 5.0.0
+* Dev - chore: remove unused checkout API methods
+* Dev - chore: remove unused gateway class methods
+* Dev - chore: remove unused isOrderPage return value from confirmIntent
+* Dev - chore: update colors on documentation pages
+* Dev - Comment: Bump qit-cli dependency to version 0.4.0.
+* Dev - E2E test - Merchant facing multi-currency on-boarding screen.
+* Dev - Fix for E2E shopper tests around 3DS and UPE settings
+* Dev - Refactoring the tracking logic
+* Dev - Refactor to how tracking events are defined for better readability.
+* Dev - Remove unnecessary tracks events for dispute accept success/error.
+* Dev - Update REST API documentation for deposits endpoints with changes to estimated and instant deposits
+* Dev - Update Tracks conditions
 
 = 7.1.0 - 2024-01-25 =
 * Add - Add active plugins array to compatibility data.

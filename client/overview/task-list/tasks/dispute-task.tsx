@@ -13,7 +13,7 @@ import type { TaskItemProps } from '../types';
 import type { CachedDispute } from 'wcpay/types/disputes';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getAdminUrl } from 'wcpay/utils';
-import wcpayTracks from 'wcpay/tracks';
+import { recordEvent } from 'tracks';
 import { isDueWithin } from 'wcpay/disputes/utils';
 
 /**
@@ -50,7 +50,7 @@ export const getDisputeResolutionTask = (
 	}
 
 	const handleClick = () => {
-		wcpayTracks.recordEvent( wcpayTracks.events.OVERVIEW_TASK_CLICK, {
+		recordEvent( 'wcpay_overview_task_click', {
 			task: 'dispute-resolution-task',
 			active_dispute_count: activeDisputeCount,
 		} );

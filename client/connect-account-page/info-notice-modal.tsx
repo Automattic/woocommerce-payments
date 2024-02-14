@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import TipBox from 'components/tip-box';
 import strings from './strings';
 import './style.scss';
@@ -32,9 +32,7 @@ const InfoNoticeModal: React.FC = () => {
 				<Button
 					variant="link"
 					onClick={ () => {
-						wcpayTracks.recordEvent(
-							wcpayTracks.events.CONNECT_ACCOUNT_KYC_MODAL_OPENED
-						);
+						recordEvent( 'wcpay_connect_account_kyc_modal_opened' );
 						setModalOpen( true );
 					} }
 				>

@@ -191,7 +191,7 @@ export const shopperWCP = {
 			! cardType.toLowerCase().includes( 'declined' );
 
 		if ( cardIs3DS ) {
-			await confirmCardAuthentication( page, cardType );
+			await confirmCardAuthentication( page );
 		}
 
 		await page.waitForNavigation( {
@@ -426,7 +426,17 @@ export const merchantWCP = {
 					button.click()
 				);
 			}
-			await page.$eval( paymentMethod, ( method ) => method.click() );
+			// Check if paymentMethod is an XPath
+			if ( paymentMethod.startsWith( '//' ) ) {
+				// Find the element using XPath and click it
+				const elements = await page.$x( paymentMethod );
+				if ( elements.length > 0 ) {
+					await elements[ 0 ].click();
+				}
+			} else {
+				// If it's a CSS selector, use $eval
+				await page.$eval( paymentMethod, ( method ) => method.click() );
+			}
 			await expect( page ).toClick( 'button', {
 				text: 'Remove',
 			} );
@@ -513,6 +523,11 @@ export const merchantWCP = {
 			}
 		}, currencyCode );
 
+		await page.waitForSelector(
+			'div.wcpay-confirmation-modal__footer button.components-button.is-primary',
+			{ timeout: 3000 }
+		);
+
 		await page.click(
 			'div.wcpay-confirmation-modal__footer button.components-button.is-primary',
 			{ text: 'Update selected' }
@@ -532,6 +547,7 @@ export const merchantWCP = {
 	},
 
 	removeCurrency: async ( currencyCode ) => {
+		await merchantWCP.openMultiCurrency();
 		const currencyItemSelector = `li.enabled-currency.${ currencyCode.toLowerCase() }`;
 		await page.waitForSelector( currencyItemSelector, { timeout: 10000 } );
 		await page.click(
@@ -730,6 +746,31 @@ export const merchantWCP = {
 			await merchantWCP.wcpSettingsSaveChanges();
 		}
 		return wasInitiallyEnabled;
+	},
+
+	disableAllEnabledCurrencies: async () => {
+		await page.goto( WCPAY_MULTI_CURRENCY, { waitUntil: 'networkidle0' } );
+
+		await page.waitForSelector( '.enabled-currencies-list li', {
+			timeout: 10000,
+		} );
+
+		// Select all delete buttons for enabled currencies.
+		const deleteButtons = await page.$$(
+			'.enabled-currency .enabled-currency__action.delete'
+		);
+
+		// Loop through each delete button and click it.
+		for ( const button of deleteButtons ) {
+			await button.click();
+
+			await page.waitForSelector( '.components-snackbar', {
+				text: 'Enabled currencies updated.',
+				timeout: 10000,
+			} );
+
+			await page.waitFor( 1000 );
+		}
 	},
 
 	editCurrency: async ( currencyCode ) => {

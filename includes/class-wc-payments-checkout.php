@@ -96,12 +96,10 @@ class WC_Payments_Checkout {
 		add_action( 'wc_payments_set_gateway', [ $this, 'set_gateway' ] );
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
 		add_action( 'wp', [ $this->gateway, 'maybe_process_upe_redirect' ] );
-		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 		add_action( 'wp_ajax_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'switch_theme', [ $this->gateway, 'clear_upe_appearance_transient' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this->gateway, 'clear_upe_appearance_transient' ] );
-		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
@@ -179,7 +177,6 @@ class WC_Payments_Checkout {
 			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'logPaymentErrorNonce'           => wp_create_nonce( 'wcpay_log_payment_error_nonce' ),
 			'initWooPayNonce'                => wp_create_nonce( 'wcpay_init_woopay_nonce' ),
 			'saveUPEAppearanceNonce'         => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
 			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
@@ -193,6 +190,7 @@ class WC_Payments_Checkout {
 			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isWoopayFirstPartyAuthEnabled'  => $this->woopay_util->is_woopay_first_party_auth_enabled(),
 			'isWooPayEmailInputEnabled'      => $this->woopay_util->is_woopay_email_input_enabled(),
+			'isWooPayDirectCheckoutEnabled'  => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
 			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
 			'woopayHost'                     => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
@@ -202,7 +200,6 @@ class WC_Payments_Checkout {
 			'woopaySessionNonce'             => wp_create_nonce( 'woopay_session_nonce' ),
 			'woopayMerchantId'               => Jetpack_Options::get_option( 'id' ),
 			'icon'                           => $this->gateway->get_icon_url(),
-			'tracksUserIdentity'             => WC_Payments::woopay_tracker()->tracks_get_identity( get_current_user_id() ),
 		];
 
 		/**
@@ -232,6 +229,10 @@ class WC_Payments_Checkout {
 			}
 		}
 		$payment_fields['enabledBillingFields'] = $enabled_billing_fields;
+
+		if ( WC_Payments::woopay_tracker()->should_enable_tracking() ) {
+			$payment_fields['tracksUserIdentity'] = WC_Payments::woopay_tracker()->tracks_get_identity( get_current_user_id() );
+		}
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->gateway->is_subscriptions_enabled() && $this->gateway->is_changing_payment_method_for_subscription() ) {
@@ -295,10 +296,11 @@ class WC_Payments_Checkout {
 			}
 
 			$payment_method                 = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+			$account_country                = $this->account->get_account_country();
 			$settings[ $payment_method_id ] = [
 				'isReusable'     => $payment_method->is_reusable(),
-				'title'          => $payment_method->get_title(),
-				'icon'           => $payment_method->get_icon(),
+				'title'          => $payment_method->get_title( $account_country ),
+				'icon'           => $payment_method->get_icon( $account_country ),
 				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
 				'countries'      => $payment_method->get_countries(),
 			];

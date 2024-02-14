@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Exceptions\{ Amount_Too_Small_Exception, API_Exception, Connection_Exception };
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 
 /**
  * WC Payments Utils class
@@ -122,7 +123,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return int The amount in cents.
 	 */
-	public static function prepare_amount( $amount, $currency = 'USD' ): int {
+	public static function prepare_amount( $amount, $currency = Currency_Code::UNITED_STATES_DOLLAR ): int {
 		$conversion_rate = 100;
 
 		if ( self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
@@ -198,21 +199,21 @@ class WC_Payments_Utils {
 	 */
 	public static function zero_decimal_currencies(): array {
 		return [
-			'bif', // Burundian Franc.
-			'clp', // Chilean Peso.
-			'djf', // Djiboutian Franc.
-			'gnf', // Guinean Franc.
-			'jpy', // Japanese Yen.
-			'kmf', // Comorian Franc.
-			'krw', // South Korean Won.
-			'mga', // Malagasy Ariary.
-			'pyg', // Paraguayan Guaraní.
-			'rwf', // Rwandan Franc.
-			'vnd', // Vietnamese Đồng.
-			'vuv', // Vanuatu Vatu.
-			'xaf', // Central African Cfa Franc.
-			'xof', // West African Cfa Franc.
-			'xpf', // Cfp Franc.
+			strtolower( Currency_Code::BURUNDIAN_FRANC ), // Burundian Franc.
+			strtolower( Currency_Code::CHILEAN_PESO ), // Chilean Peso.
+			strtolower( Currency_Code::DJIBOUTIAN_FRANC ), // Djiboutian Franc.
+			strtolower( Currency_Code::GUINEAN_FRANC ), // Guinean Franc.
+			strtolower( Currency_Code::JAPANESE_YEN ), // Japanese Yen.
+			strtolower( Currency_Code::COMORIAN_FRANC ), // Comorian Franc.
+			strtolower( Currency_Code::SOUTH_KOREAN_WON ), // South Korean Won.
+			strtolower( Currency_Code::MALAGASY_ARIARY ), // Malagasy Ariary.
+			strtolower( Currency_Code::PARAGUAYAN_GUARANI ), // Paraguayan Guaraní.
+			strtolower( Currency_Code::RWANDAN_FRANC ), // Rwandan Franc.
+			strtolower( Currency_Code::VIETNAMESE_DONG ), // Vietnamese Đồng.
+			strtolower( Currency_Code::VANUATU_VATU ), // Vanuatu Vatu.
+			strtolower( Currency_Code::CENTRAL_AFRICAN_CFA_FRANC ), // Central African CFA Franc.
+			strtolower( Currency_Code::WEST_AFRICAN_CFA_FRANC ), // West African CFA Franc.
+			strtolower( Currency_Code::CFP_FRANC ), // CFP Franc.
 		];
 	}
 
@@ -991,5 +992,76 @@ class WC_Payments_Utils {
 			self::register_style( $handle, $path, $deps, $version, $media, $has_rtl );
 		}
 		wp_enqueue_style( $handle );
+	}
+
+	/**
+	 * Returns language data: english name and native name
+	 *
+	 * @param string $language Language code.
+	 *
+	 * @return array
+	 */
+	public static function get_language_data( $language ) {
+		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
+
+		$translations = wp_get_available_translations();
+
+		if ( isset( $translations[ $language ] ) ) {
+			return [
+				'code'         => self::convert_to_server_locale( $language ),
+				'english_name' => $translations[ $language ]['english_name'] ?? $language,
+				'native_name'  => $translations[ $language ]['native_name'] ?? $language,
+			];
+		}
+
+		return [
+			'code'         => 'en_US',
+			'english_name' => 'English (United States)',
+			'native_name'  => 'English (United States)',
+		];
+	}
+
+	/**
+	 * Converts a locale to the server supported languages.
+	 *
+	 * @param string $locale The locale to convert.
+	 *
+	 * @return string Closest locale supported ('en' if NONE)
+	 */
+	public static function convert_to_server_locale( string $locale ): string {
+		$supported = [
+			'ar',     // Arabic.
+			'de',     // German (Germany).
+			'es',     // Spanish (Spain).
+			'fr',     // French (France).
+			'he',     // Hebrew (Israel).
+			'id',     // Indonesian (Indonesia).
+			'it',     // Italian (Italy).
+			'ja',     // Japanese.
+			'ko',     // Korean.
+			'nl',     // Dutch (Netherlands).
+			'pt-br',  // Portuguese (Brazil).
+			'ru',     // Russian (Russia).
+			'sv',     // Swedish (Sweden).
+			'tr',     // Turkish (Turkey).
+			'zh-cn',  // Simplified, Singapore).
+			'zh-tw',  // Chinese Traditional (Taiwan).
+		];
+
+		// Replace '-' with '_' (used in WordPress).
+		$locale = str_replace( '_', '-', $locale );
+
+		if ( in_array( $locale, $supported, true ) ) {
+			return $locale;
+		}
+
+		// Remove the country code and try with that.
+		$base_locale = substr( $locale, 0, 2 );
+		if ( in_array( $base_locale, $supported, true ) ) {
+			return $base_locale;
+		}
+
+		// Return 'en_US' to match the default site language.
+		return 'en_US';
 	}
 }

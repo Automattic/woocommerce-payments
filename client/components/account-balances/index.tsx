@@ -16,7 +16,7 @@ import BalanceBlock from './balance-block';
 import BalanceTooltip from './balance-tooltip';
 import { documentationUrls, fundLabelStrings } from './strings';
 import InstantDepositButton from 'deposits/instant-deposits';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 import './style.scss';
 
@@ -57,12 +57,9 @@ const AccountBalances: React.FC = () => {
 
 	const onTabSelect = ( tabName: BalanceTabProps[ 'name' ] ) => {
 		setSelectedCurrency( tabName );
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.OVERVIEW_BALANCES_CURRENCY_CLICK,
-			{
-				selected_currency: tabName,
-			}
-		);
+		recordEvent( 'wcpay_overview_balances_currency_tab_click', {
+			selected_currency: tabName,
+		} );
 	};
 
 	if ( isLoading ) {

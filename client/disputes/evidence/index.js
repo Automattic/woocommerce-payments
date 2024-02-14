@@ -33,7 +33,7 @@ import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 
 const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
@@ -548,7 +548,7 @@ export default ( { query } ) => {
 			return;
 		}
 
-		wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_started', {
+		recordEvent( 'wcpay_dispute_file_upload_started', {
 			type: key,
 		} );
 
@@ -580,11 +580,11 @@ export default ( { query } ) => {
 			} );
 			updateEvidence( key, uploadedFile.id );
 
-			wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_success', {
+			recordEvent( 'wcpay_dispute_file_upload_success', {
 				type: key,
 			} );
 		} catch ( err ) {
-			wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_failed', {
+			recordEvent( 'wcpay_dispute_file_upload_failed', {
 				message: err.message,
 			} );
 
@@ -609,7 +609,7 @@ export default ( { query } ) => {
 			filter: 'awaiting_response',
 		} );
 
-		wcpayTracks.recordEvent(
+		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_success'
 				: 'wcpay_dispute_save_evidence_success'
@@ -643,7 +643,7 @@ export default ( { query } ) => {
 	};
 
 	const handleSaveError = ( err, submit ) => {
-		wcpayTracks.recordEvent(
+		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_failed'
 				: 'wcpay_dispute_save_evidence_failed'
@@ -672,7 +672,7 @@ export default ( { query } ) => {
 		setLoading( true );
 
 		try {
-			wcpayTracks.recordEvent(
+			recordEvent(
 				submit
 					? 'wcpay_dispute_submit_evidence_clicked'
 					: 'wcpay_dispute_save_evidence_clicked'
@@ -705,7 +705,7 @@ export default ( { query } ) => {
 		const properties = {
 			selection: newProductType,
 		};
-		wcpayTracks.recordEvent( 'wcpay_dispute_product_selected', properties );
+		recordEvent( 'wcpay_dispute_product_selected', properties );
 		updateDispute( {
 			metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType },
 		} );

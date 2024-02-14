@@ -4,7 +4,7 @@
  * External dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import wcpayTracks from 'tracks';
+import { isEnabled, recordEvent } from 'tracks';
 
 export const makeTosAcceptanceRequest = async ( { accept } ) =>
 	apiFetch( {
@@ -25,17 +25,14 @@ export const enableGatewayAfterTosDecline = async () =>
  */
 export const maybeTrackStripeConnected = async () => {
 	const trackStripeConnected = wcpay_tos_settings.trackStripeConnected;
-	if ( ! wcpayTracks.isEnabled() || ! trackStripeConnected ) {
+	if ( ! isEnabled() || ! trackStripeConnected ) {
 		return;
 	}
 
-	wcpayTracks.recordEvent(
-		wcpayTracks.events.CONNECT_ACCOUNT_STRIPE_CONNECTED,
-		{
-			is_existing_stripe_account:
-				trackStripeConnected.is_existing_stripe_account,
-		}
-	);
+	recordEvent( 'wcpay_stripe_connected', {
+		is_existing_stripe_account:
+			trackStripeConnected.is_existing_stripe_account,
+	} );
 
 	apiFetch( {
 		path: '/wc/v3/payments/tos/stripe_track_connected',

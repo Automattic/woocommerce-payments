@@ -1,0 +1,17 @@
+.reporting-settings {
+	&__text--help-text {
+		font-size: 12px;
+		color: #757575;
+		margin: 0;
+		display: inline-block;
+	}
+
+	.reporting-export-language {
+		flex-wrap: wrap;
+		margin-bottom: 0;
+		.components-select-control {
+			padding-right: 16px;
+			margin-bottom: 0;
+		}
+	}
+}

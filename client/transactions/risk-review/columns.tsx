@@ -14,7 +14,7 @@ import { Button } from '@wordpress/components';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'utils/currency';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import TransactionStatusChip from 'components/transaction-status-chip';
 import { FraudOutcomeTransaction } from '../../data';
 
@@ -86,7 +86,7 @@ export const getRiskReviewListRowContent = (
 	);
 
 	const handleActionButtonClick = () => {
-		wcpayTracks.recordEvent(
+		recordEvent(
 			'payments_transactions_risk_review_list_review_button_click',
 			{
 				payment_intent_id: data.payment_intent.id,

@@ -103,6 +103,9 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 		$this->mock_wcpay_account    = $this->createMock( WC_Payments_Account::class );
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 		$this->mock_fraud_service    = $this->createMock( WC_Payments_Fraud_Service::class );
 

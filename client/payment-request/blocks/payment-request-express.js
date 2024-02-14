@@ -10,7 +10,7 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
  */
 import { useInitialization } from './use-initialization';
 import { getPaymentRequestData } from '../utils';
-import wcpayTracks from 'tracks';
+import { recordUserEvent } from 'tracks';
 import { useEffect, useState } from 'react';
 
 /**
@@ -79,13 +79,13 @@ const PaymentRequestExpressComponent = ( {
 		onButtonClick();
 
 		const paymentRequestTypeEvents = {
-			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
-			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+			google_pay: 'gpay_button_click',
+			apple_pay: 'applepay_button_click',
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
 			const event = paymentRequestTypeEvents[ paymentRequestType ];
-			wcpayTracks.recordUserEvent( event, {
+			recordUserEvent( event, {
 				source: wcpayPaymentRequestParams?.button_context,
 			} );
 		}
@@ -120,15 +120,15 @@ export const PaymentRequestExpress = ( props ) => {
 	useEffect( () => {
 		if ( paymentRequestType ) {
 			const paymentRequestTypeEvents = {
-				google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_LOAD,
-				apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_LOAD,
+				google_pay: 'gpay_button_load',
+				apple_pay: 'applepay_button_load',
 			};
 
 			if (
 				paymentRequestTypeEvents.hasOwnProperty( paymentRequestType )
 			) {
 				const event = paymentRequestTypeEvents[ paymentRequestType ];
-				wcpayTracks.recordUserEvent( event, {
+				recordUserEvent( event, {
 					source: wcpayPaymentRequestParams?.button_context,
 				} );
 			}
