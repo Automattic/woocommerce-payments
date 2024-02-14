@@ -22,9 +22,6 @@ describe( 'Klarna checkout', () => {
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
-	} );
-
-	beforeEach( async () => {
 		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 	} );
 
