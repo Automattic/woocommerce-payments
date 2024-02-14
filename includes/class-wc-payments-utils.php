@@ -1008,7 +1008,7 @@ class WC_Payments_Utils {
 
 		if ( isset( $translations[ $language ] ) ) {
 			return [
-				'code'         => $language,
+				'code'         => self::convert_to_server_locale( $language ),
 				'english_name' => $translations[ $language ]['english_name'] ?? $language,
 				'native_name'  => $translations[ $language ]['native_name'] ?? $language,
 			];
@@ -1019,5 +1019,49 @@ class WC_Payments_Utils {
 			'english_name' => 'English (United States)',
 			'native_name'  => 'English (United States)',
 		];
+	}
+
+	/**
+	 * Converts a locale to the server supported languages.
+	 *
+	 * @param string $locale The locale to convert.
+	 *
+	 * @return string Closest locale supported ('en' if NONE)
+	 */
+	public static function convert_to_server_locale( string $locale ): string {
+		$supported = [
+			'ar',     // Arabic.
+			'de',     // German (Germany).
+			'es',     // Spanish (Spain).
+			'fr',     // French (France).
+			'he',     // Hebrew (Israel).
+			'id',     // Indonesian (Indonesia).
+			'it',     // Italian (Italy).
+			'ja',     // Japanese.
+			'ko',     // Korean.
+			'nl',     // Dutch (Netherlands).
+			'pt-br',  // Portuguese (Brazil).
+			'ru',     // Russian (Russia).
+			'sv',     // Swedish (Sweden).
+			'tr',     // Turkish (Turkey).
+			'zh-cn',  // Simplified, Singapore).
+			'zh-tw',  // Chinese Traditional (Taiwan).
+		];
+
+		// Replace '-' with '_' (used in WordPress).
+		$locale = str_replace( '_', '-', $locale );
+
+		if ( in_array( $locale, $supported, true ) ) {
+			return $locale;
+		}
+
+		// Remove the country code and try with that.
+		$base_locale = substr( $locale, 0, 2 );
+		if ( in_array( $base_locale, $supported, true ) ) {
+			return $base_locale;
+		}
+
+		// Return 'en_US' to match the default site language.
+		return 'en_US';
 	}
 }
