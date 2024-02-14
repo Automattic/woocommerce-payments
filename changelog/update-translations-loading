@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Stop relying on Woo core for loading plugin translations.
