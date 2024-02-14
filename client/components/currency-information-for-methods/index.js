@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import _ from 'lodash';
+import { uniq } from 'lodash';
 import { sprintf, __, _n } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -14,17 +14,19 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import InlineNotice from 'components/inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
 
-const ListToCommaSeparatedSentencePartConverter = ( items ) => {
+const formatListOfItems = ( items ) => {
 	if ( items.length === 1 ) {
 		return items[ 0 ];
-	} else if ( items.length === 2 ) {
+	}
+
+	if ( items.length === 2 ) {
 		return items.join( ' ' + __( 'and', 'woocommerce-payments' ) + ' ' );
 	}
+
 	const lastItem = items.pop();
-	return (
-		items.join( ', ' ) +
-		__( ', and', 'woocommerce-payments' ) +
-		' ' +
+	return sprintf(
+		__( '%s, and %s', 'woocommerce-payments' ),
+		items.join( ', ' ),
 		lastItem
 	);
 };
@@ -40,7 +42,7 @@ export const BuildMissingCurrenciesTooltipMessage = (
 			'woocommerce-payments'
 		),
 		paymentMethodLabel,
-		ListToCommaSeparatedSentencePartConverter( missingCurrencies ),
+		formatListOfItems( missingCurrencies ),
 		_n(
 			'currency',
 			'currencies',
@@ -110,8 +112,8 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		return paymentMethod;
 	} );
 
-	missingCurrencyLabels = _.uniq( missingCurrencyLabels );
-	paymentMethodsWithMissingCurrencies = _.uniq(
+	missingCurrencyLabels = uniq( missingCurrencyLabels );
+	paymentMethodsWithMissingCurrencies = uniq(
 		paymentMethodsWithMissingCurrencies
 	);
 
@@ -125,7 +127,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 								'You can view & manage currencies later in settings.',
 							'woocommerce-payments'
 						),
-						ListToCommaSeparatedSentencePartConverter(
+						formatListOfItems(
 							paymentMethodsWithMissingCurrencies
 						),
 						_n(
@@ -141,9 +143,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 							missingCurrencyLabels.length,
 							'woocommerce-payments'
 						),
-						ListToCommaSeparatedSentencePartConverter(
-							missingCurrencyLabels
-						)
+						formatListOfItems( missingCurrencyLabels )
 					),
 					components: {
 						strong: <strong />,
