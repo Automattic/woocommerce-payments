@@ -818,6 +818,11 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
+		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+			wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
+			$order
+		);
+
 		if ( empty( $refund_reason ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
@@ -827,10 +832,7 @@ class WC_Payments_Webhook_Processing_Service {
 						'code' => '<code>',
 					]
 				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-					wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
-					$order
-				),
+				$formatted_price,
 				'WooPayments',
 				$refund_id
 			);
@@ -843,10 +845,7 @@ class WC_Payments_Webhook_Processing_Service {
 						'code' => '<code>',
 					]
 				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-					wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
-					$order
-				),
+				$formatted_price,
 				'WooPayments',
 				$refund_reason,
 				$refund_id
