@@ -130,7 +130,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 	} );
 
-	test( 'should not request session data on button click', async () => {
+	test( 'should request session data on button click', async () => {
 		getConfig.mockImplementation( ( v ) => {
 			switch ( v ) {
 				case 'wcAjaxUrl':
@@ -163,7 +163,12 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		userEvent.click( expressButton );
 
 		await waitFor( () => {
-			expect( request ).not.toHaveBeenCalled();
+			expect( request ).toHaveBeenCalledWith( 'woopay.url', {
+				_ajax_nonce: 'sessionnonce',
+				order_id: 1,
+				key: 'testkey',
+				billing_email: 'test@test.com',
+			} );
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );
 	} );
