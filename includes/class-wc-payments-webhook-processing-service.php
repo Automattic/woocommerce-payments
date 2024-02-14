@@ -150,6 +150,9 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		switch ( $event_type ) {
+			case 'charge.refunded':
+				$this->process_webhook_refund( $event_body );
+				break;
 			case 'charge.refund.updated':
 				$this->process_webhook_refund_updated( $event_body );
 				break;
@@ -782,5 +785,80 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// translators: %s Stripe error message.
 		return sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), $message );
+	}
+
+	private function process_webhook_refund( $event_body ) { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+
+		// First, check the reason for the update. We're only interested in a status of failed.
+		$status = $this->read_webhook_property( $event_object, 'status' );
+		if ( 'succeeded' !== $status ) {
+			return;
+		}
+
+		// Fetch the details of the refund so that we can find the associated order and write a note.
+		$charge_id     = $this->read_webhook_property( $event_object, 'id' );
+		$refund        = array_pop( $this->read_webhook_property( $event_object, 'refunds' )['data'] );
+		$refund_id     = $refund['id'] ?? null;
+		$refund_reason = $refund['reason'] ?? null;
+		$amount        = $this->read_webhook_property( $event_object, 'amount' );
+		$currency      = $this->read_webhook_property( $event_object, 'currency' );
+
+		// Look up the order related to this charge.
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+		if ( ! $order ) {
+			throw new Invalid_Payment_Method_Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				),
+				'order_not_found'
+			);
+		}
+
+		if ( empty( $refund_reason ) ) {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
+					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+					wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
+					$order
+				),
+				'WooPayments',
+				$refund_id
+			);
+		} else {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
+					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+					wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
+					$order
+				),
+				'WooPayments',
+				$refund_reason,
+				$refund_id
+			);
+		}
+
+		if ( $this->order_service->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		$this->order_service->set_wcpay_refund_status_for_order( $order, 'refunded' );
+		$order->update_status( Order_Status::REFUNDED, $note );
+		$order->save();
 	}
 }
