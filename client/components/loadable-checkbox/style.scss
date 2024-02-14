@@ -10,7 +10,8 @@
 		border-radius: 2px;
 		cursor: pointer;
 
-		@include breakpoint( '>660px' ) {
+		// this breakpoint is defined within the Gutenberg styles.
+		@media ( min-width: 600px ) {
 			width: 20px;
 			height: 20px;
 		}
