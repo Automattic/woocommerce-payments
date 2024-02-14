@@ -30,6 +30,9 @@ jest.mock( '../express-checkout-iframe', () => ( {
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn().mockReturnValue( true ),
+	getTracksIdentity: jest
+		.fn()
+		.mockReturnValue( Promise.resolve( undefined ) ),
 	events: {
 		WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
 		WOOPAY_OFFERED: 'checkout_woopay_save_my_info_offered',
