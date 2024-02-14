@@ -34,6 +34,7 @@ describe.each( cardTestingPreventionStates )(
 		} );
 
 		beforeEach( async () => {
+			await shopperWCP.emptyCart();
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);

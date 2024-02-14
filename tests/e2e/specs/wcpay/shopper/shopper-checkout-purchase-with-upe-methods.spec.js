@@ -46,6 +46,7 @@ describe.each( cardTestingPreventionStates )(
 		} );
 
 		afterAll( async () => {
+			await shopperWCP.emptyCart();
 			await shopperWCP.logout();
 			await merchant.login();
 			await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );

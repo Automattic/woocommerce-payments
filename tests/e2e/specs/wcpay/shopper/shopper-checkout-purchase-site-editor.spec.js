@@ -39,6 +39,7 @@ describe.each( cardTestingPreventionStates )(
 		} );
 
 		beforeEach( async () => {
+			await shopperWCP.emptyCart();
 			await setupProductCheckoutNoMiniCart(
 				config.get( 'addresses.customer.billing' )
 			);
