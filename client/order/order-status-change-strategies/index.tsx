@@ -168,8 +168,11 @@ function triggerCaptureAuthorizationModal(
 	renderModal(
 		<OrderStatusConfirmationModal
 			title={ __( 'Capture Authorization', 'woocommerce-payments' ) }
-			confirmButtonText={ __( 'Capture', 'woocommerce-payments' ) }
-			cancelButtonText={ __( 'Cancel', 'woocommerce-payments' ) }
+			confirmButtonText={ __(
+				'Complete order and capture authorization',
+				'woocommerce-payments'
+			) }
+			cancelButtonText={ __( 'Do Nothing', 'woocommerce-payments' ) }
 			confirmationMessage={ interpolatedMessage }
 			onConfirm={ () => {
 				const orderEditForm: HTMLFormElement | null =
