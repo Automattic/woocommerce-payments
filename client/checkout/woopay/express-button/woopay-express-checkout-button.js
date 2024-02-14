@@ -216,9 +216,9 @@ export const WoopayExpressCheckoutButton = ( {
 		// Append TracksUserID to the iframe if it's available
 		getTracksIdentity().then( ( tracksUserId ) => {
 			if ( ! tracksUserId ) return;
-			const urlParams = new URLSearchParams( iframe.src );
-			urlParams.append( 'tracksUserIdentity', tracksUserId );
-			iframe.src = urlParams.toString();
+			const urlObj = new URL( iframe.src );
+			urlObj.searchParams.append( 'tracksUserIdentity', tracksUserId );
+			iframe.src = urlObj.toString();
 		} );
 
 		iframe.addEventListener( 'error', () => {

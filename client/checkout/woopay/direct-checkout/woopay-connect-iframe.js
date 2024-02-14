@@ -37,9 +37,9 @@ export const WooPayConnectIframe = ( { listeners, actionCallback } ) => {
 
 		getTracksIdentity().then( ( tracksUserId ) => {
 			if ( ! tracksUserId ) return;
-			const urlParams = new URLSearchParams( iframe.src );
-			urlParams.append( 'tracksUserIdentity', tracksUserId );
-			iframe.src = urlParams.toString();
+			const urlObj = new URL( iframe.src );
+			urlObj.searchParams.append( 'tracksUserIdentity', tracksUserId );
+			iframe.src = urlObj.toString();
 		} );
 
 		const onMessage = ( event ) => {
