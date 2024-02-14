@@ -11,6 +11,7 @@
 * Add - Show charge id on payments details page, so merchants can grab it to fill out the dispute evidence form when needed.
 * Add - Showing "started" event in transaction timeline
 * Add - Support Stripe Link payments with 3DS cards.
+* Fix - Adjust WordPress locale code to match the languages supported by the server.
 * Fix - Displaying the correct method name in Order Edit page for HPOS
 * Fix - Don't instantiate `Fraud_Prevention_Service` in checkout if processing an authorized WooPay request.
 * Fix - fix: help text alignment with Gutenberg plugin enabled
