@@ -4,7 +4,7 @@
  */
 import React, { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { RadioControl, Notice } from '@wordpress/components';
+import { SelectControl, RadioControl, Notice } from '@wordpress/components';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useContext } from '@wordpress/element';
@@ -186,10 +186,15 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 				</Notice>
 			) }
 			<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
-			<RadioControl
+			<SelectControl
 				className="payment-method-settings__cta-selection"
+				label={ __( 'Call to action', 'woocommerce-payments' ) }
+				help={ __(
+					'Select a button label that fits best wit the flow of purchase or payment experience on your store.',
+					'woocommerce-payments'
+				) }
 				hideLabelFromVision
-				selected={ buttonType }
+				value={ buttonType }
 				options={ buttonActionOptions }
 				onChange={ setButtonType }
 			/>

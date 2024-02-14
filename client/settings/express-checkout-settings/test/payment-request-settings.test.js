@@ -137,16 +137,17 @@ describe( 'PaymentRequestSettings', () => {
 		).toBeInTheDocument();
 
 		// confirm radio button groups displayed
-		const [ ctaRadio, sizeRadio, themeRadio ] = screen.queryAllByRole(
-			'radio'
-		);
+		const [ sizeRadio, themeRadio ] = screen.queryAllByRole( 'radio' );
 
-		expect( ctaRadio ).toBeInTheDocument();
 		expect( sizeRadio ).toBeInTheDocument();
 		expect( themeRadio ).toBeInTheDocument();
 
 		// confirm default values
-		expect( screen.getByLabelText( 'Buy with' ) ).toBeChecked();
+		expect(
+			screen.getByRole( 'combobox', {
+				name: 'Call to action',
+			} )
+		).toHaveValue( 'buy' );
 		expect( screen.getByLabelText( 'Small (40 px)' ) ).toBeChecked();
 		expect( screen.getByLabelText( /Dark/ ) ).toBeChecked();
 	} );
@@ -208,8 +209,16 @@ describe( 'PaymentRequestSettings', () => {
 		userEvent.click( screen.getByLabelText( /Light/ ) );
 		expect( setButtonThemeMock ).toHaveBeenCalledWith( 'light' );
 
-		userEvent.click( screen.getByLabelText( 'Book with' ) );
-		expect( setButtonTypeMock ).toHaveBeenCalledWith( 'book' );
+		userEvent.selectOptions(
+			screen.getByRole( 'combobox', {
+				name: 'Call to action',
+			} ),
+			'book'
+		);
+		expect( setButtonTypeMock ).toHaveBeenCalledWith(
+			'book',
+			expect.anything()
+		);
 
 		userEvent.click( screen.getByLabelText( 'Large (56 px)' ) );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );

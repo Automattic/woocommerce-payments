@@ -100,6 +100,7 @@ describe( 'PaymentDetailsTimeline', () => {
 				},
 				{
 					amount: 6300,
+					amount_captured: 6300,
 					currency: 'USD',
 					datetime: 1585751874,
 					deposit: {
@@ -108,6 +109,16 @@ describe( 'PaymentDetailsTimeline', () => {
 					},
 					fee: 350,
 					type: 'captured',
+					transaction_details: {
+						customer_currency: 'USD',
+						customer_amount: 6300,
+						customer_amount_captured: 6300,
+						customer_fee: 350,
+						store_currency: 'USD',
+						store_amount: 6300,
+						store_amount_captured: 6300,
+						store_fee: 350,
+					},
 				},
 				{
 					amount: 9500,
@@ -180,6 +191,7 @@ describe( 'PaymentDetailsTimeline', () => {
 				{
 					type: 'captured',
 					amount: 100,
+					amount_captured: 100,
 					fee: 34,
 					fee_rates: {
 						percentage: 0.039,
@@ -208,9 +220,11 @@ describe( 'PaymentDetailsTimeline', () => {
 					transaction_details: {
 						customer_currency: 'USD',
 						customer_amount: 100,
+						customer_amount_captured: 100,
 						customer_fee: 34,
 						store_currency: 'USD',
 						store_amount: 100,
+						store_amount_captured: 100,
 						store_fee: 34,
 					},
 				},

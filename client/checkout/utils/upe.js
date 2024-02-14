@@ -172,6 +172,13 @@ export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
 	);
 };
 
+export const appendFraudPreventionTokenInputToForm = ( $form ) => {
+	const fraudPreventionToken = window.wcpayFraudPreventionToken ?? '';
+	$form.append(
+		`<input type="hidden" id="wcpay-fraud-prevention-token" name="wcpay-fraud-prevention-token" value="${ fraudPreventionToken }" />`
+	);
+};
+
 /**
  * Checks if the customer is using a saved payment method.
  *

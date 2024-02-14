@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Do not open the email input iframe without wcpay payment method
