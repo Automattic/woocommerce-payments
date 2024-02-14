@@ -28,7 +28,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 		case 'daily':
 			return interpolateComponents( {
 				mixedString: sprintf(
-					/** translators: {{strong}}: placeholders are opening and closing strong tags. %s: is an optional next deposit date message. */
+					/** translators: {{strong}}: placeholders are opening and closing strong tags. */
 					__(
 						'Available funds are automatically dispatched {{strong}}every day{{/strong}}.',
 						'woocommerce-payments'
@@ -47,7 +47,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 
 			return interpolateComponents( {
 				mixedString: sprintf(
-					/** translators: %1$s: is the day of the week. eg "Friday". %2$s: is an optional next deposit date message. {{strong}}: placeholders are opening and closing strong tags. */
+					/** translators: %1$s: is the day of the week. eg "Friday". {{strong}}: placeholders are opening and closing strong tags. */
 					__(
 						'Available funds are automatically dispatched {{strong}}every %1$s{{/strong}}.',
 						'woocommerce-payments'
@@ -65,7 +65,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 			if ( monthlyAnchor === 31 ) {
 				return interpolateComponents( {
 					mixedString: sprintf(
-						/** translators: {{strong}}: placeholders are opening and closing strong tags. %s: is an optional next deposit date message. */
+						/** translators: {{strong}}: placeholders are opening and closing strong tags. */
 						__(
 							'Available funds are automatically dispatched {{strong}}on the last day of every month{{/strong}}.',
 							'woocommerce-payments'
@@ -79,9 +79,9 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 
 			return interpolateComponents( {
 				mixedString: sprintf(
-					/** translators: {{strong}}: placeholders are opening and closing strong tags. %1$s: is the day of the month. eg "31st". %2$s: is an optional next deposit date message. */
+					/** translators: {{strong}}: placeholders are opening and closing strong tags. %1$s: is the day of the month. eg "31st". */
 					__(
-						'Available funds are automatically dispatched {{strong}}on the %1$s of every month{{/strong}}%2.',
+						'Available funds are automatically dispatched {{strong}}on the %1$s of every month{{/strong}}.',
 						'woocommerce-payments'
 					),
 					getDepositMonthlyAnchorLabel( {
