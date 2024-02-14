@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Adjust WordPress locale code to match the languages supported by the server.

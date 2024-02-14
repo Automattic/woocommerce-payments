@@ -17,7 +17,7 @@ import {
 	payForOrderHandler,
 } from './event-handlers.js';
 import '../checkout/express-checkout-buttons.scss';
-import { recordUserEvent, events } from 'tracks';
+import { recordUserEvent } from 'tracks';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
@@ -56,8 +56,8 @@ jQuery( ( $ ) => {
 	// Track the payment request button click event.
 	const trackPaymentRequestButtonClick = ( source ) => {
 		const paymentRequestTypeEvents = {
-			google_pay: events.GOOGLEPAY_BUTTON_CLICK,
-			apple_pay: events.APPLEPAY_BUTTON_CLICK,
+			google_pay: 'gpay_button_click',
+			apple_pay: 'applepay_button_click',
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
@@ -69,8 +69,8 @@ jQuery( ( $ ) => {
 	// Track the payment request button load event.
 	const trackPaymentRequestButtonLoad = debounce( ( source ) => {
 		const paymentRequestTypeEvents = {
-			google_pay: events.GOOGLEPAY_BUTTON_LOAD,
-			apple_pay: events.APPLEPAY_BUTTON_LOAD,
+			google_pay: 'gpay_button_load',
+			apple_pay: 'applepay_button_load',
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
@@ -179,6 +179,10 @@ jQuery( ( $ ) => {
 					.val();
 			}
 
+			if ( $( '.wc-bookings-booking-form' ).length ) {
+				productId = $( '.wc-booking-product-id' ).val();
+			}
+
 			const data = {
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
@@ -187,10 +191,10 @@ jQuery( ( $ ) => {
 					: [],
 			};
 
-			// Add addons data to the POST body
+			// Add extension data to the POST body
 			const formData = $( 'form.cart' ).serializeArray();
 			$.each( formData, ( i, field ) => {
-				if ( /^addon-/.test( field.name ) ) {
+				if ( /^(addon-|wc_)/.test( field.name ) ) {
 					if ( /\[\]$/.test( field.name ) ) {
 						const fieldName = field.name.substring(
 							0,
@@ -293,6 +297,10 @@ jQuery( ( $ ) => {
 				productId = $( '.single_variation_wrap' )
 					.find( 'input[name="product_id"]' )
 					.val();
+			}
+
+			if ( $( '.wc-bookings-booking-form' ).length ) {
+				productId = $( '.wc-booking-product-id' ).val();
 			}
 
 			const addons =
@@ -615,5 +623,41 @@ jQuery( ( $ ) => {
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
 		wcpayPaymentRequest.init();
+	} );
+
+	// Handle bookable products on the product page.
+	let wcBookingFormChanged = false;
+
+	$( document.body )
+		.off( 'wc_booking_form_changed' )
+		.on( 'wc_booking_form_changed', () => {
+			wcBookingFormChanged = true;
+		} );
+
+	// Listen for the WC Bookings wc_bookings_calculate_costs event to complete
+	// and add the bookable product to the cart, using the response to update the
+	// payment request request params with correct totals.
+	$( document ).ajaxComplete( function ( event, xhr, settings ) {
+		if ( wcBookingFormChanged ) {
+			if (
+				settings.url === window.booking_form_params.ajax_url &&
+				settings.data.includes( 'wc_bookings_calculate_costs' ) &&
+				xhr.responseText.includes( 'SUCCESS' )
+			) {
+				wcpayPaymentRequest.blockPaymentRequestButton();
+				wcBookingFormChanged = false;
+				return wcpayPaymentRequest.addToCart().then( ( response ) => {
+					wcpayPaymentRequestParams.product.total = response.total;
+					wcpayPaymentRequestParams.product.displayItems =
+						response.displayItems;
+					// Empty the cart to avoid having 2 products in the cart when payment request is not used.
+					api.paymentRequestEmptyCart( response.bookingId );
+
+					wcpayPaymentRequest.init();
+
+					wcpayPaymentRequest.unblockPaymentRequestButton();
+				} );
+			}
+		}
 	} );
 } );

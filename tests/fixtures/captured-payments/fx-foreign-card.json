@@ -4,6 +4,7 @@
   {
     "type": "captured",
     "amount": 10000,
+    "amount_captured": 10000,
     "fee": 320,
     "fee_rates": {
       "percentage": 0.039,
@@ -32,9 +33,11 @@
     "transaction_details": {
       "customer_currency": "USD",
       "customer_amount": 10000,
+      "customer_amount_captured": 10000,
       "customer_fee": 320,
       "store_currency": "USD",
       "store_amount": 10000,
+      "store_amount_captured": 10000,
       "store_fee": 320
     }
   },

@@ -17,7 +17,7 @@ jobs:
     
     steps:
       - name: "Checkout repository (trunk)"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: 'trunk'
 
@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: "Checkout repository (trunk)"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: 'trunk'
 
@@ -81,7 +81,7 @@ jobs:
 
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: 'trunk'
           fetch-depth: 0
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout repository (trunk)"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: 'trunk'
 
@@ -120,7 +120,7 @@ jobs:
     
     steps:
       - name: "Checkout repository (develop)"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: 'develop'
   
@@ -129,7 +129,7 @@ jobs:
         run: php .github/workflows/scripts/get-next-version.php
   
       - name: "Checkout repository's wiki"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: "${{ github.repository }}.wiki"
           path: "wiki"
