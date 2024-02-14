@@ -9,7 +9,11 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { useCurrencies, useEnabledCurrencies } from '../../data';
+import {
+	useAccountDomesticCurrency,
+	useCurrencies,
+	useEnabledCurrencies,
+} from '../../data';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import InlineNotice from 'components/inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
@@ -62,6 +66,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		currencies: currencyInfo,
 	} = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
+	const stripeAccountDomesticCurrency = useAccountDomesticCurrency().toUpperCase();
 
 	if ( isLoadingCurrencyInformation ) {
 		return null;
@@ -73,41 +78,39 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 
 	let paymentMethodsWithMissingCurrencies = [];
 	let missingCurrencyLabels = [];
-	const missingCurrencies = [];
 
-	selectedMethods.map( ( paymentMethod ) => {
-		if ( typeof PaymentMethodsMap[ paymentMethod ] !== 'undefined' ) {
-			PaymentMethodsMap[ paymentMethod ].currencies.map( ( currency ) => {
-				if (
-					! enabledCurrenciesIds.includes( currency.toLowerCase() )
-				) {
-					missingCurrencies.push( currency );
+	selectedMethods.forEach( ( paymentMethod ) => {
+		// in case of payment methods accepting only domestic payments, we shouldn't add _all_ the currencies defined on the payment method.
+		// instead, we should ensure that the merchant account's currency is set.
+		const paymentMethodInformation = PaymentMethodsMap[ paymentMethod ];
+		if ( ! paymentMethodInformation ) return;
 
-					paymentMethodsWithMissingCurrencies.push(
-						PaymentMethodsMap[ paymentMethod ].label
-					);
-
-					const missingCurrencyInfo =
-						currencyInfo &&
-						currencyInfo.available &&
-						currencyInfo.available[ currency ];
-
-					const missingCurrencyLabel =
-						missingCurrencyInfo != null
-							? missingCurrencyInfo.name +
-							  ' (' +
-							  ( undefined !== missingCurrencyInfo.symbol
-									? missingCurrencyInfo.symbol
-									: currency.toUpperCase() ) +
-							  ')'
-							: currency.toUpperCase();
-
-					missingCurrencyLabels.push( missingCurrencyLabel );
-				}
-				return currency;
-			} );
+		let currencies = paymentMethodInformation.currencies || [];
+		if ( paymentMethodInformation.accepts_only_domestic_payment ) {
+			currencies = [ stripeAccountDomesticCurrency ];
 		}
-		return paymentMethod;
+
+		currencies.forEach( ( currency ) => {
+			if ( enabledCurrenciesIds.includes( currency.toLowerCase() ) ) {
+				return;
+			}
+
+			paymentMethodsWithMissingCurrencies.push(
+				paymentMethodInformation.label
+			);
+			const missingCurrencyInfo = currencyInfo?.available?.[ currency ];
+
+			const missingCurrencyLabel =
+				missingCurrencyInfo != null
+					? `${ missingCurrencyInfo.name } (${
+							undefined !== missingCurrencyInfo.symbol
+								? missingCurrencyInfo.symbol
+								: currency.toUpperCase()
+					  })`
+					: currency.toUpperCase();
+
+			missingCurrencyLabels.push( missingCurrencyLabel );
+		} );
 	} );
 
 	missingCurrencyLabels = _.uniq( missingCurrencyLabels );
@@ -115,44 +118,68 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		paymentMethodsWithMissingCurrencies
 	);
 
-	if ( missingCurrencyLabels.length > 0 ) {
-		return (
-			<InlineNotice icon status="info" isDismissible={ false }>
-				{ interpolateComponents( {
-					mixedString: sprintf(
-						__(
-							"%s %s %s additional %s, so {{strong}}we'll add %s to your store{{/strong}}. " +
-								'You can view & manage currencies later in settings.',
-							'woocommerce-payments'
-						),
-						ListToCommaSeparatedSentencePartConverter(
-							paymentMethodsWithMissingCurrencies
-						),
-						_n(
-							'requires',
-							'require',
-							paymentMethodsWithMissingCurrencies.length,
-							'woocommerce-payments'
-						),
-						missingCurrencyLabels.length === 1 ? 'an' : '',
-						_n(
-							'currency',
-							'currencies',
-							missingCurrencyLabels.length,
-							'woocommerce-payments'
-						),
-						ListToCommaSeparatedSentencePartConverter(
-							missingCurrencyLabels
-						)
-					),
-					components: {
-						strong: <strong />,
-					},
-				} ) }
-			</InlineNotice>
+	if ( missingCurrencyLabels.length <= 0 ) {
+		return null;
+	}
+
+	let stringFormat = '';
+	if (
+		paymentMethodsWithMissingCurrencies.length === 1 &&
+		missingCurrencyLabels.length === 1
+	) {
+		stringFormat = __(
+			/* translators: %1: name of payment method being setup %2: name of missing currency that will be added */
+			"%1$s requires an additional currency, so {{strong}}we'll add %2$s to your store{{/strong}}. " +
+				'You can view & manage currencies later in settings.',
+			'woocommerce-payments'
+		);
+	} else if (
+		paymentMethodsWithMissingCurrencies.length === 1 &&
+		missingCurrencyLabels.length > 1
+	) {
+		stringFormat = __(
+			/* translators: %1: name of payment method being setup %2: list of missing currencies that will be added */
+			"%1$s requires additional currencies, so {{strong}}we'll add %2$s to your store{{/strong}}. " +
+				'You can view & manage currencies later in settings.',
+			'woocommerce-payments'
+		);
+	} else if (
+		paymentMethodsWithMissingCurrencies.length > 1 &&
+		missingCurrencyLabels.length === 1
+	) {
+		stringFormat = __(
+			/* translators: %1: list of payment methods being setup %2: name of missing currency that will be added */
+			"%1$s require an additional currency, so {{strong}}we'll add %2$s to your store{{/strong}}. " +
+				'You can view & manage currencies later in settings.',
+			'woocommerce-payments'
+		);
+	} else {
+		stringFormat = __(
+			/* translators: %1: list of payment methods being setup %2: list of missing currencies that will be added */
+			"%1$s require additional currencies, so {{strong}}we'll add %2$s to your store{{/strong}}. " +
+				'You can view & manage currencies later in settings.',
+			'woocommerce-payments'
 		);
 	}
-	return null;
+
+	return (
+		<InlineNotice icon status="info" isDismissible={ false }>
+			{ interpolateComponents( {
+				mixedString: sprintf(
+					stringFormat,
+					ListToCommaSeparatedSentencePartConverter(
+						paymentMethodsWithMissingCurrencies
+					),
+					ListToCommaSeparatedSentencePartConverter(
+						missingCurrencyLabels
+					)
+				),
+				components: {
+					strong: <strong />,
+				},
+			} ) }
+		</InlineNotice>
+	);
 };
 
 const CurrencyInformationForMethodsWrapper = ( props ) => {
