@@ -3,6 +3,7 @@
   "capturedEvent":         {
     "type": "captured",
     "amount": 13000,
+    "amount_captured": 13000,
     "fee": 676,
     "fee_rates": {
       "percentage": 0.049,
@@ -38,9 +39,11 @@
     "transaction_details": {
       "customer_currency": "CAD",
       "customer_amount": 13000,
+      "customer_amount_captured": 13000,
       "customer_fee": 676,
       "store_currency": "USD",
       "store_amount": 10071,
+      "store_amount_captured": 10071,
       "store_fee": 524
     }
   },

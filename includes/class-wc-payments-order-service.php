@@ -155,7 +155,7 @@ class WC_Payments_Order_Service {
 				break;
 			case Intent_Status::SUCCEEDED:
 				if ( Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
-					$this->mark_payment_capture_completed( $order, $intent_data );
+					$this->mark_payment_capture_completed( $order, $intent );
 				} else {
 					$this->mark_payment_completed( $order, $intent_data );
 				}
@@ -1015,34 +1015,37 @@ class WC_Payments_Order_Service {
 	/**
 	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
 	 *
-	 * @param WC_Order $order         Order object.
-	 * @param array    $intent_data   The intent data associated with this order.
+	 * @param WC_Order                          $order         Order object.
+	 * @param WC_Payments_API_Payment_Intention $intent        The intent instance.
 	 *
 	 * @return void
 	 */
-	private function mark_payment_capture_completed( $order, $intent_data ) {
-		$note = $this->generate_capture_success_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
+	private function mark_payment_capture_completed( $order, $intent ) {
+		$intent_id = $intent->get_id();
+		$note      = $this->generate_capture_success_note( $order, $intent_id, $intent->get_charge()->get_id() );
+
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
 
 		// Update the note with the fee breakdown details async.
-		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_data['intent_id'] );
+		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
 
 		/**
 		 * If we have a status for the fraud outcome, we want to add the proper meta data.
 		 * If auth/capture is enabled and the transaction is allowed, it will be 'allow'.
 		 * If it was held for review for any reason, it will be 'review'.
 		 */
-		if ( '' !== $intent_data['fraud_outcome'] && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
+		$fraud_outcome = $intent->get_metadata()['fraud_outcome'] ?? '';
+		if ( '' !== $fraud_outcome && Rule::is_valid_fraud_outcome_status( $fraud_outcome ) ) {
 			$fraud_meta_box_type = Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
-			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
+			$this->set_fraud_outcome_status_for_order( $order, $fraud_outcome );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 		}
-
-		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
+		$this->attach_transaction_fee_to_order( $order, $intent->get_charge() );
+		$this->update_order_status( $order, 'payment_complete', $intent_id );
 		$order->add_order_note( $note );
-		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+		$this->set_intention_status_for_order( $order, $intent->get_status() );
 	}
 
 	/**
