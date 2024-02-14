@@ -10,8 +10,8 @@ window.addEventListener( 'load', async () => {
 
 	WooPayDirectCheckout.init();
 
-	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
 	const isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
+	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 			WooPayDirectCheckout.redirectToWooPaySession( checkoutElements );
