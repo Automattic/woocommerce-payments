@@ -321,10 +321,7 @@ function maybeTriggerCaptureAuthorizationModal(
 	orderStatus: string,
 	newOrderStatus: string
 ): void {
-	if (
-		orderStatus === OrderStatusProcessing ||
-		orderStatus === OrderStatusCompleted
-	) {
+	if ( orderStatus === OrderStatusCompleted ) {
 		return;
 	}
 
