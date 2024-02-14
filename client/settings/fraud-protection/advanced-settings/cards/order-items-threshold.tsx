@@ -33,9 +33,11 @@ interface OrderItemsThresholdCustomFormProps {
 const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProps > = ( {
 	setting,
 } ) => {
-	const { protectionSettingsUI, setProtectionSettingsUI } = useContext(
-		FraudPreventionSettingsContext
-	);
+	const {
+		protectionSettingsUI,
+		setProtectionSettingsUI,
+		setProtectionSettingsChanged,
+	} = useContext( FraudPreventionSettingsContext );
 
 	const settingUI = useMemo(
 		() =>
@@ -59,12 +61,14 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 		settingUI.min_items = minItemsCount;
 		settingUI.max_items = maxItemsCount;
 		setProtectionSettingsUI( protectionSettingsUI );
+		setProtectionSettingsChanged( ( prev ) => ! prev );
 	}, [
 		settingUI,
 		minItemsCount,
 		maxItemsCount,
 		protectionSettingsUI,
 		setProtectionSettingsUI,
+		setProtectionSettingsChanged,
 	] );
 
 	const isItemRangeEmpty =

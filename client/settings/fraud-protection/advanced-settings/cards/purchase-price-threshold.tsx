@@ -52,9 +52,11 @@ interface PurchasePriceThresholdCustomFormProps {
 const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFormProps > = ( {
 	setting,
 } ) => {
-	const { protectionSettingsUI, setProtectionSettingsUI } = useContext(
-		FraudPreventionSettingsContext
-	);
+	const {
+		protectionSettingsUI,
+		setProtectionSettingsUI,
+		setProtectionSettingsChanged,
+	} = useContext( FraudPreventionSettingsContext );
 
 	const settingUI = useMemo(
 		() =>
@@ -74,11 +76,13 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 		settingUI.min_amount = minAmount;
 		settingUI.max_amount = maxAmount;
 		setProtectionSettingsUI( protectionSettingsUI );
+		setProtectionSettingsChanged( ( prev ) => ! prev );
 	}, [
 		minAmount,
 		maxAmount,
 		protectionSettingsUI,
 		setProtectionSettingsUI,
+		setProtectionSettingsChanged,
 		settingUI,
 	] );
 

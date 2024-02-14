@@ -9,6 +9,7 @@ import React, {
 	EffectCallback,
 } from 'react';
 import ReactDOM from 'react-dom';
+import { isMatchWith } from 'lodash';
 import { sprintf, __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { LoadableBlock } from 'wcpay/components/loadable';
@@ -49,7 +50,6 @@ import {
 	ProtectionSettingsUI,
 	SettingsHook,
 } from '../interfaces';
-import { isMatchWith } from 'lodash';
 import useConfirmNavigation from 'wcpay/utils/use-confirm-navigation';
 
 const observerEventMapping: Record< string, string > = {
