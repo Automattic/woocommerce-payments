@@ -25,22 +25,6 @@ const receiveDeposits = (
 				...state,
 				byId: { ...state.byId, [ data.id ]: data },
 			};
-		case TYPES.SET_DEPOSITS_OVERVIEW:
-			return {
-				...state,
-				overview: {
-					...state.overview,
-					data,
-				},
-			};
-		case TYPES.SET_ERROR_FOR_DEPOSITS_OVERVIEW:
-			return {
-				...state,
-				overview: {
-					...state.overview,
-					error,
-				},
-			};
 		case TYPES.SET_ALL_DEPOSITS_OVERVIEWS:
 			return {
 				...state,
