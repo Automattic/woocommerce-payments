@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Refactor to how tracking events are defined for better readability.
