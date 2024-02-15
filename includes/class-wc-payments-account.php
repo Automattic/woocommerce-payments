@@ -2051,4 +2051,22 @@ class WC_Payments_Account {
 			'referer'         => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
 		];
 	}
+
+	/**
+	 * Gets tracking info from the server and caches it.
+	 *
+	 * @param bool $force_refresh Whether to force a refresh of the tracking info.
+	 *
+	 * @return array|null Array of tracking info or null if unavailable.
+	 */
+	private function get_tracking_info( $force_refresh = false ): ?array {
+		return $this->database_cache->get_or_add(
+			Database_Cache::TRACKING_INFO_KEY,
+			function(): array {
+				return $this->payments_api_client->get_tracking_info();
+			},
+			'is_array', // We expect an array back from the cache.
+			$force_refresh
+		);
+	}
 }
