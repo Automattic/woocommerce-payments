@@ -11,7 +11,7 @@ import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
  * Internal dependencies
  */
 import { formatExplicitCurrency } from 'utils/currency';
-import TransactionStatusChip from '../../components/transaction-status-chip';
+import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 import { FraudOutcomeTransaction } from '../../data';
 import { getDetailsURL } from '../../components/details-link';
 import ClickableCell from '../../components/clickable-cell';
@@ -81,7 +81,7 @@ export const getBlockedListRowContent = (
 	return {
 		status: {
 			value: data.status,
-			display: <TransactionStatusChip status="block" />,
+			display: <TransactionStatusPill status="block" />,
 		},
 		created: {
 			value: formattedCreatedDate,
