@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixes Pay for Order checkout using non-card payment methods.
