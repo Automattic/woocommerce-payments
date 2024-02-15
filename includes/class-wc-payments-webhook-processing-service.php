@@ -855,9 +855,21 @@ class WC_Payments_Webhook_Processing_Service {
 		if ( $this->order_service->order_note_exists( $order, $note ) ) {
 			return;
 		}
+		// Adjust order total.
+		$refunded_amount = WC_Payments_Utils::interpret_stripe_amount( $amount, $currency );
+		$refund          = wc_create_refund(
+			[
+				'amount'     => $refunded_amount,
+				'reason'     => $refund_reason,
+				'order_id'   => $order->get_id(),
+				'line_items' => [], // We don't have line items for the refund.
+			]
+		);
 
-		$this->order_service->set_wcpay_refund_status_for_order( $order, 'refunded' );
 		$order->update_status( Order_Status::REFUNDED, $note );
+		$this->order_service->set_wcpay_refund_status_for_order( $order, 'refunded' );
+		// TODO set refund id and transaction id in the order meta.
+
 		$order->save();
 	}
 }
