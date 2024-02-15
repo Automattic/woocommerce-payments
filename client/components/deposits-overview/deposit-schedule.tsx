@@ -14,7 +14,6 @@ import type * as AccountOverview from 'wcpay/types/account-overview';
 
 interface DepositScheduleProps {
 	depositsSchedule: AccountOverview.Account[ 'deposits_schedule' ];
-	showNextDepositDate?: boolean;
 }
 /**
  * Renders the Deposit Schedule details component.

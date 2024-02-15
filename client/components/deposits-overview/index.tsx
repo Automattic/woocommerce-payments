@@ -191,7 +191,6 @@ const DepositsOverview: React.FC = () => {
 				<CardBody className="wcpay-deposits-overview__schedule__container">
 					<DepositSchedule
 						depositsSchedule={ account.deposits_schedule }
-						showNextDepositDate={ availableFunds > 0 }
 					/>
 					<ClickTooltip
 						content={ nextDepositHelpContent }
