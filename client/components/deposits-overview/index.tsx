@@ -11,6 +11,7 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies.
@@ -33,7 +34,6 @@ import {
 } from './deposit-notices';
 import useRecentDeposits from './hooks';
 import './style.scss';
-import interpolateComponents from '@automattic/interpolate-components';
 
 const DepositsOverview: React.FC = () => {
 	const {
