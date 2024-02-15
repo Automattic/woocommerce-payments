@@ -3,7 +3,11 @@
  */
 import config from 'config';
 
-const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
+const {
+	shopper,
+	merchant,
+	activateTheme,
+} = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -11,8 +15,8 @@ const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 import {
 	fillCardDetails,
-	setupProductCheckout,
 	confirmCardAuthentication,
+	setupProductCheckoutNoMiniCart,
 } from '../../../utils/payments';
 
 import { shopperWCP, merchantWCP } from '../../../utils';
@@ -23,19 +27,20 @@ const cardTestingPreventionStates = [
 ];
 
 describe.each( cardTestingPreventionStates )(
-	'Successful purchase, non-site builder theme',
+	'Successful purchase, site builder theme',
 	( { cardTestingPreventionEnabled } ) => {
 		beforeAll( async () => {
+			await merchant.login();
+			await activateTheme( 'twentytwentyfour' );
 			if ( cardTestingPreventionEnabled ) {
-				await merchant.login();
 				await merchantWCP.enableCardTestingProtection();
-				await merchant.logout();
 			}
+			await merchant.logout();
 		} );
 
 		beforeEach( async () => {
 			await shopperWCP.emptyCart();
-			await setupProductCheckout(
+			await setupProductCheckoutNoMiniCart(
 				config.get( 'addresses.customer.billing' )
 			);
 		} );
@@ -43,14 +48,15 @@ describe.each( cardTestingPreventionStates )(
 		afterAll( async () => {
 			// Clear the cart at the end so it's ready for another test
 			await shopperWCP.emptyCart();
+			await merchant.login();
+			await activateTheme( 'storefront' );
 			if ( cardTestingPreventionEnabled ) {
-				await merchant.login();
 				await merchantWCP.disableCardTestingProtection();
-				await merchant.logout();
 			}
+			await merchant.logout();
 		} );
 
-		it( `using a basic card, carding protection ${ cardTestingPreventionEnabled }`, async () => {
+		it( `using a basic card, carding prevention ${ cardTestingPreventionEnabled }`, async () => {
 			if ( cardTestingPreventionEnabled ) {
 				const token = await page.evaluate( () => {
 					return window.wcpayFraudPreventionToken;
@@ -60,10 +66,10 @@ describe.each( cardTestingPreventionStates )(
 			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatch( 'Your order has been received.' );
 		} );
 
-		it( `using a 3DS card, carding protection ${ cardTestingPreventionEnabled }`, async () => {
+		it( `using a 3DS card, carding prevention ${ cardTestingPreventionEnabled }`, async () => {
 			if ( cardTestingPreventionEnabled ) {
 				const token = await page.evaluate( () => {
 					return window.wcpayFraudPreventionToken;
@@ -77,7 +83,7 @@ describe.each( cardTestingPreventionStates )(
 			await page.waitForNavigation( {
 				waitUntil: 'networkidle0',
 			} );
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatch( 'Your order has been received.' );
 		} );
 	}
 );
