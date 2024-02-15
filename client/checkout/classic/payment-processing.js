@@ -9,6 +9,7 @@ import {
 	getFingerprint,
 } from 'wcpay/checkout/utils/fingerprint';
 import {
+	appendFraudPreventionTokenInputToForm,
 	appendPaymentMethodIdToForm,
 	getPaymentMethodTypes,
 	getSelectedUPEGatewayPaymentMethod,
@@ -473,6 +474,7 @@ export const processPayment = (
 				$form,
 				paymentMethodObject.paymentMethod.id
 			);
+			appendFraudPreventionTokenInputToForm( $form );
 			await additionalActionsHandler(
 				paymentMethodObject.paymentMethod,
 				$form,

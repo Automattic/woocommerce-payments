@@ -181,6 +181,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 6300,
+						amount_captured: 6300,
 						currency: 'USD',
 						datetime: 1585751874,
 						deposit: {
@@ -189,6 +190,16 @@ describe( 'mapTimelineEvents', () => {
 						},
 						fee: 350,
 						type: 'captured',
+						transaction_details: {
+							customer_currency: 'USD',
+							customer_amount: 6300,
+							customer_amount_captured: 6300,
+							customer_fee: 350,
+							store_currency: 'USD',
+							store_amount: 6300,
+							store_amount_captured: 6300,
+							store_fee: 350,
+						},
 					},
 				] )
 			).toMatchSnapshot();
@@ -199,6 +210,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 6300,
+						amount_captured: 6300,
 						currency: 'USD',
 						datetime: 1585751874,
 						deposit: {
@@ -212,6 +224,16 @@ describe( 'mapTimelineEvents', () => {
 							fixed_currency: 'USD',
 						},
 						type: 'captured',
+						transaction_details: {
+							customer_currency: 'USD',
+							customer_amount: 6300,
+							customer_amount_captured: 6300,
+							customer_fee: 350,
+							store_currency: 'USD',
+							store_amount: 6300,
+							store_amount_captured: 6300,
+							store_fee: 350,
+						},
 					},
 				] )
 			).toMatchSnapshot();
@@ -222,6 +244,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 6300,
+						amount_captured: 6300,
 						currency: 'USD',
 						datetime: 1585751874,
 						deposit: {
@@ -263,6 +286,16 @@ describe( 'mapTimelineEvents', () => {
 							],
 						},
 						type: 'captured',
+						transaction_details: {
+							customer_currency: 'USD',
+							customer_amount: 6300,
+							customer_amount_captured: 6300,
+							customer_fee: 350,
+							store_currency: 'USD',
+							store_amount: 6300,
+							store_amount_captured: 6300,
+							store_fee: 350,
+						},
 					},
 				] )
 			).toMatchSnapshot();
@@ -273,6 +306,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 6300,
+						amount_captured: 6300,
 						currency: 'USD',
 						datetime: 1585751874,
 						deposit: {
@@ -294,6 +328,16 @@ describe( 'mapTimelineEvents', () => {
 							],
 						},
 						type: 'captured',
+						transaction_details: {
+							customer_currency: 'USD',
+							customer_amount: 6300,
+							customer_amount_captured: 6300,
+							customer_fee: 350,
+							store_currency: 'USD',
+							store_amount: 6300,
+							store_amount_captured: 6300,
+							store_fee: 350,
+						},
 					},
 				] )
 			).toMatchSnapshot();
@@ -401,6 +445,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 1980,
+						amount_captured: 1980,
 						currency: 'USD',
 						datetime: 1585751874,
 						deposit: {
@@ -429,6 +474,16 @@ describe( 'mapTimelineEvents', () => {
 							],
 						},
 						type: 'captured',
+						transaction_details: {
+							customer_currency: 'USD',
+							customer_amount: 1980,
+							customer_amount_captured: 1980,
+							customer_fee: 61,
+							store_currency: 'USD',
+							store_amount: 1980,
+							store_amount_captured: 1980,
+							store_fee: 61,
+						},
 					},
 				] )
 			).toMatchSnapshot();
@@ -441,6 +496,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 1800,
+						amount_captured: 1800,
 						currency: 'EUR',
 						datetime: 1585751874,
 						deposit: {
@@ -451,9 +507,11 @@ describe( 'mapTimelineEvents', () => {
 						type: 'captured',
 						transaction_details: {
 							customer_amount: 1800,
+							customer_amount_captured: 1800,
 							customer_currency: 'EUR',
 							customer_fee: 52,
 							store_amount: 2159,
+							store_amount_captured: 2159,
 							store_currency: 'USD',
 							store_fee: 62,
 						},
@@ -467,6 +525,7 @@ describe( 'mapTimelineEvents', () => {
 				mapTimelineEvents( [
 					{
 						amount: 1800,
+						amount_captured: 1800,
 						currency: 'EUR',
 						datetime: 1585751874,
 						deposit: {
@@ -482,9 +541,11 @@ describe( 'mapTimelineEvents', () => {
 						type: 'captured',
 						transaction_details: {
 							customer_amount: 1800,
+							customer_amount_captured: 1800,
 							customer_currency: 'EUR',
 							customer_fee: 52,
 							store_amount: 2159,
+							store_amount_captured: 2159,
 							store_currency: 'USD',
 							store_fee: 62,
 						},
@@ -534,9 +595,11 @@ describe( 'mapTimelineEvents', () => {
 						acquirer_reference_number: '4785767637658864',
 						transaction_details: {
 							customer_amount: 500,
+							customer_amount_captured: 500,
 							customer_currency: 'EUR',
 							customer_fee: 0,
 							store_amount: 600,
+							store_amount_captured: 600,
 							store_currency: 'USD',
 							store_fee: 0,
 						},
@@ -558,9 +621,11 @@ describe( 'mapTimelineEvents', () => {
 						type: 'full_refund',
 						transaction_details: {
 							customer_amount: 1800,
+							customer_amount_captured: 1800,
 							customer_currency: 'EUR',
 							customer_fee: 0,
 							store_amount: 2164,
+							store_amount_captured: 2164,
 							store_currency: 'USD',
 							store_fee: 0,
 						},
@@ -584,9 +649,11 @@ describe( 'mapTimelineEvents', () => {
 						type: 'dispute_won',
 						transaction_details: {
 							customer_amount: 2500,
+							customer_amount_captured: 2500,
 							customer_currency: 'EUR',
 							customer_fee: null,
 							store_amount: 2999,
+							store_amount_captured: 2999,
 							store_currency: 'USD',
 							store_fee: -1500,
 						},

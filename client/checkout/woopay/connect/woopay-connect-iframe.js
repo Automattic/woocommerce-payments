@@ -8,8 +8,12 @@ import React, { useEffect, useRef } from 'react';
  */
 import { getConfig } from 'wcpay/utils/checkout';
 import { getTracksIdentity } from 'tracks';
+import {
+	INJECTED_STATE,
+	setConnectIframeInjectedState,
+} from 'wcpay/checkout/woopay/connect/connect-utils';
 
-export const WooPayConnectIframe = ( { listeners, actionCallback } ) => {
+export const WooPayConnectIframe = () => {
 	const iframeRef = useRef();
 
 	const getWoopayConnectUrl = () => {
@@ -26,14 +30,6 @@ export const WooPayConnectIframe = ( { listeners, actionCallback } ) => {
 		}
 
 		const iframe = iframeRef.current;
-		iframe.addEventListener( 'load', () => {
-			listeners.setIframePostMessage( ( value ) => {
-				iframe.contentWindow.postMessage(
-					value,
-					getConfig( 'woopayHost' )
-				);
-			} );
-		} );
 
 		getTracksIdentity().then( ( tracksUserId ) => {
 			if ( ! tracksUserId ) return;
@@ -42,33 +38,44 @@ export const WooPayConnectIframe = ( { listeners, actionCallback } ) => {
 			iframe.src = urlObj.toString();
 		} );
 
-		const onMessage = ( event ) => {
-			const isFromWoopayHost = getConfig( 'woopayHost' ).startsWith(
-				event.origin
+		iframe.addEventListener( 'load', () => {
+			setConnectIframeInjectedState( INJECTED_STATE.INJECTED );
+
+			window.dispatchEvent(
+				new MessageEvent( 'message', {
+					source: window,
+					origin: getConfig( 'woopayHost' ),
+					data: {
+						action: 'get_iframe_post_message_success',
+						value: ( message ) =>
+							iframe.contentWindow.postMessage(
+								message,
+								getConfig( 'woopayHost' )
+							),
+					},
+				} )
 			);
-
-			if ( ! isFromWoopayHost ) {
-				return;
-			}
-
-			if ( event.data.action in actionCallback ) {
-				const callback = actionCallback[ event.data.action ];
-				listeners[ callback ]( event.data.value );
-			}
-		};
-
-		window.addEventListener( 'message', onMessage );
-
-		return () => {
-			window.removeEventListener( 'message', onMessage );
-		};
-	}, [ actionCallback, listeners ] );
+		} );
+	}, [] );
 
 	return (
 		<iframe
 			ref={ iframeRef }
+			id="woopay-connect-iframe"
 			src={ getWoopayConnectUrl() }
-			style={ { height: 0 } }
+			style={ {
+				height: 0,
+				width: 0,
+				border: 'none',
+				margin: 0,
+				padding: 0,
+				overflow: 'hidden',
+				display: 'block',
+				visibility: 'hidden',
+				position: 'fixed',
+				pointerEvents: 'none',
+				userSelect: 'none',
+			} }
 			title="WooPay Connect Direct Checkout"
 		/>
 	);
