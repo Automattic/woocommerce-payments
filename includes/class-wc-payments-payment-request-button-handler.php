@@ -700,6 +700,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
+				'empty_cart'                => wp_create_nonce( 'wcpay-empty-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
 				'platform_tracker'          => wp_create_nonce( 'platform_tracks_nonce' ),
 				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
