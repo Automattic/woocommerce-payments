@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 /**
  * Internal dependencies
@@ -15,14 +15,29 @@ import {
 
 export const WooPayConnectIframe = () => {
 	const iframeRef = useRef();
+	const [ iframeUrl, setIframeUrl ] = useState( '' );
 
-	const getWoopayConnectUrl = () => {
-		const urlParams = new URLSearchParams();
-		urlParams.append( 'testMode', getConfig( 'testMode' ) );
-		urlParams.append( 'source_url', window.location.href );
+	useEffect( () => {
+		const fetchConfigAndSetIframeUrl = async () => {
+			const testMode = getConfig( 'testMode' );
+			const woopayHost = getConfig( 'woopayHost' );
+			const urlParams = new URLSearchParams( {
+				testMode,
+				source_url: window.location.href,
+			} );
 
-		return getConfig( 'woopayHost' ) + '/connect/?' + urlParams.toString();
-	};
+			const tracksUserId = await getTracksIdentity();
+			if ( tracksUserId ) {
+				urlParams.append( 'tracksUserIdentity', tracksUserId );
+			}
+
+			setIframeUrl(
+				`${ woopayHost }/connect/?${ urlParams.toString() }`
+			);
+		};
+
+		fetchConfigAndSetIframeUrl();
+	}, [] );
 
 	useEffect( () => {
 		if ( ! iframeRef.current ) {
@@ -30,14 +45,6 @@ export const WooPayConnectIframe = () => {
 		}
 
 		const iframe = iframeRef.current;
-
-		getTracksIdentity().then( ( tracksUserId ) => {
-			if ( ! tracksUserId ) return;
-			const urlObj = new URL( iframe.src );
-			urlObj.searchParams.append( 'tracksUserIdentity', tracksUserId );
-			iframe.src = urlObj.toString();
-		} );
-
 		iframe.addEventListener( 'load', () => {
 			setConnectIframeInjectedState( INJECTED_STATE.INJECTED );
 
@@ -56,13 +63,13 @@ export const WooPayConnectIframe = () => {
 				} )
 			);
 		} );
-	}, [] );
+	}, [ iframeUrl ] );
 
 	return (
 		<iframe
 			ref={ iframeRef }
 			id="woopay-connect-iframe"
-			src={ getWoopayConnectUrl() }
+			src={ iframeUrl }
 			style={ {
 				height: 0,
 				width: 0,
