@@ -29,7 +29,6 @@ export const getDepositMonthlyAnchorLabel = ( {
 	// If locale is set up as en_US or en_GB the ordinal will not show up
 	// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
 	// Using 'en' as the locale should be enough to workaround it
-	// see also getNextDepositDate
 	// TODO: This was resolved in WP 6.1. When the required version is 6.1 or higher, we can remove this workaround.
 	const fixedLocale = moment.locale().startsWith( 'en' )
 		? 'en'
