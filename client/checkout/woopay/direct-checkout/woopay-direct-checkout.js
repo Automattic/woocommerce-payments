@@ -87,19 +87,47 @@ class WoopayDirectCheckout {
 	}
 
 	/**
-	 * Sends the session data to the WooPayConnectIframe.
+	 * Resolves the redirect URL to the WooPay checkout page or throws an error if the request fails.
 	 *
-	 * @return {Promise<*>} Resolves to the redirect URL.
+	 * @return {string} The redirect URL.
+	 * @throws {Error} If the session data could not be sent to WooPay.
 	 */
-	static async sendRedirectSessionDataToWooPay() {
-		const woopaySession = await this.getWooPaySessionFromMerchant();
-		const woopaySessionData = await this.getSessionConnect().sendRedirectSessionDataToWooPay(
-			woopaySession
+	static async resolveWooPayRedirectUrl() {
+		try {
+			const encryptedSessionData = await this.getEncryptedSessionData();
+			if ( ! this.isValidEncryptedSessionData( encryptedSessionData ) ) {
+				throw new Error(
+					'Could not retrieve encrypted session from store.'
+				);
+			}
+
+			const woopaySessionData = await this.getSessionConnect().sendRedirectSessionDataToWooPay(
+				encryptedSessionData
+			);
+			if ( ! woopaySessionData?.redirect_url ) {
+				throw new Error( 'Invalid WooPay session.' );
+			}
+
+			return woopaySessionData.redirect_url;
+		} catch ( error ) {
+			throw new Error( error.message );
+		}
+	}
+
+	/**
+	 * Checks if the encrypted session object is valid.
+	 *
+	 * @param {Object} encryptedSessionData The encrypted session data.
+	 * @return {boolean} True if the session is valid.
+	 */
+	static isValidEncryptedSessionData( encryptedSessionData ) {
+		return (
+			encryptedSessionData &&
+			encryptedSessionData?.blog_id &&
+			encryptedSessionData?.data?.session &&
+			encryptedSessionData?.data?.iv &&
+			encryptedSessionData?.data?.hash
 		);
-
-		const { redirect_url: redirectUrl } = await woopaySessionData;
-
-		return redirectUrl;
 	}
 
 	/**
@@ -136,7 +164,7 @@ class WoopayDirectCheckout {
 			element.addEventListener( 'click', async ( event ) => {
 				event.preventDefault();
 
-				const woopayRedirectUrl = await this.sendRedirectSessionDataToWooPay();
+				const woopayRedirectUrl = await this.resolveWooPayRedirectUrl();
 				this.teardown();
 
 				window.location.href = woopayRedirectUrl;
@@ -155,11 +183,19 @@ class WoopayDirectCheckout {
 			element.addEventListener( 'click', async ( event ) => {
 				event.preventDefault();
 
-				const woopayRedirectUrl = await this.sendRedirectSessionDataToWooPay();
-				this.teardown();
+				try {
+					const woopayRedirectUrl = await this.resolveWooPayRedirectUrl();
+					this.teardown();
 
-				window.location.href =
-					woopayRedirectUrl + '&woopay_checkout_redirect=1';
+					window.location.href =
+						woopayRedirectUrl + '&woopay_checkout_redirect=1';
+				} catch ( error ) {
+					// TODO: Add telemetry for this flow.
+					console.error( error );
+
+					this.teardown();
+					window.location.href = event.target.href;
+				}
 			} );
 		} );
 	}
@@ -169,7 +205,7 @@ class WoopayDirectCheckout {
 	 *
 	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay session response.
 	 */
-	static async getWooPaySessionFromMerchant() {
+	static async getEncryptedSessionData() {
 		return request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
 			{
