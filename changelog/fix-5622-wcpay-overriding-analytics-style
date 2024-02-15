@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Prevent WooPayments overriding a WooCommerce analytics style
-
-
