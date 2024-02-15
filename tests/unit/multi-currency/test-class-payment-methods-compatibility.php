@@ -55,6 +55,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 				[
 					'get_upe_enabled_payment_method_ids',
 					'get_account_country',
+					'get_account_domestic_currency',
 				]
 			)
 			->getMock();
