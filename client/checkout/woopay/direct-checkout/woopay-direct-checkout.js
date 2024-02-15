@@ -155,40 +155,24 @@ class WoopayDirectCheckout {
 	}
 
 	/**
-	 * Adds a click-event listener that redirects to the WooPay checkout page to the given elements.
+	 * Adds a click-event listener to the given elements that redirects to the WooPay checkout page.
 	 *
 	 * @param {*[]} elements The elements to add a click-event listener to.
+	 * @param {boolean} useCheckoutRedirect Whether to use the `woopay_checkout_redirect` flag to let WooPay handle the checkout flow.
 	 */
-	static redirectToWooPaySession( elements ) {
-		elements.forEach( ( element ) => {
-			element.addEventListener( 'click', async ( event ) => {
-				event.preventDefault();
-
-				const woopayRedirectUrl = await this.resolveWooPayRedirectUrl();
-				this.teardown();
-
-				window.location.href = woopayRedirectUrl;
-			} );
-		} );
-	}
-
-	/**
-	 * Adds a click-event listener that redirects to WooPay and lets WooPay handle the checkout flow
-	 * to the given elements.
-	 *
-	 * @param {*[]} elements The elements to add a click-event listener to.
-	 */
-	static redirectToWooPay( elements ) {
+	static redirectToWooPay( elements, useCheckoutRedirect ) {
 		elements.forEach( ( element ) => {
 			element.addEventListener( 'click', async ( event ) => {
 				event.preventDefault();
 
 				try {
-					const woopayRedirectUrl = await this.resolveWooPayRedirectUrl();
-					this.teardown();
+					let woopayRedirectUrl = await this.resolveWooPayRedirectUrl();
+					if ( useCheckoutRedirect ) {
+						woopayRedirectUrl += '&woopay_checkout_redirect=1';
+					}
 
-					window.location.href =
-						woopayRedirectUrl + '&woopay_checkout_redirect=1';
+					this.teardown();
+					window.location.href = woopayRedirectUrl;
 				} catch ( error ) {
 					// TODO: Add telemetry for this flow.
 					console.error( error );

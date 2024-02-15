@@ -14,11 +14,11 @@ window.addEventListener( 'load', async () => {
 	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
-			WooPayDirectCheckout.redirectToWooPaySession( checkoutElements );
+			WooPayDirectCheckout.redirectToWooPay( checkoutElements, false );
 		}
 
 		return;
 	}
 
-	WooPayDirectCheckout.redirectToWooPay( checkoutElements );
+	WooPayDirectCheckout.redirectToWooPay( checkoutElements, true );
 } );
