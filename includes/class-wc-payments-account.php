@@ -2019,7 +2019,8 @@ class WC_Payments_Account {
 				'jetpack_connected' => $this->payments_api_client->is_server_connected(),
 				'wcpay_version'     => WCPAY_VERSION_NUMBER,
 				'woo_country_code'  => WC()->countries->get_base_country(),
-			]
+			],
+			$this->get_tracking_info() ?? []
 		);
 
 		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
