@@ -1428,6 +1428,19 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
 	}
 
+	public function test_get_tracking_info() {
+		$expected = [
+			'hosting-provider' => 'test',
+		];
+
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->willReturn( $expected );
+
+		$this->assertSame( $expected, $this->wcpay_account->get_tracking_info() );
+	}
+
 	/**
 	 * Sets up the mocked cache to simulate that its empty and call the generator.
 	 */
