@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fire `wcpay_disputes_row_action_click` for any click to dispute details (not just `Respond` button).

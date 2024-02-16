@@ -4,27 +4,27 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import type { ChipType } from 'components/chip';
+import type { PillType } from 'components/pill';
 
 export type TransactionStatus = 'allow' | 'review' | 'block';
 type TransactionStatusMapping = Record<
 	TransactionStatus,
 	{
-		type: ChipType;
+		type: PillType;
 		message: string;
 	}
 >;
 const transactionStatusMapping: TransactionStatusMapping = {
 	allow: {
-		type: 'primary',
+		type: 'success',
 		message: __( 'Succeeded', 'woocommerce-payments' ),
 	},
 	review: {
-		type: 'warning',
+		type: 'alert',
 		message: __( 'Needs review', 'woocommerce-payments' ),
 	},
 	block: {
-		type: 'alert',
+		type: 'danger',
 		message: __( 'Payment blocked', 'woocommerce-payments' ),
 	},
 };

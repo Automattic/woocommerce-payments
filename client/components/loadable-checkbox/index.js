@@ -53,13 +53,12 @@ const LoadableCheckboxControl = ( {
 
 	return (
 		<div
-			className={ classNames(
-				'loadable-checkbox',
-				hideLabel ? 'label-hidden' : ''
-			) }
+			className={ classNames( 'loadable-checkbox', {
+				'label-hidden': hideLabel,
+			} ) }
 		>
 			{ isLoading && (
-				<div className={ 'loadable-checkbox__spinner' }>
+				<div className="loadable-checkbox__spinner">
 					<svg
 						width="131px"
 						height="131px"

@@ -109,7 +109,6 @@ declare global {
 		isMultiCurrencyEnabled: string;
 		errorMessage: string;
 		onBoardingDisabled: boolean;
-		isBnplAffirmAfterpayEnabled: boolean;
 		connectIncentive?: {
 			id: string;
 			description: string;
@@ -130,6 +129,9 @@ declare global {
 			code: string;
 			english_name: string;
 			native_name: string;
+		};
+		trackingInfo?: {
+			hosting_provider: string;
 		};
 	};
 
