@@ -15,7 +15,7 @@ import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'utils/currency';
 import { recordEvent } from 'tracks';
-import TransactionStatusChip from 'components/transaction-status-chip';
+import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 import { FraudOutcomeTransaction } from '../../data';
 
 interface Column extends TableCardColumn {
@@ -97,7 +97,7 @@ export const getRiskReviewListRowContent = (
 	return {
 		status: {
 			value: data.status,
-			display: <TransactionStatusChip status="review" />,
+			display: <TransactionStatusPill status="review" />,
 		},
 		created: {
 			value: formattedCreatedDate,

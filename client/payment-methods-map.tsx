@@ -244,7 +244,7 @@ const PaymentMethodInformationObject: Record<
 						'woocommerce-payments'
 				  ),
 		icon: 'GB' === accountCountry ? ClearpayIcon : AfterpayIcon,
-		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP', 'EUR' ],
+		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP' ],
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,
 		allows_pay_later: true,
