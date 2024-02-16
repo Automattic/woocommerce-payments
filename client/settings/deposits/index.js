@@ -23,7 +23,7 @@ import {
 	useDepositRestrictions,
 } from '../../data';
 import './style.scss';
-import wcpayTracks from 'wcpay/tracks';
+import { recordEvent } from 'tracks';
 import InlineNotice from 'components/inline-notice';
 
 const daysOfWeek = [
@@ -227,10 +227,8 @@ const Deposits = () => {
 						<ExternalLink
 							href={ accountLink }
 							onClick={ () =>
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK,
-									{}
+								recordEvent(
+									'wcpay_settings_deposits_manage_in_stripe_click'
 								)
 							}
 						>

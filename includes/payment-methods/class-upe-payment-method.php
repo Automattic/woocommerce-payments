@@ -64,7 +64,6 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Should payment method be restricted to only domestic payments.
 	 * E.g. only to Stripe's connected account currency.
-	 * gs
 	 *
 	 * @var boolean
 	 */
@@ -132,6 +131,16 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
+	 * Determines whether the payment method is restricted to the Stripe account's currency.
+	 * E.g.: Afterpay/Clearpay and Affirm only supports domestic payments; Klarna also implements a simplified version of these market restrictions.
+	 *
+	 * @return bool
+	 */
+	public function has_domestic_transactions_restrictions() {
+		return $this->accept_only_domestic_payment;
+	}
+
+	/**
 	 * Returns boolean dependent on whether payment method
 	 * can be used at checkout
 	 *
@@ -194,7 +203,7 @@ abstract class UPE_Payment_Method {
 	public function is_currency_valid( string $account_domestic_currency, $order_id = null ) {
 		$current_store_currency = $this->get_currency( $order_id );
 
-		if ( $this->accept_only_domestic_payment ) {
+		if ( $this->has_domestic_transactions_restrictions() ) {
 			if ( strtolower( $current_store_currency ) !== strtolower( $account_domestic_currency ) ) {
 				return false;
 			}

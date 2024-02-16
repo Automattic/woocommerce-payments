@@ -252,9 +252,9 @@ export default class WCPayAPI {
 			// If this is a setup intent we're not processing a woopay payment so we can
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
-				return this.getStripe().confirmCardSetup(
-					decryptClientSecret( clientSecret )
-				);
+				return this.getStripe().handleNextAction( {
+					clientSecret: decryptClientSecret( clientSecret ),
+				} );
 			}
 
 			// For woopay we need the capability to switch up the account ID specifically for
@@ -274,9 +274,9 @@ export default class WCPayAPI {
 
 			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
-			return this.getStripe( true ).confirmCardPayment(
-				decryptClientSecret( clientSecret )
-			);
+			return this.getStripe( true ).handleNextAction( {
+				clientSecret: decryptClientSecret( clientSecret ),
+			} );
 		};
 
 		return (
@@ -492,6 +492,19 @@ export default class WCPayAPI {
 		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
 			security: getPaymentRequestData( 'nonce' )?.add_to_cart,
 			...productData,
+		} );
+	}
+
+	/**
+	 * Empty the cart.
+	 *
+	 * @param {number} bookingId Booking ID (optional).
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestEmptyCart( bookingId ) {
+		return this.request( getPaymentRequestAjaxURL( 'empty_cart' ), {
+			security: getPaymentRequestData( 'nonce' )?.empty_cart,
+			booking_id: bookingId,
 		} );
 	}
 

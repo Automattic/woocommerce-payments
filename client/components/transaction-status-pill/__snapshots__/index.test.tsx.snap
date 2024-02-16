@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Transaction status pill should render the allow pill correctly 1`] = `
+<div>
+  <span
+    class="components-truncate components-text woocommerce-pill wcpay-pill__success css-1g4vivm-View-Text-sx-Base em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Text"
+  >
+    Succeeded
+  </span>
+</div>
+`;
+
+exports[`Transaction status pill should render the block pill correctly 1`] = `
+<div>
+  <span
+    class="components-truncate components-text woocommerce-pill wcpay-pill__danger css-1g4vivm-View-Text-sx-Base em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Text"
+  >
+    Payment blocked
+  </span>
+</div>
+`;
+
+exports[`Transaction status pill should render the review pill correctly 1`] = `
+<div>
+  <span
+    class="components-truncate components-text woocommerce-pill wcpay-pill__alert css-1g4vivm-View-Text-sx-Base em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Text"
+  >
+    Needs review
+  </span>
+</div>
+`;
+
+exports[`Transaction status pill should render the unknown pill correctly 1`] = `
+<div>
+  <span
+    class="components-truncate components-text woocommerce-pill wcpay-pill__light css-1g4vivm-View-Text-sx-Base em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Text"
+  >
+    Unknown
+  </span>
+</div>
+`;

@@ -2,6 +2,7 @@
  * External dependencies
  */
 import config from 'config';
+import { shopperWCP } from './flows';
 
 const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
@@ -177,11 +178,7 @@ export async function clearWCBCardDetails() {
 	await page.keyboard.press( 'Backspace' );
 }
 
-export async function confirmCardAuthentication(
-	page,
-	cardType = '3DS',
-	authorize = true
-) {
+export async function confirmCardAuthentication( page, authorize = true ) {
 	const target = authorize
 		? '#test-source-authorize-3ds'
 		: '#test-source-fail-3ds';
@@ -195,14 +192,7 @@ export async function confirmCardAuthentication(
 	const challengeFrameHandle = await stripeFrame.waitForSelector(
 		'iframe#challengeFrame'
 	);
-	let challengeFrame = await challengeFrameHandle.contentFrame();
-	// 3DS 1 cards have another iframe enclosing the authorize form
-	if ( cardType.toUpperCase() === '3DS' ) {
-		const acsFrameHandle = await challengeFrame.waitForSelector(
-			'iframe[name="acsFrame"]'
-		);
-		challengeFrame = await acsFrameHandle.contentFrame();
-	}
+	const challengeFrame = await challengeFrameHandle.contentFrame();
 	// Need to wait for the CSS animations to complete.
 	await page.waitFor( 500 );
 	const button = await challengeFrame.waitForSelector( target );
@@ -249,6 +239,24 @@ export async function setupProductCheckout(
 		}
 	}
 
+	await setupCheckout( billingDetails );
+}
+
+export async function setupProductCheckoutNoMiniCart(
+	billingDetails,
+	lineItems = [ [ config.get( 'products.simple.name' ), 1 ] ]
+) {
+	// Add items to the cart
+	for ( const line of lineItems ) {
+		const [ productTitle ] = line;
+		await shopper.goToShop();
+		await shopperWCP.addToCartBySlug( productTitle );
+	}
+	await shopper.goToCart();
+	for ( const line of lineItems ) {
+		const [ productTitle, qty ] = line;
+		await shopper.setCartQuantity( productTitle, qty );
+	}
 	await setupCheckout( billingDetails );
 }
 

@@ -11,7 +11,7 @@ import PaymentCardReaderChargeDetails from './readers';
 import { PaymentDetailsProps } from './types';
 import PaymentOrderDetails from './order-details';
 import PaymentChargeDetails from './charge-details';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 
 const PaymentDetails: React.FC< PaymentDetailsProps > = ( { query } ) => {
 	const {
@@ -23,10 +23,10 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( { query } ) => {
 	const { status_is: statusIs, type_is: typeIs } = getQuery();
 
 	if ( statusIs && typeIs ) {
-		wcpayTracks.recordEvent(
-			'wcpay_fraud_protection_order_details_link_clicked',
-			{ status: statusIs, type: typeIs }
-		);
+		recordEvent( 'wcpay_fraud_protection_order_details_link_clicked', {
+			status: statusIs,
+			type: typeIs,
+		} );
 		// Remove the tracking queries on page load so we don't track refreshes or back button reloads.
 		updateQueryString( {
 			status_is: undefined,

@@ -34,7 +34,7 @@ import {
 } from '../constants.js';
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
-import wcpayTracks from 'tracks';
+import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
 
@@ -127,7 +127,7 @@ const addCheckoutTracking = () => {
 				return;
 			}
 
-			wcpayTracks.recordUserEvent( wcpayTracks.events.PLACE_ORDER_CLICK );
+			recordUserEvent( 'checkout_place_order_button_click' );
 		} );
 	}
 };

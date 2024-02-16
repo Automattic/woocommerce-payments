@@ -34,6 +34,7 @@ const formatQueryFilters = ( query ) => ( {
 	search: query.search,
 	status_is: query.statusIs,
 	status_is_not: query.statusIsNot,
+	locale: query.locale,
 } );
 
 export function getDisputesCSV( query ) {

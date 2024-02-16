@@ -19,7 +19,7 @@ import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'utils/currency';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 
 interface Column extends TableCardColumn {
@@ -193,7 +193,7 @@ export const AuthorizationsList = (): JSX.Element => {
 						paymentIntentId={ auth.payment_intent_id }
 						buttonIsSmall={ false }
 						onClick={ () => {
-							wcpayTracks.recordEvent(
+							recordEvent(
 								'payments_transactions_uncaptured_list_capture_charge_button_click',
 								{
 									payment_intent_id: auth.payment_intent_id,
@@ -249,7 +249,7 @@ export const AuthorizationsList = (): JSX.Element => {
 	}
 
 	useEffect( () => {
-		wcpayTracks.recordEvent( 'page_view', {
+		recordEvent( 'page_view', {
 			path: 'payments_transactions_uncaptured',
 		} );
 	}, [] );

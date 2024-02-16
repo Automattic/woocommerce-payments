@@ -147,10 +147,22 @@ export const shopperWCP = {
 		} );
 	},
 
-	changeAccountCurrencyTo: async ( currencyToSet ) => {
+	changeAccountCurrencyTo: async ( customerDetails, currencyToSet ) => {
 		await page.goto( MY_ACCOUNT_EDIT, {
 			waitUntil: 'networkidle0',
 		} );
+
+		// In some cases (when running tests independently), when these fields are empty, the saving
+		// fails. So ensuring these fields are filled before setting the currency.
+		await clearAndFillInput(
+			'#account_first_name',
+			customerDetails.firstname
+		);
+
+		await clearAndFillInput(
+			'#account_last_name',
+			customerDetails.lastname
+		);
 
 		await page.select( '#wcpay_selected_currency', currencyToSet );
 		await expect( page ).toClick( 'button', {
@@ -191,7 +203,7 @@ export const shopperWCP = {
 			! cardType.toLowerCase().includes( 'declined' );
 
 		if ( cardIs3DS ) {
-			await confirmCardAuthentication( page, cardType );
+			await confirmCardAuthentication( page );
 		}
 
 		await page.waitForNavigation( {
@@ -376,6 +388,45 @@ export const merchantWCP = {
 		} );
 	},
 
+	enableCardTestingProtection: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if (
+			! ( await page.$(
+				'#wcpaydev_force_card_testing_protection_on:checked'
+			) )
+		) {
+			await expect( page ).toClick(
+				'label[for="wcpaydev_force_card_testing_protection_on"]'
+			);
+		}
+
+		await expect( page ).toClick( 'input#submit' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	disableCardTestingProtection: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if (
+			await page.$( '#wcpaydev_force_card_testing_protection_on:checked' )
+		) {
+			await expect( page ).toClick(
+				'label[for="wcpaydev_force_card_testing_protection_on"]'
+			);
+		}
+		await expect( page ).toClick( 'input#submit' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
 	enablePaymentMethod: async ( paymentMethods ) => {
 		await page.goto( WCPAY_PAYMENT_SETTINGS, {
 			waitUntil: 'networkidle0',
@@ -426,7 +477,17 @@ export const merchantWCP = {
 					button.click()
 				);
 			}
-			await page.$eval( paymentMethod, ( method ) => method.click() );
+			// Check if paymentMethod is an XPath
+			if ( paymentMethod.startsWith( '//' ) ) {
+				// Find the element using XPath and click it
+				const elements = await page.$x( paymentMethod );
+				if ( elements.length > 0 ) {
+					await elements[ 0 ].click();
+				}
+			} else {
+				// If it's a CSS selector, use $eval
+				await page.$eval( paymentMethod, ( method ) => method.click() );
+			}
 			await expect( page ).toClick( 'button', {
 				text: 'Remove',
 			} );

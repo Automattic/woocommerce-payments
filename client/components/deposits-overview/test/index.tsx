@@ -53,6 +53,9 @@ declare const global: {
 			deposits: {
 				restrictions: string;
 				completed_waiting_period: boolean;
+				minimum_scheduled_deposit_amounts: {
+					[ currencyCode: string ]: number;
+				};
 			};
 		};
 		accountDefaultCurrency: string;
@@ -195,6 +198,10 @@ describe( 'Deposits Overview information', () => {
 				deposits: {
 					restrictions: 'deposits_unrestricted',
 					completed_waiting_period: true,
+					minimum_scheduled_deposit_amounts: {
+						eur: 500,
+						usd: 500,
+					},
 				},
 			},
 			accountDefaultCurrency: 'USD',
@@ -516,11 +523,11 @@ describe( 'Suspended Deposit Notice Renders', () => {
 } );
 
 describe( 'Paused Deposit notice Renders', () => {
-	test( 'When available balance is negative', () => {
+	test( 'When total balance is negative', () => {
 		const accountOverview = createMockNewAccountOverview(
 			'usd',
-			100,
-			-100 // Negative 100 available balance
+			50, // Pending and available balance total to -50
+			-100
 		);
 		mockOverviews( [ accountOverview ] );
 		mockDepositOverviews( [ accountOverview ] );
@@ -546,5 +553,68 @@ describe( 'Paused Deposit notice Renders', () => {
 
 		const { queryByText } = render( <DepositsOverview /> );
 		expect( queryByText( /Deposits may be interrupted/ ) ).toBeFalsy();
+	} );
+	test( 'When available balance is negative', () => {
+		const accountOverview = createMockNewAccountOverview(
+			'usd',
+			100,
+			-100 // Negative 100 available balance
+		);
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
+
+		const { queryByText } = render( <DepositsOverview /> );
+		expect( queryByText( /Deposits may be interrupted/ ) ).toBeFalsy();
+	} );
+} );
+
+describe( 'Minimum Deposit Amount Notice', () => {
+	beforeAll( () => {
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: false,
+		} );
+	} );
+
+	afterAll( () => {
+		jest.clearAllMocks();
+	} );
+
+	test( 'When available balance is below the minimum threshold', () => {
+		const accountOverview = createMockNewAccountOverview( 'eur', 100, 100 );
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
+
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { getByText } = render( <DepositsOverview /> );
+		getByText(
+			/Deposits are paused while your available funds balance remains below €5.00/,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
+	} );
+
+	test( 'When available balance is above the minimum threshold', () => {
+		const accountOverview = createMockNewAccountOverview( 'eur', 100, 500 );
+		mockOverviews( [ accountOverview ] );
+		mockDepositOverviews( [ accountOverview ] );
+
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { queryByText } = render( <DepositsOverview /> );
+		expect(
+			queryByText(
+				/Deposits are paused while your available funds balance remains below/
+			)
+		).toBeFalsy();
 	} );
 } );

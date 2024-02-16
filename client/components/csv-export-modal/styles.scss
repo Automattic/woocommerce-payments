@@ -1,0 +1,51 @@
+.reporting-export-modal {
+	.components-modal__header {
+		border-bottom: 1px solid #dcdcde !important;
+	}
+
+	.wcpay-confirmation-modal__footer {
+		.is-secondary {
+			box-shadow: none;
+		}
+	}
+
+	&__items-number {
+		border-bottom: 1px solid #dcdcde;
+		padding: 15px 0;
+	}
+
+	&__settings {
+		@include breakpoint( '>660px' ) {
+			min-width: 500px;
+		}
+
+		&--language {
+			display: flex;
+			flex-wrap: wrap;
+		}
+
+		&--language-label {
+			flex: 1 1 200px;
+			display: flex;
+
+			.domains-icon {
+				width: 16px;
+				margin: 7px 0;
+			}
+
+			.export-label {
+				padding: 10px 0 0 8px;
+			}
+		}
+
+		&--language-select {
+			flex: 1 1 200px;
+		}
+
+		&--remember {
+			p {
+				padding-top: 0 !important;
+			}
+		}
+	}
+}

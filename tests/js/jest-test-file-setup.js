@@ -101,6 +101,16 @@ global.wpApiSettings = {
 	nonce: 'random_wp_rest_nonce',
 };
 
+global.wcpaySettings = {
+	locale: {
+		code: 'es_ES',
+		native_name: 'Spanish',
+	},
+	accountLoans: {
+		loans: [ 'flxln_123456|active' ],
+	},
+};
+
 // const config = require( '../../config/development.json' );
 // window.wcAdminFeatures = config && config.features ? config.features : {};
 
@@ -115,4 +125,11 @@ global.ResizeObserver = jest.fn().mockImplementation( () => ( {
 	observe: jest.fn(),
 	unobserve: jest.fn(),
 	disconnect: jest.fn(),
+} ) );
+
+// Mock the tracks module to avoid the need to mock wcpaySettings in every test.
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
+	isEnabled: jest.fn(),
+	events: {},
 } ) );

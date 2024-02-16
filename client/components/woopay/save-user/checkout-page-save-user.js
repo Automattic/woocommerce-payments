@@ -21,7 +21,7 @@ import Container from './container';
 import useWooPayUser from '../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import WooPayIcon from 'assets/images/woopay.svg?asset';
-import wcpayTracks from 'tracks';
+import { recordUserEvent } from 'tracks';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -93,9 +93,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	);
 
 	const handleCountryDropdownClick = useCallback( () => {
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_SAVE_MY_INFO_COUNTRY_CLICK
-		);
+		recordUserEvent( 'checkout_woopay_save_my_info_country_click' );
 	}, [] );
 
 	const handleCheckboxClick = ( e ) => {
@@ -110,20 +108,15 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		}
 		setIsSaveDetailsChecked( isChecked );
 
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_SAVE_MY_INFO_CLICK,
-			{
-				status: isChecked ? 'checked' : 'unchecked',
-			}
-		);
+		recordUserEvent( 'checkout_save_my_info_click', {
+			status: isChecked ? 'checked' : 'unchecked',
+		} );
 	};
 
 	useEffect( () => {
 		// Record Tracks event when the mobile number is entered.
 		if ( isPhoneValid ) {
-			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.WOOPAY_SAVE_MY_INFO_MOBILE_ENTER
-			);
+			recordUserEvent( 'checkout_woopay_save_my_info_mobile_enter' );
 		}
 	}, [ isPhoneValid ] );
 
@@ -131,9 +124,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		// Record Tracks event when user clicks on the info icon for the first time.
 		if ( isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
 			setHasShownInfoFlyout( true );
-			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.WOOPAY_SAVE_MY_INFO_TOOLTIP_CLICK
-			);
+			recordUserEvent( 'checkout_save_my_info_tooltip_click' );
 		} else if ( ! isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
 			setHasShownInfoFlyout( false );
 		}
@@ -282,9 +273,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 											href="https://woo.com/document/woopay-customer-documentation/"
 											rel="noopener noreferrer"
 											onClick={ () => {
-												wcpayTracks.recordUserEvent(
-													wcpayTracks.events
-														.WOOPAY_SAVE_MY_INFO_TOOLTIP_LEARN_MORE_CLICK
+												recordUserEvent(
+													'checkout_save_my_info_tooltip_learn_more_click'
 												);
 											} }
 										>

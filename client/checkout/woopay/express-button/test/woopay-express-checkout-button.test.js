@@ -12,7 +12,6 @@ import { expressCheckoutIframe } from '../express-checkout-iframe';
 import WCPayAPI from 'wcpay/checkout/api';
 import request from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
-import wcpayTracks from 'tracks';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
 
 jest.mock( 'wcpay/checkout/utils/request', () => ( {
@@ -30,7 +29,27 @@ jest.mock( '../express-checkout-iframe', () => ( {
 } ) );
 
 jest.mock( 'tracks', () => ( {
-	recordUserEvent: jest.fn(),
+	recordUserEvent: jest.fn().mockReturnValue( true ),
+	events: {
+		WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
+		WOOPAY_OFFERED: 'checkout_woopay_save_my_info_offered',
+		WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
+		WOOPAY_SKIPPED: 'woopay_skipped',
+		WOOPAY_BUTTON_LOAD: 'woopay_button_load',
+		WOOPAY_BUTTON_CLICK: 'woopay_button_click',
+		WOOPAY_SAVE_MY_INFO_COUNTRY_CLICK:
+			'checkout_woopay_save_my_info_country_click',
+		WOOPAY_SAVE_MY_INFO_CLICK: 'checkout_save_my_info_click',
+		WOOPAY_SAVE_MY_INFO_MOBILE_ENTER:
+			'checkout_woopay_save_my_info_mobile_enter',
+		WOOPAY_SAVE_MY_INFO_TOS_CLICK: 'checkout_save_my_info_tos_click',
+		WOOPAY_SAVE_MY_INFO_PRIVACY_CLICK:
+			'checkout_save_my_info_privacy_policy_click',
+		WOOPAY_SAVE_MY_INFO_TOOLTIP_CLICK:
+			'checkout_save_my_info_tooltip_click',
+		WOOPAY_SAVE_MY_INFO_TOOLTIP_LEARN_MORE_CLICK:
+			'checkout_save_my_info_tooltip_learn_more_click',
+	},
 } ) );
 
 jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
@@ -53,10 +72,6 @@ describe( 'WoopayExpressCheckoutButton', () => {
 	beforeEach( () => {
 		expressCheckoutIframe.mockImplementation( () => jest.fn() );
 		getConfig.mockReturnValue( 'foo' );
-		wcpayTracks.recordUserEvent.mockReturnValue( true );
-		wcpayTracks.events = {
-			WOOPAY_EXPRESS_BUTTON_OFFERED: 'woopay_express_button_offered',
-		};
 		useExpressCheckoutProductHandler.mockImplementation( () => ( {
 			addToCart: mockAddToCart,
 		} ) );
@@ -115,7 +130,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 	} );
 
-	test( 'should not request session data on button click', async () => {
+	test( 'should request session data on button click', async () => {
 		getConfig.mockImplementation( ( v ) => {
 			switch ( v ) {
 				case 'wcAjaxUrl':
@@ -148,7 +163,12 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		userEvent.click( expressButton );
 
 		await waitFor( () => {
-			expect( request ).not.toHaveBeenCalled();
+			expect( request ).toHaveBeenCalledWith( 'woopay.url', {
+				_ajax_nonce: 'sessionnonce',
+				order_id: 1,
+				key: 'testkey',
+				billing_email: 'test@test.com',
+			} );
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );
 	} );
