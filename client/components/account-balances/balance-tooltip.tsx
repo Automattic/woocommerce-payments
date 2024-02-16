@@ -12,11 +12,13 @@ import { ClickTooltip } from 'components/tooltip';
 type BalanceTooltipProps = {
 	label: string;
 	content: React.ReactNode;
+	maxWidth?: string | undefined;
 };
 
 const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 	label,
 	content,
+	maxWidth,
 } ) => {
 	return (
 		<ClickTooltip
@@ -24,6 +26,7 @@ const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 			className="wcpay-account-balances__balances__item__tooltip"
 			buttonIcon={ <HelpOutlineIcon /> }
 			buttonLabel={ label }
+			maxWidth={ maxWidth }
 		/>
 	);
 };

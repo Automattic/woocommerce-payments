@@ -35,3 +35,14 @@
 	border-top: 1px solid $gray-200;
 	padding: 24px;
 }
+
+.wcpay-account-balances__balances
+	.wcpay-account-balances__balances-total-balance-tooltip {
+	margin-top: 10px;
+}
+
+.wcpay-account-balances__balances-total-balance-tooltip
+	.components-notice__content {
+	font-size: 12px;
+	white-space: nowrap;
+}
