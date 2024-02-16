@@ -792,19 +792,20 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 
-		// First, check the reason for the update. We're only interested in a status of failed.
 		$status = $this->read_webhook_property( $event_object, 'status' );
 		if ( 'succeeded' !== $status ) {
 			return;
 		}
 
 		// Fetch the details of the refund so that we can find the associated order and write a note.
-		$charge_id     = $this->read_webhook_property( $event_object, 'id' );
-		$refund        = array_pop( $this->read_webhook_property( $event_object, 'refunds' )['data'] );
-		$refund_id     = $refund['id'] ?? null;
-		$refund_reason = $refund['reason'] ?? null;
-		$amount        = $this->read_webhook_property( $event_object, 'amount' );
-		$currency      = $this->read_webhook_property( $event_object, 'currency' );
+		$charge_id         = $this->read_webhook_property( $event_object, 'id' );
+		$refund            = array_pop( $this->read_webhook_property( $event_object, 'refunds' )['data'] );
+		$refund_id         = $refund['id'] ?? null;
+		$refund_reason     = $refund['reason'] ?? null;
+		$amount            = $this->read_webhook_property( $event_object, 'amount' );
+		$currency          = $this->read_webhook_property( $event_object, 'currency' );
+		$amount_refunded   = WC_Payments_Utils::interpret_stripe_amount( $refund['amount'], $currency );
+		$is_partial_refund = $refund['amount'] < $amount;
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -820,7 +821,7 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-			wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
+			wc_price( $amount_refunded, [ 'currency' => strtoupper( $currency ) ] ),
 			$order
 		);
 
@@ -856,24 +857,44 @@ class WC_Payments_Webhook_Processing_Service {
 		if ( $this->order_service->order_note_exists( $order, $note ) ) {
 			return;
 		}
-		// Adjust order total.
-		$refunded_amount = WC_Payments_Utils::interpret_stripe_amount( $amount, $currency );
-		$refund_order    = wc_create_refund(
-			[
-				'amount'     => $refunded_amount,
-				'reason'     => $refund_reason,
-				'order_id'   => $order->get_id(),
-				'line_items' => $order->get_items(), // We don't the information of the line items that were actually refunded, so we will consider all of them as refunded.
-			]
-		);
 
-		$order->update_status( Order_Status::REFUNDED, $note );
-		$this->order_service->set_wcpay_refund_status_for_order( $order, 'refunded' );
-		$this->order_service->set_wcpay_refund_id_for_order( $refund_order, $refund_id );
-		$this->order_service->set_wcpay_refund_transaction_id_for_order( $refund_order, $refund['balance_transaction'] );
-		$refund_order->save_meta_data();
+		if ( ! $is_partial_refund ) {
+			// TODO we may need to check if there's a refund already created for this charge.
+			// A refund originated from the Dashboard will not be associated with the order, so we need to create a refund manually.
+			$refund_order = wc_create_refund(
+				[
+					'amount'     => $amount_refunded,
+					'reason'     => $refund_reason,
+					'order_id'   => $order->get_id(),
+					'line_items' => $order->get_items(), // We don't have the information of the line items that were actually refunded as part of the event, so we will consider all of them as refunded.
+				]
+			);
+			// Set the order status to refunded since the refund is for the full amount.
+			$order->update_status( Order_Status::REFUNDED, $note );
+			$this->order_service->set_wcpay_refund_status_for_order( $order, 'successful' );
+			$this->order_service->set_wcpay_refund_id_for_order( $refund_order, $refund_id );
+			$this->order_service->set_wcpay_refund_transaction_id_for_order( $refund_order, $refund['balance_transaction'] );
+			$refund_order->save_meta_data();
+		}
 
-		// TODO handle partial refunds.
+		if ( $is_partial_refund ) {
+			$wc_last_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
+			if ( ! $wc_last_refund ) {
+				$wc_last_refund = wc_create_refund(
+					[
+						'amount'     => $amount_refunded,
+						'reason'     => $refund_reason,
+						'order_id'   => $order->get_id(),
+						'line_items' => $order->get_items(), // We don't the information of the line items that were actually refunded, so we will consider all of them as refunded.
+					]
+				);
+			}
+			$this->order_service->set_wcpay_refund_status_for_order( $order, 'successful' );
+			$this->order_service->set_wcpay_refund_id_for_order( $wc_last_refund, $refund_id );
+			$this->order_service->set_wcpay_refund_transaction_id_for_order( $wc_last_refund, $refund['balance_transaction'] );
+			$wc_last_refund->save_meta_data();
+			$order->add_order_note( $note );
+		}
 
 		$order->save();
 
