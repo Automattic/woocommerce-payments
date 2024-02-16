@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: ensure comma-separated list is translatable.
