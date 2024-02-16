@@ -25,13 +25,16 @@ const appearanceSelectors = {
 	blocksCheckout: {
 		appendTarget: '#billing.wc-block-components-address-form',
 		upeThemeInputSelector: '#billing-first_name',
-		upeThemeLabelSelector: '.wc-block-components-text-input label',
+		upeThemeLabelSelector:
+			'.wc-block-components-checkout-step__description',
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
 		alternateSelectors: {
 			appendTarget: '#shipping.wc-block-components-address-form',
 			upeThemeInputSelector: '#shipping-first_name',
+			upeThemeLabelSelector:
+				'.wc-block-components-checkout-step__description',
 		},
 	},
 
@@ -200,17 +203,24 @@ const hiddenElementsForUPE = {
 		);
 		hiddenContainer.appendChild( hiddenInvalidRow );
 
-		// Clone & append target element to hidden valid row.
+		// Clone & append target input  to hidden valid row.
 		this.appendClone(
 			hiddenValidRow,
 			selectors.upeThemeInputSelector,
 			selectors.hiddenInput
 		);
 
-		// Clone & append target element to hidden invalid row.
+		// Clone & append target input  to hidden invalid row.
 		this.appendClone(
 			hiddenInvalidRow,
 			selectors.upeThemeInputSelector,
+			selectors.hiddenInvalidInput
+		);
+
+		// Clone & append target label to hidden invalid row.
+		this.appendClone(
+			hiddenInvalidRow,
+			selectors.upeThemeLabelSelector,
 			selectors.hiddenInvalidInput
 		);
 
@@ -322,7 +332,7 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 	const inputFocusRules = getFieldStyles(
 		selectors.hiddenInput,
 		'.Input',
-		true
+		false
 	);
 	const inputInvalidRules = getFieldStyles(
 		selectors.hiddenInvalidInput,
