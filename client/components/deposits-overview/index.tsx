@@ -194,7 +194,6 @@ const DepositsOverview: React.FC = () => {
 					/>
 					<ClickTooltip
 						content={ nextDepositHelpContent }
-						className="wcpay-deposits-overview__schedule__tooltip"
 						buttonIcon={ <HelpOutlineIcon /> }
 						buttonLabel={ 'Deposit schedule tooltip' }
 					/>
