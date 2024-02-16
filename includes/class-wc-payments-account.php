@@ -1980,11 +1980,17 @@ class WC_Payments_Account {
 	/**
 	 * Gets tracking info from the server and caches it.
 	 *
+	 * It's only available after connecting to Jetpack, so we should only cache it after that.
+	 *
 	 * @param bool $force_refresh Whether to force a refresh of the tracking info.
 	 *
 	 * @return array|null Array of tracking info or null if unavailable.
 	 */
 	public function get_tracking_info( $force_refresh = false ): ?array {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return null;
+		}
+
 		return $this->database_cache->get_or_add(
 			Database_Cache::TRACKING_INFO_KEY,
 			function(): array {
