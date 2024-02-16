@@ -109,7 +109,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data          += $this->build_display_items();
 		$data['result'] = 'success';
 
-		if ( $booking_id ) {
+		if ( ! empty( $booking_id ) ) {
 			$data['bookingId'] = $booking_id;
 		}
 
