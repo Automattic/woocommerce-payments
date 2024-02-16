@@ -226,9 +226,19 @@ export const DisputesList = (): JSX.Element => {
 	const totalRows = disputesSummary.count || 0;
 
 	const rows = disputes.map( ( dispute ) => {
+		const onClickDisputeRow = (
+			e: React.MouseEvent< HTMLAnchorElement >
+		) => {
+			// Use client-side routing to avoid page refresh.
+			e.preventDefault();
+			recordEvent( 'wcpay_disputes_row_action_click' );
+			const history = getHistory();
+			history.push( getDetailsURL( dispute.charge_id, 'transactions' ) );
+		};
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
 				href={ getDetailsURL( dispute.charge_id, 'transactions' ) }
+				onClick={ onClickDisputeRow }
 			>
 				{ children }
 			</ClickableCell>
@@ -331,20 +341,7 @@ export const DisputesList = (): JSX.Element => {
 							dispute.charge_id,
 							'transactions'
 						) }
-						onClick={ (
-							e: React.MouseEvent< HTMLAnchorElement >
-						) => {
-							// Use client-side routing to avoid page refresh.
-							e.preventDefault();
-							recordEvent( 'wcpay_disputes_row_action_click' );
-							const history = getHistory();
-							history.push(
-								getDetailsURL(
-									dispute.charge_id,
-									'transactions'
-								)
-							);
-						} }
+						onClick={ onClickDisputeRow }
 					>
 						{ needsResponse
 							? __( 'Respond', 'woocommerce-payments' )

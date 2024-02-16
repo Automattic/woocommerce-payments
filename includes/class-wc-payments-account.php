@@ -1983,6 +1983,31 @@ class WC_Payments_Account {
 		return $account['card_testing_protection_eligible'] ?? false;
 	}
 
+
+	/**
+	 * Gets tracking info from the server and caches it.
+	 *
+	 * It's only available after connecting to Jetpack, so we should only cache it after that.
+	 *
+	 * @param bool $force_refresh Whether to force a refresh of the tracking info.
+	 *
+	 * @return array|null Array of tracking info or null if unavailable.
+	 */
+	public function get_tracking_info( $force_refresh = false ): ?array {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return null;
+		}
+
+		return $this->database_cache->get_or_add(
+			Database_Cache::TRACKING_INFO_KEY,
+			function(): array {
+				return $this->payments_api_client->get_tracking_info();
+			},
+			'is_array', // We expect an array back from the cache.
+			$force_refresh
+		);
+	}
+
 	/**
 	 * Redirects to the onboarding flow page.
 	 * Also checks if the server is connected and try to connect it otherwise.
@@ -2031,7 +2056,8 @@ class WC_Payments_Account {
 				'jetpack_connected' => $this->payments_api_client->is_server_connected(),
 				'wcpay_version'     => WCPAY_VERSION_NUMBER,
 				'woo_country_code'  => WC()->countries->get_base_country(),
-			]
+			],
+			$this->get_tracking_info() ?? []
 		);
 
 		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
