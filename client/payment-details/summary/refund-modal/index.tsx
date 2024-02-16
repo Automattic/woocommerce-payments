@@ -18,7 +18,7 @@ import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import { Charge } from 'wcpay/types/charges';
 import { usePaymentIntentWithChargeFallback } from 'wcpay/data';
 import { PaymentChargeDetailsResponse } from 'wcpay/payment-details/types';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 
 interface RefundModalProps {
 	charge: Charge;
@@ -46,7 +46,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 	};
 
 	const handleRefund = async () => {
-		recordEvent( events.TRANSACTIONS_DETAILS_REFUND_FULL, {
+		recordEvent( 'payments_transactions_details_refund_full', {
 			payment_intent_id: charge.payment_intent,
 		} );
 		setIsRefundInProgress( true );

@@ -14,8 +14,8 @@ import { Button } from '@wordpress/components';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'utils/currency';
-import { recordEvent, events } from 'tracks';
-import TransactionStatusChip from 'components/transaction-status-chip';
+import { recordEvent } from 'tracks';
+import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 import { FraudOutcomeTransaction } from '../../data';
 
 interface Column extends TableCardColumn {
@@ -86,15 +86,18 @@ export const getRiskReviewListRowContent = (
 	);
 
 	const handleActionButtonClick = () => {
-		recordEvent( events.TRANSACTIONS_RISK_REVIEW_LIST_REVIEW_BUTTON_CLICK, {
-			payment_intent_id: data.payment_intent.id,
-		} );
+		recordEvent(
+			'payments_transactions_risk_review_list_review_button_click',
+			{
+				payment_intent_id: data.payment_intent.id,
+			}
+		);
 	};
 
 	return {
 		status: {
 			value: data.status,
-			display: <TransactionStatusChip status="review" />,
+			display: <TransactionStatusPill status="review" />,
 		},
 		created: {
 			value: formattedCreatedDate,

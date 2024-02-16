@@ -751,7 +751,7 @@ class WC_Payments_Account {
 		// Redirect directly to onboarding page if come from WC Admin task.
 		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
 		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
-			$this->redirect_to_onboarding_flow_page();
+			$this->redirect_to_onboarding_flow_page( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK );
 		}
 
 		// Redirect if not connected.
@@ -1057,15 +1057,20 @@ class WC_Payments_Account {
 				);
 			}
 
-			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
-
-			$from_wc_admin_task           = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
-			$from_wc_admin_incentive_page = false !== strpos( wp_get_referer(), 'path=%2Fwc-pay-welcome-page' );
-			$from_wc_pay_connect_page     = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
-			if ( $from_wc_admin_task || $from_wc_pay_connect_page || $from_wc_admin_incentive_page ) {
+			$source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
+			if ( in_array(
+				$source,
+				[
+					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
+					WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
+					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
+					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				],
+				true
+			) ) {
 				// Redirect non-onboarded account to the onboarding flow, otherwise to payments overview page.
 				if ( ! $this->is_stripe_connected() ) {
-					$this->redirect_to_onboarding_flow_page();
+					$this->redirect_to_onboarding_flow_page( $source );
 				} else {
 					// Accounts with Stripe account connected will be redirected to the overview page.
 					$this->redirect_to( static::get_overview_page_url() );
@@ -1073,7 +1078,7 @@ class WC_Payments_Account {
 			}
 
 			// Handle the flow for a builder moving from test to live.
-			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
+			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS === $source ) {
 				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 
 				// Delete the account if the test mode is enabled otherwise it'll cause issues to onboard again.
@@ -1083,16 +1088,16 @@ class WC_Payments_Account {
 
 				// Set the test mode to false now that we are handling a real onboarding.
 				WC_Payments_Onboarding_Service::set_test_mode( false );
-				$this->redirect_to_onboarding_flow_page();
+				$this->redirect_to_onboarding_flow_page( $source );
 				return;
 			}
 
-			if ( isset( $_GET['wcpay-reset-account'] ) ) {
+			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT === $source ) {
 				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 
 				// Delete the account.
 				$this->payments_api_client->delete_account( $test_mode );
-				$this->redirect_to_onboarding_flow_page();
+				$this->redirect_to_onboarding_flow_page( $source );
 				return;
 			}
 
@@ -1129,6 +1134,8 @@ class WC_Payments_Account {
 					$event_properties
 				);
 			}
+
+			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
 			try {
 				$this->maybe_init_jetpack_connection(
@@ -2005,9 +2012,11 @@ class WC_Payments_Account {
 	 * Redirects to the onboarding flow page.
 	 * Also checks if the server is connected and try to connect it otherwise.
 	 *
+	 * @param string $source The source of the redirect.
+	 *
 	 * @return void
 	 */
-	private function redirect_to_onboarding_flow_page() {
+	private function redirect_to_onboarding_flow_page( string $source ) {
 		if ( ! WC_Payments_Utils::should_use_new_onboarding_flow() ) {
 			return;
 		}
@@ -2015,7 +2024,10 @@ class WC_Payments_Account {
 		// Track the Jetpack connection start.
 		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
 
-		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
+		$onboarding_url = add_query_arg(
+			[ 'source' => $source ],
+			admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' )
+		);
 
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			$this->payments_api_client->start_server_connection( $onboarding_url );

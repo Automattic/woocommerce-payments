@@ -8,7 +8,7 @@ import { getPaymentRequestData } from 'wcpay/payment-request/utils';
 /**
  * Internal dependencies
  */
-import events from './events';
+import { Event } from './event';
 
 /**
  * Checks if site tracking is enabled.
@@ -23,11 +23,11 @@ export const isEnabled = (): boolean => wcTracks.isEnabled;
  * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
  * properties to every event.
  *
- * @param {string}  eventName        Name of the event.
+ * @param {Event}  eventName         Name of the event.
  * @param {Object} [eventProperties] Event properties (optional).
  */
 export const recordEvent = (
-	eventName: string,
+	eventName: Event,
 	eventProperties: Record< string, unknown > = {}
 ): void => {
 	// TODO: Load these properties in a new script to ensure it's available everywhere.
@@ -86,5 +86,3 @@ export const recordUserEvent = (
 		body,
 	} );
 };
-
-export { events };

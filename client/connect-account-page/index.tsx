@@ -21,7 +21,7 @@ import scheduled from 'gridicons/dist/scheduled';
 /**
  * Internal dependencies
  */
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 import Page from 'components/page';
 import BannerNotice from 'components/banner-notice';
 import PaymentMethods from './payment-methods';
@@ -50,7 +50,7 @@ const ConnectAccountPage: React.FC = () => {
 	const isCountrySupported = !! availableCountries[ country ];
 
 	useEffect( () => {
-		recordEvent( events.CONNECT_ACCOUNT_VIEW, {
+		recordEvent( 'page_view', {
 			path: 'payments_connect_v2',
 			...( incentive && {
 				incentive_id: incentive.id,
@@ -93,7 +93,7 @@ const ConnectAccountPage: React.FC = () => {
 	const handleSetup = async () => {
 		setSubmitted( true );
 
-		recordEvent( events.CONNECT_ACCOUNT_CLICKED, {
+		recordEvent( 'wcpay_connect_account_clicked', {
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
 			is_new_onboarding_flow: isNewFlowEnabled,
 			...( incentive && {

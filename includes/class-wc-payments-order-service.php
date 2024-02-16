@@ -11,6 +11,9 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
+use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Cancel_Intention;
+use WCPay\Core\Server\Request\Capture_Intention;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -155,7 +158,7 @@ class WC_Payments_Order_Service {
 				break;
 			case Intent_Status::SUCCEEDED:
 				if ( Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
-					$this->mark_payment_capture_completed( $order, $intent_data );
+					$this->mark_payment_capture_completed( $order, $intent );
 				} else {
 					$this->mark_payment_completed( $order, $intent_data );
 				}
@@ -922,6 +925,23 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Creates an "authorization captured" order note if not already present.
+	 *
+	 * @param WC_Order $order The order.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @return boolean        True if the note was added, false otherwise.
+	 */
+	public function post_unique_capture_complete_note( $order, $intent_id, $charge_id ) {
+		$note = $this->generate_capture_success_note( $order, $intent_id, $charge_id );
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -1015,34 +1035,37 @@ class WC_Payments_Order_Service {
 	/**
 	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
 	 *
-	 * @param WC_Order $order         Order object.
-	 * @param array    $intent_data   The intent data associated with this order.
+	 * @param WC_Order                          $order         Order object.
+	 * @param WC_Payments_API_Payment_Intention $intent        The intent instance.
 	 *
 	 * @return void
 	 */
-	private function mark_payment_capture_completed( $order, $intent_data ) {
-		$note = $this->generate_capture_success_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
+	private function mark_payment_capture_completed( $order, $intent ) {
+		$intent_id = $intent->get_id();
+		$note      = $this->generate_capture_success_note( $order, $intent_id, $intent->get_charge()->get_id() );
+
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
 
 		// Update the note with the fee breakdown details async.
-		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_data['intent_id'] );
+		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
 
 		/**
 		 * If we have a status for the fraud outcome, we want to add the proper meta data.
 		 * If auth/capture is enabled and the transaction is allowed, it will be 'allow'.
 		 * If it was held for review for any reason, it will be 'review'.
 		 */
-		if ( '' !== $intent_data['fraud_outcome'] && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
+		$fraud_outcome = $intent->get_metadata()['fraud_outcome'] ?? '';
+		if ( '' !== $fraud_outcome && Rule::is_valid_fraud_outcome_status( $fraud_outcome ) ) {
 			$fraud_meta_box_type = Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
-			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
+			$this->set_fraud_outcome_status_for_order( $order, $fraud_outcome );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 		}
-
-		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
+		$this->attach_transaction_fee_to_order( $order, $intent->get_charge() );
+		$this->update_order_status( $order, 'payment_complete', $intent_id );
 		$order->add_order_note( $note );
-		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+		$this->set_intention_status_for_order( $order, $intent->get_status() );
 	}
 
 	/**
@@ -1108,6 +1131,105 @@ class WC_Payments_Order_Service {
 			Logger::log( 'Error saving transaction fee into metadata for the order ' . $order->get_id() . ': ' . $e->getMessage() );
 		}
 
+	}
+
+	/**
+	 * Cancels uncaptured authorizations on order cancel.
+	 *
+	 * @param int $order_id - Order ID.
+	 */
+	public function cancel_authorizations_on_order_status_change( $order_id ) {
+		$order = new WC_Order( $order_id );
+		if ( null !== $order ) {
+			$intent_id = $this->get_intent_id_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id ) {
+				try {
+					$request = Get_Intention::create( $intent_id );
+					$request->set_hook_args( $order );
+					$intent = $request->send();
+					$charge = $intent->get_charge();
+
+					/**
+					 * Successful but not captured Charge is an authorization
+					 * that needs to be cancelled.
+					 */
+					if ( null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+					) {
+							$request = Cancel_Intention::create( $intent_id );
+							$request->set_hook_args( $order );
+							$intent = $request->send();
+
+							$this->post_unique_capture_cancelled_note( $order );
+					}
+
+					$this->set_intention_status_for_order( $order, $intent->get_status() );
+					$order->save();
+				} catch ( \Exception $e ) {
+					$order->add_order_note(
+						WC_Payments_Utils::esc_interpolated_html(
+							__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+							[ 'strong' => '<strong>' ]
+						)
+					);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Handles the change of an order status.
+	 *
+	 * This function is triggered when the status of an order is changed.
+	 * It performs necessary actions based on the new status of the order.
+	 *
+	 * @param int $order_id The ID of the order.
+	 * @return void
+	 */
+	public function capture_authorization_on_order_status_change( int $order_id ) {
+		$order = new WC_Order( $order_id );
+
+		if ( null !== $order ) {
+			$intent_id = $this->get_intent_id_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id ) {
+				try {
+					$request = Get_Intention::create( $intent_id );
+					$request->set_hook_args( $order );
+					$intent = $request->send();
+					$charge = $intent->get_charge();
+
+					/**
+					 * Successful but not captured Charge is an authorization
+					 * that needs to be captured.
+					 */
+					if ( null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+					) {
+							$request = Capture_Intention::create( $intent_id );
+							$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+							$request->set_hook_args( $order );
+							$intent = $request->send();
+
+							$this->post_unique_capture_complete_note( $order, $intent_id, $charge->get_id() );
+							$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
+					}
+
+					$this->set_intention_status_for_order( $order, $intent->get_status() );
+					$order->save();
+				} catch ( \Exception $e ) {
+					$order->add_order_note(
+						WC_Payments_Utils::esc_interpolated_html(
+							__( 'Capture authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+							[ 'strong' => '<strong>' ]
+						)
+					);
+				}
+			}
+		}
 	}
 
 	/**
