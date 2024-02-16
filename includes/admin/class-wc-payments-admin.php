@@ -903,6 +903,7 @@ class WC_Payments_Admin {
 				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
 			],
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
+			'trackingInfo'                  => $this->account->get_tracking_info(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
