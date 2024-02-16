@@ -109,7 +109,6 @@ declare global {
 		isMultiCurrencyEnabled: string;
 		errorMessage: string;
 		onBoardingDisabled: boolean;
-		isBnplAffirmAfterpayEnabled: boolean;
 		connectIncentive?: {
 			id: string;
 			description: string;
