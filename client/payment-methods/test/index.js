@@ -287,32 +287,13 @@ describe( 'PaymentMethods', () => {
 		expect( afterpay ).toBeChecked();
 	} );
 
-	test( 'renders the payment methods component and feedback button', () => {
+	test( 'renders the payment methods component', () => {
 		render( <PaymentMethods /> );
 
-		const feedbackButton = screen.queryByRole( 'button', {
-			name: 'Add feedback',
-		} );
-
-		expect( feedbackButton ).toBeInTheDocument();
 		expect( screen.queryByText( 'Payment methods' ) ).toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Payment methods' ).parentElement
 		).toHaveTextContent( 'Payment methods' );
-	} );
-
-	it( 'should only be able to leave feedback', () => {
-		render( <PaymentMethods /> );
-		const kebabMenuWithFeedbackOnly = screen.queryByRole( 'button', {
-			name: 'Add feedback',
-		} );
-
-		const kebabMenuWithFeedbackAndDisable = screen.queryByRole( 'button', {
-			name: 'Add feedback or disable',
-		} );
-
-		expect( kebabMenuWithFeedbackOnly ).toBeInTheDocument();
-		expect( kebabMenuWithFeedbackAndDisable ).not.toBeInTheDocument();
 	} );
 
 	it( 'should render the activation modal when requirements exist for the payment method', () => {
