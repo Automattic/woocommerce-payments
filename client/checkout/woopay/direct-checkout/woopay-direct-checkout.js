@@ -175,7 +175,7 @@ class WoopayDirectCheckout {
 					window.location.href = woopayRedirectUrl;
 				} catch ( error ) {
 					// TODO: Add telemetry for this flow.
-					console.error( error );
+					console.warn( error ); // eslint-disable-line no-console
 
 					this.teardown();
 					window.location.href = event.target.href;

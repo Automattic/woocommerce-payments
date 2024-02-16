@@ -20,5 +20,6 @@ window.addEventListener( 'load', async () => {
 		return;
 	}
 
+	// Pass true to append '&woopay_checkout_redirect=1' and let WooPay decide the checkout flow
 	WooPayDirectCheckout.redirectToWooPay( checkoutElements, true );
 } );
