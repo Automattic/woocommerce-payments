@@ -244,7 +244,7 @@ const hiddenElementsForUPE = {
 	},
 };
 
-export const getFieldStyles = ( selector, upeElement, focus = false ) => {
+export const getFieldStyles = ( selector, upeElement ) => {
 	if ( ! document.querySelector( selector ) ) {
 		return {};
 	}
@@ -252,9 +252,6 @@ export const getFieldStyles = ( selector, upeElement, focus = false ) => {
 	const validProperties = upeRestrictedProperties[ upeElement ];
 
 	const elem = document.querySelector( selector );
-	if ( focus ) {
-		elem.focus();
-	}
 
 	const styles = window.getComputedStyle( elem );
 
@@ -329,11 +326,6 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 	hiddenElementsForUPE.init( isBlocksCheckout );
 
 	const inputRules = getFieldStyles( selectors.hiddenInput, '.Input' );
-	const inputFocusRules = getFieldStyles(
-		selectors.hiddenInput,
-		'.Input',
-		false
-	);
 	const inputInvalidRules = getFieldStyles(
 		selectors.hiddenInvalidInput,
 		'.Input'
@@ -374,7 +366,6 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 		variables: globalRules,
 		rules: {
 			'.Input': inputRules,
-			'.Input:focus': inputFocusRules,
 			'.Input--invalid': inputInvalidRules,
 			'.Label': labelRules,
 			'.Block': blockRules,
