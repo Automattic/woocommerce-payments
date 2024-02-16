@@ -321,7 +321,7 @@ describe( 'AccountBalances', () => {
 		} );
 		fireEvent.click( tooltipButton );
 		const tooltip = screen.getByRole( 'tooltip', {
-			name: /The amount of funds available to be deposited./,
+			name: /Available funds have completed processing and are ready to be deposited into your bank account./,
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
@@ -368,9 +368,23 @@ describe( 'AccountBalances', () => {
 	} );
 
 	test( 'renders the correct tooltip text for the total balance', () => {
-		const delayDays = mockAccount.deposits_schedule.delay_days;
 		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 0 ) ] );
-		expect( render( <AccountBalances /> ) ).toMatchSnapshot();
+
+		const { container } = render( <AccountBalances /> );
+		expect( container ).toMatchSnapshot();
+
+		// Check the tooltips are rendered correctly.
+		const tooltipButton = screen.getByRole( 'button', {
+			name: 'Total balance tooltip',
+		} );
+		fireEvent.click( tooltipButton );
+		const tooltip = screen.getByRole( 'tooltip', {
+			name: /Total balance combines both pending funds \(transactions under processing\) and available funds \(ready for deposit\)\./,
+		} );
+		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+			'href',
+			'https://woo.com/document/woopayments/deposits/deposit-schedule/'
+		);
 	} );
 
 	test( 'renders instant deposit button correctly', () => {
