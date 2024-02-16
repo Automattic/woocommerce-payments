@@ -348,12 +348,26 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 		color: selectedTabRules.color,
 	};
 
+	const blockRules = getFieldStyles(
+		selectors.upeThemeLabelSelector,
+		'.Block'
+	);
+
+	const globalRules = {
+		colorBackground: blockRules.backgroundColor,
+		colorText: labelRules.color,
+		fontFamily: labelRules.fontFamily,
+		fontSizeBase: labelRules.fontSize,
+	};
+
 	const appearance = {
+		variables: globalRules,
 		rules: {
 			'.Input': inputRules,
 			'.Input:focus': inputFocusRules,
 			'.Input--invalid': inputInvalidRules,
 			'.Label': labelRules,
+			'.Block': blockRules,
 			'.Tab': tabRules,
 			'.Tab:hover': tabHoverRules,
 			'.Tab--selected': selectedTabRules,
