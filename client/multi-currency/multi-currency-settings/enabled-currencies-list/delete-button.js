@@ -9,7 +9,6 @@ import { useCallback, useState } from '@wordpress/element';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import CurrencyDeleteIllustration from 'wcpay/components/currency-delete-illustration';
 import PaymentMethodIcon from 'wcpay/settings/payment-method-icon';
-import React from 'react';
 
 const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
