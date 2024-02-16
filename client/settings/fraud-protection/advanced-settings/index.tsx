@@ -1,8 +1,15 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
+import React, {
+	useEffect,
+	useLayoutEffect,
+	useState,
+	useRef,
+	EffectCallback,
+} from 'react';
 import ReactDOM from 'react-dom';
+import { isMatchWith } from 'lodash';
 import { sprintf, __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { LoadableBlock } from 'wcpay/components/loadable';
@@ -43,6 +50,7 @@ import {
 	ProtectionSettingsUI,
 	SettingsHook,
 } from '../interfaces';
+import useConfirmNavigation from 'wcpay/utils/use-confirm-navigation';
 
 const observerEventMapping: Record< string, string > = {
 	'avs-mismatch-card':
@@ -237,9 +245,51 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		};
 	}, [ isLoading ] );
 
+	const { isFRTReviewFeatureActive } = wcpaySettings;
+
+	const confirmLeaveCallback = useConfirmNavigation( () => {
+		const settingsChanged =
+			! isLoading &&
+			! isMatchWith(
+				readRuleset( advancedFraudProtectionSettings ),
+				protectionSettingsUI,
+				( source, target ) => {
+					for ( const rule in source ) {
+						// We need to skip checking the "block" property, as they are not the same with defaults.
+						if ( ! isFRTReviewFeatureActive && rule === 'block' ) {
+							continue;
+						}
+						if ( source[ rule ] !== target[ rule ] ) {
+							return false;
+						}
+					}
+
+					return true;
+				}
+			);
+
+		if ( ! settingsChanged ) {
+			return;
+		}
+
+		// This message won't be applied because all major browsers disabled showing custom messages on onbeforeunload event.
+		// Each browser now displays a hardcoded message for this cause.
+		// Source: https://stackoverflow.com/a/68637899
+		return __(
+			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
+			'woocommerce-payments'
+		);
+	} ) as EffectCallback;
+
+	useEffect( confirmLeaveCallback, [
+		confirmLeaveCallback,
+		protectionSettingsChanged,
+		advancedFraudProtectionSettings,
+	] );
+
 	const renderSaveButton = () => (
 		<Button
-			isPrimary
+			variant="primary"
 			isBusy={ isSaving }
 			onClick={ handleSaveSettings }
 			disabled={
@@ -325,7 +375,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 									tab: 'checkout',
 									section: 'woocommerce_payments',
 								} ) }
-								isSecondary
+								variant="secondary"
 								disabled={ isSaving || isLoading }
 							>
 								{ __(
