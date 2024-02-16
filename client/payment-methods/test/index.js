@@ -222,8 +222,6 @@ describe( 'PaymentMethods', () => {
 			'sofort',
 		] );
 
-		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
-
 		render( <PaymentMethods /> );
 
 		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
@@ -252,8 +250,6 @@ describe( 'PaymentMethods', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'card', 'affirm', 'afterpay_clearpay' ],
 		] );
-
-		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
 
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: {
