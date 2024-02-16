@@ -13,6 +13,7 @@ use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
+use WCPay\Tracker;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -857,19 +858,25 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 		// Adjust order total.
 		$refunded_amount = WC_Payments_Utils::interpret_stripe_amount( $amount, $currency );
-		$refund          = wc_create_refund(
+		$refund_order    = wc_create_refund(
 			[
 				'amount'     => $refunded_amount,
 				'reason'     => $refund_reason,
 				'order_id'   => $order->get_id(),
-				'line_items' => [], // We don't have line items for the refund.
+				'line_items' => $order->get_items(), // We don't the information of the line items that were actually refunded, so we will consider all of them as refunded.
 			]
 		);
 
 		$order->update_status( Order_Status::REFUNDED, $note );
 		$this->order_service->set_wcpay_refund_status_for_order( $order, 'refunded' );
-		// TODO set refund id and transaction id in the order meta.
+		$this->order_service->set_wcpay_refund_id_for_order( $refund_order, $refund_id );
+		$this->order_service->set_wcpay_refund_transaction_id_for_order( $refund_order, $refund['balance_transaction'] );
+		$refund_order->save_meta_data();
+
+		// TODO handle partial refunds.
 
 		$order->save();
+
+		Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 	}
 }
