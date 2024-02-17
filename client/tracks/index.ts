@@ -39,7 +39,15 @@ export const recordEvent = (
 			jetpack_connected: wcpaySettings.isJetpackConnected,
 			wcpay_version: wcpaySettings.version,
 			woo_country_code: wcpaySettings.connect.country,
+			hosting_provider: wcpaySettings.trackingInfo?.hosting_provider,
 		} );
+
+		// Filter our undefined properties.
+		for ( const key in eventProperties ) {
+			if ( eventProperties[ key ] === undefined ) {
+				delete eventProperties[ key ];
+			}
+		}
 	}
 	// Wc-admin track script is enqueued after ours, wrap in domReady
 	// to make sure we're not too early.
