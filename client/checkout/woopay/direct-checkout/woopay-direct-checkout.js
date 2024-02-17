@@ -93,11 +93,13 @@ class WoopayDirectCheckout {
 	 * @throws {Error} If the session data could not be sent to WooPay.
 	 */
 	static async resolveWooPayRedirectUrl() {
+		// We're intentionally adding a try-catch block to catch any errors
+		// that might occur other than the known validation errors.
 		try {
 			const encryptedSessionData = await this.getEncryptedSessionData();
 			if ( ! this.isValidEncryptedSessionData( encryptedSessionData ) ) {
 				throw new Error(
-					'Could not retrieve encrypted session from store.'
+					'Could not retrieve encrypted session data from store.'
 				);
 			}
 
@@ -105,7 +107,7 @@ class WoopayDirectCheckout {
 				encryptedSessionData
 			);
 			if ( ! woopaySessionData?.redirect_url ) {
-				throw new Error( 'Invalid WooPay session.' );
+				throw new Error( 'Could not retrieve WooPay checkout URL.' );
 			}
 
 			return woopaySessionData.redirect_url;
