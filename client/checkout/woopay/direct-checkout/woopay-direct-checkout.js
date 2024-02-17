@@ -160,7 +160,7 @@ class WoopayDirectCheckout {
 	 * Adds a click-event listener to the given elements that redirects to the WooPay checkout page.
 	 *
 	 * @param {*[]} elements The elements to add a click-event listener to.
-	 * @param {boolean} useCheckoutRedirect Whether to use the `woopay_checkout_redirect` flag to let WooPay handle the checkout flow.
+	 * @param {boolean} useCheckoutRedirect Whether to use the `checkout_redirect` flag to let WooPay handle the checkout flow.
 	 */
 	static redirectToWooPay( elements, useCheckoutRedirect ) {
 		elements.forEach( ( element ) => {
@@ -170,7 +170,7 @@ class WoopayDirectCheckout {
 				try {
 					let woopayRedirectUrl = await this.resolveWooPayRedirectUrl();
 					if ( useCheckoutRedirect ) {
-						woopayRedirectUrl += '&woopay_checkout_redirect=1';
+						woopayRedirectUrl += '&checkout_redirect=1';
 					}
 
 					this.teardown();
