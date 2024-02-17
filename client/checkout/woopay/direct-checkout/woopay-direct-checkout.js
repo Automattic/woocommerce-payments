@@ -174,9 +174,10 @@ class WoopayDirectCheckout {
 					}
 
 					this.teardown();
+					// TODO: Add telemetry as to _how long_ it took to get to this step.
 					window.location.href = woopayRedirectUrl;
 				} catch ( error ) {
-					// TODO: Add telemetry for this flow.
+					// TODO: Add telemetry as to _why_ we've short-circuited the WooPay checkout flow.
 					console.warn( error ); // eslint-disable-line no-console
 
 					this.teardown();
