@@ -6,7 +6,7 @@
 import { apiFetch } from '@wordpress/data-controls';
 import { dispatch, select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal Dependencies
@@ -82,7 +82,7 @@ export function* submitEnabledCurrenciesUpdate( currencies ) {
 			__( 'Enabled currencies updated.', 'woocommerce-payments' )
 		);
 
-		recordEvent( events.MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED, {
+		recordEvent( 'wcpay_multi_currency_enabled_currencies_updated', {
 			added_currencies: addedCurrencies,
 			removed_currencies: removedCurrencies,
 		} );

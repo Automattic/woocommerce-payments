@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Fix losing cart contents during the login at checkout.

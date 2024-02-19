@@ -9,6 +9,7 @@ import type {
 
 declare global {
 	const wcpaySettings: {
+		version: string;
 		connectUrl: string;
 		isSubscriptionsActive: boolean;
 		featureFlags: {
@@ -108,7 +109,6 @@ declare global {
 		isMultiCurrencyEnabled: string;
 		errorMessage: string;
 		onBoardingDisabled: boolean;
-		isBnplAffirmAfterpayEnabled: boolean;
 		connectIncentive?: {
 			id: string;
 			description: string;
@@ -130,6 +130,9 @@ declare global {
 			english_name: string;
 			native_name: string;
 		};
+		trackingInfo?: {
+			hosting_provider: string;
+		};
 	};
 
 	const wc: {
@@ -149,5 +152,28 @@ declare global {
 		) => void;
 	};
 
-	const wcSettings: Record< string, any >;
+	const wcSettings: {
+		admin: {
+			onboarding: {
+				profile: {
+					wccom_connected: boolean;
+				};
+			};
+			currentUserData: {
+				first_name: string;
+			};
+			preloadSettings: {
+				general: {
+					woocommerce_allowed_countries: string;
+					woocommerce_all_except_countries: string[];
+					woocommerce_specific_allowed_countries: string[];
+					woocommerce_default_country: string;
+				};
+			};
+		};
+		adminUrl: string;
+		countries: Record< string, string >;
+		homeUrl: string;
+		siteTitle: string;
+	};
 }

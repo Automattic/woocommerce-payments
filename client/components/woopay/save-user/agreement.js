@@ -4,7 +4,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { recordUserEvent, events } from 'tracks';
+import { recordUserEvent } from 'tracks';
 
 const Agreement = () => {
 	return (
@@ -22,7 +22,7 @@ const Agreement = () => {
 							rel="noopener noreferrer"
 							onClick={ () => {
 								recordUserEvent(
-									events.WOOPAY_SAVE_MY_INFO_TOS_CLICK
+									'checkout_save_my_info_tos_click'
 								);
 							} }
 						>
@@ -36,7 +36,7 @@ const Agreement = () => {
 							rel="noopener noreferrer"
 							onClick={ () => {
 								recordUserEvent(
-									events.WOOPAY_SAVE_MY_INFO_PRIVACY_CLICK
+									'checkout_save_my_info_privacy_policy_click'
 								);
 							} }
 						>

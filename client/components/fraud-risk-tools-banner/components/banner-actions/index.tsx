@@ -8,7 +8,7 @@ import { Button } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 
 interface BannerActionsProps {
 	handleDontShowAgainOnClick: () => void;
@@ -18,7 +18,9 @@ const BannerActions: React.FC< BannerActionsProps > = ( {
 	handleDontShowAgainOnClick,
 } ) => {
 	const handleLearnMoreButtonClick = () => {
-		recordEvent( events.FRAUD_PROTECTION_BANNER_LEARN_MORE_CLICKED );
+		recordEvent(
+			'wcpay_fraud_protection_banner_learn_more_button_clicked'
+		);
 	};
 
 	return (

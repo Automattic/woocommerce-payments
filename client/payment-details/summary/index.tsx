@@ -50,7 +50,7 @@ import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
@@ -81,11 +81,7 @@ const placeholderValues = {
 };
 
 const isTapToPay = ( model: string ) => {
-	if ( model === 'COTS_DEVICE' ) {
-		return true;
-	}
-
-	return false;
+	return model === 'COTS_DEVICE';
 };
 
 const getTapToPayChannel = ( platform: string ) => {
@@ -431,14 +427,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										}
 										onClick={ () => {
 											recordEvent(
-												events.FRAUD_PROTECTION_TRANSACTION_REVIEWED_MERCHANT_BLOCKED,
+												'wcpay_fraud_protection_transaction_reviewed_merchant_blocked',
 												{
 													payment_intent_id:
 														charge.payment_intent,
 												}
 											);
 											recordEvent(
-												events.TRANSACTIONS_DETAILS_CANCEL_CHARGE_BUTTON_CLICK,
+												'payments_transactions_details_cancel_charge_button_click',
 												{
 													payment_intent_id:
 														charge.payment_intent,
@@ -458,14 +454,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										buttonIsSmall={ false }
 										onClick={ () => {
 											recordEvent(
-												events.FRAUD_PROTECTION_TRANSACTION_REVIEWED_MERCHANT_APPROVED,
+												'wcpay_fraud_protection_transaction_reviewed_merchant_approved',
 												{
 													payment_intent_id:
 														charge.payment_intent,
 												}
 											);
 											recordEvent(
-												events.TRANSACTIONS_DETAILS_CAPTURE_CHARGE_BUTTON_CLICK,
+												'payments_transactions_details_capture_charge_button_click',
 												{
 													payment_intent_id:
 														charge.payment_intent,
@@ -537,7 +533,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 														true
 													);
 													recordEvent(
-														events.TRANSACTIONS_DETAILS_REFUND_MODAL_OPEN,
+														'payments_transactions_details_refund_modal_open',
 														{
 															payment_intent_id:
 																charge.payment_intent,
@@ -555,7 +551,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 												<MenuItem
 													onClick={ () => {
 														recordEvent(
-															events.TRANSACTION_DETAILS_PARTIAL_REFUND,
+															'payments_transactions_details_partial_refund',
 															{
 																payment_intent_id:
 																	charge.payment_intent,
@@ -615,7 +611,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					onModalClose={ () => {
 						setIsRefundModalOpen( false );
 						recordEvent(
-							events.TRANSACTIONS_DETAILS_REFUND_MODAL_CLOSE,
+							'payments_transactions_details_refund_modal_close',
 							{
 								payment_intent_id: charge.payment_intent,
 							}
@@ -646,7 +642,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										buttonIsSmall={ false }
 										onClick={ () => {
 											recordEvent(
-												events.TRANSACTIONS_DETAILS_CAPTURE_CHARGE_BUTTON_CLICK,
+												'payments_transactions_details_capture_charge_button_click',
 												{
 													payment_intent_id:
 														charge.payment_intent,

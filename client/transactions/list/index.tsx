@@ -61,7 +61,7 @@ import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
-import { recordEvent, events } from 'tracks';
+import { recordEvent } from 'tracks';
 import DownloadButton from 'components/download-button';
 import CSVExportModal from 'components/csv-export-modal';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
@@ -718,7 +718,7 @@ export const TransactionsList = (
 		const { page, path, ...params } = getQuery();
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
-		recordEvent( events.TRANSACTIONS_DOWNLOAD_CSV_CLICK, {
+		recordEvent( 'wcpay_transactions_download_csv_click', {
 			location: props.depositId ? 'deposit_details' : 'transactions',
 			download_type: downloadType,
 			exported_transactions: rows.length,

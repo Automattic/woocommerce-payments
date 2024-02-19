@@ -293,14 +293,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the BNPL Affirm Afterpay is enabled.
-	 */
-	public static function is_bnpl_affirm_afterpay_enabled(): bool {
-		$account = WC_Payments::get_account_service()->get_cached_account_data();
-		return ! isset( $account['is_bnpl_affirm_afterpay_enabled'] ) || true === $account['is_bnpl_affirm_afterpay_enabled'];
-	}
-
-	/**
 	 * Checks whether the Stripe Billing feature is enabled.
 	 *
 	 * @return bool
