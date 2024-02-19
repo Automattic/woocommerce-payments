@@ -112,10 +112,29 @@ function setTestTimeouts() {
 	jest.setTimeout( TIMEOUT );
 }
 
+async function setLanguage() {
+	// Override the navigator.language and navigator.languages properties
+	await page.evaluateOnNewDocument( () => {
+		Object.defineProperty( navigator, 'language', {
+			get: function () {
+				return 'en-US';
+			},
+		} );
+		Object.defineProperty( navigator, 'languages', {
+			get: function () {
+				return [ 'en-US', 'en' ];
+			},
+		} );
+	} );
+}
+
 // Before every test suite run, delete all content created by the test. This ensures
 // other posts/comments/etc. aren't dirtying tests and tests don't depend on
 // each other's side-effects.
 beforeAll( async () => {
+	// Set language
+	await setLanguage();
+
 	if ( process.env.E2E_MORE_DEBUG ) {
 		addPageDebugEvents();
 	}
