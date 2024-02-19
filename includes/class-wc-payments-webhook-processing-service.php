@@ -820,81 +820,37 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-			wc_price( $amount_refunded, [ 'currency' => strtoupper( $currency ) ] ),
-			$order
-		);
-
-		if ( empty( $refund_reason ) ) {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
-					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
-					[
-						'code' => '<code>',
-					]
-				),
-				$formatted_price,
-				'WooPayments',
-				$refund_id
-			);
-		} else {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
-					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
-					[
-						'code' => '<code>',
-					]
-				),
-				$formatted_price,
-				'WooPayments',
-				$refund_reason,
-				$refund_id
+		if ( $amount < 0 || $amount_refunded > $order->get_total() ) {
+			return new WP_Error(
+				'invalid-amount',
+				__( 'The refund amount is not valid.', 'woocommerce-payments' )
 			);
 		}
 
-		if ( $this->order_service->order_note_exists( $order, $note ) ) {
+		$note = ( new WC_Payments_Refunded_Event_Note( $event_body, $order ) )->generate_html_note();
+
+		if ( ! $is_partial_refund && $this->order_service->order_note_exists( $order, $note ) ) {
 			return;
 		}
 
-		if ( ! $is_partial_refund ) {
-			// TODO we may need to check if there's a refund already created for this charge.
-			// A refund originated from the Dashboard will not be associated with the order, so we need to create a refund manually.
-			$refund_order = wc_create_refund(
-				[
-					'amount'     => $amount_refunded,
-					'reason'     => $refund_reason,
-					'order_id'   => $order->get_id(),
-					'line_items' => $order->get_items(), // We don't have the information of the line items that were actually refunded as part of the event, so we will consider all of them as refunded.
-				]
-			);
-			// Set the order status to refunded since the refund is for the full amount.
-			$order->update_status( Order_Status::REFUNDED, $note );
-			$this->order_service->set_wcpay_refund_status_for_order( $order, 'successful' );
-			$this->order_service->set_wcpay_refund_id_for_order( $refund_order, $refund_id );
-			$this->order_service->set_wcpay_refund_transaction_id_for_order( $refund_order, $refund['balance_transaction'] );
-			$refund_order->save_meta_data();
-		}
+		$wc_refund = wc_create_refund(
+			[
+				'amount'     => $amount_refunded,
+				'reason'     => $refund_reason,
+				'order_id'   => $order->get_id(),
+				'line_items' => $order->get_items(),
+			]
+		);
 
 		if ( $is_partial_refund ) {
-			$wc_last_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
-			if ( ! $wc_last_refund ) {
-				$wc_last_refund = wc_create_refund(
-					[
-						'amount'     => $amount_refunded,
-						'reason'     => $refund_reason,
-						'order_id'   => $order->get_id(),
-						'line_items' => $order->get_items(), // We don't the information of the line items that were actually refunded, so we will consider all of them as refunded.
-					]
-				);
-			}
-			$this->order_service->set_wcpay_refund_status_for_order( $order, 'successful' );
-			$this->order_service->set_wcpay_refund_id_for_order( $wc_last_refund, $refund_id );
-			$this->order_service->set_wcpay_refund_transaction_id_for_order( $wc_last_refund, $refund['balance_transaction'] );
-			$wc_last_refund->save_meta_data();
 			$order->add_order_note( $note );
+		} else {
+			$order->update_status( Order_Status::REFUNDED, $note );
 		}
+
+		$this->order_service->set_wcpay_refund_status_for_order( $order, 'successful' );
+		$this->order_service->set_wcpay_refund_id_for_order( $order, $refund_id );
+		$this->order_service->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund['balance_transaction'] );
 
 		$order->save();
 

@@ -97,7 +97,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
-			->setMethods( [ 'get_wcpay_refund_id_for_order' ] )
+			->setMethods( [ 'get_wcpay_refund_id_for_order', 'set_wcpay_refund_status_for_order', 'set_wcpay_refund_id_for_order', 'set_wcpay_refund_transaction_id_for_order' ] )
 			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
@@ -1412,10 +1412,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'refunds'  => [
 				'data' => [
 					[
-						'id'       => 'test_refund_id',
-						'amount'   => 1500,
-						'currency' => 'eur',
-						'reason'   => 'requested_by_customer',
+						'id'                  => 'test_refund_id',
+						'amount'              => 1500,
+						'currency'            => 'eur',
+						'reason'              => 'requested_by_customer',
+						'balance_transaction' => 'txn_123',
 					],
 				],
 			],
@@ -1432,13 +1433,18 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				'A refund of <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>18.00</bdi></span> was successfully processed using WooPayments. Reason: requested_by_customer. (<code>test_refund_id</code>)'
 			);
 
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_total' )
+			->willReturn( 18 );
+
 		$this->mock_db_wrapper
 			->expects( $this->once() )
 			->method( 'order_from_charge_id' )
 			->with( 'test_charge_id' )
 			->willReturn( $this->mock_order );
 
-			$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	public function test_process_refund_failed() {
