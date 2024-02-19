@@ -1,5 +1,30 @@
 *** WooPayments Changelog ***
 
+= 7.3.0-test-1 - 2024-xx-xx =
+* Add - Added confirmation modals for order status changes with pending authorizations
+* Add - Add support for bookable products to payment request buttons on product pages.
+* Add - Alert user when they try to leave advanced fraud settings page with unsaved changes
+* Add - E2E tests for card testing prevention measures
+* Fix - Do not open the email input iframe without wcpay payment method
+* Fix - Fees are now correctly applied to the Capture amount instead of the Authorize amount.
+* Fix - fix: ensure BNPL enablement is not adding unnecessary currencies
+* Fix - fix: multi-currency confirmation modal ui
+* Fix - fix: onboarding currency messaging for BNPLs
+* Fix - fix: payment method checkbox loadable state
+* Fix - fix: remove Afterpay EUR currency
+* Fix - Fix currency search input field size and margins in Woo Express.
+* Fix - Fix fraud prevention token not showing up on site editor checkout page
+* Fix - Fix typo of transaction type "Loan dispersement" to "Loan disbursement" on transactions list page.
+* Fix - Make tk_ai cookie usage cache compatible
+* Fix - Show an informative tooltip instead of estimating the next deposit date (which can be inaccurate).
+* Update - chore: convert payment request CTA to select.
+* Update - Refactor WooPay First Party Auth and WooPay Direct Checkout to reuse similar functionality.
+* Update - Update status chip to WooCommerce pill for transaction status component.
+* Dev - chore: remove BNPL feature flag check
+* Dev - Fire `wcpay_disputes_row_action_click` for any click to dispute details (not just `Respond` button).
+* Dev - Remove unused `/deposits/overview` data-fetching code.
+* Dev - Removing unsupported `deposits/overview` REST API. `deposits/overview-all` should be used instead.
+
 = 7.2.0 - 2024-02-14 =
 * Add - Add compatibility data to onboarding init payload.
 * Add - Add WooPay direct checkout flow behind a feature flag.
