@@ -1738,6 +1738,21 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get tracking info for the site.
+	 *
+	 * @return  array  Tracking info.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function get_tracking_info() {
+		return $this->request(
+			[],
+			self::TRACKING_API . '/info',
+			self::GET,
+		);
+	}
+
+	/**
 	 * Sends a request object.
 	 *
 	 * @param  Request $request The request to send.

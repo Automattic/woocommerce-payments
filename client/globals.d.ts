@@ -130,6 +130,9 @@ declare global {
 			english_name: string;
 			native_name: string;
 		};
+		trackingInfo?: {
+			hosting_provider: string;
+		};
 	};
 
 	const wc: {
