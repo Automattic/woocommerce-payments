@@ -195,6 +195,7 @@ cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --
 
 echo "Installing and activating Storefront theme..."
 cli wp theme install storefront --activate
+cli wp theme install twentytwentyfour
 
 echo "Adding basic WooCommerce settings..."
 cli wp option set woocommerce_store_address "60 29th Street"
