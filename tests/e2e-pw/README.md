@@ -1,4 +1,4 @@
-# Playwright end-to-end tests
+# Playwright end-to-end tests 🎭
 
 Playwright e2e tests can be found in the `./tests/e2e-pw/specs` directory. These will run in parallel with the existing Puppeteer e2e tests and are intended to replace them as they are migrated.
 
@@ -11,12 +11,10 @@ See [tests/e2e/README.md](/tests/e2e/README.md) for detailed e2e environment set
 
 ## Running Playwright e2e tests
 
--   `npm run test:e2e-pw` usual, headless run
--   `npm run test:e2e-pw -- --ui` runs tests in interactive UI mode – recommended for authoring tests and re-running failed tests
--   `npm run test:e2e-pw -- --headed` displays browser windows and test interactions
--   `npm run test:e2e-pw -- --debug` runs tests in debug mode
--   `npm run test:e2e-pw -- --update-snapshots` updates snapshots
--   `npm run test:e2e-pw -- keyword` runs tests only with a specific keyword in the file name, e.g. `dispute` or `checkout`
+-   `npm run test:e2e-pw` headless run from within a linux docker container.
+-   `npm run test:e2e-pw-ui` runs tests in interactive UI mode from within a linux docker container – recommended for authoring tests and re-running failed tests.
+-   `npm run test:e2e-pw keyword` runs tests only with a specific keyword in the file name, e.g. `dispute` or `checkout`.
+-   `npm run test:e2e-pw --update-snapshots` updates snapshots.
 
 ## FAQs
 
