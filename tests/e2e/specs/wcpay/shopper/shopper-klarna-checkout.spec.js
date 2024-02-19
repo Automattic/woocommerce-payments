@@ -100,11 +100,27 @@ describe( 'Klarna checkout', () => {
 		await paymentMethodLabel.click();
 		await shopper.placeOrder();
 
+		// Function to get Klarna Iframe.
+		const getNewKlarnaIframe = async () => {
+			const klarnaFrameHandle = await page.waitForSelector(
+				'#klarna-apf-iframe'
+			);
+			const klarnaIframe = await klarnaFrameHandle.contentFrame();
+			return klarnaIframe;
+		};
+
 		// Get Klarna Iframe.
-		const klarnaFrameHandle = await page.waitForSelector(
-			'#klarna-apf-iframe'
-		);
-		const klarnaIframe = await klarnaFrameHandle.contentFrame();
+		let klarnaIframe = await getNewKlarnaIframe();
+
+		const frameNavigationHandler = async ( frame ) => {
+			const newKlarnaIframe = await getNewKlarnaIframe();
+			if ( frame === newKlarnaIframe ) {
+				klarnaIframe = newKlarnaIframe;
+			}
+		};
+
+		// Add frame navigation event listener.
+		page.on( 'framenavigated', frameNavigationHandler );
 
 		// waiting for the redirect & the Klarna iframe to load within the Stripe test page.
 		// this is the "confirm phone number" page - we just click "continue".
@@ -126,9 +142,9 @@ describe( 'Klarna checkout', () => {
 		);
 
 		await klarnaIframe.waitForSelector( '.skeleton-wrapper' );
-		await klarnaIframe.waitForSelector( '.skeleton-wrapper', {
-			hidden: true,
-		} );
+		await klarnaIframe.waitFor(
+			() => ! document.querySelector( '.skeleton-wrapper' )
+		);
 
 		// Select Payment Plan - 4 weeks & click continue.
 		await klarnaIframe
@@ -142,6 +158,9 @@ describe( 'Klarna checkout', () => {
 		await klarnaIframe
 			.waitForSelector( 'button[data-testid="pick-plan"' )
 			.then( ( button ) => button.click() );
+
+		// Remove frame navigation event listener.
+		page.removeListener( 'framenavigated', frameNavigationHandler );
 
 		// Confirm payment.
 		await klarnaIframe
