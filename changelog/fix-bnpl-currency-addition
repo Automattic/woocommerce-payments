@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: ensure BNPL enablement is not adding unnecessary currencies

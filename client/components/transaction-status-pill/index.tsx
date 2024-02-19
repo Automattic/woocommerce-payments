@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import Chip from '../chip';
+import Pill from '../pill';
 
 /**
  * Internal dependencies
@@ -12,19 +12,18 @@ import Chip from '../chip';
 import transactionStatusMapping, { TransactionStatus } from './mappings';
 import { formatStringValue } from 'utils';
 
-interface TransactionStatusChipProps {
+interface TransactionStatusPillProps {
 	status: TransactionStatus;
 }
 
-const TransactionStatusChip: React.FC< TransactionStatusChipProps > = ( {
+const TransactionStatusPill: React.FC< TransactionStatusPillProps > = ( {
 	status,
-	...props
 } ) => {
 	const mapping = transactionStatusMapping[ status ] || {};
 	const message = mapping.message || formatStringValue( status );
 	const type = mapping.type || 'light';
 
-	return <Chip message={ message } type={ type } { ...props } />;
+	return <Pill type={ type }>{ message }</Pill>;
 };
 
-export default TransactionStatusChip;
+export default TransactionStatusPill;

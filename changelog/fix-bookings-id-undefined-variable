@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Small defensive check for booking_id variable.
+
+
