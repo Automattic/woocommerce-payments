@@ -1,4 +1,9 @@
 // global Stripe, wcpayStripeSiteMessaging
+/**
+ * Internal dependencies
+ */
+import './style.scss';
+
 export const initializeBnplSiteMessaging = () => {
 	const {
 		productVariations,
@@ -39,6 +44,7 @@ export const initializeBnplSiteMessaging = () => {
 		document.querySelector( '.price' ) || // For non-block product templates.
 		document.querySelector( '.wp-block-woocommerce-product-price' ); // For block product templates.
 
+	// Only attempt to adjust the margins if the price element is found.
 	if ( priceElement ) {
 		const style = window.getComputedStyle( priceElement );
 		let bottomMargin = style.marginBottom;
@@ -58,14 +64,16 @@ export const initializeBnplSiteMessaging = () => {
 			bottomMargin = convertToPixels( bottomMargin, rootFontSize );
 		}
 
-		// When the payment message element is ready, adjust the margins of the price and payment method message elements.
+		// Set the `--wc-bnpl-margin-bottom` CSS variable to the computed bottom margin of the price element.
+		document
+			.getElementById( 'payment-method-message' )
+			.style.setProperty( '--wc-bnpl-margin-bottom', bottomMargin );
+
+		// When the payment message element is ready, add the `ready` class so the necessary CSS rules are applied.
 		paymentMessageElement.on( 'ready', () => {
-			priceElement.style.marginBottom = '0px';
-			const paymentMethodMessageElement = document.getElementById(
-				'payment-method-message'
-			);
-			paymentMethodMessageElement.style.marginTop = '.5rem';
-			paymentMethodMessageElement.style.marginBottom = bottomMargin;
+			document
+				.getElementById( 'payment-method-message' )
+				.classList.add( 'ready' );
 		} );
 	}
 
