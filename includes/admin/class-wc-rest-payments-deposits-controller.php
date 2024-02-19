@@ -46,15 +46,6 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/overview',
-			[
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_deposits_overview' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
-		register_rest_route(
-			$this->namespace,
 			'/' . $this->rest_base . '/download',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -112,15 +103,6 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	public function get_deposits_summary( $request ) {
 		$filters = $this->get_deposits_filters( $request );
 		return $this->forward_request( 'get_deposits_summary', [ $filters ] );
-	}
-
-	/**
-	 * Retrieve overview of deposits to respond with via API.
-	 */
-	public function get_deposits_overview() {
-		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API . '/overview' );
-		$request->assign_hook( 'wcpay_get_deposits_overview' );
-		return $request->handle_rest_request();
 	}
 
 	/**
