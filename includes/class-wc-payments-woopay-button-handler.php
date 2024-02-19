@@ -282,13 +282,13 @@ class WC_Payments_WooPay_Button_Handler {
 
 		// Product page, but has unsupported product type.
 		if ( $this->express_checkout_helper->is_product() && ! $this->is_product_supported() ) {
-			Logger::log( __( 'Product page has unsupported product type ( WooPay Express button disabled )', 'woocommerce-payments' ) );
+			Logger::log( 'Product page has unsupported product type ( WooPay Express button disabled )' );
 			return false;
 		}
 
 		// Cart has unsupported product type.
 		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
-			Logger::log( __( 'Items in the cart have unsupported product type ( WooPay Express button disabled )', 'woocommerce-payments' ) );
+			Logger::log( 'Items in the cart have unsupported product type ( WooPay Express button disabled )' );
 			return false;
 		}
 

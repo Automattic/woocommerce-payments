@@ -396,15 +396,7 @@ class WC_Payments_Customer_Service {
 			$result = delete_user_option( $user->ID, $this->get_customer_id_option() );
 			if ( ! $result ) {
 				// Log the error, but continue since we'll be trying to update this option in create_customer.
-				Logger::error(
-					sprintf(
-						__(
-							'Failed to delete old customer ID for user %s',
-							'woocommerce-payments'
-						),
-						$user->ID
-					)
-				);
+				Logger::error( 'Failed to delete old customer ID for user ' . $user->ID );
 			}
 		}
 
@@ -442,15 +434,7 @@ class WC_Payments_Customer_Service {
 			if ( update_user_option( $user_id, $customer_option_id, $customer_id ) ) {
 				delete_user_option( $user_id, self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION );
 			} else {
-				Logger::error(
-					sprintf(
-						__(
-							'Failed to store new customer ID for user %s; legacy customer was kept.',
-							'woocommerce-payments'
-						),
-						$user_id
-					)
-				);
+				Logger::error( 'Failed to store new customer ID for user ' . $user_id . '; legacy customer was kept.' );
 			}
 		}
 	}
@@ -491,15 +475,7 @@ class WC_Payments_Customer_Service {
 		$global = WC_Payments::is_network_saved_cards_enabled();
 		$result = update_user_option( $user_id, $this->get_customer_id_option(), $customer_id, $global );
 		if ( ! $result ) {
-			Logger::error(
-				sprintf(
-					__(
-						'Failed to update customer ID for user %s.',
-						'woocommerce-payments'
-					),
-					$user_id
-				)
-			);
+			Logger::error( 'Failed to update customer ID for user ' . $user_id );
 		}
 	}
 

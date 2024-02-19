@@ -291,15 +291,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$this->gateway->update_option( 'apple_pay_verified_domain', $this->domain_name );
 		$this->gateway->update_option( 'apple_pay_domain_set', 'no' );
 
-		Logger::log(
-			sprintf(
-				__(
-					'Error registering domain with Apple:  %s',
-					'woocommerce-payments'
-				),
-				$error
-			)
-		);
+		Logger::log( 'Error registering domain with Apple: ' . $error );
 		Tracker::track_admin(
 			'wcpay_apple_pay_domain_registration_failure',
 			[

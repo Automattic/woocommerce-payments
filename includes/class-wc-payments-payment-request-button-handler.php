@@ -513,7 +513,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// If no SSL, bail.
 		if ( ! WC_Payments::mode()->is_test() && ! is_ssl() ) {
-			Logger::log( __( 'Stripe Payment Request live mode requires SSL.', 'woocommerce-payments' ) );
+			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
 
 			return false;
 		}
@@ -540,13 +540,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// Product page, but has unsupported product type.
 		if ( $this->express_checkout_helper->is_product() && ! $this->is_product_supported() ) {
-			Logger::log( __( 'Product page has unsupported product type ( Payment Request button disabled )', 'woocommerce-payments' ) );
+			Logger::log( 'Product page has unsupported product type ( Payment Request button disabled )' );
 			return false;
 		}
 
 		// Cart has unsupported product type.
 		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
-			Logger::log( __( 'Items in the cart have unsupported product type ( Payment Request button disabled )', 'woocommerce-payments' ) );
+			Logger::log( 'Items in the cart have unsupported product type ( Payment Request button disabled )' );
 			return false;
 		}
 

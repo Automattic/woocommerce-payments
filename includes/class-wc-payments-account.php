@@ -1728,12 +1728,7 @@ class WC_Payments_Account {
 	public function update_stripe_account( $stripe_account_settings ) {
 		try {
 			if ( ! $this->settings_changed( $stripe_account_settings ) ) {
-				Logger::info(
-					__(
-						'Skip updating account settings. Nothing is changed.',
-						'woocommerce-payments'
-					)
-				);
+				Logger::info( 'Skip updating account settings. Nothing is changed.' );
 				return;
 			}
 
@@ -1743,16 +1738,7 @@ class WC_Payments_Account {
 
 			$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
 		} catch ( Exception $e ) {
-			Logger::error(
-				sprintf(
-					/* translators: %s: The error message */
-					__(
-						'Failed to update Stripe account %s',
-						'woocommerce-payments'
-					),
-					$e
-				)
-			);
+			Logger::error( 'Failed to update Stripe account ' . $e );
 
 			return new WP_Error( 'wcpay_failed_to_update_stripe_account', $e->getMessage() );
 		}
