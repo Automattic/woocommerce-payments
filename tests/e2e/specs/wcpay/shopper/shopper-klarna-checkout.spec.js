@@ -64,6 +64,7 @@ describe( 'Klarna checkout', () => {
 				text: 'Buy Now. Pay Later.',
 			}
 		);
+
 		await expect( paymentMethodMessageModalIframe ).toMatchElement(
 			'[data-testid="ModalDescription"] > p',
 			{
@@ -74,12 +75,7 @@ describe( 'Klarna checkout', () => {
 	} );
 
 	it( `should successfully place an order with Klarna`, async () => {
-		const getNewKlarnaIframe = async () => {
-			const klarnaFrameHandle = await page.waitForSelector(
-				'#klarna-apf-iframe'
-			);
-			return await klarnaFrameHandle.contentFrame();
-		};
+		await shopperWCP.emptyCart();
 
 		await setupProductCheckout(
 			{
@@ -101,50 +97,60 @@ describe( 'Klarna checkout', () => {
 		await paymentMethodLabel.click();
 		await shopper.placeOrder();
 
+		// Get Klarna Iframe.
+		const klarnaFrameHandle = await page.waitForSelector(
+			'#klarna-apf-iframe'
+		);
+		const klarnaIframe = await klarnaFrameHandle.contentFrame();
+
 		// waiting for the redirect & the Klarna iframe to load within the Stripe test page.
 		// this is the "confirm phone number" page - we just click "continue".
-		await ( await getNewKlarnaIframe() ).waitForSelector(
-			'#collectPhonePurchaseFlow'
-		);
+		await klarnaIframe.waitForSelector( '#collectPhonePurchaseFlow' );
 		(
-			await ( await getNewKlarnaIframe() ).waitForSelector(
+			await klarnaIframe.waitForSelector(
 				'#onContinue[data-testid="kaf-button"]'
 			)
 		 ).click();
 		// this is where the OTP code is entered.
-		await ( await getNewKlarnaIframe() ).waitForSelector( '#phoneOtp' );
-		await expect( await getNewKlarnaIframe() ).toFill(
+		await klarnaIframe.waitForSelector( '#phoneOtp' );
+		await expect( klarnaIframe ).toFill(
 			'[data-testid="kaf-field"]',
 			'000000'
 		);
 
-		// selecting the installment plan.
-		(
-			await ( await getNewKlarnaIframe() ).waitForSelector(
-				'button[data-testid="select-payment-category"]'
+		await klarnaIframe.waitForSelector(
+			'button[data-testid="select-payment-category"'
+		);
+
+		await klarnaIframe.waitForSelector( '.skeleton-wrapper' );
+		await klarnaIframe.waitForSelector( '.skeleton-wrapper', {
+			hidden: true,
+		} );
+
+		// Select Payment Plan - 4 weeks & click continue.
+		await klarnaIframe
+			.waitForSelector( 'input[type="radio"][id*="pay_in_n"]' )
+			.then( ( input ) => input.click() );
+		await klarnaIframe
+			.waitForSelector( 'button[data-testid="select-payment-category"' )
+			.then( ( button ) => button.click() );
+
+		// Payment summary page. Click continue.
+		await klarnaIframe
+			.waitForSelector( 'button[data-testid="pick-plan"' )
+			.then( ( button ) => button.click() );
+
+		// Confirm payment.
+		await klarnaIframe
+			.waitForSelector(
+				'button[data-testid="confirm-and-pay"]:not(:disabled)'
 			)
-		 ).click();
-		// the buttons might be present, but in a "disabled" state.
-		// We need to ensure they can be clickable, before performing the "click" action.
-		(
-			await ( await getNewKlarnaIframe() ).waitForSelector(
-				'button[data-testid="pick-plan"]'
-			)
-		 ).click();
-		(
-			await (
-				await getNewKlarnaIframe()
-			 ).waitForSelector(
-				'button[data-testid="confirm-and-pay"]:not(:disabled)',
-				{ timeout: 15000 }
-			)
-		 ).click();
+			.then( ( button ) => button.click() );
 
 		// Wait for the order confirmation page to load.
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
-		await page.reload( { waitUntil: 'networkidle0' } );
 		await expect( page ).toMatch( 'Order received' );
 	} );
 } );
