@@ -81,11 +81,7 @@ const placeholderValues = {
 };
 
 const isTapToPay = ( model: string ) => {
-	if ( model === 'COTS_DEVICE' ) {
-		return true;
-	}
-
-	return false;
+	return model === 'COTS_DEVICE';
 };
 
 const getTapToPayChannel = ( platform: string ) => {

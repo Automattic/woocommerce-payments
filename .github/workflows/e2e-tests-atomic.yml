@@ -39,7 +39,7 @@ jobs:
     
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Run the tests"
         uses: ./.github/actions/e2e/atomic-prepare-and-run

@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
-import { recordUserEvent } from 'tracks';
+import { recordUserEvent, getTracksIdentity } from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from '../../payment-request/utils';
 import {
@@ -21,6 +21,7 @@ export const handleWooPayEmailInput = async (
 	let timer;
 	const waitTime = 500;
 	const woopayEmailInput = await getTargetElement( field );
+	const tracksUserId = await getTracksIdentity();
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
@@ -272,10 +273,10 @@ export const handleWooPayEmailInput = async (
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
 		);
-		urlParams.append(
-			'tracksUserIdentity',
-			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
-		);
+
+		if ( tracksUserId ) {
+			urlParams.append( 'tracksUserIdentity', tracksUserId );
+		}
 
 		iframe.src = `${ getConfig(
 			'woopayHost'
