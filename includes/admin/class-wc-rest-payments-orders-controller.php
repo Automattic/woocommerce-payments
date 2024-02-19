@@ -425,12 +425,12 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		}
 
 		if ( ! is_array( $payment_methods ) ) {
-			throw new \Exception( __( 'Invalid param \'payment_methods\'!', 'woocommerce-payments' ) );
+			throw new \Exception( 'Invalid param \'payment_methods\'!' );
 		}
 
 		foreach ( $payment_methods as $value ) {
 			if ( ! in_array( $value, Payment_Method::IPP_ALLOWED_PAYMENT_METHODS, true ) ) {
-				throw new \Exception( __( 'One or more payment methods are not supported!', 'woocommerce-payments' ) );
+				throw new \Exception( 'One or more payment methods are not supported!' );
 			}
 		}
 
@@ -453,7 +453,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		}
 
 		if ( ! in_array( $capture_method, [ 'manual', 'automatic' ], true ) ) {
-			throw new \Exception( __( 'Invalid param \'capture_method\'!', 'woocommerce-payments' ) );
+			throw new \Exception( 'Invalid param \'capture_method\'!' );
 		}
 
 		return $capture_method;
