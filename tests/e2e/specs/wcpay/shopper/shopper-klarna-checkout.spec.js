@@ -41,16 +41,16 @@ describe( 'Klarna checkout', () => {
 			'#payment-method-message iframe'
 		);
 		const paymentMethodMessageIframe = await paymentMethodMessageFrameHandle.contentFrame();
-		const productMessaging = await paymentMethodMessageIframe.waitForSelector(
-			'button[aria-label="Open Learn More Modal"]'
-		);
-		// scrolling vertically to get the "product messaging" into view, since it seems that otherwise clicking on it fails.
-		await page.evaluate( () => {
-			window.scrollBy( 0, 100 );
-		} );
-		await productMessaging.click();
 
-		// we need to wait for the iframe to be added by Stripe JS after clicking on the element.
+		// Click on Klarna link to open the modal.
+		await paymentMethodMessageIframe.evaluate( ( selector ) => {
+			const element = document.querySelector( selector );
+			if ( element ) {
+				element.click();
+			}
+		}, 'button[aria-label="Open Learn More Modal"]' );
+
+		// Wait for the iframe to be added by Stripe JS after clicking on the element.
 		await page.waitFor( 1000 );
 
 		const paymentMethodMessageModalIframeHandle = await page.waitForSelector(
