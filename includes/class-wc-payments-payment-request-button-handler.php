@@ -233,7 +233,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				}
 
 				// Ensure the selected plan is available for the product.
-				if ( in_array( $deposit_plan_id, $available_plan_ids, true ) ) {
+				if ( 0 === $deposit_plan_id || in_array( $deposit_plan_id, $available_plan_ids, true ) ) {
 					$base_price = WC_Deposits_Product_Manager::get_deposit_amount( $product, $deposit_plan_id, 'display', $base_price );
 				}
 			}
