@@ -46,6 +46,7 @@ export interface PaymentMethodMapEntry {
 	stripe_key: string;
 	allows_manual_capture: boolean;
 	allows_pay_later: boolean;
+	accepts_only_domestic_payment: boolean;
 }
 
 const PaymentMethodInformationObject: Record<
@@ -73,6 +74,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'card_payments',
 		allows_manual_capture: true,
 		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 	au_becs_debit: {
 		id: 'au_becs_debit',
@@ -89,6 +91,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'au_becs_debit_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 	bancontact: {
 		id: 'bancontact',
@@ -105,6 +108,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'bancontact_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 	eps: {
 		id: 'eps',
@@ -121,6 +125,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'eps_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 	giropay: {
 		id: 'giropay',
@@ -137,6 +142,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'giropay_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 	ideal: {
 		id: 'ideal',
@@ -153,6 +159,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'ideal_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 	p24: {
 		id: 'p24',
@@ -169,6 +176,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'p24_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 	sepa_debit: {
 		id: 'sepa_debit',
@@ -185,6 +193,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'sepa_debit_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 	sofort: {
 		id: 'sofort',
@@ -201,6 +210,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'sofort_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 	affirm: {
 		id: 'affirm',
@@ -218,6 +228,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'affirm_payments',
 		allows_manual_capture: false,
 		allows_pay_later: true,
+		accepts_only_domestic_payment: true,
 	},
 	afterpay_clearpay: {
 		id: 'afterpay_clearpay',
@@ -248,6 +259,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,
 		allows_pay_later: true,
+		accepts_only_domestic_payment: true,
 	},
 	jcb: {
 		id: 'jcb',
@@ -264,6 +276,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'jcb_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 	klarna: {
 		id: 'klarna',
@@ -281,6 +294,7 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'klarna_payments',
 		allows_manual_capture: false,
 		allows_pay_later: true,
+		accepts_only_domestic_payment: true,
 	},
 };
 

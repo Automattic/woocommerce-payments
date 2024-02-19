@@ -6,12 +6,7 @@ import momentLib from 'moment';
 /**
  * Internal dependencies
  */
-import {
-	getDepositDate,
-	getDepositMonthlyAnchorLabel,
-	getNextDepositDate,
-} from '../';
-import type * as AccountOverview from 'wcpay/types/account-overview';
+import { getDepositDate, getDepositMonthlyAnchorLabel } from '../';
 
 describe( 'Deposits Overview Utils / getDepositDate', () => {
 	test( 'returns a display value without a deposit', () => {
@@ -83,78 +78,4 @@ describe( 'Deposits Overview Utils / getDepositMonthlyAnchorLabel', () => {
 			} )
 		).toEqual( 'last day of the month' );
 	} );
-} );
-
-type NextDepositDateTestCase = [
-	string,
-	Partial< AccountOverview.Account[ 'deposits_schedule' ] >,
-	string
-];
-
-describe( 'Deposits Overview Utils / getNextDepositDate', () => {
-	const currentTimezone = momentLib.tz.guess();
-
-	beforeEach( () => {
-		// Set the local timezone to UTC for the tests.
-		momentLib.tz.setDefault( 'UTC' );
-	} );
-
-	afterEach( () => {
-		// Reset the local timezone to the original value.
-		momentLib.tz.setDefault( currentTimezone );
-	} );
-
-	const testCases: NextDepositDateTestCase[] = [
-		[ '2023-01-01', { interval: 'manual' }, '—' ],
-		[ '2023-01-01', { interval: 'daily' }, 'January 2nd, 2023' ],
-		[ '2023-01-06', { interval: 'daily' }, 'January 7th, 2023' ], // weekends are acceptable deposit dates
-		[
-			'2023-01-01',
-			{ interval: 'weekly', weekly_anchor: 'tuesday' },
-			'January 3rd, 2023',
-		],
-		[
-			'2023-01-03',
-			{ interval: 'weekly', weekly_anchor: 'tuesday' },
-			'January 10th, 2023',
-		], // when the weekly anchor is the same as the current day, it should add a week
-		[
-			'2023-01-01',
-			{ interval: 'monthly', monthly_anchor: 1 },
-			'February 1st, 2023',
-		], // when the monthly anchor is the same as the current day, it should add a month
-		[
-			'2023-01-01',
-			{ interval: 'monthly', monthly_anchor: 2 },
-			'January 2nd, 2023',
-		],
-		[
-			'2023-01-01',
-			{ interval: 'monthly', monthly_anchor: 30 },
-			'January 30th, 2023',
-		], // Using the 30th as an anchor should apply normally on months with >30 days
-		[
-			'2023-02-01',
-			{ interval: 'monthly', monthly_anchor: 30 },
-			'February 28th, 2023',
-		], // When the anchor >= 29 and the month doesn't have that many days, the last day of month is used instead
-	];
-
-	test.each( testCases )(
-		'given input date %p and depositSchedule %p, returns %p',
-		( inputDate, schedule, expectedOutput ) => {
-			Date.now = jest.fn( () => new Date( inputDate ).getTime() );
-
-			const result = getNextDepositDate( {
-				delay_days: 0, // default value
-				interval: schedule.interval || 'daily', // default value
-				weekly_anchor: schedule.weekly_anchor || 'monday', // default value
-				monthly_anchor: schedule.monthly_anchor || 1, // default value
-			} );
-			expect( result ).toBe( expectedOutput );
-
-			// Reset Date.now.
-			Date.now = () => new Date().getTime();
-		}
-	);
 } );
