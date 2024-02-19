@@ -9,16 +9,9 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 import './style.scss';
-import paymentMethodsMap from '../../payment-methods-map';
 
-const PaymentMethodIcon = ( { name, showName } ) => {
-	const paymentMethod = paymentMethodsMap[ name ];
-
-	if ( ! paymentMethod ) {
-		return <></>;
-	}
-
-	const { label, icon: Icon } = paymentMethod;
+const PaymentMethodIcon = ( { Icon, label } ) => {
+	if ( ! Icon ) return null;
 
 	return (
 		<span
@@ -27,7 +20,7 @@ const PaymentMethodIcon = ( { name, showName } ) => {
 			) }
 		>
 			<Icon />
-			{ showName && (
+			{ label && (
 				<span className="woocommerce-payments__payment-method-icon__label">
 					{ label }
 				</span>
