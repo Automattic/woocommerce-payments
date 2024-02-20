@@ -4,6 +4,7 @@
 import { useState } from '@wordpress/element';
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -46,7 +47,9 @@ const PrintedReceiptPreviewer = ( {
 	receiptHtml,
 }: PrintedReceiptPreviewerProps ): JSX.Element => {
 	return (
-		<IFrameComponent title="Preview Receipt">
+		<IFrameComponent
+			title={ __( 'Preview Receipt', 'woocommerce-payments' ) }
+		>
 			{
 				// eslint-disable-next-line react/no-danger
 				<div dangerouslySetInnerHTML={ { __html: receiptHtml } } />
