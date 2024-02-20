@@ -6,14 +6,13 @@
  */
 
 use WCPay\WooPay_Tracker;
-use PHPUnit\Framework\TestCase;
 use WC_Payments_Account;
 use WC_Payments_Http;
 
 /**
  * WooPay_Tracker unit tests.
  */
-class WooPay_Tracker_Test extends TestCase {
+class WooPay_Tracker_Test extends WCPay_UnitTestCase {
 	/**
 	 * @var WooPay_Tracker
 	 */
