@@ -12,7 +12,7 @@ use WC_Payments_Http;
 /**
  * WooPay_Tracker unit tests.
  */
-class WooPay_Tracker_Test extends WCPay_UnitTestCase {
+class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @var WooPay_Tracker
 	 */
