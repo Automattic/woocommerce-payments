@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import DisableConfirmationModal from '../disable-confirmation-modal';
+import DisableConfirmationModal from '..';
 
 jest.mock( '../../data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),

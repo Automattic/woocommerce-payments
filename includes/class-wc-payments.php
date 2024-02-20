@@ -1022,10 +1022,6 @@ class WC_Payments {
 		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
 		$refunds_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
-		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
-		$survey_controller->register_routes();
-
 		if ( WC_Payments_Features::is_documents_section_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
 			$documents_controller = new WC_REST_Payments_Documents_Controller( self::$api_client );
