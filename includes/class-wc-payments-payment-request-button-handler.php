@@ -514,6 +514,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// If no SSL, bail.
 		if ( ! WC_Payments::mode()->is_test() && ! is_ssl() ) {
 			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
+
 			return false;
 		}
 
