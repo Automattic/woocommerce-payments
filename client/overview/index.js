@@ -30,6 +30,7 @@ import { useDisputes, useGetSettings, useSettings } from 'wcpay/data';
 import strings from './strings';
 import './style.scss';
 import SetupLivePaymentsModal from './modal/setup-live-payments';
+import PaymentActivity from 'wcpay/components/payment-activity';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -182,12 +183,24 @@ const OverviewPage = () => {
 								<Card>
 									<AccountBalances />
 								</Card>
+								<Card>
+									<ErrorBoundary>
+										<PaymentActivity />
+									</ErrorBoundary>
+								</Card>
 							</>
 						) : (
-							<Card>
-								<Welcome />
-								<AccountBalances />
-							</Card>
+							<>
+								<Card>
+									<Welcome />
+									<AccountBalances />
+								</Card>
+								<Card>
+									<ErrorBoundary>
+										<PaymentActivity />
+									</ErrorBoundary>
+								</Card>
+							</>
 						) }
 
 						<DepositsOverview />
