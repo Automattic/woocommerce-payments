@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
+
 /**
  * Class WC_Deposits_Product_Manager.
  *
@@ -76,5 +78,32 @@ class WC_Deposits_Product_Manager {
 		}
 
 		return $product;
+	}
+}
+
+/**
+ * Class WC_Deposits_Plans_Manager.
+ */
+class WC_Deposits_Plans_Manager {
+	/**
+	 * Get plan ids assigned to a product.
+	 *
+	 * @param  int $product_id Product ID.
+	 * @return int[]
+	 */
+	public static function get_plan_ids_for_product( $product_id ) {
+		$product = WC_Deposits_Product_Manager::get_product( $product_id );
+		$map     = array_map( 'absint', array_filter( (array) $product->get_meta( '_wc_deposit_payment_plans' ) ) );
+		if ( count( $map ) <= 0 ) {
+			$map = self::get_default_plan_ids();
+		}
+		return $map;
+	}
+
+	/**
+	 * Get the default plan IDs.
+	 */
+	public static function get_default_plan_ids() {
+		return array_map( 'absint', array_filter( (array) get_option( 'wc_deposits_default_plans', [] ) ) );
 	}
 }
