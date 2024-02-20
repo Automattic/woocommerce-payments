@@ -7,7 +7,7 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 /**
  * Internal dependencies
  */
-import { merchantWCP, shopperWCP } from '../../../utils/flows';
+import { merchantWCP, shopperWCP } from '../../../utils';
 import { setupProductCheckout } from '../../../utils/payments';
 
 const UPE_METHOD_CHECKBOXES = [
@@ -78,8 +78,6 @@ describe( 'Klarna checkout', () => {
 	} );
 
 	it( `should successfully place an order with Klarna`, async () => {
-		await shopperWCP.emptyCart();
-
 		await setupProductCheckout(
 			{
 				...config.get( 'addresses.customer.billing' ),
@@ -100,16 +98,17 @@ describe( 'Klarna checkout', () => {
 		await paymentMethodLabel.click();
 		await shopper.placeOrder();
 
-		// Function to get Klarna Iframe.
+		// Klarna is rendered in an iframe, so we need to get its reference.
+		// Sometimes the iframe is updated (or removed from the page),
+		// this function has been created so that we always get the most updated reference.
 		const getNewKlarnaIframe = async () => {
 			const klarnaFrameHandle = await page.waitForSelector(
 				'#klarna-apf-iframe'
 			);
-			const klarnaIframe = await klarnaFrameHandle.contentFrame();
-			return klarnaIframe;
+
+			return await klarnaFrameHandle.contentFrame();
 		};
 
-		// Get Klarna Iframe.
 		let klarnaIframe = await getNewKlarnaIframe();
 
 		const frameNavigationHandler = async ( frame ) => {
@@ -156,10 +155,10 @@ describe( 'Klarna checkout', () => {
 
 		// Payment summary page. Click continue.
 		await klarnaIframe
-			.waitForSelector( 'button[data-testid="pick-plan"' )
+			.waitForSelector( 'button[data-testid="pick-plan"]' )
 			.then( ( button ) => button.click() );
 
-		// Remove frame navigation event listener.
+		// at this point, the event listener is not needed anymore.
 		page.removeListener( 'framenavigated', frameNavigationHandler );
 
 		// Confirm payment.
