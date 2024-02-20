@@ -7,12 +7,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import GeneralSettings from '..';
-import {
-	useDevMode,
-	useIsWCPayEnabled,
-	useTestMode,
-	useGetAvailablePaymentMethodIds,
-} from 'wcpay/data';
+import { useDevMode, useIsWCPayEnabled, useTestMode } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDevMode: jest.fn(),
@@ -28,7 +23,6 @@ describe( 'GeneralSettings', () => {
 		useDevMode.mockReturnValue( false );
 		useIsWCPayEnabled.mockReturnValue( [ false, jest.fn() ] );
 		useTestMode.mockReturnValue( [ false, jest.fn() ] );
-		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 	} );
 
 	it( 'renders', () => {
