@@ -10,7 +10,8 @@ import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
-import { TableCard, Link } from '@woocommerce/components';
+import { Card, CardHeader } from '@wordpress/components';
+import { Table, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
@@ -29,7 +30,7 @@ import { displayType, displayStatus } from '../strings';
 import { formatExplicitCurrency, formatExportAmount } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
-import Page from '../../components/page';
+import InlineNotice from 'components/inline-notice';
 import DepositsFilters from '../filters';
 import DownloadButton from 'components/download-button';
 import { getDepositsCSV } from 'wcpay/data/deposits/resolvers';
@@ -360,29 +361,41 @@ export const DepositsList = (): JSX.Element => {
 	};
 
 	return (
-		<Page>
+		<>
+			<InlineNotice
+				status="info"
+				icon
+				className="test"
+				isDismissible={ true }
+			>
+				Test
+			</InlineNotice>
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
-			<TableCard
-				className="wcpay-deposits-list woocommerce-report-table"
-				title={ __( 'Deposit history', 'woocommerce-payments' ) }
-				isLoading={ isLoading }
-				rowsPerPage={ parseInt( getQuery().per_page ?? '' ) || 25 }
-				totalRows={ totalRows }
-				headers={ columns }
-				rows={ rows }
-				summary={ summary }
-				query={ getQuery() }
-				onQueryChange={ onQueryChange }
-				actions={ [
-					downloadable && (
-						<DownloadButton
-							key="download"
-							isDisabled={ isLoading || isDownloading }
-							onClick={ onDownload }
-						/>
-					),
-				] }
-			/>
+			<Card className="wcpay-deposits-list woocommerce-report-table">
+				<CardHeader>
+					{ __( 'Deposit history', 'woocommerce-payments' ) }
+				</CardHeader>
+
+				<Table
+					isLoading={ isLoading }
+					rowsPerPage={ parseInt( getQuery().per_page ?? '' ) || 25 }
+					totalRows={ totalRows }
+					headers={ columns }
+					rows={ rows }
+					summary={ summary }
+					query={ getQuery() }
+					onQueryChange={ onQueryChange }
+					actions={ [
+						downloadable && (
+							<DownloadButton
+								key="download"
+								isDisabled={ isLoading || isDownloading }
+								onClick={ onDownload }
+							/>
+						),
+					] }
+				/>
+			</Card>
 			{ ! isDefaultSiteLanguage() &&
 				! isExportModalDismissed() &&
 				isCSVExportModalOpen && (
@@ -393,7 +406,7 @@ export const DepositsList = (): JSX.Element => {
 						exportType={ 'deposits' }
 					/>
 				) }
-		</Page>
+		</>
 	);
 };
 

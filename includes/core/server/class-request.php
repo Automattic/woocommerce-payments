@@ -680,7 +680,12 @@ abstract class Request {
 		}
 
 		throw new Invalid_Request_Parameter_Exception(
-			"Invalid number passed. Number $value_to_compare needs to be larger than $value_to_compare",
+			sprintf(
+				/* translators: %1$s and %2$s are both numbers */
+				__( 'Invalid number passed. Number %1$s needs to be larger than %2$s', 'woocommerce-payments' ),
+				$value_to_validate,
+				$value_to_compare
+			),
 			'wcpay_core_invalid_request_parameter_order'
 		);
 	}
