@@ -7,12 +7,18 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import GeneralSettings from '..';
-import { useDevMode, useIsWCPayEnabled, useTestMode } from 'wcpay/data';
+import {
+	useDevMode,
+	useIsWCPayEnabled,
+	useTestMode,
+	useGetAvailablePaymentMethodIds,
+} from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDevMode: jest.fn(),
 	useIsWCPayEnabled: jest.fn(),
 	useTestMode: jest.fn(),
+	useGetAvailablePaymentMethodIds: jest.fn(),
 } ) );
 
 describe( 'GeneralSettings', () => {
@@ -20,6 +26,7 @@ describe( 'GeneralSettings', () => {
 		useDevMode.mockReturnValue( false );
 		useIsWCPayEnabled.mockReturnValue( [ false, jest.fn() ] );
 		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 	} );
 
 	it( 'renders', () => {
@@ -50,27 +57,49 @@ describe( 'GeneralSettings', () => {
 		}
 	);
 
-	it.each( [ [ true ], [ false ] ] )(
-		'updates WCPay enabled state to %s when toggling checkbox',
-		( isEnabled ) => {
-			const updateIsWCPayEnabledMock = jest.fn();
-			useIsWCPayEnabled.mockReturnValue( [
-				isEnabled,
-				updateIsWCPayEnabledMock,
-			] );
+	it( 'updates WCPay enabled state to true when toggling checkbox', () => {
+		const updateIsWCPayEnabledMock = jest.fn();
+		useIsWCPayEnabled.mockReturnValue( [
+			false,
+			updateIsWCPayEnabledMock,
+		] );
 
-			render( <GeneralSettings /> );
+		render( <GeneralSettings /> );
 
-			const enableWCPayCheckbox = screen.getByLabelText(
-				'Enable WooPayments'
-			);
+		fireEvent.click( screen.getByLabelText( 'Enable WooPayments' ) );
 
-			fireEvent.click( enableWCPayCheckbox );
-			expect( updateIsWCPayEnabledMock ).toHaveBeenCalledWith(
-				! isEnabled
-			);
-		}
-	);
+		expect(
+			screen.queryByText(
+				/WooPayments is currently powering multiple popular payment methods on your store.*/i
+			)
+		).not.toBeInTheDocument();
+		expect( updateIsWCPayEnabledMock ).toHaveBeenCalledWith( true );
+	} );
+
+	it( 'shows confirmation modal and disables WooPayments when toggling checkbox', () => {
+		const updateIsWCPayEnabledMock = jest.fn();
+		useIsWCPayEnabled.mockReturnValue( [ true, updateIsWCPayEnabledMock ] );
+
+		render( <GeneralSettings /> );
+
+		fireEvent.click( screen.getByLabelText( 'Enable WooPayments' ) );
+
+		expect(
+			screen.queryByText(
+				/WooPayments is currently powering multiple popular payment methods on your store.*/i
+			)
+		).toBeInTheDocument();
+		expect( updateIsWCPayEnabledMock ).not.toHaveBeenCalled();
+
+		fireEvent.click( screen.getByText( 'Disable' ) );
+
+		expect(
+			screen.queryByText(
+				/WooPayments is currently powering multiple popular payment methods on your store.*/i
+			)
+		).not.toBeInTheDocument();
+		expect( updateIsWCPayEnabledMock ).toHaveBeenCalledWith( false );
+	} );
 
 	it.each( [ [ true ], [ false ] ] )(
 		'display of CheckBox when initial Test Mode = %s',
