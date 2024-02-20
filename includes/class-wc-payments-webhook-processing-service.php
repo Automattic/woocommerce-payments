@@ -11,6 +11,7 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
 use WCPay\Tracker;
@@ -792,25 +793,28 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 
-		$status = $this->read_webhook_property( $event_object, 'status' );
-		if ( 'succeeded' !== $status ) {
+		$is_refunded_event = isset( $event_body['type'] ) && 'charge.refunded' === $event_body['type'];
+		$status            = $this->read_webhook_property( $event_object, 'status' );
+		if ( 'succeeded' !== $status || ! $is_refunded_event ) {
 			return;
 		}
 
 		// Fetch the details of the refund so that we can find the associated order and write a note.
-		$charge_id         = $this->read_webhook_property( $event_object, 'id' );
-		$refund            = array_pop( $this->read_webhook_property( $event_object, 'refunds' )['data'] );
-		$refund_id         = $refund['id'] ?? null;
-		$refund_reason     = $refund['reason'] ?? null;
-		$amount            = $this->read_webhook_property( $event_object, 'amount' );
-		$currency          = $this->read_webhook_property( $event_object, 'currency' );
-		$amount_refunded   = WC_Payments_Utils::interpret_stripe_amount( $refund['amount'], $currency );
-		$is_partial_refund = $refund['amount'] < $amount;
+		$charge_id                     = $this->read_webhook_property( $event_object, 'id' );
+		$refund                        = array_pop( $this->read_webhook_property( $event_object, 'refunds' )['data'] );
+		$refund_id                     = $refund['id'] ?? '';
+		$refund_reason                 = $refund['reason'] ?? '';
+		$refund_balance_transaction_id = $refund['balance_transaction'] ?? '';
+		$amount                        = $this->read_webhook_property( $event_object, 'amount' );
+		$currency                      = $this->read_webhook_property( $event_object, 'currency' );
+		$refunded_amount               = WC_Payments_Utils::interpret_stripe_amount( $refund['amount'], $currency );
+		$refunded_currency             = $refund['currency'];
+		$is_partial_refund             = $refund['amount'] < $amount;
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 		if ( ! $order ) {
-			throw new Invalid_Payment_Method_Exception(
+			throw new Order_Not_Found_Exception(
 				sprintf(
 				/* translators: %1: charge ID */
 					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
@@ -820,39 +824,18 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		if ( $amount < 0 || $amount_refunded > $order->get_total() ) {
-			return new WP_Error(
-				'invalid-amount',
-				__( 'The refund amount is not valid.', 'woocommerce-payments' )
+		if ( $amount < 0 || $refunded_amount > $order->get_total() ) {
+			throw new Invalid_Webhook_Data_Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'The refund amount is not valid for charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
 			);
 		}
 
-		$note = ( new WC_Payments_Refunded_Event_Note( $event_body, $order ) )->generate_html_note();
-
-		if ( ! $is_partial_refund && $this->order_service->order_note_exists( $order, $note ) ) {
-			return;
-		}
-
-		$wc_refund = wc_create_refund(
-			[
-				'amount'     => $amount_refunded,
-				'reason'     => $refund_reason,
-				'order_id'   => $order->get_id(),
-				'line_items' => $order->get_items(),
-			]
-		);
-
-		if ( $is_partial_refund ) {
-			$order->add_order_note( $note );
-		} else {
-			$order->update_status( Order_Status::REFUNDED, $note );
-		}
-
-		$this->order_service->set_wcpay_refund_status_for_order( $order, 'successful' );
-		$this->order_service->set_wcpay_refund_id_for_order( $order, $refund_id );
-		$this->order_service->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund['balance_transaction'] );
-
-		$order->save();
+		// Create a refund note for the order.
+		$this->order_service->process_order_refund( $order, $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $refund_balance_transaction_id, $is_partial_refund );
 
 		Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 	}

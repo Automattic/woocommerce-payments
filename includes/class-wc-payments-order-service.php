@@ -1233,6 +1233,75 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Creates a refund for the given order.
+	 *
+	 * @param WC_Order $order The order to refund.
+	 * @param float    $amount The amount to refund.
+	 * @param string   $refund_id The refund ID.
+	 * @param string   $reason The reason for the refund.
+	 * @param array    $line_items The line items to refund.
+	 *
+	 * @throws Exception If the refund creation fails.
+	 */
+	public function create_refund_for_order( WC_Order $order, float $amount, string $refund_id, string $reason = '', array $line_items = [] ) {
+		$refund_params = [
+			'amount'    => $amount,
+			'reason'    => $reason,
+			'order_id'  => $order->get_id(),
+			'refund_id' => $refund_id,
+		];
+
+		if ( $line_items ) {
+			$refund_params['line_items'] = $line_items;
+		}
+
+		$refund = wc_create_refund(
+			$refund_params
+		);
+
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( $refund->get_error_message() ); // TODO add less generic exception.
+		}
+
+		return $refund;
+	}
+
+	/**
+	 * Processes a refund for the given order.
+	 *
+	 * @param WC_Order $order The order to refund.
+	 * @param float    $refunded_amount The amount refunded.
+	 * @param string   $refunded_currency The currency of the refund.
+	 * @param string   $refund_id The refund ID.
+	 * @param string   $refund_reason The reason for the refund.
+	 * @param string   $refund_balance_transaction_id The balance transaction ID of the refund.
+	 * @param bool     $is_partial_refund Whether the refund is partial.
+	 */
+	public function process_order_refund( WC_Order $order, float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, string $refund_balance_transaction_id, bool $is_partial_refund ) {
+		$note = ( new WC_Payments_Refunded_Event_Note( $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $order ) )->generate_html_note();
+
+		if ( ! $is_partial_refund && $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason );
+
+		if ( $is_partial_refund ) {
+			$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason );
+			$order->add_order_note( $note );
+		} else {
+			$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, $order->get_items() );
+			$order->update_status( Order_Status::REFUNDED, $note );
+		}
+
+		$this->set_wcpay_refund_status_for_order( $order, 'successful' );
+		$this->set_wcpay_refund_id_for_order( $order, $refund_id );
+		$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );
+
+		$order->save();
+	}
+
+	/**
 	 * Get content for the success order note.
 	 *
 	 * @param string $intent_id        The payment intent ID related to the intent/order.

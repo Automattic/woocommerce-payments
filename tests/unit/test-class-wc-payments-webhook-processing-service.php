@@ -11,8 +11,8 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
-use WCPay\Logger;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -97,7 +97,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
-			->setMethods( [ 'get_wcpay_refund_id_for_order', 'set_wcpay_refund_status_for_order', 'set_wcpay_refund_id_for_order', 'set_wcpay_refund_transaction_id_for_order' ] )
+			->setMethods( [ 'get_wcpay_refund_id_for_order', 'process_order_refund' ] )
 			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
@@ -1404,7 +1404,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
-	public function test_process_refund_succeeded() {
+	public function test_process_full_refund_succeeded() {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
@@ -1413,8 +1413,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				'data' => [
 					[
 						'id'                  => 'test_refund_id',
-						'amount'              => 1500,
-						'currency'            => 'eur',
+						'amount'              => 1800,
+						'currency'            => 'usd',
 						'reason'              => 'requested_by_customer',
 						'balance_transaction' => 'txn_123',
 					],
@@ -1427,11 +1427,43 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order
 			->expects( $this->once() )
-			->method( 'update_status' )
-			->with(
-				'refunded',
-				'A refund of <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>18.00</bdi></span> was successfully processed using WooPayments. Reason: requested_by_customer. (<code>test_refund_id</code>)'
-			);
+			->method( 'get_total' )
+			->willReturn( 18 );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'process_order_refund' )
+			->with( $this->mock_order, 18, 'usd', 'test_refund_id', 'requested_by_customer', 'txn_123', false );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function test_process_partial_refund_succeeded() {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'                  => 'test_refund_id',
+						'amount'              => 900,
+						'currency'            => 'usd',
+						'reason'              => 'requested_by_customer',
+						'balance_transaction' => 'txn_123',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+		];
 
 		$this->mock_order
 			->expects( $this->once() )
@@ -1444,10 +1476,29 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->with( 'test_charge_id' )
 			->willReturn( $this->mock_order );
 
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'process_order_refund' )
+			->with( $this->mock_order, 9, 'usd', 'test_refund_id', 'requested_by_customer', 'txn_123', true );
+
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
-	public function test_process_refund_failed() {
+	public function test_process_refund_ignores_event() {
+		$this->event_body['type'] = 'charge.refunded.updated';
+
+		$this->mock_db_wrapper
+			->expects( $this->never() )
+			->method( 'order_from_charge_id' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'process_order_refund' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function test_process_refund_ignores_failed_refund_event() {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
@@ -1457,7 +1508,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 					[
 						'id'       => 'test_refund_id',
 						'amount'   => 1500,
-						'currency' => 'eur',
+						'currency' => 'usd',
 						'reason'   => 'requested_by_customer',
 					],
 				],
@@ -1467,13 +1518,110 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'currency' => 'usd',
 		];
 
-		$this->mock_order
-			->expects( $this->never() )
-			->method( 'update_status' );
-
 		$this->mock_db_wrapper
 			->expects( $this->never() )
 			->method( 'order_from_charge_id' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'process_order_refund' );
+	}
+
+	public function test_process_refund_throws_when_order_not_found() {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'       => 'test_refund_id',
+						'amount'   => 1500,
+						'currency' => 'usd',
+						'reason'   => 'requested_by_customer',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->willReturn( false );
+
+		$this->expectException( Order_Not_Found_Exception::class );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function test_process_refund_throws_with_negative_amount() {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'       => 'test_refund_id',
+						'amount'   => 1500,
+						'currency' => 'usd',
+						'reason'   => 'requested_by_customer',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => -1800,
+			'currency' => 'usd',
+		];
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'get_total' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function test_process_refund_throws_with_invalid_refunded_amount() {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'       => 'test_refund_id',
+						'amount'   => 4200,
+						'currency' => 'usd',
+						'reason'   => 'requested_by_customer',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_total' )
+			->willReturn( 18 );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}

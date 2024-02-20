@@ -13,18 +13,25 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_Refunded_Event_Note {
 
 	/**
-	 * Captured event data.
+	 * Refund currency.
 	 *
-	 * @var array
+	 * @var string
 	 */
-	private $refunded_event;
+	private $refund_currency;
 
 	/**
-	 * Refund object.
+	 * Refund id.
 	 *
-	 * @var array
+	 * @var string
 	 */
-	private $refund;
+	private $refund_id;
+
+	/**
+	 * Refund reason.
+	 *
+	 * @var string
+	 */
+	private $refund_reason;
 
 	/**
 	 * Order object.
@@ -36,27 +43,25 @@ class WC_Payments_Refunded_Event_Note {
 	/**
 	 * Amount refunded.
 	 *
-	 * @var int
+	 * @var float
 	 */
-	private $amount_refunded;
+	private $refunded_amount;
 
 	/**
 	 * WC_Payments_Refunded_Event_Note constructor.
 	 *
-	 * @param array    $refunded_event Refunded event data.
+	 * @param float    $refunded_amount Refund amount.
+	 * @param string   $refunded_currency Refund currency.
+	 * @param string   $refund_id Refund id.
+	 * @param string   $refund_reason Refund reason.
 	 * @param WC_Order $order Order object.
-	 *
-	 * @throws InvalidArgumentException If the event is not a refunded event.
 	 */
-	public function __construct( array $refunded_event, WC_Order $order ) {
-		$is_refunded_event = isset( $refunded_event['type'] ) && 'charge.refunded' === $refunded_event['type'];
-		if ( ! $is_refunded_event ) {
-			throw new InvalidArgumentException( 'Not a refunded event type.' );
-		}
-		$this->refunded_event  = $refunded_event;
-		$this->refund          = array_pop( $refunded_event['data']['object']['refunds']['data'] );
-		$this->order           = $order;
-		$this->amount_refunded = WC_Payments_Utils::interpret_stripe_amount( $this->refund['amount'], $this->refund['currency'] );
+	public function __construct( float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, WC_Order $order ) {
+		$this->refunded_amount    = $refunded_amount;
+		$this->$refunded_currency = $refunded_currency;
+		$this->refund_id          = $refund_id;
+		$this->refund_reason      = $refund_reason;
+		$this->order              = $order;
 	}
 
 	/**
@@ -66,13 +71,11 @@ class WC_Payments_Refunded_Event_Note {
 	 */
 	public function generate_html_note(): string {
 		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-			wc_price( $this->amount_refunded, [ 'currency' => strtoupper( $this->refunded_event['data']['object']['currency'] ) ] ),
+			wc_price( $this->refunded_amount, [ 'currency' => strtoupper( $this->refund_currency ) ] ),
 			$this->order,
 		);
-		$refund_id       = $this->refund['id'];
-		$refund_reason   = $this->refund['reason'] ?? null;
 
-		if ( empty( $refund_reason ) ) {
+		if ( empty( $this->refund_reason ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
@@ -83,7 +86,7 @@ class WC_Payments_Refunded_Event_Note {
 				),
 				$formatted_price,
 				'WooPayments',
-				$refund_id
+				$this->refund_id
 			);
 		} else {
 			$note = sprintf(
@@ -96,8 +99,8 @@ class WC_Payments_Refunded_Event_Note {
 				),
 				$formatted_price,
 				'WooPayments',
-				$refund_reason,
-				$refund_id
+				$this->refund_reason,
+				$this->refund_id
 			);
 		}
 
