@@ -38,7 +38,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	 */
 	private $cache;
 
-	protected function setUp(): void {
+	public function set_up(): void {
 		parent::setUp();
 
 		$this->http_client_stub = $this->createMock( WC_Payments_Http::class );
@@ -55,7 +55,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->mock_account = $this->createMock( WC_Payments_Account::class );
 	}
 
-	protected function tearDown(): void {
+	public function tear_down(): void {
 		WC_Payments::set_database_cache( $this->cache );
 		parent::tearDown();
 	}
