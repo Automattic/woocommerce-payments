@@ -805,11 +805,11 @@ class WC_Payments_Webhook_Processing_Service {
 		$refund_id                     = $refund['id'] ?? '';
 		$refund_reason                 = $refund['reason'] ?? '';
 		$refund_balance_transaction_id = $refund['balance_transaction'] ?? '';
-		$amount                        = $this->read_webhook_property( $event_object, 'amount' );
+		$charge_amount                 = $this->read_webhook_property( $event_object, 'amount' );
 		$currency                      = $this->read_webhook_property( $event_object, 'currency' );
 		$refunded_amount               = WC_Payments_Utils::interpret_stripe_amount( $refund['amount'], $currency );
 		$refunded_currency             = $refund['currency'];
-		$is_partial_refund             = $refund['amount'] < $amount;
+		$is_partial_refund             = $refund['amount'] < $charge_amount;
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -824,7 +824,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		if ( $amount < 0 || $refunded_amount > $order->get_total() ) {
+		if ( $charge_amount < 0 || $refunded_amount > $order->get_total() ) {
 			throw new Invalid_Webhook_Data_Exception(
 				sprintf(
 				/* translators: %1: charge ID */
