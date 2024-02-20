@@ -36,7 +36,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->http_client_stub = $this->getMockBuilder( WC_Payments_Http::class )->disableOriginalConstructor()->setMethods( [ 'wpcom_json_api_request_as_user' ] )->getMock();
+		$this->http_client_stub = $this->getMockBuilder( WC_Payments_Http::class )->disableOriginalConstructor()->setMethods( [ 'wpcom_json_api_request_as_user', 'is_user_connected', 'get_connected_user_data' ] )->getMock();
 		$this->tracker          = new WCPay\WooPay_Tracker( $this->http_client_stub );
 
 		// Mock the main class's cache service.
@@ -48,6 +48,12 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->mock_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->disableOriginalConstructor()
 			->getMock();
+
+		$this->http_client_stub->method( 'is_user_connected' )
+			->willReturn( true );
+
+		$this->http_client_stub->method( 'get_connected_user_data' )
+			->willReturn( [ 'ID' => 1234 ] );
 	}
 
 	public function tear_down() {
@@ -98,6 +104,48 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_account_service( $this->mock_account );
 		$is_admin_event = false;
 		$this->assertFalse( $this->tracker->should_enable_tracking( $is_admin_event ) );
+	}
+
+	public function test_tracks_build_event_obj_for_admin_events() {
+		wp_set_current_user( 1 );
+		$this->set_is_admin( true );
+		$this->set_account_connected( true );
+		$event_name = 'wcadmin_test_event';
+		$properties = [ 'test_property' => 'value' ];
+
+		$event_obj = $this->invoke_method( $this->tracker, 'tracks_build_event_obj', [ wp_get_current_user(), $event_name, $properties ] );
+
+		// Ensure the event object is correctly built.
+		$this->assertInstanceOf( Jetpack_Tracks_Event::class, $event_obj );
+		$this->assertEquals( 'value', $event_obj->test_property );
+		$this->assertEquals( 1234, $event_obj->_ui );
+		$this->assertEquals( $event_name, $event_obj->_en );
+	}
+
+	public function test_tracks_build_event_obj_for_shopper_events() {
+		wp_set_current_user( 1 );
+		$this->set_account_connected( true );
+		$event_name = 'wcpay_test_event';
+		$properties = [ 'test_property' => 'value' ];
+
+		$event_obj = $this->invoke_method( $this->tracker, 'tracks_build_event_obj', [ wp_get_current_user(), $event_name, $properties ] );
+
+		// Ensure the event object is correctly built.
+		$this->assertInstanceOf( Jetpack_Tracks_Event::class, $event_obj );
+		$this->assertEquals( 'value', $event_obj->test_property );
+		$this->assertEquals( 1234, $event_obj->_ui );
+		$this->assertEquals( $event_name, $event_obj->_en );
+	}
+
+
+	/**
+	 * Utility method to access protected methods for testing.
+	 */
+	protected function invoke_method( &$object, $method_name, array $parameters = [] ) {
+		$reflection = new \ReflectionClass( get_class( $object ) );
+		$method     = $reflection->getMethod( $method_name );
+		$method->setAccessible( true );
+		return $method->invokeArgs( $object, $parameters );
 	}
 
 	/**
