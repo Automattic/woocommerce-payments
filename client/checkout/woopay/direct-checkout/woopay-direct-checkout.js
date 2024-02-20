@@ -150,7 +150,7 @@ class WoopayDirectCheckout {
 		addElementBySelector( '.wc-proceed-to-checkout .checkout-button' );
 		// Blocks 'Proceed to Checkout' button.
 		addElementBySelector(
-			'.wp-block-woocommerce-proceed-to-checkout-block'
+			'.wp-block-woocommerce-proceed-to-checkout-block a'
 		);
 
 		return elements;
@@ -167,6 +167,9 @@ class WoopayDirectCheckout {
 			element.addEventListener( 'click', async ( event ) => {
 				event.preventDefault();
 
+				// Store href before the async call to not lose the reference.
+				const currTargetHref = event.currentTarget.href;
+
 				try {
 					let woopayRedirectUrl = await this.resolveWooPayRedirectUrl();
 					if ( useCheckoutRedirect ) {
@@ -181,7 +184,7 @@ class WoopayDirectCheckout {
 					console.warn( error ); // eslint-disable-line no-console
 
 					this.teardown();
-					window.location.href = event.target.href;
+					window.location.href = currTargetHref;
 				}
 			} );
 		} );
