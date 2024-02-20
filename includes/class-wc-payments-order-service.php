@@ -1276,15 +1276,15 @@ class WC_Payments_Order_Service {
 	 * @param string   $refund_reason The reason for the refund.
 	 * @param string   $refund_balance_transaction_id The balance transaction ID of the refund.
 	 * @param bool     $is_partial_refund Whether the refund is partial.
+	 * @throws Order_Not_Found_Exception
+	 * @throws Exception
 	 */
-	public function process_order_refund( WC_Order $order, float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, string $refund_balance_transaction_id, bool $is_partial_refund ) {
+	public function process_order_refund( WC_Order $order, float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, string $refund_balance_transaction_id, bool $is_partial_refund ): void {
 		$note = ( new WC_Payments_Refunded_Event_Note( $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $order ) )->generate_html_note();
 
 		if ( ! $is_partial_refund && $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
-
-		$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason );
 
 		if ( $is_partial_refund ) {
 			$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason );
