@@ -101,7 +101,6 @@ declare module '@woocommerce/components' {
 		showMenu?: boolean;
 	}
 	const TableCard: ( props: TableCardProps ) => JSX.Element;
-	const Table: ( props: TableCardProps ) => JSX.Element;
 }
 
 declare module '@woocommerce/navigation' {
