@@ -1404,7 +1404,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
-	public function test_process_full_refund_succeeded() {
+	public function test_process_full_refund_succeeded(): void {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
@@ -1444,7 +1444,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
-	public function test_process_partial_refund_succeeded() {
+	public function test_process_partial_refund_succeeded(): void {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
@@ -1484,7 +1484,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
-	public function test_process_refund_ignores_event() {
+	public function test_process_refund_ignores_event(): void {
 		$this->event_body['type'] = 'charge.refunded.updated';
 
 		$this->mock_db_wrapper
@@ -1498,7 +1498,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
-	public function test_process_refund_ignores_failed_refund_event() {
+	public function test_process_refund_ignores_failed_refund_event(): void {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
@@ -1527,7 +1527,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'process_order_refund' );
 	}
 
-	public function test_process_refund_throws_when_order_not_found() {
+	public function test_process_refund_throws_when_order_not_found(): void {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
@@ -1557,7 +1557,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
-	public function test_process_refund_throws_with_negative_amount() {
+	public function test_process_refund_throws_with_negative_amount(): void {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
@@ -1591,7 +1591,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
-	public function test_process_refund_throws_with_invalid_refunded_amount() {
+	public function test_process_refund_throws_with_invalid_refunded_amount(): void {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [

@@ -1243,7 +1243,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Exception If the refund creation fails.
 	 */
-	public function create_refund_for_order( WC_Order $order, float $amount, string $refund_id, string $reason = '', array $line_items = [] ) {
+	public function create_refund_for_order( WC_Order $order, float $amount, string $refund_id, string $reason = '', array $line_items = [] ): WC_Order_Refund {
 		$refund_params = [
 			'amount'    => $amount,
 			'reason'    => $reason,
@@ -1260,7 +1260,7 @@ class WC_Payments_Order_Service {
 		);
 
 		if ( is_wp_error( $refund ) ) {
-			throw new Exception( $refund->get_error_message() ); // TODO add less generic exception.
+			throw new Exception( $refund->get_error_message() );
 		}
 
 		return $refund;
