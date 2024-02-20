@@ -23,6 +23,9 @@ declare global {
 		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
+		transactions_data: {
+			tpv: number;
+		};
 		accountStatus: {
 			email?: string;
 			created: string;
