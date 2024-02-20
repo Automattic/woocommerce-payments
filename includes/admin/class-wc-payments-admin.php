@@ -903,6 +903,10 @@ class WC_Payments_Admin {
 				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
 			],
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
+			'transactions_data'             => [
+				'tpv' => $this->account->get_transactions_tpv(),
+			],
+
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );

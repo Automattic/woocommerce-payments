@@ -2077,4 +2077,14 @@ class WC_Payments_Account {
 			'referer'         => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
 		];
 	}
+
+	/**
+	 * Gets the current account fees for rendering on the settings page.
+	 *
+	 * @return array Fees.
+	 */
+	public function get_transactions_tpv() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['transactions_data'] ) ? $account['transactions_data']['tpv'] : null;
+	}
 }
