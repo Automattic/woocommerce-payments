@@ -22,7 +22,7 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 
 	return (
 		<Modal
-			title={ 'Reset account' }
+			title={ strings.title }
 			className="wcpay-reset-account-modal"
 			onRequestClose={ onDismiss }
 		>
