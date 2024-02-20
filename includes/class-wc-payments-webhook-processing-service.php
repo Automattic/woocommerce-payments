@@ -789,7 +789,16 @@ class WC_Payments_Webhook_Processing_Service {
 		return sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), $message );
 	}
 
-	private function process_webhook_refund( $event_body ) { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+	/**
+	 * Process webhook refund event.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Invalid_Webhook_Data_Exception           Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception           When the refund amount is not valid.
+	 * @throws Order_Not_Found_Exception                When unable to resolve charge ID to order.
+	 */
+	private function process_webhook_refund( array $event_body ): void {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 
