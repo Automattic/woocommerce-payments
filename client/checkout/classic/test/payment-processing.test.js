@@ -21,6 +21,13 @@ jest.mock( 'wcpay/checkout/utils/upe' );
 jest.mock( 'wcpay/utils/checkout', () => {
 	return {
 		getUPEConfig: jest.fn( ( argument ) => {
+			if (
+				argument === 'wcBlocksUPEAppearance' ||
+				argument === 'upeAppearance'
+			) {
+				return {};
+			}
+
 			if ( argument === 'paymentMethodsConfig' ) {
 				return {
 					card: {
