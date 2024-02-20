@@ -34,7 +34,7 @@ test.describe( 'Successful purchase', () => {
 	test( 'using a 3DS card', async ( { page } ) => {
 		await shopper.fillCardDetails( page, config.cards[ '3ds' ] );
 		await shopper.placeOrder( page );
-		await shopper.confirmCardAuthentication( page, '3DS' );
+		await shopper.confirmCardAuthentication( page );
 
 		await expect(
 			page.getByText( 'Order received' ).first()

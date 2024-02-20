@@ -95,7 +95,6 @@ export const fillCardDetails = async (
 
 export const confirmCardAuthentication = async (
 	page: Page,
-	cardType = '3DS',
 	authorize = true
 ): Promise< void > => {
 	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
