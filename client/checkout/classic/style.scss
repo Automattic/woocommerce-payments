@@ -28,9 +28,21 @@
 	border: none;
 }
 
-#payment .payment_methods li img {
-	float: right;
-	border: 0;
-	padding: 0;
-	max-height: 1.618em;
+#payment .payment_methods {
+	li label img {
+		float: right;
+		border: 0;
+		padding: 0;
+		max-height: 1.618em;
+	}
+
+	.payment_method_woocommerce_payments_affirm label img {
+		min-width: 50px;
+	}
+	.payment_method_woocommerce_payments_afterpay label img {
+		min-width: 64px;
+	}
+	.payment_method_woocommerce_payments_klarna label img {
+		min-height: 30px;
+	}
 }
