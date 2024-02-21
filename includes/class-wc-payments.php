@@ -565,7 +565,7 @@ class WC_Payments {
 			self::get_gateway()->get_upe_enabled_payment_method_ids()
 		);
 		if ( [] !== $enabled_bnpl_payment_methods ) {
-			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 30 );
+			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -1020,10 +1020,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
 		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
 		$refunds_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
-		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
-		$survey_controller->register_routes();
 
 		if ( WC_Payments_Features::is_documents_section_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
@@ -1591,21 +1587,19 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function load_stripe_bnpl_site_messaging() {
-		if ( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() ) {
-			// The messaging element shall not be shown for subscription products.
-			// As we are not too deep into subscriptions API, we follow simplistic approach for now.
-			$is_subscription           = false;
-			$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
-			if ( $are_subscriptions_enabled ) {
-					global $product;
-					$is_subscription = $product && WC_Subscriptions_Product::is_subscription( $product );
-			}
+		// The messaging element shall not be shown for subscription products.
+		// As we are not too deep into subscriptions API, we follow simplistic approach for now.
+		$is_subscription           = false;
+		$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
+		if ( $are_subscriptions_enabled ) {
+				global $product;
+				$is_subscription = $product && WC_Subscriptions_Product::is_subscription( $product );
+		}
 
-			if ( ! $is_subscription ) {
-				require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
-				$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
-				echo wp_kses( $stripe_site_messaging->init(), 'post' );
-			}
+		if ( ! $is_subscription ) {
+			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
+			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
+			echo wp_kses( $stripe_site_messaging->init(), 'post' );
 		}
 	}
 

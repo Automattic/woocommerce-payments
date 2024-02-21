@@ -255,7 +255,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							<p className="payment-details-summary__amount">
 								<Loadable
 									isLoading={ isLoading }
-									placeholder="Amount placeholder"
+									placeholder={ __(
+										'Amount placeholder',
+										'woocommerce-payments'
+									) }
 								>
 									{ formattedAmount }
 									<span className="payment-details-summary__amount-currency">
@@ -313,7 +316,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<p>
 									<Loadable
 										isLoading={ isLoading }
-										placeholder="Fee amount"
+										placeholder={ __(
+											'Fee amount',
+											'woocommerce-payments'
+										) }
 									>
 										{ `${ __(
 											'Fees',
@@ -342,7 +348,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	'woocommerce-payments'
 																) }
 															</label>
-															<span aria-label="Transaction fee">
+															<span
+																aria-label={ __(
+																	'Transaction fee',
+																	'woocommerce-payments'
+																) }
+															>
 																{ formatCurrency(
 																	transactionFee.fee,
 																	transactionFee.currency
@@ -356,7 +367,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	'woocommerce-payments'
 																) }
 															</label>
-															<span aria-label="Dispute fee">
+															<span
+																aria-label={ __(
+																	'Dispute fee',
+																	'woocommerce-payments'
+																) }
+															>
 																{ disputeFee }
 															</span>
 														</Flex>
@@ -367,7 +383,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	'woocommerce-payments'
 																) }
 															</label>
-															<span aria-label="Total fees">
+															<span
+																aria-label={ __(
+																	'Total fees',
+																	'woocommerce-payments'
+																) }
+															>
 																{ formatCurrency(
 																	balance.fee,
 																	balance.currency
@@ -397,7 +418,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<p>
 									<Loadable
 										isLoading={ isLoading }
-										placeholder="Net amount"
+										placeholder={ __(
+											'Net amount',
+											'woocommerce-payments'
+										) }
 									>
 										{ `${ __(
 											'Net',
@@ -469,7 +493,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											);
 										} }
 									>
-										{ __( 'Approve Transaction' ) }
+										{ __(
+											'Approve Transaction',
+											'woocommerce-payments'
+										) }
 									</CaptureAuthorizationButton>
 								</div>
 							) }

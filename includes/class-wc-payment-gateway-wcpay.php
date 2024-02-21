@@ -2602,7 +2602,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_url();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account business URL.' . $e );
 		}
 
 		return $default_value;
@@ -2621,7 +2621,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_address();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account business support address.' . $e );
 		}
 
 		return $default_value;
@@ -2640,7 +2640,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_email();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get business support email.' . $e );
 		}
 
 		return $default_value;
@@ -2659,7 +2659,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_phone();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account business support phone.' . $e );
 		}
 
 		return $default_value;
@@ -2678,7 +2678,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_logo();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account branding logo.' . $e );
 		}
 
 		return $default_value;
@@ -2697,7 +2697,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_icon();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account\'s branding icon.' . $e );
 		}
 
 		return $default_value;
@@ -2716,7 +2716,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_primary_color();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account\'s branding primary color.' . $e );
 		}
 
 		return $default_value;
@@ -2735,7 +2735,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_secondary_color();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account\'s branding secondary color.' . $e );
 		}
 
 		return $default_value;
@@ -2747,7 +2747,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string The domestic currency code.
 	 */
-	protected function get_account_domestic_currency(): string {
+	public function get_account_domestic_currency(): string {
 		$merchant_country    = strtoupper( $this->account->get_account_country() );
 		$country_locale_data = $this->localization_service->get_country_locale_data( $merchant_country );
 
