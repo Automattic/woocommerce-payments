@@ -5,8 +5,7 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardHeader, DropdownMenu } from '@wordpress/components';
-import { moreVertical } from '@wordpress/icons';
+import { Card, CardHeader } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -22,9 +21,6 @@ import {
 } from 'wcpay/data';
 import PAYMENT_METHOD_IDS from './constants';
 
-// Survey modal imports.
-import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
-import SurveyModal from '../settings/survey-modal';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import methodsConfiguration from '../payment-methods-map';
@@ -35,21 +31,6 @@ import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import CapabilityRequestNotice from './capability-request';
 import { BuildMissingCurrenciesTooltipMessage } from 'wcpay/components/currency-information-for-methods';
-
-const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
-	return (
-		<DropdownMenu
-			icon={ moreVertical }
-			label={ __( 'Add feedback', 'woocommerce-payments' ) }
-			controls={ [
-				{
-					title: __( 'Provide feedback', 'woocommerce-payments' ),
-					onClick: () => setOpenModal( 'survey' ),
-				},
-			] }
-		/>
-	);
-};
 
 const PaymentMethods = () => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -150,20 +131,8 @@ const PaymentMethods = () => {
 		}
 	};
 
-	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
-
 	return (
 		<>
-			{ openModalIdentifier === 'survey' ? (
-				<WcPaySurveyContextProvider>
-					<SurveyModal
-						setOpenModal={ setOpenModalIdentifier }
-						surveyKey="wcpay-upe-disable-early-access-2022-may"
-						surveyQuestion="why-disable"
-					/>
-				</WcPaySurveyContextProvider>
-			) : null }
-
 			<Card className="payment-methods">
 				<CardHeader className="payment-methods__header">
 					<h4 className="payment-methods__heading">
@@ -171,9 +140,6 @@ const PaymentMethods = () => {
 							{ __( 'Payment methods', 'woocommerce-payments' ) }
 						</span>
 					</h4>
-					<PaymentMethodsDropdownMenu
-						setOpenModal={ setOpenModalIdentifier }
-					/>
 				</CardHeader>
 
 				<CardBody size={ null }>

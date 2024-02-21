@@ -9,50 +9,24 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { useDevMode, useIsWCPayEnabled, useTestMode } from 'wcpay/data';
+import { useDevMode, useTestMode } from 'wcpay/data';
 import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/overview/modal/setup-live-payments';
 import TestModeConfirmationModal from './test-mode-confirm-modal';
-import { recordEvent } from 'tracks';
+import EnableWooPaymentsCheckbox from './enable-woopayments-checkbox';
 
 const GeneralSettings = () => {
-	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
 	const [ modalVisible, setModalVisible ] = useState( false );
 	const isDevModeEnabled = useDevMode();
 	const [ testModeModalVisible, setTestModeModalVisible ] = useState( false );
 
-	const handleWcpayEnabledChange = ( enableWCPay ) => {
-		setIsWCPayEnabled( enableWCPay );
-
-		recordEvent( 'wcpay_gateway_toggle', {
-			action: enableWCPay ? 'enable' : 'disable',
-			context: 'wcpay-settings',
-		} );
-	};
-
 	return (
 		<>
 			<Card>
 				<CardBody>
-					<CheckboxControl
-						checked={ isWCPayEnabled }
-						onChange={ handleWcpayEnabledChange }
-						label={ sprintf(
-							/* translators: %s: WooPayments */
-							__( 'Enable %s', 'woocommerce-payments' ),
-							'WooPayments'
-						) }
-						help={ sprintf(
-							/* translators: %s: WooPayments */
-							__(
-								'When enabled, payment methods powered by %s will appear on checkout.',
-								'woocommerce-payments'
-							),
-							'WooPayments'
-						) }
-					/>
+					<EnableWooPaymentsCheckbox />
 					{ ! isDevModeEnabled && (
 						<>
 							<h4>

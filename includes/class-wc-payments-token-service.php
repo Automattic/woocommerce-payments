@@ -281,7 +281,7 @@ class WC_Payments_Token_Service {
 	 */
 	public function normalize_sepa_label( $label ) {
 		if ( 'sepa iban' === strtolower( $label ) ) {
-			return 'SEPA IBAN';
+			return __( 'SEPA IBAN', 'woocommerce-payments' );
 		}
 
 		return $label;
