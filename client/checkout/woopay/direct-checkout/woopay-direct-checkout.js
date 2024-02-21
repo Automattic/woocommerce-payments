@@ -165,10 +165,16 @@ class WoopayDirectCheckout {
 	static redirectToWooPay( elements, useCheckoutRedirect ) {
 		elements.forEach( ( element ) => {
 			element.addEventListener( 'click', async ( event ) => {
-				event.preventDefault();
-
 				// Store href before the async call to not lose the reference.
 				const currTargetHref = event.currentTarget.href;
+
+				// If there's no link where to redirect the user, do not break the expected behavior.
+				if ( ! currTargetHref ) {
+					this.teardown();
+					return;
+				}
+
+				event.preventDefault();
 
 				try {
 					let woopayRedirectUrl = await this.resolveWooPayRedirectUrl();
