@@ -298,6 +298,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'create_live_account'         => true,
 						'progressive'                 => false,
 						'collect_payout_requirements' => false,
+						'compatibility_data'          => $this->get_mock_compatibility_data(),
 					]
 				),
 				true,
@@ -1230,6 +1231,27 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'success', $result['result'] );
 	}
 
+	public function test_get_tracking_info() {
+		$expect = [ 'hosting-provider' => 'test' ];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( $expect ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->get_tracking_info();
+
+		$this->assertEquals( $expect, $result );
+	}
+
 	/**
 	 * Set up http mock response.
 	 *
@@ -1287,5 +1309,30 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'connect_timeout', $data );
 		$this->assertSame( 70, $data['connect_timeout'] );
 
+	}
+
+	/**
+	 * Returns the mock compatibility data.
+	 *
+	 * @param array $args If any values need to be overridden, the values can be added here.
+	 *
+	 * @return array
+	 */
+	private function get_mock_compatibility_data( array $args = [] ): array {
+		return array_merge(
+			[
+				'woopayments_version' => WCPAY_VERSION_NUMBER,
+				'woocommerce_version' => WC_VERSION,
+				'blog_theme'          => 'default',
+				'active_plugins'      => [],
+				'post_types_count'    => [
+					'post'       => 0,
+					'page'       => 0,
+					'attachment' => 0,
+					'product'    => 0,
+				],
+			],
+			$args
+		);
 	}
 }

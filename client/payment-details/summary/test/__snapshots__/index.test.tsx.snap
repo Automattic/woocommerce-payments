@@ -62,8 +62,34 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
               <div
                 class="payment-details-summary__id"
               >
-                Payment ID: 
-                ch_38jdHA39KKA
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -388,8 +414,34 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
               <div
                 class="payment-details-summary__id"
               >
-                Payment ID: 
-                ch_38jdHA39KKA
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -692,8 +744,341 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
               <div
                 class="payment-details-summary__id"
               >
-                Payment ID: 
-                ch_38jdHA39KKA
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="payment-details__refund-controls"
+          >
+            <div
+              class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
+              tabindex="-1"
+            >
+              <button
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="Transaction actions"
+                class="components-button components-dropdown-menu__toggle has-icon"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
+        >
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Date
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Sep 19, 2019, 5:24pm
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
+                  >
+                    Customer name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://somerandomorderurl.com/?edit_order=45981"
+                  >
+                    45981
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          aria-label="Visa"
+                          class="payment-method__brand payment-method__brand--visa"
+                        />
+                      </div>
+                    </button>
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Normal
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+  </div>
+</div>
+`;
+
+exports[`PaymentDetailsSummary correctly renders when payment intent is missing 1`] = `
+<div>
+  <div
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
+  >
+    <div
+      class="css-mgwsf4-View-Content em57xhy0"
+    >
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="payment-details-summary"
+          >
+            <div
+              class="payment-details-summary__section"
+            >
+              <p
+                class="payment-details-summary__amount"
+              >
+                $20.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  usd
+                </span>
+                <span
+                  class="chip chip-success"
+                >
+                  Paid
+                </span>
+              </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                
+                <p>
+                  Net: 
+                  $19.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -987,8 +1372,34 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
               <div
                 class="payment-details-summary__id"
               >
-                Payment ID: 
-                ch_38jdHA39KKA
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -1282,8 +1693,34 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
               <div
                 class="payment-details-summary__id"
               >
-                Payment ID: 
-                ch_38jdHA39KKA
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -1600,8 +2037,34 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
               <div
                 class="payment-details-summary__id"
               >
-                Payment ID: 
-                ch_38jdHA39KKA
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -1925,8 +2388,34 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
               <div
                 class="payment-details-summary__id"
               >
-                Payment ID: 
-                ch_38jdHA39KKA
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -2191,9 +2680,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             >
               <div
                 class="payment-details-summary__id"
-              >
-                Payment ID: 
-              </div>
+              />
             </div>
           </div>
           <div
@@ -2439,8 +2926,34 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
               <div
                 class="payment-details-summary__id"
               >
-                Payment ID: 
-                ch_38jdHA39KKA
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -2734,8 +3247,34 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
               <div
                 class="payment-details-summary__id"
               >
-                Payment ID: 
-                ch_38jdHA39KKA
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -3029,8 +3568,34 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
               <div
                 class="payment-details-summary__id"
               >
-                Payment ID: 
-                ch_38jdHA39KKA
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
               </div>
             </div>
           </div>

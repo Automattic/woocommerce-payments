@@ -50,7 +50,7 @@ import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
@@ -81,11 +81,7 @@ const placeholderValues = {
 };
 
 const isTapToPay = ( model: string ) => {
-	if ( model === 'COTS_DEVICE' ) {
-		return true;
-	}
-
-	return false;
+	return model === 'COTS_DEVICE';
 };
 
 const getTapToPayChannel = ( platform: string ) => {
@@ -259,7 +255,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							<p className="payment-details-summary__amount">
 								<Loadable
 									isLoading={ isLoading }
-									placeholder="Amount placeholder"
+									placeholder={ __(
+										'Amount placeholder',
+										'woocommerce-payments'
+									) }
 								>
 									{ formattedAmount }
 									<span className="payment-details-summary__amount-currency">
@@ -317,7 +316,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<p>
 									<Loadable
 										isLoading={ isLoading }
-										placeholder="Fee amount"
+										placeholder={ __(
+											'Fee amount',
+											'woocommerce-payments'
+										) }
 									>
 										{ `${ __(
 											'Fees',
@@ -346,7 +348,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	'woocommerce-payments'
 																) }
 															</label>
-															<span aria-label="Transaction fee">
+															<span
+																aria-label={ __(
+																	'Transaction fee',
+																	'woocommerce-payments'
+																) }
+															>
 																{ formatCurrency(
 																	transactionFee.fee,
 																	transactionFee.currency
@@ -360,7 +367,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	'woocommerce-payments'
 																) }
 															</label>
-															<span aria-label="Dispute fee">
+															<span
+																aria-label={ __(
+																	'Dispute fee',
+																	'woocommerce-payments'
+																) }
+															>
 																{ disputeFee }
 															</span>
 														</Flex>
@@ -371,7 +383,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	'woocommerce-payments'
 																) }
 															</label>
-															<span aria-label="Total fees">
+															<span
+																aria-label={ __(
+																	'Total fees',
+																	'woocommerce-payments'
+																) }
+															>
 																{ formatCurrency(
 																	balance.fee,
 																	balance.currency
@@ -401,7 +418,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<p>
 									<Loadable
 										isLoading={ isLoading }
-										placeholder="Net amount"
+										placeholder={ __(
+											'Net amount',
+											'woocommerce-payments'
+										) }
 									>
 										{ `${ __(
 											'Net',
@@ -430,14 +450,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											charge.payment_intent || ''
 										}
 										onClick={ () => {
-											wcpayTracks.recordEvent(
+											recordEvent(
 												'wcpay_fraud_protection_transaction_reviewed_merchant_blocked',
 												{
 													payment_intent_id:
 														charge.payment_intent,
 												}
 											);
-											wcpayTracks.recordEvent(
+											recordEvent(
 												'payments_transactions_details_cancel_charge_button_click',
 												{
 													payment_intent_id:
@@ -457,14 +477,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										}
 										buttonIsSmall={ false }
 										onClick={ () => {
-											wcpayTracks.recordEvent(
+											recordEvent(
 												'wcpay_fraud_protection_transaction_reviewed_merchant_approved',
 												{
 													payment_intent_id:
 														charge.payment_intent,
 												}
 											);
-											wcpayTracks.recordEvent(
+											recordEvent(
 												'payments_transactions_details_capture_charge_button_click',
 												{
 													payment_intent_id:
@@ -473,7 +493,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											);
 										} }
 									>
-										{ __( 'Approve Transaction' ) }
+										{ __(
+											'Approve Transaction',
+											'woocommerce-payments'
+										) }
 									</CaptureAuthorizationButton>
 								</div>
 							) }
@@ -482,13 +505,32 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									isLoading={ isLoading }
 									placeholder="Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx"
 								>
-									{ `${ __(
-										'Payment ID',
-										'woocommerce-payments'
-									) }: ` }
-									{ charge.payment_intent
-										? charge.payment_intent
-										: charge.id }
+									{ charge.payment_intent && (
+										<div className="payment-details-summary__id_wrapper">
+											<span className="payment-details-summary__id_label">
+												{ `${ __(
+													'Payment ID',
+													'woocommerce-payments'
+												) }: ` }
+											</span>
+											<span className="payment-details-summary__id_value">
+												{ charge.payment_intent }
+											</span>
+										</div>
+									) }
+									{ charge.id && (
+										<div className="payment-details-summary__id_wrapper">
+											<span className="payment-details-summary__id_label">
+												{ `${ __(
+													'Charge ID',
+													'woocommerce-payments'
+												) }: ` }
+											</span>
+											<span className="payment-details-summary__id_value">
+												{ charge.id }
+											</span>
+										</div>
+									) }
 								</Loadable>
 							</div>
 						</div>
@@ -517,7 +559,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 													setIsRefundModalOpen(
 														true
 													);
-													wcpayTracks.recordEvent(
+													recordEvent(
 														'payments_transactions_details_refund_modal_open',
 														{
 															payment_intent_id:
@@ -535,7 +577,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											{ isPartiallyRefundable && (
 												<MenuItem
 													onClick={ () => {
-														wcpayTracks.recordEvent(
+														recordEvent(
 															'payments_transactions_details_partial_refund',
 															{
 																payment_intent_id:
@@ -595,7 +637,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					formattedAmount={ formattedAmount }
 					onModalClose={ () => {
 						setIsRefundModalOpen( false );
-						wcpayTracks.recordEvent(
+						recordEvent(
 							'payments_transactions_details_refund_modal_close',
 							{
 								payment_intent_id: charge.payment_intent,
@@ -626,7 +668,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										buttonIsPrimary={ true }
 										buttonIsSmall={ false }
 										onClick={ () => {
-											wcpayTracks.recordEvent(
+											recordEvent(
 												'payments_transactions_details_capture_charge_button_click',
 												{
 													payment_intent_id:

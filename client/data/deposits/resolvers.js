@@ -17,8 +17,6 @@ import {
 	updateDeposits,
 	updateDepositsCount,
 	updateErrorForDepositQuery,
-	updateDepositsOverview,
-	updateErrorForDepositsOverview,
 	updateDepositsSummary,
 	updateErrorForDepositsSummary,
 	updateAllDepositsOverviews,
@@ -43,25 +41,6 @@ export function* getDeposit( id ) {
 			'createErrorNotice',
 			__( 'Error retrieving deposit.', 'woocommerce-payments' )
 		);
-	}
-}
-
-/**
- * Retrieve deposits overview from the deposits API.
- */
-export function* getDepositsOverview() {
-	const path = addQueryArgs( `${ NAMESPACE }/deposits/overview` );
-
-	try {
-		const result = yield apiFetch( { path } );
-		yield updateDepositsOverview( result );
-	} catch ( e ) {
-		yield controls.dispatch(
-			'core/notices',
-			'createErrorNotice',
-			__( 'Error retrieving deposits overview.', 'woocommerce-payments' )
-		);
-		yield updateErrorForDepositsOverview( e );
 	}
 }
 
@@ -99,6 +78,7 @@ const formatQueryFilters = ( query ) => ( {
 	],
 	status_is: query.statusIs,
 	status_is_not: query.statusIsNot,
+	locale: query.locale,
 } );
 
 export function getDepositsCSV( query ) {

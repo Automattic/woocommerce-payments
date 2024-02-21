@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useGetSettings, useSettings } from '../../data';
-import wcpayTracks from '../../tracks';
+import { recordEvent } from '../../tracks';
 import SettingsSection from '../settings-section';
 import './style.scss';
 import WooPayDisableFeedback from '../woopay-disable-feedback';
@@ -66,12 +66,9 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 			initialIsPaymentRequestEnabled !==
 			settings.is_payment_request_enabled
 		) {
-			wcpayTracks.recordEvent(
-				wcpayTracks.events.PAYMENT_REQUEST_SETTINGS_CHANGE,
-				{
-					enabled: settings.is_payment_request_enabled ? 'yes' : 'no',
-				}
-			);
+			recordEvent( 'wcpay_payment_request_settings_change', {
+				enabled: settings.is_payment_request_enabled ? 'yes' : 'no',
+			} );
 
 			// Update the "initial" value to properly track consecutive saves.
 			setInitialIsPaymentRequestEnabled(

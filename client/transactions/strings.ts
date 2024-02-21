@@ -19,7 +19,7 @@ export const displayType = {
 	dispute: __( 'Dispute', 'woocommerce-payments' ),
 	dispute_reversal: __( 'Dispute reversal', 'woocommerce-payments' ),
 	card_reader_fee: __( 'Reader fee', 'woocommerce-payments' ),
-	financing_payout: __( 'Loan dispersement', 'woocommerce-payments' ),
+	financing_payout: __( 'Loan disbursement', 'woocommerce-payments' ),
 	financing_paydown: __( 'Loan repayment', 'woocommerce-payments' ),
 };
 

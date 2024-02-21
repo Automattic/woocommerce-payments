@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
-import wcpayTracks from 'tracks';
+import { recordUserEvent, getTracksIdentity } from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from '../../payment-request/utils';
 import {
@@ -11,6 +11,7 @@ import {
 	validateEmail,
 	appendRedirectionParams,
 } from './utils';
+import { select } from '@wordpress/data';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -20,6 +21,7 @@ export const handleWooPayEmailInput = async (
 	let timer;
 	const waitTime = 500;
 	const woopayEmailInput = await getTargetElement( field );
+	const tracksUserId = await getTracksIdentity();
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
@@ -271,10 +273,10 @@ export const handleWooPayEmailInput = async (
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
 		);
-		urlParams.append(
-			'tracksUserIdentity',
-			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
-		);
+
+		if ( tracksUserId ) {
+			urlParams.append( 'tracksUserIdentity', tracksUserId );
+		}
 
 		iframe.src = `${ getConfig(
 			'woopayHost'
@@ -340,7 +342,7 @@ export const handleWooPayEmailInput = async (
 			parentDiv.removeChild( errorMessage );
 		}
 
-		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_EMAIL_CHECK );
+		recordUserEvent( 'checkout_email_address_woopay_check' );
 
 		request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_signature' ),
@@ -353,14 +355,21 @@ export const handleWooPayEmailInput = async (
 					return response.data;
 				}
 
-				throw new Error( 'Request for signature failed.' );
+				throw new Error(
+					__(
+						'Request for signature failed.',
+						'woocommerce-payments'
+					)
+				);
 			} )
 			.then( ( data ) => {
 				if ( data.signature ) {
 					return data.signature;
 				}
 
-				throw new Error( 'Signature not found.' );
+				throw new Error(
+					__( 'Signature not found.', 'woocommerce-payments' )
+				);
 			} )
 			.then( ( signature ) => {
 				const emailExistsQuery = new URLSearchParams();
@@ -402,10 +411,7 @@ export const handleWooPayEmailInput = async (
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
 				} else if ( data.code !== 'rest_invalid_param' ) {
-					wcpayTracks.recordUserEvent(
-						wcpayTracks.events.WOOPAY_OFFERED,
-						[]
-					);
+					recordUserEvent( 'checkout_woopay_save_my_info_offered' );
 				}
 			} )
 			.catch( ( err ) => {
@@ -464,9 +470,7 @@ export const handleWooPayEmailInput = async (
 
 	woopayEmailInput.addEventListener( 'input', ( e ) => {
 		if ( ! hasCheckedLoginSession && ! customerClickedBackButton ) {
-			if ( customerClickedBackButton ) {
-				openLoginSessionIframe( woopayEmailInput.value );
-			}
+			openLoginSessionIframe( woopayEmailInput.value );
 
 			return;
 		}
@@ -502,9 +506,7 @@ export const handleWooPayEmailInput = async (
 								'woopay-login-session-iframe-wrapper'
 							);
 							loginSessionIframe.classList.add( 'open' );
-							wcpayTracks.recordUserEvent(
-								wcpayTracks.events.WOOPAY_AUTO_REDIRECT
-							);
+							recordUserEvent( 'checkout_woopay_auto_redirect' );
 							spinner.remove();
 							// Do nothing if the iframe has been closed.
 							if (
@@ -615,8 +617,16 @@ export const handleWooPayEmailInput = async (
 	} );
 
 	if ( ! customerClickedBackButton ) {
-		// Check if user already has a WooPay login session.
-		if ( ! hasCheckedLoginSession ) {
+		const paymentMethods = await select(
+			'wc/store/payment'
+		).getAvailablePaymentMethods();
+
+		const hasWCPayPaymentMethod = paymentMethods.hasOwnProperty(
+			'woocommerce_payments'
+		);
+
+		// Check if user already has a WooPay login session and only open the iframe if there is WCPay.
+		if ( ! hasCheckedLoginSession && hasWCPayPaymentMethod ) {
 			openLoginSessionIframe( woopayEmailInput.value );
 		}
 	} else {
@@ -625,11 +635,7 @@ export const handleWooPayEmailInput = async (
 			dispatchUserExistEvent( true );
 		}, 2000 );
 
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_SKIPPED,
-			[],
-			true
-		);
+		recordUserEvent( 'woopay_skipped', {}, true );
 
 		searchParams.delete( 'skip_woopay' );
 

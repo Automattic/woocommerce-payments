@@ -10,17 +10,22 @@ import {
 	CardHeader,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies.
  */
 import { getAdminUrl } from 'wcpay/utils';
-import wcpayTracks from 'tracks';
+import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { recordEvent } from 'tracks';
 import Loadable from 'components/loadable';
+import { ClickTooltip } from 'components/tooltip';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
 import {
+	DepositMinimumBalanceNotice,
 	DepositTransitDaysNotice,
 	NegativeBalanceDepositsPausedNotice,
 	NewAccountWaitingPeriodNotice,
@@ -49,9 +54,14 @@ const DepositsOverview: React.FC = () => {
 
 	const availableFunds = overview?.available?.amount ?? 0;
 	const pendingFunds = overview?.pending?.amount ?? 0;
+	const totalFunds = availableFunds + pendingFunds;
 
-	// If the available balance is negative, deposits may be paused.
-	const isNegativeBalanceDepositsPaused = availableFunds < 0;
+	const minimumDepositAmount =
+		wcpaySettings.accountStatus.deposits
+			?.minimum_scheduled_deposit_amounts?.[ selectedCurrency ] ?? 0;
+	const isAboveMinimumDepositAmount = availableFunds >= minimumDepositAmount;
+	// If the total balance is negative, deposits may be paused.
+	const isNegativeBalanceDepositsPaused = totalFunds < 0;
 	// When there are funds pending but no available funds, deposits are paused.
 	const isDepositAwaitingPendingFunds =
 		availableFunds === 0 && pendingFunds > 0;
@@ -99,6 +109,77 @@ const DepositsOverview: React.FC = () => {
 		return null;
 	}
 
+	const nextDepositHelpContent = (
+		<>
+			{ __(
+				'Deposits are initiated based on the following criteria:',
+				'woocommerce-payments'
+			) }
+			<ul>
+				<li>
+					{ interpolateComponents( {
+						mixedString: __(
+							'The {{link}}pending period{{/link}} in your country',
+							'woocommerce-payments'
+						),
+						components: {
+							link: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									rel="external noopener noreferrer"
+									target="_blank"
+									href={
+										'https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-period-chart'
+									}
+								/>
+							),
+						},
+					} ) }
+				</li>
+				<li>
+					{ interpolateComponents( {
+						mixedString: __(
+							"Your account's {{link}}available funds{{/link}}",
+							'woocommerce-payments'
+						),
+						components: {
+							link: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									rel="external noopener noreferrer"
+									target="_blank"
+									href={
+										'https://woo.com/document/woopayments/deposits/deposit-schedule/#available-funds'
+									}
+								/>
+							),
+						},
+					} ) }
+				</li>
+				<li>
+					{ interpolateComponents( {
+						mixedString: __(
+							'Your {{link}}deposit schedule{{/link}} settings',
+							'woocommerce-payments'
+						),
+						components: {
+							link: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									rel="external noopener noreferrer"
+									target="_blank"
+									href={
+										'https://woo.com/document/woopayments/deposits/change-deposit-schedule/'
+									}
+								/>
+							),
+						},
+					} ) }
+				</li>
+			</ul>
+		</>
+	);
+
 	return (
 		<Card className="wcpay-deposits-overview">
 			<CardHeader>
@@ -110,7 +191,11 @@ const DepositsOverview: React.FC = () => {
 				<CardBody className="wcpay-deposits-overview__schedule__container">
 					<DepositSchedule
 						depositsSchedule={ account.deposits_schedule }
-						showNextDepositDate={ availableFunds > 0 }
+					/>
+					<ClickTooltip
+						content={ nextDepositHelpContent }
+						buttonIcon={ <HelpOutlineIcon /> }
+						buttonLabel={ 'Deposit schedule tooltip' }
 					/>
 				</CardBody>
 			) }
@@ -135,6 +220,15 @@ const DepositsOverview: React.FC = () => {
 						{ isNegativeBalanceDepositsPaused && (
 							<NegativeBalanceDepositsPausedNotice />
 						) }
+						{ availableFunds > 0 &&
+							! isAboveMinimumDepositAmount && (
+								<DepositMinimumBalanceNotice
+									minimumDepositAmountFormatted={ formatExplicitCurrency(
+										minimumDepositAmount,
+										selectedCurrency
+									) }
+								/>
+							) }
 					</>
 				) }
 			</CardBody>
@@ -160,9 +254,8 @@ const DepositsOverview: React.FC = () => {
 								path: '/payments/deposits',
 							} ) }
 							onClick={ () =>
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+								recordEvent(
+									'wcpay_overview_deposits_view_history_click'
 								)
 							}
 						>
@@ -184,9 +277,8 @@ const DepositsOverview: React.FC = () => {
 								} ) + '#deposit-schedule'
 							}
 							onClick={ () =>
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
+								recordEvent(
+									'wcpay_overview_deposits_change_schedule_click'
 								)
 							}
 						>

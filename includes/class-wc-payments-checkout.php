@@ -129,6 +129,8 @@ class WC_Payments_Checkout {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
 
+		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
+
 		$script = 'dist/checkout';
 
 		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
@@ -190,6 +192,7 @@ class WC_Payments_Checkout {
 			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isWoopayFirstPartyAuthEnabled'  => $this->woopay_util->is_woopay_first_party_auth_enabled(),
 			'isWooPayEmailInputEnabled'      => $this->woopay_util->is_woopay_email_input_enabled(),
+			'isWooPayDirectCheckoutEnabled'  => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
 			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
 			'woopayHost'                     => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
@@ -199,7 +202,6 @@ class WC_Payments_Checkout {
 			'woopaySessionNonce'             => wp_create_nonce( 'woopay_session_nonce' ),
 			'woopayMerchantId'               => Jetpack_Options::get_option( 'id' ),
 			'icon'                           => $this->gateway->get_icon_url(),
-			'tracksUserIdentity'             => WC_Payments::woopay_tracker()->tracks_get_identity( get_current_user_id() ),
 		];
 
 		/**
@@ -412,10 +414,6 @@ class WC_Payments_Checkout {
 				?>
 
 			</fieldset>
-
-			<?php if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
-				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
-			<?php endif; ?>
 
 			<?php
 

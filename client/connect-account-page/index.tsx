@@ -21,7 +21,7 @@ import scheduled from 'gridicons/dist/scheduled';
 /**
  * Internal dependencies
  */
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import Page from 'components/page';
 import BannerNotice from 'components/banner-notice';
 import PaymentMethods from './payment-methods';
@@ -50,16 +50,11 @@ const ConnectAccountPage: React.FC = () => {
 	const isCountrySupported = !! availableCountries[ country ];
 
 	useEffect( () => {
-		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_VIEW, {
+		recordEvent( 'page_view', {
 			path: 'payments_connect_v2',
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
-			woo_country_code:
-				wcSettings?.preloadSettings?.general
-					?.woocommerce_default_country ||
-				wcSettings?.admin?.preloadSettings?.general
-					?.woocommerce_default_country,
 		} );
 		// We only want to run this once.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,17 +93,12 @@ const ConnectAccountPage: React.FC = () => {
 	const handleSetup = async () => {
 		setSubmitted( true );
 
-		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
+		recordEvent( 'wcpay_connect_account_clicked', {
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
 			is_new_onboarding_flow: isNewFlowEnabled,
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
-			woo_country_code:
-				wcSettings?.preloadSettings?.general
-					?.woocommerce_default_country ||
-				wcSettings?.admin?.preloadSettings?.general
-					?.woocommerce_default_country,
 		} );
 
 		// If there is an incentive available, request promo activation before redirecting.

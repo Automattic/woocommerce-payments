@@ -13,7 +13,7 @@ import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import './style.scss';
@@ -68,9 +68,8 @@ const DisputeUnderReviewFooter: React.FC< {
 						<Button
 							variant="secondary"
 							onClick={ () => {
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
+								recordEvent(
+									'wcpay_view_submitted_evidence_clicked',
 									{
 										dispute_status: dispute.status,
 										on_page: 'transaction_details',
@@ -140,9 +139,8 @@ const DisputeWonFooter: React.FC< {
 						<Button
 							variant="secondary"
 							onClick={ () => {
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
+								recordEvent(
+									'wcpay_view_submitted_evidence_clicked',
 									{
 										dispute_status: dispute.status,
 										on_page: 'transaction_details',
@@ -250,9 +248,8 @@ const DisputeLostFooter: React.FC< {
 							<Button
 								variant="secondary"
 								onClick={ () => {
-									wcpayTracks.recordEvent(
-										wcpayTracks.events
-											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
+									recordEvent(
+										'wcpay_view_submitted_evidence_clicked',
 										{
 											dispute_status: dispute.status,
 											on_page: 'transaction_details',
@@ -323,9 +320,8 @@ const InquiryUnderReviewFooter: React.FC< {
 						<Button
 							variant="secondary"
 							onClick={ () => {
-								wcpayTracks.recordEvent(
-									wcpayTracks.events
-										.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
+								recordEvent(
+									'wcpay_view_submitted_evidence_clicked',
 									{
 										dispute_status: dispute.status,
 										on_page: 'transaction_details',
@@ -398,9 +394,8 @@ const InquiryClosedFooter: React.FC< {
 							<Button
 								variant="secondary"
 								onClick={ () => {
-									wcpayTracks.recordEvent(
-										wcpayTracks.events
-											.PAYMENT_DETAILS_VIEW_DISPUTE_EVIDENCE_BUTTON_CLICKED,
+									recordEvent(
+										'wcpay_view_submitted_evidence_clicked',
 										{
 											dispute_status: dispute.status,
 											on_page: 'transaction_details',

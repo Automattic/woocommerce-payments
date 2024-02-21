@@ -17,7 +17,7 @@ import {
 	payForOrderHandler,
 } from './event-handlers.js';
 import '../checkout/express-checkout-buttons.scss';
-import wcpayTracks from 'tracks';
+import { recordUserEvent } from 'tracks';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
@@ -56,26 +56,26 @@ jQuery( ( $ ) => {
 	// Track the payment request button click event.
 	const trackPaymentRequestButtonClick = ( source ) => {
 		const paymentRequestTypeEvents = {
-			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_CLICK,
-			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_CLICK,
+			google_pay: 'gpay_button_click',
+			apple_pay: 'applepay_button_click',
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
 			const event = paymentRequestTypeEvents[ paymentRequestType ];
-			wcpayTracks.recordUserEvent( event, { source } );
+			recordUserEvent( event, { source } );
 		}
 	};
 
 	// Track the payment request button load event.
 	const trackPaymentRequestButtonLoad = debounce( ( source ) => {
 		const paymentRequestTypeEvents = {
-			google_pay: wcpayTracks.events.GOOGLEPAY_BUTTON_LOAD,
-			apple_pay: wcpayTracks.events.APPLEPAY_BUTTON_LOAD,
+			google_pay: 'gpay_button_load',
+			apple_pay: 'applepay_button_load',
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
 			const event = paymentRequestTypeEvents[ paymentRequestType ];
-			wcpayTracks.recordUserEvent( event, { source } );
+			recordUserEvent( event, { source } );
 		}
 	}, 1000 );
 
@@ -179,6 +179,10 @@ jQuery( ( $ ) => {
 					.val();
 			}
 
+			if ( $( '.wc-bookings-booking-form' ).length ) {
+				productId = $( '.wc-booking-product-id' ).val();
+			}
+
 			const data = {
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
@@ -187,10 +191,10 @@ jQuery( ( $ ) => {
 					: [],
 			};
 
-			// Add addons data to the POST body
+			// Add extension data to the POST body
 			const formData = $( 'form.cart' ).serializeArray();
 			$.each( formData, ( i, field ) => {
-				if ( /^addon-/.test( field.name ) ) {
+				if ( /^(addon-|wc_)/.test( field.name ) ) {
 					if ( /\[\]$/.test( field.name ) ) {
 						const fieldName = field.name.substring(
 							0,
@@ -293,6 +297,10 @@ jQuery( ( $ ) => {
 				productId = $( '.single_variation_wrap' )
 					.find( 'input[name="product_id"]' )
 					.val();
+			}
+
+			if ( $( '.wc-bookings-booking-form' ).length ) {
+				productId = $( '.wc-booking-product-id' ).val();
 			}
 
 			const addons =
@@ -449,19 +457,9 @@ jQuery( ( $ ) => {
 								displayItems: response.displayItems,
 							} );
 						} else {
-							/**
-							 * Re init the payment request button.
-							 *
-							 * This ensures that when the customer clicks on the payment button, the available shipping options are
-							 * refetched based on the selected variable product's data and the chosen address.
-							 */
-							wcpayPaymentRequestParams.product.needs_shipping =
-								response.needs_shipping;
-							wcpayPaymentRequestParams.product.total =
-								response.total;
-							wcpayPaymentRequestParams.product.displayItems =
-								response.displayItems;
-							wcpayPaymentRequest.init();
+							wcpayPaymentRequest.reInitPaymentRequest(
+								response
+							);
 						}
 
 						wcpayPaymentRequest.unblockPaymentRequestButton();
@@ -477,32 +475,36 @@ jQuery( ( $ ) => {
 				wcpayPaymentRequest.blockPaymentRequestButton();
 			} );
 
-			$( '.quantity' ).on(
-				'input',
-				'.qty',
-				wcpayPaymentRequest.debounce( 250, () => {
-					wcpayPaymentRequest.blockPaymentRequestButton();
-					paymentRequestError = [];
+			$( '.quantity' )
+				.off( 'input', '.qty' )
+				.on(
+					'input',
+					'.qty',
+					wcpayPaymentRequest.debounce( 250, () => {
+						wcpayPaymentRequest.blockPaymentRequestButton();
+						paymentRequestError = [];
 
-					$.when( wcpayPaymentRequest.getSelectedProductData() ).then(
-						( response ) => {
-							if ( response.error ) {
-								paymentRequestError = [ response.error ];
-								wcpayPaymentRequest.unblockPaymentRequestButton();
-							} else {
-								$.when(
-									paymentRequest.update( {
-										total: response.total,
-										displayItems: response.displayItems,
-									} )
-								).then( () => {
-									wcpayPaymentRequest.unblockPaymentRequestButton();
+						$.when(
+							wcpayPaymentRequest.getSelectedProductData()
+						).then( ( response ) => {
+							if (
+								! wcpayPaymentRequest.paymentAborted &&
+								wcpayPaymentRequestParams.product
+									.needs_shipping === response.needs_shipping
+							) {
+								paymentRequest.update( {
+									total: response.total,
+									displayItems: response.displayItems,
 								} );
+							} else {
+								wcpayPaymentRequest.reInitPaymentRequest(
+									response
+								);
 							}
-						}
-					);
-				} )
-			);
+							wcpayPaymentRequest.unblockPaymentRequestButton();
+						} );
+					} )
+				);
 		},
 
 		attachCartPageEventListeners: ( prButton ) => {
@@ -554,6 +556,26 @@ jQuery( ( $ ) => {
 		unblockPaymentRequestButton: () => {
 			wcpayPaymentRequest.show();
 			$( '#wcpay-payment-request-button' ).unblock();
+		},
+
+		/**
+		 * Re init the payment request button.
+		 *
+		 * This ensures that when the customer clicks on the payment button, the available shipping options are
+		 * refetched based on the selected variable product's data and the chosen address.
+		 *
+		 *  This is also useful when the customer changes the quantity of a product, as the total and display items
+		 *  need to be updated.
+		 *
+		 * @param {Object} response Response from the server containing the updated product data.
+		 */
+		reInitPaymentRequest: ( response ) => {
+			wcpayPaymentRequestParams.product.needs_shipping =
+				response.needs_shipping;
+			wcpayPaymentRequestParams.product.total = response.total;
+			wcpayPaymentRequestParams.product.displayItems =
+				response.displayItems;
+			wcpayPaymentRequest.init();
 		},
 
 		/**
@@ -615,5 +637,41 @@ jQuery( ( $ ) => {
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
 		wcpayPaymentRequest.init();
+	} );
+
+	// Handle bookable products on the product page.
+	let wcBookingFormChanged = false;
+
+	$( document.body )
+		.off( 'wc_booking_form_changed' )
+		.on( 'wc_booking_form_changed', () => {
+			wcBookingFormChanged = true;
+		} );
+
+	// Listen for the WC Bookings wc_bookings_calculate_costs event to complete
+	// and add the bookable product to the cart, using the response to update the
+	// payment request request params with correct totals.
+	$( document ).ajaxComplete( function ( event, xhr, settings ) {
+		if ( wcBookingFormChanged ) {
+			if (
+				settings.url === window.booking_form_params.ajax_url &&
+				settings.data.includes( 'wc_bookings_calculate_costs' ) &&
+				xhr.responseText.includes( 'SUCCESS' )
+			) {
+				wcpayPaymentRequest.blockPaymentRequestButton();
+				wcBookingFormChanged = false;
+				return wcpayPaymentRequest.addToCart().then( ( response ) => {
+					wcpayPaymentRequestParams.product.total = response.total;
+					wcpayPaymentRequestParams.product.displayItems =
+						response.displayItems;
+					// Empty the cart to avoid having 2 products in the cart when payment request is not used.
+					api.paymentRequestEmptyCart( response.bookingId );
+
+					wcpayPaymentRequest.init();
+
+					wcpayPaymentRequest.unblockPaymentRequestButton();
+				} );
+			}
+		}
 	} );
 } );

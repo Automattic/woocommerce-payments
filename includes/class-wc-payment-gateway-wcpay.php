@@ -272,7 +272,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->icon               = $payment_method->get_icon();
 		$this->has_fields         = true;
 		$this->method_title       = 'WooPayments';
-		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
+		$this->method_description = $this->get_method_description();
 
 		$this->title       = $payment_method->get_title();
 		$this->description = '';
@@ -503,7 +503,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
-			add_action( 'woocommerce_order_status_cancelled', [ $this, 'cancel_authorizations_on_order_cancel' ] );
+			add_action( 'woocommerce_order_status_cancelled', [ $this->order_service, 'cancel_authorizations_on_order_status_change' ] );
+			add_action( 'woocommerce_order_status_completed', [ $this->order_service, 'capture_authorization_on_order_status_change' ], 10, 3 );
 
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
@@ -663,11 +664,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Proceed with current request using new login session (to ensure consistent nonce).
+	 * Only apply during the checkout process with the account creation.
 	 *
 	 * @param string $cookie New cookie value.
 	 */
 	public function set_cookie_on_current_request( $cookie ) {
-		$_COOKIE[ LOGGED_IN_COOKIE ] = $cookie;
+		if ( defined( 'WOOCOMMERCE_CHECKOUT' ) && WOOCOMMERCE_CHECKOUT && did_action( 'woocommerce_created_customer' ) > 0 ) {
+			$_COOKIE[ LOGGED_IN_COOKIE ] = $cookie;
+		}
 	}
 
 	/**
@@ -2598,7 +2602,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_url();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account business URL.' . $e );
 		}
 
 		return $default_value;
@@ -2617,7 +2621,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_address();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account business support address.' . $e );
 		}
 
 		return $default_value;
@@ -2636,7 +2640,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_email();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get business support email.' . $e );
 		}
 
 		return $default_value;
@@ -2655,7 +2659,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_phone();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account business support phone.' . $e );
 		}
 
 		return $default_value;
@@ -2674,7 +2678,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_logo();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account branding logo.' . $e );
 		}
 
 		return $default_value;
@@ -2693,7 +2697,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_icon();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account\'s branding icon.' . $e );
 		}
 
 		return $default_value;
@@ -2712,7 +2716,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_primary_color();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account\'s branding primary color.' . $e );
 		}
 
 		return $default_value;
@@ -2731,7 +2735,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_secondary_color();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account\'s branding secondary color.' . $e );
 		}
 
 		return $default_value;
@@ -2743,7 +2747,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string The domestic currency code.
 	 */
-	protected function get_account_domestic_currency(): string {
+	public function get_account_domestic_currency(): string {
 		$merchant_country    = strtoupper( $this->account->get_account_country() );
 		$country_locale_data = $this->localization_service->get_country_locale_data( $merchant_country );
 
@@ -3254,52 +3258,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'message'   => $error_message,
 			'http_code' => $http_code,
 		];
-	}
-
-	/**
-	 * Cancels uncaptured authorizations on order cancel.
-	 *
-	 * @param int $order_id - Order ID.
-	 */
-	public function cancel_authorizations_on_order_cancel( $order_id ) {
-		$order = new WC_Order( $order_id );
-		if ( null !== $order ) {
-			$intent_id = $this->order_service->get_intent_id_for_order( $order );
-			if ( null !== $intent_id && '' !== $intent_id ) {
-				try {
-					$request = Get_Intention::create( $intent_id );
-					$request->set_hook_args( $order );
-					$intent = $request->send();
-					$charge = $intent->get_charge();
-
-					/**
-					 * Successful but not captured Charge is an authorization
-					 * that needs to be cancelled.
-					 */
-					if ( null !== $charge
-						&& false === $charge->is_captured()
-						&& Intent_Status::SUCCEEDED === $charge->get_status()
-						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
-					) {
-							$request = Cancel_Intention::create( $intent_id );
-							$request->set_hook_args( $order );
-							$intent = $request->send();
-
-							$this->order_service->post_unique_capture_cancelled_note( $order );
-					}
-
-					$this->order_service->set_intention_status_for_order( $order, $intent->get_status() );
-					$order->save();
-				} catch ( \Exception $e ) {
-					$order->add_order_note(
-						WC_Payments_Utils::esc_interpolated_html(
-							__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
-							[ 'strong' => '<strong>' ]
-						)
-					);
-				}
-			}
-		}
 	}
 
 	/**
@@ -4282,31 +4240,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	// End: Deprecated functions.
-
-	/**
-	 * Determine if current payment method is a platform payment method.
-	 *
-	 * @param boolean $is_using_saved_payment_method If it is using saved payment method.
-	 *
-	 * @return boolean True if it is a platform payment method.
-	 */
-	private function is_platform_payment_method( bool $is_using_saved_payment_method ) {
-		// Return false for express checkout method.
-		if ( isset( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return false;
-		}
-
-		// Make sure the payment method being charged was created in the platform.
-		if (
-			! $is_using_saved_payment_method &&
-			$this->should_use_stripe_platform_on_checkout_page()
-		) {
-			// This payment method was created under the platform account.
-			return true;
-		}
-
-		return false;
-	}
 
 	/**
 	 * Determine whether redirection is needed for the non-card UPE payment method.

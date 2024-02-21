@@ -15,9 +15,11 @@ import {
 	validateEmail,
 	appendRedirectionParams,
 } from '../utils';
+import { getTracksIdentity } from 'tracks';
 
 export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	const woopayEmailInput = await getTargetElement( emailSelector );
+	const tracksUserID = await getTracksIdentity();
 	let userEmail = '';
 
 	const parentDiv = document.body;
@@ -178,10 +180,10 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
 		);
-		urlParams.append(
-			'tracksUserIdentity',
-			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
-		);
+
+		if ( tracksUserID ) {
+			urlParams.append( 'tracksUserIdentity', tracksUserID );
+		}
 
 		iframe.src = `${ getConfig(
 			'woopayHost'
