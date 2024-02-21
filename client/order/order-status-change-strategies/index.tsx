@@ -87,7 +87,7 @@ function triggerCancelAuthorizationModal(
 					href="https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#cancelling-authorizations"
 					rel="noopener noreferrer"
 				>
-					{ __( 'cancel the authorization', 'woocommerce-payments' ) }
+					{ __( 'cancel the payment', 'woocommerce-payments' ) }
 				</a>
 			),
 			newOrderStatus: <b>{ OrderStatusLookup[ newOrderStatus ] }</b>,
@@ -96,12 +96,12 @@ function triggerCancelAuthorizationModal(
 
 	renderModal(
 		<OrderStatusConfirmationModal
-			title={ __( 'Cancel authorization', 'woocommerce-payments' ) }
+			title={ __( 'Cancel payment', 'woocommerce-payments' ) }
 			confirmButtonText={ __(
-				'Cancel order and authorization',
+				'Cancel order and payment',
 				'woocommerce-payments'
 			) }
-			cancelButtonText={ __( 'Do Nothing', 'woocommerce-payments' ) }
+			cancelButtonText={ __( 'Cancel', 'woocommerce-payments' ) }
 			confirmationMessage={ interpolatedMessage }
 			onConfirm={ () => {
 				const orderEditForm: HTMLFormElement | null =
@@ -167,12 +167,12 @@ function triggerCaptureAuthorizationModal(
 
 	renderModal(
 		<OrderStatusConfirmationModal
-			title={ __( 'Capture Authorization', 'woocommerce-payments' ) }
+			title={ __( 'Capture payment', 'woocommerce-payments' ) }
 			confirmButtonText={ __(
-				'Complete order and capture authorization',
+				'Complete order and capture payment',
 				'woocommerce-payments'
 			) }
-			cancelButtonText={ __( 'Do Nothing', 'woocommerce-payments' ) }
+			cancelButtonText={ __( 'Cancel', 'woocommerce-payments' ) }
 			confirmationMessage={ interpolatedMessage }
 			onConfirm={ () => {
 				const orderEditForm: HTMLFormElement | null =
