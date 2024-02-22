@@ -42,7 +42,7 @@ describe( 'Getting styles for automated theming', () => {
 			'.Input'
 		);
 		expect( fieldStyles ).toEqual( {
-			backgroundColor: 'rgba(0, 0, 0, 0)',
+			backgroundColor: 'rgb(0, 0, 0)',
 			color: 'rgb(109, 109, 109)',
 			fontFamily:
 				'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -119,7 +119,7 @@ describe( 'Getting styles for automated theming', () => {
 		const appearance = upeStyles.getAppearance();
 		expect( appearance ).toEqual( {
 			variables: {
-				colorBackground: 'rgba(0, 0, 0, 0)',
+				colorBackground: 'rgb(0, 0, 0)',
 				colorText: 'rgb(109, 109, 109)',
 				fontFamily:
 					'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -127,7 +127,7 @@ describe( 'Getting styles for automated theming', () => {
 			},
 			rules: {
 				'.Input': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
+					backgroundColor: 'rgb(0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -135,7 +135,7 @@ describe( 'Getting styles for automated theming', () => {
 					fontSize: '12px',
 				},
 				'.Input--invalid': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
+					backgroundColor: 'rgb(0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -149,19 +149,19 @@ describe( 'Getting styles for automated theming', () => {
 					fontSize: '12px',
 				},
 				'.Tab': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
+					backgroundColor: 'rgb(0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab:hover': {
-					backgroundColor: 'rgba(18, 18, 18, 0)',
+					backgroundColor: 'rgb(18, 18, 18)',
 					color: 'rgb(255, 255, 255)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab--selected': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
+					backgroundColor: 'rgb(0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					outline: '1px solid rgb(150, 88, 138)',
 				},
@@ -184,11 +184,7 @@ describe( 'Getting styles for automated theming', () => {
 					fontSize: '12px',
 				},
 				'.Block': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-					color: 'rgb(109, 109, 109)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
+					backgroundColor: 'none',
 				},
 			},
 		} );

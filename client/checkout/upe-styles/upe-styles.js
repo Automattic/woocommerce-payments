@@ -23,6 +23,7 @@ const textFontTransitionProps = [
 	'transition',
 ];
 const borderOutlineBackgroundProps = [
+	'backgroundColor',
 	'border',
 	'borderTop',
 	'borderRight',
@@ -50,7 +51,6 @@ const borderOutlineBackgroundProps = [
 	'borderBottomLeftRadius',
 	'outline',
 	'outlineOffset',
-	'backgroundColor',
 	'boxShadow',
 ];
 const upeSupportedProperties = {
@@ -73,9 +73,8 @@ const upeSupportedProperties = {
 	'.TabIcon': [ ...paddingColorProps ],
 	'.TabLabel': [ ...paddingColorProps, ...textFontTransitionProps ],
 	'.Block': [
-		...paddingColorProps,
-		...textFontTransitionProps,
-		...borderOutlineBackgroundProps,
+		...paddingColorProps.slice( 1 ), // Remove color
+		...borderOutlineBackgroundProps.slice( 1 ), // Remove backgroundColor
 	],
 };
 

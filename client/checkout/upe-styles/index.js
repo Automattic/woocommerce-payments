@@ -91,6 +91,18 @@ const dashedToCamelCase = ( string ) => {
 	} );
 };
 
+const maybeConvertRGBAtoRGB = ( string ) => {
+	if ( string.startsWith( 'rgba(' ) ) {
+		string = string
+			.replace( 'rgba', 'rgb' )
+			.split( ',' )
+			.slice( 0, 3 )
+			.join( ',' )
+			.concat( ')' );
+	}
+	return string;
+};
+
 const hiddenElementsForUPE = {
 	/**
 	 * Create hidden container for generating UPE styles.
@@ -256,12 +268,11 @@ export const getFieldStyles = ( selector, upeElement ) => {
 	const styles = window.getComputedStyle( elem );
 
 	const filteredStyles = {};
-
 	for ( let i = 0; i < styles.length; i++ ) {
 		const camelCase = dashedToCamelCase( styles[ i ] );
 		if ( validProperties.includes( camelCase ) ) {
-			filteredStyles[ camelCase ] = styles.getPropertyValue(
-				styles[ i ]
+			filteredStyles[ camelCase ] = maybeConvertRGBAtoRGB(
+				styles.getPropertyValue( styles[ i ] )
 			);
 		}
 	}
@@ -354,9 +365,10 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 		selectors.upeThemeLabelSelector,
 		'.Block'
 	);
+	blockRules.backgroundColor = 'none';
 
 	const globalRules = {
-		colorBackground: blockRules.backgroundColor,
+		colorBackground: tabRules.backgroundColor,
 		colorText: labelRules.color,
 		fontFamily: labelRules.fontFamily,
 		fontSizeBase: labelRules.fontSize,
