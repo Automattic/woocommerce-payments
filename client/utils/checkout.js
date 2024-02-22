@@ -8,18 +8,12 @@
  */
 export const getConfig = ( name ) => {
 	// Classic checkout or blocks-based one.
-	let config = null;
 	if ( typeof wcpayConfig !== 'undefined' ) {
-		config = wcpayConfig;
-	} else if ( typeof wcpay_upe_config !== 'undefined' ) {
-		config = wcpay_upe_config;
-	} else if ( typeof wc !== 'undefined' ) {
-		config = wc.wcSettings.getSetting( 'woocommerce_payments_data' );
-	} else {
-		return null;
+		return wcpayConfig[ name ];
 	}
 
-	return config[ name ] || null;
+	// eslint-disable-next-line no-use-before-define
+	return getUPEConfig( name );
 };
 
 /**
@@ -30,10 +24,18 @@ export const getConfig = ( name ) => {
  */
 export const getUPEConfig = ( name ) => {
 	// Classic checkout or blocks-based one.
-	const config =
-		typeof wcpay_upe_config !== 'undefined'
-			? wcpay_upe_config
-			: wc.wcSettings.getSetting( 'woocommerce_payments_data' );
+	let config = null;
+	if ( typeof wcpay_upe_config !== 'undefined' ) {
+		config = wcpay_upe_config;
+	} else if (
+		typeof wc === 'object' &&
+		typeof wc.wcSettings !== 'undefined'
+	) {
+		// If getSettings or woocommerce_payments_data is not available, default to an empty object so we return null bellow.
+		config = wc.wcSettings.getSetting( 'woocommerce_payments_data' ) || {};
+	} else {
+		return null;
+	}
 
 	return config[ name ] || null;
 };

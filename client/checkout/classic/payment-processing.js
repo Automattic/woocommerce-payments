@@ -42,15 +42,15 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
  * it is simply returned.
  *
  * @param {Object} api The API object used to save the UPE configuration.
- * @return {Object} The appearance object for the UPE.
+ * @return {Promise<Object>} The appearance object for the UPE.
  */
-function initializeAppearance( api ) {
-	let appearance = getUPEConfig( 'upeAppearance' );
-	if ( ! appearance ) {
-		appearance = getAppearance();
-		api.saveUPEAppearance( appearance );
+async function initializeAppearance( api ) {
+	const appearance = getUPEConfig( 'upeAppearance' );
+	if ( appearance ) {
+		return Promise.resolve( appearance );
 	}
-	return appearance;
+
+	return await api.saveUPEAppearance( getAppearance() );
 }
 
 /**
@@ -203,7 +203,7 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 		amount: amount,
 		paymentMethodCreation: 'manual',
 		paymentMethodTypes: paymentMethodTypes,
-		appearance: initializeAppearance( api ),
+		appearance: await initializeAppearance( api ),
 		fonts: getFontRulesFromPage(),
 	};
 
@@ -228,17 +228,17 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 /**
  * Appends a hidden input field with the confirmed setup intent ID to the provided form.
  *
- * @param {HTMLElement} form The HTML form element to which the input field will be appended.
+ * @param {HTMLElement} $form The HTML form element to which the input field will be appended.
  * @param {Object} confirmedIntent The confirmed setup intent object containing the ID to be stored in the input field.
  */
-function appendSetupIntentToForm( form, confirmedIntent ) {
+function appendSetupIntentToForm( $form, confirmedIntent ) {
 	const input = document.createElement( 'input' );
 	input.type = 'hidden';
 	input.id = 'wcpay-setup-intent';
 	input.name = 'wcpay-setup-intent';
 	input.value = confirmedIntent.id;
 
-	form.append( input );
+	$form.append( input );
 }
 
 const ensureSameAsBillingIsUnchecked = () => {
