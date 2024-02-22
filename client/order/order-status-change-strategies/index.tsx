@@ -76,7 +76,7 @@ function triggerCancelAuthorizationModal(
 					rel="noopener noreferrer"
 				>
 					{ __(
-						'authorized but not captured',
+						'authorized but payment has not been captured',
 						'woocommerce-payments'
 					) }
 				</a>
@@ -145,7 +145,7 @@ function triggerCaptureAuthorizationModal(
 					rel="noopener noreferrer"
 				>
 					{ __(
-						'authorized but not captured',
+						'authorized but payment has not been captured',
 						'woocommerce-payments'
 					) }
 				</a>
