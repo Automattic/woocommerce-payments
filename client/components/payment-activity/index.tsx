@@ -108,7 +108,7 @@ const PaymentActivity: React.FC = () => {
 						) }
 						renderContent={ () => (
 							<div className="wcpay-payments-activity__date__picker__wrapper">
-								<ul className="wcpay-payments-activity__date__picker__ranges">
+								<div className="wcpay-payments-activity__date__picker__ranges">
 									<Button
 										icon={
 											selectedRange ===
@@ -287,7 +287,7 @@ const PaymentActivity: React.FC = () => {
 									</Button>
 									{ /* TODO: Need to implement all time */ }
 									{ /* <Button>All time</Button> */ }
-								</ul>
+								</div>
 								<div className="wcpay-payments-activity__date__picker">
 									<DateRange
 										after={ after || moment() }
