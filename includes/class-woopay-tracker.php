@@ -467,11 +467,12 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$is_woopay_order = ( isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'] );
 
 		$payment_gateway = wc_get_payment_gateway_by_order( $order_id );
-		$gateway_name  = false !== $payment_gateway ? ( ! empty( $payment_gateway->method_title ) ? $payment_gateway->method_title : $payment_gateway->get_title() ) : '';
+		$properties = [ 'payment_title' => 'other' ];
 
-		$properties = [ 'gateway_name' => 'other' ];
 		if (strpos( $payment_gateway->id, 'woocommerce_payments') === 0 ) {
-			$properties = [ 'gateway_name' => $gateway_name ];
+			$order = wc_get_order( $order_id );
+			$payment_title = $order->get_payment_method_title();
+			$properties = [ 'payment_title' => $payment_title ];
 		}
 
 		// Don't track WooPay orders. They will be tracked on WooPay side with more flow specific details.
