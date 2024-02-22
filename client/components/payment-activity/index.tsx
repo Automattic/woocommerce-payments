@@ -18,7 +18,7 @@ import { DateRange } from '@woocommerce/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { TIME_RANGES } from './constants';
 
-const getLabelFromRange = ( range: string ) => {
+const getLabelFromRange = ( range: TIME_RANGES | null ) => {
 	switch ( range ) {
 		case TIME_RANGES.TODAY_VALUE:
 			return TIME_RANGES.TODAY_LABEL;
@@ -54,7 +54,7 @@ const PaymentActivity: React.FC = () => {
 	const [ after, setAfter ] = useState(
 		moment().subtract( 7, 'days' ).startOf( 'day' )
 	);
-	const [ selectedRange, setSelectedRange ] = useState(
+	const [ selectedRange, setSelectedRange ] = useState< TIME_RANGES | null >(
 		TIME_RANGES.SEVEN_DAYS_VALUE
 	);
 
@@ -295,6 +295,7 @@ const PaymentActivity: React.FC = () => {
 										before={ before || moment() }
 										beforeText={ beforeText }
 										onUpdate={ ( data ) => {
+											setSelectedRange( null );
 											if ( data.after ) {
 												setAfter( data.after );
 											}
@@ -313,6 +314,24 @@ const PaymentActivity: React.FC = () => {
 											)
 										}
 									/>
+									<Button
+										onClick={ () => {
+											setSelectedRange(
+												TIME_RANGES.SEVEN_DAYS_VALUE
+											);
+
+											setAfter(
+												moment()
+													.subtract( 7, 'days' )
+													.startOf( 'day' )
+											);
+											setBefore(
+												moment().endOf( 'day' )
+											);
+										} }
+									>
+										Reset
+									</Button>
 								</div>
 							</div>
 						) }
