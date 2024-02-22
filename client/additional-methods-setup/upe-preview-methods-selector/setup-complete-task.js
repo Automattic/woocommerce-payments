@@ -16,6 +16,7 @@ import { useEnabledPaymentMethodIds } from '../../data';
 import WizardContext from '../wizard/wrapper/context';
 import PaymentMethodIcon from '../../settings/payment-method-icon';
 import './setup-complete-task.scss';
+import paymentMethodsMap from 'wcpay/payment-methods-map';
 
 const SetupCompleteMessaging = () => {
 	const [ enabledPaymentMethods ] = useEnabledPaymentMethodIds();
@@ -61,7 +62,9 @@ const EnabledMethodsList = () => {
 		<ul className="wcpay-wizard-task__description-element setup-complete-task__enabled-methods-list">
 			{ enabledPaymentMethods.map( ( methodId ) => (
 				<li key={ methodId }>
-					<PaymentMethodIcon name={ methodId } showName={ false } />
+					<PaymentMethodIcon
+						Icon={ paymentMethodsMap[ methodId ].icon }
+					/>
 				</li>
 			) ) }
 		</ul>

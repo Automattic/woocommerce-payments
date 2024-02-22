@@ -2606,7 +2606,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_url();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account business URL.' . $e );
 		}
 
 		return $default_value;
@@ -2625,7 +2625,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_address();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account business support address.' . $e );
 		}
 
 		return $default_value;
@@ -2644,7 +2644,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_email();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get business support email.' . $e );
 		}
 
 		return $default_value;
@@ -2663,7 +2663,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_business_support_phone();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account business support phone.' . $e );
 		}
 
 		return $default_value;
@@ -2682,7 +2682,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_logo();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account branding logo.' . $e );
 		}
 
 		return $default_value;
@@ -2701,7 +2701,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_icon();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account\'s branding icon.' . $e );
 		}
 
 		return $default_value;
@@ -2720,7 +2720,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_primary_color();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account\'s branding primary color.' . $e );
 		}
 
 		return $default_value;
@@ -2739,7 +2739,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_branding_secondary_color();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
+			Logger::error( 'Failed to get account\'s branding secondary color.' . $e );
 		}
 
 		return $default_value;
@@ -3910,6 +3910,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$is_blocks_checkout = isset( $_POST['is_blocks_checkout'] ) ? rest_sanitize_boolean( wc_clean( wp_unslash( $_POST['is_blocks_checkout'] ) ) ) : false;
 			$appearance         = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
+
+			/**
+			 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
+			 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
+			 *
+			 * @since 7.3.0
+			 */
+			$appearance = apply_filters( 'wcpay_upe_appearance', $appearance, $is_blocks_checkout );
 
 			$appearance_transient = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT : self::UPE_APPEARANCE_TRANSIENT;
 

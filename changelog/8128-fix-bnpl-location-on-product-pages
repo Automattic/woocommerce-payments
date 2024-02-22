@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed positioning on buy-now-pay-later Stripe element on product page.

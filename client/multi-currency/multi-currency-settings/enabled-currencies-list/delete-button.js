@@ -9,6 +9,7 @@ import { useCallback, useState } from '@wordpress/element';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import CurrencyDeleteIllustration from 'wcpay/components/currency-delete-illustration';
 import PaymentMethodIcon from 'wcpay/settings/payment-method-icon';
+import paymentMethodsMap from 'wcpay/payment-methods-map';
 
 const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
@@ -100,8 +101,12 @@ const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 						{ dependentPaymentMethods.map( ( paymentMethod ) => (
 							<li key={ paymentMethod }>
 								<PaymentMethodIcon
-									name={ paymentMethod }
-									showName
+									Icon={
+										paymentMethodsMap[ paymentMethod ].icon
+									}
+									label={
+										paymentMethodsMap[ paymentMethod ].label
+									}
 								/>
 							</li>
 						) ) }
