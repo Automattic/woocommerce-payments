@@ -11,11 +11,33 @@ import {
 	Dropdown,
 	DropdownMenu,
 } from '@wordpress/components';
+import { check } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { DateRange } from '@woocommerce/components';
 import interpolateComponents from '@automattic/interpolate-components';
+import { TIME_RANGES } from './constants';
 
+const getLabelFromRange = ( range: string ) => {
+	switch ( range ) {
+		case TIME_RANGES.TODAY_VALUE:
+			return TIME_RANGES.TODAY_LABEL;
+		case TIME_RANGES.SEVEN_DAYS_VALUE:
+			return TIME_RANGES.SEVEN_DAYS_LABEL;
+		case TIME_RANGES.FOUR_WEEKS_VALUE:
+			return TIME_RANGES.FOUR_WEEKS_LABEL;
+		case TIME_RANGES.THREE_MONTHS_VALUE:
+			return TIME_RANGES.THREE_MONTHS_LABEL;
+		case TIME_RANGES.TWELVE_MONTHS_VALUE:
+			return TIME_RANGES.TWELVE_MONTHS_LABEL;
+		case TIME_RANGES.MONTH_TO_DATE_VALUE:
+			return TIME_RANGES.MONTH_TO_DATE_LABEL;
+		case TIME_RANGES.QUARTER_TO_DATE_VALUE:
+			return TIME_RANGES.QUARTER_TO_DATE_LABEL;
+		case TIME_RANGES.YEAR_TO_DATE_VALUE:
+			return TIME_RANGES.YEAR_TO_DATE_LABEL;
+	}
+};
 /**
  * Internal dependencies.
  */
@@ -32,10 +54,17 @@ const PaymentActivity: React.FC = () => {
 	const [ after, setAfter ] = useState(
 		moment().subtract( 7, 'days' ).startOf( 'day' )
 	);
-	const [ rangeLabel, setRangeLabel ] = useState( 'Last 7 days' );
+	const [ selectedRange, setSelectedRange ] = useState(
+		TIME_RANGES.SEVEN_DAYS_VALUE
+	);
 
 	const afterText = after ? moment( after ).format( 'MM/DD/YYYY' ) : 'From';
 	const beforeText = before ? moment( before ).format( 'MM/DD/YYYY' ) : 'To';
+
+	const rangeLabel = getLabelFromRange( selectedRange );
+
+	// Empty Icon to display next to ranges when not selected.
+	const emptyIcon = <div style={ { width: '24px' } }></div>;
 
 	return (
 		<Card className="">
@@ -81,6 +110,12 @@ const PaymentActivity: React.FC = () => {
 							<div className="wcpay-payments-activity__date__picker__wrapper">
 								<ul className="wcpay-payments-activity__date__picker__ranges">
 									<Button
+										icon={
+											selectedRange ===
+											TIME_RANGES.TODAY_VALUE
+												? check
+												: emptyIcon
+										}
 										onClick={ () => {
 											setAfter(
 												moment().startOf( 'day' )
@@ -88,12 +123,20 @@ const PaymentActivity: React.FC = () => {
 											setBefore(
 												moment().endOf( 'day' )
 											);
-											setRangeLabel( 'Today' );
+											setSelectedRange(
+												TIME_RANGES.TODAY_VALUE
+											);
 										} }
 									>
 										Today
 									</Button>
 									<Button
+										icon={
+											selectedRange ===
+											TIME_RANGES.SEVEN_DAYS_VALUE
+												? check
+												: emptyIcon
+										}
 										onClick={ () => {
 											setAfter(
 												moment()
@@ -103,12 +146,20 @@ const PaymentActivity: React.FC = () => {
 											setBefore(
 												moment().endOf( 'day' )
 											);
-											setRangeLabel( 'Last 7 days' );
+											setSelectedRange(
+												TIME_RANGES.SEVEN_DAYS_VALUE
+											);
 										} }
 									>
 										Last 7 days
 									</Button>
 									<Button
+										icon={
+											selectedRange ===
+											TIME_RANGES.FOUR_WEEKS_VALUE
+												? check
+												: emptyIcon
+										}
 										onClick={ () => {
 											setAfter(
 												moment()
@@ -118,12 +169,20 @@ const PaymentActivity: React.FC = () => {
 											setBefore(
 												moment().endOf( 'day' )
 											);
-											setRangeLabel( 'Last 4 weeks' );
+											setSelectedRange(
+												TIME_RANGES.FOUR_WEEKS_VALUE
+											);
 										} }
 									>
 										Last 4 weeks
 									</Button>
 									<Button
+										icon={
+											selectedRange ===
+											TIME_RANGES.THREE_MONTHS_VALUE
+												? check
+												: emptyIcon
+										}
 										onClick={ () => {
 											setAfter(
 												moment()
@@ -133,12 +192,20 @@ const PaymentActivity: React.FC = () => {
 											setBefore(
 												moment().endOf( 'day' )
 											);
-											setRangeLabel( 'Last 3 months' );
+											setSelectedRange(
+												TIME_RANGES.THREE_MONTHS_VALUE
+											);
 										} }
 									>
 										Last 3 months
 									</Button>
 									<Button
+										icon={
+											selectedRange ===
+											TIME_RANGES.TWELVE_MONTHS_VALUE
+												? check
+												: emptyIcon
+										}
 										onClick={ () => {
 											setAfter(
 												moment()
@@ -148,12 +215,20 @@ const PaymentActivity: React.FC = () => {
 											setBefore(
 												moment().endOf( 'day' )
 											);
-											setRangeLabel( 'Last 12 months' );
+											setSelectedRange(
+												TIME_RANGES.TWELVE_MONTHS_VALUE
+											);
 										} }
 									>
 										Last 12 months
 									</Button>
 									<Button
+										icon={
+											selectedRange ===
+											TIME_RANGES.MONTH_TO_DATE_VALUE
+												? check
+												: emptyIcon
+										}
 										onClick={ () => {
 											setAfter(
 												moment().startOf( 'month' )
@@ -161,12 +236,20 @@ const PaymentActivity: React.FC = () => {
 											setBefore(
 												moment().endOf( 'day' )
 											);
-											setRangeLabel( 'Month to date' );
+											setSelectedRange(
+												TIME_RANGES.MONTH_TO_DATE_VALUE
+											);
 										} }
 									>
 										Month to date
 									</Button>
 									<Button
+										icon={
+											selectedRange ===
+											TIME_RANGES.QUARTER_TO_DATE_VALUE
+												? check
+												: emptyIcon
+										}
 										onClick={ () => {
 											setAfter(
 												moment().startOf( 'quarter' )
@@ -174,12 +257,20 @@ const PaymentActivity: React.FC = () => {
 											setBefore(
 												moment().endOf( 'day' )
 											);
-											setRangeLabel( 'Quarter to date' );
+											setSelectedRange(
+												TIME_RANGES.QUARTER_TO_DATE_VALUE
+											);
 										} }
 									>
 										Quarter to date
 									</Button>
 									<Button
+										icon={
+											selectedRange ===
+											TIME_RANGES.YEAR_TO_DATE_VALUE
+												? check
+												: emptyIcon
+										}
 										onClick={ () => {
 											setAfter(
 												moment().startOf( 'year' )
@@ -187,7 +278,9 @@ const PaymentActivity: React.FC = () => {
 											setBefore(
 												moment().endOf( 'day' )
 											);
-											setRangeLabel( 'Year to date' );
+											setSelectedRange(
+												TIME_RANGES.YEAR_TO_DATE_VALUE
+											);
 										} }
 									>
 										Year to date
