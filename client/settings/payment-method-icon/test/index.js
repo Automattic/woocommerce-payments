@@ -9,108 +9,33 @@ import '@testing-library/jest-dom/extend-expect';
  * Internal dependencies
  */
 import PaymentMethodIcon from '..';
+import paymentMethodsMap from 'wcpay/payment-methods-map';
 
 describe( 'PaymentMethodIcon', () => {
-	test( 'renders BECS payment method icon', () => {
+	it( 'renders BECS payment method icon', () => {
 		const { container } = render(
-			<PaymentMethodIcon name="au_becs_debit" />
+			<PaymentMethodIcon
+				Icon={ paymentMethodsMap.au_becs_debit.icon }
+				label={ paymentMethodsMap.au_becs_debit.label }
+			/>
 		);
+
 		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'BECS Direct Debit' ) ).toBeInTheDocument();
 	} );
 
-	test( 'renders Bancontact payment method icon', () => {
-		const { container } = render( <PaymentMethodIcon name="bancontact" /> );
-		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
+	it( 'does not render the label, if not passed', () => {
+		render(
+			<PaymentMethodIcon Icon={ paymentMethodsMap.au_becs_debit.icon } />
+		);
+
+		expect(
+			screen.queryByText( 'BECS Direct Debit' )
+		).not.toBeInTheDocument();
 	} );
 
-	test( 'renders EPS payment method icon', () => {
-		const { container } = render( <PaymentMethodIcon name="eps" /> );
-		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
-	} );
-
-	test( 'renders giropay payment method icon', () => {
-		const { container } = render( <PaymentMethodIcon name="giropay" /> );
-		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
-	} );
-
-	test( 'renders Sepa payment method icon', () => {
-		const { container } = render( <PaymentMethodIcon name="sepa_debit" /> );
-		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
-	} );
-
-	test( 'renders Sofort payment method icon', () => {
-		const { container } = render( <PaymentMethodIcon name="sofort" /> );
-		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
-	} );
-
-	test( 'renders p24 payment method icon', () => {
-		const { container } = render( <PaymentMethodIcon name="p24" /> );
-		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
-	} );
-
-	test( 'renders iDEAL payment method icon', () => {
-		const { container } = render( <PaymentMethodIcon name="ideal" /> );
-		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
-	} );
-
-	test( 'renders BECS payment method icon and label', () => {
-		render( <PaymentMethodIcon name="au_becs_debit" showName /> );
-
-		const label = screen.queryByText( 'BECS Direct Debit' );
-		expect( label ).toBeInTheDocument();
-	} );
-
-	test( 'renders Bancontact payment method icon and label', () => {
-		render( <PaymentMethodIcon name="bancontact" showName /> );
-
-		const label = screen.queryByText( 'Bancontact' );
-		expect( label ).toBeInTheDocument();
-	} );
-
-	test( 'renders EPS payment method icon and label', () => {
-		render( <PaymentMethodIcon name="eps" showName /> );
-
-		const label = screen.queryByText( 'EPS' );
-		expect( label ).toBeInTheDocument();
-	} );
-
-	test( 'renders giropay payment method icon and label', () => {
-		render( <PaymentMethodIcon name="giropay" showName /> );
-
-		const label = screen.queryByText( 'giropay' );
-		expect( label ).toBeInTheDocument();
-	} );
-
-	test( 'renders Sepa payment method icon and label', () => {
-		render( <PaymentMethodIcon name="sepa_debit" showName /> );
-
-		const label = screen.queryByText( 'SEPA Direct Debit' );
-		expect( label ).toBeInTheDocument();
-	} );
-
-	test( 'renders Sofort payment method icon and label', () => {
-		render( <PaymentMethodIcon name="sofort" showName /> );
-
-		const label = screen.queryByText( 'Sofort' );
-		expect( label ).toBeInTheDocument();
-	} );
-
-	test( 'renders p24 payment method icon and label', () => {
-		render( <PaymentMethodIcon name="p24" showName /> );
-
-		const label = screen.queryByText( 'Przelewy24 (P24)' );
-		expect( label ).toBeInTheDocument();
-	} );
-
-	test( 'renders iDEAL payment method icon and label', () => {
-		render( <PaymentMethodIcon name="ideal" showName /> );
-
-		const label = screen.queryByText( 'iDEAL' );
-		expect( label ).toBeInTheDocument();
-	} );
-
-	test( 'renders nothing when using an invalid icon name', () => {
-		const { container } = render( <PaymentMethodIcon name="wrong" /> );
+	it( "doesn't render anything, if the icon isn' provided", () => {
+		const { container } = render( <PaymentMethodIcon /> );
 
 		expect( container.firstChild ).toBeNull();
 	} );

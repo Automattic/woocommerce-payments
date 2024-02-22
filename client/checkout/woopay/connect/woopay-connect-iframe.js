@@ -1,12 +1,14 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { getConfig } from 'wcpay/utils/checkout';
+import { getTracksIdentity } from 'tracks';
 import {
 	INJECTED_STATE,
 	setConnectIframeInjectedState,
@@ -14,19 +16,29 @@ import {
 
 export const WooPayConnectIframe = () => {
 	const iframeRef = useRef();
+	const [ iframeUrl, setIframeUrl ] = useState( '' );
 
-	const getWoopayConnectUrl = () => {
-		const tracksUserId = JSON.stringify(
-			getConfig( 'tracksUserIdentity' )
-		);
+	useEffect( () => {
+		const fetchConfigAndSetIframeUrl = async () => {
+			const testMode = getConfig( 'testMode' );
+			const woopayHost = getConfig( 'woopayHost' );
+			const urlParams = new URLSearchParams( {
+				testMode,
+				source_url: window.location.href,
+			} );
 
-		const urlParams = new URLSearchParams();
-		urlParams.append( 'testMode', getConfig( 'testMode' ) );
-		urlParams.append( 'source_url', window.location.href );
-		urlParams.append( 'tracksUserIdentity', tracksUserId );
+			const tracksUserId = await getTracksIdentity();
+			if ( tracksUserId ) {
+				urlParams.append( 'tracksUserIdentity', tracksUserId );
+			}
 
-		return getConfig( 'woopayHost' ) + '/connect/?' + urlParams.toString();
-	};
+			setIframeUrl(
+				`${ woopayHost }/connect/?${ urlParams.toString() }`
+			);
+		};
+
+		fetchConfigAndSetIframeUrl();
+	}, [] );
 
 	useEffect( () => {
 		if ( ! iframeRef.current ) {
@@ -52,13 +64,13 @@ export const WooPayConnectIframe = () => {
 				} )
 			);
 		} );
-	}, [] );
+	}, [ iframeUrl ] );
 
 	return (
 		<iframe
 			ref={ iframeRef }
 			id="woopay-connect-iframe"
-			src={ getWoopayConnectUrl() }
+			src={ iframeUrl }
 			style={ {
 				height: 0,
 				width: 0,
@@ -72,7 +84,10 @@ export const WooPayConnectIframe = () => {
 				pointerEvents: 'none',
 				userSelect: 'none',
 			} }
-			title="WooPay Connect Direct Checkout"
+			title={ __(
+				'WooPay Connect Direct Checkout',
+				'woocommerce-payments'
+			) }
 		/>
 	);
 };

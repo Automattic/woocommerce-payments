@@ -10,14 +10,30 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 import './styles.scss';
-import { useGetAvailablePaymentMethodIds } from '../data';
+import {
+	useEnabledPaymentMethodIds,
+	usePaymentRequestEnabledSettings,
+	useWooPayEnabledSettings,
+} from '../data';
 import PaymentMethodIcon from '../settings/payment-method-icon';
 import PaymentDeleteIllustration from '../components/payment-delete-illustration';
 import WooCardIcon from 'assets/images/cards/woo-card.svg?asset';
 import ConfirmationModal from '../components/confirmation-modal';
+import paymentMethodsMap from 'wcpay/payment-methods-map';
+import {
+	ApplePayIcon,
+	GooglePayIcon,
+	LinkIcon,
+	WooIcon,
+} from 'wcpay/payment-methods-icons';
 
 const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
-	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
+	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
+	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
+	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
+	const isStripeLinkEnabled = Boolean(
+		enabledMethodIds.find( ( id ) => id === 'link' )
+	);
 
 	return (
 		<ConfirmationModal
@@ -91,11 +107,57 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 				</strong>
 			</p>
 			<ul className="disable-confirmation-modal__payment-methods-list">
-				{ availablePaymentMethodIds.map( ( methodId ) => (
-					<li key={ methodId }>
-						<PaymentMethodIcon name={ methodId } showName />
+				{ enabledMethodIds
+					.filter( ( methodId ) => methodId !== 'link' )
+					.map( ( methodId ) => (
+						<li key={ methodId }>
+							<PaymentMethodIcon
+								Icon={ paymentMethodsMap[ methodId ].icon }
+								label={ paymentMethodsMap[ methodId ].label }
+							/>
+						</li>
+					) ) }
+				{ isPaymentRequestEnabled && (
+					<>
+						<li>
+							<PaymentMethodIcon
+								Icon={ GooglePayIcon }
+								label={ __(
+									'Google Pay',
+									'woocommerce-payments'
+								) }
+							/>
+						</li>
+						<li>
+							<PaymentMethodIcon
+								Icon={ ApplePayIcon }
+								label={ __(
+									'Apple Pay',
+									'woocommerce-payments'
+								) }
+							/>
+						</li>
+					</>
+				) }
+				{ isStripeLinkEnabled && (
+					<li>
+						<PaymentMethodIcon
+							Icon={ LinkIcon }
+							label={ __(
+								'Link by Stripe',
+								'woocommerce-payments'
+							) }
+						/>
 					</li>
-				) ) }
+				) }
+				{ isWooPayEnabled && (
+					<li>
+						<PaymentMethodIcon
+							Icon={ WooIcon }
+							label={ __( 'WooPay', 'woocommerce-payments' ) }
+						/>
+					</li>
+				) }
 			</ul>
 			<p>
 				{ interpolateComponents( {

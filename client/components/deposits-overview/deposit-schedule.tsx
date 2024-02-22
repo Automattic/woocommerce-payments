@@ -9,15 +9,11 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import {
-	getDepositMonthlyAnchorLabel,
-	getNextDepositDate,
-} from 'wcpay/deposits/utils';
+import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
 interface DepositScheduleProps {
 	depositsSchedule: AccountOverview.Account[ 'deposits_schedule' ];
-	showNextDepositDate?: boolean;
 }
 /**
  * Renders the Deposit Schedule details component.
@@ -26,30 +22,16 @@ interface DepositScheduleProps {
  */
 const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 	depositsSchedule,
-	showNextDepositDate,
 } ) => {
-	const nextDepositDate = getNextDepositDate( depositsSchedule );
-	const nextDepositDateString = showNextDepositDate
-		? sprintf(
-				/** translators: %s: is the date of the next deposit, e.g. "January 1st, 2023". */
-				__(
-					' – your next deposit is scheduled for {{strong}}%s{{/strong}}',
-					'woocommerce-payments'
-				),
-				nextDepositDate
-		  )
-		: '';
-
 	switch ( depositsSchedule.interval ) {
 		case 'daily':
 			return interpolateComponents( {
 				mixedString: sprintf(
-					/** translators: {{strong}}: placeholders are opening and closing strong tags. %s: is an optional next deposit date message. */
+					/** translators: {{strong}}: placeholders are opening and closing strong tags. */
 					__(
-						'Available funds are automatically dispatched {{strong}}every day{{/strong}}%s.',
+						'Available funds are automatically dispatched {{strong}}every day{{/strong}}.',
 						'woocommerce-payments'
-					),
-					nextDepositDateString
+					)
 				),
 				components: {
 					strong: <strong />,
@@ -64,13 +46,12 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 
 			return interpolateComponents( {
 				mixedString: sprintf(
-					/** translators: %1$s: is the day of the week. eg "Friday". %2$s: is an optional next deposit date message. {{strong}}: placeholders are opening and closing strong tags. */
+					/** translators: %1$s: is the day of the week. eg "Friday". {{strong}}: placeholders are opening and closing strong tags. */
 					__(
-						'Available funds are automatically dispatched {{strong}}every %1$s{{/strong}}%2$s.',
+						'Available funds are automatically dispatched {{strong}}every %1$s{{/strong}}.',
 						'woocommerce-payments'
 					),
-					dayOfWeek,
-					nextDepositDateString
+					dayOfWeek
 				),
 				components: {
 					strong: <strong />,
@@ -83,12 +64,11 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 			if ( monthlyAnchor === 31 ) {
 				return interpolateComponents( {
 					mixedString: sprintf(
-						/** translators: {{strong}}: placeholders are opening and closing strong tags. %s: is an optional next deposit date message. */
+						/** translators: {{strong}}: placeholders are opening and closing strong tags. */
 						__(
-							'Available funds are automatically dispatched {{strong}}on the last day of every month{{/strong}}%s.',
+							'Available funds are automatically dispatched {{strong}}on the last day of every month{{/strong}}.',
 							'woocommerce-payments'
-						),
-						nextDepositDateString
+						)
 					),
 					components: {
 						strong: <strong />,
@@ -98,16 +78,15 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 
 			return interpolateComponents( {
 				mixedString: sprintf(
-					/** translators: {{strong}}: placeholders are opening and closing strong tags. %1$s: is the day of the month. eg "31st". %2$s: is an optional next deposit date message. */
+					/** translators: {{strong}}: placeholders are opening and closing strong tags. %1$s: is the day of the month. eg "31st". */
 					__(
-						'Available funds are automatically dispatched {{strong}}on the %1$s of every month{{/strong}}%2$s.',
+						'Available funds are automatically dispatched {{strong}}on the %1$s of every month{{/strong}}.',
 						'woocommerce-payments'
 					),
 					getDepositMonthlyAnchorLabel( {
 						monthlyAnchor: monthlyAnchor,
 						capitalize: false,
-					} ),
-					nextDepositDateString
+					} )
 				),
 				components: {
 					strong: <strong />,
