@@ -42,7 +42,7 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
  * it is simply returned.
  *
  * @param {Object} api The API object used to save the UPE configuration.
- * @return {Prromise<Object>} The appearance object for the UPE.
+ * @return {Promise<Object>} The appearance object for the UPE.
  */
 async function initializeAppearance( api ) {
 	const appearance = getUPEConfig( 'upeAppearance' );
