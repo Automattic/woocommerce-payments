@@ -19,12 +19,22 @@
 		border-right: 1px solid $studio-gray-10;
 	}
 
-	&__date__picker__ranges > li:hover {
-		cursor: pointer;
-	}
-
 	&__date__picker {
 		padding: 16px;
+
+		.woocommerce-calendar {
+			border-top: none;
+			background-color: transparent;
+		}
+
+		.woocommerce-calendar > .woocommerce-calendar__inputs {
+			display: none;
+		}
+
+		.woocommerce-calendar
+			*:not( .CalendarDay__selected, .CalendarDay__selected_span ) {
+			background-color: transparent !important;
+		}
 	}
 
 	&__label__span {
