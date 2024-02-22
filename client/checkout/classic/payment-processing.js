@@ -94,6 +94,36 @@ export function validateElements( elements ) {
 }
 
 /**
+ * Validates the checkout fields by checking if any fields required for payment method creation are misisng.
+ * Throws an error if any required fields are missing. The error is caught by the processPayment function
+ * and triggers WC Core's validation so that it can display its own error message.
+ *
+ * @param {Object} params The parameters to be validated.
+ *
+ */
+function validateCheckoutFields( params ) {
+	const requiredFields = [ 'name', 'email' ];
+	for ( const field of requiredFields ) {
+		if ( ! params.billing_details[ field ] ) {
+			throw new Error( 'Missing required field' );
+		}
+	}
+
+	const requiredAddressFields = [
+		'city',
+		'country',
+		'line1',
+		'postal_code',
+		'state',
+	];
+	for ( const field of requiredAddressFields ) {
+		if ( ! params.billing_details.address[ field ] ) {
+			throw new Error( 'Missing required field' );
+		}
+	}
+}
+
+/**
  * Submits the provided jQuery form and removes the 'processing' class from it.
  *
  * @param {Object} jQueryForm The jQuery object for the form being submitted.
@@ -171,6 +201,8 @@ function createStripePaymentMethod(
 				},
 			},
 		};
+
+		validateCheckoutFields( params );
 	}
 
 	return api
@@ -445,14 +477,16 @@ export function renderTerms( event ) {
  * @return {boolean} return false to prevent the default form submission from WC Core.
  */
 let hasCheckoutCompleted;
+let isValidationError = false;
 export const processPayment = (
 	api,
 	$form,
 	paymentMethodType,
 	additionalActionsHandler = () => Promise.resolve()
 ) => {
-	if ( hasCheckoutCompleted ) {
+	if ( hasCheckoutCompleted || isValidationError ) {
 		hasCheckoutCompleted = false;
+		isValidationError = false;
 		return;
 	}
 
@@ -485,7 +519,13 @@ export const processPayment = (
 		} catch ( err ) {
 			hasCheckoutCompleted = false;
 			unblockUI( $form );
-			showErrorCheckout( err.message );
+			if ( err.message.includes( 'Missing required field' ) ) {
+				isValidationError = true;
+				// Submitting the form to allow WC Core to handle the validation and display it's own error message.
+				submitForm( $form );
+			} else {
+				showErrorCheckout( err.message );
+			}
 		}
 	} )();
 
