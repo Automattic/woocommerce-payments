@@ -2475,8 +2475,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function init_settings() {
 		parent::init_settings();
-		$enabled_pms   = $this->get_upe_enabled_payment_method_ids();
-		$this->enabled = in_array( $this->stripe_id, $enabled_pms, true ) ? 'yes' : 'no';
+		$this->enabled = in_array( $this->stripe_id, $this->get_upe_enabled_payment_method_ids(), true ) ? 'yes' : 'no';
 	}
 
 	/**
