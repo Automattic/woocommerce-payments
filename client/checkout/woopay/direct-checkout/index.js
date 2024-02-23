@@ -32,5 +32,21 @@ jQuery( ( $ ) => {
 		}
 
 		WooPayDirectCheckout.maybePrefetchWooPaySession();
+
+		// When "updated_cart_totals" is triggered, the classic 'Proceed to Checkout' button is
+		// re-rendered. So, the click-event listener needs to be re-attached to the new button.
+		const checkoutButton = WooPayDirectCheckout.getClassicProceedToCheckoutButton();
+		const isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
+		if ( isThirdPartyCookieEnabled ) {
+			if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
+				WooPayDirectCheckout.redirectToWooPaySession( [
+					checkoutButton,
+				] );
+			}
+
+			return;
+		}
+
+		WooPayDirectCheckout.redirectToWooPay( [ checkoutButton ] );
 	} );
 } );

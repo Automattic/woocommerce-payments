@@ -134,6 +134,17 @@ class WoopayDirectCheckout {
 	}
 
 	/**
+	 * Gets the classic 'Proceed to Checkout' button.
+	 *
+	 * @return {Element} The classic 'Proceed to Checkout' button.
+	 */
+	static getClassicProceedToCheckoutButton() {
+		return document.querySelector(
+			'.wc-proceed-to-checkout .checkout-button'
+		);
+	}
+
+	/**
 	 * Adds a click-event listener that redirects to the WooPay checkout page to the given elements.
 	 *
 	 * @param {*[]} elements The elements to add a click-event listener to.
