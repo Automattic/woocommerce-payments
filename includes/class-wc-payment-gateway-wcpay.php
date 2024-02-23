@@ -3921,7 +3921,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 */
 			$appearance = apply_filters( 'wcpay_upe_appearance', $appearance, $is_blocks_checkout );
 
-			$appearance_transient = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT : self::UPE_APPEARANCE_TRANSIENT;
+			$appearance_transient       = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT : self::UPE_APPEARANCE_TRANSIENT;
 			$appearance_theme_transient = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT : self::UPE_APPEARANCE_THEME_TRANSIENT;
 
 			if ( null !== $appearance ) {
