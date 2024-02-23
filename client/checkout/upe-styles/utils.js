@@ -109,10 +109,10 @@ export const dashedToCamelCase = ( string ) => {
  * @return {string} Accepted CSS color value.
  */
 export const maybeConvertRGBAtoRGB = ( color ) => {
-	if ( color.match( /^rgba/ ) ) {
-		const colorParts = color.match(
-			/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
-		);
+	const colorParts = color.match(
+		/^rgba\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
+	);
+	if ( colorParts ) {
 		color = `rgb(${ colorParts[ 1 ] }, ${ colorParts[ 2 ] }, ${ colorParts[ 3 ] })`;
 	}
 	return color;
@@ -134,7 +134,7 @@ export const getBackgroundColor = ( selectors ) => {
 		).backgroundColor;
 		if ( bgColor && bgColor.match( /^rgba/ ) ) {
 			const colorParts = bgColor.match(
-				/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
+				/^rgba\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
 			);
 			// Check if color is transparent.
 			if ( parseInt( colorParts[ 5 ], 10 ) > 0 ) {
