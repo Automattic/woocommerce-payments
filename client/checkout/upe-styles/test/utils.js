@@ -99,4 +99,27 @@ describe( 'UPE Utilities to generate UPE styles', () => {
 			color: '',
 		} );
 	} );
+
+	test( 'maybeConvertRGBAtoRGB returns valid colors', () => {
+		const hexOutput = upeUtils.maybeConvertRGBAtoRGB( '#ffffff' );
+		expect( hexOutput ).toEqual( '#ffffff' );
+
+		const rgbOutput = upeUtils.maybeConvertRGBAtoRGB( 'rgb(1,2,3)' );
+		expect( rgbOutput ).toEqual( 'rgb(1,2,3)' );
+
+		const rgbaOutput = upeUtils.maybeConvertRGBAtoRGB( 'rgba(1,2,3,0)' );
+		expect( rgbaOutput ).toEqual( 'rgb(1, 2, 3)' );
+	} );
+
+	test( 'isColorLight returns valid brightness values', () => {
+		const white = '#ffffff';
+		const black = '#000000';
+		const darkGrey = '#454545';
+		const lightGrey = '#dbdbdb';
+
+		expect( upeUtils.isColorLight( white ) ).toEqual( true );
+		expect( upeUtils.isColorLight( black ) ).toEqual( false );
+		expect( upeUtils.isColorLight( darkGrey ) ).toEqual( false );
+		expect( upeUtils.isColorLight( lightGrey ) ).toEqual( true );
+	} );
 } );
