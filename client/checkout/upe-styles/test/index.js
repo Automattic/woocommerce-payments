@@ -6,7 +6,7 @@ import * as upeStyles from '../index';
 describe( 'Getting styles for automated theming', () => {
 	const mockElement = document.createElement( 'input' );
 	const mockCSStyleDeclaration = {
-		length: 7,
+		length: 8,
 		0: 'color',
 		1: 'backgroundColor',
 		2: 'fontFamily',
@@ -14,6 +14,7 @@ describe( 'Getting styles for automated theming', () => {
 		4: 'outlineColor',
 		5: 'outlineWidth',
 		6: 'fontSize',
+		7: 'padding',
 		getPropertyValue: ( propertyName ) => {
 			const cssProperties = {
 				fontFamily:
@@ -24,6 +25,7 @@ describe( 'Getting styles for automated theming', () => {
 				outlineColor: 'rgb(150, 88, 138)',
 				outlineWidth: '1px',
 				fontSize: '12px',
+				padding: '10px',
 			};
 			return cssProperties[ propertyName ];
 		},
@@ -48,6 +50,7 @@ describe( 'Getting styles for automated theming', () => {
 				'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 			fontSize: '12px',
 			outline: '1px solid rgb(150, 88, 138)',
+			padding: '10px',
 		} );
 	} );
 
@@ -134,6 +137,7 @@ describe( 'Getting styles for automated theming', () => {
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 					outline: '1px solid rgb(150, 88, 138)',
 					fontSize: '12px',
+					padding: '10px',
 				},
 				'.Input--invalid': {
 					backgroundColor: 'rgb(0, 0, 0)',
@@ -142,12 +146,14 @@ describe( 'Getting styles for automated theming', () => {
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 					outline: '1px solid rgb(150, 88, 138)',
 					fontSize: '12px',
+					padding: '10px',
 				},
 				'.Label': {
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 					fontSize: '12px',
+					padding: '10px',
 				},
 				'.Tab': {
 					backgroundColor: 'rgb(0, 0, 0)',
@@ -177,15 +183,17 @@ describe( 'Getting styles for automated theming', () => {
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 					fontSize: '12px',
+					padding: '10px',
 				},
 				'.Text--redirect': {
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 					fontSize: '12px',
+					padding: '10px',
 				},
 				'.Block': {
-					backgroundColor: 'none',
+					padding: '10px',
 				},
 			},
 		} );
