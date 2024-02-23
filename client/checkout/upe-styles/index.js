@@ -366,7 +366,6 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 		selectors.upeThemeLabelSelector,
 		'.Block'
 	);
-	blockRules.backgroundColor = 'none';
 
 	const globalRules = {
 		colorBackground: 'none',
