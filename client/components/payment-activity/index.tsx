@@ -224,8 +224,10 @@ const PaymentActivity: React.FC = () => {
 					<div className="wcpay-payments-activity__date__picker">
 						<DateRange
 							after={ after || moment() }
+							// afterText is hidden via CSS but necessary for the component to render/work as expected
 							afterText={ afterText }
 							before={ before || moment() }
+							// beforeText is hidden via CSS but necessary for the component to render/work as expected
 							beforeText={ beforeText }
 							onUpdate={ ( data ) => {
 								setSelectedRange( ranges.CUSTOM_VALUE );
@@ -350,7 +352,7 @@ const PaymentActivity: React.FC = () => {
 						</p>
 					</>
 				) }
-				{ /* This should be replaced with the correct graphs */ }
+				{ /* TODO: This should be replaced with the correct graphs */ }
 				{ tpv !== 0 && <>You have some money</> }
 			</CardBody>
 		</Card>
