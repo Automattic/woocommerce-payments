@@ -4,6 +4,7 @@
  */
 import { dispatch, select } from '@wordpress/data';
 import { addAction } from '@wordpress/hooks';
+import { debounce } from 'lodash';
 /**
  * Internal dependencies
  */
@@ -65,6 +66,36 @@ const addItemCallback = async () => {
 	WooPayDirectCheckout.maybePrefetchWooPaySession();
 };
 
+const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
+	// setItemQtyCallback is debounced to prevent multiple calls to maybePrefetchWooPaySession
+	// when the quantity of an item is being updated multiple times in quick succession.
+	const cartStore = select( WC_STORE_CART );
+	const cartDispatch = dispatch( WC_STORE_CART );
+
+	// product's quantity is being updated so set itemIsPendingQuantity to true. Expect
+	// the wcblocks-cart to set itemIsPendingQuantity to false after the quantity is updated.
+	cartDispatch.itemIsPendingQuantity( product.key, true );
+
+	// Set attempts to 60 (100 ms * 60 = 6 seconds).
+	// This is also set to prevent an infinite loop.
+	let attempts = 60;
+
+	// Wait for the item's quantity to be updated or until attempts is 0.
+	while ( cartStore.isItemPendingQuantity( product.key ) && attempts > 0 ) {
+		attempts = attempts - 1;
+		await waitMilliseconds( 100 );
+	}
+
+	const isItemQtyUpdatedBeforeOutOfAttempts = attempts > 0;
+	if ( isItemQtyUpdatedBeforeOutOfAttempts ) {
+		// Only prefetch the WooPay session data if the item's quantity is updated.
+		WooPayDirectCheckout.maybePrefetchWooPaySession();
+	} else {
+		// Force the WooPay session data to be fetched upon button click.
+		WooPayDirectCheckout.setWooPaySessionAsNotPrefetched();
+	}
+}, 400 );
+
 const removeItemCallback = async ( { product } ) => {
 	const cartStore = select( WC_STORE_CART );
 	const cartDispatch = dispatch( WC_STORE_CART );
@@ -93,10 +124,18 @@ const removeItemCallback = async ( { product } ) => {
 	}
 };
 
+// Note, although the following hooks are prefixed with 'experimental__', they will be
+// graduated to stable in the near future (it'll include the 'experimental__' prefix).
 addAction(
 	'experimental__woocommerce_blocks-cart-add-item',
 	'wcpay_woopay_direct_checkout',
 	addItemCallback
+);
+
+addAction(
+	'experimental__woocommerce_blocks-cart-set-item-quantity',
+	'wcpay_woopay_direct_checkout',
+	debounceSetItemQtyCallback
 );
 
 addAction(
