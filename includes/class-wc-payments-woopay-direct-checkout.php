@@ -36,6 +36,17 @@ class WC_Payments_WooPay_Direct_Checkout {
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY_DIRECT_CHECKOUT', 'dist/woopay-direct-checkout' );
 
+		$direct_checkout_settings = [
+			'params' => [
+				'is_product_page' => $this->is_product_page(),
+			],
+		];
+		wp_localize_script(
+			'WCPAY_WOOPAY_DIRECT_CHECKOUT',
+			'wcpayWooPayDirectCheckout',
+			$direct_checkout_settings
+		);
+
 		wp_enqueue_script( 'WCPAY_WOOPAY_DIRECT_CHECKOUT' );
 	}
 
@@ -46,5 +57,14 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 */
 	public function is_cart_page(): bool {
 		return is_cart() || has_block( 'woocommerce/cart' );
+	}
+
+	/**
+	 * Check if the current page is the product page.
+	 *
+	 * @return bool True if the current page is the product page, false otherwise.
+	 */
+	public function is_product_page() {
+		return is_product() || wc_post_content_has_shortcode( 'product_page' );
 	}
 }

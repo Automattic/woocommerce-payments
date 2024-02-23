@@ -202,6 +202,12 @@ class WoopayDirectCheckout {
 	 * @return {Promise<void>} Resolves when the WooPay session has been prefetched.
 	 */
 	static async maybePrefetchWooPaySession() {
+		const isProductPage =
+			window?.wcpayWooPayDirectCheckout?.params?.is_product_page;
+		if ( typeof isProductPage === 'undefined' || isProductPage ) {
+			return;
+		}
+
 		this.wooPaySessionFromMerchantPromise = new Promise( ( resolve ) => {
 			resolve( this.getWooPaySessionFromMerchant() );
 		} );
