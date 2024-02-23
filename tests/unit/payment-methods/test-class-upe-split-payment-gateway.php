@@ -293,7 +293,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						'get_payment_method_ids_enabled_at_checkout',
 						'wc_payments_get_payment_gateway_by_id',
 						'get_selected_payment_method',
-						'get_upe_enabled_payment_method_ids',
 					]
 				)
 				->getMock();
@@ -381,12 +380,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function test_link_payment_method_requires_mandate_data() {
 		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
 
-		$mock_upe_gateway
-			->expects( $this->once() )
-			->method( 'get_upe_enabled_payment_method_ids' )
-			->will(
-				$this->returnValue( [ 'link' ] )
-			);
+		$mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', [ 'link' ] );
 
 		$this->assertTrue( $mock_upe_gateway->is_mandate_data_required() );
 	}
@@ -422,11 +416,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->will(
 				$this->returnValue( [ $user, $customer_id ] )
 			);
-		$mock_card_payment_gateway->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids' )
-			->will(
-				$this->returnValue( [ Payment_Method::CARD ] )
-			);
+		$mock_card_payment_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
 		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1 )
 			->expects( $this->once() )
 			->method( 'format_response' )
@@ -1216,7 +1206,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			)
 			->onlyMethods(
 				[
-					'get_upe_enabled_payment_method_ids',
 					'get_payment_method_ids_enabled_at_checkout',
 				]
 			)
@@ -1225,11 +1214,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$gateway = WC_Payments::get_gateway();
 		WC_Payments::set_gateway( $mock_upe_gateway );
 
-		$mock_upe_gateway->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids' )
-			->will(
-				$this->returnValue( [ Payment_Method::CARD, Payment_Method::LINK ] )
-			);
+		$mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::LINK ] );
 
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::BANCONTACT );
 		$this->assertSame( [ Payment_Method::BANCONTACT ], $payment_methods );

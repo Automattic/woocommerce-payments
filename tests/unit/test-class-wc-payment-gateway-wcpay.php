@@ -821,8 +821,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {
-			$link_gateway = $this->get_gateway( Payment_Method::LINK );
-			$link_gateway->settings['upe_enabled_payment_method_ids'] = [ 'link' ];
+		$link_gateway = $this->get_gateway( Payment_Method::LINK );
+		$link_gateway->settings['upe_enabled_payment_method_ids'] = [ 'link' ];
 
 		$this->mock_wcpay_account
 			->expects( $this->any() )
@@ -839,6 +839,24 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->assertSame( $link_gateway->get_payment_method_ids_enabled_at_checkout(), [] );
+	}
+
+	public function test_gateway_enabled_when_payment_method_is_enabled() {
+		$giropay = $this->get_gateway( Payment_Method::GIROPAY );
+
+		$giropay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::GIROPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+		$giropay->init_settings();
+
+		$this->assertEquals( $giropay->enabled, 'yes' );
+	}
+
+	public function test_gateway_disabled_when_payment_method_is_disabled() {
+		$giropay = $this->get_gateway( Payment_Method::GIROPAY );
+
+		$giropay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+		$giropay->init_settings();
+
+		$this->assertEquals( $giropay->enabled, 'no' );
 	}
 
 	/**
