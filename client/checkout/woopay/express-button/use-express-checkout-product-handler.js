@@ -125,10 +125,7 @@ const useExpressCheckoutProductHandler = ( api ) => {
 			const formData = new FormData( addOnForm );
 
 			formData.forEach( ( value, name ) => {
-				if (
-					/^addon-/.test( name ) ||
-					/^wc_gc_giftcard_/.test( name )
-				) {
+				if ( /^(addon-|wc_)/.test( name ) ) {
 					if ( /\[\]$/.test( name ) ) {
 						const fieldName = name.substring( 0, name.length - 2 );
 

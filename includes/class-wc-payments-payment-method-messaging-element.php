@@ -73,6 +73,15 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		// register the script.
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] );
 		wp_enqueue_script( 'WCPAY_PRODUCT_DETAILS' );
+
+		// Enqueue the styles.
+		wp_enqueue_style(
+			'wcpay-product-details',
+			plugins_url( 'dist/product-details.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/product-details.css' ),
+		);
+
 		// Create script tag with config.
 		wp_localize_script(
 			'WCPAY_PRODUCT_DETAILS',
