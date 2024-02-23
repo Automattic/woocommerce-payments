@@ -194,6 +194,7 @@ describe( 'Getting styles for automated theming', () => {
 				},
 				'.Block': {
 					padding: '10px',
+					backgroundColor: 'none',
 				},
 			},
 		} );
