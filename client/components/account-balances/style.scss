@@ -36,13 +36,28 @@
 	padding: 24px;
 }
 
-.wcpay-account-balances__balances
+.wcpay-account-balances__balances {
+	.wcpay-account-balances__balances__item__tooltip {
+		line-height: 20px;
+	}
+
+	.wcpay-account-balances__balances__item__tooltip a {
+		text-decoration: none;
+	}
+
 	.wcpay-account-balances__balances-total-balance-tooltip {
-	margin-top: 10px;
+		margin-top: 10px;
+	}
 }
 
-.wcpay-account-balances__balances-total-balance-tooltip
+.wcpay-account-balances__balances-total-balance-tooltip {
+	.components-notice {
+		padding: 8px;
+	}
+
 	.components-notice__content {
-	font-size: 12px;
-	white-space: nowrap;
+		font-size: 12px;
+		white-space: nowrap;
+		color: #054b7a;
+	}
 }
