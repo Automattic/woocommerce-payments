@@ -343,6 +343,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 								'city'        => $order->get_billing_city(),
 								'country'     => $order->get_billing_country(),
 								'line1'       => $order->get_billing_address_1(),
+								'line2'       => $order->get_billing_address_2(),
 								'postal_code' => $order->get_billing_postcode(),
 								'state'       => $order->get_billing_state(),
 							],
