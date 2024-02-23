@@ -64,8 +64,8 @@ class WoopayDirectCheckout {
 	 *
 	 * @return {boolean} True if WooPay is enabled.
 	 */
-	static isWooPayEnabled() {
-		return getConfig( 'isWooPayEnabled' );
+	static isWooPayDirectCheckoutEnabled() {
+		return getConfig( 'isWooPayDirectCheckoutEnabled' );
 	}
 
 	/**

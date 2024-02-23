@@ -4,7 +4,7 @@
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 
 window.addEventListener( 'load', async () => {
-	if ( ! WooPayDirectCheckout.isWooPayEnabled() ) {
+	if ( ! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ) {
 		return;
 	}
 
