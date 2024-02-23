@@ -132,7 +132,7 @@ export const getBackgroundColor = ( selectors ) => {
 		const bgColor = window.getComputedStyle(
 			document.querySelector( selectors[ i ] )
 		).backgroundColor;
-		if ( bgColor.match( /^rgba/ ) ) {
+		if ( bgColor && bgColor.match( /^rgba/ ) ) {
 			const colorParts = bgColor.match(
 				/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
 			);

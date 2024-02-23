@@ -119,12 +119,13 @@ describe( 'Getting styles for automated theming', () => {
 		const appearance = upeStyles.getAppearance();
 		expect( appearance ).toEqual( {
 			variables: {
-				colorBackground: 'rgb(0, 0, 0)',
+				colorBackground: 'none',
 				colorText: 'rgb(109, 109, 109)',
 				fontFamily:
 					'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				fontSizeBase: '12px',
 			},
+			theme: 'stripe',
 			rules: {
 				'.Input': {
 					backgroundColor: 'rgb(0, 0, 0)',
