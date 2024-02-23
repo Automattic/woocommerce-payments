@@ -11,7 +11,11 @@ import apiFetch from '@wordpress/api-fetch';
 import { useOnboardingContext } from '../context';
 import { POEligibleData, POEligibleResult } from '../types';
 import { fromDotNotation } from '../utils';
-import { trackRedirected, useTrackAbandoned } from '../tracking';
+import {
+	trackEligibilityError,
+	trackRedirected,
+	useTrackAbandoned,
+} from '../tracking';
 import LoadBar from 'components/load-bar';
 import strings from '../strings';
 
@@ -61,7 +65,7 @@ const LoadingStep: React.FC< Props > = () => {
 			isEligible = await isEligibleForPo();
 		} catch ( error ) {
 			// fall back to full KYC scenario.
-			// TODO maybe log these errors in future, e.g. with tracks.
+			trackEligibilityError( error );
 			isEligible = false;
 		}
 		const resultUrl = addQueryArgs( connectUrl, {

@@ -66,6 +66,12 @@ export const trackEligibilityModalClosed = (
 		action,
 	} );
 
+export const trackEligibilityError = ( error: string ): void => {
+	recordEvent( 'wcpay_onboarding_flow_eligibility_error', {
+		error: JSON.stringify( error ),
+	} );
+};
+
 export const useTrackAbandoned = (): {
 	trackAbandoned: ( method: 'hide' | 'exit' ) => void;
 	removeTrackListener: () => void;
