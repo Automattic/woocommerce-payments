@@ -251,6 +251,7 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Returns icon to use on dark themes.
 	 *
+	 * @param string|null $account_country Optional account country.
 	 * @return string
 	 */
 	public function get_dark_icon( string $account_country = null ) {
