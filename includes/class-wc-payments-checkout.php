@@ -297,12 +297,12 @@ class WC_Payments_Checkout {
 			$payment_method                 = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
 			$account_country                = $this->account->get_account_country();
 			$settings[ $payment_method_id ] = [
-				'isReusable'              => $payment_method->is_reusable(),
-				'title'                   => $payment_method->get_title( $account_country ),
-				'icon'                    => $payment_method->get_icon( $account_country ),
-				'darkIcon'                => $payment_method->get_dark_icon( $account_country ),
-				'showSaveOption'          => $this->should_upe_payment_method_show_save_option( $payment_method ),
-				'countries'               => $payment_method->get_countries(),
+				'isReusable'     => $payment_method->is_reusable(),
+				'title'          => $payment_method->get_title( $account_country ),
+				'icon'           => $payment_method->get_icon( $account_country ),
+				'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
+				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
+				'countries'      => $payment_method->get_countries(),
 			];
 
 			$gateway_for_payment_method                            = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );

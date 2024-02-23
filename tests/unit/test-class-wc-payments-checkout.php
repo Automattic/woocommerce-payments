@@ -309,7 +309,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	public function test_link_payment_method_provided_when_card_enabled() {
-		$icon_url = 'test-icon-url';
+		$icon_url      = 'test-icon-url';
 		$dark_icon_url = 'test-dark-icon-url';
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
@@ -362,7 +362,6 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->will(
 				$this->returnValue( $dark_icon_url )
 			);
-
 
 		$this->mock_wcpay_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
