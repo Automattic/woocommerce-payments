@@ -93,7 +93,10 @@ const ManualCaptureControl = (): JSX.Element => {
 								onClick={ handleModalConfirmation }
 								isPrimary
 							>
-								{ __( 'Enable', 'woocommerce-payments' ) }
+								{ __(
+									'Enable manual capture',
+									'woocommerce-payments'
+								) }
 							</Button>
 						</>
 					}
@@ -101,20 +104,19 @@ const ManualCaptureControl = (): JSX.Element => {
 				>
 					<strong>
 						{ __(
-							'Are you sure you want to enable manual capture of payments?',
+							'Payments must be captured within 7 days or the authorization will expire and money will be returned to the shopper.',
 							'woocommerce-payments'
 						) }
 					</strong>
 					<p>
 						{ __(
-							'Only cards support manual capture. When enabled, all other payment methods will be hidden from checkout.',
+							'Additionally, only card payments support manual capture. Non-card payments will be hidden from checkout.',
 							'woocommerce-payments'
 						) }
 					</p>
 					<p>
 						{ __(
-							'You must capture the payment on the order details screen within 7 days of authorization,' +
-								' otherwise the money will return to the shopper.',
+							'Do you want to continue?',
 							'woocommerce-payments'
 						) }
 					</p>
