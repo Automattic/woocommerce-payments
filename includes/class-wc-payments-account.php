@@ -2091,7 +2091,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Gets the current account fees for rendering on the settings page.
+	 * Gets the current account TPV (Total Payments Volume).
 	 *
 	 * @return array Fees.
 	 */
