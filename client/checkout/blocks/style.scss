@@ -60,6 +60,7 @@ button.wcpay-stripelink-modal-trigger:hover {
 		border: 0;
 		padding: 0;
 		max-height: 1.618em;
+		min-height: 30px;
 	}
 
 	/* stylelint-disable-next-line selector-id-pattern */
@@ -71,11 +72,6 @@ button.wcpay-stripelink-modal-trigger:hover {
 	#radio-control-wc-payment-method-options-woocommerce_payments_afterpay_clearpay__label
 		img {
 		min-width: 64px;
-	}
-	/* stylelint-disable-next-line selector-id-pattern */
-	#radio-control-wc-payment-method-options-woocommerce_payments_klarna__label
-		img {
-		min-height: 30px;
 	}
 }
 
