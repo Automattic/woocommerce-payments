@@ -1,5 +1,9 @@
 /* global jQuery */
 /**
+ * External dependencies
+ */
+import { addAction } from '@wordpress/hooks';
+/**
  * Internal dependencies
  */
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
@@ -51,3 +55,15 @@ jQuery( ( $ ) => {
 		WooPayDirectCheckout.redirectToWooPay( [ checkoutButton ] );
 	} );
 } );
+
+const addItemCallback = async () => {
+	// The 'experimental__woocommerce_blocks-cart-add-item' hook is triggered after an item
+	// is added to the cart. So, no special handling is needed here.
+	WooPayDirectCheckout.maybePrefetchWooPaySession();
+};
+
+addAction(
+	'experimental__woocommerce_blocks-cart-add-item',
+	'wcpay_woopay_direct_checkout',
+	addItemCallback
+);
