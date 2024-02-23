@@ -109,13 +109,11 @@ export const dashedToCamelCase = ( string ) => {
  * @return {string} Accepted CSS color value.
  */
 export const maybeConvertRGBAtoRGB = ( color ) => {
-	if ( color.startsWith( 'rgba(' ) ) {
-		color = color
-			.replace( 'rgba', 'rgb' )
-			.split( ',' )
-			.slice( 0, 3 )
-			.join( ',' )
-			.concat( ')' );
+	if ( color.match( /^rgba/ ) ) {
+		const colorParts = color.match(
+			/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
+		);
+		color = `rgb(${ colorParts[ 1 ] }, ${ colorParts[ 2 ] }, ${ colorParts[ 3 ] })`;
 	}
 	return color;
 };
