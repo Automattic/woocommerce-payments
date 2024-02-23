@@ -4,6 +4,8 @@
  */
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 
+let isThirdPartyCookieEnabled = false;
+
 window.addEventListener( 'load', async () => {
 	if ( ! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ) {
 		return;
@@ -12,7 +14,7 @@ window.addEventListener( 'load', async () => {
 	WooPayDirectCheckout.init();
 	WooPayDirectCheckout.maybePrefetchWooPaySession();
 
-	const isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
+	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
@@ -36,7 +38,6 @@ jQuery( ( $ ) => {
 		// When "updated_cart_totals" is triggered, the classic 'Proceed to Checkout' button is
 		// re-rendered. So, the click-event listener needs to be re-attached to the new button.
 		const checkoutButton = WooPayDirectCheckout.getClassicProceedToCheckoutButton();
-		const isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 		if ( isThirdPartyCookieEnabled ) {
 			if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 				WooPayDirectCheckout.redirectToWooPaySession( [
