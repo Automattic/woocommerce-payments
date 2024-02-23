@@ -103,6 +103,23 @@ class WoopayDirectCheckout {
 	}
 
 	/**
+	 * Gets the necessary merchant data to create session from WooPay request.
+	 *
+	 * @return {string} WooPay redirect URL with parameters.
+	 */
+	static async getWooPayRedirectUrl() {
+		const redirectData = await this.getWooPayRedirectDataFromMerchant();
+		// TODO: Handle error case.
+		const redirectParams = new URLSearchParams( redirectData ).toString();
+		const redirectUrl =
+			getConfig( 'woopayHost' ) +
+			'/woopay/?woopay_checkout_redirect=1&' +
+			redirectParams;
+
+		return redirectUrl;
+	}
+
+	/**
 	 * Gets the checkout redirect elements.
 	 *
 	 * @return {*[]} The checkout redirect elements.
@@ -155,11 +172,10 @@ class WoopayDirectCheckout {
 			element.addEventListener( 'click', async ( event ) => {
 				event.preventDefault();
 
-				const woopayRedirectUrl = await this.sendRedirectSessionDataToWooPay();
+				const redirectUrl = await this.getWooPayRedirectUrl();
 				this.teardown();
 
-				window.location.href =
-					woopayRedirectUrl + '&woopay_checkout_redirect=1';
+				window.location.href = redirectUrl;
 			} );
 		} );
 	}
@@ -172,6 +188,23 @@ class WoopayDirectCheckout {
 	static async getWooPaySessionFromMerchant() {
 		return request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
+			{
+				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+			}
+		);
+	}
+
+	/**
+	 * Gets the WooPay redirect data.
+	 *
+	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay redirect response.
+	 */
+	static async getWooPayRedirectDataFromMerchant() {
+		return request(
+			buildAjaxURL(
+				getConfig( 'wcAjaxUrl' ),
+				'get_woopay_redirect_data'
+			),
 			{
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
 			}

@@ -369,7 +369,7 @@ class WooPay_Session {
 	 * @param string|null $billing_email Pay-for-order billing email.
 	 * @return array The initial session request data without email and user_session.
 	 */
-	private static function get_init_session_request( $order_id = null, $key = null, $billing_email = null ) {
+	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null ) {
 		$user             = wp_get_current_user();
 		$is_pay_for_order = null !== $order_id;
 		$order            = wc_get_order( $order_id );
@@ -554,6 +554,40 @@ class WooPay_Session {
 		}
 
 		wp_send_json( self::get_frontend_init_session_request() );
+	}
+
+	/**
+	 * Used to initialize woopay session on frontend
+	 *
+	 * @return void
+	 */
+	public static function ajax_get_woopay_redirect_data() {
+		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		$blog_id = Jetpack_Options::get_option('id');
+		if ( empty( $blog_id ) ) {
+			wp_send_json_error(
+				__( 'Could not determine the blog ID.', 'woocommerce-payments' ),
+				503
+			);
+		}
+
+		$response = [
+			'blog_id'           => Jetpack_Options::get_option( 'id' ),
+			'blog_rest_url'     => get_rest_url(),
+			'blog_checkout_url' => wc_get_checkout_url(), // TODO: Handle pay for order checkout.
+			'session_nonce'     => self::create_woopay_nonce( get_current_user_id() ),
+			'store_api_token'   => self::init_store_api_token(),
+		];
+
+		wp_send_json( $response );
 	}
 
 	/**
