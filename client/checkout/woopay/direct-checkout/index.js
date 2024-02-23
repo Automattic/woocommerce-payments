@@ -1,3 +1,4 @@
+/* global jQuery */
 /**
  * Internal dependencies
  */
@@ -22,4 +23,14 @@ window.addEventListener( 'load', async () => {
 	}
 
 	WooPayDirectCheckout.redirectToWooPay( checkoutElements );
+} );
+
+jQuery( ( $ ) => {
+	$( document.body ).on( 'updated_cart_totals', async () => {
+		if ( ! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ) {
+			return;
+		}
+
+		WooPayDirectCheckout.maybePrefetchWooPaySession();
+	} );
 } );
