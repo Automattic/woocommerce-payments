@@ -101,7 +101,14 @@ Object.entries( enabledPaymentMethodsConfig )
 				<>
 					<span>
 						{ upeConfig.title }
-						<img src={ upeConfig.icon } alt={ upeConfig.title } />
+						<img
+							src={
+								upeConfig.wcBlocksAppearanceTheme === 'night'
+									? upeConfig.darkIcon
+									: upeConfig.icon
+							}
+							alt={ upeConfig.title }
+						/>
 					</span>
 				</>
 			),

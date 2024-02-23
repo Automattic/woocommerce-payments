@@ -2,7 +2,14 @@
  * Internal dependencies
  */
 import { upeRestrictedProperties } from './upe-styles';
-import { generateHoverRules, generateOutlineStyle } from './utils.js';
+import {
+	generateHoverRules,
+	generateOutlineStyle,
+	maybeConvertRGBAtoRGB,
+	dashedToCamelCase,
+	isColorLight,
+	getBackgroundColor,
+} from './utils.js';
 
 const appearanceSelectors = {
 	default: {
@@ -21,6 +28,12 @@ const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		backgroundSelectors: [
+			'#payment',
+			'#order_review',
+			'form.checkout',
+			'body',
+		],
 	},
 	blocksCheckout: {
 		appendTarget: '#billing.wc-block-components-address-form',
@@ -36,6 +49,12 @@ const appearanceSelectors = {
 			upeThemeLabelSelector:
 				'.wc-block-components-checkout-step__description',
 		},
+		backgroundSelectors: [
+			'#payment-method',
+			'form.wc-block-checkout__form',
+			'.wc-block-checkout',
+			'body',
+		],
 	},
 
 	/**
@@ -83,24 +102,6 @@ const appearanceSelectors = {
 			...this.updateSelectors( this.classicCheckout ),
 		};
 	},
-};
-
-const dashedToCamelCase = ( string ) => {
-	return string.replace( /-([a-z])/g, function ( g ) {
-		return g[ 1 ].toUpperCase();
-	} );
-};
-
-const maybeConvertRGBAtoRGB = ( string ) => {
-	if ( string.startsWith( 'rgba(' ) ) {
-		string = string
-			.replace( 'rgba', 'rgb' )
-			.split( ',' )
-			.slice( 0, 3 )
-			.join( ',' )
-			.concat( ')' );
-	}
-	return string;
 };
 
 const hiddenElementsForUPE = {
@@ -368,7 +369,7 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 	blockRules.backgroundColor = 'none';
 
 	const globalRules = {
-		colorBackground: tabRules.backgroundColor,
+		colorBackground: 'none',
 		colorText: labelRules.color,
 		fontFamily: labelRules.fontFamily,
 		fontSizeBase: labelRules.fontSize,
@@ -376,6 +377,11 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 
 	const appearance = {
 		variables: globalRules,
+		theme: isColorLight(
+			getBackgroundColor( selectors.backgroundSelectors )
+		)
+			? 'stripe'
+			: 'night',
 		rules: {
 			'.Input': inputRules,
 			'.Input--invalid': inputInvalidRules,

@@ -117,6 +117,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE = 'upe_process_redirect_order_id_mismatched';
 	const UPE_APPEARANCE_TRANSIENT                   = 'wcpay_upe_appearance';
 	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT         = 'wcpay_wc_blocks_upe_appearance';
+	const UPE_APPEARANCE_THEME_TRANSIENT             = 'wcpay_upe_appearance_theme';
+	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT   = 'wcpay_wc_blocks_upe_appearance_theme';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -269,7 +271,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->fraud_service                        = $fraud_service;
 
 		$this->id                 = static::GATEWAY_ID;
-		$this->icon               = $payment_method->get_icon();
+		$this->icon               = $this->get_theme_icon();
 		$this->has_fields         = true;
 		$this->method_title       = 'WooPayments';
 		$this->method_description = $this->get_method_description();
@@ -3001,7 +3003,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Returns the payment method icon URL.
 	 */
 	public function get_icon_url() {
-		return $this->icon;
+		return $this->payment_method->get_icon();
 	}
 
 	/**
@@ -3907,10 +3909,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$is_blocks_checkout = isset( $_POST['is_blocks_checkout'] ) ? rest_sanitize_boolean( wc_clean( wp_unslash( $_POST['is_blocks_checkout'] ) ) ) : false;
 			$appearance         = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
 
-			$appearance_transient = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT : self::UPE_APPEARANCE_TRANSIENT;
+			$appearance_transient       = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT : self::UPE_APPEARANCE_TRANSIENT;
+			$appearance_theme_transient = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT : self::UPE_APPEARANCE_THEME_TRANSIENT;
 
 			if ( null !== $appearance ) {
 				set_transient( $appearance_transient, $appearance, DAY_IN_SECONDS );
+				set_transient( $appearance_theme_transient, $appearance->theme, DAY_IN_SECONDS );
 			}
 
 			wp_send_json_success( $appearance, 200 );
@@ -3933,6 +3937,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function clear_upe_appearance_transient() {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
+		delete_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
+		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
 	}
 
 	/**
@@ -4167,6 +4173,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function wc_payments_get_payment_method_by_id( $payment_method_id ) {
 		return WC_Payments::get_payment_method_by_id( $payment_method_id );
+	}
+
+	/**
+	 * Checks if UPE appearance theme is set and returns appropriate icon URL.
+	 *
+	 * @return string
+	 */
+	public function get_theme_icon() {
+		$upe_appearance_theme = get_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
+		if ( $upe_appearance_theme ) {
+			return 'night' === $upe_appearance_theme ? $this->payment_method->get_dark_icon() : $this->payment_method->get_icon();
+		}
+		return $this->payment_method->get_icon();
 	}
 
 	/**

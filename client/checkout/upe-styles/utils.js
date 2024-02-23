@@ -80,7 +80,6 @@ export const generateHoverRules = ( baseRules ) => {
  * @param {string}  outlineColor Outline width from computed styles.
  * @return {string} Object with generated hover rules.
  */
-
 export const generateOutlineStyle = (
 	outlineWidth,
 	outlineStyle = 'solid',
@@ -89,4 +88,100 @@ export const generateOutlineStyle = (
 	return outlineWidth && outlineColor
 		? [ outlineWidth, outlineStyle, outlineColor ].join( ' ' )
 		: '';
+};
+
+/**
+ * Converts CSS property from dashed format to camel case.
+ *
+ * @param {string} string CSS property.
+ * @return {string} Camel case string.
+ */
+export const dashedToCamelCase = ( string ) => {
+	return string.replace( /-([a-z])/g, function ( g ) {
+		return g[ 1 ].toUpperCase();
+	} );
+};
+
+/**
+ * Converts rgba to rgb format, since Stripe Appearances API does not accept rgba format for background.
+ *
+ * @param {string} color CSS color value.
+ * @return {string} Accepted CSS color value.
+ */
+export const maybeConvertRGBAtoRGB = ( color ) => {
+	if ( color.startsWith( 'rgba(' ) ) {
+		color = color
+			.replace( 'rgba', 'rgb' )
+			.split( ',' )
+			.slice( 0, 3 )
+			.join( ',' )
+			.concat( ')' );
+	}
+	return color;
+};
+
+/**
+ * Searches through array of CSS selectors and returns first visible background color.
+ *
+ * @param {Array} selectors List of CSS selectors to check.
+ * @return {string} CSS color value.
+ */
+export const getBackgroundColor = ( selectors ) => {
+	const defaultColor = '#ffffff';
+	let color = null;
+	let i = 0;
+	while ( ! color && i < selectors.length ) {
+		const bgColor = window.getComputedStyle(
+			document.querySelector( selectors[ i ] )
+		).backgroundColor;
+		if ( bgColor.match( /^rgba/ ) ) {
+			const colorParts = bgColor.match(
+				/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
+			);
+			// Check if color is transparent.
+			if ( parseInt( colorParts[ 5 ], 10 ) > 0 ) {
+				color = bgColor;
+			}
+		} else {
+			color = bgColor;
+		}
+		i++;
+	}
+	return color || defaultColor;
+};
+
+/**
+ * Determines whether background color is light or dark.
+ *
+ * @param {string} color CSS color value.
+ * @return {boolean} True, if background is light; false, if background is dark.
+ */
+export const isColorLight = ( color ) => {
+	let r, g, b;
+	if ( color.match( /^rgb/ ) ) {
+		color = color.match(
+			/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
+		);
+		[ r, g, b ] = color.slice( 1 );
+	} else {
+		// Convert hex format to rgb
+		color = +(
+			'0x' + color.slice( 1 ).replace( color.length < 5 && /./g, '$&$&' )
+		);
+
+		// eslint-disable-next-line no-bitwise
+		r = color >> 16;
+		// eslint-disable-next-line no-bitwise
+		g = ( color >> 8 ) & 255;
+		// eslint-disable-next-line no-bitwise
+		b = color & 255;
+	}
+
+	// HSP equation from http://alienryderflex.com/hsp.html
+	const hsp = Math.sqrt(
+		0.299 * ( r * r ) + 0.587 * ( g * g ) + 0.114 * ( b * b )
+	);
+
+	// Using the HSP value, determine whether the color is light or dark
+	return hsp > 127.5;
 };
