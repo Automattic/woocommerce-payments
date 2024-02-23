@@ -50,7 +50,7 @@ import './style.scss';
 const PaymentActivity: React.FC = () => {
 	const {
 		accountDefaultCurrency,
-		transactions_data: { tpv },
+		transactionsData: { tpv },
 	} = wcpaySettings;
 	const [ before, setBefore ] = useState( moment() );
 	const [ after, setAfter ] = useState(

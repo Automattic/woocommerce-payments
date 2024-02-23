@@ -23,7 +23,7 @@ declare global {
 		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
-		transactions_data: {
+		transactionsData: {
 			tpv: number;
 		};
 		accountStatus: {
