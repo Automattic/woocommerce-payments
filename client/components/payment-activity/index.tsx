@@ -16,26 +16,28 @@ import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { DateRange } from '@woocommerce/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import { TIME_RANGES } from './constants';
+import { ranges } from './constants';
 
-const getLabelFromRange = ( range: TIME_RANGES | null ) => {
+const getLabelFromRange = ( range: string | null ) => {
 	switch ( range ) {
-		case TIME_RANGES.TODAY_VALUE:
-			return TIME_RANGES.TODAY_LABEL;
-		case TIME_RANGES.SEVEN_DAYS_VALUE:
-			return TIME_RANGES.SEVEN_DAYS_LABEL;
-		case TIME_RANGES.FOUR_WEEKS_VALUE:
-			return TIME_RANGES.FOUR_WEEKS_LABEL;
-		case TIME_RANGES.THREE_MONTHS_VALUE:
-			return TIME_RANGES.THREE_MONTHS_LABEL;
-		case TIME_RANGES.TWELVE_MONTHS_VALUE:
-			return TIME_RANGES.TWELVE_MONTHS_LABEL;
-		case TIME_RANGES.MONTH_TO_DATE_VALUE:
-			return TIME_RANGES.MONTH_TO_DATE_LABEL;
-		case TIME_RANGES.QUARTER_TO_DATE_VALUE:
-			return TIME_RANGES.QUARTER_TO_DATE_LABEL;
-		case TIME_RANGES.YEAR_TO_DATE_VALUE:
-			return TIME_RANGES.YEAR_TO_DATE_LABEL;
+		case ranges.TODAY_VALUE:
+			return ranges.TODAY_LABEL;
+		case ranges.SEVEN_DAYS_VALUE:
+			return ranges.SEVEN_DAYS_LABEL;
+		case ranges.FOUR_WEEKS_VALUE:
+			return ranges.FOUR_WEEKS_LABEL;
+		case ranges.THREE_MONTHS_VALUE:
+			return ranges.THREE_MONTHS_LABEL;
+		case ranges.TWELVE_MONTHS_VALUE:
+			return ranges.TWELVE_MONTHS_LABEL;
+		case ranges.MONTH_TO_DATE_VALUE:
+			return ranges.MONTH_TO_DATE_LABEL;
+		case ranges.QUARTER_TO_DATE_VALUE:
+			return ranges.QUARTER_TO_DATE_LABEL;
+		case ranges.YEAR_TO_DATE_VALUE:
+			return ranges.YEAR_TO_DATE_LABEL;
+		case ranges.CUSTOM_VALUE:
+			return ranges.CUSTOM_LABEL;
 	}
 };
 /**
@@ -54,17 +56,230 @@ const PaymentActivity: React.FC = () => {
 	const [ after, setAfter ] = useState(
 		moment().subtract( 7, 'days' ).startOf( 'day' )
 	);
-	const [ selectedRange, setSelectedRange ] = useState< TIME_RANGES | null >(
-		TIME_RANGES.SEVEN_DAYS_VALUE
+	const [ selectedRange, setSelectedRange ] = useState< string | null >(
+		ranges.SEVEN_DAYS_VALUE
 	);
 
-	const afterText = after ? moment( after ).format( 'MM/DD/YYYY' ) : 'From';
-	const beforeText = before ? moment( before ).format( 'MM/DD/YYYY' ) : 'To';
+	// These are not used, nor displayed (via CSS). But necessary for the DateRange component to work.
+	const afterText = after ? moment( after ).format( 'DD/MM/YYYY' ) : 'From';
+	const beforeText = before ? moment( before ).format( 'DD/MM/YYYY' ) : 'To';
 
 	const rangeLabel = getLabelFromRange( selectedRange );
 
 	// Empty Icon to display next to ranges when not selected.
 	const emptyIcon = <div style={ { width: '24px' } }></div>;
+
+	const renderContent = ( { onToggle }: { onToggle: () => void } ) => {
+		return (
+			<div className="wcpay-payments-activity__date__picker__wrapper">
+				<div className="wcpay-payments-activity__date__picker__ranges">
+					<Button
+						icon={
+							selectedRange === ranges.TODAY_VALUE
+								? check
+								: emptyIcon
+						}
+						onClick={ () => {
+							setAfter( moment().startOf( 'day' ) );
+							setBefore( moment().endOf( 'day' ) );
+							setSelectedRange( ranges.TODAY_VALUE );
+							onToggle();
+						} }
+					>
+						{ ranges.TODAY_LABEL }
+					</Button>
+					<Button
+						icon={
+							selectedRange === ranges.SEVEN_DAYS_VALUE
+								? check
+								: emptyIcon
+						}
+						onClick={ () => {
+							setAfter(
+								moment().subtract( 7, 'days' ).startOf( 'day' )
+							);
+							setBefore( moment().endOf( 'day' ) );
+							setSelectedRange( ranges.SEVEN_DAYS_VALUE );
+							onToggle();
+						} }
+					>
+						{ ranges.SEVEN_DAYS_LABEL }
+					</Button>
+					<Button
+						icon={
+							selectedRange === ranges.FOUR_WEEKS_VALUE
+								? check
+								: emptyIcon
+						}
+						onClick={ () => {
+							setAfter(
+								moment().subtract( 28, 'days' ).startOf( 'day' )
+							);
+							setBefore( moment().endOf( 'day' ) );
+							setSelectedRange( ranges.FOUR_WEEKS_VALUE );
+							onToggle();
+						} }
+					>
+						{ ranges.FOUR_WEEKS_LABEL }
+					</Button>
+					<Button
+						icon={
+							selectedRange === ranges.THREE_MONTHS_VALUE
+								? check
+								: emptyIcon
+						}
+						onClick={ () => {
+							setAfter(
+								moment()
+									.subtract( 3, 'months' )
+									.startOf( 'day' )
+							);
+							setBefore( moment().endOf( 'day' ) );
+							setSelectedRange( ranges.THREE_MONTHS_VALUE );
+							onToggle();
+						} }
+					>
+						{ ranges.THREE_MONTHS_LABEL }
+					</Button>
+					<Button
+						icon={
+							selectedRange === ranges.TWELVE_MONTHS_VALUE
+								? check
+								: emptyIcon
+						}
+						onClick={ () => {
+							setAfter(
+								moment().subtract( 1, 'years' ).startOf( 'day' )
+							);
+							setBefore( moment().endOf( 'day' ) );
+							setSelectedRange( ranges.TWELVE_MONTHS_VALUE );
+							onToggle();
+						} }
+					>
+						{ ranges.TWELVE_MONTHS_LABEL }
+					</Button>
+					<Button
+						icon={
+							selectedRange === ranges.MONTH_TO_DATE_VALUE
+								? check
+								: emptyIcon
+						}
+						onClick={ () => {
+							setAfter( moment().startOf( 'month' ) );
+							setBefore( moment().endOf( 'day' ) );
+							setSelectedRange( ranges.MONTH_TO_DATE_VALUE );
+							onToggle();
+						} }
+					>
+						{ ranges.MONTH_TO_DATE_LABEL }
+					</Button>
+					<Button
+						icon={
+							selectedRange === ranges.QUARTER_TO_DATE_VALUE
+								? check
+								: emptyIcon
+						}
+						onClick={ () => {
+							setAfter( moment().startOf( 'quarter' ) );
+							setBefore( moment().endOf( 'day' ) );
+							setSelectedRange( ranges.QUARTER_TO_DATE_VALUE );
+							onToggle();
+						} }
+					>
+						{ ranges.QUARTER_TO_DATE_LABEL }
+					</Button>
+					<Button
+						icon={
+							selectedRange === ranges.YEAR_TO_DATE_VALUE
+								? check
+								: emptyIcon
+						}
+						onClick={ () => {
+							setAfter( moment().startOf( 'year' ) );
+							setBefore( moment().endOf( 'day' ) );
+							setSelectedRange( ranges.YEAR_TO_DATE_VALUE );
+							onToggle();
+						} }
+					>
+						{ ranges.YEAR_TO_DATE_LABEL }
+					</Button>
+					<Button
+						icon={
+							selectedRange === ranges.CUSTOM_VALUE
+								? check
+								: emptyIcon
+						}
+						onClick={ () => {
+							setAfter(
+								moment().subtract( 7, 'days' ).startOf( 'day' )
+							);
+							setBefore( moment().endOf( 'day' ) );
+							setSelectedRange( ranges.CUSTOM_VALUE );
+						} }
+					>
+						{ ranges.CUSTOM_LABEL }
+					</Button>
+				</div>
+				{ selectedRange === ranges.CUSTOM_VALUE && (
+					<div className="wcpay-payments-activity__date__picker">
+						<DateRange
+							after={ after || moment() }
+							afterText={ afterText }
+							before={ before || moment() }
+							beforeText={ beforeText }
+							onUpdate={ ( data ) => {
+								setSelectedRange( ranges.CUSTOM_VALUE );
+								if ( data.after ) {
+									setAfter( data.after );
+								}
+
+								if ( data.before ) {
+									setBefore( data.before );
+								}
+							} }
+							shortDateFormat="DD/MM/YYYY"
+							focusedInput="endDate"
+							isInvalidDate={ ( date ) =>
+								// Can not select a future date
+								moment().isBefore( moment( date ), 'date' )
+							}
+						/>
+						<div
+							style={ {
+								textAlign: 'end',
+							} }
+						>
+							<Button
+								onClick={ () => {
+									setSelectedRange( ranges.SEVEN_DAYS_VALUE );
+
+									setAfter(
+										moment()
+											.subtract( 7, 'days' )
+											.startOf( 'day' )
+									);
+									setBefore( moment().endOf( 'day' ) );
+
+									onToggle();
+								} }
+							>
+								Reset
+							</Button>
+							<Button
+								variant="primary"
+								onClick={ () => {
+									// TODO: Need to implement logic for applying changes here
+									onToggle();
+								} }
+							>
+								Apply
+							</Button>
+						</div>
+					</div>
+				) }
+			</div>
+		);
+	};
 
 	return (
 		<Card className="">
@@ -106,235 +321,7 @@ const PaymentActivity: React.FC = () => {
 								</span>
 							</Button>
 						) }
-						renderContent={ () => (
-							<div className="wcpay-payments-activity__date__picker__wrapper">
-								<div className="wcpay-payments-activity__date__picker__ranges">
-									<Button
-										icon={
-											selectedRange ===
-											TIME_RANGES.TODAY_VALUE
-												? check
-												: emptyIcon
-										}
-										onClick={ () => {
-											setAfter(
-												moment().startOf( 'day' )
-											);
-											setBefore(
-												moment().endOf( 'day' )
-											);
-											setSelectedRange(
-												TIME_RANGES.TODAY_VALUE
-											);
-										} }
-									>
-										Today
-									</Button>
-									<Button
-										icon={
-											selectedRange ===
-											TIME_RANGES.SEVEN_DAYS_VALUE
-												? check
-												: emptyIcon
-										}
-										onClick={ () => {
-											setAfter(
-												moment()
-													.subtract( 7, 'days' )
-													.startOf( 'day' )
-											);
-											setBefore(
-												moment().endOf( 'day' )
-											);
-											setSelectedRange(
-												TIME_RANGES.SEVEN_DAYS_VALUE
-											);
-										} }
-									>
-										Last 7 days
-									</Button>
-									<Button
-										icon={
-											selectedRange ===
-											TIME_RANGES.FOUR_WEEKS_VALUE
-												? check
-												: emptyIcon
-										}
-										onClick={ () => {
-											setAfter(
-												moment()
-													.subtract( 28, 'days' )
-													.startOf( 'day' )
-											);
-											setBefore(
-												moment().endOf( 'day' )
-											);
-											setSelectedRange(
-												TIME_RANGES.FOUR_WEEKS_VALUE
-											);
-										} }
-									>
-										Last 4 weeks
-									</Button>
-									<Button
-										icon={
-											selectedRange ===
-											TIME_RANGES.THREE_MONTHS_VALUE
-												? check
-												: emptyIcon
-										}
-										onClick={ () => {
-											setAfter(
-												moment()
-													.subtract( 3, 'months' )
-													.startOf( 'day' )
-											);
-											setBefore(
-												moment().endOf( 'day' )
-											);
-											setSelectedRange(
-												TIME_RANGES.THREE_MONTHS_VALUE
-											);
-										} }
-									>
-										Last 3 months
-									</Button>
-									<Button
-										icon={
-											selectedRange ===
-											TIME_RANGES.TWELVE_MONTHS_VALUE
-												? check
-												: emptyIcon
-										}
-										onClick={ () => {
-											setAfter(
-												moment()
-													.subtract( 1, 'years' )
-													.startOf( 'day' )
-											);
-											setBefore(
-												moment().endOf( 'day' )
-											);
-											setSelectedRange(
-												TIME_RANGES.TWELVE_MONTHS_VALUE
-											);
-										} }
-									>
-										Last 12 months
-									</Button>
-									<Button
-										icon={
-											selectedRange ===
-											TIME_RANGES.MONTH_TO_DATE_VALUE
-												? check
-												: emptyIcon
-										}
-										onClick={ () => {
-											setAfter(
-												moment().startOf( 'month' )
-											);
-											setBefore(
-												moment().endOf( 'day' )
-											);
-											setSelectedRange(
-												TIME_RANGES.MONTH_TO_DATE_VALUE
-											);
-										} }
-									>
-										Month to date
-									</Button>
-									<Button
-										icon={
-											selectedRange ===
-											TIME_RANGES.QUARTER_TO_DATE_VALUE
-												? check
-												: emptyIcon
-										}
-										onClick={ () => {
-											setAfter(
-												moment().startOf( 'quarter' )
-											);
-											setBefore(
-												moment().endOf( 'day' )
-											);
-											setSelectedRange(
-												TIME_RANGES.QUARTER_TO_DATE_VALUE
-											);
-										} }
-									>
-										Quarter to date
-									</Button>
-									<Button
-										icon={
-											selectedRange ===
-											TIME_RANGES.YEAR_TO_DATE_VALUE
-												? check
-												: emptyIcon
-										}
-										onClick={ () => {
-											setAfter(
-												moment().startOf( 'year' )
-											);
-											setBefore(
-												moment().endOf( 'day' )
-											);
-											setSelectedRange(
-												TIME_RANGES.YEAR_TO_DATE_VALUE
-											);
-										} }
-									>
-										Year to date
-									</Button>
-									{ /* TODO: Need to implement all time */ }
-									{ /* <Button>All time</Button> */ }
-								</div>
-								<div className="wcpay-payments-activity__date__picker">
-									<DateRange
-										after={ after || moment() }
-										afterText={ afterText }
-										before={ before || moment() }
-										beforeText={ beforeText }
-										onUpdate={ ( data ) => {
-											setSelectedRange( null );
-											if ( data.after ) {
-												setAfter( data.after );
-											}
-
-											if ( data.before ) {
-												setBefore( data.before );
-											}
-										} }
-										shortDateFormat="DD/MM/YYYY"
-										focusedInput="endDate"
-										isInvalidDate={ ( date ) =>
-											// not a future date
-											moment().isBefore(
-												moment( date ),
-												'date'
-											)
-										}
-									/>
-									<Button
-										onClick={ () => {
-											setSelectedRange(
-												TIME_RANGES.SEVEN_DAYS_VALUE
-											);
-
-											setAfter(
-												moment()
-													.subtract( 7, 'days' )
-													.startOf( 'day' )
-											);
-											setBefore(
-												moment().endOf( 'day' )
-											);
-										} }
-									>
-										Reset
-									</Button>
-								</div>
-							</div>
-						) }
+						renderContent={ renderContent }
 					/>
 				</div>
 
