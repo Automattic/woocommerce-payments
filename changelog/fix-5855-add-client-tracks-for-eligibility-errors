@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add client error tracking when po eligibility can't be established
