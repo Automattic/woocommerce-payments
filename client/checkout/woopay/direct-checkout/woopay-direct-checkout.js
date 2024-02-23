@@ -214,6 +214,13 @@ class WoopayDirectCheckout {
 	}
 
 	/**
+	 * Sets the WooPay session as not prefetched.
+	 */
+	static setWooPaySessionAsNotPrefetched() {
+		this.wooPaySessionFromMerchantPromise = null;
+	}
+
+	/**
 	 * Checks if the WooPay session has been prefetched.
 	 *
 	 * @return {boolean} True if the WooPay session has been prefetched.
