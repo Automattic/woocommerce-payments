@@ -14,6 +14,7 @@ import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
 class WoopayDirectCheckout {
 	static userConnect;
 	static sessionConnect;
+	static wooPaySessionFromMerchantPromise;
 
 	/**
 	 * Initializes the WooPay direct checkout feature.
@@ -92,7 +93,13 @@ class WoopayDirectCheckout {
 	 * @return {Promise<*>} Resolves to the redirect URL.
 	 */
 	static async sendRedirectSessionDataToWooPay() {
-		const woopaySession = await this.getWooPaySessionFromMerchant();
+		let woopaySession;
+		if ( this.isWooPaySessionPrefetched() ) {
+			woopaySession = await this.wooPaySessionFromMerchantPromise;
+		} else {
+			woopaySession = await this.getWooPaySessionFromMerchant();
+		}
+
 		const woopaySessionData = await this.getSessionConnect().sendRedirectSessionDataToWooPay(
 			woopaySession
 		);
@@ -175,6 +182,28 @@ class WoopayDirectCheckout {
 			{
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
 			}
+		);
+	}
+
+	/**
+	 * Prefetches the WooPay session.
+	 *
+	 * @return {Promise<void>} Resolves when the WooPay session has been prefetched.
+	 */
+	static async maybePrefetchWooPaySession() {
+		this.wooPaySessionFromMerchantPromise = new Promise( ( resolve ) => {
+			resolve( this.getWooPaySessionFromMerchant() );
+		} );
+	}
+
+	/**
+	 * Checks if the WooPay session has been prefetched.
+	 *
+	 * @return {boolean} True if the WooPay session has been prefetched.
+	 */
+	static isWooPaySessionPrefetched() {
+		return (
+			typeof this.wooPaySessionFromMerchantPromise?.then === 'function'
 		);
 	}
 }

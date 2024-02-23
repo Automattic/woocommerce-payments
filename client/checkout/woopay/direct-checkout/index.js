@@ -9,6 +9,7 @@ window.addEventListener( 'load', async () => {
 	}
 
 	WooPayDirectCheckout.init();
+	WooPayDirectCheckout.maybePrefetchWooPaySession();
 
 	const isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
