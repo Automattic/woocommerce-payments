@@ -49,7 +49,7 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 	return (
 		<BalanceTooltip
 			label={ `${ fundLabelStrings.total } tooltip` }
-			maxWidth={ balance < 0 ? undefined : '315px' }
+			maxWidth={ '315px' }
 			content={
 				<>
 					<>
