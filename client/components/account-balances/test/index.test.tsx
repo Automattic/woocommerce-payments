@@ -342,7 +342,7 @@ describe( 'AccountBalances', () => {
 			// Regex optional group for `(opens in a new tab)`.
 			name: /Learn more( \(.*?\))? about why your account balance may be negative./,
 		} );
-		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+		expect( within( tooltip ).getAllByRole( 'link' )[ 1 ] ).toHaveAttribute(
 			'href',
 			'https://woo.com/document/woopayments/fees-and-debits/account-showing-negative-balance/'
 		);
@@ -361,7 +361,7 @@ describe( 'AccountBalances', () => {
 			// Regex optional group for `(opens in a new tab)`.
 			name: /Learn more( \(.*?\))? about why your account balance may be negative./,
 		} );
-		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+		expect( within( tooltip ).getAllByRole( 'link' )[ 1 ] ).toHaveAttribute(
 			'href',
 			'https://woo.com/document/woopayments/fees-and-debits/account-showing-negative-balance/'
 		);
