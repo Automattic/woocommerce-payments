@@ -23,6 +23,10 @@ type TotalBalanceTooltipProps = {
 	balance: number;
 };
 
+type AvailableBalanceTooltipProps = {
+	balance: number;
+};
+
 const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 	label,
 	content,
@@ -78,10 +82,85 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 							'woocommerce-payments'
 						) }
 					</InlineNotice>
+					<>
+						{ balance < 0 &&
+							interpolateComponents( {
+								mixedString: __(
+									'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+									'woocommerce-payments'
+								),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											rel="external noopener noreferrer"
+											target="_blank"
+											href={
+												documentationUrls.negativeBalance
+											}
+										/>
+									),
+								},
+							} ) }
+					</>
 				</>
 			}
 		/>
 	);
 };
 
-export default BalanceTooltip;
+export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > = ( {
+	balance,
+} ) => {
+	return (
+		<BalanceTooltip
+			label={ `${ fundLabelStrings.available } tooltip` }
+			content={
+				<>
+					<p>
+						{ interpolateComponents( {
+							mixedString: __(
+								'{{bold}}Available funds{{/bold}} have completed processing and are ready to be deposited into your bank account. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								'woocommerce-payments'
+							),
+							components: {
+								bold: <b />,
+								learnMoreLink: (
+									// eslint-disable-next-line jsx-a11y/anchor-has-content
+									<a
+										rel="external noopener noreferrer"
+										target="_blank"
+										href={
+											documentationUrls.depositSchedule
+										}
+									/>
+								),
+							},
+						} ) }
+					</p>
+					<p>
+						{ balance < 0 &&
+							interpolateComponents( {
+								mixedString: __(
+									'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+									'woocommerce-payments'
+								),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											rel="external noopener noreferrer"
+											target="_blank"
+											href={
+												documentationUrls.negativeBalance
+											}
+										/>
+									),
+								},
+							} ) }
+					</p>
+				</>
+			}
+		/>
+	);
+};
