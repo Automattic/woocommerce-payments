@@ -4,7 +4,6 @@
 import * as React from 'react';
 import { Flex, TabPanel } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -13,10 +12,12 @@ import { useAllDepositsOverviews } from 'wcpay/data';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
-import BalanceTooltip from './balance-tooltip';
-import { documentationUrls, fundLabelStrings } from './strings';
+import {
+	TotalBalanceTooltip,
+	AvailableBalanceTooltip,
+} from './balance-tooltip';
+import { fundLabelStrings } from './strings';
 import InstantDepositButton from 'deposits/instant-deposits';
-import InlineNotice from 'components/inline-notice';
 import { recordEvent } from 'tracks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 import './style.scss';
@@ -134,22 +135,6 @@ const AccountBalances: React.FC = () => {
 			{ ( tab: BalanceTabProps ) => {
 				const totalBalance = tab.availableFunds + tab.pendingFunds;
 
-				const negativeBalanceTooltipContent = interpolateComponents( {
-					mixedString: __(
-						'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
-						'woocommerce-payments'
-					),
-					components: {
-						learnMoreLink: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								rel="external noopener noreferrer"
-								target="_blank"
-								href={ documentationUrls.negativeBalance }
-							/>
-						),
-					},
-				} );
 				return (
 					<>
 						<Flex
@@ -162,53 +147,8 @@ const AccountBalances: React.FC = () => {
 								amount={ totalBalance }
 								currencyCode={ tab.currencyCode }
 								tooltip={
-									<BalanceTooltip
-										label={ `${ fundLabelStrings.total } tooltip` }
-										maxWidth={
-											totalBalance < 0
-												? undefined
-												: '335px'
-										}
-										content={
-											totalBalance < 0 ? (
-												negativeBalanceTooltipContent
-											) : (
-												<>
-													<>
-														{ interpolateComponents(
-															{
-																mixedString: __(
-																	'{{bold}}Total balance{{/bold}} combines both pending funds (transactions under processing) and available funds (ready for deposit). {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-																	'woocommerce-payments'
-																),
-																components: {
-																	bold: <b />,
-																	learnMoreLink: (
-																		// eslint-disable-next-line jsx-a11y/anchor-has-content
-																		<a
-																			rel="external noopener noreferrer"
-																			target="_blank"
-																			href={
-																				documentationUrls.depositSchedule
-																			}
-																		/>
-																	),
-																},
-															}
-														) }
-													</>
-													<InlineNotice
-														className="wcpay-account-balances__balances-total-balance-tooltip-notice"
-														isDismissible={ false }
-													>
-														{ __(
-															'Total balance = Available funds + Pending funds',
-															'woocommerce-payments'
-														) }
-													</InlineNotice>
-												</>
-											)
-										}
+									<TotalBalanceTooltip
+										balance={ totalBalance }
 									/>
 								}
 							/>
@@ -218,31 +158,8 @@ const AccountBalances: React.FC = () => {
 								amount={ tab.availableFunds }
 								currencyCode={ tab.currencyCode }
 								tooltip={
-									<BalanceTooltip
-										label={ `${ fundLabelStrings.available } tooltip` }
-										content={
-											tab.availableFunds < 0
-												? negativeBalanceTooltipContent
-												: interpolateComponents( {
-														mixedString: __(
-															'{{bold}}Available funds{{/bold}} have completed processing and are ready to be deposited into your bank account. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-															'woocommerce-payments'
-														),
-														components: {
-															bold: <b />,
-															learnMoreLink: (
-																// eslint-disable-next-line jsx-a11y/anchor-has-content
-																<a
-																	rel="external noopener noreferrer"
-																	target="_blank"
-																	href={
-																		documentationUrls.depositSchedule
-																	}
-																/>
-															),
-														},
-												  } )
-										}
+									<AvailableBalanceTooltip
+										balance={ tab.availableFunds }
 									/>
 								}
 							/>
