@@ -198,7 +198,7 @@ const AccountBalances: React.FC = () => {
 														) }
 													</>
 													<InlineNotice
-														className="wcpay-account-balances__balances-total-balance-tooltip"
+														className="wcpay-account-balances__balances-total-balance-tooltip-notice"
 														isDismissible={ false }
 													>
 														{ __(

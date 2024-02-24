@@ -45,7 +45,7 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 	return (
 		<BalanceTooltip
 			label={ `${ fundLabelStrings.total } tooltip` }
-			maxWidth={ balance < 0 ? undefined : '335px' }
+			maxWidth={ balance < 0 ? undefined : '315px' }
 			content={
 				<>
 					<>
@@ -70,7 +70,7 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 						} ) }
 					</>
 					<InlineNotice
-						className="wcpay-account-balances__balances-total-balance-tooltip"
+						className="wcpay-account-balances__balances-total-balance-tooltip-notice"
 						isDismissible={ false }
 					>
 						{ __(
