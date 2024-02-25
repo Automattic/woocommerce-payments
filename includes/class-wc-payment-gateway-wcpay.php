@@ -2475,7 +2475,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function init_settings() {
 		parent::init_settings();
-		$this->enabled = in_array( $this->stripe_id, $this->get_upe_enabled_payment_method_ids(), true ) ? 'yes' : 'no';
+		if ( 'card' === $this->stripe_id ) {
+			// Use the 'enabled' option for the card payment method to accommodate WooPayments toggling in WooCommerce Settings.
+			$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
+		} else {
+			// Enable non-card methods based on upe_enabled_payment_method_ids array.
+			$this->enabled = in_array( $this->stripe_id, $this->get_upe_enabled_payment_method_ids(), true ) ? 'yes' : 'no';
+		}
 	}
 
 	/**
