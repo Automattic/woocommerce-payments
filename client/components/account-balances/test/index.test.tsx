@@ -340,7 +340,7 @@ describe( 'AccountBalances', () => {
 		fireEvent.click( tooltipButton );
 		const tooltip = screen.getByRole( 'tooltip', {
 			// Regex optional group for `(opens in a new tab)`.
-			name: /Learn more( \(.*?\))? about why your account balance may be negative./,
+			name: /Negative account balance\? .*Discover why\./,
 		} );
 		expect( within( tooltip ).getAllByRole( 'link' )[ 1 ] ).toHaveAttribute(
 			'href',
@@ -359,7 +359,7 @@ describe( 'AccountBalances', () => {
 		fireEvent.click( tooltipButton );
 		const tooltip = screen.getByRole( 'tooltip', {
 			// Regex optional group for `(opens in a new tab)`.
-			name: /Learn more( \(.*?\))? about why your account balance may be negative./,
+			name: /Negative account balance\? .*Discover why\./,
 		} );
 		expect( within( tooltip ).getAllByRole( 'link' )[ 1 ] ).toHaveAttribute(
 			'href',

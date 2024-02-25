@@ -86,11 +86,11 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 						{ balance < 0 &&
 							interpolateComponents( {
 								mixedString: __(
-									'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+									'Negative account balance? {{discoverWhyLink}}Discover why.{{/discoverWhyLink}}',
 									'woocommerce-payments'
 								),
 								components: {
-									learnMoreLink: (
+									discoverWhyLink: (
 										// eslint-disable-next-line jsx-a11y/anchor-has-content
 										<a
 											rel="external noopener noreferrer"
@@ -115,6 +115,7 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 	return (
 		<BalanceTooltip
 			label={ `${ fundLabelStrings.available } tooltip` }
+			maxWidth={ balance < 0 ? '280px' : undefined }
 			content={
 				<>
 					<p>
@@ -142,11 +143,11 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 						{ balance < 0 &&
 							interpolateComponents( {
 								mixedString: __(
-									'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+									'Negative account balance? {{discoverWhyLink}}Discover why.{{/discoverWhyLink}}',
 									'woocommerce-payments'
 								),
 								components: {
-									learnMoreLink: (
+									discoverWhyLink: (
 										// eslint-disable-next-line jsx-a11y/anchor-has-content
 										<a
 											rel="external noopener noreferrer"
