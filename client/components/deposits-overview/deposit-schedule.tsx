@@ -182,11 +182,15 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 	return (
 		<>
 			<DepositScheduleSummary depositsSchedule={ depositsSchedule } />
-			<ClickTooltip
-				content={ nextDepositHelpContent }
-				buttonIcon={ <HelpOutlineIcon /> }
-				buttonLabel={ 'Deposit schedule tooltip' }
-			/>
+			{ [ 'daily', 'weekly', 'monthly' ].includes(
+				depositsSchedule.interval
+			) && (
+				<ClickTooltip
+					content={ nextDepositHelpContent }
+					buttonIcon={ <HelpOutlineIcon /> }
+					buttonLabel={ 'Deposit schedule tooltip' }
+				/>
+			) }
 		</>
 	);
 };

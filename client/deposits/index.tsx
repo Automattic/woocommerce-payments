@@ -57,7 +57,10 @@ const NextDepositNotice: React.FC = () => {
 		! isDepositsUnrestricted ||
 		! hasCompletedWaitingPeriod ||
 		! account ||
-		isNextDepositNoticeDismissed
+		isNextDepositNoticeDismissed ||
+		! [ 'daily', 'weekly', 'monthly' ].includes(
+			account.deposits_schedule.interval
+		)
 	) {
 		return null;
 	}
