@@ -13,12 +13,6 @@ import { ClickTooltip } from 'components/tooltip';
 import { documentationUrls, fundLabelStrings } from './strings';
 import InlineNotice from 'components/inline-notice';
 
-type BalanceTooltipProps = {
-	label: string;
-	content: React.ReactNode;
-	maxWidth?: string | undefined;
-};
-
 type TotalBalanceTooltipProps = {
 	balance: number;
 };
@@ -27,29 +21,15 @@ type AvailableBalanceTooltipProps = {
 	balance: number;
 };
 
-const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
-	label,
-	content,
-	maxWidth,
-} ) => {
-	return (
-		<ClickTooltip
-			content={ content }
-			className="wcpay-account-balances__balances__item__tooltip"
-			buttonIcon={ <HelpOutlineIcon /> }
-			buttonLabel={ label }
-			maxWidth={ maxWidth }
-		/>
-	);
-};
-
 export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 	balance,
 } ) => {
 	return (
-		<BalanceTooltip
-			label={ `${ fundLabelStrings.total } tooltip` }
-			maxWidth={ '315px' }
+		<ClickTooltip
+			className="wcpay-account-balances__balances__item__tooltip"
+			buttonIcon={ <HelpOutlineIcon /> }
+			buttonLabel={ `${ fundLabelStrings.total } tooltip` }
+			maxWidth={ '315px' } // So that tooltip is wide enough and the content in the inline notice is not wrapped.
 			content={
 				<>
 					<>
@@ -113,9 +93,11 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 	balance,
 } ) => {
 	return (
-		<BalanceTooltip
-			label={ `${ fundLabelStrings.available } tooltip` }
-			maxWidth={ balance < 0 ? '280px' : undefined }
+		<ClickTooltip
+			className="wcpay-account-balances__balances__item__tooltip"
+			buttonIcon={ <HelpOutlineIcon /> }
+			buttonLabel={ `${ fundLabelStrings.available } tooltip` }
+			maxWidth={ balance < 0 ? '280px' : undefined } // So that the negative balance sentence is not wrapped and looks like the design.
 			content={
 				<>
 					<p>
