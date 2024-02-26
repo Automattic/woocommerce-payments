@@ -34,7 +34,6 @@ import {
 } from '../constants.js';
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
-import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
@@ -115,26 +114,6 @@ Object.entries( enabledPaymentMethodsConfig )
 		} );
 	} );
 
-const addProceedToCheckoutTracking = () => {
-	Object.values( WooPayDirectCheckout.redirectElements ).forEach(
-		( className ) => {
-			const proceedButton = document.querySelector( className );
-			const isWooPayEnabled = WooPayDirectCheckout.isWooPayEnabled();
-			const isWoopayDirectCheckoutEnabled = Boolean(
-				getUPEConfig( 'isWooPayDirectCheckoutEnabled' )
-			);
-			if ( proceedButton ) {
-				proceedButton.addEventListener( 'click', () => {
-					recordUserEvent( 'wcpay_proceed_to_checkout_button_click', {
-						woopay_direct_checkout:
-							isWooPayEnabled && isWoopayDirectCheckoutEnabled,
-					} );
-				} );
-			}
-		}
-	);
-};
-
 const addCheckoutTracking = () => {
 	const placeOrderButton = document.getElementsByClassName(
 		'wc-block-components-checkout-place-order-button'
@@ -171,6 +150,5 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
-	addProceedToCheckoutTracking();
 	addCheckoutTracking();
 } );
