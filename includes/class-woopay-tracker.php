@@ -70,8 +70,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_after_single_product', [ $this, 'classic_product_page_view' ] );
 		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'blocks_checkout_start' ] );
 		add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ $this, 'blocks_cart_page_view' ] );
-		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
-		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
+		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
+		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
 		add_action( 'woocommerce_thankyou', [ $this, 'thank_you_page_view' ] );
@@ -463,11 +463,21 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Record a Tracks event that the order has been processed.
 	 */
-	public function checkout_order_processed() {
+	public function checkout_order_processed( $order_id ) {
 		$is_woopay_order = ( isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'] );
+
+		$payment_gateway = wc_get_payment_gateway_by_order( $order_id );
+		$properties = [ 'payment_title' => 'other' ];
+
+		if (strpos( $payment_gateway->id, 'woocommerce_payments') === 0 ) {
+			$order = wc_get_order( $order_id );
+			$payment_title = $order->get_payment_method_title();
+			$properties = [ 'payment_title' => $payment_title ];
+		}
+
 		// Don't track WooPay orders. They will be tracked on WooPay side with more flow specific details.
 		if ( ! $is_woopay_order ) {
-			$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed' );
+			$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties );
 		}
 	}
 
