@@ -132,18 +132,9 @@ export const getBackgroundColor = ( selectors ) => {
 		const bgColor = window.getComputedStyle(
 			document.querySelector( selectors[ i ] )
 		).backgroundColor;
-		if ( bgColor ) {
-			if ( bgColor.match( /^rgba/ ) ) {
-				const colorParts = bgColor.match(
-					/^rgba\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
-				);
-				// Check if color is transparent.
-				if ( parseInt( colorParts[ 5 ], 10 ) > 0 ) {
-					color = bgColor;
-				}
-			} else {
-				color = bgColor;
-			}
+		// If backgroundColor property present and alpha > 0.
+		if ( bgColor && tinycolor( bgColor ).getAlpha() > 0 ) {
+			color = bgColor;
 		}
 		i++;
 	}
