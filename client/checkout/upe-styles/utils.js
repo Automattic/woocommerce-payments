@@ -132,16 +132,18 @@ export const getBackgroundColor = ( selectors ) => {
 		const bgColor = window.getComputedStyle(
 			document.querySelector( selectors[ i ] )
 		).backgroundColor;
-		if ( bgColor && bgColor.match( /^rgba/ ) ) {
-			const colorParts = bgColor.match(
-				/^rgba\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
-			);
-			// Check if color is transparent.
-			if ( parseInt( colorParts[ 5 ], 10 ) > 0 ) {
+		if ( bgColor ) {
+			if ( bgColor.match( /^rgba/ ) ) {
+				const colorParts = bgColor.match(
+					/^rgba\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
+				);
+				// Check if color is transparent.
+				if ( parseInt( colorParts[ 5 ], 10 ) > 0 ) {
+					color = bgColor;
+				}
+			} else {
 				color = bgColor;
 			}
-		} else {
-			color = bgColor;
 		}
 		i++;
 	}
@@ -155,31 +157,5 @@ export const getBackgroundColor = ( selectors ) => {
  * @return {boolean} True, if background is light; false, if background is dark.
  */
 export const isColorLight = ( color ) => {
-	let r, g, b;
-	if ( color.match( /^rgb/ ) ) {
-		color = color.match(
-			/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
-		);
-		[ r, g, b ] = color.slice( 1 );
-	} else {
-		// Convert hex format to rgb
-		color = +(
-			'0x' + color.slice( 1 ).replace( color.length < 5 && /./g, '$&$&' )
-		);
-
-		// eslint-disable-next-line no-bitwise
-		r = color >> 16;
-		// eslint-disable-next-line no-bitwise
-		g = ( color >> 8 ) & 255;
-		// eslint-disable-next-line no-bitwise
-		b = color & 255;
-	}
-
-	// HSP equation from http://alienryderflex.com/hsp.html
-	const hsp = Math.sqrt(
-		0.299 * ( r * r ) + 0.587 * ( g * g ) + 0.114 * ( b * b )
-	);
-
-	// Using the HSP value, determine whether the color is light or dark
-	return hsp > 127.5;
+	return tinycolor( color ).getBrightness() > 125;
 };
