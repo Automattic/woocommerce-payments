@@ -46,13 +46,13 @@ const formatPaymentMethodDetails = ( charge ) => {
  * Placeholders to display while loading.
  */
 const paymentMethodPlaceholders = {
-	id: 'id placeholder',
-	bank: 'bank name placeholder',
-	reference: 'reference placeholder',
-	verifiedName: 'verified_name placeholder',
-	customerName: 'customer_name placeholder',
-	email: 'email placeholder',
-	formattedAddress: 'address placeholder',
+	id: __( 'id placeholder', 'woocommerce-payments' ),
+	bank: __( 'bank name placeholder', 'woocommerce-payments' ),
+	reference: __( 'reference placeholder', 'woocommerce-payments' ),
+	verifiedName: __( 'verified_name placeholder', 'woocommerce-payments' ),
+	customerName: __( 'customer_name placeholder', 'woocommerce-payments' ),
+	email: __( 'email placeholder', 'woocommerce-payments' ),
+	formattedAddress: __( 'address placeholder', 'woocommerce-payments' ),
 };
 
 const P24Details = ( { charge = {}, isLoading } ) => {

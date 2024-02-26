@@ -58,7 +58,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 	return (
 		<ConfirmationModal
 			className="missing-order-notice-modal"
-			title={ __( 'Refund Transaction', 'woocommerce-payments' ) }
+			title={ __( 'Refund transaction', 'woocommerce-payments' ) }
 			actions={
 				<>
 					<Button onClick={ handleModalCancel } variant="secondary">

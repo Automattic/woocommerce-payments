@@ -14,6 +14,12 @@ jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 
+jest.mock( 'tracks', () => ( {
+	getTracksIdentity: jest
+		.fn()
+		.mockReturnValue( Promise.resolve( undefined ) ),
+} ) );
+
 describe( 'expressCheckoutIframe', () => {
 	const api = new WCPayAPI( {}, jest.fn() );
 

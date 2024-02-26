@@ -2,6 +2,7 @@
  * External dependencies
  */
 import validator from 'validator';
+import { __ } from '@wordpress/i18n';
 
 const useExpressCheckoutProductHandler = ( api ) => {
 	const getAttributes = () => {
@@ -34,7 +35,12 @@ const useExpressCheckoutProductHandler = ( api ) => {
 				data.hasOwnProperty( requiredField ) &&
 				! data[ requiredField ]
 			) {
-				alert( 'Please fill out all required fields' );
+				alert(
+					__(
+						'Please fill out all required fields',
+						'woocommerce-payments'
+					)
+				);
 				return false;
 			}
 		}
@@ -45,14 +51,24 @@ const useExpressCheckoutProductHandler = ( api ) => {
 					.split( ',' )
 					.every( ( email ) => validator.isEmail( email.trim() ) )
 			) {
-				alert( 'Please type only valid emails' );
+				alert(
+					__(
+						'Please type only valid emails',
+						'woocommerce-payments'
+					)
+				);
 				return false;
 			}
 		}
 
 		if ( data.hasOwnProperty( 'wc_gc_giftcard_to' ) ) {
 			if ( ! validator.isEmail( data.wc_gc_giftcard_to ) ) {
-				alert( 'Please type only valid emails' );
+				alert(
+					__(
+						'Please type only valid emails',
+						'woocommerce-payments'
+					)
+				);
 				return false;
 			}
 		}
@@ -109,10 +125,7 @@ const useExpressCheckoutProductHandler = ( api ) => {
 			const formData = new FormData( addOnForm );
 
 			formData.forEach( ( value, name ) => {
-				if (
-					/^addon-/.test( name ) ||
-					/^wc_gc_giftcard_/.test( name )
-				) {
+				if ( /^(addon-|wc_)/.test( name ) ) {
 					if ( /\[\]$/.test( name ) ) {
 						const fieldName = name.substring( 0, name.length - 2 );
 

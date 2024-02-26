@@ -1,0 +1,17 @@
+// Add the margin-bottom variable so we can set the value with JS based on the computed style of the price element.
+#payment-method-message {
+	--wc-bnpl-margin-bottom: 0;
+}
+
+// Only apply the adjusted margins on the bnpl element when it immediately follows .price or .wp-block-woocommerce-product-price and the `ready` class has been added.
+.price,
+.wp-block-woocommerce-product-price {
+	&:has( + #payment-method-message.ready ) {
+		margin-bottom: 0;
+	}
+
+	+ #payment-method-message.ready {
+		margin-top: 0.5rem;
+		margin-bottom: var( --wc-bnpl-margin-bottom );
+	}
+}
