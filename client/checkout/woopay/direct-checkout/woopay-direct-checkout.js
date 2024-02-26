@@ -109,13 +109,13 @@ class WoopayDirectCheckout {
 	 */
 	static async getWooPayRedirectUrl() {
 		const redirectData = await this.getWooPayRedirectDataFromMerchant();
-		// TODO: Handle error case.
-		const redirectParams = new URLSearchParams( redirectData ).toString();
-		const redirectUrl =
-			getConfig( 'woopayHost' ) +
-			'/woopay/?woopay_checkout_redirect=1&' +
-			redirectParams;
+		const redirectSessionData = await this.getSessionConnect().setCacheSessionDataCallback(
+			redirectData
+		);
 
+		const { redirect_url: redirectUrl } = await redirectSessionData;
+
+		// TODO: Handle error case.
 		return redirectUrl;
 	}
 
