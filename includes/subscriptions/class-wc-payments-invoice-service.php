@@ -83,6 +83,14 @@ class WC_Payments_Invoice_Service {
 
 		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
 		add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
+
+		/**
+		 * For Authorize and Capture stores.
+		 * When an order payment is authorized and captured later, the order status changes from on-hold to processing/completed.
+		 * This is not captured by the woocommerce_order_payment_status_changed hook above.
+		 * We hook on at 20 to make sure it runs after the payment has been captured by WC_Payment_Gateway_WCPay::capture_charge().
+		 */
+		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'maybe_record_captured_payment' ], 20 );
 	}
 
 	/**
@@ -369,6 +377,17 @@ class WC_Payments_Invoice_Service {
 				'metadata' => ['order_id' => $order_id ],
 			]
 		);
+	}
+
+	/**
+	 * When an order payment is captured and is paid, record the payment on the invoice.
+	 *
+	 * @param WC_Order $order The order that was captured.
+	 */
+	public function maybe_record_captured_payment( $order ) {
+		if ( $order instanceof WC_Order && $order->has_status( wc_get_is_paid_statuses() ) ) {
+			$this->maybe_record_invoice_payment( $order->get_id() );
+		}
 	}
 
 	/**
