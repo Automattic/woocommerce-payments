@@ -462,6 +462,8 @@ class WC_Payments {
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();
 
+		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'load_cart_scripts' ] );
+
 		// // Load woopay save user section if feature is enabled.
 		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_woopay' ] );
 
@@ -1561,6 +1563,16 @@ class WC_Payments {
 			$field = '';
 		}
 		return $field;
+	}
+
+	/**
+	 * Enqueue cart page scripts.
+	 *
+	 * @return void
+	 */
+	public static function load_cart_scripts() {
+		self::register_script_with_dependencies( 'WCPAY_CART', 'dist/cart' );
+		wp_enqueue_script( 'WCPAY_CART' );
 	}
 
 	/**
