@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Checking if wc.wcSettings is correctly set in checkou.js. This will not change anything as other extensions and even WC itself depends on it being correctly set, so it's just a minor enhancement.
-
-
