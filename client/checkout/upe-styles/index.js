@@ -304,6 +304,10 @@ export const getFieldStyles = ( selector, upeElement ) => {
 		filteredStyles.paddingRight = textIndent;
 	}
 
+	if ( upeElement === '.Block' ) {
+		filteredStyles.backgroundColor = 'none';
+	}
+
 	return filteredStyles;
 };
 
@@ -366,7 +370,6 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 		selectors.upeThemeLabelSelector,
 		'.Block'
 	);
-	blockRules.backgroundColor = 'none';
 
 	const globalRules = {
 		colorBackground: 'none',
