@@ -423,8 +423,7 @@ export default class WCPayAPI {
 			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
 		} )
 			.then( ( response ) => {
-				// There is not any action to take or harm caused by a failed update, so just returning success status.
-				return response.success;
+				return response.data;
 			} )
 			.catch( ( error ) => {
 				if ( error.message ) {

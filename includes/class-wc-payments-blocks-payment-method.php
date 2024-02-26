@@ -52,13 +52,17 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return string[] A list of script handles.
 	 */
 	public function get_payment_method_script_handles() {
-		WC_Payments_Utils::enqueue_style(
-			'wc-blocks-checkout-style',
-			plugins_url( 'dist/blocks-checkout.css', WCPAY_PLUGIN_FILE ),
-			[],
-			'1.0',
-			'all'
-		);
+
+		if ( ( is_cart() || is_checkout() || is_product() ) ) {
+			WC_Payments_Utils::enqueue_style(
+				'wc-blocks-checkout-style',
+				plugins_url( 'dist/blocks-checkout.css', WCPAY_PLUGIN_FILE ),
+				[],
+				'1.0',
+				'all'
+			);
+		}
+
 		wp_register_script(
 			'stripe',
 			'https://js.stripe.com/v3/',
