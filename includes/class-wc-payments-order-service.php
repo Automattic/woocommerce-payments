@@ -1287,13 +1287,16 @@ class WC_Payments_Order_Service {
 		}
 
 		if ( $is_partial_refund ) {
+			// For partial refunds we do not mark the order as refunded, we only add a refund note.
+			// We lack information about the refund items, so we cannot refund them.
 			$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason );
 			$order->add_order_note( $note );
 		} else {
+			// For full refunds we mark the order as refunded, including all the order items, and add a refund note.
 			$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, $order->get_items() );
 			$order->update_status( Order_Status::REFUNDED, $note );
 		}
-
+		// Set refund metadata.
 		$this->set_wcpay_refund_status_for_order( $order, 'successful' );
 		$this->set_wcpay_refund_id_for_order( $order, $refund_id );
 		$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );

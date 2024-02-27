@@ -14,7 +14,6 @@ use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
-use WCPay\Tracker;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -843,9 +842,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		// Create a refund note for the order.
+		// Process the refund in the order service.
 		$this->order_service->process_order_refund( $order, $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $refund_balance_transaction_id, $is_partial_refund );
-
-		Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 	}
 }
