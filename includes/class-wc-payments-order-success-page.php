@@ -149,14 +149,12 @@ class WC_Payments_Order_Success_Page {
 			return;
 		}
 
-		// RTL=false for these files as they aren't currently transpiled by webpack.
 		WC_Payments_Utils::enqueue_style(
 			'wcpay-success-css',
 			plugins_url( 'assets/css/success.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'assets/css/success.css' ),
 			'all',
-			false
 		);
 	}
 }

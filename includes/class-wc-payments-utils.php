@@ -358,7 +358,6 @@ class WC_Payments_Utils {
 			'phone'   => $order->get_billing_phone(),
 		];
 
-		$billing_details['address'] = array_filter( $billing_details['address'] );
 		return array_filter( $billing_details );
 	}
 
