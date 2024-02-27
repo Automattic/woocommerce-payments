@@ -108,16 +108,11 @@ function submitForm( jQueryForm ) {
  *
  * @param {Object} api The API object used to call the Stripe API's createPaymentMethod method.
  * @param {Object} elements The Stripe elements object used to create a Stripe payment method.
- * @param {Object} jQueryForm The jQuery object for the form being submitted.
+ * @param {Object} $form The jQuery object for the form being submitted.
  * @param {string} paymentMethodType The type of Stripe payment method to create.
  * @return {Promise<Object>} A promise that resolves with the created Stripe payment method.
  */
-function createStripePaymentMethod(
-	api,
-	elements,
-	jQueryForm,
-	paymentMethodType
-) {
+function createStripePaymentMethod( api, elements, $form, paymentMethodType ) {
 	/* global wcpayCustomerData */
 	let params = {};
 	if ( window.wcpayCustomerData ) {
@@ -132,20 +127,27 @@ function createStripePaymentMethod(
 		};
 	}
 
-	if ( jQueryForm.attr( 'name' ) === 'checkout' ) {
+	if ( $form.attr( 'name' ) === 'checkout' ) {
 		params = {
 			billing_details: {
 				...params.billing_details,
 				name:
-					`${
-						document.querySelector(
-							`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name }`
-						)?.value || ''
-					} ${
-						document.querySelector(
-							`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name }`
-						)?.value || ''
-					}`.trim() || undefined,
+					document.querySelector(
+						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name }`
+					) ||
+					document.querySelector(
+						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name }`
+					)
+						? `${
+								document.querySelector(
+									`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name }`
+								)?.value || ''
+						  } ${
+								document.querySelector(
+									`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name }`
+								)?.value || ''
+						  }`.trim()
+						: undefined,
 				email: document.querySelector( '#billing_email' )?.value,
 				phone: document.querySelector( '#billing_phone' )?.value,
 				address: {

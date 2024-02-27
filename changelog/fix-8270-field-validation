@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: checkout error message on empty field
