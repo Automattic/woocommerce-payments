@@ -10,6 +10,8 @@ import {
 	Button,
 	Dropdown,
 	DropdownMenu,
+	MenuGroup,
+	MenuItem,
 } from '@wordpress/components';
 import { check } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
@@ -52,6 +54,10 @@ const PaymentActivity: React.FC = () => {
 		accountDefaultCurrency,
 		transactionsData: { tpv },
 	} = wcpaySettings;
+	const customerCurrencies = wcSettings.customerCurrencies;
+	const [ selectedCurrency, setSelectedCurrency ] = useState(
+		accountDefaultCurrency?.toUpperCase()
+	);
 	const [ before, setBefore ] = useState( moment() );
 	const [ after, setAfter ] = useState(
 		moment().subtract( 7, 'days' ).startOf( 'day' )
@@ -291,22 +297,46 @@ const PaymentActivity: React.FC = () => {
 			<CardBody className="wcpay-payments-activity__card__body">
 				<div>
 					<DropdownMenu
-						label="Select a currency"
+						label={ __(
+							'Select a currency',
+							'woocommerce-payments'
+						) }
 						icon={
 							<Button variant="secondary">
 								Currency:{ ' ' }
 								<span className="wcpay-payments-activity__label__span">
-									{ accountDefaultCurrency.toUpperCase() }
+									{ selectedCurrency }
 								</span>
 							</Button>
 						}
-						controls={ [
-							{
-								title: 'EUR',
-								icon: <></>,
-							},
-						] }
-					/>
+					>
+						{ ( { onClose } ) => (
+							<MenuGroup>
+								{ customerCurrencies.map( ( currency ) => {
+									return (
+										<MenuItem
+											key={ currency.value }
+											onClick={ () => {
+												setSelectedCurrency(
+													currency.value.toUpperCase()
+												);
+												onClose();
+											} }
+											icon={
+												selectedCurrency ===
+												currency.value
+													? check
+													: emptyIcon
+											}
+											iconPosition="left"
+										>
+											{ currency.value }
+										</MenuItem>
+									);
+								} ) }
+							</MenuGroup>
+						) }
+					</DropdownMenu>
 					<Dropdown
 						className="my-container-class-name"
 						contentClassName="my-dropdown-content-classname"
