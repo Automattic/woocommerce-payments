@@ -14,14 +14,11 @@ const addProceedToCheckoutTracking = () => {
 				return;
 			}
 
-			const isWooPayEnabled = WooPayDirectCheckout.isWooPayEnabled();
-			const isWoopayDirectCheckoutEnabled = Boolean(
-				getConfig( 'isWooPayDirectCheckoutEnabled' )
-			);
 			proceedButton.addEventListener( 'click', () => {
 				recordUserEvent( 'wcpay_proceed_to_checkout_button_click', {
-					woopay_direct_checkout:
-						isWooPayEnabled && isWoopayDirectCheckoutEnabled,
+					woopay_direct_checkout: Boolean(
+						getConfig( 'isWooPayDirectCheckoutEnabled' )
+					),
 				} );
 			} );
 		}
