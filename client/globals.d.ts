@@ -178,5 +178,10 @@ declare global {
 		countries: Record< string, string >;
 		homeUrl: string;
 		siteTitle: string;
+		customerCurrencies: [
+			{
+				value: string;
+			}
+		];
 	};
 }
