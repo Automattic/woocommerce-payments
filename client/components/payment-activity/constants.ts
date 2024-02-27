@@ -30,4 +30,16 @@ export const ranges = {
 
 	CUSTOM_VALUE: 'custom',
 	CUSTOM_LABEL: __( 'Custom', 'woocommerce-payments' ),
+
+	PREVIOUS_PERIOD_VALUE: 'previous_period',
+	PREVIOUS_PERIOD_LABEL: __( 'Previous period', 'woocommerce-payments' ),
+
+	PREVIOUS_MONTH_VALUE: 'previous_month',
+	PREVIOUS_MONTH_LABEL: __( 'Previous month', 'woocommerce-payments' ),
+
+	PREVIOUS_YEAR_VALUE: 'previous_year',
+	PREVIOUS_YEAR_LABEL: __( 'Previous year', 'woocommerce-payments' ),
+
+	NO_COMPARISON_VALUE: 'no_comparison',
+	NO_COMPARISON_LABEL: __( 'No comparison', 'woocommerce-payments' ),
 };
