@@ -16,6 +16,14 @@
 		min-width: 150px;
 	}
 
+	&__filters > * {
+		margin: 0 4px;
+
+		.components-dropdown-menu__toggle {
+			padding-right: 0 !important; // Important is to override the padding added automatically by the component
+		}
+	}
+
 	&__date__picker {
 		padding: 16px;
 		border-left: 1px solid $studio-gray-10;
