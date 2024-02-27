@@ -17,7 +17,7 @@ class WC_Payments_Refunded_Event_Note {
 	 *
 	 * @var string
 	 */
-	private $refund_currency;
+	private $refunded_currency;
 
 	/**
 	 * Refund id.
@@ -57,11 +57,11 @@ class WC_Payments_Refunded_Event_Note {
 	 * @param WC_Order $order Order object.
 	 */
 	public function __construct( float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, WC_Order $order ) {
-		$this->refunded_amount    = $refunded_amount;
-		$this->$refunded_currency = $refunded_currency;
-		$this->refund_id          = $refund_id;
-		$this->refund_reason      = $refund_reason;
-		$this->order              = $order;
+		$this->refunded_amount   = $refunded_amount;
+		$this->refunded_currency = $refunded_currency;
+		$this->refund_id         = $refund_id;
+		$this->refund_reason     = $refund_reason;
+		$this->order             = $order;
 	}
 
 	/**
@@ -71,7 +71,7 @@ class WC_Payments_Refunded_Event_Note {
 	 */
 	public function generate_html_note(): string {
 		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-			wc_price( $this->refunded_amount, [ 'currency' => strtoupper( $this->refund_currency ) ] ),
+			wc_price( $this->refunded_amount, [ 'currency' => strtoupper( $this->refunded_currency ) ] ),
 			$this->order,
 		);
 
