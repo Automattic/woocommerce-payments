@@ -462,8 +462,6 @@ class WC_Payments {
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();
 
-		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'load_cart_scripts' ] );
-
 		// // Load woopay save user section if feature is enabled.
 		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_woopay' ] );
 
@@ -656,6 +654,7 @@ class WC_Payments {
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_cart_scripts' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
 
@@ -1570,7 +1569,11 @@ class WC_Payments {
 	 *
 	 * @return void
 	 */
-	public static function load_cart_scripts() {
+	public static function enqueue_cart_scripts() {
+		if ( ! WC_Payments_Utils::is_cart_page() ) {
+			return;
+		}
+
 		self::register_script_with_dependencies( 'WCPAY_CART', 'dist/cart' );
 		wp_enqueue_script( 'WCPAY_CART' );
 	}
