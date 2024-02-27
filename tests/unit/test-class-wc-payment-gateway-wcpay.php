@@ -842,21 +842,35 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_gateway_enabled_when_payment_method_is_enabled() {
-		$giropay = $this->get_gateway( Payment_Method::GIROPAY );
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => [
+						'afterpay_clearpay_payments' => 'active',
+					],
+					'capability_requirements' => [
+						'afterpay_clearpay_payments' => [],
+					],
+				]
+			);
 
-		$giropay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::GIROPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
-		$giropay->init_settings();
+		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
 
-		$this->assertEquals( $giropay->enabled, 'yes' );
+		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+		$afterpay->init_settings();
+
+		$this->assertEquals( $afterpay->enabled, 'yes' );
 	}
 
 	public function test_gateway_disabled_when_payment_method_is_disabled() {
-		$giropay = $this->get_gateway( Payment_Method::GIROPAY );
+		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
 
-		$giropay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
-		$giropay->init_settings();
+		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+		$afterpay->init_settings();
 
-		$this->assertEquals( $giropay->enabled, 'no' );
+		$this->assertEquals( $afterpay->enabled, 'no' );
 	}
 
 	/**
