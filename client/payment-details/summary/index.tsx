@@ -285,7 +285,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							</p>
 							<div className="payment-details-summary__breakdown">
 								{ renderStorePrice ? (
-									<p className="payment-details-summary__breakdown__explicit-currency">
+									<p className="payment-details-summary__breakdown__settlement-currency">
 										{ formatExplicitCurrency(
 											balance.amount,
 											balance.currency

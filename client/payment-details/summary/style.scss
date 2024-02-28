@@ -37,7 +37,7 @@
 	}
 
 	.payment-details-summary__breakdown {
-		&__explicit-currency {
+		&__settlement-currency {
 			padding-right: 16px;
 			border-right: 1px solid $gray-200;
 		}
