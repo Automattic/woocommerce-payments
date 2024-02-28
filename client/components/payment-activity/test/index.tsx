@@ -11,7 +11,7 @@ import PaymentActivity from '..';
 
 declare const global: {
 	wcpaySettings: {
-		transactions_data: {
+		transactionsData: {
 			tpv: number;
 		};
 	};
@@ -20,7 +20,7 @@ declare const global: {
 describe( 'PaymentActivity component', () => {
 	test( 'Component renders an empty state', () => {
 		global.wcpaySettings = {
-			transactions_data: {
+			transactionsData: {
 				tpv: 0,
 			},
 		};
@@ -32,7 +32,7 @@ describe( 'PaymentActivity component', () => {
 
 	test( 'Component renders non-empty state', () => {
 		global.wcpaySettings = {
-			transactions_data: {
+			transactionsData: {
 				tpv: 1000,
 			},
 		};
