@@ -475,92 +475,119 @@ const PaymentActivity: React.FC = () => {
 				{ __( 'You payment activity', 'woocommerce-payments' ) }
 			</CardHeader>
 			<CardBody className="wcpay-payments-activity__card__body">
-				<div className="wcpay-payments-activity__filters">
-					<DropdownMenu
-						label={ __(
-							'Select a currency',
-							'woocommerce-payments'
-						) }
-						icon={
-							<Button variant="secondary">
-								Currency:{ ' ' }
-								<span className="wcpay-payments-activity__label__span">
-									{ selectedCurrency }
-								</span>
-							</Button>
-						}
-					>
-						{ ( { onClose } ) => (
-							<MenuGroup>
-								{ customerCurrencies.map( ( currency ) => {
-									return (
-										<MenuItem
-											key={ currency.value }
-											onClick={ () => {
-												setSelectedCurrency(
-													currency.value.toUpperCase()
-												);
-												onClose();
-											} }
-											icon={
-												selectedCurrency ===
-												currency.value
-													? check
-													: emptyIcon
-											}
-											iconPosition="left"
-										>
-											{ currency.value }
-										</MenuItem>
-									);
-								} ) }
-							</MenuGroup>
-						) }
-					</DropdownMenu>
-					<Dropdown
-						renderToggle={ ( { isOpen, onToggle } ) => (
-							<Button
-								variant="secondary"
-								onClick={ onToggle }
-								aria-expanded={ isOpen }
-							>
-								{ rangeLabel }:
-								<span className="wcpay-payments-activity__label__span">
-									{ after.format( 'MMM D' ) } -{ ' ' }
-									{ before.format( 'MMM D, YYYY' ) }
-								</span>
-							</Button>
-						) }
-						renderContent={ renderContent }
-					/>
-					<Dropdown
-						renderToggle={ ( { isOpen, onToggle } ) => (
-							<Button
-								variant="secondary"
-								onClick={ onToggle }
-								aria-expanded={ isOpen }
-							>
-								{ __( 'Compared to', 'woocommerce-payments' ) }:
-								{ selectedComparisonRange ===
-									ranges.CUSTOM_VALUE && (
-									<span className="wcpay-payments-activity__label__span">
-										{ comparisonAfter.format( 'MMM D' ) } -{ ' ' }
-										{ comparisonBefore.format(
-											'MMM D, YYYY'
+				{ tpv !== 0 && (
+					<>
+						<div className="wcpay-payments-activity__filters">
+							<DropdownMenu
+								label={ __(
+									'Select a currency',
+									'woocommerce-payments'
+								) }
+								popoverProps={ {
+									position: 'bottom left',
+								} }
+								// This component expects a non-null icon. In our case, we don't need an icon. So we pass an empty HTML element.
+								icon={ <></> }
+								text={
+									<>
+										{ __(
+											'Currency',
+											'woocommerce-payments'
 										) }
-									</span>
+										:{ ' ' }
+										<span className="wcpay-payments-activity__label__span">
+											{ selectedCurrency }
+										</span>
+									</>
+								}
+								toggleProps={ {
+									variant: 'secondary',
+								} }
+							>
+								{ ( { onClose } ) => (
+									<MenuGroup>
+										{ customerCurrencies.map(
+											( currency ) => {
+												return (
+													<MenuItem
+														key={ currency.value }
+														onClick={ () => {
+															setSelectedCurrency(
+																currency.value.toUpperCase()
+															);
+															onClose();
+														} }
+														icon={
+															selectedCurrency ===
+															currency.value
+																? check
+																: emptyIcon
+														}
+														iconPosition="left"
+													>
+														{ currency.value }
+													</MenuItem>
+												);
+											}
+										) }
+									</MenuGroup>
 								) }
-								{ selectedComparisonRange !==
-									ranges.CUSTOM_VALUE && (
-									<span className="wcpay-payments-activity__label__span">
-										{ comparisonRangeLabel }
-									</span>
+							</DropdownMenu>
+							<Dropdown
+								renderToggle={ ( { isOpen, onToggle } ) => (
+									<Button
+										variant="secondary"
+										onClick={ onToggle }
+										aria-expanded={ isOpen }
+									>
+										{ rangeLabel }:
+										<span className="wcpay-payments-activity__label__span">
+											{ after.format( 'MMM D' ) } -{ ' ' }
+											{ before.format( 'MMM D, YYYY' ) }
+										</span>
+									</Button>
 								) }
-							</Button>
-						) }
-						renderContent={ renderComparisonContent }
-					/>
-				</div>
+								renderContent={ renderContent }
+							/>
+							<Dropdown
+								renderToggle={ ( { isOpen, onToggle } ) => (
+									<Button
+										variant="secondary"
+										onClick={ onToggle }
+										aria-expanded={ isOpen }
+									>
+										{ __(
+											'Compared to',
+											'woocommerce-payments'
+										) }
+										:
+										{ selectedComparisonRange ===
+											ranges.CUSTOM_VALUE && (
+											<span className="wcpay-payments-activity__label__span">
+												{ comparisonAfter.format(
+													'MMM D'
+												) }{ ' ' }
+												-{ ' ' }
+												{ comparisonBefore.format(
+													'MMM D, YYYY'
+												) }
+											</span>
+										) }
+										{ selectedComparisonRange !==
+											ranges.CUSTOM_VALUE && (
+											<span className="wcpay-payments-activity__label__span">
+												{ comparisonRangeLabel }
+											</span>
+										) }
+									</Button>
+								) }
+								renderContent={ renderComparisonContent }
+							/>
+						</div>
+						{ /* TODO: Graphs should be inserted here */ }
+						<p>You have some money</p>
+					</>
+				) }
 
 				{ tpv === 0 && (
 					<>
@@ -587,8 +614,6 @@ const PaymentActivity: React.FC = () => {
 						</p>
 					</>
 				) }
-				{ /* TODO: This should be replaced with the correct graphs */ }
-				{ tpv !== 0 && <>You have some money</> }
 			</CardBody>
 		</Card>
 	);
