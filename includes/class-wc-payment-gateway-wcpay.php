@@ -788,11 +788,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		if ( 'card' === $this->stripe_id ) {
-			$is_gateway_enabled = 'yes' === $this->settings[ self::METHOD_ENABLED_KEY ] ? true : false;
-		} else {
-			$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
-		}
+		$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
 
 		if ( ! $is_gateway_enabled ) {
 			return false;
