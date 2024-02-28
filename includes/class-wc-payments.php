@@ -735,7 +735,7 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooPayments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
+		$payment_methods = array_keys( self::get_payment_method_map() );
 
 		$key = array_search( 'link', $payment_methods, true );
 
