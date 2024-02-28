@@ -24,6 +24,7 @@ type AvailableBalanceTooltipProps = {
 export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 	balance,
 } ) => {
+	const isBalanceNegative = balance < 0;
 	return (
 		<ClickTooltip
 			className="wcpay-account-balances__balances__item__tooltip"
@@ -63,7 +64,7 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 						) }
 					</InlineNotice>
 					<>
-						{ balance < 0 &&
+						{ isBalanceNegative &&
 							interpolateComponents( {
 								mixedString: __(
 									'Negative account balance? {{discoverWhyLink}}Discover why.{{/discoverWhyLink}}',
@@ -92,12 +93,13 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > = ( {
 	balance,
 } ) => {
+	const isBalanceNegative = balance < 0;
 	return (
 		<ClickTooltip
 			className="wcpay-account-balances__balances__item__tooltip"
 			buttonIcon={ <HelpOutlineIcon /> }
 			buttonLabel={ `${ fundLabelStrings.available } tooltip` }
-			maxWidth={ balance < 0 ? '280px' : undefined } // So that the negative balance sentence is not wrapped and looks like the design.
+			maxWidth={ isBalanceNegative ? '280px' : undefined } // So that the negative balance sentence is not wrapped and looks like the design.
 			content={
 				<>
 					<p>
@@ -122,7 +124,7 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 						} ) }
 					</p>
 					<p>
-						{ balance < 0 &&
+						{ isBalanceNegative &&
 							interpolateComponents( {
 								mixedString: __(
 									'Negative account balance? {{discoverWhyLink}}Discover why.{{/discoverWhyLink}}',
