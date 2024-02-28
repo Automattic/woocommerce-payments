@@ -50,6 +50,10 @@ test.describe( 'Merchant deposits', () => {
 			} )
 			.selectOption( 'Pending' );
 
+		// Scroll to the top to ensure the sticky header doesn't cover the filters.
+		await page.evaluate( () => {
+			window.scrollTo( 0, 0 );
+		} );
 		await expect(
 			page.locator( '.woocommerce-filters' ).last()
 		).toHaveScreenshot();
