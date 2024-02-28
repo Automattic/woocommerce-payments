@@ -51,7 +51,7 @@ require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
-class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
+class Timur_Test extends WCPAY_UnitTestCase {
 
 	const NO_REQUIREMENTS      = false;
 	const PENDING_REQUIREMENTS = true;
@@ -839,22 +839,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->assertSame( $link_gateway->get_payment_method_ids_enabled_at_checkout(), [] );
-	}
-
-	public function test_gateway_enabled_when_payment_method_is_enabled() {
-		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
-		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
-		$this->prepare_gateway_for_availability_testing( $afterpay );
-
-		$this->assertTrue( $afterpay->is_available() );
-	}
-
-	public function test_gateway_disabled_when_payment_method_is_disabled() {
-		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
-		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
-		$this->prepare_gateway_for_availability_testing( $afterpay );
-
-		$this->assertFalse( $afterpay->is_available() );
 	}
 
 	/**
@@ -2636,6 +2620,22 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		foreach ( $this->get_gateways_excluding( [ Payment_Method::CARD ] ) as $gateway ) {
 			$this->assertFalse( $gateway->is_available() );
 		}
+	}
+
+	public function test_gateway_enabled_when_payment_method_is_enabled() {
+		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+		$this->prepare_gateway_for_availability_testing( $afterpay );
+
+		$this->assertTrue( $afterpay->is_available() );
+	}
+
+	public function test_gateway_disabled_when_payment_method_is_disabled() {
+		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+		$this->prepare_gateway_for_availability_testing( $afterpay );
+
+		$this->assertFalse( $afterpay->is_available() );
 	}
 
 	public function test_process_payment_for_order_cc_payment_method() {
