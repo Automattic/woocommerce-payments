@@ -440,6 +440,6 @@ class WC_Payments_Apple_Pay_Registration {
 <?php endif; ?>
 			<p><?php echo $check_log_text; /* @codingStandardsIgnoreLine */ ?></p>
 		</div>
-<?php
+		<?php
 	}
 }
