@@ -788,6 +788,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
+		if ( 'card' === $this->stripe_id ) {
+			$is_gateway_enabled = 'yes' === $this->settings[ self::METHOD_ENABLED_KEY ] ? true : false;
+		} else {
+			$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
+		}
+
+		if ( ! $is_gateway_enabled ) {
+			return false;
+		}
+
 		return parent::is_available() && ! $this->needs_setup();
 	}
 
@@ -2475,20 +2485,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function init_settings() {
 		parent::init_settings();
-		$this->update_enablement_status();
-	}
-
-	/**
-	 * Update the enabled status of the gateway.
-	 */
-	public function update_enablement_status() {
-		if ( 'card' === $this->stripe_id ) {
-			// Use the 'enabled' option for the card payment method to accommodate WooPayments toggling in WooCommerce Settings.
-			$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
-		} else {
-			// Enable non-card methods based on the payment methods enabled at checkout.
-			$this->enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? 'yes' : 'no';
-		}
+		$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
 	}
 
 	/**
