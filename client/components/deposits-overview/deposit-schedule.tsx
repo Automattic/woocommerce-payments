@@ -11,7 +11,10 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
  * Internal dependencies
  */
 import { ClickTooltip } from 'components/tooltip';
-import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
+import {
+	hasAutomaticScheduledDeposits,
+	getDepositMonthlyAnchorLabel,
+} from 'wcpay/deposits/utils';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
 interface DepositScheduleProps {
@@ -101,13 +104,18 @@ const DepositScheduleSummary: React.FC< DepositScheduleProps > = ( {
 };
 
 /**
- * Renders a summary of the deposit schedule so merchant understands when they will get paid.
+ * Renders a summary of the deposit schedule & a tooltip so merchant understands when they will get paid.
  *
- * eg "Your deposits are dispatched automatically every day"
+ * If the merchant has no schedule configured, renders nothing.
  */
 const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 	depositsSchedule,
 } ) => {
+	// Bail if the merchant is on manual or ad-hoc deposits.
+	if ( ! hasAutomaticScheduledDeposits( depositsSchedule.interval ) ) {
+		return null;
+	}
+
 	const nextDepositHelpContent = (
 		<>
 			{ __(
@@ -182,15 +190,11 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 	return (
 		<>
 			<DepositScheduleSummary depositsSchedule={ depositsSchedule } />
-			{ [ 'daily', 'weekly', 'monthly' ].includes(
-				depositsSchedule.interval
-			) && (
-				<ClickTooltip
-					content={ nextDepositHelpContent }
-					buttonIcon={ <HelpOutlineIcon /> }
-					buttonLabel={ 'Deposit schedule tooltip' }
-				/>
-			) }
+			<ClickTooltip
+				content={ nextDepositHelpContent }
+				buttonIcon={ <HelpOutlineIcon /> }
+				buttonLabel={ 'Deposit schedule tooltip' }
+			/>
 		</>
 	);
 };
