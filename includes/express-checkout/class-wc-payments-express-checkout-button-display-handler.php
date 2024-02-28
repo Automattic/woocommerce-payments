@@ -55,6 +55,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$this->payment_request_button_handler   = $payment_request_button_handler;
 		$this->platform_checkout_button_handler = $platform_checkout_button_handler;
 		$this->express_checkout_helper          = $express_checkout_helper;
+	}
 
 	/**
 	 * Initializes this class, its dependencies, and its hooks.
