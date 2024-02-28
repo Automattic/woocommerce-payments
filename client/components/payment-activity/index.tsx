@@ -469,6 +469,14 @@ const PaymentActivity: React.FC = () => {
 		);
 	};
 
+	// This is a HACK
+	// The DropdownMenu component is missing a prop in the type definition.
+	// Given we can't change the type definition, we are wrapping it in our own component,
+	// so we can pass all the props we want.
+	const ExtendedDropdownMenu = ( props: any ) => {
+		return <DropdownMenu { ...props } />;
+	};
+
 	return (
 		<Card className="">
 			<CardHeader>
@@ -478,7 +486,7 @@ const PaymentActivity: React.FC = () => {
 				{ tpv !== 0 && (
 					<>
 						<div className="wcpay-payments-activity__filters">
-							<DropdownMenu
+							<ExtendedDropdownMenu
 								label={ __(
 									'Select a currency',
 									'woocommerce-payments'
@@ -504,7 +512,7 @@ const PaymentActivity: React.FC = () => {
 									variant: 'secondary',
 								} }
 							>
-								{ ( { onClose } ) => (
+								{ ( { onClose }: { onClose: () => void } ) => (
 									<MenuGroup>
 										{ customerCurrencies.map(
 											( currency ) => {
@@ -532,7 +540,7 @@ const PaymentActivity: React.FC = () => {
 										) }
 									</MenuGroup>
 								) }
-							</DropdownMenu>
+							</ExtendedDropdownMenu>
 							<Dropdown
 								renderToggle={ ( { isOpen, onToggle } ) => (
 									<Button
