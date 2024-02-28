@@ -68,10 +68,7 @@ jobs:
 
             - name: Install Playwright
               shell: bash
-              run: |
-                  echo "::group::Install Playwright"
-                  npx playwright install chromium
-                  echo "::endgroup::"
+              run: npx playwright install chromium
 
             - name: Run tests, upload screenshots & logs
               uses: ./.github/actions/e2e-pw/run-log-tests
