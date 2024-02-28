@@ -28,6 +28,7 @@ describe( 'PaymentActivity component', () => {
 		const { container, getByText } = render( <PaymentActivity /> );
 		// Making sure the empty state is rendered
 		getByText( 'No payments… yet!' );
+		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'Component renders non-empty state', () => {
@@ -37,7 +38,7 @@ describe( 'PaymentActivity component', () => {
 			},
 		};
 
-		const { container, getByText } = render( <PaymentActivity /> );
+		const { getByText } = render( <PaymentActivity /> );
 		// Should be updated with correct checks
 		getByText( 'You have some money' );
 	} );
