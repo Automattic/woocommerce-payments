@@ -751,8 +751,7 @@ class WC_Payments {
 			if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
 				continue;
 			}
-			$gateway = self::get_payment_gateway_by_id( $payment_method_id );
-			// Update gateway enabled status based on the up-to-date current store currency.
+			$gateway        = self::get_payment_gateway_by_id( $payment_method_id );
 			$payment_method = self::get_payment_method_by_id( $payment_method_id );
 
 			if ( $payment_method->is_reusable() ) {
