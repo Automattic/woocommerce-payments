@@ -4,11 +4,12 @@
 # Allows us to read user input below, redirects script's input to the terminal.
 exec < /dev/tty
 
-# Execute the code only if pushing to the 'develop' branch
-if [ "$branch" == "avoid-accidental-push-to-develop" ]; then
-    # Warn about the push and ask for confirmation
+PROTECTED_BRANCH="avoid-accidental-push-to-develop"
+CURRENT_BRANCH=$(git branch --show-current)
+
+if [ $PROTECTED_BRANCH = $CURRENT_BRANCH ]; then
     read -p "Are you sure you want to push.? (y/n): " confirmation
-    if [ "$confirmation" != "y" ]; then
+        if [ "$confirmation" != "y" ]; then
         echo "Push aborted"
         exit 1
     fi
