@@ -2093,10 +2093,10 @@ class WC_Payments_Account {
 	/**
 	 * Gets the current account TPV (Total Payments Volume).
 	 *
-	 * @return array Fees.
+	 * @return int The total TPV for the website.
 	 */
 	public function get_transactions_tpv() {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['transactions_data'] ) ? $account['transactions_data']['tpv'] : null;
+		return ! empty( $account ) && isset( $account['transactions_data'] ) ? $account['transactions_data']['tpv'] : 0;
 	}
 }
