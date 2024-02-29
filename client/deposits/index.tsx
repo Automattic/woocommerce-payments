@@ -16,6 +16,7 @@ import DepositSchedule from 'components/deposits-overview/deposit-schedule';
 import { useAllDepositsOverviews } from 'data';
 import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
+import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 
 const useNextDepositNoticeState = () => {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
@@ -53,11 +54,16 @@ const NextDepositNotice: React.FC = () => {
 	const hasCompletedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 
+	const hasScheduledDeposits = hasAutomaticScheduledDeposits(
+		account?.deposits_schedule.interval
+	);
+
 	if (
 		! isDepositsUnrestricted ||
 		! hasCompletedWaitingPeriod ||
 		! account ||
-		isNextDepositNoticeDismissed
+		isNextDepositNoticeDismissed ||
+		! hasScheduledDeposits
 	) {
 		return null;
 	}
