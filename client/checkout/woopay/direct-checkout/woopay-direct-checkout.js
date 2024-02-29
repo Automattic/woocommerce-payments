@@ -109,14 +109,26 @@ class WoopayDirectCheckout {
 	 */
 	static async getWooPayRedirectUrl() {
 		const redirectData = await this.getWooPayRedirectDataFromMerchant();
-		const redirectSessionData = await this.getSessionConnect().setCacheSessionDataCallback(
+		if ( redirectData.success === false ) {
+			return false;
+		}
+		const setCacheSessionPromise = await this.getSessionConnect().setCacheSessionDataCallback(
 			redirectData
 		);
+		const setCacheSessionResult = await setCacheSessionPromise;
+		if (
+			setCacheSessionResult?.is_error ||
+			! setCacheSessionResult?.redirect_url
+		) {
+			return false;
+		}
 
-		const { redirect_url: redirectUrl } = await redirectSessionData;
+		const { redirect_url: redirectUrl } = setCacheSessionResult;
+		if ( this.validateRedirectUrl( redirectUrl, 'cache_checkout_key' ) ) {
+			return redirectUrl;
+		}
 
-		// TODO: Handle error case.
-		return redirectUrl;
+		return false;
 	}
 
 	/**
@@ -171,11 +183,17 @@ class WoopayDirectCheckout {
 		elements.forEach( ( element ) => {
 			element.addEventListener( 'click', async ( event ) => {
 				event.preventDefault();
+				// Store href before the async call to not lose the reference.
+				const currTargetHref = event.currentTarget.href;
 
 				const redirectUrl = await this.getWooPayRedirectUrl();
 				this.teardown();
 
-				window.location.href = redirectUrl;
+				if ( redirectUrl !== false ) {
+					window.location.href = redirectUrl;
+				} else {
+					window.location.href = currTargetHref;
+				}
 			} );
 		} );
 	}
@@ -209,6 +227,30 @@ class WoopayDirectCheckout {
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
 			}
 		);
+	}
+
+	/**
+	 * Validates a WooPay redirect URL.
+	 *
+	 * @param {string} redirectUrl The URL to validate.
+	 * @param {string} requiredParam The URL parameter that is required in the URL.
+	 *
+	 * @return {boolean} True if URL is valid, false otherwise.
+	 */
+	static validateRedirectUrl( redirectUrl, requiredParam ) {
+		try {
+			const parsedUrl = new URL( redirectUrl );
+			if (
+				parsedUrl.origin !== getConfig( 'woopayHost' ) ||
+				! parsedUrl.searchParams.has( requiredParam )
+			) {
+				return false;
+			}
+
+			return true;
+		} catch ( error ) {
+			return false;
+		}
 	}
 }
 
