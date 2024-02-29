@@ -21,6 +21,29 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 */
 	public function init() {
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
+		add_filter( 'woocommerce_create_order', [ $this, 'maybe_use_store_api_draft_order_id' ] );
+	}
+
+	/**
+	 * This filter is used to ensure the session's store_api_draft_order is used, if it exists.
+	 * This prevents a bug where the store_api_draft_order is not used and instead, a new
+	 * order_awaiting_payment is created during the checkout request.
+	 *
+	 * @param int $order_id The order ID being used.
+	 * @return int|mixed The new order ID to use.
+	 */
+	public function maybe_use_store_api_draft_order_id( $order_id ) {
+		// Only apply this filter during the checkout request.
+		$is_checkout = defined( 'WOOCOMMERCE_CHECKOUT' ) && WOOCOMMERCE_CHECKOUT;
+		// Only apply this filter if the order ID is not already defined.
+		$is_already_defined_order_id = ! empty( $order_id );
+		// Only apply this filter if the session doesn't already have an order_awaiting_payment.
+		$is_order_awaiting_payment = isset( WC()->session->order_awaiting_payment );
+		if ( ! $is_checkout || $is_already_defined_order_id || $is_order_awaiting_payment ) {
+			return $order_id;
+		}
+
+		return absint( WC()->session->get( 'store_api_draft_order', $order_id ) );
 	}
 
 	/**
