@@ -445,16 +445,14 @@ export function renderTerms( event ) {
  * @return {boolean} return false to prevent the default form submission from WC Core.
  */
 let hasCheckoutCompleted;
-let isValidationError = false;
 export const processPayment = (
 	api,
 	$form,
 	paymentMethodType,
 	additionalActionsHandler = () => Promise.resolve()
 ) => {
-	if ( hasCheckoutCompleted || isValidationError ) {
+	if ( hasCheckoutCompleted ) {
 		hasCheckoutCompleted = false;
-		isValidationError = false;
 		return;
 	}
 
@@ -487,13 +485,7 @@ export const processPayment = (
 		} catch ( err ) {
 			hasCheckoutCompleted = false;
 			unblockUI( $form );
-			if ( err.message.includes( 'Missing required field' ) ) {
-				isValidationError = true;
-				// Submitting the form to allow WC Core to handle the validation and display it's own error message.
-				submitForm( $form );
-			} else {
-				showErrorCheckout( err.message );
-			}
+			showErrorCheckout( err.message );
 		}
 	} )();
 
