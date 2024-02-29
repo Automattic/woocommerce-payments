@@ -88,25 +88,49 @@ class WoopayDirectCheckout {
 	}
 
 	/**
-	 * Sends the session data to the WooPayConnectIframe.
+	 * Resolves the redirect URL to the WooPay checkout page or throws an error if the request fails.
 	 *
-	 * @return {Promise<*>} Resolves to the redirect URL.
+	 * @return {string} The redirect URL.
+	 * @throws {Error} If the session data could not be sent to WooPay.
 	 */
-	static async sendRedirectSessionDataToWooPay() {
-		let woopaySession;
-		if ( this.isWooPaySessionPrefetched() ) {
-			woopaySession = await this.woopaySessionFromMerchantPromise;
-		} else {
-			woopaySession = await this.getWooPaySessionFromMerchant();
+	static async resolveWooPayRedirectUrl() {
+		// We're intentionally adding a try-catch block to catch any errors
+		// that might occur other than the known validation errors.
+		try {
+			const encryptedSessionData = await this.getEncryptedSessionData();
+			if ( ! this.isValidEncryptedSessionData( encryptedSessionData ) ) {
+				throw new Error(
+					'Could not retrieve encrypted session data from store.'
+				);
+			}
+
+			const woopaySessionData = await this.getSessionConnect().sendRedirectSessionDataToWooPay(
+				encryptedSessionData
+			);
+			if ( ! woopaySessionData?.redirect_url ) {
+				throw new Error( 'Could not retrieve WooPay checkout URL.' );
+			}
+
+			return woopaySessionData.redirect_url;
+		} catch ( error ) {
+			throw new Error( error.message );
 		}
+	}
 
-		const woopaySessionData = await this.getSessionConnect().sendRedirectSessionDataToWooPay(
-			woopaySession
+	/**
+	 * Checks if the encrypted session object is valid.
+	 *
+	 * @param {Object} encryptedSessionData The encrypted session data.
+	 * @return {boolean} True if the session is valid.
+	 */
+	static isValidEncryptedSessionData( encryptedSessionData ) {
+		return (
+			encryptedSessionData &&
+			encryptedSessionData?.blog_id &&
+			encryptedSessionData?.data?.session &&
+			encryptedSessionData?.data?.iv &&
+			encryptedSessionData?.data?.hash
 		);
-
-		const { redirect_url: redirectUrl } = await woopaySessionData;
-
-		return redirectUrl;
 	}
 
 	/**
@@ -127,7 +151,7 @@ class WoopayDirectCheckout {
 		addElementBySelector( '.wc-proceed-to-checkout .checkout-button' );
 		// Blocks 'Proceed to Checkout' button.
 		addElementBySelector(
-			'.wp-block-woocommerce-proceed-to-checkout-block'
+			'.wp-block-woocommerce-proceed-to-checkout-block a'
 		);
 
 		return elements;
@@ -145,39 +169,41 @@ class WoopayDirectCheckout {
 	}
 
 	/**
-	 * Adds a click-event listener that redirects to the WooPay checkout page to the given elements.
+	 * Adds a click-event listener to the given elements that redirects to the WooPay checkout page.
 	 *
 	 * @param {*[]} elements The elements to add a click-event listener to.
+	 * @param {boolean} useCheckoutRedirect Whether to use the `checkout_redirect` flag to let WooPay handle the checkout flow.
 	 */
-	static redirectToWooPaySession( elements ) {
+	static redirectToWooPay( elements, useCheckoutRedirect ) {
 		elements.forEach( ( element ) => {
 			element.addEventListener( 'click', async ( event ) => {
+				// Store href before the async call to not lose the reference.
+				const currTargetHref = event.currentTarget.href;
+
+				// If there's no link where to redirect the user, do not break the expected behavior.
+				if ( ! currTargetHref ) {
+					this.teardown();
+					return;
+				}
+
 				event.preventDefault();
 
-				const woopayRedirectUrl = await this.sendRedirectSessionDataToWooPay();
-				this.teardown();
+				try {
+					let woopayRedirectUrl = await this.resolveWooPayRedirectUrl();
+					if ( useCheckoutRedirect ) {
+						woopayRedirectUrl += '&checkout_redirect=1';
+					}
 
-				window.location.href = woopayRedirectUrl;
-			} );
-		} );
-	}
+					this.teardown();
+					// TODO: Add telemetry as to _how long_ it took to get to this step.
+					window.location.href = woopayRedirectUrl;
+				} catch ( error ) {
+					// TODO: Add telemetry as to _why_ we've short-circuited the WooPay checkout flow.
+					console.warn( error ); // eslint-disable-line no-console
 
-	/**
-	 * Adds a click-event listener that redirects to WooPay and lets WooPay handle the checkout flow
-	 * to the given elements.
-	 *
-	 * @param {*[]} elements The elements to add a click-event listener to.
-	 */
-	static redirectToWooPay( elements ) {
-		elements.forEach( ( element ) => {
-			element.addEventListener( 'click', async ( event ) => {
-				event.preventDefault();
-
-				const woopayRedirectUrl = await this.sendRedirectSessionDataToWooPay();
-				this.teardown();
-
-				window.location.href =
-					woopayRedirectUrl + '&woopay_checkout_redirect=1';
+					this.teardown();
+					window.location.href = currTargetHref;
+				}
 			} );
 		} );
 	}
@@ -187,7 +213,7 @@ class WoopayDirectCheckout {
 	 *
 	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay session response.
 	 */
-	static async getWooPaySessionFromMerchant() {
+	static async getEncryptedSessionData() {
 		return request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
 			{

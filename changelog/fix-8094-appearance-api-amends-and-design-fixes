@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixes Stripe appearances API implementation to support dark themes and new elements, includes amends to checkout logos.
