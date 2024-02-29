@@ -821,8 +821,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {
-			$link_gateway = $this->get_gateway( Payment_Method::LINK );
-			$link_gateway->settings['upe_enabled_payment_method_ids'] = [ 'link' ];
+		$link_gateway = $this->get_gateway( Payment_Method::LINK );
+		$link_gateway->settings['upe_enabled_payment_method_ids'] = [ 'link' ];
 
 		$this->mock_wcpay_account
 			->expects( $this->any() )
@@ -2622,6 +2622,22 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_gateway_enabled_when_payment_method_is_enabled() {
+		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+		$this->prepare_gateway_for_availability_testing( $afterpay );
+
+		$this->assertTrue( $afterpay->is_available() );
+	}
+
+	public function test_gateway_disabled_when_payment_method_is_disabled() {
+		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+		$this->prepare_gateway_for_availability_testing( $afterpay );
+
+		$this->assertFalse( $afterpay->is_available() );
+	}
+
 	public function test_process_payment_for_order_cc_payment_method() {
 		$payment_method                              = 'woocommerce_payments';
 		$expected_upe_payment_method_for_pi_creation = 'card';
@@ -3372,6 +3388,48 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$created->setTimestamp( $this->mock_charge_created );
 
 		return new WC_Payments_API_Charge( $this->mock_charge_id, 1500, $created );
+	}
+
+	private function prepare_gateway_for_availability_testing( $gateway ) {
+		WC_Payments::mode()->test();
+		$current_currency = strtolower( get_woocommerce_currency() );
+		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_customer_supported_currencies' )->will(
+			$this->returnValue(
+				[
+					$current_currency,
+				]
+			)
+		);
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => [
+						'afterpay_clearpay_payments' => 'active',
+					],
+					'capability_requirements' => [
+						'afterpay_clearpay_payments' => [],
+					],
+				]
+			);
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_account_status_data' )
+			->willReturn(
+				[
+					'paymentsEnabled' => true,
+				]
+			);
+			$gateway->update_option( WC_Payment_Gateway_WCPay::METHOD_ENABLED_KEY, 'yes' );
+			$gateway->init_settings();
 	}
 
 	private function init_payment_methods() {
