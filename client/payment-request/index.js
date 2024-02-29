@@ -654,7 +654,10 @@ jQuery( ( $ ) => {
 	};
 
 	// We don't need to initialize payment request on the checkout page now because it will be initialized by updated_checkout event.
-	if ( ! wcpayPaymentRequestParams.is_checkout_page ) {
+	if (
+		! wcpayPaymentRequestParams.is_checkout_page ||
+		wcpayPaymentRequestParams.is_pay_for_order
+	) {
 		wcpayPaymentRequest.init();
 	}
 
