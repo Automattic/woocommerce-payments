@@ -47,6 +47,13 @@ class WC_Subscriptions_Product extends WC_Product {
 	public static $sign_up_fee = 0;
 
 	/**
+	 * Stores a temporary mock sign-up fee.
+	 *
+	 * @var mixed
+	 */
+	public static $get_trial_length = 0;
+
+	/**
 	 * Mock for static get_period.
 	 *
 	 * @param Product $product WC Product.
@@ -80,7 +87,7 @@ class WC_Subscriptions_Product extends WC_Product {
 	 * @param Product $product WC Product.
 	 */
 	public static function get_trial_length( $product ) {
-		return 0;
+		return self::$get_trial_length;
 	}
 
 	/**

@@ -573,6 +573,39 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions_Product::set_sign_up_fee( 0 );
 	}
 
+	public function test_is_invalid_subscription_product() {
+		$mock_product = $this->createMock( WC_Subscriptions_Product::class );
+		$this->assertFalse( $this->pr->is_invalid_subscription_product( $mock_product ) );
+
+		WC_Subscriptions_Synchroniser::$is_product_synced  = true;
+		WC_Subscriptions_Synchroniser::$is_payment_upfront = false;
+		$mock_product
+			->expects( $this->any() )
+			->method( 'needs_shipping' )
+			->willReturn( true );
+
+		$this->assertTrue( $this->pr->is_invalid_subscription_product( $mock_product ) );
+
+		WC_Subscriptions_Synchroniser::$is_product_synced  = true;
+		WC_Subscriptions_Synchroniser::$is_payment_upfront = true;
+
+		$this->assertFalse( $this->pr->is_invalid_subscription_product( $mock_product ) );
+
+		WC_Subscriptions_Product::$get_trial_length        = 1;
+		WC_Subscriptions_Synchroniser::$is_product_synced  = false;
+		WC_Subscriptions_Synchroniser::$is_payment_upfront = true;
+
+		$this->assertTrue( $this->pr->is_invalid_subscription_product( $mock_product ) );
+
+		$mock_virtual = $this->createMock( WC_Subscriptions_Product::class );
+		$mock_virtual
+			->expects( $this->any() )
+			->method( 'needs_shipping' )
+			->willReturn( false );
+
+		$this->assertfalse( $this->pr->is_invalid_subscription_product( $mock_virtual ) );
+	}
+
 	private function create_mock_subscription( $type ) {
 		$mock_product = $this->createMock( WC_Subscriptions_Product::class );
 

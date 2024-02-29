@@ -262,7 +262,10 @@ jQuery( ( $ ) => {
 					prButton,
 					paymentRequest
 				);
-				wcpayPaymentRequest.showPaymentRequestButton( prButton );
+
+				if ( options?.showButtonOnStart ) {
+					wcpayPaymentRequest.showPaymentRequestButton( prButton );
+				}
 			} );
 
 			paymentRequest.on( 'cancel', () => {
@@ -606,8 +609,10 @@ jQuery( ( $ ) => {
 
 		/**
 		 * Initialize event handlers and UI state
+		 *
+		 * @param {boolean} showButtonOnStart Whether to show the payment request buttons during startPaymentRequest.
 		 */
-		init: () => {
+		init: ( showButtonOnStart ) => {
 			if ( wcpayPaymentRequestParams.is_pay_for_order ) {
 				if ( ! window.wcpayPaymentRequestPayForOrderParams ) {
 					return;
@@ -634,6 +639,7 @@ jQuery( ( $ ) => {
 						wcpayPaymentRequestParams.product.needs_shipping,
 					displayItems:
 						wcpayPaymentRequestParams.product.displayItems,
+					showButtonOnStart: showButtonOnStart ?? true,
 				} );
 			} else {
 				// If this is the cart or checkout page, we need to request the
@@ -653,7 +659,9 @@ jQuery( ( $ ) => {
 		},
 	};
 
-	wcpayPaymentRequest.init();
+	wcpayPaymentRequest.init(
+		wcpayPaymentRequestParams.product.validProductSelected ?? true
+	);
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {

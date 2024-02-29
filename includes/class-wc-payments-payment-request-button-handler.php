@@ -274,8 +274,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		/** @var WC_Product_Variable $product */ // phpcs:ignore
-		$product  = $this->express_checkout_helper->get_product();
-		$currency = get_woocommerce_currency();
+		$product      = $this->express_checkout_helper->get_product();
+		$currency     = get_woocommerce_currency();
+		$variation_id = 0;
 
 		if ( 'variable' === $product->get_type() || 'variable-subscription' === $product->get_type() ) {
 			$variation_attributes = $product->get_variation_attributes();
@@ -284,10 +285,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 			foreach ( $variation_attributes as $attribute_name => $attribute_values ) {
 				$attribute_key = 'attribute_' . sanitize_title( $attribute_name );
 
-				// Passed value via GET takes precedence. Otherwise get the default value for given attribute.
-				$attributes[ $attribute_key ] = isset( $_GET[ $attribute_key ] ) // phpcs:ignore WordPress.Security.NonceVerification
-					? wc_clean( wp_unslash( $_GET[ $attribute_key ] ) ) // phpcs:ignore WordPress.Security.NonceVerification
-					: $product->get_variation_default_attribute( $attribute_name );
+				// Passed value via GET takes precedence, then check POST data, otherwise get the default value for given attribute.
+				if ( isset( $_GET[ $attribute_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+					$attributes[ $attribute_key ] = wc_clean( wp_unslash( $_GET[ $attribute_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+				} elseif ( isset( $_POST[ $attribute_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+					$attributes[ $attribute_key ] = wc_clean( wp_unslash( $_POST[ $attribute_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+				} else {
+					$attributes[ $attribute_key ] = $product->get_variation_default_attribute( $attribute_name );
+				}
 			}
 
 			$data_store   = WC_Data_Store::load( 'product' );
@@ -349,6 +354,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
 		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+
+		/**
+		 * On product page load, if there's a variation already selected, check if it's supported.
+		 * For non-variations, we don't need to check as this is already handled by @see should_show_payment_request_button()
+		 */
+		$data['validProductSelected'] = ! empty( $variation_id ) ? $this->is_product_supported( $product ) : true;
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
@@ -646,7 +657,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 
 			// Trial subscriptions with shipping are not supported.
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
+			if ( $this->is_invalid_subscription_product( $_product ) ) {
 				return false;
 			}
 		}
@@ -786,16 +797,18 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Whether product page has a supported product.
 	 *
+	 * @param WC_Product|null $product Product object.
+	 *
 	 * @return boolean
 	 */
-	private function is_product_supported() {
-		$product      = $this->express_checkout_helper->get_product();
+	private function is_product_supported( $product = null ) {
+		$product      = ! is_object( $product ) ? $this->express_checkout_helper->get_product() : $product;
 		$is_supported = true;
 
 		if ( is_null( $product )
 			|| ! is_object( $product )
 			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) // Trial subscriptions with shipping are not supported.
+			|| $this->is_invalid_subscription_product( $product, true ) // Trial subscriptions with shipping are not supported.
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
@@ -1025,6 +1038,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 				if ( ! empty( $variation_id ) ) {
 					$product = wc_get_product( $variation_id );
 				}
+			}
+
+			if ( $this->is_invalid_subscription_product( $product, true ) ) {
+				throw new Exception( __( 'Subscription products with a trial period and require shipping are not supported.', 'woocommerce-payments' ) );
 			}
 
 			// Force quantity to 1 if sold individually and check for existing item in cart.
@@ -1504,5 +1521,66 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
 		return WC_Tax::calc_tax( $price, $rates, false );
+	}
+
+	/**
+	 * Returns true if the given product is a subscription that cannot be purchased with Payment Request Buttons.
+	 *
+	 * Invalid subscription products include those that have:
+	 *  - a free trial and requires shipping (synchronised subscriptions with a delayed first payment are considered to have a free trial)
+	 *  - a synchronised subscription with no upfront payment and is virtual (this limitation only applies to the product page as we cannot calculate totals until the product is in the cart)
+	 *
+	 * If the product is a variable subscription, this function will return true if all of its variations have a trial and require shipping.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param WC_Product $product                 Product object.
+	 * @param boolean    $is_product_page_request Whether the request is from the product page. Defaulted to false.
+	 *
+	 * @return boolean
+	 */
+	public function is_invalid_subscription_product( $product, $is_product_page_request = false ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Synchroniser' ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+			return false;
+		}
+
+		$is_invalid = true;
+
+		if ( $product->get_type() === 'variable-subscription' ) {
+			$products = $product->get_available_variations( 'object' );
+		} else {
+			$products = [ $product ];
+		}
+
+		foreach ( $products as $product ) {
+			$needs_shipping     = $product->needs_shipping();
+			$is_synced          = WC_Subscriptions_Synchroniser::is_product_synced( $product );
+			$is_payment_upfront = WC_Subscriptions_Synchroniser::is_payment_upfront( $product );
+			$has_trial_period   = WC_Subscriptions_Product::get_trial_length( $product ) > 0;
+
+			if ( $is_product_page_request && $is_synced && ! $is_payment_upfront && ! $needs_shipping ) {
+				/**
+				 * This condition is to prevent the purchase of virtual synced subscription products with no upfront costs via Payment Request Buttons from the product page.
+				 *
+				 * The main issue is on product page load, calling $product->get_price() on a synced subscription does not take into account a mock trial period or prorated price calculations.
+				 * This happens on WC()->cart->calculate_totals() which means that the totals passed to Payment Request buttons are incorrect when on the product page.
+				 * Part of the problem is because the product is virtual, this stops the PaymentRequest API from triggering the necessary `shippingaddresschange` event
+				 * which is when we call WC()->cart->calculate_totals(); which would fix the totals.
+				 *
+				 * The fix here is to not allow virtual synced subscription products with no upfront costs to be purchased via Payment Request Buttons on the product page.
+				 */
+				continue;
+			} elseif ( $is_synced && ! $is_payment_upfront && $needs_shipping ) {
+				continue;
+			} elseif ( $has_trial_period && $needs_shipping ) {
+				continue;
+			} else {
+				// If we made it this far, the product is valid. Break out of the foreach and return early as we only care about invalid cases.
+				$is_invalid = false;
+				break;
+			}
+		}
+
+		return $is_invalid;
 	}
 }

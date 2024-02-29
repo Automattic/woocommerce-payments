@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Prevent "Invalid recurring shipping method" errors when attempting to purchase a synchronized subscription product that requires shipping.
