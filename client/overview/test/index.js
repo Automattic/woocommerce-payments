@@ -111,6 +111,7 @@ describe( 'Overview page', () => {
 				remindMeAt: null,
 				dontShowAgain: false,
 			} ),
+			transactionsData: { tpv: 0 },
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
