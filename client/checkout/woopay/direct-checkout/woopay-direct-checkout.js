@@ -14,7 +14,7 @@ import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
 class WoopayDirectCheckout {
 	static userConnect;
 	static sessionConnect;
-	static wooPaySessionFromMerchantPromise;
+	static woopaySessionFromMerchantPromise;
 
 	/**
 	 * Initializes the WooPay direct checkout feature.
@@ -95,7 +95,7 @@ class WoopayDirectCheckout {
 	static async sendRedirectSessionDataToWooPay() {
 		let woopaySession;
 		if ( this.isWooPaySessionPrefetched() ) {
-			woopaySession = await this.wooPaySessionFromMerchantPromise;
+			woopaySession = await this.woopaySessionFromMerchantPromise;
 		} else {
 			woopaySession = await this.getWooPaySessionFromMerchant();
 		}
@@ -208,7 +208,7 @@ class WoopayDirectCheckout {
 			return;
 		}
 
-		this.wooPaySessionFromMerchantPromise = new Promise( ( resolve ) => {
+		this.woopaySessionFromMerchantPromise = new Promise( ( resolve ) => {
 			resolve( this.getWooPaySessionFromMerchant() );
 		} );
 	}
@@ -217,7 +217,7 @@ class WoopayDirectCheckout {
 	 * Sets the WooPay session as not prefetched.
 	 */
 	static setWooPaySessionAsNotPrefetched() {
-		this.wooPaySessionFromMerchantPromise = null;
+		this.woopaySessionFromMerchantPromise = null;
 	}
 
 	/**
@@ -227,7 +227,7 @@ class WoopayDirectCheckout {
 	 */
 	static isWooPaySessionPrefetched() {
 		return (
-			typeof this.wooPaySessionFromMerchantPromise?.then === 'function'
+			typeof this.woopaySessionFromMerchantPromise?.then === 'function'
 		);
 	}
 }
