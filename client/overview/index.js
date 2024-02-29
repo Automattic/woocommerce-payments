@@ -32,6 +32,16 @@ import './style.scss';
 import SetupLivePaymentsModal from './modal/setup-live-payments';
 import PaymentActivity from 'wcpay/components/payment-activity';
 
+const PaymentActivityCard = () => {
+	return (
+		<Card>
+			<ErrorBoundary>
+				<PaymentActivity />
+			</ErrorBoundary>
+		</Card>
+	);
+};
+
 const OverviewPageError = () => {
 	const queryParams = getQuery();
 	const showLoginError = queryParams[ 'wcpay-login-error' ] === '1';
@@ -183,11 +193,7 @@ const OverviewPage = () => {
 								<Card>
 									<AccountBalances />
 								</Card>
-								<Card>
-									<ErrorBoundary>
-										<PaymentActivity />
-									</ErrorBoundary>
-								</Card>
+								<PaymentActivityCard />
 							</>
 						) : (
 							<>
@@ -195,11 +201,7 @@ const OverviewPage = () => {
 									<Welcome />
 									<AccountBalances />
 								</Card>
-								<Card>
-									<ErrorBoundary>
-										<PaymentActivity />
-									</ErrorBoundary>
-								</Card>
+								<PaymentActivityCard />
 							</>
 						) }
 
