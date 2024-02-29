@@ -122,7 +122,7 @@ describe( 'Getting styles for automated theming', () => {
 		const appearance = upeStyles.getAppearance();
 		expect( appearance ).toEqual( {
 			variables: {
-				colorBackground: 'none',
+				colorBackground: '#ffffff',
 				colorText: 'rgb(109, 109, 109)',
 				fontFamily:
 					'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -194,7 +194,7 @@ describe( 'Getting styles for automated theming', () => {
 				},
 				'.Block': {
 					padding: '10px',
-					backgroundColor: 'none',
+					backgroundColor: '#ffffff',
 				},
 			},
 		} );
