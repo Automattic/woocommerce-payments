@@ -29,6 +29,8 @@ const appearanceSelectors = {
 			'woocommerce-invalid-required-field',
 		],
 		backgroundSelectors: [
+			'li.wc_payment_method .wc-payment-form',
+			'li.wc_payment_method .payment_box',
 			'#payment',
 			'#order_review',
 			'form.checkout',
@@ -50,6 +52,7 @@ const appearanceSelectors = {
 				'.wc-block-components-checkout-step__description',
 		},
 		backgroundSelectors: [
+			'#payment-method .wc-block-components-radio-control-accordion-option',
 			'#payment-method',
 			'form.wc-block-checkout__form',
 			'.wc-block-checkout',
@@ -257,7 +260,11 @@ const hiddenElementsForUPE = {
 	},
 };
 
-export const getFieldStyles = ( selector, upeElement ) => {
+export const getFieldStyles = (
+	selector,
+	upeElement,
+	backgroundColor = null
+) => {
 	if ( ! document.querySelector( selector ) ) {
 		return {};
 	}
@@ -305,7 +312,7 @@ export const getFieldStyles = ( selector, upeElement ) => {
 	}
 
 	if ( upeElement === '.Block' ) {
-		filteredStyles.backgroundColor = 'none';
+		filteredStyles.backgroundColor = backgroundColor;
 	}
 
 	return filteredStyles;
@@ -366,13 +373,15 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 		color: selectedTabRules.color,
 	};
 
+	const backgroundColor = getBackgroundColor( selectors.backgroundSelectors );
 	const blockRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
-		'.Block'
+		'.Block',
+		backgroundColor
 	);
 
 	const globalRules = {
-		colorBackground: 'none',
+		colorBackground: backgroundColor,
 		colorText: labelRules.color,
 		fontFamily: labelRules.fontFamily,
 		fontSizeBase: labelRules.fontSize,
@@ -380,11 +389,7 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 
 	const appearance = {
 		variables: globalRules,
-		theme: isColorLight(
-			getBackgroundColor( selectors.backgroundSelectors )
-		)
-			? 'stripe'
-			: 'night',
+		theme: isColorLight( backgroundColor ) ? 'stripe' : 'night',
 		rules: {
 			'.Input': inputRules,
 			'.Input--invalid': inputInvalidRules,
@@ -399,7 +404,6 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 			'.Text--redirect': labelRules,
 		},
 	};
-
 	// Remove hidden fields from DOM.
 	hiddenElementsForUPE.cleanup();
 	return appearance;
