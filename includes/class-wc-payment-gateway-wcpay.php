@@ -2281,19 +2281,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return new WP_Error( 'wcpay_edit_order_refund_failure', $e->getMessage() );
 		}
 
-		$note = ( new WC_Payments_Refunded_Event_Note( $amount, $currency, $refund['id'], $reason, $order ) )->generate_html_note();
-
-		// Get the last created WC refund from order and save WCPay refund id as meta.
-		$wc_last_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order_id );
-		if ( $wc_last_refund ) {
-			$this->order_service->set_wcpay_refund_id_for_order( $wc_last_refund, $refund['id'] );
-			$this->order_service->set_wcpay_refund_transaction_id_for_order( $wc_last_refund, $refund['balance_transaction'] );
-			$wc_last_refund->save_meta_data();
-		}
-
-		$order->add_order_note( $note );
-		$this->order_service->set_wcpay_refund_status_for_order( $order, 'successful' );
-		$order->save();
+		// If the refund was successful, add a note to the order and update the refund status.
+		$this->order_service->process_order_refund( $order, $amount, $currency, $refund['id'], $reason, $refund['balance_transaction'] ?? null, false );
 
 		return true;
 	}

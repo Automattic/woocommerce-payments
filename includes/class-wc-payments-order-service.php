@@ -1269,17 +1269,17 @@ class WC_Payments_Order_Service {
 	/**
 	 * Processes a refund for the given order.
 	 *
-	 * @param WC_Order $order The order to refund.
-	 * @param float    $refunded_amount The amount refunded.
-	 * @param string   $refunded_currency The currency of the refund.
-	 * @param string   $refund_id The refund ID.
-	 * @param string   $refund_reason The reason for the refund.
-	 * @param string   $refund_balance_transaction_id The balance transaction ID of the refund.
-	 * @param bool     $is_partial_refund Whether the refund is partial.
+	 * @param WC_Order    $order The order to refund.
+	 * @param float       $refunded_amount The amount refunded.
+	 * @param string      $refunded_currency The currency of the refund.
+	 * @param string      $refund_id The refund ID.
+	 * @param string      $refund_reason The reason for the refund.
+	 * @param string|null $refund_balance_transaction_id The balance transaction ID of the refund.
+	 * @param bool        $is_partial_refund Whether the refund is partial.
 	 * @throws Order_Not_Found_Exception
 	 * @throws Exception
 	 */
-	public function process_order_refund( WC_Order $order, float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, string $refund_balance_transaction_id, bool $is_partial_refund ): void {
+	public function process_order_refund( WC_Order $order, float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, ?string $refund_balance_transaction_id, bool $is_partial_refund ): void {
 		$note = ( new WC_Payments_Refunded_Event_Note( $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $order ) )->generate_html_note();
 
 		if ( ! $is_partial_refund && $this->order_note_exists( $order, $note ) ) {
@@ -1293,13 +1293,25 @@ class WC_Payments_Order_Service {
 			$order->add_order_note( $note );
 		} else {
 			// For full refunds we mark the order as refunded, including all the order items, and add a refund note.
-			$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, $order->get_items() );
-			$order->update_status( Order_Status::REFUNDED, $note );
+			// Get the last created WC refund from order.
+			$wc_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
+			if ( ! $wc_refund ) {
+				// If there is no refund, create a new one.
+				$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, $order->get_items() );
+				$order->update_status( Order_Status::REFUNDED, $note );
+			}
+
+			if ( ! $this->order_note_exists( $order, $note ) ) {
+				$order->add_order_note( $note );
+			}
 		}
+
 		// Set refund metadata.
 		$this->set_wcpay_refund_status_for_order( $order, 'successful' );
 		$this->set_wcpay_refund_id_for_order( $order, $refund_id );
-		$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );
+		if ( isset( $refund_balance_transaction_id ) ) {
+			$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );
+		}
 
 		$order->save();
 	}
