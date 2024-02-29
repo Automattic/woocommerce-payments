@@ -5,22 +5,28 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import moment from 'moment';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies
  */
-import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
+import { ClickTooltip } from 'components/tooltip';
+import {
+	hasAutomaticScheduledDeposits,
+	getDepositMonthlyAnchorLabel,
+} from 'wcpay/deposits/utils';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
 interface DepositScheduleProps {
 	depositsSchedule: AccountOverview.Account[ 'deposits_schedule' ];
 }
+
 /**
- * Renders the Deposit Schedule details component.
+ * Renders a rich-text sentence summarising the deposit schedule.
  *
  * eg "Your deposits are dispatched automatically every day"
  */
-const DepositSchedule: React.FC< DepositScheduleProps > = ( {
+const DepositScheduleSummary: React.FC< DepositScheduleProps > = ( {
 	depositsSchedule,
 } ) => {
 	switch ( depositsSchedule.interval ) {
@@ -95,6 +101,102 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 		default:
 			return <></>;
 	}
+};
+
+/**
+ * Renders a summary of the deposit schedule & a tooltip so merchant understands when they will get paid.
+ *
+ * If the merchant has no schedule configured, renders nothing.
+ */
+const DepositSchedule: React.FC< DepositScheduleProps > = ( {
+	depositsSchedule,
+} ) => {
+	// Bail if the merchant is on manual or ad-hoc deposits.
+	if ( ! hasAutomaticScheduledDeposits( depositsSchedule.interval ) ) {
+		return null;
+	}
+
+	const nextDepositHelpContent = (
+		<>
+			{ __(
+				'Deposits are initiated based on the following criteria:',
+				'woocommerce-payments'
+			) }
+			<ul>
+				<li>
+					{ interpolateComponents( {
+						mixedString: __(
+							'The {{link}}pending period{{/link}} in your country',
+							'woocommerce-payments'
+						),
+						components: {
+							link: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									rel="external noopener noreferrer"
+									target="_blank"
+									href={
+										'https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-period-chart'
+									}
+								/>
+							),
+						},
+					} ) }
+				</li>
+				<li>
+					{ interpolateComponents( {
+						mixedString: __(
+							"Your account's {{link}}available funds{{/link}}",
+							'woocommerce-payments'
+						),
+						components: {
+							link: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									rel="external noopener noreferrer"
+									target="_blank"
+									href={
+										'https://woo.com/document/woopayments/deposits/deposit-schedule/#available-funds'
+									}
+								/>
+							),
+						},
+					} ) }
+				</li>
+				<li>
+					{ interpolateComponents( {
+						mixedString: __(
+							'Your {{link}}deposit schedule{{/link}} settings',
+							'woocommerce-payments'
+						),
+						components: {
+							link: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									rel="external noopener noreferrer"
+									target="_blank"
+									href={
+										'https://woo.com/document/woopayments/deposits/change-deposit-schedule/'
+									}
+								/>
+							),
+						},
+					} ) }
+				</li>
+			</ul>
+		</>
+	);
+
+	return (
+		<>
+			<DepositScheduleSummary depositsSchedule={ depositsSchedule } />
+			<ClickTooltip
+				content={ nextDepositHelpContent }
+				buttonIcon={ <HelpOutlineIcon /> }
+				buttonLabel={ 'Deposit schedule tooltip' }
+			/>
+		</>
+	);
 };
 
 export default DepositSchedule;

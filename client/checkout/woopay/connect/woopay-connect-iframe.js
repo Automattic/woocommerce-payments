@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useEffect, useRef, useState } from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -83,7 +84,10 @@ export const WooPayConnectIframe = () => {
 				pointerEvents: 'none',
 				userSelect: 'none',
 			} }
-			title="WooPay Connect Direct Checkout"
+			title={ __(
+				'WooPay Connect Direct Checkout',
+				'woocommerce-payments'
+			) }
 		/>
 	);
 };
