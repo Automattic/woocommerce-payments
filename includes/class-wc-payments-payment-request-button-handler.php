@@ -744,6 +744,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->get_product_data(),
 			'total_label'        => $this->express_checkout_helper->get_total_label(),
+			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/payment-request', [ 'jquery', 'stripe' ] );
