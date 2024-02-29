@@ -20,12 +20,12 @@ window.addEventListener( 'load', async () => {
 	}
 
 	WooPayDirectCheckout.init();
-	WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
 
 	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
 			WooPayDirectCheckout.redirectToWooPay( checkoutElements );
 		}
 
@@ -42,13 +42,12 @@ jQuery( ( $ ) => {
 			return;
 		}
 
-		WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-
 		// When "updated_cart_totals" is triggered, the classic 'Proceed to Checkout' button is
 		// re-rendered. So, the click-event listener needs to be re-attached to the new button.
 		const checkoutButton = WooPayDirectCheckout.getClassicProceedToCheckoutButton();
 		if ( isThirdPartyCookieEnabled ) {
 			if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
+				WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
 				WooPayDirectCheckout.redirectToWooPay( [ checkoutButton ] );
 			}
 
@@ -59,15 +58,37 @@ jQuery( ( $ ) => {
 	} );
 } );
 
+/**
+ * Determines whether the encrypted session data should be prefetched.
+ *
+ * @return {Promise<boolean|*>} True if the encrypted session data should be prefetched.
+ */
+const shouldPrefetchEncryptedSessionData = async () => {
+	return (
+		isThirdPartyCookieEnabled &&
+		( await WooPayDirectCheckout.isUserLoggedIn() )
+	);
+};
+
 const addItemCallback = async () => {
 	// The 'experimental__woocommerce_blocks-cart-add-item' hook is triggered after an item
 	// is added to the cart. So, no special handling is needed here.
+	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
+		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
+		return;
+	}
+
 	WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
 };
 
 const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
 	// setItemQtyCallback is debounced to prevent multiple calls to maybePrefetchWooPaySession
 	// when the quantity of an item is being updated multiple times in quick succession.
+	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
+		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
+		return;
+	}
+
 	const cartStore = select( WC_STORE_CART );
 	const cartDispatch = dispatch( WC_STORE_CART );
 
@@ -96,6 +117,11 @@ const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
 }, 400 );
 
 const removeItemCallback = async ( { product } ) => {
+	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
+		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
+		return;
+	}
+
 	const cartStore = select( WC_STORE_CART );
 	const cartDispatch = dispatch( WC_STORE_CART );
 
