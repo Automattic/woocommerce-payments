@@ -70,9 +70,14 @@ const shouldPrefetchEncryptedSessionData = async () => {
 	);
 };
 
+/**
+ * The callback function to be called when an item is added to the cart.
+ * Note: the 'experimental__woocommerce_blocks-cart-add-item' hook is triggered
+ * after an item is added to the cart. So, no special handling is needed here.
+ *
+ * @return {Promise<void>} A promise that resolves when the callback is complete.
+ */
 const addItemCallback = async () => {
-	// The 'experimental__woocommerce_blocks-cart-add-item' hook is triggered after an item
-	// is added to the cart. So, no special handling is needed here.
 	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
 		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 		return;
@@ -81,9 +86,15 @@ const addItemCallback = async () => {
 	WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
 };
 
+/**
+ * The callback function to be called when an item's quantity is updated.
+ * Note: debounceSetItemQtyCallback is debounced to prevent multiple calls to
+ * maybePrefetchEncryptedSessionData when the quantity of an item is being updated
+ * multiple times in quick succession.
+ *
+ * @type {DebouncedFunc<(function({product: *}): Promise<void>)|*>} The debounced callback function.
+ */
 const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
-	// setItemQtyCallback is debounced to prevent multiple calls to maybePrefetchWooPaySession
-	// when the quantity of an item is being updated multiple times in quick succession.
 	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
 		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 		return;
@@ -116,6 +127,12 @@ const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
 	}
 }, 400 );
 
+/**
+ * The callback function to be called when an item is removed from the cart.
+ *
+ * @param {Object} product The product that is being removed.
+ * @return {Promise<void>} A promise that resolves when the callback is complete.
+ */
 const removeItemCallback = async ( { product } ) => {
 	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
 		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
