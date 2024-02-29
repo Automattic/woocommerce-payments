@@ -14,7 +14,7 @@ import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
 class WoopayDirectCheckout {
 	static userConnect;
 	static sessionConnect;
-	static woopaySessionFromMerchantPromise;
+	static encryptedSessionDataPromise;
 
 	/**
 	 * Initializes the WooPay direct checkout feature.
@@ -97,7 +97,12 @@ class WoopayDirectCheckout {
 		// We're intentionally adding a try-catch block to catch any errors
 		// that might occur other than the known validation errors.
 		try {
-			const encryptedSessionData = await this.getEncryptedSessionData();
+			let encryptedSessionData;
+			if ( this.isEncryptedSessionDataPrefetched() ) {
+				encryptedSessionData = await this.encryptedSessionDataPromise;
+			} else {
+				encryptedSessionData = await this.getEncryptedSessionData();
+			}
 			if ( ! this.isValidEncryptedSessionData( encryptedSessionData ) ) {
 				throw new Error(
 					'Could not retrieve encrypted session data from store.'
@@ -223,38 +228,34 @@ class WoopayDirectCheckout {
 	}
 
 	/**
-	 * Prefetches the WooPay session.
-	 *
-	 * @return {Promise<void>} Resolves when the WooPay session has been prefetched.
+	 * Prefetches the encrypted session data if not on the product page.
 	 */
-	static async maybePrefetchWooPaySession() {
+	static maybePrefetchEncryptedSessionData() {
 		const isProductPage =
 			window?.wcpayWooPayDirectCheckout?.params?.is_product_page;
 		if ( typeof isProductPage === 'undefined' || isProductPage ) {
 			return;
 		}
 
-		this.woopaySessionFromMerchantPromise = new Promise( ( resolve ) => {
-			resolve( this.getWooPaySessionFromMerchant() );
+		this.encryptedSessionDataPromise = new Promise( ( resolve ) => {
+			resolve( this.getEncryptedSessionData() );
 		} );
 	}
 
 	/**
-	 * Sets the WooPay session as not prefetched.
+	 * Sets the encrypted session data as not prefetched.
 	 */
-	static setWooPaySessionAsNotPrefetched() {
-		this.woopaySessionFromMerchantPromise = null;
+	static setEncryptedSessionDataAsNotPrefetched() {
+		this.encryptedSessionDataPromise = null;
 	}
 
 	/**
-	 * Checks if the WooPay session has been prefetched.
+	 * Checks if the encrypted session data has been prefetched.
 	 *
-	 * @return {boolean} True if the WooPay session has been prefetched.
+	 * @return {boolean} True if the encrypted session data has been prefetched.
 	 */
-	static isWooPaySessionPrefetched() {
-		return (
-			typeof this.woopaySessionFromMerchantPromise?.then === 'function'
-		);
+	static isEncryptedSessionDataPrefetched() {
+		return typeof this.encryptedSessionDataPromise?.then === 'function';
 	}
 }
 

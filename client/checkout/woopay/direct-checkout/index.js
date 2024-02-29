@@ -20,7 +20,7 @@ window.addEventListener( 'load', async () => {
 	}
 
 	WooPayDirectCheckout.init();
-	WooPayDirectCheckout.maybePrefetchWooPaySession();
+	WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
 
 	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
@@ -42,29 +42,30 @@ jQuery( ( $ ) => {
 			return;
 		}
 
-		WooPayDirectCheckout.maybePrefetchWooPaySession();
+		WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
 
 		// When "updated_cart_totals" is triggered, the classic 'Proceed to Checkout' button is
 		// re-rendered. So, the click-event listener needs to be re-attached to the new button.
 		const checkoutButton = WooPayDirectCheckout.getClassicProceedToCheckoutButton();
 		if ( isThirdPartyCookieEnabled ) {
 			if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
-				WooPayDirectCheckout.redirectToWooPaySession( [
-					checkoutButton,
-				] );
+				WooPayDirectCheckout.redirectToWooPay(
+					[ checkoutButton ],
+					false
+				);
 			}
 
 			return;
 		}
 
-		WooPayDirectCheckout.redirectToWooPay( [ checkoutButton ] );
+		WooPayDirectCheckout.redirectToWooPay( [ checkoutButton ], true );
 	} );
 } );
 
 const addItemCallback = async () => {
 	// The 'experimental__woocommerce_blocks-cart-add-item' hook is triggered after an item
 	// is added to the cart. So, no special handling is needed here.
-	WooPayDirectCheckout.maybePrefetchWooPaySession();
+	WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
 };
 
 const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
@@ -90,10 +91,10 @@ const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
 	const isItemQtyUpdatedBeforeOutOfAttempts = attempts > 0;
 	if ( isItemQtyUpdatedBeforeOutOfAttempts ) {
 		// Only prefetch the WooPay session data if the item's quantity is updated.
-		WooPayDirectCheckout.maybePrefetchWooPaySession();
+		WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
 	} else {
 		// Force the WooPay session data to be fetched upon button click.
-		WooPayDirectCheckout.setWooPaySessionAsNotPrefetched();
+		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 	}
 }, 400 );
 
@@ -118,10 +119,10 @@ const removeItemCallback = async ( { product } ) => {
 	const isItemRemovedBeforeOutOfAttempts = attempts > 0;
 	if ( isItemRemovedBeforeOutOfAttempts ) {
 		// Only prefetch the WooPay session data if the item is removed.
-		WooPayDirectCheckout.maybePrefetchWooPaySession();
+		WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
 	} else {
 		// Force the WooPay session data to be fetched upon button click.
-		WooPayDirectCheckout.setWooPaySessionAsNotPrefetched();
+		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 	}
 };
 
