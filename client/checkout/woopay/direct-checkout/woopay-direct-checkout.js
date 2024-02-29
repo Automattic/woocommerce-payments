@@ -111,6 +111,16 @@ class WoopayDirectCheckout {
 				throw new Error( 'Could not retrieve WooPay checkout URL.' );
 			}
 
+			const { redirect_url: redirectUrl } = woopaySessionData;
+			if (
+				! this.validateRedirectUrl(
+					redirectUrl,
+					'platform_checkout_key'
+				)
+			) {
+				throw new Error( 'Invalid WooPay session URL: ' + redirectUrl );
+			}
+
 			return woopaySessionData.redirect_url;
 		} catch ( error ) {
 			throw new Error( error.message );

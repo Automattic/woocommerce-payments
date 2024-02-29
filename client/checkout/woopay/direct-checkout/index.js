@@ -20,6 +20,6 @@ window.addEventListener( 'load', async () => {
 		return;
 	}
 
-	// Pass true to append '&checkout_redirect=1' and let WooPay decide the checkout flow.
+	// Pass false to indicate we are not sure if the user is logged in or not.
 	WooPayDirectCheckout.redirectToWooPay( checkoutElements, false );
 } );
