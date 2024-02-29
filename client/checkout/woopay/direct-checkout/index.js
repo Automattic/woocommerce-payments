@@ -26,7 +26,7 @@ window.addEventListener( 'load', async () => {
 	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
-			WooPayDirectCheckout.redirectToWooPay( checkoutElements, false );
+			WooPayDirectCheckout.redirectToWooPay( checkoutElements );
 		}
 
 		return;
@@ -49,10 +49,7 @@ jQuery( ( $ ) => {
 		const checkoutButton = WooPayDirectCheckout.getClassicProceedToCheckoutButton();
 		if ( isThirdPartyCookieEnabled ) {
 			if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
-				WooPayDirectCheckout.redirectToWooPay(
-					[ checkoutButton ],
-					false
-				);
+				WooPayDirectCheckout.redirectToWooPay( [ checkoutButton ] );
 			}
 
 			return;

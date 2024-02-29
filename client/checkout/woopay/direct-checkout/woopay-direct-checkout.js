@@ -179,7 +179,7 @@ class WoopayDirectCheckout {
 	 * @param {*[]} elements The elements to add a click-event listener to.
 	 * @param {boolean} useCheckoutRedirect Whether to use the `checkout_redirect` flag to let WooPay handle the checkout flow.
 	 */
-	static redirectToWooPay( elements, useCheckoutRedirect ) {
+	static redirectToWooPay( elements, useCheckoutRedirect = false ) {
 		elements.forEach( ( element ) => {
 			element.addEventListener( 'click', async ( event ) => {
 				// Store href before the async call to not lose the reference.
