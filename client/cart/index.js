@@ -25,6 +25,43 @@ const addProceedToCheckoutTracking = () => {
 	);
 };
 
+/**
+ * We need to register a MutationObserver in the classic checkout because if the
+ * user updates something in the cart page, the entire "Cart totals" section is
+ * re-rendered and the event listener is lost. For this reason, we need to register
+ * the event listener again, and just for that particular "Proceed to checkout" button.
+ *
+ * @return {void}
+ */
+const registerClassicCartCollateralsObserver = () => {
+	const cartCollateralsNode = document.querySelector( '.cart-collaterals' );
+
+	if ( ! cartCollateralsNode ) {
+		return;
+	}
+
+	const observer = new MutationObserver( () => {
+		const proceedButton = document.querySelector(
+			WooPayDirectCheckout.redirectElements.CLASSIC_CART_PROCEED_BUTTON
+		);
+
+		if ( ! proceedButton ) {
+			return;
+		}
+
+		proceedButton.addEventListener( 'click', () => {
+			recordUserEvent( 'wcpay_proceed_to_checkout_button_click', {
+				woopay_direct_checkout: Boolean(
+					getConfig( 'isWooPayDirectCheckoutEnabled' )
+				),
+			} );
+		} );
+	} );
+
+	observer.observe( cartCollateralsNode, { childList: true, subtree: true } );
+};
+
 window.addEventListener( 'load', () => {
 	addProceedToCheckoutTracking();
+	registerClassicCartCollateralsObserver();
 } );
