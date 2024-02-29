@@ -24,16 +24,6 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 };
 
 /**
- * Check if Card payment is being used.
- *
- * @return {boolean} Boolean indicating whether or not Card payment is being used.
- */
-export const isWCPayChosen = function () {
-	return document.getElementById( 'payment_method_woocommerce_payments' )
-		.checked;
-};
-
-/**
  * Finds selected payment gateway and returns matching Stripe payment method for gateway.
  *
  * @return {string} Stripe payment method type

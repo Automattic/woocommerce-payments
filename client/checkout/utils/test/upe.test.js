@@ -3,7 +3,6 @@
  */
 import {
 	getTerms,
-	isWCPayChosen,
 	generateCheckoutEventNames,
 	getUpeSettings,
 	getStripeElementOptions,
@@ -123,26 +122,6 @@ describe( 'UPE checkout utils', () => {
 			expect( getTerms( paymentMethods, 'never' ) ).toEqual(
 				terms.never
 			);
-		} );
-	} );
-
-	describe( 'isWCPayChosen', () => {
-		const container = document.createElement( 'div' );
-
-		it( 'should return true when WCPay is chosen', () => {
-			container.innerHTML =
-				'<input type="radio" id="payment_method_woocommerce_payments" value="woocommerce-payments" checked>';
-			document.body.appendChild( container );
-			expect( isWCPayChosen() ).toBe( true );
-		} );
-
-		it( 'should return false when WCPay is not chosen', () => {
-			container.innerHTML = `
-				<input type="radio" id="payment_method_woocommerce_payments" value="woocommerce-payments">
-				<input type="radio" id="payment_method_woocommerce_payments_bancontact" value="bancontact" checked>
-				`;
-			document.body.appendChild( container );
-			expect( isWCPayChosen() ).toBe( false );
 		} );
 	} );
 
