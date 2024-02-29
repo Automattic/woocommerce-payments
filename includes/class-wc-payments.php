@@ -554,6 +554,7 @@ class WC_Payments {
 		self::maybe_register_woopay_hooks();
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
+		self::$apple_pay_registration->init_hooks();
 
 		self::maybe_display_express_checkout_buttons();
 
@@ -565,7 +566,7 @@ class WC_Payments {
 			self::get_gateway()->get_upe_enabled_payment_method_ids()
 		);
 		if ( [] !== $enabled_bnpl_payment_methods ) {
-			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 30 );
+			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -734,7 +735,7 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooPayments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
+		$payment_methods = array_keys( self::get_payment_method_map() );
 
 		$key = array_search( 'link', $payment_methods, true );
 
@@ -1489,6 +1490,7 @@ class WC_Payments {
 			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), $express_checkout_helper );
 			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, $express_checkout_helper );
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, $express_checkout_helper );
+			$express_checkout_button_display_handler->init();
 		}
 	}
 

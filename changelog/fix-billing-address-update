@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed billing address line 2 not being updated for saved payment methods

@@ -47,3 +47,16 @@ export const getDepositMonthlyAnchorLabel = ( {
 	}
 	return label;
 };
+
+// Determine if the store/merchant has scheduled deposits configured.
+export const hasAutomaticScheduledDeposits = (
+	depositsScheduleInterval: string | undefined
+): boolean => {
+	if ( ! depositsScheduleInterval ) {
+		return false;
+	}
+
+	return [ 'daily', 'weekly', 'monthly' ].includes(
+		depositsScheduleInterval
+	);
+};

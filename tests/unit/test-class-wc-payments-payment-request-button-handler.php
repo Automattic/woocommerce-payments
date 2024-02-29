@@ -339,6 +339,75 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		);
 	}
 
+	public function test_get_product_price_returns_deposit_amount() {
+		$product_price = 10;
+		$this->simple_product->set_price( $product_price );
+
+		$this->assertEquals(
+			$product_price,
+			$this->pr->get_product_price( $this->simple_product, false ),
+			'When deposit is disabled, the regular price should be returned.'
+		);
+		$this->assertEquals(
+			$product_price,
+			$this->pr->get_product_price( $this->simple_product, true ),
+			'When deposit is enabled, but the product has no setting for deposit, the regular price should be returned.'
+		);
+
+		$this->simple_product->update_meta_data( '_wc_deposit_enabled', 'optional' );
+		$this->simple_product->update_meta_data( '_wc_deposit_type', 'percent' );
+		$this->simple_product->update_meta_data( '_wc_deposit_amount', 50 );
+		$this->simple_product->save_meta_data();
+
+		$this->assertEquals(
+			$product_price,
+			$this->pr->get_product_price( $this->simple_product, false ),
+			'When deposit is disabled, the regular price should be returned.'
+		);
+		$this->assertEquals(
+			$product_price * 0.5,
+			$this->pr->get_product_price( $this->simple_product, true ),
+			'When deposit is enabled, the deposit price should be returned.'
+		);
+
+		$this->simple_product->delete_meta_data( '_wc_deposit_amount' );
+		$this->simple_product->delete_meta_data( '_wc_deposit_type' );
+		$this->simple_product->delete_meta_data( '_wc_deposit_enabled' );
+		$this->simple_product->save_meta_data();
+	}
+
+	public function test_get_product_price_returns_deposit_amount_default_values() {
+		$product_price = 10;
+		$this->simple_product->set_price( $product_price );
+
+		$this->assertEquals(
+			$product_price,
+			$this->pr->get_product_price( $this->simple_product ),
+			'When deposit is disabled by default, the regular price should be returned.'
+		);
+
+		$this->simple_product->update_meta_data( '_wc_deposit_enabled', 'optional' );
+		$this->simple_product->update_meta_data( '_wc_deposit_type', 'percent' );
+		$this->simple_product->update_meta_data( '_wc_deposit_amount', 50 );
+		$this->simple_product->update_meta_data( '_wc_deposit_selected_type', 'full' );
+		$this->simple_product->save_meta_data();
+
+		$this->assertEquals(
+			$product_price,
+			$this->pr->get_product_price( $this->simple_product ),
+			'When deposit is optional and disabled by default, the regular price should be returned.'
+		);
+
+		$this->simple_product->update_meta_data( '_wc_deposit_selected_type', 'deposit' );
+		$this->simple_product->save_meta_data();
+
+		$this->assertEquals(
+			$product_price * 0.5,
+			$this->pr->get_product_price( $this->simple_product ),
+			'When deposit is optional and selected by default, the deposit price should be returned.'
+		);
+	}
+
 	/**
 	 * @dataProvider provide_get_product_tax_tests
 	 */
@@ -440,6 +509,12 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_get_product_price_includes_subscription_sign_up_fee() {
 		$mock_product = $this->create_mock_subscription( 'subscription' );
+		add_filter(
+			'test_deposit_get_product',
+			function() use ( $mock_product ) {
+				return $mock_product;
+			}
+		);
 
 		// We have a helper because we are not loading subscriptions.
 		WC_Subscriptions_Product::set_sign_up_fee( 10 );
@@ -452,6 +527,12 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_get_product_price_includes_variable_subscription_sign_up_fee() {
 		$mock_product = $this->create_mock_subscription( 'subscription_variation' );
+		add_filter(
+			'test_deposit_get_product',
+			function() use ( $mock_product ) {
+				return $mock_product;
+			}
+		);
 
 		// We have a helper because we are not loading subscriptions.
 		WC_Subscriptions_Product::set_sign_up_fee( 10 );
@@ -477,6 +558,12 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_get_product_price_throws_exception_for_a_non_numeric_signup_fee() {
 		$mock_product = $this->create_mock_subscription( 'subscription' );
+		add_filter(
+			'test_deposit_get_product',
+			function() use ( $mock_product ) {
+				return $mock_product;
+			}
+		);
 		WC_Subscriptions_Product::set_sign_up_fee( 'a' );
 
 		$this->expectException( WCPay\Exceptions\Invalid_Price_Exception::class );

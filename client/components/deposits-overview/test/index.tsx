@@ -501,7 +501,7 @@ describe( 'Deposit Schedule renders', () => {
 
 		expect( descriptionText ).toContain( 'every day' );
 	} );
-	test( 'with a daily schedule', () => {
+	test( 'with a manual schedule', () => {
 		mockAccount.deposits_schedule.interval = 'manual';
 
 		const { container } = render(
