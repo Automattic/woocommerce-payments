@@ -55,7 +55,7 @@ jobs:
       E2E_WC_VERSION: ${{ matrix.woocommerce }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
-      SKIP_WC_BLOCKS_TESTS: 1 #skip installing & running blocks tests
+      SKIP_WC_BLOCKS_TESTS: 1 # skip running blocks tests
 
     steps:
       - name: Checkout WCPay repository
