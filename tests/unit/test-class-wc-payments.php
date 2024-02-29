@@ -78,18 +78,9 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_it_skips_stripe_link_gateway_registration() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
+		$all_gateways_before_registration = count( WC_Payments::get_payment_method_map() );
+		$card_gateway_mock                = $this->createMock( WC_Payment_Gateway_WCPay::class );
 
-		$card_gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$card_gateway_mock
-			->expects( $this->once() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
-			->willReturn(
-				[
-					'link',
-					'card',
-				]
-			);
 		$card_gateway_mock
 			->expects( $this->once() )
 			->method( 'get_stripe_id' )
@@ -98,7 +89,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		$registered_gateways = WC_Payments::register_gateway( [] );
 
-		$this->assertCount( 1, $registered_gateways );
+		$this->assertCount( $all_gateways_before_registration - 1, $registered_gateways );
 		$this->assertInstanceOf( WC_Payment_Gateway_WCPay::class, $registered_gateways[0] );
 		$this->assertEquals( $registered_gateways[0]->get_stripe_id(), 'card' );
 	}

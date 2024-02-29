@@ -10,8 +10,6 @@ import {
 	CardHeader,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import HelpOutlineIcon from 'gridicons/dist/help-outline';
-import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies.
@@ -20,7 +18,6 @@ import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'wcpay/utils/currency';
 import { recordEvent } from 'tracks';
 import Loadable from 'components/loadable';
-import { ClickTooltip } from 'components/tooltip';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
@@ -32,6 +29,7 @@ import {
 	NoFundsAvailableForDepositNotice,
 	SuspendedDepositNotice,
 } from './deposit-notices';
+import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import useRecentDeposits from './hooks';
 import './style.scss';
 
@@ -71,6 +69,9 @@ const DepositsOverview: React.FC = () => {
 		! account?.deposits_blocked && hasCompletedWaitingPeriod;
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
 	const hasRecentDeposits = ! isLoading && deposits?.length > 0 && !! account;
+	const hasScheduledDeposits = hasAutomaticScheduledDeposits(
+		account?.deposits_schedule?.interval
+	);
 
 	// Show a loading state if the page is still loading.
 	if ( isLoading ) {
@@ -109,77 +110,6 @@ const DepositsOverview: React.FC = () => {
 		return null;
 	}
 
-	const nextDepositHelpContent = (
-		<>
-			{ __(
-				'Deposits are initiated based on the following criteria:',
-				'woocommerce-payments'
-			) }
-			<ul>
-				<li>
-					{ interpolateComponents( {
-						mixedString: __(
-							'The {{link}}pending period{{/link}} in your country',
-							'woocommerce-payments'
-						),
-						components: {
-							link: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<a
-									rel="external noopener noreferrer"
-									target="_blank"
-									href={
-										'https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-period-chart'
-									}
-								/>
-							),
-						},
-					} ) }
-				</li>
-				<li>
-					{ interpolateComponents( {
-						mixedString: __(
-							"Your account's {{link}}available funds{{/link}}",
-							'woocommerce-payments'
-						),
-						components: {
-							link: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<a
-									rel="external noopener noreferrer"
-									target="_blank"
-									href={
-										'https://woo.com/document/woopayments/deposits/deposit-schedule/#available-funds'
-									}
-								/>
-							),
-						},
-					} ) }
-				</li>
-				<li>
-					{ interpolateComponents( {
-						mixedString: __(
-							'Your {{link}}deposit schedule{{/link}} settings',
-							'woocommerce-payments'
-						),
-						components: {
-							link: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<a
-									rel="external noopener noreferrer"
-									target="_blank"
-									href={
-										'https://woo.com/document/woopayments/deposits/change-deposit-schedule/'
-									}
-								/>
-							),
-						},
-					} ) }
-				</li>
-			</ul>
-		</>
-	);
-
 	return (
 		<Card className="wcpay-deposits-overview">
 			<CardHeader>
@@ -187,15 +117,10 @@ const DepositsOverview: React.FC = () => {
 			</CardHeader>
 
 			{ /* Deposit schedule message */ }
-			{ isDepositsUnrestricted && !! account && (
+			{ isDepositsUnrestricted && !! account && hasScheduledDeposits && (
 				<CardBody className="wcpay-deposits-overview__schedule__container">
 					<DepositSchedule
 						depositsSchedule={ account.deposits_schedule }
-					/>
-					<ClickTooltip
-						content={ nextDepositHelpContent }
-						buttonIcon={ <HelpOutlineIcon /> }
-						buttonLabel={ 'Deposit schedule tooltip' }
 					/>
 				</CardBody>
 			) }
