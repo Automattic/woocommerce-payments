@@ -27,3 +27,20 @@
 	cursor: pointer;
 	border: none;
 }
+
+#payment .payment_methods {
+	li label img {
+		float: right;
+		border: 0;
+		padding: 0;
+		max-height: 1.618em;
+		min-height: 30px;
+	}
+
+	.payment_method_woocommerce_payments_affirm label img {
+		min-width: 50px;
+	}
+	.payment_method_woocommerce_payments_afterpay_clearpay label img {
+		min-width: 64px;
+	}
+}
