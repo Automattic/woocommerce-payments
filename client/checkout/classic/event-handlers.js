@@ -29,6 +29,7 @@ import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
+import { SHORTCODE_BILLING_ADDRESS_FIELDS } from 'wcpay/checkout/constants';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -71,6 +72,10 @@ jQuery( function ( $ ) {
 	} );
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
+		if ( isBillingInformationMissing() ) {
+			return;
+		}
+
 		return processPaymentIfNotUsingSavedMethod( $( this ) );
 	} );
 
@@ -174,5 +179,47 @@ jQuery( function ( $ ) {
 				togglePaymentMethodForCountry( upeElement );
 			} );
 		}
+	}
+
+	function isBillingInformationMissing() {
+		const billingFieldsDisplayed = getUPEConfig( 'enabledBillingFields' );
+
+		// first name and last name are kinda special - we just need one of them to be at checkout
+		const name = `${
+			document.querySelector(
+				`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name }`
+			)?.value || ''
+		} ${
+			document.querySelector(
+				`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name }`
+			)?.value || ''
+		}`.trim();
+		if (
+			! name &&
+			( billingFieldsDisplayed.includes(
+				SHORTCODE_BILLING_ADDRESS_FIELDS.first_name
+			) ||
+				billingFieldsDisplayed.includes(
+					SHORTCODE_BILLING_ADDRESS_FIELDS.last_name
+				) )
+		) {
+			return true;
+		}
+
+		const billingFieldsToValidate = [
+			'billing_email',
+			SHORTCODE_BILLING_ADDRESS_FIELDS.country,
+			SHORTCODE_BILLING_ADDRESS_FIELDS.address_1,
+			SHORTCODE_BILLING_ADDRESS_FIELDS.city,
+			SHORTCODE_BILLING_ADDRESS_FIELDS.postcode,
+		].filter( ( field ) => billingFieldsDisplayed.includes( field ) );
+
+		// We need to just find one field with missing information. If even only one is missing, just return early.
+		return Boolean(
+			billingFieldsToValidate.find(
+				( fieldName ) =>
+					! document.querySelector( `#${ fieldName }` )?.value
+			)
+		);
 	}
 } );
