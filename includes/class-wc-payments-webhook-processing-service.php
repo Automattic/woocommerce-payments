@@ -809,7 +809,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Fetch the details of the refund so that we can find the associated order and write a note.
 		$charge_id                     = $this->read_webhook_property( $event_object, 'id' );
-		$refund                        = array_pop( $this->read_webhook_property( $event_object, 'refunds' )['data'] );
+		$refund                        = $this->read_webhook_property( $event_object, 'refunds' )['data'][0]; // Most recent refund.
 		$refund_id                     = $refund['id'] ?? '';
 		$refund_reason                 = $refund['reason'] ?? '';
 		$refund_balance_transaction_id = $refund['balance_transaction'] ?? '';
@@ -830,6 +830,10 @@ class WC_Payments_Webhook_Processing_Service {
 				),
 				'order_not_found'
 			);
+		}
+		// This is to avoid processing the same refund multiple times in case of a webhook retry.
+		if ( $refund_id === $this->order_service->get_wcpay_refund_id_for_order( $order ) ) {
+			return;
 		}
 
 		if ( $charge_amount < 0 || $refunded_amount > $order->get_total() ) {

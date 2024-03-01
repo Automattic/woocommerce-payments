@@ -1282,10 +1282,6 @@ class WC_Payments_Order_Service {
 	public function process_order_refund( WC_Order $order, float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, ?string $refund_balance_transaction_id, bool $is_partial_refund ): void {
 		$note = ( new WC_Payments_Refunded_Event_Note( $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $order ) )->generate_html_note();
 
-		if ( ! $is_partial_refund && $this->order_note_exists( $order, $note ) ) {
-			return;
-		}
-
 		if ( $is_partial_refund ) {
 			// For partial refunds we do not mark the order as refunded, we only add a refund note.
 			// We lack information about the refund items, so we cannot refund them.
@@ -1298,7 +1294,6 @@ class WC_Payments_Order_Service {
 			if ( ! $wc_refund ) {
 				// If there is no refund, create a new one.
 				$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, $order->get_items() );
-				$order->update_status( Order_Status::REFUNDED, $note );
 			}
 
 			if ( ! $this->order_note_exists( $order, $note ) ) {
