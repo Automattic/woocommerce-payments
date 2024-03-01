@@ -117,6 +117,13 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
+		wc_create_refund(
+			[
+				'amount'   => 19.99,
+				'order_id' => $order->get_id(),
+			]
+		);
+
 		$response = new Response(
 			[
 				'id'                       => 're_123456789',
@@ -268,6 +275,13 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
+		wc_create_refund(
+			[
+				'amount'   => 19.99,
+				'order_id' => $order->get_id(),
+			]
+		);
+
 		$response = new Response(
 			[
 				'id'                       => 're_123456789',
@@ -325,6 +339,13 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
+
+		wc_create_refund(
+			[
+				'amount'   => 19.99,
+				'order_id' => $order->get_id(),
+			]
+		);
 
 		$response = new Response(
 			[
@@ -387,6 +408,13 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_payment_method_id', $payment_method_id );
 		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
 		$order->save();
+
+		wc_create_refund(
+			[
+				'amount'   => 19.99,
+				'order_id' => $order->get_id(),
+			]
+		);
 
 		$this->mock_order_service
 			->method( 'get_payment_method_id_for_order' )
@@ -464,6 +492,13 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
+
+		wc_create_refund(
+			[
+				'amount'   => 19.99,
+				'order_id' => $order->get_id(),
+			]
+		);
 
 		$this->mock_order_service
 			->method( 'get_intent_id_for_order' )
@@ -667,6 +702,13 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_payment_method_id', $payment_method_id );
 		$order->save();
 
+		wc_create_refund(
+			[
+				'amount'   => 19.99,
+				'order_id' => $order->get_id(),
+			]
+		);
+
 		$this->mock_order_service
 			->method( 'get_intent_id_for_order' )
 			->willReturn( $intent_id );
@@ -811,6 +853,13 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
+
+		wc_create_refund(
+			[
+				'amount'   => 19.99,
+				'order_id' => $order->get_id(),
+			]
+		);
 
 		$response = new Response(
 			[

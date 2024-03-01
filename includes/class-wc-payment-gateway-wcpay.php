@@ -2280,9 +2280,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
 			return new WP_Error( 'wcpay_edit_order_refund_failure', $e->getMessage() );
 		}
-
+		$wc_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
 		// If the refund was successful, add a note to the order and update the refund status.
-		$this->order_service->process_order_refund( $order, $amount, $currency, $refund['id'], $reason, $refund['balance_transaction'] ?? null, false );
+		$this->order_service->process_order_refund( $order, $amount, $currency, $refund['id'], $reason, $refund['balance_transaction'] ?? null, $wc_refund );
 
 		return true;
 	}
