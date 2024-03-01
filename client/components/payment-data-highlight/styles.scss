@@ -1,0 +1,55 @@
+.payment-data-highlight {
+	&__wrapper {
+		position: relative;
+	}
+
+	&__label {
+		font-size: 12px;
+		line-height: 16px;
+		color: #757575;
+
+		.wcpay-tooltip__content-wrapper {
+			position: relative;
+			top: 1px;
+		}
+	}
+
+	&__amount {
+		display: flex;
+		padding-top: 8px;
+
+		&-number {
+			font-size: 16px;
+			line-height: 16px;
+			color: #1e1e1e;
+			font-weight: 500;
+		}
+
+		&-change {
+			margin-left: 10px;
+			font-size: 12px;
+			line-height: 16px;
+			padding-top: 1px;
+
+			&-arrow-up {
+				color: #005c12;
+
+				&-icon {
+					position: relative;
+					top: 2px;
+					right: 2px;
+				}
+			}
+
+			&-arrow-down {
+				color: #50575e;
+
+				&-icon {
+					position: relative;
+					top: 2px;
+					right: 2px;
+				}
+			}
+		}
+	}
+}
