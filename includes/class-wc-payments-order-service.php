@@ -1289,10 +1289,10 @@ class WC_Payments_Order_Service {
 			$order->add_order_note( $note );
 		} else {
 			// For full refunds we mark the order as refunded, including all the order items, and add a refund note.
-			// Get the last created WC refund from order.
+			// Get the last created WC refund from order since the refund from order details flow already created the refund.
 			$wc_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
 			if ( ! $wc_refund ) {
-				// If there is no refund, create a new one.
+				// If there is no refund, create a new one since we are processing a webhook refund.
 				$wc_refund = $this->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, $order->get_items() );
 			}
 

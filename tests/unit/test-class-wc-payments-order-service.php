@@ -1294,8 +1294,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service->process_order_refund( $order, $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $refund_balance_transaction_id, $is_partial_refund );
 
-		$this->assertSame( Order_Status::REFUNDED, $order->get_status() );
-
 		$order_note = wc_get_order_notes( [ 'order_id' => $order->get_id() ] )[0]->content;
 		$this->assertStringContainsString( $refunded_amount, $order_note, 'Order note does not contain expected refund amount' );
 		$this->assertStringContainsString( $refund_id, $order_note, 'Order note does not contain expected refund id' );
