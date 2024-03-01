@@ -48,6 +48,7 @@
 	}
 
 	&__view-report {
+		position: relative;
 		padding-top: 8px;
 		visibility: hidden;
 
@@ -59,5 +60,20 @@
 
 	&__wrapper:hover .payment-data-highlight__view-report {
 		visibility: visible;
+	}
+
+	@include breakpoint( '<800px' ) {
+		&__wrapper {
+			display: flex;
+			justify-content: space-between;
+			padding: 8px 0;
+		}
+
+		&__view-report {
+			width: 30%;
+			float: right;
+			visibility: visible;
+			top: 15px;
+		}
 	}
 }

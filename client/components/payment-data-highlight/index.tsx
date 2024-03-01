@@ -53,25 +53,27 @@ const PaymentDataHighlight: React.FunctionComponent< {
 } > = ( { label, amount, change, reportUrl, tooltip } ): JSX.Element => {
 	return (
 		<div className="payment-data-highlight__wrapper">
-			<div className="payment-data-highlight__label">
-				<span>{ label }</span>
+			<div className="payment-data-highlight__visible">
+				<div className="payment-data-highlight__label">
+					<span>{ label }</span>
 
-				{ tooltip && (
-					<ClickTooltip
-						buttonIcon={ <HelpOutlineIcon /> }
-						isVisible={ false }
-						content={ tooltip }
-					>
-						<VisuallyHidden>{ tooltip }</VisuallyHidden>
-					</ClickTooltip>
-				) }
-			</div>
-			<div className="payment-data-highlight__amount">
-				<div className="payment-data-highlight__amount-number">
-					{ amount }
+					{ tooltip && (
+						<ClickTooltip
+							buttonIcon={ <HelpOutlineIcon /> }
+							isVisible={ false }
+							content={ tooltip }
+						>
+							<VisuallyHidden>{ tooltip }</VisuallyHidden>
+						</ClickTooltip>
+					) }
 				</div>
-				<div className="payment-data-highlight__amount-change">
-					<PaymentChangeFlow change={ change } />
+				<div className="payment-data-highlight__amount">
+					<div className="payment-data-highlight__amount-number">
+						{ amount }
+					</div>
+					<div className="payment-data-highlight__amount-change">
+						<PaymentChangeFlow change={ change } />
+					</div>
 				</div>
 			</div>
 			<div className="payment-data-highlight__view-report">
