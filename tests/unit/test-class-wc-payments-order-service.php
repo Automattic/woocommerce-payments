@@ -1286,15 +1286,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$order->save();
 
 		$refunded_amount               = 50;
-		$refunded_currency             = 'USD';
 		$refund_id                     = 're_1J2a3B4c5D6e7F8g9H0';
 		$refund_reason                 = 'Test refund';
 		$refund_balance_transaction_id = 'txn_1J2a3B4c5D6e7F8g9H0';
-		$is_partial_refund             = false;
 
 		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, $order->get_items() );
 
-		$this->order_service->process_order_refund( $order, $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $refund_balance_transaction_id, $wc_refund );
+		$this->order_service->process_order_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
 
 		$order_note = wc_get_order_notes( [ 'order_id' => $order->get_id() ] )[0]->content;
 		$this->assertStringContainsString( $refunded_amount, $order_note, 'Order note does not contain expected refund amount' );
@@ -1313,13 +1311,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$order->save();
 
 		$refunded_amount               = 10;
-		$refunded_currency             = 'USD';
 		$refund_id                     = 're_1J2a3B4c5D6e7F8g9H0';
 		$refund_reason                 = 'Test refund';
 		$refund_balance_transaction_id = 'txn_1J2a3B4c5D6e7F8g9H0';
-		$is_partial_refund             = true;
+		$wc_refund                     = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, $order->get_items() );
 
-		$this->order_service->process_order_refund( $order, $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $refund_balance_transaction_id, $is_partial_refund );
+		$this->order_service->process_order_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
 
 		$this->assertSame( Order_Status::PENDING, $order->get_status() );
 

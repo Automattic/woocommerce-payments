@@ -97,7 +97,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
-			->setMethods( [ 'get_wcpay_refund_id_for_order', 'process_order_refund' ] )
+			->setMethods( [ 'get_wcpay_refund_id_for_order', 'process_order_refund', 'create_refund_for_order' ] )
 			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
@@ -1430,6 +1430,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_total' )
 			->willReturn( 18 );
 
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_items' )
+			->willReturn( [] );
+
 		$this->mock_db_wrapper
 			->expects( $this->once() )
 			->method( 'order_from_charge_id' )
@@ -1438,8 +1443,21 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->once() )
+			->method( 'get_wcpay_refund_id_for_order' )
+			->with( $this->mock_order )
+			->willReturn( 'test_refund_id_other' );
+
+		$mock_refund = $this->createMock( WC_Order_Refund::class );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'create_refund_for_order' )
+			->willReturn( $mock_refund );
+
+		$this->order_service
+			->expects( $this->once() )
 			->method( 'process_order_refund' )
-			->with( $this->mock_order, 18, 'usd', 'test_refund_id', 'requested_by_customer', 'txn_123', false );
+			->with( $this->mock_order, $mock_refund, 'test_refund_id', 'txn_123' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -1476,10 +1494,17 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->with( 'test_charge_id' )
 			->willReturn( $this->mock_order );
 
+		$mock_refund = $this->createMock( WC_Order_Refund::class );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'create_refund_for_order' )
+			->willReturn( $mock_refund );
+
 		$this->order_service
 			->expects( $this->once() )
 			->method( 'process_order_refund' )
-			->with( $this->mock_order, 9, 'usd', 'test_refund_id', 'requested_by_customer', 'txn_123', true );
+			->with( $this->mock_order, $mock_refund, 'test_refund_id', 'txn_123' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}

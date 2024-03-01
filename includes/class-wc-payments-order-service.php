@@ -1270,17 +1270,14 @@ class WC_Payments_Order_Service {
 	 * Processes a refund for the given order.
 	 *
 	 * @param WC_Order        $order The order to refund.
-	 * @param float           $refunded_amount The amount refunded.
-	 * @param string          $refunded_currency The currency of the refund.
-	 * @param string          $refund_id The refund ID.
-	 * @param string          $refund_reason The reason for the refund.
-	 * @param string|null     $refund_balance_transaction_id The balance transaction ID of the refund.
 	 * @param WC_Order_Refund $wc_refund The WC refund object.
+	 * @param string          $refund_id The refund ID.
+	 * @param string|null     $refund_balance_transaction_id The balance transaction ID of the refund.
 	 * @throws Order_Not_Found_Exception
 	 * @throws Exception
 	 */
-	public function process_order_refund( WC_Order $order, float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, ?string $refund_balance_transaction_id, $wc_refund ): void {
-		$note = ( new WC_Payments_Refunded_Event_Note( $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $order ) )->generate_html_note();
+	public function process_order_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id ): void {
+		$note = ( new WC_Payments_Refunded_Event_Note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order ) )->generate_html_note();
 
 		if ( ! $this->order_note_exists( $order, $note ) ) {
 			$order->add_order_note( $note );

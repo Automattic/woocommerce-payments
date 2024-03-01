@@ -816,7 +816,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$charge_amount                 = $this->read_webhook_property( $event_object, 'amount' );
 		$currency                      = $this->read_webhook_property( $event_object, 'currency' );
 		$refunded_amount               = WC_Payments_Utils::interpret_stripe_amount( $refund['amount'], $currency );
-		$refunded_currency             = $refund['currency'];
 		$is_partial_refund             = $refund['amount'] < $charge_amount;
 
 		// Look up the order related to this charge.
@@ -848,6 +847,6 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, ( ! $is_partial_refund ? $order->get_items() : [] ) );
 		// Process the refund in the order service.
-		$this->order_service->process_order_refund( $order, $refunded_amount, $refunded_currency, $refund_id, $refund_reason, $refund_balance_transaction_id, $wc_refund );
+		$this->order_service->process_order_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
 	}
 }
