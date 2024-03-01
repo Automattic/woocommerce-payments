@@ -156,7 +156,7 @@ class WoopayDirectCheckout {
 		addElementBySelector( '.wc-proceed-to-checkout .checkout-button' );
 		// Blocks 'Proceed to Checkout' button.
 		addElementBySelector(
-			'.wp-block-woocommerce-proceed-to-checkout-block a'
+			'.wp-block-woocommerce-proceed-to-checkout-block'
 		);
 
 		return elements;
@@ -183,7 +183,8 @@ class WoopayDirectCheckout {
 		elements.forEach( ( element ) => {
 			element.addEventListener( 'click', async ( event ) => {
 				// Store href before the async call to not lose the reference.
-				const currTargetHref = event.currentTarget.href;
+				const currTargetHref = event.currentTarget.querySelector( 'a' )
+					?.href;
 
 				// If there's no link where to redirect the user, do not break the expected behavior.
 				if ( ! currTargetHref ) {
