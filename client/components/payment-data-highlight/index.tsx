@@ -8,6 +8,8 @@ import ArrowUpIcon from 'gridicons/dist/arrow-up';
 import ArrowDownIcon from 'gridicons/dist/arrow-down';
 import { __ } from '@wordpress/i18n';
 import { VisuallyHidden } from '@wordpress/components';
+import { Link } from '@woocommerce/components';
+
 /**
  * Internal dependencies
  */
@@ -20,7 +22,7 @@ const PaymentChangeFlow: React.FunctionComponent< {
 	if ( change < 0 ) {
 		return (
 			<div className="payment-data-highlight__amount-change-arrow-down">
-				<span className="payment-data-highlight__amount-change-arrow-down-icon">
+				<span className="payment-data-highlight__amount-change-icon">
 					<ArrowDownIcon size={ 12 } />
 				</span>
 				<span className="payment-data-highlight__amount-change-percentage">
@@ -32,7 +34,7 @@ const PaymentChangeFlow: React.FunctionComponent< {
 
 	return (
 		<div className="payment-data-highlight__amount-change-arrow-up">
-			<span className="payment-data-highlight__amount-change-arrow-up-icon">
+			<span className="payment-data-highlight__amount-change-icon">
 				<ArrowUpIcon size={ 12 } />
 			</span>
 			<span className="payment-data-highlight__amount-change-arrow-up-percentage">
@@ -46,8 +48,9 @@ const PaymentDataHighlight: React.FunctionComponent< {
 	label: string;
 	amount: string;
 	change: number;
+	reportUrl: string;
 	tooltip?: string;
-} > = ( { label, amount, change, tooltip } ): JSX.Element => {
+} > = ( { label, amount, change, reportUrl, tooltip } ): JSX.Element => {
 	return (
 		<div className="payment-data-highlight__wrapper">
 			<div className="payment-data-highlight__label">
@@ -70,6 +73,11 @@ const PaymentDataHighlight: React.FunctionComponent< {
 				<div className="payment-data-highlight__amount-change">
 					<PaymentChangeFlow change={ change } />
 				</div>
+			</div>
+			<div className="payment-data-highlight__view-report">
+				<Link href={ reportUrl }>
+					{ __( 'View report', 'woocommerce-paymnets' ) }
+				</Link>
 			</div>
 		</div>
 	);
