@@ -153,7 +153,7 @@ class WoopayDirectCheckout {
 		};
 
 		// Classic 'Proceed to Checkout' button.
-		addElementBySelector( '.wc-proceed-to-checkout .checkout-button' );
+		addElementBySelector( '.wc-proceed-to-checkout' );
 		// Blocks 'Proceed to Checkout' button.
 		addElementBySelector(
 			'.wp-block-woocommerce-proceed-to-checkout-block'
@@ -168,9 +168,7 @@ class WoopayDirectCheckout {
 	 * @return {Element} The classic 'Proceed to Checkout' button.
 	 */
 	static getClassicProceedToCheckoutButton() {
-		return document.querySelector(
-			'.wc-proceed-to-checkout .checkout-button'
-		);
+		return document.querySelector( '.wc-proceed-to-checkout' );
 	}
 
 	/**
