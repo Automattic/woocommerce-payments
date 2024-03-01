@@ -309,7 +309,8 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	public function test_link_payment_method_provided_when_card_enabled() {
-		$icon_url = 'test-icon-url';
+		$icon_url      = 'test-icon-url';
+		$dark_icon_url = 'test-dark-icon-url';
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
@@ -332,12 +333,12 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 		$card_pm = $this->getMockBuilder( CC_Payment_Method::class )
 			->setConstructorArgs( [ $this->mock_token_service ] )
-			->onlyMethods( [ 'get_icon' ] )
+			->onlyMethods( [ 'get_icon', 'get_dark_icon' ] )
 			->getMock();
 
 		$link_pm = $this->getMockBuilder( Link_Payment_Method::class )
 			->setConstructorArgs( [ $this->mock_token_service ] )
-			->onlyMethods( [ 'get_icon' ] )
+			->onlyMethods( [ 'get_icon', 'get_dark_icon' ] )
 			->getMock();
 
 		$card_pm->expects( $this->any() )
@@ -345,11 +346,21 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->will(
 				$this->returnValue( $icon_url )
 			);
+		$card_pm->expects( $this->any() )
+			->method( 'get_dark_icon' )
+			->will(
+				$this->returnValue( $dark_icon_url )
+			);
 
 		$link_pm->expects( $this->any() )
 			->method( 'get_icon' )
 			->will(
 				$this->returnValue( $icon_url )
+			);
+		$link_pm->expects( $this->any() )
+			->method( 'get_dark_icon' )
+			->will(
+				$this->returnValue( $dark_icon_url )
 			);
 
 		$this->mock_wcpay_gateway
@@ -369,6 +380,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'isReusable'             => true,
 					'title'                  => 'Credit card / debit card',
 					'icon'                   => $icon_url,
+					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,
 					'countries'              => [],
 					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
@@ -378,6 +390,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'isReusable'             => true,
 					'title'                  => 'Link',
 					'icon'                   => $icon_url,
+					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,
 					'countries'              => [],
 					'testingInstructions'    => '',

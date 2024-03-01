@@ -114,6 +114,7 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 	buttonSize = 16,
 	children,
 	className,
+	maxWidth,
 	...props
 } ) => {
 	const [ isClicked, setIsClicked ] = useState( false );
@@ -145,6 +146,7 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 				{ ...props }
 				parentElement={ tooltipParentRef.current || undefined }
 				onHide={ handleHide }
+				maxWidth={ maxWidth }
 				isVisible={ isVisible || isClicked }
 				className={ classNames(
 					'wcpay-tooltip--click__tooltip',
