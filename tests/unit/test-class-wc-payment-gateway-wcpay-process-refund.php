@@ -88,7 +88,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->mock_token_service            = $this->createMock( WC_Payments_Token_Service::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$this->mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
-		$this->mock_order_service            = $this->getMockBuilder( WC_Payments_Order_Service::class )->disableOriginalConstructor()->onlyMethods( [ 'get_charge_id_for_order', 'get_payment_method_id_for_order', 'get_intent_id_for_order', 'get_intention_status_for_order', 'get_wcpay_refund_status_for_order', 'get_wcpay_intent_currency_for_order' ] )->getMock();
+		$this->mock_order_service            = $this->getMockBuilder( WC_Payments_Order_Service::class )->disableOriginalConstructor()->onlyMethods( [ 'get_charge_id_for_order', 'get_payment_method_id_for_order', 'get_intent_id_for_order', 'get_intention_status_for_order', 'get_wcpay_refund_status_for_order', 'get_wcpay_intent_currency_for_order', 'process_order_refund' ] )->getMock();
 		$mock_dpps                           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 		$mock_payment_method                 = $this->createMock( CC_Payment_Method::class );
 
@@ -1072,5 +1072,60 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'failed to complete', $latest_wcpay_note->content );
 		$this->assertStringContainsString( 'Test message', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+	}
+
+	public function test_process_refund_returns_error_when_refund_not_found() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$response = new Response(
+			[
+				'id'                       => 're_123456789',
+				'object'                   => 'refund',
+				'amount'                   => $amount = 19.99,
+				'balance_transaction'      => 'txn_987654321',
+				'charge'                   => 'ch_121212121212',
+				'created'                  => 1610123467,
+				'payment_intent'           => 'pi_1234567890',
+				'reason'                   => null,
+				'receipt_number'           => null,
+				'source_transfer_reversal' => null,
+				'status'                   => Intent_Status::SUCCEEDED,
+				'transfer_reversal'        => null,
+				'currency'                 => 'usd',
+			]
+		);
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( WC_Payments_Utils::prepare_amount( $amount ) );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
+		$this->mock_order_service
+			->expects( $this->never() )
+			->method( 'process_order_refund' );
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $amount );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'wcpay_edit_order_refund_not_found', $result->get_error_code() );
+		$this->assertSame( sprintf( 'A refund cannot be found for order: %1$s', $order->get_id() ), $result->get_error_message() );
 	}
 }
