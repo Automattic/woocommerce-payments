@@ -1316,6 +1316,9 @@ class MultiCurrency {
 			if ( ! $order ) {
 				return;
 			}
+			if ( ! $this->backend_currencies ) {
+				return;
+			}
 			$currency                     = $order->get_currency();
 			$currency_format_num_decimals = $this->backend_currencies->get_price_decimals( $currency );
 			$currency_format_decimal_sep  = $this->backend_currencies->get_price_decimal_separator( $currency );
