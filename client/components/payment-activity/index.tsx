@@ -83,6 +83,10 @@ const PaymentActivity: React.FC = () => {
 	const [ selectedComparisonRange, setSelectedComparisonRange ] = useState<
 		string | null
 	>( ranges.PREVIOUS_PERIOD_VALUE );
+
+	// TODO: We could probably make these comparison dates depend on the dates defined above.
+	// A user will select the timeframe for these analytics and we should automatically update the comparison timeframe to match the selection.
+	// More details in this thread https://github.com/Automattic/woocommerce-payments/pull/8234#discussion_r1498679045 .
 	const [ comparisonBefore, setComparisonBefore ] = useState( after );
 	const [ comparisonAfter, setComparisonAfter ] = useState(
 		moment().subtract( 14, 'days' ).startOf( 'day' )
