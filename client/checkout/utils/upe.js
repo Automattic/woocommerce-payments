@@ -24,27 +24,6 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 };
 
 /**
- * Returns the value of the given cookie.
- *
- * @param {string} name Name of the cookie.
- *
- * @return {string} Value of the given cookie. Empty string if cookie doesn't exist.
- */
-export const getCookieValue = ( name ) =>
-	document.cookie.match( '(^|;)\\s*' + name + '\\s*=\\s*([^;]+)' )?.pop() ||
-	'';
-
-/**
- * Check if Card payment is being used.
- *
- * @return {boolean} Boolean indicating whether or not Card payment is being used.
- */
-export const isWCPayChosen = function () {
-	return document.getElementById( 'payment_method_woocommerce_payments' )
-		.checked;
-};
-
-/**
  * Finds selected payment gateway and returns matching Stripe payment method for gateway.
  *
  * @return {string} Stripe payment method type
@@ -335,67 +314,6 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 	} );
 
 	emailInput.parentNode.appendChild( stripeLinkButton );
-};
-
-/**
- * Converts form fields object into Stripe `billing_details` object.
- *
- * @param {Object} fields Object mapping checkout billing fields to values.
- * @return {Object} Stripe formatted `billing_details` object.
- */
-export const getBillingDetails = ( fields ) => {
-	return {
-		name:
-			`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
-			'-',
-		email:
-			typeof fields.billing_email === 'string'
-				? fields.billing_email.trim()
-				: '-',
-		phone: fields.billing_phone || '-',
-		address: {
-			country: fields.billing_country || '-',
-			line1: fields.billing_address_1 || '-',
-			line2: fields.billing_address_2 || '-',
-			city: fields.billing_city || '-',
-			state: fields.billing_state || '-',
-			postal_code: fields.billing_postcode || '-',
-		},
-	};
-};
-
-/**
- * Converts form fields object into Stripe `shipping` object.
- *
- * @param {Object} fields Object mapping checkout shipping fields to values.
- * @return {Object} Stripe formatted `shipping` object.
- */
-export const getShippingDetails = ( fields ) => {
-	// Shipping address is needed by Afterpay. If available, use shipping address, else fallback to billing address.
-	if (
-		fields.ship_to_different_address &&
-		fields.ship_to_different_address === '1'
-	) {
-		return {
-			name:
-				`${ fields.shipping_first_name } ${ fields.shipping_last_name }`.trim() ||
-				'-',
-			address: {
-				country: fields.shipping_country || '-',
-				line1: fields.shipping_address_1 || '-',
-				line2: fields.shipping_address_2 || '-',
-				city: fields.shipping_city || '-',
-				state: fields.shipping_state || '-',
-				postal_code: fields.shipping_postcode || '-',
-			},
-		};
-	}
-
-	const billingAsShippingAddress = getBillingDetails( fields );
-	delete billingAsShippingAddress.email;
-	delete billingAsShippingAddress.phone;
-
-	return billingAsShippingAddress;
 };
 
 /**
