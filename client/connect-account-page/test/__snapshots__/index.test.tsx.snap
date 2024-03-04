@@ -159,12 +159,12 @@ exports[`ConnectAccountPage should render correctly 1`] = `
             <img
               alt="Affirm"
               class="payment-method__icon"
-              src="assets/images/payment-methods/affirm.svg"
+              src="assets/images/payment-methods/affirm-badge.svg"
             />
             <img
               alt="Afterpay"
               class="payment-method__icon"
-              src="assets/images/payment-methods/afterpay.svg"
+              src="assets/images/payment-methods/afterpay-logo.svg"
             />
             <span>
               & more.
@@ -495,12 +495,12 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
             <img
               alt="Affirm"
               class="payment-method__icon"
-              src="assets/images/payment-methods/affirm.svg"
+              src="assets/images/payment-methods/affirm-badge.svg"
             />
             <img
               alt="Afterpay"
               class="payment-method__icon"
-              src="assets/images/payment-methods/afterpay.svg"
+              src="assets/images/payment-methods/afterpay-logo.svg"
             />
             <span>
               & more.
@@ -780,12 +780,12 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
             <img
               alt="Affirm"
               class="payment-method__icon"
-              src="assets/images/payment-methods/affirm.svg"
+              src="assets/images/payment-methods/affirm-badge.svg"
             />
             <img
               alt="Afterpay"
               class="payment-method__icon"
-              src="assets/images/payment-methods/afterpay.svg"
+              src="assets/images/payment-methods/afterpay-logo.svg"
             />
             <span>
               & more.

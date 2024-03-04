@@ -1,0 +1,129 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AccountBalances renders the correct tooltip text for the total balance 1`] = `
+<div>
+  <div>
+    <div
+      aria-orientation="horizontal"
+      class="components-tab-panel__tabs"
+      role="tablist"
+    >
+      <button
+        aria-controls="tab-panel-8-usd-view"
+        aria-selected="true"
+        class="components-button components-tab-panel__tabs-item is-active"
+        id="tab-panel-8-usd"
+        role="tab"
+        type="button"
+      >
+        USD Balance
+      </button>
+    </div>
+    <div
+      aria-labelledby="tab-panel-8-usd"
+      class="components-tab-panel__tab-content"
+      id="tab-panel-8-usd-view"
+      role="tabpanel"
+    >
+      <div
+        class="components-flex wcpay-account-balances__balances css-1ng0jhd-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="wcpay-account-balances__balances__item"
+        >
+          <p
+            class="wcpay-account-balances__balances__item__title"
+            id="wcpay-account-balances-usd-total"
+          >
+            <span>
+              Total balance
+            </span>
+            <button
+              class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+              type="button"
+            >
+              <div
+                class="wcpay-tooltip__content-wrapper"
+              >
+                <div
+                  aria-label="Total balance tooltip"
+                  role="button"
+                  tabindex="0"
+                >
+                  <svg
+                    class="gridicon gridicons-help-outline"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                      />
+                    </g>
+                  </svg>
+                </div>
+              </div>
+            </button>
+          </p>
+          <p
+            aria-labelledby="wcpay-account-balances-usd-total"
+            class="wcpay-account-balances__balances__item__amount"
+          >
+            $300.00
+          </p>
+        </div>
+        <div
+          class="wcpay-account-balances__balances__item"
+        >
+          <p
+            class="wcpay-account-balances__balances__item__title"
+            id="wcpay-account-balances-usd-available"
+          >
+            <span>
+              Available funds
+            </span>
+            <button
+              class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+              type="button"
+            >
+              <div
+                class="wcpay-tooltip__content-wrapper"
+              >
+                <div
+                  aria-label="Available funds tooltip"
+                  role="button"
+                  tabindex="0"
+                >
+                  <svg
+                    class="gridicon gridicons-help-outline"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                      />
+                    </g>
+                  </svg>
+                </div>
+              </div>
+            </button>
+          </p>
+          <p
+            aria-labelledby="wcpay-account-balances-usd-available"
+            class="wcpay-account-balances__balances__item__amount"
+          >
+            $200.00
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

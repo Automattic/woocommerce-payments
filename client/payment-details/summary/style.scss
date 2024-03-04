@@ -37,6 +37,11 @@
 	}
 
 	.payment-details-summary__breakdown {
+		&__settlement-currency {
+			padding-right: 16px;
+			border-right: 1px solid $gray-200;
+		}
+
 		p {
 			@include font-size( 14 );
 			color: $gray-700;
