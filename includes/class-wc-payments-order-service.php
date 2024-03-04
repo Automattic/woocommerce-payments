@@ -345,7 +345,6 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-
 		// Order `completed` and `refunded` emails should both be blocked when disputes are closed.
 		add_filter( 'woocommerce_email_enabled_customer_completed_order', '__return_false' );
 		add_filter( 'woocommerce_email_enabled_customer_refunded_order', '__return_false' );
