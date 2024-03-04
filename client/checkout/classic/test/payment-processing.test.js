@@ -347,7 +347,25 @@ describe( 'Payment processing', () => {
 			}
 		} );
 	} );
+
 	afterEach( () => {
+		[
+			'billing_first_name',
+			'billing_last_name',
+			'billing_email',
+			'billing_phone',
+			'billing_city',
+			'billing_country',
+			'billing_address_1',
+			'billing_address_2',
+			'billing_postcode',
+			'billing_state',
+		].forEach( ( id ) => {
+			const element = document.getElementById( id );
+			if ( ! element ) return;
+
+			document.body.removeChild( element );
+		} );
 		jest.clearAllMocks();
 	} );
 
@@ -388,6 +406,91 @@ describe( 'Payment processing', () => {
 		} );
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
 		expect( checkoutResult ).toBe( false );
+	} );
+
+	test( 'Payment processing creates the correct `name` attribute when both last/first name fields are removed', async () => {
+		setupBillingDetailsFields();
+		// pretending that the customizer removed the billing name field
+		document.body.removeChild(
+			document.getElementById( 'billing_first_name' )
+		);
+		document.body.removeChild(
+			document.getElementById( 'billing_last_name' )
+		);
+		getFingerprint.mockImplementation( () => {
+			return 'fingerprint';
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
+			elements: expect.any( Object ),
+			params: {
+				billing_details: expect.objectContaining( {
+					name: undefined,
+					email: 'john.doe@example.com',
+					phone: '555-1234',
+					address: expect.any( Object ),
+				} ),
+			},
+		} );
+	} );
+
+	test( 'Payment processing creates the correct `name` attribute when last name field is removed via customizer', async () => {
+		setupBillingDetailsFields();
+		// pretending that the customizer removed the billing name field
+		document.body.removeChild(
+			document.getElementById( 'billing_first_name' )
+		);
+		getFingerprint.mockImplementation( () => {
+			return 'fingerprint';
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
+			elements: expect.any( Object ),
+			params: {
+				billing_details: expect.objectContaining( {
+					name: 'Doe',
+					email: 'john.doe@example.com',
+					phone: '555-1234',
+					address: expect.any( Object ),
+				} ),
+			},
+		} );
 	} );
 
 	test( 'Payment processing adds billing details for checkout', async () => {
