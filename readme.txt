@@ -139,7 +139,6 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - chore: remove unused brandTitles property from PMs
 * Dev - Dev: additional check when pushing to protected branches.
 * Dev - Fire `wcpay_disputes_row_action_click` for any click to dispute details (not just `Respond` button).
-* Dev - Include gateway name in order-placed Tracks event
 * Dev - Remove unused `/deposits/overview` data-fetching code.
 * Dev - Removing unsupported `deposits/overview` REST API. `deposits/overview-all` should be used instead.
 * Dev - Reverts removed REST controller class to prevent error on update from older versions of the plugin.
