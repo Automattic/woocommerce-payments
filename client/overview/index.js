@@ -30,6 +30,8 @@ import { useDisputes, useGetSettings, useSettings } from 'wcpay/data';
 import strings from './strings';
 import './style.scss';
 import SetupLivePaymentsModal from './modal/setup-live-payments';
+import Survey from 'wcpay/overview/survey';
+import { WcPayOverviewSurveyContextProvider } from 'wcpay/overview/survey/context';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -117,11 +119,18 @@ const OverviewPage = () => {
 			return { payment_method: key, fee: value };
 		} )
 		.filter( ( e ) => e && e.fee !== undefined );
+	const isOverviewSurveySubmitted =
+		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
 	return (
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
 			<JetpackIdcNotice />
+			{ ! isOverviewSurveySubmitted && (
+				<WcPayOverviewSurveyContextProvider>
+					<Survey></Survey>
+				</WcPayOverviewSurveyContextProvider>
+			) }
 			{ showLoanOfferError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(
