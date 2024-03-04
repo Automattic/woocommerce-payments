@@ -1,6 +1,6 @@
 *** WooPayments Changelog ***
 
-= 7.3.0 - 2024-03-06 =
+= 7.3.0-test-3 - unreleased =
 * Add - Added confirmation modals for order status changes with pending authorizations
 * Add - Add support for bookable products to payment request buttons on product pages.
 * Add - Alert user when they try to leave advanced fraud settings page with unsaved changes
