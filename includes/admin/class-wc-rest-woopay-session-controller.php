@@ -15,6 +15,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\WooPay\WooPay_Session;
+use Automattic\Jetpack\Connection\Rest_Authentication;
 
 /**
  * REST controller to check get WooPay extension data for user.
@@ -46,7 +47,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_session_data' ],
-				'permission_callback' => '__return_true',
+				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
 	}
@@ -68,5 +69,35 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response( $response );
 	}
+
+	/**
+	 * Check permission confirms that the request is from WooPay.
+	 *
+	 * @return bool True if request is from WooPay and 
+	 */
+	public function check_permission() {
+		return $this->is_request_from_woopay() && $this->has_valid_request_signature();
+	}
+
+	/**
+	 * Returns true if the request that's currently being processed is signed with the blog token.
+	 *
+	 * @return bool True if the request signature is valid.
+	 */
+	private function has_valid_request_signature() {
+		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
+	}
+
+	/**
+	 * Returns true if the request that's currently being processed is from WooPay, false
+	 * otherwise.
+	 *
+	 * @return bool True if request is from WooPay.
+	 */
+	private function is_request_from_woopay(): bool {
+		return isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'];
+	}
+
+	
 }
 
