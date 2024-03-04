@@ -922,7 +922,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'Pending payment to Completed', $notes[1]->content );
 		$this->assertStringContainsString( 'Payment dispute has been closed with status won', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
-		$this->assert
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
 		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
