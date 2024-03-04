@@ -88,7 +88,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->mock_token_service            = $this->createMock( WC_Payments_Token_Service::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$this->mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
-		$this->mock_order_service            = $this->getMockBuilder( WC_Payments_Order_Service::class )->disableOriginalConstructor()->onlyMethods( [ 'get_charge_id_for_order', 'get_payment_method_id_for_order', 'get_intent_id_for_order', 'get_intention_status_for_order', 'get_wcpay_refund_status_for_order', 'get_wcpay_intent_currency_for_order', 'process_order_refund' ] )->getMock();
+		$this->mock_order_service            = $this->getMockBuilder( WC_Payments_Order_Service::class )->disableOriginalConstructor()->onlyMethods( [ 'get_charge_id_for_order', 'get_payment_method_id_for_order', 'get_intent_id_for_order', 'get_intention_status_for_order', 'get_wcpay_refund_status_for_order', 'get_wcpay_intent_currency_for_order' ] )->getMock();
 		$mock_dpps                           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 		$mock_payment_method                 = $this->createMock( CC_Payment_Method::class );
 
@@ -1117,10 +1117,6 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->method( 'get_charge_id_for_order' )
 			->willReturn( $charge_id );
-
-		$this->mock_order_service
-			->expects( $this->never() )
-			->method( 'process_order_refund' );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $amount );
 
