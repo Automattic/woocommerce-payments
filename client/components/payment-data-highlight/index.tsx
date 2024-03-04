@@ -9,6 +9,7 @@ import ArrowDownIcon from 'gridicons/dist/arrow-down';
 import { __ } from '@wordpress/i18n';
 import { VisuallyHidden } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
@@ -77,7 +78,17 @@ const PaymentDataHighlight: React.FunctionComponent< {
 				</div>
 			</div>
 			<div className="payment-data-highlight__view-report">
-				<Link href={ reportUrl }>
+				<Link
+					href={ reportUrl }
+					onClick={ () =>
+						recordEvent(
+							'wcpay_overview_widget_data_highlight_view_report_click',
+							{
+								url: reportUrl,
+							}
+						)
+					}
+				>
 					{ __( 'View report', 'woocommerce-paymnets' ) }
 				</Link>
 			</div>
