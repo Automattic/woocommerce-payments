@@ -33,6 +33,7 @@ import TransactionsList from 'transactions/list';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice } from 'components/test-mode-notice';
+import InlineNotice from 'components/inline-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import { displayStatus } from '../strings';
 import './style.scss';
@@ -178,6 +179,21 @@ interface DepositDetailsProps {
 	};
 }
 
+function loadDepositOverviewIfDepositPresent( deposit: CachedDeposit ) {
+	if ( deposit ) {
+		return <DepositOverview deposit={ deposit } />;
+	}
+
+	return (
+		<InlineNotice icon status="error" isDismissible={ false }>
+			{ __(
+				`The deposit you are looking for cannot be found.`,
+				'woocommerce-payments'
+			) }
+		</InlineNotice>
+	);
+}
+
 export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 	query: { id: depositId },
 } ) => {
@@ -192,42 +208,44 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 				{ isLoading ? (
 					<SummaryListPlaceholder numberOfItems={ 2 } />
 				) : (
-					<DepositOverview deposit={ deposit } />
+					loadDepositOverviewIfDepositPresent( deposit )
 				) }
 			</ErrorBoundary>
 
-			<ErrorBoundary>
-				{ isInstantDeposit ? (
-					// If instant deposit, show a message instead of the transactions list.
-					// Matching the components used in @woocommerce/components TableCard for consistent UI.
-					<Card>
-						<CardHeader>
-							<Text size={ 16 } weight={ 600 } as="h2">
-								{ __(
-									'Deposit transactions',
-									'woocommerce-payments'
-								) }
-							</Text>
-						</CardHeader>
-						<CardBody className="wcpay-deposit-overview--instant__transactions-list-message">
-							{ interpolateComponents( {
-								/* Translators: {{learnMoreLink}} is a link element (<a/>). */
-								mixedString: __(
-									`We're unable to show transaction history on instant deposits. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
-									'woocommerce-payments'
-								),
-								components: {
-									learnMoreLink: (
-										<ExternalLink href="https://woo.com/document/woopayments/deposits/instant-deposits/#transactions" />
+			{ deposit && (
+				<ErrorBoundary>
+					{ isInstantDeposit ? (
+						// If instant deposit, show a message instead of the transactions list.
+						// Matching the components used in @woocommerce/components TableCard for consistent UI.
+						<Card>
+							<CardHeader>
+								<Text size={ 16 } weight={ 600 } as="h2">
+									{ __(
+										'Deposit transactions',
+										'woocommerce-payments'
+									) }
+								</Text>
+							</CardHeader>
+							<CardBody className="wcpay-deposit-overview--instant__transactions-list-message">
+								{ interpolateComponents( {
+									/* Translators: {{learnMoreLink}} is a link element (<a/>). */
+									mixedString: __(
+										`We're unable to show transaction history on instant deposits. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
+										'woocommerce-payments'
 									),
-								},
-							} ) }
-						</CardBody>
-					</Card>
-				) : (
-					<TransactionsList depositId={ depositId } />
-				) }
-			</ErrorBoundary>
+									components: {
+										learnMoreLink: (
+											<ExternalLink href="https://woo.com/document/woopayments/deposits/instant-deposits/#transactions" />
+										),
+									},
+								} ) }
+							</CardBody>
+						</Card>
+					) : (
+						<TransactionsList depositId={ depositId } />
+					) }
+				</ErrorBoundary>
+			) }
 		</Page>
 	);
 };
