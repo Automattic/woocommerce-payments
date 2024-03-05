@@ -29,6 +29,7 @@ import {
 	NoFundsAvailableForDepositNotice,
 	SuspendedDepositNotice,
 } from './deposit-notices';
+import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import useRecentDeposits from './hooks';
 import './style.scss';
 
@@ -68,6 +69,9 @@ const DepositsOverview: React.FC = () => {
 		! account?.deposits_blocked && hasCompletedWaitingPeriod;
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
 	const hasRecentDeposits = ! isLoading && deposits?.length > 0 && !! account;
+	const hasScheduledDeposits = hasAutomaticScheduledDeposits(
+		account?.deposits_schedule?.interval
+	);
 
 	// Show a loading state if the page is still loading.
 	if ( isLoading ) {
@@ -113,11 +117,10 @@ const DepositsOverview: React.FC = () => {
 			</CardHeader>
 
 			{ /* Deposit schedule message */ }
-			{ isDepositsUnrestricted && !! account && (
+			{ isDepositsUnrestricted && !! account && hasScheduledDeposits && (
 				<CardBody className="wcpay-deposits-overview__schedule__container">
 					<DepositSchedule
 						depositsSchedule={ account.deposits_schedule }
-						showNextDepositDate={ availableFunds > 0 }
 					/>
 				</CardBody>
 			) }

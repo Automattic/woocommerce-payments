@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: list of payment methods in disable confirmation modal

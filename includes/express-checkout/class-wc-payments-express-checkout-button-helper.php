@@ -109,7 +109,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data          += $this->build_display_items();
 		$data['result'] = 'success';
 
-		if ( $booking_id ) {
+		if ( ! empty( $booking_id ) ) {
 			$data['bookingId'] = $booking_id;
 		}
 
@@ -170,7 +170,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$currency  = get_woocommerce_currency();
 
 		// Default show only subtotal instead of itemization.
-		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', true ) || $itemized_display_items ) {
+		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', ! $itemized_display_items ) ) {
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				$amount         = $cart_item['line_subtotal'];
 				$subtotal      += $cart_item['line_subtotal'];

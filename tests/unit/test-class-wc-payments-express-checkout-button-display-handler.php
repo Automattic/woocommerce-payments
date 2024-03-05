@@ -143,6 +143,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->getMock();
 
 			$this->express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( $this->mock_wcpay_gateway, $this->mock_payment_request_button_handler, $this->mock_woopay_button_handler, $this->mock_express_checkout_helper );
+			$this->express_checkout_button_display_handler->init();
 
 		add_filter(
 			'woocommerce_available_payment_gateways',

@@ -30,7 +30,7 @@ describe( 'As a merchant, I should be prompted a confirmation modal when I try t
 			confirmationModalClass
 		);
 		await expect( confirmationModal ).toMatch(
-			'Are you sure you want to enable manual capture of payments?'
+			'Payments must be captured within 7 days or the authorization will expire and money will be returned to the shopper'
 		);
 	} );
 

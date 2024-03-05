@@ -24,7 +24,10 @@ const AVSMismatchRuleCard: React.FC = () => {
 		>
 			<FraudProtectionRuleToggle
 				setting="avs_verification"
-				label="Block transactions for mismatched AVS"
+				label={ __(
+					'Block transactions for mismatched AVS',
+					'woocommerce-payments'
+				) }
 			/>
 
 			<FraudProtectionRuleDescription>
