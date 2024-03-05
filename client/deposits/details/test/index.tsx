@@ -12,7 +12,7 @@ import React from 'react';
 import type { CachedDeposit } from 'types/deposits';
 import { DepositOverview } from '../';
 
-const mockDeposit = {
+const mockDeposit: CachedDeposit | undefined = {
 	id: 'po_mock',
 	date: '2020-01-02 17:46:02',
 	type: 'deposit',
@@ -22,7 +22,8 @@ const mockDeposit = {
 	automatic: true,
 	fee: 30,
 	fee_percentage: 1.5,
-} as CachedDeposit;
+	currency: 'USD',
+};
 
 declare const global: {
 	wcpaySettings: {
@@ -66,6 +67,14 @@ describe( 'Deposit overview', () => {
 	test( 'renders instant deposit correctly', () => {
 		const { container: overview } = render(
 			<DepositOverview deposit={ { ...mockDeposit, automatic: false } } />
+		);
+		expect( overview ).toMatchSnapshot();
+	} );
+
+	// test when deposit data could not be found, it renders a notice
+	test( 'renders notice when deposit data is not found', () => {
+		const { container: overview } = render(
+			<DepositOverview deposit={ undefined } />
 		);
 		expect( overview ).toMatchSnapshot();
 	} );

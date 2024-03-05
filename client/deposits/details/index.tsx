@@ -82,12 +82,23 @@ const SummaryItem: React.FC< SummaryItemProps > = ( {
 );
 
 interface DepositOverviewProps {
-	deposit: CachedDeposit;
+	deposit: CachedDeposit | undefined;
 }
 
 export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 	deposit,
 } ) => {
+	if ( ! deposit ) {
+		return (
+			<InlineNotice icon status="error" isDismissible={ false }>
+				{ __(
+					`The deposit you are looking for cannot be found.`,
+					'woocommerce-payments'
+				) }
+			</InlineNotice>
+		);
+	}
+
 	const depositDateLabel = deposit.automatic
 		? __( 'Deposit date', 'woocommerce-payments' )
 		: __( 'Instant deposit date', 'woocommerce-payments' );
@@ -179,21 +190,6 @@ interface DepositDetailsProps {
 	};
 }
 
-function loadDepositOverviewIfDepositPresent( deposit: CachedDeposit ) {
-	if ( deposit ) {
-		return <DepositOverview deposit={ deposit } />;
-	}
-
-	return (
-		<InlineNotice icon status="error" isDismissible={ false }>
-			{ __(
-				`The deposit you are looking for cannot be found.`,
-				'woocommerce-payments'
-			) }
-		</InlineNotice>
-	);
-}
-
 export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 	query: { id: depositId },
 } ) => {
@@ -208,7 +204,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 				{ isLoading ? (
 					<SummaryListPlaceholder numberOfItems={ 2 } />
 				) : (
-					loadDepositOverviewIfDepositPresent( deposit )
+					<DepositOverview deposit={ deposit } />
 				) }
 			</ErrorBoundary>
 
