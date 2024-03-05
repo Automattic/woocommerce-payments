@@ -1273,7 +1273,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Processes a refund for the given order.
+	 * Adds a note and metadata for a refund.
 	 *
 	 * @param WC_Order        $order The order to refund.
 	 * @param WC_Order_Refund $wc_refund The WC refund object.
