@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { isDueWithin } from '../utils';
+import { isDueWithin, isInquiry } from '../utils';
 
 describe( 'isDueWithin', () => {
 	// 2021-01-01T00:00:00.000Z
@@ -92,5 +92,21 @@ describe( 'isDueWithin', () => {
 		expect(
 			isDueWithin( { dueBy: '2020-12-31T23:59:00.000Z', days: 10 } )
 		).toBe( false );
+	} );
+} );
+
+describe( 'isInquiry', () => {
+	test( 'returns true if status is inquiry', () => {
+		expect( isInquiry( 'warning_needs_response' ) ).toBe( true );
+		expect( isInquiry( 'warning_under_review' ) ).toBe( true );
+		expect( isInquiry( 'warning_closed' ) ).toBe( true );
+	} );
+
+	test( 'returns false if status is not inquiry', () => {
+		expect( isInquiry( 'needs_response' ) ).toBe( false );
+		expect( isInquiry( 'under_review' ) ).toBe( false );
+		expect( isInquiry( 'charge_refunded' ) ).toBe( false );
+		expect( isInquiry( 'won' ) ).toBe( false );
+		expect( isInquiry( 'lost' ) ).toBe( false );
 	} );
 } );
