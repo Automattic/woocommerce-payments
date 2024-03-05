@@ -1283,7 +1283,7 @@ class WC_Payments_Order_Service {
 	 * @throws Exception
 	 */
 	public function process_order_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id ): void {
-		$note = ( new WC_Payments_Refunded_Event_Note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order ) )->generate_html_note();
+		$note = $this->generate_payment_refunded_note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order );
 
 		if ( ! $this->order_note_exists( $order, $note ) ) {
 			$order->add_order_note( $note );
@@ -1632,6 +1632,54 @@ class WC_Payments_Order_Service {
 			),
 			$status
 		);
+	}
+
+	/**
+	 * Generates the HTML note for a refunded payment.
+	 *
+	 * @param float    $refunded_amount Amount refunded.
+	 * @param string   $refunded_currency Refund currency.
+	 * @param string   $refund_id Refund ID.
+	 * @param string   $refund_reason Refund reason.
+	 * @param WC_Order $order Order object.
+	 * @return string HTML note.
+	 */
+	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, WC_Order $order ): string {
+		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+			wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ),
+			$order
+		);
+
+		if ( empty( $refund_reason ) ) {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
+					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				$formatted_price,
+				'WooPayments',
+				$refund_id
+			);
+		} else {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
+					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				$formatted_price,
+				'WooPayments',
+				$refund_reason,
+				$refund_id
+			);
+		}
+
+		return $note;
 	}
 
 	/**
