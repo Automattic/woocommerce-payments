@@ -1151,7 +1151,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_set_wcpay_refund_id() {
 		$wcpay_refund_id = 'ri_mock';
-		$this->order_service->set_wcpay_refund_id_for_order( $this->order, $wcpay_refund_id );
+		$this->order_service->set_wcpay_refund_id_for_refund( $this->order, $wcpay_refund_id );
 		$this->assertEquals( $this->order->get_meta( '_wcpay_refund_id', true ), $wcpay_refund_id );
 	}
 
@@ -1300,7 +1300,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $refund_reason, $order_note, 'Order note does not contain expected refund reason' );
 
 		$this->assertSame( 'successful', $order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY, true ) );
-		$this->assertSame( $refund_id, $order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY, true ) );
+		$this->assertSame( $refund_id, $wc_refund->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY, true ) );
 		$this->assertSame( $refund_balance_transaction_id, $order->get_refunds()[0]->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ) );
 
 		WC_Helper_Order::delete_order( $order->get_id() );
@@ -1326,7 +1326,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $refund_reason, $order_note, 'Order note does not contain expected refund reason' );
 
 		$this->assertSame( 'successful', $order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY, true ) );
-		$this->assertSame( $refund_id, $order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY, true ) );
+		$this->assertSame( $refund_id, $wc_refund->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY, true ) );
 		$this->assertSame( $refund_balance_transaction_id, $order->get_refunds()[0]->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ) );
 
 		WC_Helper_Order::delete_order( $order->get_id() );

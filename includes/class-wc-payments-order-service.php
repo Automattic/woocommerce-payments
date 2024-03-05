@@ -687,7 +687,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function set_wcpay_refund_id_for_order( $order, $wcpay_refund_id ) {
+	public function set_wcpay_refund_id_for_refund( $order, $wcpay_refund_id ) {
 		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_REFUND_ID_META_KEY, $wcpay_refund_id );
 		$order->save_meta_data();
@@ -1291,7 +1291,7 @@ class WC_Payments_Order_Service {
 
 		// Set refund metadata.
 		$this->set_wcpay_refund_status_for_order( $order, 'successful' );
-		$this->set_wcpay_refund_id_for_order( $order, $refund_id );
+		$this->set_wcpay_refund_id_for_refund( $wc_refund, $refund_id );
 		if ( isset( $refund_balance_transaction_id ) ) {
 			$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );
 		}
