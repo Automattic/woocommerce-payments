@@ -831,10 +831,15 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 		// This is to avoid processing the same refund multiple times in case of a webhook retry.
-		if ( $refund_id === $this->order_service->get_wcpay_refund_id_for_order( $order ) ) {
-			return;
+		$wc_refunds = $order->get_refunds();
+		if ( ! empty( $wc_refunds ) ) {
+			foreach ( $wc_refunds as $wc_refund ) {
+				$wcpay_refund_id = $this->order_service->get_wcpay_refund_id_for_order( $wc_refund );
+				if ( $refund_id === $wcpay_refund_id ) {
+					return;
+				}
+			}
 		}
-
 		if ( $charge_amount < 0 || $refunded_amount > $order->get_total() ) {
 			throw new Invalid_Webhook_Data_Exception(
 				sprintf(

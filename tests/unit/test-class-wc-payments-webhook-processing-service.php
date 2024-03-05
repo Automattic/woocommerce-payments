@@ -1442,10 +1442,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( $this->mock_order );
 
 		$this->order_service
-			->expects( $this->once() )
-			->method( 'get_wcpay_refund_id_for_order' )
-			->with( $this->mock_order )
-			->willReturn( 'test_refund_id_other' );
+			->expects( $this->never() )
+			->method( 'get_wcpay_refund_id_for_order' );
 
 		$mock_refund = $this->createMock( WC_Order_Refund::class );
 
@@ -1505,6 +1503,66 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'add_note_and_metadata_for_refund' )
 			->with( $this->mock_order, $mock_refund, 'test_refund_id', 'txn_123' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function test_process_refund_ignores_processed_event(): void {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'                  => 'test_refund_id',
+						'amount'              => 1800,
+						'currency'            => 'usd',
+						'reason'              => 'requested_by_customer',
+						'balance_transaction' => 'txn_123',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+		];
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'get_total' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'get_items' );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_refunds' )
+			->willReturn(
+				[
+					$this->createMock( WC_Order_Refund::class ),
+				]
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'get_wcpay_refund_id_for_order' )
+			->willReturn( 'test_refund_id' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'create_refund_for_order' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'add_note_and_metadata_for_refund' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
