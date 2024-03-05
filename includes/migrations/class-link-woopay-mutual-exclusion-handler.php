@@ -58,8 +58,7 @@ class Link_WooPay_Mutual_Exclusion_Handler {
 	 * Does the actual migration as described in the class docblock.
 	 */
 	private function migrate() {
-		// check if Stripe Link is enabled and also if WooPay should be enabled
-		// if both requirements met, disable Stripe Link.
+		// check if both Stripe Link and WooPay are enabled and if so - disable Stripe Link.
 		$enabled_payment_methods   = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 		$enabled_stripe_link_index = array_search( 'link', $enabled_payment_methods, true );
 
