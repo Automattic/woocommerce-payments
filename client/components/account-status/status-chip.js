@@ -12,6 +12,7 @@ import Chip from 'components/chip';
 import './style.scss';
 
 const StatusChip = ( props ) => {
+	// TODO add status under review.
 	const { accountStatus, poEnabled, poComplete } = props;
 
 	let description = __( 'Unknown', 'woocommerce-payments' );
