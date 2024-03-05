@@ -845,7 +845,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, ( ! $is_partial_refund ? $order->get_items() : [] ) );
+		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, ( ! $is_partial_refund ? $order->get_items() : [] ) );
 		// Process the refund in the order service.
 		$this->order_service->process_order_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
 	}

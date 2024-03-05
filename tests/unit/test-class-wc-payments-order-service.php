@@ -1290,7 +1290,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$refund_reason                 = 'Test refund';
 		$refund_balance_transaction_id = 'txn_1J2a3B4c5D6e7F8g9H0';
 
-		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, $order->get_items() );
+		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, $order->get_items() );
 
 		$this->order_service->process_order_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
 
@@ -1314,7 +1314,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$refund_id                     = 're_1J2a3B4c5D6e7F8g9H0';
 		$refund_reason                 = 'Test refund';
 		$refund_balance_transaction_id = 'txn_1J2a3B4c5D6e7F8g9H0';
-		$wc_refund                     = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_id, $refund_reason, $order->get_items() );
+		$wc_refund                     = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, $order->get_items() );
 
 		$this->order_service->process_order_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
 

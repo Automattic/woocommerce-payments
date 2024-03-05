@@ -1245,18 +1245,16 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order $order The order to refund.
 	 * @param float    $amount The amount to refund.
-	 * @param string   $refund_id The refund ID.
 	 * @param string   $reason The reason for the refund.
 	 * @param array    $line_items The line items to refund.
 	 *
 	 * @throws Exception If the refund creation fails.
 	 */
-	public function create_refund_for_order( WC_Order $order, float $amount, string $refund_id, string $reason = '', array $line_items = [] ) {
+	public function create_refund_for_order( WC_Order $order, float $amount, string $reason = '', array $line_items = [] ) {
 		$refund_params = [
-			'amount'    => $amount,
-			'reason'    => $reason,
-			'order_id'  => $order->get_id(),
-			'refund_id' => $refund_id,
+			'amount'   => $amount,
+			'reason'   => $reason,
+			'order_id' => $order->get_id(),
 		];
 
 		if ( $line_items ) {
