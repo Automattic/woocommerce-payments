@@ -22,7 +22,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WC_Payment_Gateway_WCPay;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-
+use WCPay\WooPay\WooPay_Session;
 
 /**
  * WC_Payments_Checkout
@@ -202,7 +202,10 @@ class WC_Payments_Checkout {
 			'woopaySessionNonce'             => wp_create_nonce( 'woopay_session_nonce' ),
 			'woopayMerchantId'               => Jetpack_Options::get_option( 'id' ),
 			'icon'                           => $this->gateway->get_icon_url(),
+			'woopayMinimumSessionData'       => WooPay_Session::get_woopay_minimum_session_data(),
 		];
+
+
 
 		/**
 		 * Allows filtering of the JS config for the payment fields.

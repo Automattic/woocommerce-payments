@@ -561,7 +561,7 @@ class WooPay_Session {
 	 *
 	 * @return void
 	 */
-	public static function ajax_get_woopay_redirect_data() {
+	public static function ajax_get_woopay_minimum_session_data() {
 		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
 
 		if ( ! $is_nonce_valid ) {
@@ -579,15 +579,27 @@ class WooPay_Session {
 			);
 		}
 
-		$response = [
-			'blog_id'           => Jetpack_Options::get_option( 'id' ),
+		wp_send_json( self::get_woopay_minimum_session_data() );
+	}
+
+	/**
+	 * Return WooPay minimum session data.
+	 * 
+	 * @return array Array of minimum session data used by WooPay or false on failures.
+	 */
+	public static function get_woopay_minimum_session_data() {
+		$blog_id = Jetpack_Options::get_option('id');
+		if ( empty( $blog_id ) ) {
+			return [];
+		}
+
+		return [
+			'blog_id'           => $blog_id,
 			'blog_rest_url'     => get_rest_url(),
-			'blog_checkout_url' => wc_get_checkout_url(), // TODO: Handle pay for order checkout.
+			'blog_checkout_url' => wc_get_checkout_url(),
 			'session_nonce'     => self::create_woopay_nonce( get_current_user_id() ),
 			'store_api_token'   => self::init_store_api_token(),
 		];
-
-		wp_send_json( $response );
 	}
 
 	/**

@@ -1424,7 +1424,7 @@ class WC_Payments {
 			add_action( 'wc_ajax_wcpay_init_woopay', [ WooPay_Session::class, 'ajax_init_woopay' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_session', [ WooPay_Session::class, 'ajax_get_woopay_session' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
-			add_action( 'wc_ajax_wcpay_get_woopay_redirect_data', [ WooPay_Session::class, 'ajax_get_woopay_redirect_data' ] );
+			add_action( 'wc_ajax_wcpay_get_woopay_minimum_session_data', [ WooPay_Session::class, 'ajax_get_woopay_minimum_session_data' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
 			// We should remove this once both features are available by default in the WC minimum supported version.

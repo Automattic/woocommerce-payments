@@ -149,9 +149,9 @@ class WoopayDirectCheckout {
 	 *
 	 * @return {string} WooPay redirect URL with parameters.
 	 */
-	static async getWooPaySessionCheckUrl() {
-		const redirectData = await this.getWooPayRedirectDataFromMerchant();
-		if ( redirectData.success === false ) {
+	static async getWooPayCacheSessionUrl() {
+		const redirectData = await this.getWooPayMinimumSesssionDataFromMerchant();
+		if ( redirectData?.success === false ) {
 			throw new Error(
 				'Could not retrieve redirect data from merchant.'
 			);
@@ -224,7 +224,7 @@ class WoopayDirectCheckout {
 					if ( userIsLoggedIn ) {
 						woopayRedirectUrl = await this.getWooPayCheckoutUrl();
 					} else {
-						woopayRedirectUrl = await this.getWooPaySessionCheckUrl();
+						woopayRedirectUrl = await this.getWooPayCacheSessionUrl();
 					}
 
 					this.teardown();
@@ -260,11 +260,15 @@ class WoopayDirectCheckout {
 	 *
 	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay redirect response.
 	 */
-	static async getWooPayRedirectDataFromMerchant() {
+	static async getWooPayMinimumSesssionDataFromMerchant() {
+		if ( getConfig( 'woopayMinimumSessionData' ) ) {
+			return getConfig( 'woopayMinimumSessionData' );
+		}
+
 		return request(
 			buildAjaxURL(
 				getConfig( 'wcAjaxUrl' ),
-				'get_woopay_redirect_data'
+				'get_woopay_minimum_session_data'
 			),
 			{
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
