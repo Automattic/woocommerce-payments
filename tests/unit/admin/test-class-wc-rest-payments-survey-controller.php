@@ -8,7 +8,7 @@
 /**
  * WC_REST_Payments_Survey_Controller_Test unit tests.
  */
-class WC_REST_Payments_Survey_Controller_Test extends WCPAY_UnitTestCase {
+class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 
 	/**
 	 * Tested REST route.
@@ -32,8 +32,8 @@ class WC_REST_Payments_Survey_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function set_up() {
-		parent::set_up();
+	public function setUp(): void {
+		parent::setUp();
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
@@ -43,9 +43,9 @@ class WC_REST_Payments_Survey_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_empty_request_returns_400_status_code() {
-		$request = new WP_REST_Request( 'POST', self::ROUTE );
+		$request = new WP_REST_Request( 'POST', self::ROUTE . '/payments-overview' );
 
-		$response = $this->controller->submit_survey( $request );
+		$response = $this->controller->submit_payments_overview_survey( $request );
 
 		$this->assertEquals( 400, $response->get_status() );
 	}
@@ -63,22 +63,17 @@ class WC_REST_Payments_Survey_Controller_Test extends WCPAY_UnitTestCase {
 					$this->arrayHasKey( 'survey_responses' ),
 					$this->callback(
 						function ( $argument ) {
-							return 'wcpay-upe-disable-early-access-2022-may' === $argument['survey_id'];
+							return 'wcpay-payments-overview' === $argument['survey_id'];
 						}
 					),
 					$this->callback(
 						function ( $argument ) {
-							return 'slow' === $argument['survey_responses']['why-disable'];
+							return '4' === $argument['survey_responses']['rating'];
 						}
 					),
 					$this->callback(
 						function ( $argument ) {
 							return 'test comment' === $argument['survey_responses']['comments']['text'];
-						}
-					),
-					$this->callback(
-						function ( $argument ) {
-							return 'System Status Report' === $argument['survey_responses']['ssr']['text'];
 						}
 					)
 				)
@@ -90,16 +85,15 @@ class WC_REST_Payments_Survey_Controller_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$request = new WP_REST_Request( 'POST', self::ROUTE );
+		$request = new WP_REST_Request( 'POST', self::ROUTE . '/payments-overview' );
 		$request->set_body_params(
 			[
-				'why-disable' => 'slow',
-				'comments'    => 'test comment',
-				'ssr'         => 'System Status Report',
+				'rating'   => '4',
+				'comments' => 'test comment',
 			]
 		);
 
-		$response = $this->controller->submit_survey( $request );
+		$response = $this->controller->submit_payments_overview_survey( $request );
 
 		$this->assertEquals( 200, $response->get_status() );
 	}
