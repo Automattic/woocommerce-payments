@@ -45,6 +45,7 @@ const mockAccount: AccountOverview.Account = {
 		weekly_anchor: 'Monday',
 		monthly_anchor: 1,
 	},
+	external_accounts: [],
 };
 
 declare const global: {

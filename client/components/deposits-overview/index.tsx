@@ -73,8 +73,11 @@ const DepositsOverview: React.FC = () => {
 	const hasScheduledDeposits = hasAutomaticScheduledDeposits(
 		account?.deposits_schedule?.interval
 	);
-	const hasErroredExternalAccount = account?.external_accounts?.some( 
-			external_account => external_account.currency === selectedCurrency && external_account.status === 'errored'
+	const hasErroredExternalAccount =
+		account?.external_accounts?.some(
+			( externalAccount ) =>
+				externalAccount.currency === selectedCurrency &&
+				externalAccount.status === 'errored'
 		) ?? false;
 
 	// Show a loading state if the page is still loading.
