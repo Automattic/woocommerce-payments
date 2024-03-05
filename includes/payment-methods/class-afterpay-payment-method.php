@@ -29,7 +29,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title                        = __( 'Afterpay', 'woocommerce-payments' );
 		$this->is_reusable                  = false;
-		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/afterpay.svg', WCPAY_PLUGIN_FILE );
+		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/afterpay-logo.svg', WCPAY_PLUGIN_FILE );
 		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR, Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::NEW_ZEALAND_DOLLAR, Currency_Code::POUND_STERLING ];
 		$this->accept_only_domestic_payment = true;
 		$this->limits_per_currency          = [
@@ -92,7 +92,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
 		}
 
-		return plugins_url( 'assets/images/payment-methods/afterpay.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/afterpay-badge.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

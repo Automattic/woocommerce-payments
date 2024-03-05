@@ -54,5 +54,26 @@ button.wcpay-stripelink-modal-trigger:hover {
 	}
 }
 
+#payment-method {
+	label img {
+		float: right;
+		border: 0;
+		padding: 0;
+		max-height: 1.618em;
+		min-height: 30px;
+	}
+
+	/* stylelint-disable-next-line selector-id-pattern */
+	#radio-control-wc-payment-method-options-woocommerce_payments_affirm__label
+		img {
+		min-width: 50px;
+	}
+	/* stylelint-disable-next-line selector-id-pattern */
+	#radio-control-wc-payment-method-options-woocommerce_payments_afterpay_clearpay__label
+		img {
+		min-width: 64px;
+	}
+}
+
 @import '../woopay/style';
 @import '../../components/loadable/style';

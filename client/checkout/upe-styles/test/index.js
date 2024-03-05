@@ -6,13 +6,15 @@ import * as upeStyles from '../index';
 describe( 'Getting styles for automated theming', () => {
 	const mockElement = document.createElement( 'input' );
 	const mockCSStyleDeclaration = {
-		length: 6,
+		length: 8,
 		0: 'color',
 		1: 'backgroundColor',
 		2: 'fontFamily',
 		3: 'unsuportedProperty',
 		4: 'outlineColor',
 		5: 'outlineWidth',
+		6: 'fontSize',
+		7: 'padding',
 		getPropertyValue: ( propertyName ) => {
 			const cssProperties = {
 				fontFamily:
@@ -22,6 +24,8 @@ describe( 'Getting styles for automated theming', () => {
 				unsuportedProperty: 'some value',
 				outlineColor: 'rgb(150, 88, 138)',
 				outlineWidth: '1px',
+				fontSize: '12px',
+				padding: '10px',
 			};
 			return cssProperties[ propertyName ];
 		},
@@ -40,11 +44,13 @@ describe( 'Getting styles for automated theming', () => {
 			'.Input'
 		);
 		expect( fieldStyles ).toEqual( {
-			backgroundColor: 'rgba(0, 0, 0, 0)',
+			backgroundColor: 'rgb(0, 0, 0)',
 			color: 'rgb(109, 109, 109)',
 			fontFamily:
 				'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+			fontSize: '12px',
 			outline: '1px solid rgb(150, 88, 138)',
+			padding: '10px',
 		} );
 	} );
 
@@ -115,47 +121,54 @@ describe( 'Getting styles for automated theming', () => {
 
 		const appearance = upeStyles.getAppearance();
 		expect( appearance ).toEqual( {
+			variables: {
+				colorBackground: '#ffffff',
+				colorText: 'rgb(109, 109, 109)',
+				fontFamily:
+					'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+				fontSizeBase: '12px',
+			},
+			theme: 'stripe',
 			rules: {
 				'.Input': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
+					backgroundColor: 'rgb(0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 					outline: '1px solid rgb(150, 88, 138)',
+					fontSize: '12px',
+					padding: '10px',
 				},
 				'.Input--invalid': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
+					backgroundColor: 'rgb(0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 					outline: '1px solid rgb(150, 88, 138)',
-				},
-				'.Input:focus': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-					color: 'rgb(109, 109, 109)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					outline: '1px solid rgb(150, 88, 138)',
+					fontSize: '12px',
+					padding: '10px',
 				},
 				'.Label': {
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
 				},
 				'.Tab': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
+					backgroundColor: 'rgb(0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab:hover': {
-					backgroundColor: 'rgba(18, 18, 18, 0)',
+					backgroundColor: 'rgb(18, 18, 18)',
 					color: 'rgb(255, 255, 255)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab--selected': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
+					backgroundColor: 'rgb(0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					outline: '1px solid rgb(150, 88, 138)',
 				},
@@ -169,11 +182,19 @@ describe( 'Getting styles for automated theming', () => {
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
 				},
 				'.Text--redirect': {
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Block': {
+					padding: '10px',
+					backgroundColor: '#ffffff',
 				},
 			},
 		} );

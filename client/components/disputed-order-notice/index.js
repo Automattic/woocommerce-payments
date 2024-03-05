@@ -43,7 +43,7 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 
 	// Special case the dispute "under review" notice which is much simpler.
 	// (And return early.)
-	if ( isUnderReview( dispute.status ) && ! isInquiry( dispute ) ) {
+	if ( isUnderReview( dispute.status ) && ! isInquiry( dispute.status ) ) {
 		return (
 			<DisputeOrderLockedNotice
 				message={ __(
@@ -100,7 +100,7 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 				dispute.amount,
 				dispute.currency
 			) }
-			isPreDisputeInquiry={ isInquiry( dispute ) }
+			isPreDisputeInquiry={ isInquiry( dispute.status ) }
 			dueBy={ dueBy }
 			countdownDays={ Math.floor( dueBy.diff( now, 'days', true ) ) }
 			disputeDetailsUrl={ disputeDetailsUrl }
