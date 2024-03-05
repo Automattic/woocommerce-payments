@@ -84,6 +84,13 @@ abstract class UPE_Payment_Method {
 	protected $icon_url;
 
 	/**
+	 * Payment method icon URL for dark themes (optional)
+	 *
+	 * @var string
+	 */
+	protected $dark_icon_url;
+
+	/**
 	 * Supported customer locations for which charges for a payment method can be processed
 	 * Empty if all customer locations are supported
 	 *
@@ -239,6 +246,16 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_icon( string $account_country = null ) {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
+	}
+
+	/**
+	 * Returns icon to use on dark themes.
+	 *
+	 * @param string|null $account_country Optional account country.
+	 * @return string
+	 */
+	public function get_dark_icon( string $account_country = null ) {
+		return isset( $this->dark_icon_url ) ? $this->dark_icon_url : $this->get_icon( $account_country );
 	}
 
 	/**
