@@ -12,7 +12,7 @@ import React from 'react';
 import type { CachedDeposit } from 'types/deposits';
 import { DepositOverview } from '../';
 
-const mockDeposit: CachedDeposit | undefined = {
+const mockDeposit = {
 	id: 'po_mock',
 	date: '2020-01-02 17:46:02',
 	type: 'deposit',
@@ -23,7 +23,7 @@ const mockDeposit: CachedDeposit | undefined = {
 	fee: 30,
 	fee_percentage: 1.5,
 	currency: 'USD',
-};
+} as CachedDeposit;
 
 declare const global: {
 	wcpaySettings: {
