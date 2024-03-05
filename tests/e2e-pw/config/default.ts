@@ -108,7 +108,7 @@ export const config = {
 			number: '4242424242424242',
 			expires: {
 				month: '02',
-				year: '24',
+				year: '45',
 			},
 			cvc: '424',
 			label: 'Visa ending in 4242',
@@ -117,7 +117,7 @@ export const config = {
 			number: '4111111111111111',
 			expires: {
 				month: '11',
-				year: '25',
+				year: '45',
 			},
 			cvc: '123',
 			label: 'Visa ending in 1111',
@@ -126,7 +126,7 @@ export const config = {
 			number: '378282246310005',
 			expires: {
 				month: '11',
-				year: '30',
+				year: '45',
 			},
 			cvc: '1234',
 			label: 'Amex ending in 0005',
@@ -135,7 +135,7 @@ export const config = {
 			number: '4000002760003184',
 			expires: {
 				month: '03',
-				year: '25',
+				year: '45',
 			},
 			cvc: '525',
 			label: 'Visa ending in 3184',
@@ -144,7 +144,7 @@ export const config = {
 			number: '4000002500003155',
 			expires: {
 				month: '04',
-				year: '36',
+				year: '45',
 			},
 			cvc: '626',
 			label: 'Visa ending in 3155',
@@ -153,7 +153,7 @@ export const config = {
 			number: '4000000000003220',
 			expires: {
 				month: '04',
-				year: '36',
+				year: '45',
 			},
 			cvc: '626',
 			label: 'Visa ending in 3220',
@@ -162,7 +162,7 @@ export const config = {
 			number: '4000000000000259',
 			expires: {
 				month: '05',
-				year: '25',
+				year: '45',
 			},
 			cvc: '525',
 			label: 'Visa ending in 0259',
@@ -171,7 +171,7 @@ export const config = {
 			number: '4000000000002685',
 			expires: {
 				month: '06',
-				year: '25',
+				year: '45',
 			},
 			cvc: '626',
 			label: 'Visa ending in 2685',
@@ -180,7 +180,7 @@ export const config = {
 			number: '4000000000000002',
 			expires: {
 				month: '06',
-				year: '25',
+				year: '45',
 			},
 			cvc: '626',
 			label: 'Visa ending in 0002',
@@ -189,7 +189,7 @@ export const config = {
 			number: '4000000000009995',
 			expires: {
 				month: '06',
-				year: '25',
+				year: '45',
 			},
 			cvc: '626',
 			label: 'Visa ending in 9995',
@@ -198,7 +198,7 @@ export const config = {
 			number: '4242424242424241',
 			expires: {
 				month: '06',
-				year: '25',
+				year: '45',
 			},
 			cvc: '626',
 			label: 'Visa ending in 4241',
@@ -216,7 +216,7 @@ export const config = {
 			number: '4000000000000127',
 			expires: {
 				month: '06',
-				year: '25',
+				year: '45',
 			},
 			cvc: '626',
 			label: 'Visa ending in 0127',
@@ -225,7 +225,7 @@ export const config = {
 			number: '4000000000000119',
 			expires: {
 				month: '06',
-				year: '25',
+				year: '45',
 			},
 			cvc: '626',
 			label: 'Visa ending in 0119',
@@ -234,7 +234,7 @@ export const config = {
 			number: '4000008400001629',
 			expires: {
 				month: '06',
-				year: '25',
+				year: '45',
 			},
 			cvc: '626',
 			label: 'Visa ending in 1629',
@@ -252,7 +252,7 @@ export const config = {
 			number: '4242424242424242',
 			expires: {
 				month: '06',
-				year: '24',
+				year: '45',
 			},
 			cvc: '11',
 			label: 'Visa ending in 4242',
