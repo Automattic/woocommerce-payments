@@ -97,7 +97,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
-			->setMethods( [ 'get_wcpay_refund_id_for_order', 'process_order_refund', 'create_refund_for_order' ] )
+			->setMethods( [ 'get_wcpay_refund_id_for_order', 'add_note_and_metadata_for_refund', 'create_refund_for_order' ] )
 			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
@@ -1456,7 +1456,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->once() )
-			->method( 'process_order_refund' )
+			->method( 'add_note_and_metadata_for_refund' )
 			->with( $this->mock_order, $mock_refund, 'test_refund_id', 'txn_123' );
 
 		$this->webhook_processing_service->process( $this->event_body );
@@ -1503,7 +1503,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->once() )
-			->method( 'process_order_refund' )
+			->method( 'add_note_and_metadata_for_refund' )
 			->with( $this->mock_order, $mock_refund, 'test_refund_id', 'txn_123' );
 
 		$this->webhook_processing_service->process( $this->event_body );
@@ -1518,7 +1518,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->never() )
-			->method( 'process_order_refund' );
+			->method( 'add_note_and_metadata_for_refund' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -1549,7 +1549,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->never() )
-			->method( 'process_order_refund' );
+			->method( 'add_note_and_metadata_for_refund' );
 	}
 
 	public function test_process_refund_throws_when_order_not_found(): void {

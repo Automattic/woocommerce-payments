@@ -2287,7 +2287,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return new WP_Error( 'wcpay_edit_order_refund_not_found', sprintf( __( 'A refund cannot be found for order: %1$s', 'woocommerce-payments' ), $order->get_id() ) );
 		}
 		// If the refund was successful, add a note to the order and update the refund status.
-		$this->order_service->process_order_refund( $order, $wc_refund, $refund['id'], $refund['balance_transaction'] ?? null );
+		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund['id'], $refund['balance_transaction'] ?? null );
 
 		return true;
 	}

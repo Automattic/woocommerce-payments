@@ -1282,7 +1282,7 @@ class WC_Payments_Order_Service {
 	 * @throws Order_Not_Found_Exception
 	 * @throws Exception
 	 */
-	public function process_order_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id ): void {
+	public function add_note_and_metadata_for_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id ): void {
 		$note = $this->generate_payment_refunded_note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order );
 
 		if ( ! $this->order_note_exists( $order, $note ) ) {

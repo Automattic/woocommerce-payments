@@ -1281,7 +1281,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->attach_transaction_fee_to_order( $mock_order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' ) );
 	}
 
-	public function test_process_order_refund_fully_refunded(): void {
+	public function test_add_note_and_metadata_for_refund_fully_refunded(): void {
 		$order = WC_Helper_Order::create_order();
 		$order->save();
 
@@ -1292,7 +1292,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, $order->get_items() );
 
-		$this->order_service->process_order_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
+		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
 
 		$order_note = wc_get_order_notes( [ 'order_id' => $order->get_id() ] )[0]->content;
 		$this->assertStringContainsString( $refunded_amount, $order_note, 'Order note does not contain expected refund amount' );
@@ -1306,7 +1306,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
 
-	public function test_process_order_refund_partially_refunded(): void {
+	public function test_add_note_and_metadata_for_refund_partially_refunded(): void {
 		$order = WC_Helper_Order::create_order();
 		$order->save();
 
@@ -1316,7 +1316,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$refund_balance_transaction_id = 'txn_1J2a3B4c5D6e7F8g9H0';
 		$wc_refund                     = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, $order->get_items() );
 
-		$this->order_service->process_order_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
+		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
 
 		$this->assertSame( Order_Status::PENDING, $order->get_status() );
 
