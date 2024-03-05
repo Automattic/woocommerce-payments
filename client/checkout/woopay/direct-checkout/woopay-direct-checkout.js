@@ -8,10 +8,10 @@ import UserConnect from 'wcpay/checkout/woopay/connect/user-connect';
 import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
 
 /**
- * The WoopayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
+ * The WooPayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
  * page and for handling the communication between the WooPayConnectIframe and the page.
  */
-class WoopayDirectCheckout {
+class WooPayDirectCheckout {
 	static userConnect;
 	static sessionConnect;
 	static encryptedSessionDataPromise;
@@ -55,7 +55,7 @@ class WoopayDirectCheckout {
 	}
 
 	/**
-	 * Teardown WoopayDirectCheckout.
+	 * Teardown WooPayDirectCheckout.
 	 */
 	static teardown() {
 		this.sessionConnect?.detachMessageListener();
@@ -266,4 +266,4 @@ class WoopayDirectCheckout {
 	}
 }
 
-export default WoopayDirectCheckout;
+export default WooPayDirectCheckout;
