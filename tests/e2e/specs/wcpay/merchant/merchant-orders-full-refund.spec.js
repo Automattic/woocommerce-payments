@@ -39,19 +39,18 @@ describe( 'Order > Full refund', () => {
 		);
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 
+		// Get the order total so we can verify the refund amount
+		const orderTotalField = await page.$(
+			'.woocommerce-order-overview__total .woocommerce-Price-amount'
+		);
+		orderAmount = await orderTotalField.evaluate( ( el ) => el.innerText );
+
 		// Login and open the order
 		await merchant.login();
 		await merchant.goToOrder( orderId );
 
 		// We need to remove any listeners on the `dialog` event otherwise we can't catch the dialog below
 		await page.removeAllListeners( 'dialog' );
-
-		// Get the order price
-		const priceElement = await page.$( '.woocommerce-Price-amount' );
-		orderAmount = await page.evaluate(
-			( el ) => el.textContent,
-			priceElement
-		);
 	} );
 
 	afterAll( async () => {
