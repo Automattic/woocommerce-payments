@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Include gateway name in order-placed Tracks event
