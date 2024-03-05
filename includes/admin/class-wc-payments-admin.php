@@ -853,6 +853,7 @@ class WC_Payments_Admin {
 				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
 			],
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
+			'isOverviewSurveySubmitted'     => get_option( 'wcpay_survey_overview', false ),
 			'trackingInfo'                  => $this->account->get_tracking_info(),
 		];
 

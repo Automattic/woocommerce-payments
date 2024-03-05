@@ -134,7 +134,7 @@ const OverviewPage = () => {
 			<JetpackIdcNotice />
 			{ ! isOverviewSurveySubmitted && (
 				<WcPayOverviewSurveyContextProvider>
-					<Survey></Survey>
+					<Survey />
 				</WcPayOverviewSurveyContextProvider>
 			) }
 			{ showLoanOfferError && (
