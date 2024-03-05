@@ -15,6 +15,11 @@ class WoopayDirectCheckout {
 	static userConnect;
 	static sessionConnect;
 	static encryptedSessionDataPromise;
+	static redirectElements = {
+		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout .checkout-button',
+		BLOCKS_CART_PROCEED_BUTTON:
+			'.wp-block-woocommerce-proceed-to-checkout-block a',
+	};
 
 	/**
 	 * Initializes the WooPay direct checkout feature.
@@ -152,11 +157,12 @@ class WoopayDirectCheckout {
 			}
 		};
 
-		// Classic 'Proceed to Checkout' button.
-		addElementBySelector( '.wc-proceed-to-checkout' );
-		// Blocks 'Proceed to Checkout' button.
+		// For every new element added here, ensure the selector is added to the redirectElements object.
 		addElementBySelector(
-			'.wp-block-woocommerce-proceed-to-checkout-block'
+			this.redirectElements.CLASSIC_CART_PROCEED_BUTTON
+		);
+		addElementBySelector(
+			this.redirectElements.BLOCKS_CART_PROCEED_BUTTON
 		);
 
 		return elements;
