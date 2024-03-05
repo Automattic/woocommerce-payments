@@ -215,6 +215,7 @@ class WC_Payments_Checkout {
 		$payment_fields['addPaymentReturnURL']      = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']                = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$payment_fields['isCheckout']               = is_checkout();
+		$payment_fields['isCart']                   = is_cart();
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
 		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
 		$payment_fields['upeAppearance']            = get_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );

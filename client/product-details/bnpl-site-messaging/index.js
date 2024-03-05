@@ -10,13 +10,22 @@ export const initializeBnplSiteMessaging = () => {
 		country,
 		publishableKey,
 		paymentMethods,
+		currencyCode,
 	} = window.wcpayStripeSiteMessaging;
+
+	let amount;
+
+	if ( window.wcpayConfig.isCart ) {
+		amount = parseInt( window.wcpayConfig.cartTotal, 10 ) || 0;
+	} else {
+		amount = parseInt( productVariations.base_product.amount, 10 ) || 0;
+	}
 
 	// eslint-disable-next-line no-undef
 	const stripe = Stripe( publishableKey );
 	const options = {
-		amount: parseInt( productVariations.base_product.amount, 10 ) || 0,
-		currency: productVariations.base_product.currency || 'USD',
+		amount: amount,
+		currency: currencyCode || 'USD',
 		paymentMethodTypes: paymentMethods || [],
 		countryCode: country, // Customer's country or base country of the store.
 	};

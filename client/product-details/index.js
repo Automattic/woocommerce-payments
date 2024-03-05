@@ -23,10 +23,16 @@ jQuery( function ( $ ) {
 	}
 
 	const { productVariations, productId } = window.wcpayStripeSiteMessaging;
-	const {
-		amount: baseProductAmount = 0,
-		currency: productCurrency,
-	} = productVariations[ productId ];
+
+	let baseProductAmount = 0;
+	let productCurrency;
+
+	if ( productVariations ) {
+		const { amount, currency } = productVariations[ productId ];
+
+		baseProductAmount = amount || 0;
+		productCurrency = currency;
+	}
 	const QUANTITY_INPUT_SELECTOR = '.quantity input[type=number]';
 	const SINGLE_VARIATION_SELECTOR = '.single_variation_wrap';
 	const VARIATIONS_SELECTOR = '.variations';
