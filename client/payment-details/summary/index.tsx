@@ -210,7 +210,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// present, partial refund is not possible.
 	const isPartiallyRefundable = charge.order && charge.order.number;
 
-	const hasRefundedAmount = charge.amount_refunded > 0;
+	const isPartiallyRefunded = charge.amount_refunded > 0;
 
 	// Control menu only shows refund actions for now. In the future, it may show other actions.
 	const showControlMenu =
@@ -556,7 +556,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								>
 									{ ( { onClose } ) => (
 										<MenuGroup>
-											{ ! hasRefundedAmount && (
+											{ ! isPartiallyRefunded && (
 												<MenuItem
 													onClick={ () => {
 														setIsRefundModalOpen(
