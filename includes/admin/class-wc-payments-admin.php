@@ -375,7 +375,7 @@ class WC_Payments_Admin {
 			]
 		);
 
-		if ( $this->account->is_account_rejected() ) {
+		if ( $this->account->is_account_rejected() || $this->account->is_account_under_review() ) {
 			// If the account is rejected, only show the overview page.
 			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
 			return;

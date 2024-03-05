@@ -12,7 +12,6 @@ import Chip from 'components/chip';
 import './style.scss';
 
 const StatusChip = ( props ) => {
-	// TODO add status under review.
 	const { accountStatus, poEnabled, poComplete } = props;
 
 	let description = __( 'Unknown', 'woocommerce-payments' );
@@ -46,6 +45,9 @@ const StatusChip = ( props ) => {
 		type = 'alert';
 	} else if ( accountStatus.startsWith( 'rejected' ) ) {
 		description = __( 'Rejected', 'woocommerce-payments' );
+		type = 'light';
+	} else if ( accountStatus === 'under_review' ) {
+		description = __( 'Under review', 'woocommerce-payments' );
 		type = 'light';
 	}
 
