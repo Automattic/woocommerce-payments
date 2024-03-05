@@ -8,13 +8,20 @@ import React from 'react';
 /**
  * Internal dependencies.
  */
-import { Card, CardBody, Button, TextareaControl } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	Button,
+	TextareaControl,
+	Icon,
+} from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import './style.scss';
 import Emoticons from 'wcpay/overview/survey/emoticons';
 import { HorizontalRule } from '@wordpress/primitives';
 import { useOverviewSurveyContext } from './context';
 import { OverviewSurveyFields } from 'wcpay/overview/survey/types';
+import close from 'wcpay/overview/survey/icons/close';
 
 const Survey = () => {
 	const { status } = useOverviewSurveyContext();
@@ -44,41 +51,39 @@ const Survey = () => {
 						<div className="survey_container">
 							<div className="emoticons_container">
 								<span>
-									How do you like your new finance overview?
+									{ __(
+										'How do you like your new finance overview?',
+										'woocommerce-payments'
+									) }
 								</span>
 								<Emoticons
-									icon={ 'icon_sad1.png' }
 									disabled={ 'pending' === status }
 									rating="1"
-									onClick={ setReviewRating }
+									setReviewRating={ setReviewRating }
 									currentRating={ surveyAnswers.rating ?? 0 }
 								/>
 								<Emoticons
-									icon={ 'icon_sad2.png' }
 									disabled={ 'pending' === status }
 									rating="2"
-									onClick={ setReviewRating }
+									setReviewRating={ setReviewRating }
 									currentRating={ surveyAnswers.rating ?? 0 }
 								/>
 								<Emoticons
-									icon={ 'icon_neutral.png' }
 									disabled={ 'pending' === status }
 									rating="3"
-									onClick={ setReviewRating }
+									setReviewRating={ setReviewRating }
 									currentRating={ surveyAnswers.rating ?? 0 }
 								/>
 								<Emoticons
-									icon={ 'icon_smile.png' }
 									disabled={ 'pending' === status }
 									rating="4"
-									onClick={ setReviewRating }
+									setReviewRating={ setReviewRating }
 									currentRating={ surveyAnswers.rating ?? 0 }
 								/>
 								<Emoticons
-									icon={ 'icon_love.png' }
 									disabled={ 'pending' === status }
 									rating="5"
-									onClick={ setReviewRating }
+									setReviewRating={ setReviewRating }
 									currentRating={ surveyAnswers.rating ?? 0 }
 								/>
 							</div>
@@ -92,16 +97,11 @@ const Survey = () => {
 											setReviewRating( 0 );
 										} }
 									>
-										<svg
-											width="24"
-											height="24"
-											xmlns="http://www.w3.org/2000/svg"
-											viewBox="0 0 24 24"
-											aria-hidden="true"
-											focusable="false"
-										>
-											<path d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"></path>
-										</svg>
+										<Icon
+											icon={ close }
+											type="close"
+											size={ 32 }
+										/>
 									</button>
 								) }
 						</div>
@@ -169,9 +169,12 @@ const Survey = () => {
 					<div className="survey_container">
 						<span>
 							<span role="img" aria-label="Thank you!">
-								🙌
+								🙌{ ' ' }
 							</span>
-							We appreciate your feedback!
+							{ __(
+								'We appreciate your feedback!',
+								'woocommerce-payments'
+							) }
 						</span>
 					</div>
 				) }

@@ -60,9 +60,7 @@ export const WcPayOverviewSurveyContextProvider: React.FC< {
 export const useOverviewSurveyContext = (): ContextValue => {
 	const context = useContext( WcPayOverviewSurveyContext );
 	if ( ! context ) {
-		throw new Error(
-			'useOverviewSurveyContext() must be used within <WcPayOverviewSurveyContextProvider>'
-		);
+		throw new Error( 'An error occured when using survey context' );
 	}
 	return context;
 };
