@@ -205,8 +205,6 @@ class WC_Payments_Checkout {
 			'woopayMinimumSessionData'       => WooPay_Session::get_woopay_minimum_session_data(),
 		];
 
-
-
 		/**
 		 * Allows filtering of the JS config for the payment fields.
 		 *

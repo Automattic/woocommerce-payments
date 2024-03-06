@@ -60,10 +60,9 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_session_data( WP_REST_Request $request ): WP_REST_Response {
-		
 		$response = WooPay_Session::get_init_session_request();
 		// This was needed as the preloaded requests were not honoring the cart token and so were empty carts.
-		// It would be ideal to get this to successfully preload the cart data so WooPay doesn't need to make 
+		// It would be ideal to get this to successfully preload the cart data so WooPay doesn't need to make
 		// a separate request to get the cart data.
 		unset( $response['preloaded_requests'] );
 
@@ -73,7 +72,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	/**
 	 * Check permission confirms that the request is from WooPay.
 	 *
-	 * @return bool True if request is from WooPay and 
+	 * @return bool True if request is from WooPay and has a valid signature.
 	 */
 	public function check_permission() {
 		return $this->is_request_from_woopay() && $this->has_valid_request_signature();
@@ -97,7 +96,5 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	private function is_request_from_woopay(): bool {
 		return isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'];
 	}
-
-	
 }
 
