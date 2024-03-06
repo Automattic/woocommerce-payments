@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 7.2.0
+Stable tag: 7.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,57 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 7.3.0 - 2024-03-06 =
+* Add - Added confirmation modals for order status changes with pending authorizations
+* Add - Add migration script to cover situations with Link and WooPay both enabled after plugin update.
+* Add - Add support for bookable products to payment request buttons on product pages.
+* Add - Alert user when they try to leave advanced fraud settings page with unsaved changes
+* Add - E2E tests for card testing prevention measures
+* Add - feat: add UPE appearance filter
+* Add - Handle timeouts in direct to WooPay checkout flow.
+* Fix - Add checks for cart and checkout blocks to enqueue_style call.
+* Fix - Added a small separator line between converted currency and the next line item.
+* Fix - Added support for WooCommerce Deposits when using Apple Pay and Google Pay
+* Fix - Adjustments to the wording of confirmation modals on the order and transaction details pages.
+* Fix - Do not open the email input iframe when there is no wcpay as payment method
+* Fix - Do not open the email input iframe without wcpay payment method
+* Fix - Ensure gateways accessibility for use cases which don't require the gateway to be enabled
+* Fix - Fees are now correctly applied to the Capture amount instead of the Authorize amount.
+* Fix - fix: add confirmation modal when disabling WooPayments from settings page
+* Fix - fix: ensure BNPL enablement is not adding unnecessary currencies
+* Fix - fix: list of payment methods in disable confirmation modal
+* Fix - fix: multi-currency confirmation modal ui
+* Fix - fix: onboarding currency messaging for BNPLs
+* Fix - fix: payment method checkbox loadable state
+* Fix - fix: remove Afterpay EUR currency
+* Fix - Fix a few untranslated phrases in the plugin
+* Fix - Fix currency search input field size and margins in Woo Express.
+* Fix - Fixed billing address line 2 not being updated for saved payment methods
+* Fix - Fixed positioning on buy-now-pay-later Stripe element on product page.
+* Fix - Fixes Stripe appearances API implementation to support dark themes and new elements, includes amends to checkout logos.
+* Fix - Fix fraud prevention token not showing up on site editor checkout page
+* Fix - Fix typo of transaction type "Loan dispersement" to "Loan disbursement" on transactions list page.
+* Fix - Make tk_ai cookie usage cache compatible
+* Fix - Only load `blocks-checkout.css` on single product, cart, and checkout pages.
+* Fix - Rename log file to woopayments
+* Fix - Show an informative tooltip instead of estimating the next deposit date (which can be inaccurate).
+* Fix - Updating saved payment method billing address before processing the payment
+* Update - Add deposit schedule help tooltip to deposits list screen so it's consistent with Payments Overview.
+* Update - chore: convert payment request CTA to select.
+* Update - chore: remove UPE feedback survey
+* Update - On Payments Overview page, show total balance (pending + available) instead of pending balance.
+* Update - Refactor WooPay First Party Auth and WooPay Direct Checkout to reuse similar functionality.
+* Update - Update status chip to WooCommerce pill for transaction status component.
+* Dev - Add Klarna e2e tests.
+* Dev - Bump WC tested up to version to 8.6.0.
+* Dev - chore: remove BNPL feature flag check
+* Dev - chore: remove unused brandTitles property from PMs
+* Dev - Dev: additional check when pushing to protected branches.
+* Dev - Fire `wcpay_disputes_row_action_click` for any click to dispute details (not just `Respond` button).
+* Dev - Remove unused `/deposits/overview` data-fetching code.
+* Dev - Removing unsupported `deposits/overview` REST API. `deposits/overview-all` should be used instead.
+* Dev - Reverts removed REST controller class to prevent error on update from older versions of the plugin.
 
 = 7.2.0 - 2024-02-14 =
 * Add - Add compatibility data to onboarding init payload.
