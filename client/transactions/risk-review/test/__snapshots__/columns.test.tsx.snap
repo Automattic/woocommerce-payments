@@ -27,7 +27,7 @@ Array [
     "value": "Mock Customer",
   },
   Object {
-    "display": <TransactionStatusChip
+    "display": <TransactionStatusPill
       status="review"
     />,
     "value": "review",

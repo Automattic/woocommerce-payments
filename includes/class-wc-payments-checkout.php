@@ -129,6 +129,8 @@ class WC_Payments_Checkout {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
 
+		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
+
 		$script = 'dist/checkout';
 
 		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
@@ -209,18 +211,19 @@ class WC_Payments_Checkout {
 		 */
 		$payment_fields = apply_filters( 'wcpay_payment_fields_js_config', $js_config );
 
-		$payment_fields['accountDescriptor']        = $this->gateway->get_account_statement_descriptor();
-		$payment_fields['addPaymentReturnURL']      = wc_get_account_endpoint_url( 'payment-methods' );
-		$payment_fields['gatewayId']                = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$payment_fields['isCheckout']               = is_checkout();
-		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
-		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
-		$payment_fields['upeAppearance']            = get_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['wcBlocksUPEAppearance']    = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
-		$payment_fields['currency']                 = get_woocommerce_currency();
-		$cart_total                                 = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
-		$payment_fields['cartTotal']                = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
+		$payment_fields['accountDescriptor']          = $this->gateway->get_account_statement_descriptor();
+		$payment_fields['addPaymentReturnURL']        = wc_get_account_endpoint_url( 'payment-methods' );
+		$payment_fields['gatewayId']                  = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$payment_fields['isCheckout']                 = is_checkout();
+		$payment_fields['paymentMethodsConfig']       = $this->get_enabled_payment_method_config();
+		$payment_fields['testMode']                   = WC_Payments::mode()->is_test();
+		$payment_fields['upeAppearance']              = get_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['wcBlocksUPEAppearance']      = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['wcBlocksUPEAppearanceTheme'] = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
+		$payment_fields['cartContainsSubscription']   = $this->gateway->is_subscription_item_in_cart();
+		$payment_fields['currency']                   = get_woocommerce_currency();
+		$cart_total                                   = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+		$payment_fields['cartTotal']                  = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -229,10 +232,6 @@ class WC_Payments_Checkout {
 			}
 		}
 		$payment_fields['enabledBillingFields'] = $enabled_billing_fields;
-
-		if ( WC_Payments::woopay_tracker()->should_enable_tracking() ) {
-			$payment_fields['tracksUserIdentity'] = WC_Payments::woopay_tracker()->tracks_get_identity( get_current_user_id() );
-		}
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->gateway->is_subscriptions_enabled() && $this->gateway->is_changing_payment_method_for_subscription() ) {
@@ -301,6 +300,7 @@ class WC_Payments_Checkout {
 				'isReusable'     => $payment_method->is_reusable(),
 				'title'          => $payment_method->get_title( $account_country ),
 				'icon'           => $payment_method->get_icon( $account_country ),
+				'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
 				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
 				'countries'      => $payment_method->get_countries(),
 			];
@@ -416,10 +416,6 @@ class WC_Payments_Checkout {
 				?>
 
 			</fieldset>
-
-			<?php if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
-				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
-			<?php endif; ?>
 
 			<?php
 

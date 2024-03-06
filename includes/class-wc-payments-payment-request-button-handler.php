@@ -204,16 +204,39 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Gets the product total price.
 	 *
 	 * @param object $product WC_Product_* object.
+	 * @param bool   $is_deposit Whether customer is paying a deposit.
+	 * @param int    $deposit_plan_id The ID of the deposit plan.
 	 * @return mixed Total price.
 	 *
 	 * @throws Invalid_Price_Exception Whenever a product has no price.
 	 */
-	public function get_product_price( $product ) {
+	public function get_product_price( $product, ?bool $is_deposit = null, int $deposit_plan_id = 0 ) {
 		// If prices should include tax, using tax inclusive price.
 		if ( $this->express_checkout_helper->cart_prices_include_tax() ) {
 			$base_price = wc_get_price_including_tax( $product );
 		} else {
 			$base_price = wc_get_price_excluding_tax( $product );
+		}
+
+		// If WooCommerce Deposits is active, we need to get the correct price for the product.
+		if ( class_exists( 'WC_Deposits_Product_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
+			// If is_deposit is null, we use the default deposit type for the product.
+			if ( is_null( $is_deposit ) ) {
+				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_selected_type( $product->get_id() );
+			}
+			if ( $is_deposit ) {
+				$deposit_type       = WC_Deposits_Product_Manager::get_deposit_type( $product->get_id() );
+				$available_plan_ids = WC_Deposits_Plans_Manager::get_plan_ids_for_product( $product->get_id() );
+				// Default to first (default) plan if no plan is specified.
+				if ( 'plan' === $deposit_type && 0 === $deposit_plan_id && ! empty( $available_plan_ids ) ) {
+					$deposit_plan_id = $available_plan_ids[0];
+				}
+
+				// Ensure the selected plan is available for the product.
+				if ( 0 === $deposit_plan_id || in_array( $deposit_plan_id, $available_plan_ids, true ) ) {
+					$base_price = WC_Deposits_Product_Manager::get_deposit_amount( $product, $deposit_plan_id, 'display', $base_price );
+				}
+			}
 		}
 
 		// Add subscription sign-up fees to product price.
@@ -514,6 +537,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// If no SSL, bail.
 		if ( ! WC_Payments::mode()->is_test() && ! is_ssl() ) {
 			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
+
 			return false;
 		}
 
@@ -700,6 +724,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
+				'empty_cart'                => wp_create_nonce( 'wcpay-empty-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
 				'platform_tracker'          => wp_create_nonce( 'platform_tracks_nonce' ),
 				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
@@ -719,6 +744,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->get_product_data(),
 			'total_label'        => $this->express_checkout_helper->get_total_label(),
+			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/payment-request', [ 'jquery', 'stripe' ] );
@@ -736,6 +762,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		wp_enqueue_script( 'WCPAY_PAYMENT_REQUEST' );
 
+		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
+
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( isset( $gateways['woocommerce_payments'] ) ) {
 			WC_Payments::get_wc_payments_checkout()->register_scripts();
@@ -749,9 +777,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! $this->should_show_payment_request_button() ) {
 			return;
 		}
-		if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
-			<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
-		<?php endif; ?>
+		?>
 		<div id="wcpay-payment-request-button">
 			<!-- A Stripe Element will be inserted here. -->
 		</div>
@@ -977,12 +1003,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		check_ajax_referer( 'wcpay-get-selected-product-data', 'security' );
 
 		try {
-			$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
-			$qty          = ! isset( $_POST['qty'] ) ? 1 : apply_filters( 'woocommerce_add_to_cart_quantity', absint( $_POST['qty'] ), $product_id );
-			$addon_value  = isset( $_POST['addon_value'] ) ? max( (float) $_POST['addon_value'], 0 ) : 0;
-			$product      = wc_get_product( $product_id );
-			$variation_id = null;
-			$currency     = get_woocommerce_currency();
+			$product_id      = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+			$qty             = ! isset( $_POST['qty'] ) ? 1 : apply_filters( 'woocommerce_add_to_cart_quantity', absint( $_POST['qty'] ), $product_id );
+			$addon_value     = isset( $_POST['addon_value'] ) ? max( (float) $_POST['addon_value'], 0 ) : 0;
+			$product         = wc_get_product( $product_id );
+			$variation_id    = null;
+			$currency        = get_woocommerce_currency();
+			$is_deposit      = isset( $_POST['wc_deposit_option'] ) ? 'yes' === sanitize_text_field( wp_unslash( $_POST['wc_deposit_option'] ) ) : null;
+			$deposit_plan_id = isset( $_POST['wc_deposit_payment_plan'] ) ? absint( $_POST['wc_deposit_payment_plan'] ) : 0;
 
 			if ( ! is_a( $product, 'WC_Product' ) ) {
 				/* translators: product ID */
@@ -1010,7 +1038,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
 			}
 
-			$price = $this->get_product_price( $product );
+			$price = $this->get_product_price( $product, $is_deposit, $deposit_plan_id );
 			$total = $qty * $price + $addon_value;
 
 			$quantity_label = 1 < $qty ? ' (x' . $qty . ')' : '';

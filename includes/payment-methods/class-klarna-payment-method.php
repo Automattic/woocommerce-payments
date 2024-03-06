@@ -30,7 +30,7 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title                        = __( 'Klarna', 'woocommerce-payments' );
 		$this->is_reusable                  = false;
-		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/klarna.svg', WCPAY_PLUGIN_FILE );
+		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/klarna-pill.svg', WCPAY_PLUGIN_FILE );
 		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING, Currency_Code::EURO, Currency_Code::DANISH_KRONE, Currency_Code::NORWEGIAN_KRONE, Currency_Code::SWEDISH_KRONA ];
 		$this->accept_only_domestic_payment = true;
 		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM, Country_Code::AUSTRIA, Country_Code::GERMANY, Country_Code::NETHERLANDS, Country_Code::BELGIUM, Country_Code::SPAIN, Country_Code::ITALY, Country_Code::IRELAND, Country_Code::DENMARK, Country_Code::FINLAND, Country_Code::NORWAY, Country_Code::SWEDEN ];

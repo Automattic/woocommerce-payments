@@ -79,25 +79,6 @@ export const useDepositIncludesLoan = (
 	);
 };
 
-export const useDepositsOverview = (): {
-	overviewError: unknown;
-	isLoading: boolean;
-	overview: unknown;
-} =>
-	useSelect( ( select ) => {
-		const {
-			getDepositsOverview,
-			getDepositsOverviewError,
-			isResolving,
-		} = select( STORE_NAME );
-
-		return {
-			overview: getDepositsOverview(),
-			overviewError: getDepositsOverviewError(),
-			isLoading: isResolving( 'getDepositsOverview' ),
-		};
-	} );
-
 export const useAllDepositsOverviews = (): AccountOverview.OverviewsResponse =>
 	useSelect( ( select ) => {
 		const {

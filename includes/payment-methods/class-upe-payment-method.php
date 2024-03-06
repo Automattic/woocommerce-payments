@@ -64,7 +64,6 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Should payment method be restricted to only domestic payments.
 	 * E.g. only to Stripe's connected account currency.
-	 * gs
 	 *
 	 * @var boolean
 	 */
@@ -83,6 +82,13 @@ abstract class UPE_Payment_Method {
 	 * @var string
 	 */
 	protected $icon_url;
+
+	/**
+	 * Payment method icon URL for dark themes (optional)
+	 *
+	 * @var string
+	 */
+	protected $dark_icon_url;
 
 	/**
 	 * Supported customer locations for which charges for a payment method can be processed
@@ -129,6 +135,16 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_currencies() {
 		return $this->currencies;
+	}
+
+	/**
+	 * Determines whether the payment method is restricted to the Stripe account's currency.
+	 * E.g.: Afterpay/Clearpay and Affirm only supports domestic payments; Klarna also implements a simplified version of these market restrictions.
+	 *
+	 * @return bool
+	 */
+	public function has_domestic_transactions_restrictions() {
+		return $this->accept_only_domestic_payment;
 	}
 
 	/**
@@ -194,7 +210,7 @@ abstract class UPE_Payment_Method {
 	public function is_currency_valid( string $account_domestic_currency, $order_id = null ) {
 		$current_store_currency = $this->get_currency( $order_id );
 
-		if ( $this->accept_only_domestic_payment ) {
+		if ( $this->has_domestic_transactions_restrictions() ) {
 			if ( strtolower( $current_store_currency ) !== strtolower( $account_domestic_currency ) ) {
 				return false;
 			}
@@ -230,6 +246,16 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_icon( string $account_country = null ) {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
+	}
+
+	/**
+	 * Returns icon to use on dark themes.
+	 *
+	 * @param string|null $account_country Optional account country.
+	 * @return string
+	 */
+	public function get_dark_icon( string $account_country = null ) {
+		return isset( $this->dark_icon_url ) ? $this->dark_icon_url : $this->get_icon( $account_country );
 	}
 
 	/**

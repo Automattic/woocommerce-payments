@@ -46,9 +46,7 @@ const getBillingDetails = ( billingData ) => {
 };
 
 const getFraudPreventionToken = () => {
-	return document
-		.querySelector( '#wcpay-fraud-prevention-token' )
-		?.getAttribute( 'value' );
+	return window.wcpayFraudPreventionToken ?? '';
 };
 
 const PaymentProcessor = ( {

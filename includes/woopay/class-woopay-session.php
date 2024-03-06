@@ -408,7 +408,7 @@ class WooPay_Session {
 		// This uses the same logic as the Checkout block in hydrate_from_api to get the cart and checkout data.
 		$cart_data = ! $is_pay_for_order
 			? rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body']
-			: rest_preload_api_request( [], "/wc/store/v1/order/{$order_id}?key={$key}&billing_email={$billing_email}" )[ "/wc/store/v1/order/{$order_id}?key={$key}&billing_email={$billing_email}" ]['body'];
+			: rest_preload_api_request( [], "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) )[ "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) ]['body'];
 		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 		$preloaded_checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' );
 		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
@@ -452,7 +452,7 @@ class WooPay_Session {
 					'order_id' => $order_id, // This is a workaround for the checkout order error. https://github.com/woocommerce/woocommerce-blocks/blob/04f36065b34977f02079e6c2c8cb955200a783ff/assets/js/blocks/checkout/block.tsx#L81-L83.
 				],
 			],
-			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity( $user->ID ),
+			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity(),
 		];
 
 		$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();

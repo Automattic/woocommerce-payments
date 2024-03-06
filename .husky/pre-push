@@ -1,0 +1,16 @@
+#!/bin/bash
+. "$(dirname "$0")/_/husky.sh"
+
+# Allows us to read user input below, redirects script's input to the terminal.
+exec < /dev/tty
+
+PROTECTED_BRANCH=("develop" "trunk")
+CURRENT_BRANCH=$(git branch --show-current)
+
+if [[ " ${PROTECTED_BRANCH[@]} " =~ " ${CURRENT_BRANCH} " ]]; then
+    read -p "$CURRENT_BRANCH is a protected branch. Are you sure you want to push? (y/n): " confirmation
+        if [ "$confirmation" != "y" ]; then
+        echo "Push aborted"
+        exit 1
+    fi
+fi

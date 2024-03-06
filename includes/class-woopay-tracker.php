@@ -61,6 +61,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
+		add_action( 'wp_ajax_get_identity', [ $this, 'ajax_tracks_id' ] );
+		add_action( 'wp_ajax_nopriv_get_identity', [ $this, 'ajax_tracks_id' ] );
 
 		// Actions that should result in recorded Tracks events.
 		add_action( 'woocommerce_after_checkout_form', [ $this, 'classic_checkout_start' ] );
@@ -112,6 +114,18 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		wp_send_json_success();
 	}
+
+	/**
+	 * Get tracks ID of the current user
+	 */
+	public function ajax_tracks_id() {
+		$tracks_id = $this->tracks_get_identity();
+
+		if ( $tracks_id ) {
+			wp_send_json_success( $tracks_id );
+		}
+	}
+
 
 	/**
 	 * Generic method to track user events on WooPay enabled stores.
@@ -285,7 +299,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return \Jetpack_Tracks_Event|\WP_Error
 	 */
 	private function tracks_build_event_obj( $user, $event_name, $properties = [] ) {
-		$identity = $this->tracks_get_identity( $user->ID );
+		$identity = $this->tracks_get_identity();
 		$site_url = get_option( 'siteurl' );
 
 		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ): '';
@@ -330,12 +344,10 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Get the identity to send to tracks.
 	 *
-	 * @param int $user_id The user id of the local user.
-	 *
 	 * @return array $identity
 	 */
-	public function tracks_get_identity( $user_id ) {
-
+	public function tracks_get_identity() {
+		$user_id  = get_current_user_id();
 		// If the user is not trackable, return an empty array.
 		if ( ! $this->should_enable_tracking() ) {
 			return [];
@@ -366,10 +378,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		if ( ! $anon_id ) {
 			$anon_id = \Jetpack_Tracks_Client::get_anon_id();
 			add_user_meta( $user_id, 'jetpack_tracks_anon_id', $anon_id, false );
-		}
-
-		if ( ! isset( $_COOKIE['tk_ai'] ) && ! headers_sent() ) {
-			setcookie( 'tk_ai', $anon_id );
 		}
 
 		return [

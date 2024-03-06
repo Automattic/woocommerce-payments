@@ -10,15 +10,16 @@ window.addEventListener( 'load', async () => {
 
 	WooPayDirectCheckout.init();
 
-	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
 	const isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
+	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
-			WooPayDirectCheckout.redirectToWooPaySession( checkoutElements );
+			WooPayDirectCheckout.redirectToWooPay( checkoutElements, false );
 		}
 
 		return;
 	}
 
-	WooPayDirectCheckout.redirectToWooPay( checkoutElements );
+	// Pass true to append '&checkout_redirect=1' and let WooPay decide the checkout flow.
+	WooPayDirectCheckout.redirectToWooPay( checkoutElements, true );
 } );

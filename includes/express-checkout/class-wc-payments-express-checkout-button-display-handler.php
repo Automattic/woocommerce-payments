@@ -55,7 +55,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$this->payment_request_button_handler   = $payment_request_button_handler;
 		$this->platform_checkout_button_handler = $platform_checkout_button_handler;
 		$this->express_checkout_helper          = $express_checkout_helper;
+	}
 
+	/**
+	 * Initializes this class, its dependencies, and its hooks.
+	 *
+	 * @return void
+	 */
+	public function init() {
 		$this->platform_checkout_button_handler->init();
 		$this->payment_request_button_handler->init();
 
@@ -64,6 +71,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 
 		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
 			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_helper, 'ajax_add_to_cart' ] );
+			add_action( 'wc_ajax_wcpay_empty_cart', [ $this->express_checkout_helper, 'ajax_empty_cart' ] );
 
 			add_action( 'woocommerce_after_add_to_cart_form', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 21 );
@@ -105,9 +113,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			?>
 			<div class='wcpay-payment-request-wrapper' >
 			<?php
-				if ( ! $this->express_checkout_helper->is_pay_for_order_page() || $this->is_pay_for_order_flow_supported() ) {
-					$this->platform_checkout_button_handler->display_woopay_button_html();
-				}
+			if ( ! $this->express_checkout_helper->is_pay_for_order_page() || $this->is_pay_for_order_flow_supported() ) {
+				$this->platform_checkout_button_handler->display_woopay_button_html();
+			}
 				$this->payment_request_button_handler->display_payment_request_button_html();
 			?>
 			</div >
@@ -147,7 +155,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 
 		$order = wc_get_order( $order_id );
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		// phpcs:disable WordPress.Security.NonceVerification
 		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && current_user_can( 'pay_for_order', $order_id ) ) {
 			add_filter(
 				'wcpay_payment_fields_js_config',
@@ -161,7 +169,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 					}
 
 					// Silence the filter_input warning because we are sanitizing the input with sanitize_email().
-					// nosemgrep: audit.php.lang.misc.filter-input-no-filter
+					// nosemgrep: audit.php.lang.misc.filter-input-no-filter.
 					$user_email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email' ) ) ) : $session_email;
 
 					$js_config['order_id']      = $order->get_id();
@@ -176,6 +184,6 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 				}
 			);
 		}
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 }

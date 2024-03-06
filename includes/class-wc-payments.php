@@ -554,6 +554,7 @@ class WC_Payments {
 		self::maybe_register_woopay_hooks();
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
+		self::$apple_pay_registration->init_hooks();
 
 		self::maybe_display_express_checkout_buttons();
 
@@ -565,7 +566,7 @@ class WC_Payments {
 			self::get_gateway()->get_upe_enabled_payment_method_ids()
 		);
 		if ( [] !== $enabled_bnpl_payment_methods ) {
-			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 30 );
+			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -586,11 +587,13 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-additional-payment-methods-admin-notes-removal.php';
+		require_once __DIR__ . '/migrations/class-link-woopay-mutual-exclusion-handler.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Additional_Payment_Methods_Admin_Notes_Removal(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
@@ -734,15 +737,7 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooPayments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
-
-		$key = array_search( 'link', $payment_methods, true );
-
-		if ( false !== $key && WC_Payments_Features::is_woopay_enabled() ) {
-			unset( $payment_methods[ $key ] );
-
-			self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
-		}
+		$payment_methods = array_keys( self::get_payment_method_map() );
 
 		$gateways[]       = self::$card_gateway;
 		$all_gateways     = [];
@@ -1020,10 +1015,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
 		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
 		$refunds_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
-		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
-		$survey_controller->register_routes();
 
 		if ( WC_Payments_Features::is_documents_section_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
@@ -1488,6 +1479,7 @@ class WC_Payments {
 			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), $express_checkout_helper );
 			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, $express_checkout_helper );
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, $express_checkout_helper );
+			$express_checkout_button_display_handler->init();
 		}
 	}
 
@@ -1591,21 +1583,19 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function load_stripe_bnpl_site_messaging() {
-		if ( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() ) {
-			// The messaging element shall not be shown for subscription products.
-			// As we are not too deep into subscriptions API, we follow simplistic approach for now.
-			$is_subscription           = false;
-			$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
-			if ( $are_subscriptions_enabled ) {
-					global $product;
-					$is_subscription = $product && WC_Subscriptions_Product::is_subscription( $product );
-			}
+		// The messaging element shall not be shown for subscription products.
+		// As we are not too deep into subscriptions API, we follow simplistic approach for now.
+		$is_subscription           = false;
+		$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
+		if ( $are_subscriptions_enabled ) {
+				global $product;
+				$is_subscription = $product && WC_Subscriptions_Product::is_subscription( $product );
+		}
 
-			if ( ! $is_subscription ) {
-				require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
-				$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
-				echo wp_kses( $stripe_site_messaging->init(), 'post' );
-			}
+		if ( ! $is_subscription ) {
+			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
+			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
+			echo wp_kses( $stripe_site_messaging->init(), 'post' );
 		}
 	}
 

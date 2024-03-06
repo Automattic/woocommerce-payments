@@ -18,7 +18,7 @@ use WCPay\Core\Mode;
  */
 class Logger {
 
-	const LOG_FILENAME = 'woocommerce-payments';
+	const LOG_FILENAME = 'woopayments';
 
 	/**
 	 * The holding property for our WC_Logger_Interface instance.
