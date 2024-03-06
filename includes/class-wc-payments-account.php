@@ -230,6 +230,21 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account is under review, assumes the value of false on any account retrieval error.
+	 * Returns false if the account is not connected.
+	 *
+	 * @return bool
+	 */
+	public function is_account_under_review(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return 'under_review' === $account['status'];
+	}
+
+	/**
 	 * Checks if the account "details_submitted" flag is true.
 	 * This is a proxy for telling if an account has completed onboarding.
 	 * If the "details_submitted" flag is false, it means that the account has not
