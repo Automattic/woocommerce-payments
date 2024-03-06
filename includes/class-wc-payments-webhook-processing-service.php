@@ -152,7 +152,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		switch ( $event_type ) {
 			case 'charge.refunded':
-				$this->process_webhook_refund( $event_body );
+				$this->process_webhook_refund_triggered_externally( $event_body );
 				break;
 			case 'charge.refund.updated':
 				$this->process_webhook_refund_updated( $event_body );
@@ -789,7 +789,7 @@ class WC_Payments_Webhook_Processing_Service {
 	}
 
 	/**
-	 * Process webhook refund event.
+	 * Process webhook refund for events triggered externally.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
@@ -797,7 +797,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception           When the refund amount is not valid.
 	 * @throws Order_Not_Found_Exception                When unable to resolve charge ID to order.
 	 */
-	private function process_webhook_refund( array $event_body ): void {
+	private function process_webhook_refund_triggered_externally( array $event_body ): void {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 
@@ -831,6 +831,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 		// Only care about refunds that are triggered externally, i.e. outside WP Admin.
+		// Refunds triggered in WP Admin are handled by WC_Payment_Gateway_WCPay::process_refund.
 		$wc_refunds = $order->get_refunds();
 		if ( ! empty( $wc_refunds ) ) {
 			foreach ( $wc_refunds as $wc_refund ) {
