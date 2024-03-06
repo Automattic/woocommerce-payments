@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Reverts removed REST controller class to prevent error on update from older versions of the plugin.
