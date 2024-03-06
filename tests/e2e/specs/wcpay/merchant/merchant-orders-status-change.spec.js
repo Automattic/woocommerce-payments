@@ -11,7 +11,7 @@ const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 const orderIdSelector = '.woocommerce-order-overview__order.order > strong';
 const orderStatusDropdownSelector = 'select[name="order_status"]';
-const cancelModalSelector = 'div.cancel-confirmation-modal';
+const cancelModalSelector = 'div.wcpay-confirmation-modal';
 const refundModalSelector = 'div.refund-confirmation-modal';
 const refundCancelSelector =
 	'.refund-confirmation-modal .wcpay-confirmation-modal__footer .is-secondary';
@@ -98,6 +98,8 @@ describe( 'Order > Status Change', () => {
 
 			// Click on Cancel order.
 			await expect( page ).toClick( 'button', { text: 'Cancel order' } );
+
+			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			// Verify the order status is set to cancel.
 			const selectedOrderStatus = await page.$(
