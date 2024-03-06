@@ -508,6 +508,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
 				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'show_woopay_incompatibility_notice'  => get_option( 'woopay_invalid_extension_found', false ),
+				'show_express_checkout_incompatibility_notice' => false, // TODO: implement this.
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
 				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ) ),
