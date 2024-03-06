@@ -4,7 +4,7 @@ const { mapValues } = require( 'lodash' );
 const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
-const WebpackRTLPlugin = require( 'webpack-rtl-plugin' );
+const WebpackRTLPlugin = require( '@automattic/webpack-rtl-plugin' );
 
 module.exports = {
 	entry: mapValues(

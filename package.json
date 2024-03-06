@@ -84,6 +84,7 @@
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",
+    "@automattic/webpack-rtl-plugin": "6.0.0",
     "@jest/test-sequencer": "29.5.0",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
     "@testing-library/jest-dom": "5.14.1",
@@ -169,6 +170,7 @@
     "react-refresh": "0.14.0",
     "react-test-renderer": "16.14.0",
     "react-transition-group": "4.4.5",
+    "rtlcss": "4.1.1",
     "sass": "1.43.4",
     "sass-loader": "12.1.0",
     "shelljs": "0.8.4",
@@ -186,7 +188,6 @@
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "4.9.3",
     "webpack-merge": "5.8.0",
-    "webpack-rtl-plugin": "2.0.0",
     "yarnhook": "0.5.1"
   },
   "overrides": {
