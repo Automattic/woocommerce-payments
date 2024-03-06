@@ -1252,7 +1252,7 @@ class WC_Payments_Order_Service {
 	 */
 	public function create_refund_for_order( WC_Order $order, float $amount, string $reason = '', array $line_items = [] ) {
 		$refund_params = [
-			'amount'   => $amount,
+			'amount'   => wc_format_decimal( $amount, wc_get_price_decimals() ),
 			'reason'   => $reason,
 			'order_id' => $order->get_id(),
 		];
