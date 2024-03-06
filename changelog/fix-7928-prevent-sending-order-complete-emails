@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Order completed and refunded emails are no longer sent when a dispute is closed.
