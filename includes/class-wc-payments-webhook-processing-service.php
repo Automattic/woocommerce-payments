@@ -830,7 +830,7 @@ class WC_Payments_Webhook_Processing_Service {
 				'order_not_found'
 			);
 		}
-		// This is to avoid processing the same refund multiple times in case of a webhook retry.
+		// Only care about refunds that are triggered externally, i.e. outside WP Admin.
 		$wc_refunds = $order->get_refunds();
 		if ( ! empty( $wc_refunds ) ) {
 			foreach ( $wc_refunds as $wc_refund ) {
