@@ -70,6 +70,7 @@ export type Event =
 	| 'wcpay_merchant_settings_upload_failed'
 	| 'wcpay_multi_currency_enabled_currencies_updated'
 	| 'wcpay_payment_request_settings_change'
+	| 'wcpay_proceed_to_checkout_button_click'
 	| 'checkout_place_order_button_click'
 	| 'wcpay_subscriptions_empty_state_view'
 	| 'wcpay_subscriptions_empty_state_finish_setup'
