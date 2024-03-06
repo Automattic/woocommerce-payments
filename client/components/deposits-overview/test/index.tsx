@@ -10,7 +10,10 @@ import { render } from '@testing-library/react';
 import DepositsOverview from '..';
 import RecentDepositsList from '../recent-deposits-list';
 import DepositSchedule from '../deposit-schedule';
-import { SuspendedDepositNotice, DepositFailureNotice } from '../deposit-notices';
+import {
+	SuspendedDepositNotice,
+	DepositFailureNotice,
+} from '../deposit-notices';
 import {
 	useSelectedCurrencyOverview,
 	useSelectedCurrency,
@@ -538,7 +541,7 @@ describe( 'DepositFailureNotice Renders', () => {
 			{
 				currency: 'chf',
 				status: 'errored',
-			}
+			},
 		];
 		const eurAccountOverview = createMockNewAccountOverview(
 			'eur',
@@ -557,7 +560,7 @@ describe( 'DepositFailureNotice Renders', () => {
 			overview: chfAccountOverview,
 			isLoading: false,
 		} );
-		const { queryByText } = render( <DepositsOverview /> );	
+		const { queryByText } = render( <DepositsOverview /> );
 		expect(
 			queryByText(
 				/Deposits are currently paused because a recent deposit failed./,
@@ -577,7 +580,7 @@ describe( 'DepositFailureNotice Renders', () => {
 			{
 				currency: 'chf',
 				status: 'new',
-			}
+			},
 		];
 		const eurAccountOverview = createMockNewAccountOverview(
 			'eur',
@@ -596,7 +599,7 @@ describe( 'DepositFailureNotice Renders', () => {
 			overview: eurAccountOverview,
 			isLoading: false,
 		} );
-		const { queryByText } = render( <DepositsOverview /> );	
+		const { queryByText } = render( <DepositsOverview /> );
 		expect(
 			queryByText(
 				/Deposits are currently paused because a recent deposit failed./,
@@ -616,7 +619,7 @@ describe( 'DepositFailureNotice Renders', () => {
 			{
 				currency: 'chf',
 				status: 'new',
-			}
+			},
 		];
 		const eurAccountOverview = createMockNewAccountOverview(
 			'eur',
@@ -635,7 +638,7 @@ describe( 'DepositFailureNotice Renders', () => {
 			overview: chfAccountOverview,
 			isLoading: false,
 		} );
-		const { queryByText } = render( <DepositsOverview /> );	
+		const { queryByText } = render( <DepositsOverview /> );
 		expect(
 			queryByText(
 				/Deposits are currently paused because a recent deposit failed./,
@@ -645,8 +648,7 @@ describe( 'DepositFailureNotice Renders', () => {
 			)
 		).toBeFalsy();
 	} );
-	
-});
+} );
 
 describe( 'Paused Deposit notice Renders', () => {
 	test( 'When total balance is negative', () => {
