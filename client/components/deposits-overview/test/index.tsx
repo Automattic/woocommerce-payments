@@ -10,7 +10,7 @@ import { render } from '@testing-library/react';
 import DepositsOverview from '..';
 import RecentDepositsList from '../recent-deposits-list';
 import DepositSchedule from '../deposit-schedule';
-import { SuspendedDepositNotice } from '../deposit-notices';
+import { SuspendedDepositNotice, DepositFailureNotice } from '../deposit-notices';
 import {
 	useSelectedCurrencyOverview,
 	useSelectedCurrency,
@@ -522,6 +522,131 @@ describe( 'Suspended Deposit Notice Renders', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 } );
+
+describe( 'DepositFailureNotice Renders', () => {
+	test( 'Renders DepositFailureNotice component correctly', () => {
+		const { container } = render( <DepositFailureNotice /> );
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'Renders DepositFailureNotice when there is an errored external account', () => {
+		mockAccount.external_accounts = [
+			{
+				currency: 'eur',
+				status: 'new',
+			},
+			{
+				currency: 'chf',
+				status: 'errored',
+			}
+		];
+		const eurAccountOverview = createMockNewAccountOverview(
+			'eur',
+			12300,
+			45600
+		);
+		const chfAccountOverview = createMockNewAccountOverview(
+			'chf',
+			12300,
+			45600
+		);
+		mockOverviews( [ eurAccountOverview, chfAccountOverview ] );
+		mockDepositOverviews( [ eurAccountOverview, chfAccountOverview ] );
+		mockUseSelectedCurrencyOverview.mockReturnValue( {
+			account: mockAccount,
+			overview: chfAccountOverview,
+			isLoading: false,
+		} );
+		const { queryByText } = render( <DepositsOverview /> );	
+		expect(
+			queryByText(
+				/Deposits are currently paused because a recent deposit failed./,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeInTheDocument();
+	} );
+
+	test( 'Does not render DepositFailureNotice when there is no errored external account', () => {
+		mockAccount.external_accounts = [
+			{
+				currency: 'eur',
+				status: 'new',
+			},
+			{
+				currency: 'chf',
+				status: 'new',
+			}
+		];
+		const eurAccountOverview = createMockNewAccountOverview(
+			'eur',
+			12300,
+			45600
+		);
+		const chfAccountOverview = createMockNewAccountOverview(
+			'chf',
+			12300,
+			45600
+		);
+		mockOverviews( [ eurAccountOverview, chfAccountOverview ] );
+		mockDepositOverviews( [ eurAccountOverview, chfAccountOverview ] );
+		mockUseSelectedCurrencyOverview.mockReturnValue( {
+			account: mockAccount,
+			overview: eurAccountOverview,
+			isLoading: false,
+		} );
+		const { queryByText } = render( <DepositsOverview /> );	
+		expect(
+			queryByText(
+				/Deposits are currently paused because a recent deposit failed./,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeFalsy();
+	} );
+
+	test( 'Does not render DepositFailureNotice if the selected currency does not have errored external account', () => {
+		mockAccount.external_accounts = [
+			{
+				currency: 'eur',
+				status: 'errored',
+			},
+			{
+				currency: 'chf',
+				status: 'new',
+			}
+		];
+		const eurAccountOverview = createMockNewAccountOverview(
+			'eur',
+			12300,
+			45600
+		);
+		const chfAccountOverview = createMockNewAccountOverview(
+			'chf',
+			12300,
+			45600
+		);
+		mockOverviews( [ eurAccountOverview, chfAccountOverview ] );
+		mockDepositOverviews( [ eurAccountOverview, chfAccountOverview ] );
+		mockUseSelectedCurrencyOverview.mockReturnValue( {
+			account: mockAccount,
+			overview: chfAccountOverview,
+			isLoading: false,
+		} );
+		const { queryByText } = render( <DepositsOverview /> );	
+		expect(
+			queryByText(
+				/Deposits are currently paused because a recent deposit failed./,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeFalsy();
+	} );
+	
+});
 
 describe( 'Paused Deposit notice Renders', () => {
 	test( 'When total balance is negative', () => {
