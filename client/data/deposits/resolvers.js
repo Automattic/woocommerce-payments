@@ -31,7 +31,8 @@ import { formatDateValue } from 'utils';
  */
 export function* getDeposit( id ) {
 	// Validate input to avoid path traversal request.
-	if ( /[.\/?#&]/.test( id ) ) {
+    // Avoid lookup if the id contains any unexpected characters.
+	if ( /\W/.test( id ) ) {
 		return;
 	}
 
