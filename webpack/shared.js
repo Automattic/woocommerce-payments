@@ -17,6 +17,7 @@ module.exports = {
 				'./client/checkout/woopay/express-button/index.js',
 			'woopay-direct-checkout':
 				'./client/checkout/woopay/direct-checkout/index.js',
+			cart: './client/cart/index.js',
 			checkout: './client/checkout/classic/event-handlers.js',
 			'payment-request': './client/payment-request/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',

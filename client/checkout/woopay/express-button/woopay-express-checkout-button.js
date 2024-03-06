@@ -29,7 +29,7 @@ const ButtonTypeTextMap = {
 };
 
 export const WoopayExpressCheckoutButton = ( {
-	listenForCartChanges = {},
+	listenForCartChanges,
 	isPreview = false,
 	buttonSettings,
 	api,

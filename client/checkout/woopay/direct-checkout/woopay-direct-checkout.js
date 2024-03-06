@@ -8,12 +8,18 @@ import UserConnect from 'wcpay/checkout/woopay/connect/user-connect';
 import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
 
 /**
- * The WoopayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
+ * The WooPayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
  * page and for handling the communication between the WooPayConnectIframe and the page.
  */
-class WoopayDirectCheckout {
+class WooPayDirectCheckout {
 	static userConnect;
 	static sessionConnect;
+	static encryptedSessionDataPromise;
+	static redirectElements = {
+		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout',
+		BLOCKS_CART_PROCEED_BUTTON:
+			'.wp-block-woocommerce-proceed-to-checkout-block',
+	};
 
 	/**
 	 * Initializes the WooPay direct checkout feature.
@@ -49,7 +55,7 @@ class WoopayDirectCheckout {
 	}
 
 	/**
-	 * Teardown WoopayDirectCheckout.
+	 * Teardown WooPayDirectCheckout.
 	 */
 	static teardown() {
 		this.sessionConnect?.detachMessageListener();
@@ -64,8 +70,8 @@ class WoopayDirectCheckout {
 	 *
 	 * @return {boolean} True if WooPay is enabled.
 	 */
-	static isWooPayEnabled() {
-		return getConfig( 'isWooPayEnabled' );
+	static isWooPayDirectCheckoutEnabled() {
+		return getConfig( 'isWooPayDirectCheckoutEnabled' );
 	}
 
 	/**
@@ -96,7 +102,12 @@ class WoopayDirectCheckout {
 		// We're intentionally adding a try-catch block to catch any errors
 		// that might occur other than the known validation errors.
 		try {
-			const encryptedSessionData = await this.getEncryptedSessionData();
+			let encryptedSessionData;
+			if ( this.isEncryptedSessionDataPrefetched() ) {
+				encryptedSessionData = await this.encryptedSessionDataPromise;
+			} else {
+				encryptedSessionData = await this.getEncryptedSessionData();
+			}
 			if ( ! this.isValidEncryptedSessionData( encryptedSessionData ) ) {
 				throw new Error(
 					'Could not retrieve encrypted session data from store.'
@@ -146,14 +157,26 @@ class WoopayDirectCheckout {
 			}
 		};
 
-		// Classic 'Proceed to Checkout' button.
-		addElementBySelector( '.wc-proceed-to-checkout .checkout-button' );
-		// Blocks 'Proceed to Checkout' button.
+		// For every new element added here, ensure the selector is added to the redirectElements object.
 		addElementBySelector(
-			'.wp-block-woocommerce-proceed-to-checkout-block a'
+			this.redirectElements.CLASSIC_CART_PROCEED_BUTTON
+		);
+		addElementBySelector(
+			this.redirectElements.BLOCKS_CART_PROCEED_BUTTON
 		);
 
 		return elements;
+	}
+
+	/**
+	 * Gets the classic 'Proceed to Checkout' button.
+	 *
+	 * @return {Element} The classic 'Proceed to Checkout' button.
+	 */
+	static getClassicProceedToCheckoutButton() {
+		return document.querySelector(
+			this.redirectElements.CLASSIC_CART_PROCEED_BUTTON
+		);
 	}
 
 	/**
@@ -162,11 +185,12 @@ class WoopayDirectCheckout {
 	 * @param {*[]} elements The elements to add a click-event listener to.
 	 * @param {boolean} useCheckoutRedirect Whether to use the `checkout_redirect` flag to let WooPay handle the checkout flow.
 	 */
-	static redirectToWooPay( elements, useCheckoutRedirect ) {
+	static redirectToWooPay( elements, useCheckoutRedirect = false ) {
 		elements.forEach( ( element ) => {
 			element.addEventListener( 'click', async ( event ) => {
 				// Store href before the async call to not lose the reference.
-				const currTargetHref = event.currentTarget.href;
+				const currTargetHref = event.currentTarget.querySelector( 'a' )
+					?.href;
 
 				// If there's no link where to redirect the user, do not break the expected behavior.
 				if ( ! currTargetHref ) {
@@ -209,6 +233,37 @@ class WoopayDirectCheckout {
 			}
 		);
 	}
+
+	/**
+	 * Prefetches the encrypted session data if not on the product page.
+	 */
+	static maybePrefetchEncryptedSessionData() {
+		const isProductPage =
+			window?.wcpayWooPayDirectCheckout?.params?.is_product_page;
+		if ( typeof isProductPage === 'undefined' || isProductPage ) {
+			return;
+		}
+
+		this.encryptedSessionDataPromise = new Promise( ( resolve ) => {
+			resolve( this.getEncryptedSessionData() );
+		} );
+	}
+
+	/**
+	 * Sets the encrypted session data as not prefetched.
+	 */
+	static setEncryptedSessionDataAsNotPrefetched() {
+		this.encryptedSessionDataPromise = null;
+	}
+
+	/**
+	 * Checks if the encrypted session data has been prefetched.
+	 *
+	 * @return {boolean} True if the encrypted session data has been prefetched.
+	 */
+	static isEncryptedSessionDataPrefetched() {
+		return typeof this.encryptedSessionDataPromise?.then === 'function';
+	}
 }
 
-export default WoopayDirectCheckout;
+export default WooPayDirectCheckout;
