@@ -680,17 +680,17 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Set the payment metadata for refund id.
+	 * Set WCPay refund ID as metadata for refund object.
 	 *
-	 * @param  mixed  $order The order.
-	 * @param  string $wcpay_refund_id The value to be set.
+	 * @param  WC_Refund $wc_refund The refund instance.
+	 * @param  string    $wcpay_refund_id The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function set_wcpay_refund_id_for_refund( $order, $wcpay_refund_id ) {
-		$order = $this->get_order( $order );
-		$order->update_meta_data( self::WCPAY_REFUND_ID_META_KEY, $wcpay_refund_id );
-		$order->save_meta_data();
+	public function set_wcpay_refund_id_for_refund( $wc_refund, $wcpay_refund_id ) {
+		$wc_refund = $this->get_order( $wc_refund );
+		$wc_refund->update_meta_data( self::WCPAY_REFUND_ID_META_KEY, $wcpay_refund_id );
+		$wc_refund->save_meta_data();
 	}
 
 	/**
