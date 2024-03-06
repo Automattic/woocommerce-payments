@@ -1639,12 +1639,12 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param float    $refunded_amount Amount refunded.
 	 * @param string   $refunded_currency Refund currency.
-	 * @param string   $refund_id Refund ID.
+	 * @param string   $wcpay_refund_id WCPay Refund ID.
 	 * @param string   $refund_reason Refund reason.
 	 * @param WC_Order $order Order object.
 	 * @return string HTML note.
 	 */
-	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $refund_id, string $refund_reason, WC_Order $order ): string {
+	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order ): string {
 		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
 			wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ),
 			$order
@@ -1661,7 +1661,7 @@ class WC_Payments_Order_Service {
 				),
 				$formatted_price,
 				'WooPayments',
-				$refund_id
+				$wcpay_refund_id
 			);
 		} else {
 			$note = sprintf(
@@ -1675,7 +1675,7 @@ class WC_Payments_Order_Service {
 				$formatted_price,
 				'WooPayments',
 				$refund_reason,
-				$refund_id
+				$wcpay_refund_id
 			);
 		}
 
