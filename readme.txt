@@ -96,11 +96,13 @@ Please note that our support for the checkout block is still experimental and th
 
 = 7.3.0 - 2024-03-06 =
 * Add - Added confirmation modals for order status changes with pending authorizations
+* Add - Add migration script to cover situations with Link and WooPay both enabled after plugin update.
 * Add - Add support for bookable products to payment request buttons on product pages.
 * Add - Alert user when they try to leave advanced fraud settings page with unsaved changes
 * Add - E2E tests for card testing prevention measures
 * Add - feat: add UPE appearance filter
 * Add - Handle timeouts in direct to WooPay checkout flow.
+* Fix - Add checks for cart and checkout blocks to enqueue_style call.
 * Fix - Added a small separator line between converted currency and the next line item.
 * Fix - Added support for WooCommerce Deposits when using Apple Pay and Google Pay
 * Fix - Adjustments to the wording of confirmation modals on the order and transaction details pages.
