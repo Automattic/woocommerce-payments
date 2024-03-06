@@ -80,7 +80,6 @@ export const generateHoverRules = ( baseRules ) => {
  * @param {string}  outlineColor Outline width from computed styles.
  * @return {string} Object with generated hover rules.
  */
-
 export const generateOutlineStyle = (
 	outlineWidth,
 	outlineStyle = 'solid',
@@ -89,4 +88,65 @@ export const generateOutlineStyle = (
 	return outlineWidth && outlineColor
 		? [ outlineWidth, outlineStyle, outlineColor ].join( ' ' )
 		: '';
+};
+
+/**
+ * Converts CSS property from dashed format to camel case.
+ *
+ * @param {string} string CSS property.
+ * @return {string} Camel case string.
+ */
+export const dashedToCamelCase = ( string ) => {
+	return string.replace( /-([a-z])/g, function ( g ) {
+		return g[ 1 ].toUpperCase();
+	} );
+};
+
+/**
+ * Converts rgba to rgb format, since Stripe Appearances API does not accept rgba format for background.
+ *
+ * @param {string} color CSS color value.
+ * @return {string} Accepted CSS color value.
+ */
+export const maybeConvertRGBAtoRGB = ( color ) => {
+	const colorParts = color.match(
+		/^rgba\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
+	);
+	if ( colorParts ) {
+		color = `rgb(${ colorParts[ 1 ] }, ${ colorParts[ 2 ] }, ${ colorParts[ 3 ] })`;
+	}
+	return color;
+};
+
+/**
+ * Searches through array of CSS selectors and returns first visible background color.
+ *
+ * @param {Array} selectors List of CSS selectors to check.
+ * @return {string} CSS color value.
+ */
+export const getBackgroundColor = ( selectors ) => {
+	const defaultColor = '#ffffff';
+	let color = null;
+	let i = 0;
+	while ( ! color && i < selectors.length ) {
+		const bgColor = window.getComputedStyle(
+			document.querySelector( selectors[ i ] )
+		).backgroundColor;
+		// If backgroundColor property present and alpha > 0.
+		if ( bgColor && tinycolor( bgColor ).getAlpha() > 0 ) {
+			color = bgColor;
+		}
+		i++;
+	}
+	return color || defaultColor;
+};
+
+/**
+ * Determines whether background color is light or dark.
+ *
+ * @param {string} color CSS color value.
+ * @return {boolean} True, if background is light; false, if background is dark.
+ */
+export const isColorLight = ( color ) => {
+	return tinycolor( color ).getBrightness() > 125;
 };

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Added a small separator line between converted currency and the next line item.

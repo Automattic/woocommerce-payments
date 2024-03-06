@@ -22,6 +22,7 @@ const mockDeposit = {
 	automatic: true,
 	fee: 30,
 	fee_percentage: 1.5,
+	currency: 'USD',
 } as CachedDeposit;
 
 declare const global: {
@@ -66,6 +67,14 @@ describe( 'Deposit overview', () => {
 	test( 'renders instant deposit correctly', () => {
 		const { container: overview } = render(
 			<DepositOverview deposit={ { ...mockDeposit, automatic: false } } />
+		);
+		expect( overview ).toMatchSnapshot();
+	} );
+
+	// test when deposit data could not be found, it renders a notice
+	test( 'renders notice when deposit data is not found', () => {
+		const { container: overview } = render(
+			<DepositOverview deposit={ undefined } />
 		);
 		expect( overview ).toMatchSnapshot();
 	} );
