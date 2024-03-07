@@ -3,7 +3,7 @@
 		display: flex;
 		position: relative;
 		flex-wrap: wrap;
-		margin: 24px;
+		margin: $gap-large;
 		padding: 30px 0;
 
 		&-column {
