@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Ensure gateways accessibility for use cases which don't require the gateway to be enabled
