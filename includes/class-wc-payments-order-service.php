@@ -682,8 +682,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set WCPay refund ID as metadata for refund object.
 	 *
-	 * @param  WC_Refund $wc_refund The refund instance.
-	 * @param  string    $wcpay_refund_id The value to be set.
+	 * @param  WC_Order_Refund $wc_refund The refund instance.
+	 * @param  string          $wcpay_refund_id The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
