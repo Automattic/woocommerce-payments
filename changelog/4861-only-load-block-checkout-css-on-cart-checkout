@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Only load `blocks-checkout.css` on single product, cart, and checkout pages.
