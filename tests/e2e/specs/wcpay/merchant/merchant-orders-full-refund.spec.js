@@ -34,15 +34,15 @@ describe( 'Order > Full refund', () => {
 		await expect( page ).toMatch( 'Order received' );
 
 		// Get the order ID so we can open it in the merchant view
-		const orderIdField = await page.$(
-			'.woocommerce-order-overview__order.order > strong'
-		);
+		const ORDER_RECEIVED_ID_SELECTOR =
+			'.woocommerce-order-overview__order.order > strong';
+		const orderIdField = await page.$( ORDER_RECEIVED_ID_SELECTOR );
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 
 		// Get the order total so we can verify the refund amount
-		const orderTotalField = await page.$(
-			'.woocommerce-order-overview__total .woocommerce-Price-amount'
-		);
+		const ORDER_RECEIVED_AMOUNT_SELECTOR =
+			'.woocommerce-order-overview__total .woocommerce-Price-amount';
+		const orderTotalField = await page.$( ORDER_RECEIVED_AMOUNT_SELECTOR );
 		orderAmount = await orderTotalField.evaluate( ( el ) => el.innerText );
 
 		// Login and open the order
