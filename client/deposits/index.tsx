@@ -10,6 +10,8 @@ import { useDispatch } from '@wordpress/data';
  * Internal dependencies.
  */
 import Page from 'components/page';
+import interpolateComponents from '@automattic/interpolate-components';
+import { __ } from '@wordpress/i18n';
 import { TestModeNotice } from 'components/test-mode-notice';
 import BannerNotice from 'components/banner-notice';
 import DepositSchedule from 'components/deposits-overview/deposit-schedule';
@@ -79,6 +81,43 @@ const NextDepositNotice: React.FC = () => {
 	);
 };
 
+const DepositFailureNotice: React.FC = () => {
+	const {
+		overviews: { account },
+	} = useAllDepositsOverviews();
+	
+	const hasErroredExternalAccount = account?.external_accounts?.some(
+		(externalAccount) => externalAccount.status === 'errored'
+	) ?? false;
+
+	return hasErroredExternalAccount ? (
+		<BannerNotice
+			status="warning"
+			icon
+			className="deposit-failure-notice"
+			isDismissible={ false }
+		>
+			{ interpolateComponents( {
+			mixedString: __(
+				'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+				'woocommerce-payments'
+			),
+			components: {
+				updateLink: (
+					// Link content is in the format string above.
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						target="_blank"
+						rel="noopener noreferrer"
+						href="https://woo.com/document/woopayments/deposits/change-deposit-account-info/"
+					/>
+				),
+			},
+		} ) }
+		</BannerNotice>
+	) : null;
+};
+
 const DepositsPage: React.FC = () => {
 	// pre-fetching the settings.
 	useSettings();
@@ -87,6 +126,7 @@ const DepositsPage: React.FC = () => {
 		<Page>
 			<TestModeNotice currentPage="deposits" />
 			<NextDepositNotice />
+			<DepositFailureNotice />
 			<DepositsList />
 		</Page>
 	);
