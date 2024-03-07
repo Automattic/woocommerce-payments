@@ -232,7 +232,7 @@ describe( 'ExpressCheckout', () => {
 
 		expect(
 			screen.queryByText(
-				'One or more of your extensions are incompatible with Express Checkouts.'
+				'One or more of your extensions alters the checkout fields. This might cause issues with Express Checkout methods.'
 			)
 		).toBeInTheDocument();
 	} );

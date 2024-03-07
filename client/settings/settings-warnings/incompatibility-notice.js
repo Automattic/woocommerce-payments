@@ -64,7 +64,7 @@ export const WooPayIncompatibilityNotice = () => (
 export const ExpressCheckoutIncompatibilityNotice = () => (
 	<IncompatibilityNotice
 		message={ __(
-			'One or more of your extensions are incompatible with Express Checkouts.',
+			'One or more of your extensions alters the checkout fields. This might cause issues with Express Checkout methods.',
 			'woocommerce-payments'
 		) }
 		learnMoreLinkHref="https://woo.com/document/woopayments/payment-methods/#express-checkout-methods"
