@@ -139,7 +139,8 @@ const DepositsOverview: React.FC = () => {
 				) : (
 					<>
 						{ isDepositsUnrestricted &&
-							! isDepositAwaitingPendingFunds && (
+							! isDepositAwaitingPendingFunds &&
+							! hasErroredExternalAccount && (
 								<DepositTransitDaysNotice />
 							) }
 						{ ! hasCompletedWaitingPeriod && (
