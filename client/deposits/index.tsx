@@ -40,10 +40,24 @@ const useNextDepositNoticeState = () => {
 	};
 };
 
-const NextDepositNotice: React.FC = () => {
+const useAccountStatus = () => {
 	const {
 		overviews: { account },
 	} = useAllDepositsOverviews();
+
+	const hasErroredExternalAccount =
+		account?.external_accounts?.some(
+			( externalAccount ) => externalAccount.status === 'errored'
+		) ?? false;
+
+	return {
+		account,
+		hasErroredExternalAccount,
+	};
+};
+
+const NextDepositNotice: React.FC = () => {
+	const { account, hasErroredExternalAccount } = useAccountStatus();
 	const {
 		isNextDepositNoticeDismissed,
 		handleDismissNextDepositNotice,
@@ -65,7 +79,8 @@ const NextDepositNotice: React.FC = () => {
 		! hasCompletedWaitingPeriod ||
 		! account ||
 		isNextDepositNoticeDismissed ||
-		! hasScheduledDeposits
+		! hasScheduledDeposits ||
+		hasErroredExternalAccount
 	) {
 		return null;
 	}
@@ -82,14 +97,7 @@ const NextDepositNotice: React.FC = () => {
 };
 
 const DepositFailureNotice: React.FC = () => {
-	const {
-		overviews: { account },
-	} = useAllDepositsOverviews();
-
-	const hasErroredExternalAccount =
-		account?.external_accounts?.some(
-			( externalAccount ) => externalAccount.status === 'errored'
-		) ?? false;
+	const { hasErroredExternalAccount } = useAccountStatus();
 
 	return hasErroredExternalAccount ? (
 		<BannerNotice
