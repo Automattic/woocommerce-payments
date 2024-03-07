@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
 import { VisuallyHidden } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 import { recordEvent } from 'tracks';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -20,25 +21,18 @@ import './styles.scss';
 const PaymentChangeFlow: React.FunctionComponent< {
 	change: number;
 } > = ( { change } ): JSX.Element => {
-	if ( change < 0 ) {
-		return (
-			<div className="payment-data-highlight__amount-change-arrow-down">
-				<span className="payment-data-highlight__amount-change-icon">
-					<ArrowDownIcon size={ 12 } />
-				</span>
-				<span className="payment-data-highlight__amount-change-percentage">
-					{ Math.abs( change ) }%
-				</span>
-			</div>
-		);
-	}
-
 	return (
-		<div className="payment-data-highlight__amount-change-arrow-up">
+		<div
+			className={ classNames( 'payment-data-highlight__amount-change', {
+				'arrow-down': change < 0,
+				'arrow-up': change >= 0,
+			} ) }
+		>
 			<span className="payment-data-highlight__amount-change-icon">
-				<ArrowUpIcon size={ 12 } />
+				{ change < 0 && <ArrowDownIcon size={ 12 } /> }
+				{ change >= 0 && <ArrowUpIcon size={ 12 } /> }
 			</span>
-			<span className="payment-data-highlight__amount-change-arrow-up-percentage">
+			<span className="payment-data-highlight__amount-change-percentage">
 				{ Math.abs( change ) }%
 			</span>
 		</div>
