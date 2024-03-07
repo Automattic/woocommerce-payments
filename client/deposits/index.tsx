@@ -85,10 +85,11 @@ const DepositFailureNotice: React.FC = () => {
 	const {
 		overviews: { account },
 	} = useAllDepositsOverviews();
-	
-	const hasErroredExternalAccount = account?.external_accounts?.some(
-		(externalAccount) => externalAccount.status === 'errored'
-	) ?? false;
+
+	const hasErroredExternalAccount =
+		account?.external_accounts?.some(
+			( externalAccount ) => externalAccount.status === 'errored'
+		) ?? false;
 
 	return hasErroredExternalAccount ? (
 		<BannerNotice
@@ -98,22 +99,22 @@ const DepositFailureNotice: React.FC = () => {
 			isDismissible={ false }
 		>
 			{ interpolateComponents( {
-			mixedString: __(
-				'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
-				'woocommerce-payments'
-			),
-			components: {
-				updateLink: (
-					// Link content is in the format string above.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						target="_blank"
-						rel="noopener noreferrer"
-						href="https://woo.com/document/woopayments/deposits/change-deposit-account-info/"
-					/>
+				mixedString: __(
+					'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+					'woocommerce-payments'
 				),
-			},
-		} ) }
+				components: {
+					updateLink: (
+						// Link content is in the format string above.
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							target="_blank"
+							rel="noopener noreferrer"
+							href="https://woo.com/document/woopayments/deposits/change-deposit-account-info/"
+						/>
+					),
+				},
+			} ) }
 		</BannerNotice>
 	) : null;
 };
