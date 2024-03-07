@@ -34,10 +34,16 @@ describe( 'Order > Full refund', () => {
 		await expect( page ).toMatch( 'Order received' );
 
 		// Get the order ID so we can open it in the merchant view
-		const orderIdField = await page.$(
-			'.woocommerce-order-overview__order.order > strong'
-		);
+		const ORDER_RECEIVED_ID_SELECTOR =
+			'.woocommerce-order-overview__order.order > strong';
+		const orderIdField = await page.$( ORDER_RECEIVED_ID_SELECTOR );
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
+
+		// Get the order total so we can verify the refund amount
+		const ORDER_RECEIVED_AMOUNT_SELECTOR =
+			'.woocommerce-order-overview__total .woocommerce-Price-amount';
+		const orderTotalField = await page.$( ORDER_RECEIVED_AMOUNT_SELECTOR );
+		orderAmount = await orderTotalField.evaluate( ( el ) => el.innerText );
 
 		// Login and open the order
 		await merchant.login();
@@ -45,13 +51,6 @@ describe( 'Order > Full refund', () => {
 
 		// We need to remove any listeners on the `dialog` event otherwise we can't catch the dialog below
 		await page.removeAllListeners( 'dialog' );
-
-		// Get the order price
-		const priceElement = await page.$( '.woocommerce-Price-amount' );
-		orderAmount = await page.evaluate(
-			( el ) => el.textContent,
-			priceElement
-		);
 	} );
 
 	afterAll( async () => {
