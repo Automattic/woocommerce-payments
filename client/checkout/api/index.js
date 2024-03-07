@@ -423,8 +423,7 @@ export default class WCPayAPI {
 			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
 		} )
 			.then( ( response ) => {
-				// There is not any action to take or harm caused by a failed update, so just returning success status.
-				return response.success;
+				return response.data;
 			} )
 			.catch( ( error ) => {
 				if ( error.message ) {
@@ -492,6 +491,19 @@ export default class WCPayAPI {
 		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
 			security: getPaymentRequestData( 'nonce' )?.add_to_cart,
 			...productData,
+		} );
+	}
+
+	/**
+	 * Empty the cart.
+	 *
+	 * @param {number} bookingId Booking ID (optional).
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestEmptyCart( bookingId ) {
+		return this.request( getPaymentRequestAjaxURL( 'empty_cart' ), {
+			security: getPaymentRequestData( 'nonce' )?.empty_cart,
+			booking_id: bookingId,
 		} );
 	}
 

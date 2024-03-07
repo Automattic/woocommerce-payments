@@ -95,17 +95,63 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			WC()->cart->add_to_cart( $product->get_id(), $quantity, $variation_id, $attributes );
 		}
 
-		if ( in_array( $product_type, [ 'simple', 'subscription', 'subscription_variation', 'bundle', 'mix-and-match' ], true ) ) {
+		if ( in_array( $product_type, [ 'simple', 'variation', 'subscription', 'subscription_variation', 'booking', 'bundle', 'mix-and-match' ], true ) ) {
 			WC()->cart->add_to_cart( $product->get_id(), $quantity );
 		}
 
 		WC()->cart->calculate_totals();
 
+		if ( 'booking' === $product_type ) {
+			$booking_id = $this->get_booking_id_from_cart();
+		}
+
 		$data           = [];
 		$data          += $this->build_display_items();
 		$data['result'] = 'success';
 
+		if ( ! empty( $booking_id ) ) {
+			$data['bookingId'] = $booking_id;
+		}
+
 		wp_send_json( $data );
+	}
+
+	/**
+	 * Gets the booking id from the cart.
+	 * It's expected that the cart only contains one item which was added via ajax_add_to_cart.
+	 * Used to remove the booking from WC Bookings in-cart status.
+	 *
+	 * @return int|false
+	 */
+	public function get_booking_id_from_cart() {
+		$cart      = WC()->cart->get_cart();
+		$cart_item = reset( $cart );
+
+		if ( $cart_item && isset( $cart_item['booking']['_booking_id'] ) ) {
+			return $cart_item['booking']['_booking_id'];
+		}
+
+		return false;
+	}
+
+	/**
+	 * Empties the cart via AJAX. Used on the product page.
+	 */
+	public function ajax_empty_cart() {
+		check_ajax_referer( 'wcpay-empty-cart', 'security' );
+
+		$booking_id = isset( $_POST['booking_id'] ) ? absint( $_POST['booking_id'] ) : null;
+
+		WC()->cart->empty_cart();
+
+		if ( $booking_id ) {
+			// When a bookable product is added to the cart, a 'booking' is create with status 'in-cart'.
+			// This status is used to prevent the booking from being booked by another customer
+			// and should be removed when the cart is emptied for PRB purposes.
+			do_action( 'wc-booking-remove-inactive-cart', $booking_id ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		}
+
+		wp_send_json( [ 'result' => 'success' ] );
 	}
 
 	/**
@@ -124,7 +170,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$currency  = get_woocommerce_currency();
 
 		// Default show only subtotal instead of itemization.
-		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', true ) || $itemized_display_items ) {
+		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', ! $itemized_display_items ) ) {
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				$amount         = $cart_item['line_subtotal'];
 				$subtotal      += $cart_item['line_subtotal'];

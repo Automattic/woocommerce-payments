@@ -9,10 +9,14 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import DisableConfirmationModal from '../disable-confirmation-modal';
+import DisableConfirmationModal from '..';
 
 jest.mock( '../../data', () => ( {
-	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
+	useEnabledPaymentMethodIds: jest
+		.fn()
+		.mockReturnValue( [ [ 'card', 'giropay', 'link' ] ] ),
+	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ true ] ),
+	usePaymentRequestEnabledSettings: jest.fn().mockReturnValue( [ true ] ),
 } ) );
 
 describe( 'DisableConfirmationModal', () => {

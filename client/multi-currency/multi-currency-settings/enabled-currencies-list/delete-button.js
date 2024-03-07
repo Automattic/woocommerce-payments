@@ -4,15 +4,13 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon } from '@wordpress/components';
-import InfoOutlineIcon from 'gridicons/dist/info-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import CurrencyDeleteIllustration from 'wcpay/components/currency-delete-illustration';
 import PaymentMethodIcon from 'wcpay/settings/payment-method-icon';
+import paymentMethodsMap from 'wcpay/payment-methods-map';
 
-// TODO: Delete button and modal should be separated.
-// TODO: This removes the item, but the list does not refresh.
 const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
 		false
@@ -51,21 +49,14 @@ const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 		<>
 			{ isConfirmationModalOpen && (
 				<ConfirmationModal
-					title={ interpolateComponents( {
-						mixedString: sprintf(
-							__(
-								/* translators: %1: Name of the currency being removed */
-								'{{infoIcon /}} Remove %1$s',
-								'woocommerce-payments'
-							),
-							label
+					title={ sprintf(
+						__(
+							/* translators: %1: Name of the currency being removed */
+							'Remove %1$s',
+							'woocommerce-payments'
 						),
-						components: {
-							infoIcon: (
-								<InfoOutlineIcon className="currency-delete-illustration__currency-info-icon" />
-							),
-						},
-					} ) }
+						label
+					) }
 					onRequestClose={ handleDeleteCancelClick }
 					className="enabled-currency-delete-modal"
 					actions={
@@ -108,11 +99,14 @@ const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 					</p>
 					<ul>
 						{ dependentPaymentMethods.map( ( paymentMethod ) => (
-							<li key={ 'pm-icon-wrapper-' + paymentMethod }>
+							<li key={ paymentMethod }>
 								<PaymentMethodIcon
-									key={ 'pm-icon-' + paymentMethod }
-									name={ paymentMethod }
-									showName={ true }
+									Icon={
+										paymentMethodsMap[ paymentMethod ].icon
+									}
+									label={
+										paymentMethodsMap[ paymentMethod ].label
+									}
 								/>
 							</li>
 						) ) }

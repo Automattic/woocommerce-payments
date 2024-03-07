@@ -7,7 +7,11 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { useCurrencies, useEnabledCurrencies } from '../../../data';
+import {
+	useCurrencies,
+	useEnabledCurrencies,
+	useAccountDomesticCurrency,
+} from '../../../data';
 import CurrencyInformationForMethods, {
 	BuildMissingCurrenciesTooltipMessage,
 } from '..';
@@ -16,6 +20,7 @@ import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 jest.mock( '../../../data', () => ( {
 	useCurrencies: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
+	useAccountDomesticCurrency: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {
@@ -48,6 +53,7 @@ describe( 'CurrencyInformationForMethods', () => {
 				USD: { id: 'usd', code: 'USD' },
 			},
 		} );
+		useAccountDomesticCurrency.mockReturnValue( 'usd' );
 	} );
 
 	it( 'should not display content when the feature flag is disabled', () => {
@@ -185,6 +191,51 @@ describe( 'CurrencyInformationForMethods', () => {
 					ignore: '.a11y-speak-region',
 				}
 			)
+		).toBeInTheDocument();
+	} );
+
+	it( "should not display a notice for additional currencies for BNPL methods, if the account's currency is already enabled", () => {
+		const { container } = render(
+			<FlagsContextWrapper>
+				<CurrencyInformationForMethods
+					selectedMethods={ [
+						'afterpay_clearpay',
+						'klarna',
+						'affirm',
+					] }
+				/>
+			</FlagsContextWrapper>
+		);
+
+		expect( container.firstChild ).toBeNull();
+	} );
+
+	it( "should display a notice to enable additional currencies for BNPL methods, if the account' currency is not enabled", () => {
+		useAccountDomesticCurrency.mockReturnValue( 'eur' );
+		render(
+			<FlagsContextWrapper>
+				<CurrencyInformationForMethods
+					selectedMethods={ [
+						'afterpay_clearpay',
+						'klarna',
+						'affirm',
+					] }
+				/>
+			</FlagsContextWrapper>
+		);
+
+		expect(
+			screen.queryByText(
+				/Afterpay, Klarna, and Affirm require an additional currency/,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( /we\'ll add Euro \(€\) to your store/, {
+				ignore: '.a11y-speak-region',
+			} )
 		).toBeInTheDocument();
 	} );
 

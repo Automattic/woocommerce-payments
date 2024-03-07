@@ -1,0 +1,183 @@
+/* TODO: When merging into WooCommerce Core, integrate these icons into the WooCommerce.ttf icon font */
+@font-face {
+	font-family: 'WCPay';
+	src: url( '../fonts/WCPay.eot' );
+	src: url( '../fonts/WCPay.eot?#iefix' ) format( 'embedded-opentype' ),
+		url( '../fonts/WCPay.woff' ) format( 'woff' ),
+		url( '../fonts/WCPay.ttf' ) format( 'truetype' ),
+		url( '../fonts/WCPay.svg#WCPay' ) format( 'svg' );
+	font-weight: normal;
+	font-style: normal;
+}
+/* stylelint-disable selector-id-pattern */
+#adminmenu
+	#toplevel_page_wc-admin-path--payments-overview
+	.menu-icon-generic
+	div.wp-menu-image::before,
+#adminmenu
+	#toplevel_page_wc-admin-path--payments-connect
+	.menu-icon-generic
+	div.wp-menu-image::before,
+#adminmenu
+	#toplevel_page_wc-admin-path--payments-deposits
+	.menu-icon-generic
+	div.wp-menu-image::before {
+	font-family: 'WCPay' !important;
+	content: '\e900';
+	width: 24px;
+	font-size: 24px;
+	margin-top: -2px;
+}
+/* stylelint-enable selector-id-pattern */
+
+.payment-method__brand {
+	display: inline-block;
+	height: 20px;
+	height: 1.25rem;
+	width: 32px;
+	width: 2rem;
+	background-size: contain;
+	background-repeat: no-repeat;
+	border-radius: 2px;
+	outline: 1px solid rgba( 0, 0, 0, 0.25 );
+}
+
+.payment-method__brand--amex {
+	background-image: url( '../images/cards/amex.svg' );
+}
+
+.payment-method__brand--diners {
+	background-image: url( '../images/cards/diners.svg' );
+}
+
+.payment-method__brand--discover {
+	background-image: url( '../images/cards/discover.svg' );
+}
+
+.payment-method__brand--jcb {
+	background-image: url( '../images/cards/jcb.svg' );
+}
+
+.payment-method__brand--mastercard {
+	background-image: url( '../images/cards/mastercard.svg' );
+}
+
+.payment-method__brand--unionpay {
+	background-image: url( '../images/cards/unionpay.svg' );
+}
+
+.payment-method__brand--visa {
+	background-image: url( '../images/cards/visa.svg' );
+}
+
+.payment-method__brand--unknown {
+	background-image: url( '../images/cards/unknown.svg' );
+}
+
+.payment-method__brand--giropay {
+	background-image: url( '../images/payment-methods/giropay.svg' );
+}
+
+.payment-method__brand--eps {
+	background-image: url( '../images/payment-methods/eps.svg' );
+}
+
+.payment-method__brand--p24 {
+	background-image: url( '../images/payment-methods/p24.svg' );
+}
+
+.payment-method__brand--sepa_debit {
+	background-image: url( '../images/cards/sepa.svg' );
+}
+
+.payment-method__brand--sofort {
+	background-image: url( '../images/payment-methods/sofort.svg' );
+}
+
+.payment-method__brand--ideal {
+	background-image: url( '../images/payment-methods/ideal.svg' );
+}
+
+.payment-method__brand--google-pay {
+	background-image: url( '../images/cards/google-pay.svg' );
+}
+
+.payment-method__brand--apple-pay {
+	background-image: url( '../images/cards/apple-pay.svg' );
+}
+
+.payment-method__brand--bancontact {
+	background-image: url( '../images/payment-methods/bancontact.svg' );
+}
+
+.payment-method__brand--sepa_debit {
+	background-image: url( '../images/payment-methods/sepa-debit.svg' );
+}
+
+.payment-method__brand--au_becs_debit {
+	background-image: url( '../images/payment-methods/bank-debit.svg' );
+}
+
+.payment-method__brand--link {
+	background-image: url( '../images/payment-methods/link.svg' );
+}
+
+.payment-method__brand--afterpay_clearpay {
+	background-image: url( '../images/payment-methods/afterpay-icon.svg' );
+}
+
+.payment-method__brand--affirm {
+	background-image: url( '../images/payment-methods/affirm-icon.svg' );
+}
+
+.payment-method__brand--klarna {
+	background-image: url( '../images/payment-methods/klarna.svg' );
+}
+
+.wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {
+	border: 1px solid #ddd;
+	border-radius: 2px;
+}
+
+.woocommerce-payments-page .woocommerce-inbox-message .components-dropdown {
+	position: absolute;
+}
+
+.wc-payment-gateway-method-name-woopay-wrapper {
+	display: flex;
+	justify-content: end;
+	align-items: center;
+}
+
+.wc-payment-gateway-method-name-woopay-wrapper img {
+	margin: 0 5px;
+	padding-top: 2px;
+}
+
+.wcpay-fraud-risk-meta-allow,
+.wcpay-fraud-risk-meta-review,
+.wcpay-fraud-risk-meta-blocked {
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.wcpay-fraud-risk-meta-allow img {
+	margin: 0 0 0 5px;
+}
+
+.wcpay-fraud-risk-meta-review img,
+.wcpay-fraud-risk-meta-blocked img {
+	margin: 0 0 -3px 3px;
+}
+
+.wcpay-fraud-risk-meta-allow {
+	color: #008a20;
+}
+
+.wcpay-fraud-risk-meta-review {
+	color: #b26200;
+}
+
+.wcpay-fraud-risk-meta-blocked {
+	color: #b32d2e;
+}
