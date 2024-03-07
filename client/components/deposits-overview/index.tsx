@@ -154,7 +154,11 @@ const DepositsOverview: React.FC = () => {
 							<NegativeBalanceDepositsPausedNotice />
 						) }
 						{ hasErroredExternalAccount && (
-							<DepositFailureNotice />
+							<DepositFailureNotice
+								updateAccountLink={
+									wcpaySettings.accountStatus.accountLink
+								}
+							/>
 						) }
 						{ availableFunds > 0 &&
 							! isAboveMinimumDepositAmount && (

@@ -215,7 +215,12 @@ export const NoFundsAvailableForDepositNotice: React.FC = () => (
 /**
  * Renders a notice informing the user that deposits are paused due to a recent deposit failure.
  */
-export const DepositFailureNotice: React.FC = () => (
+export const DepositFailureNotice: React.FC< {
+	/**
+	 * The link to update the account details.
+	 */
+	updateAccountLink: string;
+} > = ( { updateAccountLink } ) => (
 	<InlineNotice
 		status="warning"
 		icon
@@ -234,7 +239,7 @@ export const DepositFailureNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woo.com/document/woopayments/deposits/change-deposit-account-info/"
+						href={ updateAccountLink }
 					/>
 				),
 			},
