@@ -118,7 +118,7 @@ const DepositFailureNotice: React.FC = () => {
 						<a
 							target="_blank"
 							rel="noopener noreferrer"
-							href="https://woo.com/document/woopayments/deposits/change-deposit-account-info/"
+							href={ wcpaySettings.accountStatus.accountLink }
 						/>
 					),
 				},
