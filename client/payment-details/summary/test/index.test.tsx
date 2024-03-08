@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
@@ -959,6 +959,42 @@ describe( 'PaymentDetailsSummary', () => {
 			).not.toBeInTheDocument();
 
 			expect( container ).toMatchSnapshot();
+		} );
+	} );
+
+	describe( 'Refund actions menu', () => {
+		test( 'Refund control menu is visible when conditions are met', () => {
+			renderCharge( getBaseCharge() );
+			expect(
+				screen.getByLabelText( 'Transaction actions' )
+			).toBeInTheDocument();
+		} );
+
+		test( 'Refund in full option is available when no amount has been refunded', () => {
+			renderCharge( getBaseCharge() );
+			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+			expect( screen.getByText( 'Refund in full' ) ).toBeInTheDocument();
+		} );
+
+		test( 'Refund in full option is not available when an amount has been refunded', () => {
+			renderCharge( { ...getBaseCharge(), amount_refunded: 42 } );
+			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+			expect(
+				screen.queryByText( 'Refund in full' )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'Partial refund option is available when charge is associated with an order', () => {
+			renderCharge( getBaseCharge() );
+			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+			expect( screen.getByText( 'Partial refund' ) ).toBeInTheDocument();
+		} );
+
+		test( 'Refund control menu is not visible when charge is not captured', () => {
+			renderCharge( { ...getBaseCharge(), captured: false } );
+			expect(
+				screen.queryByLabelText( 'Transaction actions' )
+			).not.toBeInTheDocument();
 		} );
 	} );
 } );
