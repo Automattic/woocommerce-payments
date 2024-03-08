@@ -16,7 +16,7 @@ class WooPayDirectCheckout {
 	static sessionConnect;
 	static encryptedSessionDataPromise;
 	static redirectElements = {
-		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout',
+		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout .checkout-button',
 		BLOCKS_CART_PROCEED_BUTTON:
 			'.wp-block-woocommerce-proceed-to-checkout-block',
 	};
@@ -189,8 +189,13 @@ class WooPayDirectCheckout {
 		elements.forEach( ( element ) => {
 			element.addEventListener( 'click', async ( event ) => {
 				// Store href before the async call to not lose the reference.
-				const currTargetHref = event.currentTarget.querySelector( 'a' )
-					?.href;
+				let currTargetHref;
+				const isAElement = element.tagName.toLowerCase() === 'a';
+				if ( isAElement ) {
+					currTargetHref = element.href;
+				} else {
+					currTargetHref = element.querySelector( 'a' )?.href;
+				}
 
 				// If there's no link where to redirect the user, do not break the expected behavior.
 				if ( ! currTargetHref ) {

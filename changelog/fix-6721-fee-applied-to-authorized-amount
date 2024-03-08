@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fees are now correctly applied to the Capture amount instead of the Authorize amount.
