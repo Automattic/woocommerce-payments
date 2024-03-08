@@ -528,7 +528,9 @@ describe( 'Suspended Deposit Notice Renders', () => {
 
 describe( 'DepositFailureNotice Renders', () => {
 	test( 'Renders DepositFailureNotice component correctly', () => {
-		const { container } = render( <DepositFailureNotice /> );
+		const { container } = render(
+			<DepositFailureNotice updateAccountLink="https://example.com" />
+		);
 		expect( container ).toMatchSnapshot();
 	} );
 

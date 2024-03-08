@@ -39,7 +39,7 @@ exports[`DepositFailureNotice Renders Renders DepositFailureNotice component cor
         >
           Deposits are currently paused because a recent deposit failed. Please 
           <a
-            href="https://woo.com/document/woopayments/deposits/change-deposit-account-info/"
+            href="https://example.com"
             rel="noopener noreferrer"
             target="_blank"
           >
