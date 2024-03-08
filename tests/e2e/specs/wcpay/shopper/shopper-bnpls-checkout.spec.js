@@ -32,6 +32,7 @@ describe.each( cardTestingPreventionStates )(
 			if ( cardTestingPreventionEnabled ) {
 				await merchantWCP.enableCardTestingProtection();
 			}
+			await merchantWCP.activateMulticurrency();
 			await merchant.logout();
 			await shopper.login();
 			await shopperWCP.changeAccountCurrencyTo(
@@ -48,6 +49,7 @@ describe.each( cardTestingPreventionStates )(
 			if ( cardTestingPreventionEnabled ) {
 				await merchantWCP.disableCardTestingProtection();
 			}
+			await merchantWCP.deactivateMulticurrency();
 			await merchant.logout();
 		} );
 
