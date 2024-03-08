@@ -164,6 +164,8 @@ export const shopperWCP = {
 			customerDetails.lastname
 		);
 
+		await page.waitForSelector( '#wcpay_selected_currency' );
+
 		await page.select( '#wcpay_selected_currency', currencyToSet );
 		await expect( page ).toClick( 'button', {
 			text: 'Save changes',
