@@ -20,7 +20,9 @@ import {
 
 import { getDeposit, getDeposits, getDepositsSummary } from '../resolvers';
 
-jest.mock( '@wordpress/data-controls' );
+jest.mock( '@wordpress/data-controls', () => ( {
+	apiFetch: jest.fn().mockReturnValue( 'something' ),
+} ) );
 
 const depositsResponse = {
 	data: [
@@ -121,9 +123,6 @@ describe( 'getDeposits resolver', () => {
 		'page=1&pagesize=25&match=all&store_currency_is=gbp&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&status_is=paid&status_is_not=failed';
 
 	beforeEach( () => {
-		apiFetch.mockImplementation( () => {
-			return 'something';
-		} );
 		generator = getDeposits( query );
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
