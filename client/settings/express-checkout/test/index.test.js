@@ -232,7 +232,7 @@ describe( 'ExpressCheckout', () => {
 
 		expect(
 			screen.queryByText(
-				'One or more of your extensions alters the checkout fields. This might cause issues with Express Checkout methods.'
+				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
 			)
 		).toBeInTheDocument();
 	} );
