@@ -67,6 +67,6 @@ export const ExpressCheckoutIncompatibilityNotice = () => (
 			'One or more of your extensions alters checkout fields. This might cause issues with this payment method.',
 			'woocommerce-payments'
 		) }
-		learnMoreLinkHref="https://woo.com/document/woopayments/payment-methods/#express-checkout-methods"
+		learnMoreLinkHref="https://woo.com/document/woopayments/payment-methods/apple-pay-and-google-pay-compatibility/"
 	/>
 );
