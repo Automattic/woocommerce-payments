@@ -2,9 +2,13 @@
  * External dependencies
  */
 import React, { createContext, useState, useCallback, useContext } from 'react';
-import { OverviewSurveyFields } from 'wcpay/overview/survey/types';
 import apiFetch from '@wordpress/api-fetch';
+
+/**
+ * Internal dependencies
+ */
 import { NAMESPACE } from 'wcpay/data/constants';
+import { OverviewSurveyFields } from 'wcpay/overview/survey/types';
 
 const useContextValue = ( initialState = {} as OverviewSurveyFields ) => {
 	const [ surveySubmitted, setSurveySubmitted ] = useState(
