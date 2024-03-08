@@ -2399,7 +2399,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Overrides parent method so the option key is the same as the parent class.
 	 */
 	public function get_option_key() {
-		// Intentionally using self instead of static so options are loaded from main gateway settings.
 		return $this->plugin_id . $this->id . '_settings';
 	}
 
