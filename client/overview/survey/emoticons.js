@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React from 'react';
+import strings from './strings';
 
 const Emoticons = ( props ) => {
 	const { rating, setReviewRating, disabled, currentRating } = props;
@@ -9,47 +10,6 @@ const Emoticons = ( props ) => {
 	const buttonCss =
 		'components-button has-icon' +
 		( rating === currentRating ? ' selected' : '' );
-
-	const getIcon = function () {
-		if ( rating === '1' ) {
-			return (
-				<span role="img" aria-label="emoticon">
-					&#128542;
-				</span>
-			);
-		}
-		if ( rating === '2' ) {
-			return (
-				<span role="img" aria-label="emoticon">
-					&#129764;
-				</span>
-			);
-		}
-
-		if ( rating === '3' ) {
-			return (
-				<span role="img" aria-label="emoticon">
-					&#128529;
-				</span>
-			);
-		}
-
-		if ( rating === '4' ) {
-			return (
-				<span role="img" aria-label="emoticon">
-					&#128578;
-				</span>
-			);
-		}
-
-		if ( rating === '5' ) {
-			return (
-				<span role="img" aria-label="emoticon">
-					&#128525;
-				</span>
-			);
-		}
-	};
 
 	return (
 		<>
@@ -61,7 +21,13 @@ const Emoticons = ( props ) => {
 					setReviewRating( rating );
 				} }
 			>
-				{ getIcon() }
+				<span
+					role="img"
+					aria-label="emoticon"
+					dangerouslySetInnerHTML={ {
+						__html: strings[ `${ rating }` ],
+					} }
+				/>
 			</button>
 		</>
 	);

@@ -32,6 +32,7 @@ const Survey = () => {
 		setSurveyAnswers,
 	} = useOverviewSurveyContext();
 
+	const currentRating = surveyAnswers.rating ?? 0;
 	const setReviewRating = function ( value: number ) {
 		const answers: OverviewSurveyFields = {
 			...surveyAnswers,
@@ -60,57 +61,56 @@ const Survey = () => {
 									disabled={ 'pending' === status }
 									rating="1"
 									setReviewRating={ setReviewRating }
-									currentRating={ surveyAnswers.rating ?? 0 }
+									currentRating={ currentRating }
 								/>
 								<Emoticons
 									disabled={ 'pending' === status }
 									rating="2"
 									setReviewRating={ setReviewRating }
-									currentRating={ surveyAnswers.rating ?? 0 }
+									currentRating={ currentRating }
 								/>
 								<Emoticons
 									disabled={ 'pending' === status }
 									rating="3"
 									setReviewRating={ setReviewRating }
-									currentRating={ surveyAnswers.rating ?? 0 }
+									currentRating={ currentRating }
 								/>
 								<Emoticons
 									disabled={ 'pending' === status }
 									rating="4"
 									setReviewRating={ setReviewRating }
-									currentRating={ surveyAnswers.rating ?? 0 }
+									currentRating={ currentRating }
 								/>
 								<Emoticons
 									disabled={ 'pending' === status }
 									rating="5"
 									setReviewRating={ setReviewRating }
-									currentRating={ surveyAnswers.rating ?? 0 }
+									currentRating={ currentRating }
 								/>
 							</div>
-							{ ( surveyAnswers.rating ?? 0 ) <= 3 &&
-								( surveyAnswers.rating ?? 0 ) > 0 && (
-									<button
-										type="button"
-										className="components-button has-icon"
-										aria-label="Close dialog"
-										onClick={ () => {
-											setReviewRating( 0 );
-										} }
-									>
-										<Icon
-											icon={ close }
-											type="close"
-											size={ 32 }
-										/>
-									</button>
-								) }
+							{ currentRating <= 3 && currentRating > 0 && (
+								<button
+									type="button"
+									className="components-button has-icon"
+									aria-label="Close dialog"
+									onClick={ () => {
+										setReviewRating( 0 );
+									} }
+								>
+									<Icon
+										icon={ close }
+										type="close"
+										size={ 32 }
+									/>
+								</button>
+							) }
 						</div>
 					</>
 				) }
 
 				{ ! surveySubmitted &&
-					( surveyAnswers.rating ?? 0 ) <= 3 &&
-					( surveyAnswers.rating ?? 0 ) > 0 && (
+					currentRating <= 3 &&
+					currentRating > 0 && (
 						<>
 							<HorizontalRule />
 							<TextareaControl
