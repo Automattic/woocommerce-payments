@@ -2400,7 +2400,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_option_key() {
 		// Intentionally using self instead of static so options are loaded from main gateway settings.
-		return $this->plugin_id . self::GATEWAY_ID . '_settings';
+		return $this->plugin_id . $this->id . '_settings';
 	}
 
 
