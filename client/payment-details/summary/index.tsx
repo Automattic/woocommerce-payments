@@ -210,6 +210,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// present, partial refund is not possible.
 	const isPartiallyRefundable = charge.order && charge.order.number;
 
+	const isPartiallyRefunded = charge.amount_refunded > 0;
+
 	// Control menu only shows refund actions for now. In the future, it may show other actions.
 	const showControlMenu =
 		charge.captured && ! charge.refunded && isDisputeRefundable;
@@ -554,26 +556,28 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								>
 									{ ( { onClose } ) => (
 										<MenuGroup>
-											<MenuItem
-												onClick={ () => {
-													setIsRefundModalOpen(
-														true
-													);
-													recordEvent(
-														'payments_transactions_details_refund_modal_open',
-														{
-															payment_intent_id:
-																charge.payment_intent,
-														}
-													);
-													onClose();
-												} }
-											>
-												{ __(
-													'Refund in full',
-													'woocommerce-payments'
-												) }
-											</MenuItem>
+											{ ! isPartiallyRefunded && (
+												<MenuItem
+													onClick={ () => {
+														setIsRefundModalOpen(
+															true
+														);
+														recordEvent(
+															'payments_transactions_details_refund_modal_open',
+															{
+																payment_intent_id:
+																	charge.payment_intent,
+															}
+														);
+														onClose();
+													} }
+												>
+													{ __(
+														'Refund in full',
+														'woocommerce-payments'
+													) }
+												</MenuItem>
+											) }
 											{ isPartiallyRefundable && (
 												<MenuItem
 													onClick={ () => {

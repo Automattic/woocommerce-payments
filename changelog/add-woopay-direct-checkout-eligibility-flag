@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add WooPay direct checkout flow behind a server-side feature flag.

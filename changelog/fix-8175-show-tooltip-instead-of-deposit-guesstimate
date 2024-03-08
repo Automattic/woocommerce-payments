@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Show an informative tooltip instead of estimating the next deposit date (which can be inaccurate).

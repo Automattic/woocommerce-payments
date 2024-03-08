@@ -375,7 +375,10 @@ class WC_Payments_Admin {
 			]
 		);
 
-		if ( $this->account->is_account_rejected() ) {
+		// Merchants are unable to see their deposits, transactions, disputes and settings if their account is rejected or under review.
+		// That's expected, because account under review is hard-blocked account that spends in a review pretty short time-frame.
+		// Either merchant gets approved and continues to use payments or they remain suspended and can't use payments.
+		if ( $this->account->is_account_rejected() || $this->account->is_account_under_review() ) {
 			// If the account is rejected, only show the overview page.
 			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
 			return;
