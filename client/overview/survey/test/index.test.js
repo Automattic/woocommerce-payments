@@ -43,7 +43,7 @@ describe( 'WcPayOverviewSurveyContextProvider', () => {
 		} );
 	} );
 
-	it( 'should render survey questions radio buttons and be clickable', () => {
+	it( 'should render survey emoji buttons and be clickable', () => {
 		render(
 			<WcPayOverviewSurveyContextProvider>
 				<Survey />
@@ -76,5 +76,27 @@ describe( 'WcPayOverviewSurveyContextProvider', () => {
 		fireEvent.click( buttons[ 3 ] );
 		expect( commentLabel ).not.toBeInTheDocument();
 		expect( apiFetch ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'test survey initial display', () => {
+		const { container } = render(
+			<WcPayOverviewSurveyContextProvider>
+				<Survey />
+			</WcPayOverviewSurveyContextProvider>
+		);
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'test survey with comments textbox', () => {
+		const { container } = render(
+			<WcPayOverviewSurveyContextProvider>
+				<Survey />
+			</WcPayOverviewSurveyContextProvider>
+		);
+
+		const buttons = screen.getAllByRole( 'button' );
+		fireEvent.click( buttons[ 1 ] );
+
+		expect( container ).toMatchSnapshot();
 	} );
 } );

@@ -114,7 +114,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 				'method'  => 'POST',
 				'headers' => [
 					'Content-Type'    => 'application/json',
-					'X-Forwarded-For' => $this->get_current_user_ip(),
+					'X-Forwarded-For' => \WC_Geolocation::get_ip_address(),
 				],
 			],
 			[
@@ -145,33 +145,5 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	 */
 	public function check_permission() {
 		return current_user_can( 'manage_woocommerce' );
-	}
-
-	/**
-	 * Gets current user IP address.
-	 *
-	 * @return string Current user IP address.
-	 */
-	public function get_current_user_ip() {
-		foreach (
-			[
-				'HTTP_CF_CONNECTING_IP',
-				'HTTP_CLIENT_IP',
-				'HTTP_X_FORWARDED_FOR',
-				'HTTP_X_FORWARDED',
-				'HTTP_X_CLUSTER_CLIENT_IP',
-				'HTTP_FORWARDED_FOR',
-				'HTTP_FORWARDED',
-				'HTTP_VIA',
-				'REMOTE_ADDR',
-			] as $key
-		) {
-			if ( ! empty( $_SERVER[ $key ] ) ) {
-				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-				return $_SERVER[ $key ];
-			}
-		}
-
-		return '';
 	}
 }
