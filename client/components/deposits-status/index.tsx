@@ -121,7 +121,7 @@ const DepositsStatus: React.FC< Props > = ( {
 } ) => {
 	const isPoInProgress = poEnabled && ! poComplete;
 
-	if ( status === 'blocked' ) {
+	if ( status === 'blocked' || accountStatus === 'under_review' ) {
 		return (
 			<DepositsStatusSuspended
 				iconSize={ iconSize }

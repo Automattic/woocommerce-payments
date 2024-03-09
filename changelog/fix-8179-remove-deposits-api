@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Removing unsupported `deposits/overview` REST API. `deposits/overview-all` should be used instead.
