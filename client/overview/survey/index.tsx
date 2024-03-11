@@ -57,36 +57,38 @@ const Survey = () => {
 										'woocommerce-payments'
 									) }
 								</span>
-								<Emoticons
-									disabled={ 'pending' === status }
-									rating="1"
-									setReviewRating={ setReviewRating }
-									currentRating={ currentRating }
-								/>
-								<Emoticons
-									disabled={ 'pending' === status }
-									rating="2"
-									setReviewRating={ setReviewRating }
-									currentRating={ currentRating }
-								/>
-								<Emoticons
-									disabled={ 'pending' === status }
-									rating="3"
-									setReviewRating={ setReviewRating }
-									currentRating={ currentRating }
-								/>
-								<Emoticons
-									disabled={ 'pending' === status }
-									rating="4"
-									setReviewRating={ setReviewRating }
-									currentRating={ currentRating }
-								/>
-								<Emoticons
-									disabled={ 'pending' === status }
-									rating="5"
-									setReviewRating={ setReviewRating }
-									currentRating={ currentRating }
-								/>
+								<div>
+									<Emoticons
+										disabled={ 'pending' === status }
+										rating="1"
+										setReviewRating={ setReviewRating }
+										currentRating={ currentRating }
+									/>
+									<Emoticons
+										disabled={ 'pending' === status }
+										rating="2"
+										setReviewRating={ setReviewRating }
+										currentRating={ currentRating }
+									/>
+									<Emoticons
+										disabled={ 'pending' === status }
+										rating="3"
+										setReviewRating={ setReviewRating }
+										currentRating={ currentRating }
+									/>
+									<Emoticons
+										disabled={ 'pending' === status }
+										rating="4"
+										setReviewRating={ setReviewRating }
+										currentRating={ currentRating }
+									/>
+									<Emoticons
+										disabled={ 'pending' === status }
+										rating="5"
+										setReviewRating={ setReviewRating }
+										currentRating={ currentRating }
+									/>
+								</div>
 							</div>
 							{ currentRating <= 3 && currentRating > 0 && (
 								<button

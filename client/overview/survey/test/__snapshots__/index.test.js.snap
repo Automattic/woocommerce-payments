@@ -24,61 +24,63 @@ exports[`WcPayOverviewSurveyContextProvider test survey initial display 1`] = `
             <span>
               How do you like your new finance overview?
             </span>
-            <button
-              class="components-button has-icon"
-              type="button"
-            >
-              <span
-                aria-label="emoticon"
-                role="img"
+            <div>
+              <button
+                class="components-button has-icon"
+                type="button"
               >
-                😞
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
-            >
-              <span
-                aria-label="emoticon"
-                role="img"
+                <span
+                  aria-label="emoticon"
+                  role="img"
+                >
+                  😞
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
               >
-                🫤
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
-            >
-              <span
-                aria-label="emoticon"
-                role="img"
+                <span
+                  aria-label="emoticon"
+                  role="img"
+                >
+                  🫤
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
               >
-                😑
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
-            >
-              <span
-                aria-label="emoticon"
-                role="img"
+                <span
+                  aria-label="emoticon"
+                  role="img"
+                >
+                  😑
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
               >
-                🙂
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
-            >
-              <span
-                aria-label="emoticon"
-                role="img"
+                <span
+                  aria-label="emoticon"
+                  role="img"
+                >
+                  🙂
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
               >
-                😍
-              </span>
-            </button>
+                <span
+                  aria-label="emoticon"
+                  role="img"
+                >
+                  😍
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -123,61 +125,63 @@ exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`
             <span>
               How do you like your new finance overview?
             </span>
-            <button
-              class="components-button has-icon"
-              type="button"
-            >
-              <span
-                aria-label="emoticon"
-                role="img"
+            <div>
+              <button
+                class="components-button has-icon"
+                type="button"
               >
-                😞
-              </span>
-            </button>
-            <button
-              class="components-button has-icon selected"
-              type="button"
-            >
-              <span
-                aria-label="emoticon"
-                role="img"
+                <span
+                  aria-label="emoticon"
+                  role="img"
+                >
+                  😞
+                </span>
+              </button>
+              <button
+                class="components-button has-icon selected"
+                type="button"
               >
-                🫤
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
-            >
-              <span
-                aria-label="emoticon"
-                role="img"
+                <span
+                  aria-label="emoticon"
+                  role="img"
+                >
+                  🫤
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
               >
-                😑
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
-            >
-              <span
-                aria-label="emoticon"
-                role="img"
+                <span
+                  aria-label="emoticon"
+                  role="img"
+                >
+                  😑
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
               >
-                🙂
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
-            >
-              <span
-                aria-label="emoticon"
-                role="img"
+                <span
+                  aria-label="emoticon"
+                  role="img"
+                >
+                  🙂
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
               >
-                😍
-              </span>
-            </button>
+                <span
+                  aria-label="emoticon"
+                  role="img"
+                >
+                  😍
+                </span>
+              </button>
+            </div>
           </div>
           <button
             aria-label="Close dialog"
