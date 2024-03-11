@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Add migration script to cover situations with Link and WooPay both enabled after plugin update.

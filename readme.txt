@@ -94,6 +94,24 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.4.0-test-1 - unreleased =
+* Add - Add data telemetry for the Proceed to Checkout button and the WooPay direct checkout.
+* Add - Add WooPay direct checkout flow behind a server-side feature flag.
+* Add - Handle refunds triggered externally, outside WP Admin
+* Add - Preload WooPay session data for WooPay Direct Checkout flow.
+* Fix - Apply the WooPay Direct Checkout flow only to the "Proceed to Checkout" button, in cthe classic cart.
+* Fix - Ensure every gateway has individual settings object.
+* Fix - Fixed Clearpay aria-label for UK sites
+* Fix - Hide the option to refund in full from the transaction details menu when a transaction is partially refunded.
+* Fix - Inform hard blocked merchants they're under review
+* Fix - Load deposit overview only when deposit is present
+* Fix - Order completed and refunded emails are no longer sent when a dispute is closed.
+* Update - Validate deposit id before sending a request to fetch deposit.
+* Dev - Ensure pre-push hook understands terminal & non-terminal environments
+* Dev - Fix a bug in Tracks where admin events were not recorded properly
+* Dev - Implement a feature flag for the Payment Overview widget.
+* Dev - Minor refactor to disputes utility function inInquiry to make it accept only dispute status as a param, instead of whole dispute object.
+
 = 7.3.0 - 2024-03-06 =
 * Add - Added confirmation modals for order status changes with pending authorizations
 * Add - Add migration script to cover situations with Link and WooPay both enabled after plugin update.
