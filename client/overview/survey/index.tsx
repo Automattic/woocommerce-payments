@@ -4,6 +4,7 @@
  * External dependencies
  */
 import React from 'react';
+import { HorizontalRule } from '@wordpress/primitives';
 
 /**
  * Internal dependencies.
@@ -18,7 +19,6 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import './style.scss';
 import Emoticons from 'wcpay/overview/survey/emoticons';
-import { HorizontalRule } from '@wordpress/primitives';
 import { useOverviewSurveyContext } from './context';
 import { OverviewSurveyFields } from 'wcpay/overview/survey/types';
 import close from 'wcpay/overview/survey/icons/close';
@@ -135,13 +135,9 @@ const Survey = () => {
 							readOnly={ 'pending' === status }
 						/>
 						<p className="survey-bottom-disclaimer">
-							{ sprintf(
-								/* translators: %s: WooPayments */
-								__(
-									'Your feedback will be only be shared with WooCommerce and treated pursuant to our privacy policy.',
-									'woocommerce-payments'
-								),
-								'WooPayments'
+							{ __(
+								'Your feedback will be only be shared with WooCommerce and treated pursuant to our privacy policy.',
+								'woocommerce-payments'
 							) }
 						</p>
 						<div className="wcpay-confirmation-modal__footer">
