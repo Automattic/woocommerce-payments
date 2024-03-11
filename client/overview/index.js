@@ -121,12 +121,14 @@ const OverviewPage = () => {
 		.filter( ( e ) => e && e.fee !== undefined );
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
+	const isPaymentOverviewWidgetEnabled =
+		wcpaySettings.featureFlags.isPaymentOverviewWidgetEnabled ?? false;
 
 	return (
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
 			<JetpackIdcNotice />
-			{ ! isOverviewSurveySubmitted && (
+			{ ! isOverviewSurveySubmitted && isPaymentOverviewWidgetEnabled && (
 				<WcPayOverviewSurveyContextProvider>
 					<Survey />
 				</WcPayOverviewSurveyContextProvider>
