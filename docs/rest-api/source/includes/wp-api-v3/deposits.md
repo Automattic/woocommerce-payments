@@ -171,7 +171,17 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 			"interval": "weekly",
 			"weekly_anchor": "friday"
 		},
-		"default_currency": "eur"
+		"default_currency": "eur",
+ 		"default_external_accounts": [
+            {
+                "currency": "eur",
+                "status": "new"
+            },
+            {
+                "currency": "usd",
+                "status": "new"
+            }
+        ]
 	}
 }
 ```
