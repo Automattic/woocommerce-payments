@@ -3,6 +3,6 @@
  */
 
 export type OverviewSurveyFields = {
-	rating?: number;
+	rating?: string;
 	comments?: string;
 };
