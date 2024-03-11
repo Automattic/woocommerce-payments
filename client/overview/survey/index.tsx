@@ -32,14 +32,16 @@ const Survey = () => {
 		setSurveyAnswers,
 	} = useOverviewSurveyContext();
 
-	const currentRating = surveyAnswers.rating ?? 0;
-	const setReviewRating = function ( value: number ) {
+	const currentRating = surveyAnswers.rating ?? '';
+	const ratingWithComment = [ 'very-unhappy', 'unhappy', 'neutral' ];
+	const showComment = ratingWithComment.includes( currentRating );
+	const setReviewRating = function ( value: string ) {
 		const answers: OverviewSurveyFields = {
 			...surveyAnswers,
 			rating: value,
 		};
 		setSurveyAnswers( answers );
-		if ( value > 3 ) {
+		if ( ! ratingWithComment.includes( value ) ) {
 			setSurveySubmitted( answers );
 		}
 	};
@@ -60,43 +62,43 @@ const Survey = () => {
 								<div>
 									<Emoticons
 										disabled={ 'pending' === status }
-										rating="1"
+										rating="very-unhappy"
 										setReviewRating={ setReviewRating }
 										currentRating={ currentRating }
 									/>
 									<Emoticons
 										disabled={ 'pending' === status }
-										rating="2"
+										rating="unhappy"
 										setReviewRating={ setReviewRating }
 										currentRating={ currentRating }
 									/>
 									<Emoticons
 										disabled={ 'pending' === status }
-										rating="3"
+										rating="neutral"
 										setReviewRating={ setReviewRating }
 										currentRating={ currentRating }
 									/>
 									<Emoticons
 										disabled={ 'pending' === status }
-										rating="4"
+										rating="happy"
 										setReviewRating={ setReviewRating }
 										currentRating={ currentRating }
 									/>
 									<Emoticons
 										disabled={ 'pending' === status }
-										rating="5"
+										rating="very-happy"
 										setReviewRating={ setReviewRating }
 										currentRating={ currentRating }
 									/>
 								</div>
 							</div>
-							{ currentRating <= 3 && currentRating > 0 && (
+							{ showComment && (
 								<button
 									type="button"
 									className="components-button has-icon"
 									aria-label="Close dialog"
 									onClick={ () => {
-										setReviewRating( 0 );
+										setReviewRating( '' );
 									} }
 								>
 									<Icon
@@ -110,63 +112,61 @@ const Survey = () => {
 					</>
 				) }
 
-				{ ! surveySubmitted &&
-					currentRating <= 3 &&
-					currentRating > 0 && (
-						<>
-							<HorizontalRule />
-							<TextareaControl
-								className="ssr-text-field"
-								label={ __(
-									'Why do you feel that way? (optional)',
+				{ ! surveySubmitted && showComment && (
+					<>
+						<HorizontalRule />
+						<TextareaControl
+							className="ssr-text-field"
+							label={ __(
+								'Why do you feel that way? (optional)',
+								'woocommerce-payments'
+							) }
+							onChange={ ( text ) => {
+								setSurveyAnswers(
+									(
+										prev: OverviewSurveyFields
+									): OverviewSurveyFields => ( {
+										...prev,
+										comments: text,
+									} )
+								);
+							} }
+							value={ surveyAnswers.comments ?? '' }
+							readOnly={ 'pending' === status }
+						/>
+						<p className="survey-bottom-disclaimer">
+							{ sprintf(
+								/* translators: %s: WooPayments */
+								__(
+									'Your feedback will be only be shared with WooCommerce and treated pursuant to our privacy policy.',
 									'woocommerce-payments'
-								) }
-								onChange={ ( text ) => {
-									setSurveyAnswers(
-										(
-											prev: OverviewSurveyFields
-										): OverviewSurveyFields => ( {
-											...prev,
-											comments: text,
-										} )
-									);
+								),
+								'WooPayments'
+							) }
+						</p>
+						<div className="wcpay-confirmation-modal__footer">
+							<Button
+								variant={ 'secondary' }
+								disabled={ 'pending' === status }
+								onClick={ () => {
+									setReviewRating( '' );
 								} }
-								value={ surveyAnswers.comments ?? '' }
-								readOnly={ 'pending' === status }
-							/>
-							<p className="survey-bottom-disclaimer">
-								{ sprintf(
-									/* translators: %s: WooPayments */
-									__(
-										'Your feedback will be only be shared with WooCommerce and treated pursuant to our privacy policy.',
-										'woocommerce-payments'
-									),
-									'WooPayments'
-								) }
-							</p>
-							<div className="wcpay-confirmation-modal__footer">
-								<Button
-									variant={ 'secondary' }
-									disabled={ 'pending' === status }
-									onClick={ () => {
-										setReviewRating( 0 );
-									} }
-								>
-									{ __( 'Cancel', 'woocommerce-payments' ) }
-								</Button>
-								<Button
-									variant={ 'primary' }
-									isBusy={ 'pending' === status }
-									disabled={ 'pending' === status }
-									onClick={ () =>
-										setSurveySubmitted( surveyAnswers )
-									}
-								>
-									{ __( 'Send', 'woocommerce-payments' ) }
-								</Button>
-							</div>
-						</>
-					) }
+							>
+								{ __( 'Cancel', 'woocommerce-payments' ) }
+							</Button>
+							<Button
+								variant={ 'primary' }
+								isBusy={ 'pending' === status }
+								disabled={ 'pending' === status }
+								onClick={ () =>
+									setSurveySubmitted( surveyAnswers )
+								}
+							>
+								{ __( 'Send', 'woocommerce-payments' ) }
+							</Button>
+						</div>
+					</>
+				) }
 				{ surveySubmitted && (
 					<div className="survey_container">
 						<span>
