@@ -4,6 +4,7 @@
 		flex-direction: row;
 
 		span {
+			float: left;
 			margin: auto;
 		}
 
@@ -12,6 +13,10 @@
 			align-items: center;
 			flex-grow: 1;
 			justify-content: left;
+
+			div {
+				float: left;
+			}
 
 			span {
 				vertical-align: middle;
