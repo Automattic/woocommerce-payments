@@ -30,6 +30,12 @@ import { formatDateValue } from 'utils';
  * @param {string} id Identifier for specified deposit to retrieve.
  */
 export function* getDeposit( id ) {
+	// Validate input to avoid path traversal request.
+	// Avoid lookup if the id contains any unexpected characters.
+	if ( /\W/.test( id ) ) {
+		return;
+	}
+
 	const path = addQueryArgs( `${ NAMESPACE }/deposits/${ id }` );
 
 	try {
