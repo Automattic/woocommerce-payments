@@ -2,6 +2,10 @@
  * External dependencies
  */
 import React from 'react';
+
+/**
+ * Internal dependencies
+ */
 import strings from './strings';
 
 const Emoticons = ( props ) => {
