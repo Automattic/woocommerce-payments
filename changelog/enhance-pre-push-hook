@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Ensure pre-push hook understands terminal & non-terminal environments
