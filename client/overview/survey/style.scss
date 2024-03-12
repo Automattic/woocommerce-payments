@@ -4,8 +4,13 @@
 		flex-direction: row;
 
 		span {
-			float: left;
 			margin: auto;
+			text-align: center;
+			display: inline-block;
+		}
+
+		.width_32 {
+			width: 32px;
 		}
 
 		.emoticons_container {
@@ -13,16 +18,17 @@
 			align-items: center;
 			flex-grow: 1;
 			justify-content: left;
+			display: flex;
+			flex-direction: row;
 
 			div {
 				float: left;
 			}
-
-			span {
-				vertical-align: middle;
-			}
 			button {
 				vertical-align: middle;
+				span {
+					font-size: 17px;
+				}
 			}
 			.selected {
 				background-color: #ecf2f8;

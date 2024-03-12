@@ -16,7 +16,7 @@ import {
 	TextareaControl,
 	Icon,
 } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import './style.scss';
 import Emoticons from 'wcpay/overview/survey/emoticons';
 import { useOverviewSurveyContext } from './context';
@@ -34,6 +34,13 @@ const Survey = () => {
 
 	const currentRating = surveyAnswers.rating ?? '';
 	const ratingWithComment = [ 'very-unhappy', 'unhappy', 'neutral' ];
+	const ratings = [
+		'very-unhappy',
+		'unhappy',
+		'neutral',
+		'happy',
+		'very-happy',
+	];
 	const showComment = ratingWithComment.includes( currentRating );
 	const setReviewRating = function ( value: string ) {
 		const answers: OverviewSurveyFields = {
@@ -41,7 +48,7 @@ const Survey = () => {
 			rating: value,
 		};
 		setSurveyAnswers( answers );
-		if ( ! ratingWithComment.includes( value ) ) {
+		if ( ! ratingWithComment.includes( value ) && '' !== value ) {
 			setSurveySubmitted( answers );
 		}
 	};
@@ -58,56 +65,45 @@ const Survey = () => {
 										'How do you like your new finance overview?',
 										'woocommerce-payments'
 									) }
+									<span>
+										{ ratings.map( ( rating, i ) => {
+											return (
+												<Emoticons
+													key={ rating }
+													disabled={
+														'pending' === status
+													}
+													rating={ rating }
+													setReviewRating={
+														setReviewRating
+													}
+													currentRating={
+														currentRating
+													}
+												/>
+											);
+										} ) }
+									</span>
 								</span>
-								<div>
-									<Emoticons
-										disabled={ 'pending' === status }
-										rating="very-unhappy"
-										setReviewRating={ setReviewRating }
-										currentRating={ currentRating }
-									/>
-									<Emoticons
-										disabled={ 'pending' === status }
-										rating="unhappy"
-										setReviewRating={ setReviewRating }
-										currentRating={ currentRating }
-									/>
-									<Emoticons
-										disabled={ 'pending' === status }
-										rating="neutral"
-										setReviewRating={ setReviewRating }
-										currentRating={ currentRating }
-									/>
-									<Emoticons
-										disabled={ 'pending' === status }
-										rating="happy"
-										setReviewRating={ setReviewRating }
-										currentRating={ currentRating }
-									/>
-									<Emoticons
-										disabled={ 'pending' === status }
-										rating="very-happy"
-										setReviewRating={ setReviewRating }
-										currentRating={ currentRating }
-									/>
-								</div>
 							</div>
-							{ showComment && (
-								<button
-									type="button"
-									className="components-button has-icon"
-									aria-label="Close dialog"
-									onClick={ () => {
-										setReviewRating( '' );
-									} }
-								>
-									<Icon
-										icon={ close }
-										type="close"
-										size={ 32 }
-									/>
-								</button>
-							) }
+							<div className="width_32">
+								{ showComment && (
+									<button
+										type="button"
+										className="components-button has-icon"
+										aria-label="Close dialog"
+										onClick={ () => {
+											setReviewRating( '' );
+										} }
+									>
+										<Icon
+											icon={ close }
+											type="close"
+											size={ 32 }
+										/>
+									</button>
+								) }
+							</div>
 						</div>
 					</>
 				) }
@@ -169,6 +165,7 @@ const Survey = () => {
 							<span role="img" aria-label="Thank you!">
 								🙌{ ' ' }
 							</span>
+							&nbsp;
 							{ __(
 								'We appreciate your feedback!',
 								'woocommerce-payments'
