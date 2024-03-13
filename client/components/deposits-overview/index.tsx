@@ -10,6 +10,7 @@ import {
 	CardHeader,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
@@ -72,6 +73,18 @@ const DepositsOverview: React.FC = () => {
 	const hasScheduledDeposits = hasAutomaticScheduledDeposits(
 		account?.deposits_schedule?.interval
 	);
+
+	const navigateToDepositsHistory = () => {
+		recordEvent( 'wcpay_overview_deposits_view_history_click' );
+
+		const history = getHistory();
+		history.push(
+			getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/deposits',
+			} )
+		);
+	};
 
 	// Show a loading state if the page is still loading.
 	if ( isLoading ) {
@@ -174,15 +187,7 @@ const DepositsOverview: React.FC = () => {
 					{ hasRecentDeposits && (
 						<Button
 							variant="secondary"
-							href={ getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/deposits',
-							} ) }
-							onClick={ () =>
-								recordEvent(
-									'wcpay_overview_deposits_view_history_click'
-								)
-							}
+							onClick={ navigateToDepositsHistory }
 						>
 							{ __(
 								'View full deposits history',
