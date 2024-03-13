@@ -235,6 +235,7 @@ class WooPayDirectCheckout {
 				}
 
 				elementState.is_loading = true;
+
 				if ( isCheckoutButtonInCartShortCode( element ) ) {
 					addLoadingSpinner( element );
 				}
