@@ -65,6 +65,7 @@ const Survey = () => {
 										'How do you like your new finance overview?',
 										'woocommerce-payments'
 									) }
+									&nbsp;&nbsp;&nbsp;
 									<span>
 										{ ratings.map( ( rating, i ) => {
 											return (
@@ -86,7 +87,7 @@ const Survey = () => {
 									</span>
 								</span>
 							</div>
-							<div className="width_32">
+							<div className="close_container">
 								{ showComment && (
 									<button
 										type="button"
@@ -165,7 +166,7 @@ const Survey = () => {
 							<span role="img" aria-label="Thank you!">
 								🙌{ ' ' }
 							</span>
-							&nbsp;
+							&nbsp;&nbsp;
 							{ __(
 								'We appreciate your feedback!',
 								'woocommerce-payments'
