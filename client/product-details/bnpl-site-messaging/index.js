@@ -15,7 +15,6 @@ export const initializeBnplSiteMessaging = () => {
 		paymentMethods,
 	} = window.wcpayStripeSiteMessaging;
 
-	// eslint-disable-next-line no-undef
 	const api = new WCPayAPI(
 		{
 			publishableKey: publishableKey,
