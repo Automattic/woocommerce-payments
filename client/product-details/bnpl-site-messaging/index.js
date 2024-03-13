@@ -3,24 +3,35 @@
  * Internal dependencies
  */
 import './style.scss';
+import WCPayAPI from 'wcpay/checkout/api';
 
 export const initializeBnplSiteMessaging = () => {
 	const {
 		productVariations,
 		country,
+		locale,
+		accountId,
 		publishableKey,
 		paymentMethods,
 	} = window.wcpayStripeSiteMessaging;
 
 	// eslint-disable-next-line no-undef
-	const stripe = Stripe( publishableKey );
+	const api = new WCPayAPI(
+		{
+			publishableKey: publishableKey,
+			accountId: accountId,
+			locale: locale,
+		},
+		null
+	);
 	const options = {
 		amount: parseInt( productVariations.base_product.amount, 10 ) || 0,
 		currency: productVariations.base_product.currency || 'USD',
 		paymentMethodTypes: paymentMethods || [],
 		countryCode: country, // Customer's country or base country of the store.
 	};
-	const paymentMessageElement = stripe
+	const paymentMessageElement = api
+		.getStripe()
 		.elements()
 		.create( 'paymentMethodMessaging', options );
 	paymentMessageElement.mount( '#payment-method-message' );
