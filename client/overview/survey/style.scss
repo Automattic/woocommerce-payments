@@ -2,6 +2,7 @@
 	.survey_container {
 		display: flex;
 		flex-direction: row;
+		position: relative;
 
 		span {
 			margin: auto;
@@ -9,8 +10,9 @@
 			display: inline-block;
 		}
 
-		.width_32 {
-			width: 32px;
+		.close_container {
+			position: absolute;
+			right: 0;
 		}
 
 		.emoticons_container {
@@ -32,6 +34,10 @@
 			}
 			.selected {
 				background-color: #ecf2f8;
+			}
+
+			.has-icon {
+				min-width: 32px;
 			}
 		}
 	}
