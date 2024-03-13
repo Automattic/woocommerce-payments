@@ -20,6 +20,8 @@ import {
 
 import { getDeposit, getDeposits, getDepositsSummary } from '../resolvers';
 
+jest.mock( '@wordpress/data-controls' );
+
 const depositsResponse = {
 	data: [
 		{
@@ -57,36 +59,54 @@ const filterQuery = {
 };
 
 describe( 'getDeposit resolver', () => {
-	let generator = null;
+	describe( 'on', () => {
+		let generator = null;
 
-	beforeEach( () => {
-		generator = getDeposit( 'test_dep_1' );
-		expect( generator.next().value ).toEqual(
-			apiFetch( { path: '/wc/v3/payments/deposits/test_dep_1' } )
-		);
-	} );
+		beforeEach( () => {
+			generator = getDeposit( 'test_dep_1' );
+			expect( generator.next().value ).toEqual(
+				apiFetch( { path: '/wc/v3/payments/deposits/test_dep_1' } )
+			);
+		} );
 
-	afterEach( () => {
-		expect( generator.next().done ).toStrictEqual( true );
-	} );
+		afterEach( () => {
+			expect( generator.next().done ).toStrictEqual( true );
+		} );
 
-	describe( 'on success', () => {
-		test( 'should update state with deposit data', () => {
-			expect(
-				generator.next( depositsResponse.data[ 0 ] ).value
-			).toEqual( updateDeposit( depositsResponse.data[ 0 ] ) );
+		describe( 'success', () => {
+			test( 'should update state with deposit data', () => {
+				expect(
+					generator.next( depositsResponse.data[ 0 ] ).value
+				).toEqual( updateDeposit( depositsResponse.data[ 0 ] ) );
+			} );
+		} );
+
+		describe( 'error', () => {
+			test( 'should update state with error on error', () => {
+				expect( generator.throw( errorResponse ).value ).toEqual(
+					controls.dispatch(
+						'core/notices',
+						'createErrorNotice',
+						expect.any( String )
+					)
+				);
+			} );
 		} );
 	} );
 
-	describe( 'on error', () => {
-		test( 'should update state with error on error', () => {
-			expect( generator.throw( errorResponse ).value ).toEqual(
-				controls.dispatch(
-					'core/notices',
-					'createErrorNotice',
-					expect.any( String )
-				)
-			);
+	describe( 'validation', () => {
+		let generator = null;
+
+		beforeEach( () => {
+			jest.clearAllMocks();
+		} );
+
+		test( "shouldn't fetch deposit with non-word-character deposit id", () => {
+			generator = getDeposit( '../path?a=b&c=d' );
+			const next = generator.next();
+			expect( next.value ).toStrictEqual( undefined );
+			expect( next.done ).toStrictEqual( true );
+			expect( apiFetch ).not.toBeCalled();
 		} );
 	} );
 } );
@@ -101,6 +121,9 @@ describe( 'getDeposits resolver', () => {
 		'page=1&pagesize=25&match=all&store_currency_is=gbp&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&status_is=paid&status_is_not=failed';
 
 	beforeEach( () => {
+		apiFetch.mockImplementation( () => {
+			return 'something';
+		} );
 		generator = getDeposits( query );
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
