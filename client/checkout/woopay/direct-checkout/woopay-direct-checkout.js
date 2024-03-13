@@ -179,7 +179,9 @@ class WooPayDirectCheckout {
 		}
 
 		const { redirect_url: redirectUrl } = setCacheSessionResult;
-		if ( ! this.validateRedirectUrl( redirectUrl, 'cache_checkout_key' ) ) {
+		if (
+			! this.validateRedirectUrl( redirectUrl, 'redirect_checkout_key' )
+		) {
 			throw new Error( 'Invalid WooPay session URL: ' + redirectUrl );
 		}
 
