@@ -33,7 +33,6 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
-		// TODO: We need to give this proper permission checks, required fields, etc.
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base,
