@@ -1,4 +1,4 @@
 Significance: patch
-Type: fix
+Type: update
 
-Make the order note for `dispute funds withdrawn` event clearly mention that the dispute amount and fee would be deducted from the next deposit
+Make the order note for `dispute funds withdrawn` event clearly mention that the dispute amount and fee would be deducted from the next deposit.
