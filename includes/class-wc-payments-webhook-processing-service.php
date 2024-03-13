@@ -618,7 +618,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		switch ( $event_type ) {
 			case 'charge.dispute.funds_withdrawn':
-				$message = __( 'Payment dispute funds have been withdrawn', 'woocommerce-payments' );
+				$message = __( 'Payment dispute and fees have been deducted from your next deposit', 'woocommerce-payments' );
 				break;
 			case 'charge.dispute.funds_reinstated':
 				$message = __( 'Payment dispute funds have been reinstated', 'woocommerce-payments' );
