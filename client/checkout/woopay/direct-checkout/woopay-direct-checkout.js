@@ -285,6 +285,7 @@ class WooPayDirectCheckout {
 	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay redirect response.
 	 */
 	static async getWooPayMinimumSesssionDataFromMerchant() {
+		// This should always be defined, but fallback to a request in case of the unexpected.
 		if ( getConfig( 'woopayMinimumSessionData' ) ) {
 			return getConfig( 'woopayMinimumSessionData' );
 		}
