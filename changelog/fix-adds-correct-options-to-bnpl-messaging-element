@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Uses WCPayAPI to initialise Stripe for BNPL payment element, includes necessary required parameters.
