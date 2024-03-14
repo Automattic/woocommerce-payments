@@ -28,6 +28,7 @@ import {
 	NewAccountWaitingPeriodNotice,
 	NoFundsAvailableForDepositNotice,
 	SuspendedDepositNotice,
+	DepositFailureNotice,
 } from './deposit-notices';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import useRecentDeposits from './hooks';
@@ -72,6 +73,12 @@ const DepositsOverview: React.FC = () => {
 	const hasScheduledDeposits = hasAutomaticScheduledDeposits(
 		account?.deposits_schedule?.interval
 	);
+	const hasErroredExternalAccount =
+		account?.default_external_accounts?.some(
+			( externalAccount ) =>
+				externalAccount.currency === selectedCurrency &&
+				externalAccount.status === 'errored'
+		) ?? false;
 
 	// Show a loading state if the page is still loading.
 	if ( isLoading ) {
@@ -132,7 +139,8 @@ const DepositsOverview: React.FC = () => {
 				) : (
 					<>
 						{ isDepositsUnrestricted &&
-							! isDepositAwaitingPendingFunds && (
+							! isDepositAwaitingPendingFunds &&
+							! hasErroredExternalAccount && (
 								<DepositTransitDaysNotice />
 							) }
 						{ ! hasCompletedWaitingPeriod && (
@@ -144,6 +152,13 @@ const DepositsOverview: React.FC = () => {
 							) }
 						{ isNegativeBalanceDepositsPaused && (
 							<NegativeBalanceDepositsPausedNotice />
+						) }
+						{ hasErroredExternalAccount && (
+							<DepositFailureNotice
+								updateAccountLink={
+									wcpaySettings.accountStatus.accountLink
+								}
+							/>
 						) }
 						{ availableFunds > 0 &&
 							! isAboveMinimumDepositAmount && (

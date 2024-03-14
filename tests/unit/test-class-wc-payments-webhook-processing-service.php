@@ -1359,7 +1359,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'add_order_note' )
 			->with(
 				$this->matchesRegularExpression(
-					'/Payment dispute funds have been withdrawn/'
+					'/Payment dispute and fees have been deducted from your next deposit/'
 				)
 			);
 
