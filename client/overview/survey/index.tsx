@@ -67,7 +67,7 @@ const Survey = () => {
 									) }
 									&nbsp;&nbsp;&nbsp;
 									<span>
-										{ ratings.map( ( rating, i ) => {
+										{ ratings.map( ( rating ) => {
 											return (
 												<Emoticons
 													key={ rating }
