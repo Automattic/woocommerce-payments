@@ -113,7 +113,11 @@ const DepositFailureNotice: React.FC = () => {
 					'woocommerce-payments'
 				),
 				components: {
-					updateLink: <ExternalLink href={ wcpaySettings.accountStatus.accountLink } />,
+					updateLink: (
+						<ExternalLink
+							href={ wcpaySettings.accountStatus.accountLink }
+						/>
+					),
 				},
 			} ) }
 		</BannerNotice>
