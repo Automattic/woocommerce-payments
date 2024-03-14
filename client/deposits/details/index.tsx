@@ -114,7 +114,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 				)
 			}
-			value={ <Status status={ 'pending' } /> }
+			value={ <Status status={ deposit.status } /> }
 			detail={ deposit.bankAccount }
 		/>
 	);
