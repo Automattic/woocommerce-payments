@@ -887,9 +887,8 @@ export const merchantWCP = {
 
 	addMulticurrencyWidget: async () => {
 		await page.goto( `${ WP_ADMIN_DASHBOARD }widgets.php`, {
-			waitUntil: 'networkidle0',
+			waitUntil: 'load',
 		} );
-		await uiLoaded();
 
 		const closeWelcomeModal = await page.$( 'button[aria-label="Close"]' );
 		if ( closeWelcomeModal ) {
