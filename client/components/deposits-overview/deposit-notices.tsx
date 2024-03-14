@@ -6,6 +6,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 import { tip } from '@wordpress/icons';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -233,15 +234,7 @@ export const DepositFailureNotice: React.FC< {
 				'woocommerce-payments'
 			),
 			components: {
-				updateLink: (
-					// Link content is in the format string above.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						target="_blank"
-						rel="noopener noreferrer"
-						href={ updateAccountLink }
-					/>
-				),
+				updateLink: <ExternalLink href={ updateAccountLink } />,
 			},
 		} ) }
 	</InlineNotice>
