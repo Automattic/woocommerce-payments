@@ -25,7 +25,7 @@ export interface Account {
 		 */
 		monthly_anchor: number;
 	};
-	external_accounts: {
+	default_external_accounts: {
 		currency: string;
 		status: string;
 	}[];

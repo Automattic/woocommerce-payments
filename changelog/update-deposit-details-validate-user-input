@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Validate deposit id before sending a request to fetch deposit.

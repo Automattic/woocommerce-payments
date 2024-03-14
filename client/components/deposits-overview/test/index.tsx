@@ -48,7 +48,7 @@ const mockAccount: AccountOverview.Account = {
 		weekly_anchor: 'Monday',
 		monthly_anchor: 1,
 	},
-	external_accounts: [],
+	default_external_accounts: [],
 };
 
 declare const global: {
@@ -535,7 +535,7 @@ describe( 'DepositFailureNotice Renders', () => {
 	} );
 
 	test( 'Renders DepositFailureNotice when there is an errored external account', () => {
-		mockAccount.external_accounts = [
+		mockAccount.default_external_accounts = [
 			{
 				currency: 'eur',
 				status: 'new',
@@ -574,7 +574,7 @@ describe( 'DepositFailureNotice Renders', () => {
 	} );
 
 	test( 'Does not render DepositFailureNotice when there is no errored external account', () => {
-		mockAccount.external_accounts = [
+		mockAccount.default_external_accounts = [
 			{
 				currency: 'eur',
 				status: 'new',
@@ -613,7 +613,7 @@ describe( 'DepositFailureNotice Renders', () => {
 	} );
 
 	test( 'Does not render DepositFailureNotice if the selected currency does not have errored external account', () => {
-		mockAccount.external_accounts = [
+		mockAccount.default_external_accounts = [
 			{
 				currency: 'eur',
 				status: 'errored',

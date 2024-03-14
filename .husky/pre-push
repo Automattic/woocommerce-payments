@@ -1,8 +1,11 @@
 #!/bin/bash
 . "$(dirname "$0")/_/husky.sh"
 
-# Allows us to read user input below, redirects script's input to the terminal.
-exec < /dev/tty
+# check if main stream (stdout and stderr) are attached to the terminal
+if [ -t 1 ] && [ -t 2 ]; then
+    # Allows us to read user input below, redirects script's input to the terminal.
+    exec < /dev/tty
+fi
 
 PROTECTED_BRANCH=("develop" "trunk")
 CURRENT_BRANCH=$(git branch --show-current)
