@@ -77,8 +77,8 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
         -   `monthly_anchor` _int_ | _undefined_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
     -   `default_currency` _string_ - The default currency for the account.
     -   `default_external_accounts` _array_ - The default external payout accounts (deposit destinations) for the account.
-        -   `currency` _string_ - The currency of the external account. e.g. eur, chf.
-        -   `status` _string_ - The status of the external account. e.g. new, errored.
+        -   `currency` _string_ - The currency of the external account. e.g. `eur`, `chf`.
+        -   `status` _string_ - The status of the external account. e.g. `new`, `errored`.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
