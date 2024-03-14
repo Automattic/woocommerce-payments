@@ -19,6 +19,7 @@ import { useAllDepositsOverviews } from 'data';
 import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
+import { ExternalLink } from '@wordpress/components';
 
 const useNextDepositNoticeState = () => {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
@@ -46,7 +47,7 @@ const useAccountStatus = () => {
 	} = useAllDepositsOverviews();
 
 	const hasErroredExternalAccount =
-		account?.external_accounts?.some(
+		account?.default_external_accounts?.some(
 			( externalAccount ) => externalAccount.status === 'errored'
 		) ?? false;
 
@@ -112,15 +113,7 @@ const DepositFailureNotice: React.FC = () => {
 					'woocommerce-payments'
 				),
 				components: {
-					updateLink: (
-						// Link content is in the format string above.
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							target="_blank"
-							rel="noopener noreferrer"
-							href={ wcpaySettings.accountStatus.accountLink }
-						/>
-					),
+					updateLink: <ExternalLink href={ wcpaySettings.accountStatus.accountLink } />,
 				},
 			} ) }
 		</BannerNotice>
