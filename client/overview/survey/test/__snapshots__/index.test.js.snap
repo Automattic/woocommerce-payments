@@ -23,8 +23,9 @@ exports[`WcPayOverviewSurveyContextProvider test survey initial display 1`] = `
           >
             <span>
               How do you like your new finance overview?
-                 
-              <span>
+              <span
+                class="padding_left_10"
+              >
                 <button
                   class="components-button has-icon"
                   type="button"
@@ -128,8 +129,9 @@ exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`
           >
             <span>
               How do you like your new finance overview?
-                 
-              <span>
+              <span
+                class="padding_left_10"
+              >
                 <button
                   class="components-button has-icon"
                   type="button"
