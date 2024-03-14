@@ -45,7 +45,6 @@ declare global {
 				minimum_manual_deposit_amounts: Record< string, number >;
 				minimum_scheduled_deposit_amounts: Record< string, number >;
 			};
-			depositsStatus?: string;
 			currentDeadline?: bigint;
 			detailsSubmitted?: boolean;
 			pastDue?: boolean;

@@ -285,53 +285,6 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Add deposits and transactions menus for wcpay_empty_state_preview_mode_v1 experiment's treatment group.
-	 * This code can be removed once we're done with the experiment.
-	 */
-	public function add_payments_menu_for_treatment() {
-		wc_admin_register_page(
-			[
-				'id'         => 'wc-payments',
-				'title'      => __( 'Payments', 'woocommerce-payments' ),
-				'capability' => 'manage_woocommerce',
-				'path'       => '/payments/deposits',
-				'position'   => '55.7', // After WooCommerce & Product menu items.
-				'nav_args'   => [
-					'title'        => 'WooPayments',
-					'is_category'  => true,
-					'menuId'       => 'plugins',
-					'is_top_level' => true,
-				],
-			]
-		);
-
-		wc_admin_register_page( $this->admin_child_pages['wc-payments-deposits'] );
-		wc_admin_register_page( $this->admin_child_pages['wc-payments-transactions'] );
-		wc_admin_register_page(
-			[
-				'id'       => 'wc-payments-connect',
-				'title'    => __( 'Connect', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/connect',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 10,
-				],
-			]
-		);
-
-		WC_Payments_Utils::enqueue_style(
-			'wcpay-admin-css',
-			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'assets/css/admin.css' ),
-			'all',
-		);
-
-		$this->add_menu_notification_badge();
-	}
-
-	/**
 	 * Add payments menu items.
 	 */
 	public function add_payments_menu() {

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed a 1px gap on the right side of some payment method icons in transaction details.
