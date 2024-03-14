@@ -65,8 +65,7 @@ const Survey = () => {
 										'How do you like your new finance overview?',
 										'woocommerce-payments'
 									) }
-									&nbsp;&nbsp;&nbsp;
-									<span>
+									<span className="padding_left_10">
 										{ ratings.map( ( rating ) => {
 											return (
 												<Emoticons
@@ -163,10 +162,13 @@ const Survey = () => {
 				{ surveySubmitted && (
 					<div className="survey_container">
 						<span>
-							<span role="img" aria-label="Thank you!">
-								🙌{ ' ' }
+							<span
+								className="padding_right_7"
+								role="img"
+								aria-label="Thank you!"
+							>
+								🙌
 							</span>
-							&nbsp;&nbsp;
 							{ __(
 								'We appreciate your feedback!',
 								'woocommerce-payments'
