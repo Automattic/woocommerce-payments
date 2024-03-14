@@ -48,7 +48,7 @@ describe( 'Admin Multi-Currency', () => {
 		await page.click( 'button[aria-label="Add block"]' );
 
 		const searchInput = await page.waitForSelector(
-			'input.components-search-control__input'
+			'input[placeholder="Search"]'
 		);
 		searchInput.type( 'switcher', { delay: 20 } );
 
