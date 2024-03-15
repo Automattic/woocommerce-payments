@@ -168,4 +168,9 @@ body.wcpay-onboarding__body {
 			color: $gray-700;
 		}
 	}
+
+	// Reposition JITM banners below the fixed onboarding header.
+	.jitm-banner {
+		margin-top: 100px;
+	}
 }
