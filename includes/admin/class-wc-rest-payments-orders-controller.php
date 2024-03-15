@@ -226,6 +226,11 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
+			// Add payment method for future subscription payments
+			if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
+				$token = $this->token_service->add_payment_method_to_user( $intent->get_payment_method_id(), $order->get_user() );
+				$this->gateway->add_token_to_order( $order, $token );
+			}
 			// Actualize order status.
 			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'] );
 
@@ -237,6 +242,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to capture a terminal payment via REST API: ' . $e );
+			Logger::error( $e->getTraceAsString() );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
