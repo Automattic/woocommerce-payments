@@ -5,10 +5,6 @@
  */
 import React from 'react';
 import { HorizontalRule } from '@wordpress/primitives';
-
-/**
- * Internal dependencies.
- */
 import {
 	Card,
 	CardBody,
@@ -17,6 +13,11 @@ import {
 	Icon,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { createInterpolateElement, useState } from '@wordpress/element';
+
+/**
+ * Internal dependencies.
+ */
 import './style.scss';
 import Emoticons from 'wcpay/overview/survey/emoticons';
 import { useOverviewSurveyContext } from './context';
@@ -31,6 +32,8 @@ const Survey = () => {
 		surveyAnswers,
 		setSurveyAnswers,
 	} = useOverviewSurveyContext();
+
+	const [ showComponent, setShowComponent ] = useState( true );
 
 	const currentRating = surveyAnswers.rating ?? '';
 	const ratingWithComment = [ 'very-unhappy', 'unhappy', 'neutral' ];
@@ -52,6 +55,10 @@ const Survey = () => {
 			setSurveySubmitted( answers );
 		}
 	};
+
+	if ( ! showComponent ) {
+		return <></>;
+	}
 
 	return (
 		<Card>
@@ -111,31 +118,44 @@ const Survey = () => {
 				{ ! surveySubmitted && showComment && (
 					<>
 						<HorizontalRule />
-						<TextareaControl
-							className="ssr-text-field"
-							label={ __(
-								'Why do you feel that way? (optional)',
-								'woocommerce-payments'
-							) }
-							onChange={ ( text ) => {
-								setSurveyAnswers(
-									(
-										prev: OverviewSurveyFields
-									): OverviewSurveyFields => ( {
-										...prev,
-										comments: text,
-									} )
-								);
-							} }
-							value={ surveyAnswers.comments ?? '' }
-							readOnly={ 'pending' === status }
-						/>
-						<p className="survey-bottom-disclaimer">
-							{ __(
-								'Your feedback will be only be shared with WooCommerce and treated pursuant to our privacy policy.',
-								'woocommerce-payments'
-							) }
-						</p>
+						<div className="comment_container">
+							<TextareaControl
+								label={ __(
+									'Why do you feel that way? (optional)',
+									'woocommerce-payments'
+								) }
+								onChange={ ( text ) => {
+									setSurveyAnswers(
+										(
+											prev: OverviewSurveyFields
+										): OverviewSurveyFields => ( {
+											...prev,
+											comments: text,
+										} )
+									);
+								} }
+								value={ surveyAnswers.comments ?? '' }
+								readOnly={ 'pending' === status }
+							/>
+							<p className="survey-bottom-disclaimer">
+								{ createInterpolateElement(
+									__(
+										'Your feedback will be only be shared with WooCommerce and treated pursuant to our <a>privacy policy</a>.',
+										'woocommerce-payments'
+									),
+									{
+										a: (
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												href="https://automattic.com/privacy/"
+												target="_blank"
+												rel="noreferrer"
+											/>
+										),
+									}
+								) }
+							</p>
+						</div>
 						<div className="wcpay-confirmation-modal__footer">
 							<Button
 								variant={ 'secondary' }
@@ -160,21 +180,36 @@ const Survey = () => {
 					</>
 				) }
 				{ surveySubmitted && (
-					<div className="survey_container">
-						<span>
-							<span
-								className="padding_right_7"
-								role="img"
-								aria-label="Thank you!"
-							>
-								🙌
+					<>
+						<div className="survey_container">
+							<span>
+								<span
+									className="padding_right_7"
+									role="img"
+									aria-label="Thank you!"
+								>
+									🙌
+								</span>
+								{ __(
+									'We appreciate your feedback!',
+									'woocommerce-payments'
+								) }
 							</span>
-							{ __(
-								'We appreciate your feedback!',
-								'woocommerce-payments'
-							) }
-						</span>
-					</div>
+						</div>
+
+						<div className="close_survey">
+							<button
+								type="button"
+								className="components-button has-icon"
+								aria-label="Close dialog"
+								onClick={ () => {
+									setShowComponent( false );
+								} }
+							>
+								<Icon icon={ close } type="close" size={ 32 } />
+							</button>
+						</div>
+					</>
 				) }
 			</CardBody>
 		</Card>

@@ -13,10 +13,20 @@
 		.close_container {
 			position: absolute;
 			right: 0;
+			margin-top: -11px;
+			margin-right: -11px;
+
+			.has-icon {
+				margin-top: 7px;
+			}
 		}
 
 		.padding_right_7 {
 			padding-right: 7px;
+		}
+
+		.padding_right_14 {
+			padding-right: 14px;
 		}
 
 		.emoticons_container {
@@ -26,7 +36,6 @@
 			justify-content: left;
 			display: flex;
 			flex-direction: row;
-			padding-top: 15px;
 
 			div {
 				float: left;
@@ -50,6 +59,31 @@
 			.padding_left_10 {
 				padding-left: 10px;
 			}
+
+			@media ( max-width: 600px ) {
+				.padding_left_10 {
+					padding-left: 10px;
+					display: block;
+				}
+			}
 		}
+	}
+
+	.comment_container {
+		max-width: 450px;
+		margin: auto;
+
+		.survey-bottom-disclaimer {
+			font-size: 11px;
+			color: #757575;
+			font-style: italic;
+		}
+	}
+
+	.close_survey {
+		position: absolute;
+		top: 0;
+		right: 0;
+		margin-top: 7px;
 	}
 }
