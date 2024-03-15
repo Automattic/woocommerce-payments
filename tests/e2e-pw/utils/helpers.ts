@@ -23,7 +23,7 @@ export const wpAdminLogin = async (
 ): void => {
 	await page.goto( `/wp-admin` );
 	await page.getByLabel( 'Username or Email Address' ).fill( user.username );
-	await page.getByLabel( 'Password' ).fill( user.password );
+	await page.getByLabel( 'Password', { exact: true } ).fill( user.password ); // Need exact match to avoid resolving "Show password" button.
 	await page.getByRole( 'button', { name: 'Log In' } ).click();
 };
 
