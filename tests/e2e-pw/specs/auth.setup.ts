@@ -54,7 +54,9 @@ setup( 'authenticate as admin', async ( { page } ) => {
 			await page.goto( `/wp-admin` );
 			await page.waitForLoadState( 'domcontentloaded' );
 
-			await expect( page.getByText( 'Dashboard' ) ).toBeVisible();
+			await expect(
+				page.getByRole( 'heading', { name: 'Dashboard' } )
+			).toBeVisible();
 
 			console.log( 'Logged-in as admin successfully.' );
 			adminLoggedIn = true;
