@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Clean up remaining unused code from a past experiment - `wcpay_empty_state_preview_mode`, done on Deposits list.

@@ -4,7 +4,7 @@ const { mapValues } = require( 'lodash' );
 const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
-const WebpackRTLPlugin = require( 'webpack-rtl-plugin' );
+const WebpackRTLPlugin = require( './webpack-rtl-plugin' );
 
 module.exports = {
 	entry: mapValues(
@@ -128,7 +128,7 @@ module.exports = {
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WebpackRTLPlugin( {
-			filename: '[name]-rtl.[ext]',
+			filenameSuffix: '-rtl.css',
 		} ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
