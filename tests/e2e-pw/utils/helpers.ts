@@ -15,6 +15,19 @@ export const customerStorageFile = path.resolve(
 );
 
 /**
+ * Logs in to the WordPress admin as a given user.
+ */
+export const wpAdminLogin = async (
+	page: Page,
+	user: { username: string; password: string }
+): void => {
+	await page.goto( `/wp-admin` );
+	await page.getByLabel( 'Username or Email Address' ).fill( user.username );
+	await page.getByLabel( 'Password' ).fill( user.password );
+	await page.getByRole( 'button', { name: 'Log In' } ).click();
+};
+
+/**
  * Sets the shopper as the authenticated user for a test suite (describe).
  */
 export const useShopper = (): void => {

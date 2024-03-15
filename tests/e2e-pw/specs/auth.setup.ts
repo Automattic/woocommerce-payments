@@ -9,7 +9,11 @@ import fs from 'fs';
  * Internal dependencies
  */
 import { config } from '../config/default';
-import { merchantStorageFile, customerStorageFile } from '../utils/helpers';
+import {
+	merchantStorageFile,
+	customerStorageFile,
+	wpAdminLogin,
+} from '../utils/helpers';
 
 // See https://playwright.dev/docs/auth#multiple-signed-in-roles
 const {
@@ -45,12 +49,7 @@ setup( 'authenticate as admin', async ( { page } ) => {
 	for ( let i = 0; i < adminRetries; i++ ) {
 		try {
 			console.log( 'Trying to log-in as admin...' );
-			await page.goto( `/wp-admin` );
-			await page
-				.getByLabel( 'Username or Email Address' )
-				.fill( admin.username );
-			await page.getByLabel( 'Password' ).fill( admin.password );
-			await page.getByRole( 'button', { name: 'Log In' } ).click();
+			await wpAdminLogin( page, admin );
 			await page.waitForLoadState( 'domcontentloaded' );
 			await page.goto( `/wp-admin` );
 			await page.waitForLoadState( 'domcontentloaded' );
@@ -94,10 +93,7 @@ setup( 'authenticate as customer', async ( { page } ) => {
 	for ( let i = 0; i < customerRetries; i++ ) {
 		try {
 			console.log( 'Trying to log-in as customer...' );
-			await page.goto( `/wp-admin` );
-			await page.locator( 'input[name="log"]' ).fill( customer.username );
-			await page.locator( 'input[name="pwd"]' ).fill( customer.password );
-			await page.locator( 'text=Log In' ).click();
+			await wpAdminLogin( page, customer );
 
 			await page.goto( `/my-account` );
 			await expect(
