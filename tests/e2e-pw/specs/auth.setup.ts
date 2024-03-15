@@ -46,16 +46,16 @@ setup( 'authenticate as admin', async ( { page } ) => {
 		try {
 			console.log( 'Trying to log-in as admin...' );
 			await page.goto( `/wp-admin` );
-			await page.locator( 'input[name="log"]' ).fill( admin.username );
-			await page.locator( 'input[name="pwd"]' ).fill( admin.password );
-			await page.locator( 'text=Log In' ).click();
+			await page
+				.getByLabel( 'Username or Email Address' )
+				.fill( admin.username );
+			await page.getByLabel( 'Password' ).fill( admin.password );
+			await page.getByRole( 'button', { name: 'Log In' } ).click();
 			await page.waitForLoadState( 'domcontentloaded' );
 			await page.goto( `/wp-admin` );
 			await page.waitForLoadState( 'domcontentloaded' );
 
-			await expect( page.locator( 'div.wrap > h1' ) ).toHaveText(
-				'Dashboard'
-			);
+			await expect( page.getByText( 'Dashboard' ) ).toBeVisible();
 
 			console.log( 'Logged-in as admin successfully.' );
 			adminLoggedIn = true;
