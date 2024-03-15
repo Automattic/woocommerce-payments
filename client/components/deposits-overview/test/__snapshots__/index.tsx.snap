@@ -262,12 +262,12 @@ exports[`Deposits Overview information Component Renders 1`] = `
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
-        <a
+        <button
           class="components-button is-secondary"
-          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits"
+          type="button"
         >
           View full deposits history
-        </a>
+        </button>
         <a
           class="components-button is-tertiary"
           href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#deposit-schedule"
