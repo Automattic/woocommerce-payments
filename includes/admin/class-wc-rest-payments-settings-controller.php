@@ -630,7 +630,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			}
 		}
 
-		$this->wcpay_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
+		foreach ( $payment_method_ids_to_enable as $payment_method_id ) {
+			$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			$gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
+		}
+
 		if ( $payment_method_ids_to_enable ) {
 			$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
 		}
