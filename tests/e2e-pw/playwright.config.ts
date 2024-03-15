@@ -36,6 +36,7 @@ export default defineConfig( {
 		video: 'on-first-retry',
 		viewport: { width: 1280, height: 720 },
 	},
+	timeout: 60 * 1000, // Default is 30s, somteimes it is not enough for local tests due to long setup.
 	expect: {
 		toHaveScreenshot: { maxDiffPixelRatio: 0.025 },
 		//=* Increase expect timeout to 10 seconds. See https://playwright.dev/docs/test-timeouts#set-expect-timeout-in-the-config.*/
