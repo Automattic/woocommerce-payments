@@ -292,14 +292,15 @@ class FrontendCurrencies {
 			// Get order ID from order-received page URL.
 			$current_url = add_query_arg( '', '' );
 
-			$url_parts = explode( '/', $current_url );
+			$url_parts    = explode( '/', $current_url );
+			$parts_length = count( $url_parts );
 
-			for( $i = 0; $i < count( $url_parts ); $i++ ) {
+			for ( $i = 0; $i < $parts_length; $i++ ) {
 				$part = $url_parts[ $i ];
-				if ( $part == "order-received" ) {
+				if ( 'order-received' === $part ) {
 					$arg = $url_parts[ $i + 1 ];
 					break;
-				} else if ( $part == "view-order" ) {
+				} elseif ( 'view-order' === $part ) {
 					$arg = $url_parts[ $i + 1 ];
 					break;
 				}
@@ -315,27 +316,28 @@ class FrontendCurrencies {
 			global $wpdb;
 
 			if ( WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
-				$q = $wpdb->prepare( "SELECT id, currency FROM wp_wc_orders WHERE id = %s", $arg );
-				$res = $wpdb->get_results( $q );
+				$res = $wpdb->get_results(
+					$wpdb->prepare( 'SELECT id, currency FROM wp_wc_orders WHERE id = %s', $arg )
+				);
 
 				if ( ! empty( $res ) ) {
-					$id = $res[0]->id;
+					$id                   = $res[0]->id;
 					$this->order_currency = $res[0]->currency;
 
 					return $id;
 				}
 			} else {
-				$q = $wpdb->prepare( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE post_id = %s AND meta_key = '_order_currency' LIMIT 1", $arg );
-				$res = $wpdb->get_results( $q );
+				$res = $wpdb->get_results(
+					$wpdb->prepare( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE post_id = %s AND meta_key = '_order_currency' LIMIT 1", $arg )
+				);
 
 				if ( ! empty( $res ) ) {
-					$id = $res[0]->post_id;
+					$id                   = $res[0]->post_id;
 					$this->order_currency = $res[0]->meta_value;
 
 					return $id;
 				}
 			}
-
 		}
 
 		if ( $order ) {
