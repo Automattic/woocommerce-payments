@@ -216,29 +216,41 @@ exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`
         </div>
         <hr />
         <div
-          class="components-base-control ssr-text-field css-wdf2ti-Wrapper ej5x27r4"
+          class="comment_container"
         >
           <div
-            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+            class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
           >
-            <label
-              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
-              for="inspector-textarea-control-1"
+            <div
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
             >
-              Why do you feel that way? (optional)
-            </label>
-            <textarea
-              class="components-textarea-control__input css-zika3g-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
-              id="inspector-textarea-control-1"
-              rows="4"
-            />
+              <label
+                class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+                for="inspector-textarea-control-1"
+              >
+                Why do you feel that way? (optional)
+              </label>
+              <textarea
+                class="components-textarea-control__input css-zika3g-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+                id="inspector-textarea-control-1"
+                rows="4"
+              />
+            </div>
           </div>
+          <p
+            class="survey-bottom-disclaimer"
+          >
+            Your feedback will be only be shared with WooCommerce and treated pursuant to our 
+            <a
+              href="https://automattic.com/privacy/"
+              rel="noreferrer"
+              target="_blank"
+            >
+              privacy policy
+            </a>
+            .
+          </p>
         </div>
-        <p
-          class="survey-bottom-disclaimer"
-        >
-          Your feedback will be only be shared with WooCommerce and treated pursuant to our privacy policy.
-        </p>
         <div
           class="wcpay-confirmation-modal__footer"
         >
