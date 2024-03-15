@@ -9,6 +9,7 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Payments_Localization_Service;
+use WC_Payments_Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -188,7 +189,14 @@ class FrontendCurrencies {
 	 * @return string The decimal separator.
 	 */
 	public function get_price_decimal_separator( $separator ): string {
-		$currency_code       = $this->get_currency_code();
+		$currency_code = $this->get_currency_code();
+		if ( empty( $currency_code ) ) {
+			// Try to re-initialize the order currency, in case it wasn't at the time get_currency_code was called
+			// which can cause the currency code to be empty.
+			$this->init_order_currency( '' );
+			$currency_code = $this->get_currency_code();
+		}
+
 		$store_currency_code = $this->get_store_currency()->get_code();
 
 		if ( $currency_code === $store_currency_code ) {
@@ -270,7 +278,65 @@ class FrontendCurrencies {
 			return $arg;
 		}
 
-		$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
+		// If the arg variable is empty we may be on the order received or view order pages,
+		// in which case we need to get the order id from the URL.
+		if (
+			empty( $arg )
+			&& $this->utils->is_call_in_backtrace(
+				[
+					'WC_Shortcode_Checkout::order_received',
+					'WC_Shortcode_My_Account::view_order',
+				]
+			)
+		) {
+			// Get order ID from order-received page URL.
+			$current_url = add_query_arg( '', '' );
+
+			$url_parts = explode( '/', $current_url );
+
+			for( $i = 0; $i < count( $url_parts ); $i++ ) {
+				$part = $url_parts[ $i ];
+				if ( $part == "order-received" ) {
+					$arg = $url_parts[ $i + 1 ];
+					break;
+				} else if ( $part == "view-order" ) {
+					$arg = $url_parts[ $i + 1 ];
+					break;
+				}
+			}
+		}
+
+		$order = $arg;
+
+		if ( ! $arg instanceof WC_Order ) {
+			// We can't use wc_get_order here because it would trigger the 'wc_get_price_decimal_separator' filter
+			// which calls get_price_decimnal_separator without the order currency being set, so we must retrive it
+			// directly from the DB.
+			global $wpdb;
+
+			if ( WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
+				$q = $wpdb->prepare( "SELECT id, currency FROM wp_wc_orders WHERE id = %s", $arg );
+				$res = $wpdb->get_results( $q );
+
+				if ( ! empty( $res ) ) {
+					$id = $res[0]->id;
+					$this->order_currency = $res[0]->currency;
+
+					return $id;
+				}
+			} else {
+				$q = $wpdb->prepare( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE post_id = %s AND meta_key = '_order_currency' LIMIT 1", $arg );
+				$res = $wpdb->get_results( $q );
+
+				if ( ! empty( $res ) ) {
+					$id = $res[0]->post_id;
+					$this->order_currency = $res[0]->meta_value;
+
+					return $id;
+				}
+			}
+
+		}
 
 		if ( $order ) {
 			$this->order_currency = $order->get_currency();
