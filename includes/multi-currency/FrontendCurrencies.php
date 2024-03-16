@@ -9,7 +9,6 @@ namespace WCPay\MultiCurrency;
 
 use WC_Order;
 use WC_Payments_Localization_Service;
-use WC_Payments_Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -112,12 +111,18 @@ class FrontendCurrencies {
 			// Currency hooks.
 			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 900 );
 			add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );
-			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
 			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
 			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
 			add_action( 'woocommerce_order_get_total', [ $this, 'maybe_init_order_currency_from_order_total_prop' ], 900, 2 );
 			add_action( 'woocommerce_get_formatted_order_total', [ $this, 'maybe_clear_order_currency_after_formatted_order_total' ], 900, 4 );
+
+			// Note: it's important that 'init_order_currency_from_query_vars' is called before
+			// 'get_price_decimal_separator' because the order currency is often required to
+			// determine the decimal separator. That's why the priority on 'init_order_currency_from_query_vars'
+			// is explicity lower than the priority of 'get_price_decimal_separator'.
+			add_filter( 'wc_get_price_decimal_separator', [ $this, 'init_order_currency_from_query_vars' ], 900 );
+			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 901 );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
@@ -189,14 +194,7 @@ class FrontendCurrencies {
 	 * @return string The decimal separator.
 	 */
 	public function get_price_decimal_separator( $separator ): string {
-		$currency_code = $this->get_currency_code();
-		if ( empty( $currency_code ) ) {
-			// Try to re-initialize the order currency, in case it wasn't at the time get_currency_code was called
-			// which can cause the currency code to be empty.
-			$this->init_order_currency( '' );
-			$currency_code = $this->get_currency_code();
-		}
-
+		$currency_code       = $this->get_currency_code();
 		$store_currency_code = $this->get_store_currency()->get_code();
 
 		if ( $currency_code === $store_currency_code ) {
@@ -278,67 +276,16 @@ class FrontendCurrencies {
 			return $arg;
 		}
 
-		// If the arg variable is empty we may be on the order received or view order pages,
-		// in which case we need to get the order id from the URL.
-		if (
-			empty( $arg )
-			&& $this->utils->is_call_in_backtrace(
-				[
-					'WC_Shortcode_Checkout::order_received',
-					'WC_Shortcode_My_Account::view_order',
-				]
-			)
-		) {
-			// Get order ID from order-received page URL.
-			$current_url = add_query_arg( '', '' );
-
-			$url_parts    = explode( '/', $current_url );
-			$parts_length = count( $url_parts );
-
-			for ( $i = 0; $i < $parts_length; $i++ ) {
-				$part = $url_parts[ $i ];
-				if ( 'order-received' === $part ) {
-					$arg = $url_parts[ $i + 1 ];
-					break;
-				} elseif ( 'view-order' === $part ) {
-					$arg = $url_parts[ $i + 1 ];
-					break;
-				}
-			}
-		}
-
-		$order = $arg;
-
-		if ( ! $arg instanceof WC_Order ) {
-			// We can't use wc_get_order here because it would trigger the 'wc_get_price_decimal_separator' filter
-			// which calls get_price_decimnal_separator without the order currency being set, so we must retrive it
-			// directly from the DB.
-			global $wpdb;
-
-			if ( WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
-				$res = $wpdb->get_results(
-					$wpdb->prepare( 'SELECT id, currency FROM wp_wc_orders WHERE id = %s', $arg )
-				);
-
-				if ( ! empty( $res ) ) {
-					$id                   = $res[0]->id;
-					$this->order_currency = $res[0]->currency;
-
-					return $id;
-				}
-			} else {
-				$res = $wpdb->get_results(
-					$wpdb->prepare( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE post_id = %s AND meta_key = '_order_currency' LIMIT 1", $arg )
-				);
-
-				if ( ! empty( $res ) ) {
-					$id                   = $res[0]->post_id;
-					$this->order_currency = $res[0]->meta_value;
-
-					return $id;
-				}
-			}
-		}
+		// We remove the filters here becuase 'wc_get_order' triggers the 'wc_get_price_decimal_separator' filter.
+		remove_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+		remove_filter( 'wc_get_price_decimal_separator', [ $this, 'init_order_currency_from_query_vars' ], 900 );
+		$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
+		// Note: it's important that 'init_order_currency_from_query_vars' is called before
+		// 'get_price_decimal_separator' because the order currency is often required to
+		// determine the decimal separator. That's why the priority on 'init_order_currency_from_query_vars'
+		// is explicity lower than the priority of 'get_price_decimal_separator'.
+		add_filter( 'wc_get_price_decimal_separator', [ $this, 'init_order_currency_from_query_vars' ], 900 );
+		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
 
 		if ( $order ) {
 			$this->order_currency = $order->get_currency();
@@ -358,6 +305,10 @@ class FrontendCurrencies {
 		global $wp;
 		if ( ! empty( $wp->query_vars['order-pay'] ) ) {
 			$this->init_order_currency( $wp->query_vars['order-pay'] );
+		} elseif ( ! empty( $wp->query_vars['order-received'] ) ) {
+			$this->init_order_currency( $wp->query_vars['order-received'] );
+		} elseif ( ! empty( $wp->query_vars['view-order'] ) ) {
+			$this->init_order_currency( $wp->query_vars['view-order'] );
 		}
 	}
 
