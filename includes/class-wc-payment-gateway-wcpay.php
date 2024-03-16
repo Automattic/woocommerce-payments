@@ -1726,7 +1726,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $response;
 		}
 
-		wc_reduce_stock_levels( $order_id );
+		wc_maybe_reduce_stock_levels( $order_id );
 		if ( isset( $cart ) ) {
 			$cart->empty_cart();
 		}
@@ -2281,46 +2281,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return new WP_Error( 'wcpay_edit_order_refund_failure', $e->getMessage() );
 		}
 
-		if ( empty( $reason ) ) {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: refund id */
-					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
-					[
-						'code' => '<code>',
-					]
-				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-				'WooPayments',
-				$refund['id']
-			);
-		} else {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
-					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
-					[
-						'code' => '<code>',
-					]
-				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-				'WooPayments',
-				$reason,
-				$refund['id']
-			);
+		$wc_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
+		if ( ! $wc_refund ) {
+			// translators: %1$: order id.
+			return new WP_Error( 'wcpay_edit_order_refund_not_found', sprintf( __( 'A refund cannot be found for order: %1$s', 'woocommerce-payments' ), $order->get_id() ) );
 		}
-
-		// Get the last created WC refund from order and save WCPay refund id as meta.
-		$wc_last_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order_id );
-		if ( $wc_last_refund ) {
-			$this->order_service->set_wcpay_refund_id_for_order( $wc_last_refund, $refund['id'] );
-			$this->order_service->set_wcpay_refund_transaction_id_for_order( $wc_last_refund, $refund['balance_transaction'] );
-			$wc_last_refund->save_meta_data();
-		}
-
-		$order->add_order_note( $note );
-		$this->order_service->set_wcpay_refund_status_for_order( $order, 'successful' );
-		$order->save();
+		// If the refund was successful, add a note to the order and update the refund status.
+		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund['id'], $refund['balance_transaction'] ?? null );
 
 		return true;
 	}
@@ -2432,8 +2399,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Overrides parent method so the option key is the same as the parent class.
 	 */
 	public function get_option_key() {
-		// Intentionally using self instead of static so options are loaded from main gateway settings.
-		return $this->plugin_id . self::GATEWAY_ID . '_settings';
+		return $this->plugin_id . $this->id . '_settings';
 	}
 
 

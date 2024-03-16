@@ -345,6 +345,10 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		// Order `completed` and `refunded` emails should both be blocked when disputes are closed.
+		add_filter( 'woocommerce_email_enabled_customer_completed_order', '__return_false' );
+		add_filter( 'woocommerce_email_enabled_customer_refunded_order', '__return_false' );
+
 		if ( 'lost' === $status ) {
 			wc_create_refund(
 				[
@@ -359,6 +363,10 @@ class WC_Payments_Order_Service {
 			$this->update_order_status( $order, Order_Status::COMPLETED );
 			$order->save();
 		}
+
+		// Restore completed and refunded order emails.
+		remove_filter( 'woocommerce_email_enabled_customer_completed_order', '__return_false' );
+		remove_filter( 'woocommerce_email_enabled_customer_refunded_order', '__return_false' );
 
 		$order->add_order_note( $note );
 	}
@@ -672,17 +680,17 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Set the payment metadata for refund id.
+	 * Set WCPay refund ID as metadata for refund object.
 	 *
-	 * @param  mixed  $order The order.
-	 * @param  string $wcpay_refund_id The value to be set.
+	 * @param  WC_Order_Refund $wc_refund The refund instance.
+	 * @param  string          $wcpay_refund_id The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function set_wcpay_refund_id_for_order( $order, $wcpay_refund_id ) {
-		$order = $this->get_order( $order );
-		$order->update_meta_data( self::WCPAY_REFUND_ID_META_KEY, $wcpay_refund_id );
-		$order->save_meta_data();
+	public function set_wcpay_refund_id_for_refund( $wc_refund, $wcpay_refund_id ) {
+		$wc_refund = $this->get_order( $wc_refund );
+		$wc_refund->update_meta_data( self::WCPAY_REFUND_ID_META_KEY, $wcpay_refund_id );
+		$wc_refund->save_meta_data();
 	}
 
 	/**
@@ -1233,6 +1241,65 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Creates a refund for the given order.
+	 *
+	 * @param WC_Order $order The order to refund.
+	 * @param float    $amount The amount to refund.
+	 * @param string   $reason The reason for the refund.
+	 * @param array    $line_items The line items to refund.
+	 *
+	 * @throws Exception If the refund creation fails.
+	 */
+	public function create_refund_for_order( WC_Order $order, float $amount, string $reason = '', array $line_items = [] ) {
+		$refund_params = [
+			'amount'   => wc_format_decimal( $amount, wc_get_price_decimals() ),
+			'reason'   => $reason,
+			'order_id' => $order->get_id(),
+		];
+
+		if ( $line_items ) {
+			$refund_params['line_items'] = $line_items;
+		}
+
+		$refund = wc_create_refund(
+			$refund_params
+		);
+
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( $refund->get_error_message() );
+		}
+
+		return $refund;
+	}
+
+	/**
+	 * Adds a note and metadata for a refund.
+	 *
+	 * @param WC_Order        $order The order to refund.
+	 * @param WC_Order_Refund $wc_refund The WC refund object.
+	 * @param string          $refund_id The refund ID.
+	 * @param string|null     $refund_balance_transaction_id The balance transaction ID of the refund.
+	 * @throws Order_Not_Found_Exception
+	 * @throws Exception
+	 */
+	public function add_note_and_metadata_for_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id ): void {
+		$note = $this->generate_payment_refunded_note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order );
+
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+		}
+
+		// Set refund metadata.
+		$this->set_wcpay_refund_status_for_order( $order, 'successful' );
+		$this->set_wcpay_refund_id_for_refund( $wc_refund, $refund_id );
+		if ( isset( $refund_balance_transaction_id ) ) {
+			$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );
+		}
+
+		$order->save();
+	}
+
+	/**
 	 * Get content for the success order note.
 	 *
 	 * @param string $intent_id        The payment intent ID related to the intent/order.
@@ -1565,6 +1632,54 @@ class WC_Payments_Order_Service {
 			),
 			$status
 		);
+	}
+
+	/**
+	 * Generates the HTML note for a refunded payment.
+	 *
+	 * @param float    $refunded_amount Amount refunded.
+	 * @param string   $refunded_currency Refund currency.
+	 * @param string   $wcpay_refund_id WCPay Refund ID.
+	 * @param string   $refund_reason Refund reason.
+	 * @param WC_Order $order Order object.
+	 * @return string HTML note.
+	 */
+	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order ): string {
+		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+			wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ),
+			$order
+		);
+
+		if ( empty( $refund_reason ) ) {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
+					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				$formatted_price,
+				'WooPayments',
+				$wcpay_refund_id
+			);
+		} else {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
+					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				$formatted_price,
+				'WooPayments',
+				$refund_reason,
+				$wcpay_refund_id
+			);
+		}
+
+		return $note;
 	}
 
 	/**

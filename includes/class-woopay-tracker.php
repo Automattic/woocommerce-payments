@@ -348,10 +348,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	public function tracks_get_identity() {
 		$user_id  = get_current_user_id();
-		// If the user is not trackable, return an empty array.
-		if ( ! $this->should_enable_tracking() ) {
-			return [];
-		}
 
 		// Meta is set, and user is still connected.  Use WPCOM ID.
 		$wpcom_id = get_user_meta( $user_id, 'jetpack_tracks_wpcom_id', true );

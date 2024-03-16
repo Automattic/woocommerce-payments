@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Preventing stock quantity from being reduced twice.

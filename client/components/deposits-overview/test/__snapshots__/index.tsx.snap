@@ -1,5 +1,83 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`DepositFailureNotice Renders Renders DepositFailureNotice component correctly 1`] = `
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-warning-notice deposit-failure-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <svg
+            class="gridicon gridicons-notice-outline"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+              />
+            </g>
+          </svg>
+        </div>
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          Deposits are currently paused because a recent deposit failed. Please 
+          <a
+            class="components-external-link"
+            href="https://example.com"
+            rel="external noreferrer noopener"
+            target="_blank"
+          >
+            update your bank account details
+            <span
+              class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="VisuallyHidden"
+              style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+            >
+              (opens in a new tab)
+            </span>
+            <svg
+              aria-hidden="true"
+              class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+              focusable="false"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+              />
+            </svg>
+          </a>
+          .
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Deposits Overview information Component Renders 1`] = `
 <div>
   <div
@@ -262,12 +340,12 @@ exports[`Deposits Overview information Component Renders 1`] = `
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
-        <a
+        <button
           class="components-button is-secondary"
-          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits"
+          type="button"
         >
           View full deposits history
-        </a>
+        </button>
         <a
           class="components-button is-tertiary"
           href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#deposit-schedule"

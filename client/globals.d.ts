@@ -17,6 +17,7 @@ declare global {
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
+			isPaymentOverviewWidgetEnabled?: boolean;
 		};
 		fraudServices: unknown[];
 		testMode: boolean;
@@ -44,7 +45,6 @@ declare global {
 				minimum_manual_deposit_amounts: Record< string, number >;
 				minimum_scheduled_deposit_amounts: Record< string, number >;
 			};
-			depositsStatus?: string;
 			currentDeadline?: bigint;
 			detailsSubmitted?: boolean;
 			pastDue?: boolean;

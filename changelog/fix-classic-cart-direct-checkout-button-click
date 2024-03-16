@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Apply the WooPay Direct Checkout flow only to the "Proceed to Checkout" button, in cthe classic cart.

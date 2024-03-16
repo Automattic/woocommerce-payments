@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Ensure every gateway has individual settings object.
