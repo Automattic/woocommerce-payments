@@ -887,9 +887,8 @@ export const merchantWCP = {
 
 	addMulticurrencyWidget: async () => {
 		await page.goto( `${ WP_ADMIN_DASHBOARD }widgets.php`, {
-			waitUntil: 'networkidle0',
+			waitUntil: 'load',
 		} );
-		await uiLoaded();
 
 		const closeWelcomeModal = await page.$( 'button[aria-label="Close"]' );
 		if ( closeWelcomeModal ) {
@@ -903,7 +902,7 @@ export const merchantWCP = {
 			await page.click( 'button[aria-label="Add block"]' );
 
 			const searchInput = await page.waitForSelector(
-				'input.components-search-control__input'
+				'input[placeholder="Search"]'
 			);
 			searchInput.type( 'switcher', { delay: 20 } );
 
