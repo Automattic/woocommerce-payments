@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: better error message when saved card and amount too large
