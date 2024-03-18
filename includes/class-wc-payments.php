@@ -1136,6 +1136,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns Payment Gateway map.
+	 *
+	 * @return array
+	 */
+	public static function get_payment_gateway_map() {
+		return self::$payment_gateway_map;
+	}
+
+	/**
 	 * Returns the WC_Payment_Gateway_WCPay instance
 	 *
 	 * @return WC_Payment_Gateway_WCPay gateway instance

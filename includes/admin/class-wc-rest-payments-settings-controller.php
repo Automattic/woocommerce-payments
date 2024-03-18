@@ -606,11 +606,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			)
 		);
 
-		if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-			$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
-			$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
-			$enabled_payment_methods  = array_diff( $payment_method_ids_to_enable, $active_payment_methods );
+		$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
+		$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
+		$enabled_payment_methods  = array_diff( $payment_method_ids_to_enable, $active_payment_methods );
 
+		if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
 			foreach ( $disabled_payment_methods as $disabled_payment_method ) {
 				wc_admin_record_tracks_event(
 					Track_Events::PAYMENT_METHOD_DISABLED,
@@ -630,9 +630,19 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			}
 		}
 
-		foreach ( $payment_method_ids_to_enable as $payment_method_id ) {
+		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
-			$gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
+			$gateway->enable();
+		}
+
+		foreach ( $disabled_payment_methods as $payment_method_id ) {
+			$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			$gateway->disable();
+		}
+
+		// Keep the enabled payment method IDs list synchronized across gateway setting objects unless we remove this list with all dependencies.
+		foreach ( WC_Payments::get_payment_gateway_map() as $payment_gateway ) {
+			$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
 		}
 
 		if ( $payment_method_ids_to_enable ) {
