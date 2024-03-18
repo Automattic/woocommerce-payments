@@ -25,6 +25,10 @@ export interface Account {
 		 */
 		monthly_anchor: number;
 	};
+	default_external_accounts: {
+		currency: string;
+		status: string;
+	}[];
 }
 
 export interface Balance {
