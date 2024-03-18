@@ -67,6 +67,7 @@ export const ExpressCheckoutIncompatibilityNotice = () => (
 			'One or more of your extensions alters checkout fields. This might cause issues with this payment method.',
 			'woocommerce-payments'
 		) }
+		// eslint-disable-next-line max-len
 		learnMoreLinkHref="https://woo.com/document/woopayments/payment-methods/apple-pay-and-google-pay-compatibility/#faq-extra-fields-on-checkout"
 	/>
 );
