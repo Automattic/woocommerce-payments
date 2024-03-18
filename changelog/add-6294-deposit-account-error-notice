@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added a notice to inform the merchant when the payout bank account is in errored state
