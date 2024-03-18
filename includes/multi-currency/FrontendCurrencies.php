@@ -277,7 +277,7 @@ class FrontendCurrencies {
 		}
 
 		// We remove the filters here becuase 'wc_get_order' triggers the 'wc_get_price_decimal_separator' filter.
-		remove_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+		remove_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 901 );
 		remove_filter( 'wc_get_price_decimal_separator', [ $this, 'init_order_currency_from_query_vars' ], 900 );
 		$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
 		// Note: it's important that 'init_order_currency_from_query_vars' is called before
@@ -285,7 +285,7 @@ class FrontendCurrencies {
 		// determine the decimal separator. That's why the priority on 'init_order_currency_from_query_vars'
 		// is explicity lower than the priority of 'get_price_decimal_separator'.
 		add_filter( 'wc_get_price_decimal_separator', [ $this, 'init_order_currency_from_query_vars' ], 900 );
-		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 901 );
 
 		if ( $order ) {
 			$this->order_currency = $order->get_currency();
