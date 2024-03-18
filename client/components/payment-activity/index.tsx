@@ -17,7 +17,7 @@ const PaymentActivity: React.FC = () => {
 				className="wcpay-payments-activity__card__header"
 				isBorderless={ true }
 			>
-				{ __( 'You payment activity', 'woocommerce-payments' ) }
+				{ __( 'Your payment activity', 'woocommerce-payments' ) }
 				{ /* Filters go here */ }
 			</CardHeader>
 			<CardBody className="wcpay-payments-activity__card__body">
