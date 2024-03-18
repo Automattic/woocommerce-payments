@@ -30,6 +30,7 @@ import { useDisputes, useGetSettings, useSettings } from 'wcpay/data';
 import strings from './strings';
 import './style.scss';
 import SetupLivePaymentsModal from './modal/setup-live-payments';
+import PaymentActivity from 'wcpay/components/payment-activity';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -181,6 +182,17 @@ const OverviewPage = () => {
 										/>
 									</ErrorBoundary>
 								</Card>
+								{
+									/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
+									wcpaySettings.featureFlags
+										.isPaymentOverviewWidgetEnabled && (
+										<Card>
+											<ErrorBoundary>
+												<PaymentActivity />
+											</ErrorBoundary>
+										</Card>
+									)
+								}
 								<Card>
 									<AccountBalances />
 								</Card>
