@@ -167,23 +167,20 @@ class WooPayDirectCheckout {
 				'Could not retrieve redirect data from merchant.'
 			);
 		}
-		const setCacheSessionPromise = await this.getSessionConnect().setCacheSessionDataCallback(
-			redirectData
-		);
-		const setCacheSessionResult = await setCacheSessionPromise;
-		if (
-			setCacheSessionResult?.is_error ||
-			! setCacheSessionResult?.redirect_url
-		) {
-			throw new Error( 'Could not retrieve session data from WooPay.' );
+
+		if ( ! this.validateEncryptedSessionData( redirectData ) ) {
+			throw new Error( 'Invalid encrypted session data.' );
 		}
 
-		const { redirect_url: redirectUrl } = setCacheSessionResult;
-		if (
-			! this.validateRedirectUrl( redirectUrl, 'redirect_checkout_key' )
-		) {
-			throw new Error( 'Invalid WooPay session URL: ' + redirectUrl );
-		}
+		const redirectParams = new URLSearchParams();
+		redirectParams.append( 'blog_id', redirectData.blog_id );
+		redirectParams.append( 'session', redirectData.data.session );
+		redirectParams.append( 'iv', redirectData.data.iv );
+		redirectParams.append( 'hash', redirectData.data.hash );
+		const redirectUrl =
+			getConfig( 'woopayHost' ) +
+			'/woopay/?checkout_redirect=1&' +
+			redirectParams.toString();
 
 		return redirectUrl;
 	}
@@ -325,6 +322,22 @@ class WooPayDirectCheckout {
 		} catch ( error ) {
 			return false;
 		}
+	}
+
+	/**
+	 * Validate minimum session data.
+	 *
+	 * @param {Object} encryptedSessionData The encrypted session data to be used in URL.
+	 *
+	 * @return {boolean} True if all required fields are present, false otherwise.
+	 */
+	static validateEncryptedSessionData( encryptedSessionData ) {
+		return (
+			encryptedSessionData?.blog_id &&
+			encryptedSessionData?.data?.session &&
+			encryptedSessionData?.data?.iv &&
+			encryptedSessionData?.data?.hash
+		);
 	}
 
 	/**

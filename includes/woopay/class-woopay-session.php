@@ -334,31 +334,7 @@ class WooPay_Session {
 
 		$session = self::get_init_session_request( $order_id, $key, $billing_email );
 
-		$store_blog_token = ( WooPay_Utilities::get_woopay_url() === WooPay_Utilities::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
-
-		$message = wp_json_encode( $session );
-
-		// Generate an initialization vector (IV) for encryption.
-		$iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
-
-		// Encrypt the JSON session.
-		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $iv );
-
-		// Create an HMAC hash for data integrity.
-		$hash = hash_hmac( 'sha256', $session_encrypted, $store_blog_token );
-
-		$data = [
-			'session' => $session_encrypted,
-			'iv'      => $iv,
-			'hash'    => $hash,
-		];
-
-		$response = [
-			'blog_id' => Jetpack_Options::get_option( 'id' ),
-			'data'    => array_map( 'base64_encode', $data ),
-		];
-
-		return $response;
+		return WooPay_Utilities::encrypt_and_sign_data( $session );
 	}
 
 	/**
@@ -593,13 +569,15 @@ class WooPay_Session {
 			return [];
 		}
 
-		return [
+		$data = [
 			'blog_id'           => $blog_id,
 			'blog_rest_url'     => get_rest_url(),
 			'blog_checkout_url' => wc_get_checkout_url(),
 			'session_nonce'     => self::create_woopay_nonce( get_current_user_id() ),
 			'store_api_token'   => self::init_store_api_token(),
 		];
+
+		return WooPay_Utilities::encrypt_and_sign_data( $data );
 	}
 
 	/**
