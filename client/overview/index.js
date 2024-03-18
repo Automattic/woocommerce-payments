@@ -11,26 +11,26 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies.
  */
-import Page from 'components/page';
-import { TestModeNotice } from 'components/test-mode-notice';
-import AccountStatus from 'components/account-status';
-import Welcome from 'components/welcome';
 import AccountBalances from 'components/account-balances';
-import DepositsOverview from 'components/deposits-overview';
+import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
-import ErrorBoundary from 'components/error-boundary';
-import TaskList from './task-list';
-import { getTasks, taskSort } from './task-list/tasks';
-import InboxNotifications from './inbox-notifications';
 import ConnectionSuccessNotice from './connection-sucess-notice';
-import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
-import JetpackIdcNotice from 'components/jetpack-idc-notice';
+import DepositsOverview from 'components/deposits-overview';
+import ErrorBoundary from 'components/error-boundary';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
-import { useDisputes, useGetSettings, useSettings } from 'wcpay/data';
-import strings from './strings';
-import './style.scss';
-import SetupLivePaymentsModal from './modal/setup-live-payments';
+import InboxNotifications from './inbox-notifications';
+import JetpackIdcNotice from 'components/jetpack-idc-notice';
+import Page from 'components/page';
 import PaymentActivity from 'wcpay/components/payment-activity';
+import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
+import SetupLivePaymentsModal from './modal/setup-live-payments';
+import strings from './strings';
+import TaskList from './task-list';
+import Welcome from 'components/welcome';
+import { getTasks, taskSort } from './task-list/tasks';
+import { TestModeNotice } from 'components/test-mode-notice';
+import { useDisputes, useGetSettings, useSettings } from 'wcpay/data';
+import './style.scss';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
