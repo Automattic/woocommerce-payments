@@ -110,10 +110,14 @@ export const dashedToCamelCase = ( string ) => {
  */
 export const maybeConvertRGBAtoRGB = ( color ) => {
 	const colorParts = color.match(
-		/^rgba\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
+		/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0?(\.\d+)?|1?(\.0+)?)\s*\)$/
 	);
 	if ( colorParts ) {
-		color = `rgb(${ colorParts[ 1 ] }, ${ colorParts[ 2 ] }, ${ colorParts[ 3 ] })`;
+		const alpha = colorParts[ 4 ] || 1;
+		const newColorParts = colorParts.slice( 1, 4 ).map( ( part ) => {
+			return Math.round( part * alpha + 255 * ( 1 - alpha ) );
+		} );
+		color = `rgb(${ newColorParts.join( ', ' ) })`;
 	}
 	return color;
 };
