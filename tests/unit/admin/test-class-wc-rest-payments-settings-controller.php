@@ -350,15 +350,15 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
-	public function test_update_settings_saves_enabled_payment_methods() {
-			$this->gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+	public function test_timur_testing() {
+		WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
 
-			$request = new WP_REST_Request();
-			$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::GIROPAY ] );
+		$request = new WP_REST_Request();
+		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::GIROPAY ] );
 
-			$this->controller->update_settings( $request );
+		$this->controller->update_settings( $request );
 
-			$this->assertEquals( [ Payment_Method::CARD, Payment_Method::GIROPAY ], $this->gateway->get_option( 'upe_enabled_payment_method_ids' ) );
+		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::GIROPAY ], WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
 
 	public function test_update_settings_fails_if_user_cannot_manage_woocommerce() {
