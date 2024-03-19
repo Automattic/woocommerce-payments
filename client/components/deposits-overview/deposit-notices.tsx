@@ -6,6 +6,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 import { tip } from '@wordpress/icons';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -207,6 +208,33 @@ export const NoFundsAvailableForDepositNotice: React.FC = () => (
 						href="https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-funds"
 					/>
 				),
+			},
+		} ) }
+	</InlineNotice>
+);
+
+/**
+ * Renders a notice informing the user that deposits are paused due to a recent deposit failure.
+ */
+export const DepositFailureNotice: React.FC< {
+	/**
+	 * The link to update the account details.
+	 */
+	updateAccountLink: string;
+} > = ( { updateAccountLink } ) => (
+	<InlineNotice
+		status="warning"
+		icon
+		className="deposit-failure-notice"
+		isDismissible={ false }
+	>
+		{ interpolateComponents( {
+			mixedString: __(
+				'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+				'woocommerce-payments'
+			),
+			components: {
+				updateLink: <ExternalLink href={ updateAccountLink } />,
 			},
 		} ) }
 	</InlineNotice>

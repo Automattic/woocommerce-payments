@@ -626,7 +626,11 @@ export const handleWooPayEmailInput = async (
 		);
 
 		// Check if user already has a WooPay login session and only open the iframe if there is WCPay.
-		if ( ! hasCheckedLoginSession && hasWCPayPaymentMethod ) {
+		if (
+			! hasCheckedLoginSession &&
+			hasWCPayPaymentMethod &&
+			! getConfig( 'isWooPayDirectCheckoutEnabled' )
+		) {
 			openLoginSessionIframe( woopayEmailInput.value );
 		}
 	} else {
