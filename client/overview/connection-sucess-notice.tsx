@@ -40,12 +40,8 @@ const ConnectionSuccessNotice: React.FC = () => {
 			/>
 		);
 	};
-	{
-		/* Show at the end of Progressive Onboarding or at the end of the full KYC flow. */
-	}
-	return ! isDismissed &&
-		! onboardingTestMode &&
-		! ( isPoEnabled && ! isPoComplete ) ? (
+	const isPoDisabledOrCompleted = ! ( isPoEnabled && ! isPoComplete );
+	return ! isDismissed && ! onboardingTestMode && isPoDisabledOrCompleted ? (
 		<Card className="wcpay-connection-success">
 			<DismissMenu />
 			<img src={ ConfettiImage } alt="confetti" />
