@@ -5,6 +5,7 @@
  */
 import React, { useState } from 'react';
 import { useDispatch } from '@wordpress/data';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -19,7 +20,6 @@ import { useAllDepositsOverviews } from 'data';
 import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
-import { ExternalLink } from '@wordpress/components';
 
 const useNextDepositNoticeState = () => {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
