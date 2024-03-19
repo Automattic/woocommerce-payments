@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Re-enable Direct-to-Checkout Feature Flag in WooPay OTP Iframe.

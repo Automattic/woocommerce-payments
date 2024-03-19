@@ -289,7 +289,6 @@ class WC_Payments_Account {
 			'paymentsEnabled'       => $account['payments_enabled'],
 			'detailsSubmitted'      => $account['details_submitted'] ?? true,
 			'deposits'              => $account['deposits'] ?? [],
-			'depositsStatus'        => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
 			'currentDeadline'       => $account['current_deadline'] ?? false,
 			'pastDue'               => $account['has_overdue_requirements'] ?? false,
 			'accountLink'           => $this->get_login_url(),
@@ -1085,6 +1084,14 @@ class WC_Payments_Account {
 			) ) {
 				// Redirect non-onboarded account to the onboarding flow, otherwise to payments overview page.
 				if ( ! $this->is_stripe_connected() ) {
+					$should_onboard_in_test_mode = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
+					if ( ! $should_onboard_in_test_mode && WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
+						// If there is no test mode in the URL informing us to onboard in test mode,
+						// but the onboarding test mode is enabled in our DB, we should disable it.
+						// This is most likely a leftover from a previous onboarding attempt.
+						WC_Payments_Onboarding_Service::set_test_mode( false );
+					}
+
 					$this->redirect_to_onboarding_flow_page( $source );
 				} else {
 					// Accounts with Stripe account connected will be redirected to the overview page.

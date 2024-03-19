@@ -17,7 +17,7 @@ class WooPayDirectCheckout {
 	static sessionConnect;
 	static encryptedSessionDataPromise;
 	static redirectElements = {
-		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout',
+		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout .checkout-button',
 		BLOCKS_CART_PROCEED_BUTTON:
 			'.wp-block-woocommerce-proceed-to-checkout-block',
 	};
@@ -238,11 +238,68 @@ class WooPayDirectCheckout {
 	 * @param {boolean} userIsLoggedIn True if we determined the user is already logged in, false otherwise.
 	 */
 	static redirectToWooPay( elements, userIsLoggedIn = false ) {
+		/**
+		 * Adds a loading spinner to the given element.
+		 *
+		 * @param {Element} element The element to add the loading spinner to.
+		 */
+		const addLoadingSpinner = ( element ) => {
+			// Create a spinner to show when the user clicks the button.
+			const spinner = document.createElement( 'span' );
+			spinner.classList.add( 'wc-block-components-spinner' );
+			spinner.style.position = 'relative';
+			spinner.style.fontSize = 'unset';
+			// Remove the existing content of the button.
+			// Set innerHTML to '&nbsp;' to keep the button's height.
+			element.innerHTML = '&nbsp;';
+			element.classList.remove( 'wc-forward' );
+			// Add the spinner to the button.
+			element.appendChild( spinner );
+		};
+
+		/**
+		 * Checks if the given element is the checkout button in the cart shortcode.
+		 *
+		 * @param {Element} element The element to check.
+		 *
+		 * @return {boolean} True if the element is a checkout button in the cart shortcode.
+		 */
+		const isCheckoutButtonInCartShortCode = ( element ) => {
+			const isCheckoutButton = element.classList.contains(
+				'checkout-button'
+			);
+			const isParentProceedToCheckout = element.parentElement?.classList?.contains(
+				'wc-proceed-to-checkout'
+			);
+
+			return isCheckoutButton && isParentProceedToCheckout;
+		};
+
 		elements.forEach( ( element ) => {
+			const elementState = {
+				is_loading: false,
+			};
+
 			element.addEventListener( 'click', async ( event ) => {
+				if ( elementState.is_loading ) {
+					event.preventDefault();
+					return;
+				}
+
+				elementState.is_loading = true;
+
+				if ( isCheckoutButtonInCartShortCode( element ) ) {
+					addLoadingSpinner( element );
+				}
+
 				// Store href before the async call to not lose the reference.
-				const currTargetHref = event.currentTarget.querySelector( 'a' )
-					?.href;
+				let currTargetHref;
+				const isAElement = element.tagName.toLowerCase() === 'a';
+				if ( isAElement ) {
+					currTargetHref = element.href;
+				} else {
+					currTargetHref = element.querySelector( 'a' )?.href;
+				}
 
 				// If there's no link where to redirect the user, do not break the expected behavior.
 				if ( ! currTargetHref ) {

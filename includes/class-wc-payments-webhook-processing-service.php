@@ -11,6 +11,7 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
 
@@ -150,6 +151,9 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		switch ( $event_type ) {
+			case 'charge.refunded':
+				$this->process_webhook_refund_triggered_externally( $event_body );
+				break;
 			case 'charge.refund.updated':
 				$this->process_webhook_refund_updated( $event_body );
 				break;
@@ -614,7 +618,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		switch ( $event_type ) {
 			case 'charge.dispute.funds_withdrawn':
-				$message = __( 'Payment dispute funds have been withdrawn', 'woocommerce-payments' );
+				$message = __( 'Payment dispute and fees have been deducted from your next deposit', 'woocommerce-payments' );
 				break;
 			case 'charge.dispute.funds_reinstated':
 				$message = __( 'Payment dispute funds have been reinstated', 'woocommerce-payments' );
@@ -782,5 +786,73 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// translators: %s Stripe error message.
 		return sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), $message );
+	}
+
+	/**
+	 * Process webhook refund for events triggered externally.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Invalid_Webhook_Data_Exception           Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception           When the refund amount is not valid.
+	 * @throws Order_Not_Found_Exception                When unable to resolve charge ID to order.
+	 */
+	private function process_webhook_refund_triggered_externally( array $event_body ): void {
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+
+		$is_refunded_event = isset( $event_body['type'] ) && 'charge.refunded' === $event_body['type'];
+		$status            = $this->read_webhook_property( $event_object, 'status' );
+		if ( 'succeeded' !== $status || ! $is_refunded_event ) {
+			return;
+		}
+
+		// Fetch the details of the refund so that we can find the associated order and write a note.
+		$charge_id                     = $this->read_webhook_property( $event_object, 'id' );
+		$refund                        = $this->read_webhook_property( $event_object, 'refunds' )['data'][0]; // Most recent refund.
+		$refund_id                     = $refund['id'] ?? '';
+		$refund_reason                 = $refund['reason'] ?? '';
+		$refund_balance_transaction_id = $refund['balance_transaction'] ?? '';
+		$charge_amount                 = $this->read_webhook_property( $event_object, 'amount' );
+		$currency                      = $this->read_webhook_property( $event_object, 'currency' );
+		$refunded_amount               = WC_Payments_Utils::interpret_stripe_amount( $refund['amount'], $currency );
+		$is_partial_refund             = $refund['amount'] < $charge_amount;
+
+		// Look up the order related to this charge.
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+		if ( ! $order ) {
+			throw new Order_Not_Found_Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				),
+				'order_not_found'
+			);
+		}
+		// Only care about refunds that are triggered externally, i.e. outside WP Admin.
+		// Refunds triggered in WP Admin are handled by WC_Payment_Gateway_WCPay::process_refund.
+		$wc_refunds = $order->get_refunds();
+		if ( ! empty( $wc_refunds ) ) {
+			foreach ( $wc_refunds as $wc_refund ) {
+				$wcpay_refund_id = $this->order_service->get_wcpay_refund_id_for_order( $wc_refund );
+				if ( $refund_id === $wcpay_refund_id ) {
+					return;
+				}
+			}
+		}
+		if ( $charge_amount < 0 || $refunded_amount > $order->get_total() ) {
+			throw new Invalid_Webhook_Data_Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'The refund amount is not valid for charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, ( ! $is_partial_refund ? $order->get_items() : [] ) );
+		// Process the refund in the order service.
+		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
 	}
 }
