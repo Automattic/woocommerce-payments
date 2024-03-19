@@ -6,6 +6,7 @@ import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 import UserConnect from 'wcpay/checkout/woopay/connect/user-connect';
 import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
+import { getTracksIdentity } from 'tracks';
 
 /**
  * The WooPayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
@@ -172,15 +173,24 @@ class WooPayDirectCheckout {
 			throw new Error( 'Invalid encrypted session data.' );
 		}
 
-		const redirectParams = new URLSearchParams();
-		redirectParams.append( 'blog_id', redirectData.blog_id );
-		redirectParams.append( 'session', redirectData.data.session );
-		redirectParams.append( 'iv', redirectData.data.iv );
-		redirectParams.append( 'hash', redirectData.data.hash );
+		const testMode = getConfig( 'testMode' );
+		const redirectParams = new URLSearchParams( {
+			checkout_redirect: 1,
+			blog_id: redirectData.blog_id,
+			session: redirectData.data.session,
+			iv: redirectData.data.iv,
+			hash: redirectData.data.hash,
+			testMode,
+			source_url: window.location.href,
+		} );
+
+		const tracksUserId = await getTracksIdentity();
+		if ( tracksUserId ) {
+			redirectParams.append( 'tracksUserIdentity', tracksUserId );
+		}
+
 		const redirectUrl =
-			getConfig( 'woopayHost' ) +
-			'/woopay/?checkout_redirect=1&' +
-			redirectParams.toString();
+			getConfig( 'woopayHost' ) + '/woopay/?' + redirectParams.toString();
 
 		return redirectUrl;
 	}
