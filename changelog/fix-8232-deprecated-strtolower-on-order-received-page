@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-strtolower deprecation warning no longer appears on the Order Received and View Order pages when using PHP version 8.1+
