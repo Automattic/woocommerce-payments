@@ -60,6 +60,7 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		enabledPaymentMethods,
+		featureFlags: { isPaymentOverviewWidgetEnabled },
 	} = wcpaySettings;
 
 	const isDevMode = wcpaySettings.devMode;
@@ -184,8 +185,7 @@ const OverviewPage = () => {
 								</Card>
 								{
 									/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
-									wcpaySettings.featureFlags
-										.isPaymentOverviewWidgetEnabled && (
+									isPaymentOverviewWidgetEnabled && (
 										<Card>
 											<ErrorBoundary>
 												<PaymentActivity />
