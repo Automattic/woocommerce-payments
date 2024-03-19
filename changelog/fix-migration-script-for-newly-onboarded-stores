@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Ensure card gateway is not running through the settings migration.
