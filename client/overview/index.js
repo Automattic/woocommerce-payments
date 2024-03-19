@@ -56,11 +56,14 @@ const OverviewPageError = () => {
 const OverviewPage = () => {
 	const {
 		accountStatus,
-		overviewTasksVisibility,
-		showUpdateDetailsTask,
-		wpcomReconnectUrl,
+		// eslint-disable-next-line camelcase
+		accountLoans: { has_active_loan },
 		enabledPaymentMethods,
 		featureFlags: { isPaymentOverviewWidgetEnabled },
+		overviewTasksVisibility,
+		progressiveOnboarding,
+		showUpdateDetailsTask,
+		wpcomReconnectUrl,
 	} = wcpaySettings;
 
 	const isDevMode = wcpaySettings.devMode;
@@ -97,8 +100,8 @@ const OverviewPage = () => {
 		queryParams[ 'wcpay-server-link-error' ] === '1';
 	const showProgressiveOnboardingEligibilityModal =
 		showConnectionSuccess &&
-		accountStatus.progressiveOnboarding.isEnabled &&
-		! accountStatus.progressiveOnboarding.isComplete;
+		progressiveOnboarding.isEnabled &&
+		! progressiveOnboarding.isComplete;
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
 
@@ -210,15 +213,18 @@ const OverviewPage = () => {
 			) }
 			<ErrorBoundary>
 				<AccountStatus
-					accountStatus={ wcpaySettings.accountStatus }
+					accountStatus={ accountStatus }
 					accountFees={ activeAccountFees }
 				/>
 			</ErrorBoundary>
-			{ wcpaySettings.accountLoans.has_active_loan && (
-				<ErrorBoundary>
-					<ActiveLoanSummary />
-				</ErrorBoundary>
-			) }
+			{
+				// eslint-disable-next-line camelcase
+				has_active_loan && (
+					<ErrorBoundary>
+						<ActiveLoanSummary />
+					</ErrorBoundary>
+				)
+			}
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<InboxNotifications />
