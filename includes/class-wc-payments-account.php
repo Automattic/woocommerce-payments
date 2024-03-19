@@ -1115,7 +1115,7 @@ class WC_Payments_Account {
 			}
 
 			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT === $source ) {
-				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled() || WC_Payments::mode()->is_dev();
 
 				// Delete the account.
 				$this->payments_api_client->delete_account( $test_mode );
