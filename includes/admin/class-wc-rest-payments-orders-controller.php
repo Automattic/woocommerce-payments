@@ -230,6 +230,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
 				$token = $this->token_service->add_payment_method_to_user( $intent->get_payment_method_id(), $order->get_user() );
 				$this->gateway->add_token_to_order( $order, $token );
+				$subscriptions = wcs_get_subscriptions_for_order( $order_id );
+				$first_subscription = reset( $subscriptions );
+				WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $first_subscription, WC_Payment_Gateway_WCPay::GATEWAY_ID );
 			}
 			// Actualize order status.
 			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'] );
