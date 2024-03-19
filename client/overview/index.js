@@ -57,8 +57,7 @@ const OverviewPage = () => {
 	const {
 		accountStatus,
 		accountStatus: { progressiveOnboarding },
-		// eslint-disable-next-line camelcase
-		accountLoans: { has_active_loan },
+		accountLoans: { has_active_loan: hasActiveLoan },
 		enabledPaymentMethods,
 		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
@@ -217,14 +216,11 @@ const OverviewPage = () => {
 					accountFees={ activeAccountFees }
 				/>
 			</ErrorBoundary>
-			{
-				// eslint-disable-next-line camelcase
-				has_active_loan && (
-					<ErrorBoundary>
-						<ActiveLoanSummary />
-					</ErrorBoundary>
-				)
-			}
+			{ hasActiveLoan && (
+				<ErrorBoundary>
+					<ActiveLoanSummary />
+				</ErrorBoundary>
+			) }
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<InboxNotifications />
