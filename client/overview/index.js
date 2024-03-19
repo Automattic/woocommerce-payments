@@ -56,12 +56,12 @@ const OverviewPageError = () => {
 const OverviewPage = () => {
 	const {
 		accountStatus,
+		accountStatus: { progressiveOnboarding },
 		// eslint-disable-next-line camelcase
 		accountLoans: { has_active_loan },
 		enabledPaymentMethods,
 		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
-		progressiveOnboarding,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 	} = wcpaySettings;
