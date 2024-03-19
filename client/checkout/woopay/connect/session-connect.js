@@ -14,7 +14,6 @@ class WooPaySessionConnect extends WoopayConnect {
 			setTempThirdPartyCookieCallback: () => {},
 			getIsThirdPartyCookiesEnabledCallback: () => {},
 			setPreemptiveSessionDataCallback: () => {},
-			setCacheSessionDataCallback: () => {},
 		};
 	}
 
@@ -84,19 +83,6 @@ class WooPaySessionConnect extends WoopayConnect {
 	}
 
 	/**
-	 * Sends minimal session data to be stored in cache.
-	 *
-	 * @param {Object} data The data to send to WooPay.
-	 * @return {Promise<*>} Resolves to the WooPay session response.
-	 */
-	async setCacheSessionDataCallback( data ) {
-		return await super.sendMessageAndListenWith(
-			{ action: 'setCacheSessionData', value: data },
-			'setCacheSessionDataCallback'
-		);
-	}
-
-	/**
 	 * The callback function that is called when a message is received from the WooPayConnectIframe.
 	 *
 	 * @param {Object} data The data received from the WooPayConnectIframe.
@@ -126,14 +112,6 @@ class WooPaySessionConnect extends WoopayConnect {
 				break;
 			case 'set_preemptive_session_data_error':
 				this.listeners.setPreemptiveSessionDataCallback( {
-					is_error: true,
-				} );
-				break;
-			case 'set_cache_session_data_success':
-				this.listeners.setCacheSessionDataCallback( data.value );
-				break;
-			case 'set_cache_session_data_error':
-				this.listeners.setCacheSessionDataCallback( {
 					is_error: true,
 				} );
 				break;

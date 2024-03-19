@@ -161,7 +161,7 @@ class WooPayDirectCheckout {
 	 *
 	 * @return {string} WooPay redirect URL with parameters.
 	 */
-	static async getWooPayCacheSessionUrl() {
+	static async getWooPayMinimumSessionUrl() {
 		const redirectData = await this.getWooPayMinimumSesssionDataFromMerchant();
 		if ( redirectData?.success === false ) {
 			throw new Error(
@@ -257,7 +257,7 @@ class WooPayDirectCheckout {
 					if ( userIsLoggedIn ) {
 						woopayRedirectUrl = await this.getWooPayCheckoutUrl();
 					} else {
-						woopayRedirectUrl = await this.getWooPayCacheSessionUrl();
+						woopayRedirectUrl = await this.getWooPayMinimumSessionUrl();
 					}
 
 					this.teardown();
