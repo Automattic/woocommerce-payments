@@ -228,7 +228,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
 			// Add payment method for future subscription payments
 			if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
-				$token = $this->token_service->add_payment_method_to_user( $intent->get_payment_method_id(), $order->get_user() );
+				$generated_card = $intent->get_charge()->get_payment_method_details()['card_present']['generated_card'];
+				$token = $this->token_service->add_payment_method_to_user( $generated_card, $order->get_user() );
 				$this->gateway->add_token_to_order( $order, $token );
 				$subscriptions = wcs_get_subscriptions_for_order( $order_id );
 				$first_subscription = reset( $subscriptions );
