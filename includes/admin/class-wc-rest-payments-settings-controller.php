@@ -508,6 +508,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
 				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'show_woopay_incompatibility_notice'  => get_option( 'woopay_invalid_extension_found', false ),
+				'show_express_checkout_incompatibility_notice' => $this->should_show_express_checkout_incompatibility_notice(),
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
 				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ) ),
@@ -606,11 +607,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			)
 		);
 
-		if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-			$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
-			$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
-			$enabled_payment_methods  = array_diff( $payment_method_ids_to_enable, $active_payment_methods );
+		$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
+		$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
+		$enabled_payment_methods  = array_diff( $payment_method_ids_to_enable, $active_payment_methods );
 
+		if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
 			foreach ( $disabled_payment_methods as $disabled_payment_method ) {
 				wc_admin_record_tracks_event(
 					Track_Events::PAYMENT_METHOD_DISABLED,
@@ -630,7 +631,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			}
 		}
 
-		$this->wcpay_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
+		foreach ( $enabled_payment_methods as $payment_method_id ) {
+			$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			$gateway->enable();
+		}
+
+		foreach ( $disabled_payment_methods as $payment_method_id ) {
+			$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			$gateway->disable();
+		}
+
+		// Keep the enabled payment method IDs list synchronized across gateway setting objects unless we remove this list with all dependencies.
+		foreach ( WC_Payments::get_payment_gateway_map() as $payment_gateway ) {
+			$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
+		}
+
 		if ( $payment_method_ids_to_enable ) {
 			$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
 		}
@@ -1079,5 +1094,39 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$reporting_export_language = $request->get_param( 'reporting_export_language' );
 
 		$this->wcpay_gateway->update_option( 'reporting_export_language', $reporting_export_language );
+	}
+
+	/**
+	 * Whether to show the express checkout incompatibility notice.
+	 *
+	 * @return bool
+	 */
+	private function should_show_express_checkout_incompatibility_notice() {
+		// Apply filters to empty arrays to check if any plugin is modifying the checkout fields.
+		$after_apply_billing  = apply_filters( 'woocommerce_billing_fields', [], '' );
+		$after_apply_shipping = apply_filters( 'woocommerce_shipping_fields', [], '' );
+		$after_apply_checkout = array_filter(
+			apply_filters(
+				'woocommerce_checkout_fields',
+				[
+					'billing'  => [],
+					'shipping' => [],
+					'account'  => [],
+					'order'    => [],
+				]
+			)
+		);
+		// All the input values are empty, so if any of them is not empty, it means that the checkout fields are being modified.
+		$is_modifying_checkout_fields = ! empty(
+			array_filter(
+				[
+					'after_apply_billing'  => $after_apply_billing,
+					'after_apply_shipping' => $after_apply_shipping,
+					'after_apply_checkout' => $after_apply_checkout,
+				]
+			)
+		);
+
+		return $is_modifying_checkout_fields;
 	}
 }
