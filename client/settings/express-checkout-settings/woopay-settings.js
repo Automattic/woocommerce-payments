@@ -28,7 +28,7 @@ import {
 	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
-import WooPayIncompatibilityNotice from '../settings-warnings/incompatibility-notice';
+import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
 
 const WooPaySettings = ( { section } ) => {
 	const [
