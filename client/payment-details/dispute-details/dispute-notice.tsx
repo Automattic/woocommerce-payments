@@ -43,7 +43,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	let learnMoreDocsUrl =
 		'https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding';
 
-	if ( isInquiry( dispute ) ) {
+	if ( isInquiry( dispute.status ) ) {
 		/* translators: <a> link to dispute inquiry documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
 		noticeText = __(
 			'<strong>%s</strong> You can challenge their claim if you believe it’s invalid. ' +

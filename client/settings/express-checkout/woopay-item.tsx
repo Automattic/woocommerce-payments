@@ -20,7 +20,7 @@ import {
 } from 'wcpay/data';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
-import WooPayIncompatibilityNotice from '../settings-warnings/incompatibility-notice';
+import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
 
 import { WooPayEnabledSettingsHook } from './interfaces';
 import { WooIcon } from 'wcpay/payment-methods-icons';

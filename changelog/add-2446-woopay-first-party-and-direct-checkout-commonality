@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Refactor WooPay First Party Auth and WooPay Direct Checkout to reuse similar functionality.

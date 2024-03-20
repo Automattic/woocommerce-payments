@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+refactor: validator package bundle size improvements

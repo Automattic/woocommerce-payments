@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixes some instances where Stripe UPE styles add a black background to input fields.
