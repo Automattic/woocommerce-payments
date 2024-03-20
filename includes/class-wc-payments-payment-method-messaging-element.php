@@ -102,6 +102,8 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				'productId'         => 'base_product',
 				'productVariations' => $product_variations,
 				'country'           => empty( $billing_country ) ? $store_country : $billing_country,
+				'locale'            => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+				'accountId'         => $this->account->get_stripe_account_id(),
 				'publishableKey'    => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 				'paymentMethods'    => array_values( $bnpl_payment_methods ),
 				'currencyCode'      => $currency_code,

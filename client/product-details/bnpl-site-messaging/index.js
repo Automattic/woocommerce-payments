@@ -3,11 +3,14 @@
  * Internal dependencies
  */
 import './style.scss';
+import WCPayAPI from 'wcpay/checkout/api';
 
 export const initializeBnplSiteMessaging = () => {
 	const {
 		productVariations,
 		country,
+		locale,
+		accountId,
 		publishableKey,
 		paymentMethods,
 		currencyCode,
@@ -24,9 +27,16 @@ export const initializeBnplSiteMessaging = () => {
 		amount = parseInt( productVariations.base_product.amount, 10 ) || 0;
 	}
 
-	// eslint-disable-next-line no-undef
-	const stripe = Stripe( publishableKey );
 	let paymentMessageElement;
+
+	const api = new WCPayAPI(
+		{
+			publishableKey: publishableKey,
+			accountId: accountId,
+			locale: locale,
+		},
+		null
+	);
 
 	const options = {
 		amount: amount,
@@ -35,13 +45,13 @@ export const initializeBnplSiteMessaging = () => {
 		countryCode: country, // Customer's country or base country of the store.
 	};
 
-	// The cart block will use the Stripe React component to render the payment method messaging.
-	if ( ! isCartBlock ) {
-		paymentMessageElement = stripe
-			.elements()
-			.create( 'paymentMethodMessaging', options );
-		paymentMessageElement.mount( '#payment-method-message' );
-	}
+  if ( ! isCartBlock ) {
+    paymentMessageElement = api
+		  .getStripe()
+		  .elements()
+		  .create( 'paymentMethodMessaging', options );
+	  paymentMessageElement.mount( '#payment-method-message' );
+  }
 
 	// This function converts relative units (rem/em) to pixels based on the current font size.
 	function convertToPixels( value, baseFontSize ) {

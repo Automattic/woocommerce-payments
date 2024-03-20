@@ -67,14 +67,14 @@ export const isUnderReview = ( status: DisputeStatus | string ): boolean => {
 	return disputeUnderReviewStatuses.includes( status );
 };
 
-export const isInquiry = ( dispute: Pick< Dispute, 'status' > ): boolean => {
+export const isInquiry = ( status: DisputeStatus ): boolean => {
 	// Inquiry dispute statuses are one of `warning_needs_response`, `warning_under_review` or `warning_closed`.
-	return dispute.status.startsWith( 'warning' );
+	return status.startsWith( 'warning' );
 };
 
 export const isRefundable = ( status: DisputeStatus ): boolean => {
 	// Refundable dispute statuses are one of `warning_needs_response`, `warning_under_review`, `warning_closed` or `won`.
-	return isInquiry( { status } ) || 'won' === status;
+	return isInquiry( status ) || 'won' === status;
 };
 
 /**

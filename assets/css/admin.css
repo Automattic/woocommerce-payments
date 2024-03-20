@@ -17,10 +17,6 @@
 #adminmenu
 	#toplevel_page_wc-admin-path--payments-connect
 	.menu-icon-generic
-	div.wp-menu-image::before,
-#adminmenu
-	#toplevel_page_wc-admin-path--payments-deposits
-	.menu-icon-generic
 	div.wp-menu-image::before {
 	font-family: 'WCPay' !important;
 	content: '\e900';
@@ -36,7 +32,8 @@
 	height: 1.25rem;
 	width: 32px;
 	width: 2rem;
-	background-size: contain;
+	background-size: cover;
+	background-position: center;
 	background-repeat: no-repeat;
 	border-radius: 2px;
 	outline: 1px solid rgba( 0, 0, 0, 0.25 );

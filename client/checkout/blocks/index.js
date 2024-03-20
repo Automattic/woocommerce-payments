@@ -60,6 +60,7 @@ const upeMethods = {
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
 const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
 
 // Create an API object, which will be used throughout the checkout.
@@ -107,7 +108,14 @@ Object.entries( enabledPaymentMethodsConfig )
 				<>
 					<span>
 						{ upeConfig.title }
-						<img src={ upeConfig.icon } alt={ upeConfig.title } />
+						<img
+							src={
+								upeAppearanceTheme === 'night'
+									? upeConfig.darkIcon
+									: upeConfig.icon
+							}
+							alt={ upeConfig.title }
+						/>
 					</span>
 				</>
 			),

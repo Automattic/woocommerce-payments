@@ -554,6 +554,7 @@ class WC_Payments {
 		self::maybe_register_woopay_hooks();
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
+		self::$apple_pay_registration->init_hooks();
 
 		self::maybe_display_express_checkout_buttons();
 
@@ -590,11 +591,15 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-additional-payment-methods-admin-notes-removal.php';
+		require_once __DIR__ . '/migrations/class-link-woopay-mutual-exclusion-handler.php';
+		require_once __DIR__ . '/migrations/class-gateway-settings-sync.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Additional_Payment_Methods_Admin_Notes_Removal(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
@@ -658,6 +663,7 @@ class WC_Payments {
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_cart_scripts' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
 
@@ -738,15 +744,7 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooPayments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
-
-		$key = array_search( 'link', $payment_methods, true );
-
-		if ( false !== $key && WC_Payments_Features::is_woopay_enabled() ) {
-			unset( $payment_methods[ $key ] );
-
-			self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
-		}
+		$payment_methods = array_keys( self::get_payment_method_map() );
 
 		$gateways[]       = self::$card_gateway;
 		$all_gateways     = [];
@@ -1144,6 +1142,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns Payment Gateway map.
+	 *
+	 * @return array
+	 */
+	public static function get_payment_gateway_map() {
+		return self::$payment_gateway_map;
+	}
+
+	/**
 	 * Returns the WC_Payment_Gateway_WCPay instance
 	 *
 	 * @return WC_Payment_Gateway_WCPay gateway instance
@@ -1488,6 +1495,7 @@ class WC_Payments {
 			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), $express_checkout_helper );
 			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, $express_checkout_helper );
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, $express_checkout_helper );
+			$express_checkout_button_display_handler->init();
 		}
 	}
 
@@ -1587,6 +1595,20 @@ class WC_Payments {
 			$field = '';
 		}
 		return $field;
+	}
+
+	/**
+	 * Enqueue cart page scripts.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_cart_scripts() {
+		if ( ! WC_Payments_Utils::is_cart_page() ) {
+			return;
+		}
+
+		self::register_script_with_dependencies( 'WCPAY_CART', 'dist/cart' );
+		wp_enqueue_script( 'WCPAY_CART' );
 	}
 
 	/**

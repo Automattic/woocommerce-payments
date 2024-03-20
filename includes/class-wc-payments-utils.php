@@ -572,6 +572,8 @@ class WC_Payments_Utils {
 				),
 				wp_strip_all_tags( html_entity_decode( $price ) )
 			);
+		} elseif ( $e instanceof API_Exception && 'amount_too_large' === $e->get_error_code() ) {
+			$error_message = $e->getMessage();
 		} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
@@ -1062,5 +1064,14 @@ class WC_Payments_Utils {
 
 		// Return 'en_US' to match the default site language.
 		return 'en_US';
+	}
+
+	/**
+	 * Check if the current page is the cart page.
+	 *
+	 * @return bool True if the current page is the cart page, false otherwise.
+	 */
+	public static function is_cart_page(): bool {
+		return is_cart() || has_block( 'woocommerce/cart' );
 	}
 }

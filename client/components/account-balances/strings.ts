@@ -21,7 +21,7 @@ export const greetingStrings = {
 
 export const fundLabelStrings = {
 	available: __( 'Available funds', 'woocommerce-payments' ),
-	pending: __( 'Pending funds', 'woocommerce-payments' ),
+	total: __( 'Total balance', 'woocommerce-payments' ),
 };
 
 export const documentationUrls = {

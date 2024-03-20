@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: add confirmation modal when disabling WooPayments from settings page

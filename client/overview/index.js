@@ -85,6 +85,7 @@ const OverviewPage = () => {
 	const queryParams = getQuery();
 	const accountRejected =
 		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
+	const accountUnderReview = accountStatus.status === 'under_review';
 
 	const showConnectionSuccess =
 		queryParams[ 'wcpay-connection-success' ] === '1';
@@ -96,7 +97,8 @@ const OverviewPage = () => {
 		showConnectionSuccess &&
 		accountStatus.progressiveOnboarding.isEnabled &&
 		! accountStatus.progressiveOnboarding.isComplete;
-	const showTaskList = ! accountRejected && tasks.length > 0;
+	const showTaskList =
+		! accountRejected && ! accountUnderReview && tasks.length > 0;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -163,7 +165,7 @@ const OverviewPage = () => {
 				<FRTDiscoverabilityBanner />
 			</ErrorBoundary>
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
-			{ ! accountRejected && (
+			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<>
 						{ showTaskList ? (
@@ -205,7 +207,7 @@ const OverviewPage = () => {
 					<ActiveLoanSummary />
 				</ErrorBoundary>
 			) }
-			{ ! accountRejected && (
+			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<InboxNotifications />
 				</ErrorBoundary>
