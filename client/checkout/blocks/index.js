@@ -37,6 +37,10 @@ import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
+import {
+	Elements,
+	PaymentMethodMessagingElement,
+} from '@stripe/react-stripe-js';
 
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,
@@ -68,6 +72,11 @@ const api = new WCPayAPI(
 	},
 	request
 );
+
+const stripeAppearance = getUPEConfig( 'wcBlocksUPEAppearance' );
+// TODO: This needs to be handled on the backend for this specific implementation of PMME.
+stripeAppearance.variables.fontSizeBase = '13px';
+
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
@@ -102,6 +111,34 @@ Object.entries( enabledPaymentMethodsConfig )
 				<>
 					<span>
 						{ upeConfig.title }
+						{ upeName !== 'card' && (
+							<>
+								<Elements
+									stripe={ api.getStripeForUPE( upeName ) }
+									options={ {
+										appearance: stripeAppearance ?? {},
+									} }
+								>
+									<PaymentMethodMessagingElement
+										options={ {
+											amount:
+												getUPEConfig( 'cartTotal' ) ||
+												0,
+											currency: getUPEConfig(
+												'currency'
+											),
+											paymentMethodTypes: [ upeName ],
+											countryCode:
+												window.wcBlocksCheckoutData
+													.billingCountry ||
+												window.wcBlocksCheckoutData
+													.storeCountry, // Customer's country or base country of the store.
+											displayType: 'promotional_text',
+										} }
+									/>
+								</Elements>
+							</>
+						) }
 						<img
 							src={
 								upeAppearanceTheme === 'night'
