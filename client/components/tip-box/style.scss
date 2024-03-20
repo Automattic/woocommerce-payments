@@ -33,6 +33,14 @@
 			color: #0063a1; // Gutenberg/Blue -10%
 		}
 	}
+	&.yellow {
+		fill: $gray-50;
+		background-color: #fef8ee;
+		color: $gray-900;
+		.components-button.is-link {
+			color: #0063a1; // Gutenberg/Blue -10%
+		}
+	}
 
 	&__content {
 		align-self: center;
