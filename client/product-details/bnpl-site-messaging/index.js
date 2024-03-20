@@ -29,29 +29,29 @@ export const initializeBnplSiteMessaging = () => {
 
 	let paymentMessageElement;
 
-	const api = new WCPayAPI(
-		{
-			publishableKey: publishableKey,
-			accountId: accountId,
-			locale: locale,
-		},
-		null
-	);
+	if ( ! isCartBlock ) {
+		const api = new WCPayAPI(
+			{
+				publishableKey: publishableKey,
+				accountId: accountId,
+				locale: locale,
+			},
+			null
+		);
 
-	const options = {
-		amount: amount,
-		currency: currencyCode || 'USD',
-		paymentMethodTypes: paymentMethods || [],
-		countryCode: country, // Customer's country or base country of the store.
-	};
+		const options = {
+			amount: amount,
+			currency: currencyCode || 'USD',
+			paymentMethodTypes: paymentMethods || [],
+			countryCode: country, // Customer's country or base country of the store.
+		};
 
-  if ( ! isCartBlock ) {
-    paymentMessageElement = api
-		  .getStripe()
-		  .elements()
-		  .create( 'paymentMethodMessaging', options );
-	  paymentMessageElement.mount( '#payment-method-message' );
-  }
+		paymentMessageElement = api
+			.getStripe()
+			.elements()
+			.create( 'paymentMethodMessaging', options );
+		paymentMessageElement.mount( '#payment-method-message' );
+	}
 
 	// This function converts relative units (rem/em) to pixels based on the current font size.
 	function convertToPixels( value, baseFontSize ) {

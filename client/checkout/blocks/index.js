@@ -183,7 +183,6 @@ const ProductDetail = ( { cart, context } ) => {
 	const cartTotal = cart.cartTotals.total_price;
 	const {
 		country,
-		publishableKey,
 		paymentMethods,
 		currencyCode,
 	} = window.wcpayStripeSiteMessaging;
@@ -197,8 +196,7 @@ const ProductDetail = ( { cart, context } ) => {
 		countryCode: country, // Customer's country or base country of the store.
 	};
 
-	// eslint-disable-next-line no-undef
-	const stripe = Stripe( publishableKey );
+	const stripe = api.getStripe();
 
 	return (
 		<div className="wc-block-components-bnpl-wrapper">
