@@ -9,6 +9,14 @@ import { fireEvent } from '@testing-library/react';
  */
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 
+const wpHookCallbacks = {};
+
+jest.mock( '@wordpress/hooks', () => ( {
+	addAction: ( _hookName, _namespace, callback ) => {
+		wpHookCallbacks[ _hookName ] = callback;
+	},
+} ) );
+
 jest.mock(
 	'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout',
 	() => ( {
@@ -20,6 +28,7 @@ jest.mock(
 		maybePrefetchEncryptedSessionData: jest.fn(),
 		getClassicProceedToCheckoutButton: jest.fn(),
 		redirectToWooPay: jest.fn(),
+		setEncryptedSessionDataAsNotPrefetched: jest.fn(),
 	} )
 );
 
@@ -37,9 +46,10 @@ global.$ = jest.fn( () => ( {
 	},
 } ) );
 
+require( '../index.js' );
+
 describe( 'WooPay direct checkout window "load" event listener', () => {
-	afterEach( () => {
-		jest.resetModules();
+	beforeEach( () => {
 		jest.clearAllMocks();
 	} );
 
@@ -47,8 +57,6 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		WooPayDirectCheckout.isWooPayDirectCheckoutEnabled.mockReturnValue(
 			false
 		);
-
-		require( '../index.js' );
 
 		fireEvent.load( window );
 
@@ -68,8 +76,6 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
-
-		require( '../index.js' );
 
 		fireEvent.load( window );
 
@@ -95,8 +101,6 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		);
 		WooPayDirectCheckout.getCheckoutRedirectElements.mockReturnValue( [] );
 
-		require( '../index.js' );
-
 		fireEvent.load( window );
 
 		await new Promise( ( resolve ) => setImmediate( resolve ) );
@@ -117,8 +121,7 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 } );
 
 describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', () => {
-	afterEach( () => {
-		jest.resetModules();
+	beforeEach( () => {
 		jest.clearAllMocks();
 	} );
 
@@ -126,8 +129,6 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 		WooPayDirectCheckout.isWooPayDirectCheckoutEnabled.mockReturnValue(
 			false
 		);
-
-		require( '../index.js' );
 
 		fireEvent.load( window );
 
@@ -151,8 +152,6 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
-
-		require( '../index.js' );
 
 		fireEvent.load( window );
 
@@ -182,8 +181,6 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 			[]
 		);
 
-		require( '../index.js' );
-
 		fireEvent.load( window );
 
 		await new Promise( ( resolve ) => setImmediate( resolve ) );
@@ -202,5 +199,54 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 			expect.any( Array ),
 			true
 		);
+	} );
+} );
+
+describe( 'WooPay direct checkout cart item listeners', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+	} );
+
+	it( 'should not prefetch encrypted session data on add item if third-party cookies are not enabled', async () => {
+		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
+			false
+		);
+
+		fireEvent.load( window );
+
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		await wpHookCallbacks[
+			'experimental__woocommerce_blocks-cart-add-item'
+		]();
+
+		expect(
+			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
+		).toHaveBeenCalled();
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).not.toHaveBeenCalled();
+	} );
+
+	it( 'should prefetch encrypted session data on add item if third-party cookies are enabled and user is logged-in', async () => {
+		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
+			true
+		);
+		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
+
+		fireEvent.load( window );
+
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		await wpHookCallbacks[
+			'experimental__woocommerce_blocks-cart-add-item'
+		]();
+
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).toHaveBeenCalled();
+		expect(
+			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
+		).not.toHaveBeenCalled();
 	} );
 } );
