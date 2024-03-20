@@ -42,9 +42,17 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	/**
 	 * Initializes the payment method messaging element.
 	 *
-	 * @return string The HTML markup for the payment method message container.
+	 * @return string|void The HTML markup for the payment method message container.
 	 */
-	public function init(): string {
+	public function init() {
+		// Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
+		// in this case because it checks the page content for the block, which isn't present.
+		$is_cart_block = has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+
+		if ( ! is_product() && ! is_cart() && ! $is_cart_block ) {
+			return;
+		}
+
 		global $product;
 		$currency_code      = get_woocommerce_currency();
 		$store_country      = WC()->countries->get_base_country();
@@ -97,9 +105,16 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				'publishableKey'    => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 				'paymentMethods'    => array_values( $bnpl_payment_methods ),
 				'currencyCode'      => $currency_code,
+				'isCart'            => is_cart(),
+				'isCartBlock'       => $is_cart_block,
+				'cartTotal'         => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
+				'nonce'             => wp_create_nonce( 'wcpay-get-cart-details' ),
+				'wcAjaxUrl'         => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			]
 		);
 
-		return '<div id="payment-method-message"></div>';
+		if ( ! $is_cart_block ) {
+			return '<div id="payment-method-message"></div>';
+		}
 	}
 }

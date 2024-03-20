@@ -1,3 +1,4 @@
+// global Stripe
 /**
  * External dependencies
  */
@@ -7,6 +8,11 @@ import {
 	registerExpressPaymentMethod,
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
+import {
+	Elements,
+	PaymentMethodMessagingElement,
+} from '@stripe/react-stripe-js';
+import { select } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -151,4 +157,62 @@ registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();
+} );
+
+const isInEditor = () => {
+	const editorStore = select( 'core/editor' );
+
+	return !! editorStore;
+};
+
+const { registerPlugin } = window.wp.plugins;
+const { ExperimentalOrderMeta } = window.wc.blocksCheckout;
+
+const ProductDetail = ( { cart, context } ) => {
+	if ( context !== 'woocommerce/cart' ) {
+		return null;
+	}
+	const cartTotal = cart.cartTotals.total_price;
+	const {
+		country,
+		publishableKey,
+		paymentMethods,
+		currencyCode,
+	} = window.wcpayStripeSiteMessaging;
+
+	const amount = parseInt( cartTotal, 10 ) || 0;
+
+	const options = {
+		amount: amount,
+		currency: currencyCode || 'USD',
+		paymentMethodTypes: paymentMethods || [],
+		countryCode: country, // Customer's country or base country of the store.
+	};
+
+	// eslint-disable-next-line no-undef
+	const stripe = Stripe( publishableKey );
+
+	return (
+		<div className="wc-block-components-bnpl-wrapper">
+			<Elements stripe={ stripe }>
+				<PaymentMethodMessagingElement options={ options } />
+			</Elements>
+		</div>
+	);
+};
+
+const render = () => {
+	if ( isInEditor() ) {
+		return null;
+	}
+	return (
+		<ExperimentalOrderMeta>
+			<ProductDetail />
+		</ExperimentalOrderMeta>
+	);
+};
+
+registerPlugin( 'bnpl-site-messaging', {
+	render,
+	scope: 'woocommerce-checkout',
 } );

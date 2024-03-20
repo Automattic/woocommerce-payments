@@ -11,28 +11,37 @@ export const initializeBnplSiteMessaging = () => {
 		publishableKey,
 		paymentMethods,
 		currencyCode,
+		isCart,
+		isCartBlock,
+		cartTotal,
 	} = window.wcpayStripeSiteMessaging;
 
 	let amount;
 
-	if ( window.wcpayConfig.isCart ) {
-		amount = parseInt( window.wcpayConfig.cartTotal, 10 ) || 0;
+	if ( isCart || isCartBlock ) {
+		amount = parseInt( cartTotal, 10 ) || 0;
 	} else {
 		amount = parseInt( productVariations.base_product.amount, 10 ) || 0;
 	}
 
 	// eslint-disable-next-line no-undef
 	const stripe = Stripe( publishableKey );
+	let paymentMessageElement;
+
 	const options = {
 		amount: amount,
 		currency: currencyCode || 'USD',
 		paymentMethodTypes: paymentMethods || [],
 		countryCode: country, // Customer's country or base country of the store.
 	};
-	const paymentMessageElement = stripe
-		.elements()
-		.create( 'paymentMethodMessaging', options );
-	paymentMessageElement.mount( '#payment-method-message' );
+
+	// The cart block will use the Stripe React component to render the payment method messaging.
+	if ( ! isCartBlock ) {
+		paymentMessageElement = stripe
+			.elements()
+			.create( 'paymentMethodMessaging', options );
+		paymentMessageElement.mount( '#payment-method-message' );
+	}
 
 	// This function converts relative units (rem/em) to pixels based on the current font size.
 	function convertToPixels( value, baseFontSize ) {
@@ -52,10 +61,14 @@ export const initializeBnplSiteMessaging = () => {
 	const priceElement =
 		document.querySelector( '.price' ) || // For non-block product templates.
 		document.querySelector( '.wp-block-woocommerce-product-price' ); // For block product templates.
+	const cartTotalElement = document.querySelector(
+		'.cart_totals .shop_table'
+	);
 
 	// Only attempt to adjust the margins if the price element is found.
-	if ( priceElement ) {
-		const style = window.getComputedStyle( priceElement );
+	if ( priceElement || cartTotalElement ) {
+		const element = priceElement || cartTotalElement;
+		const style = window.getComputedStyle( element );
 		let bottomMargin = style.marginBottom;
 
 		// Get the computed font size of the price element for 'em' calculations.
