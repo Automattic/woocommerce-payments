@@ -6,13 +6,13 @@
 import React, { useState } from 'react';
 import { useDispatch } from '@wordpress/data';
 import { ExternalLink } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
 import Page from 'components/page';
 import interpolateComponents from '@automattic/interpolate-components';
-import { __ } from '@wordpress/i18n';
 import { TestModeNotice } from 'components/test-mode-notice';
 import BannerNotice from 'components/banner-notice';
 import DepositSchedule from 'components/deposits-overview/deposit-schedule';
