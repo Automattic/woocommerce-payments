@@ -11,7 +11,6 @@ import { OnboardingContextProvider, useOnboardingContext } from './context';
 import { Stepper } from 'components/stepper';
 import { OnboardingForm } from './form';
 import Step from './step';
-import ModeChoice from './steps/mode-choice';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
@@ -43,9 +42,6 @@ const OnboardingStepper = () => {
 			onStepChange={ handleStepChange }
 			onExit={ handleExit }
 		>
-			<Step name="mode">
-				<ModeChoice />
-			</Step>
 			<Step name="personal">
 				<OnboardingForm>
 					<PersonalDetails />
