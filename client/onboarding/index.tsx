@@ -11,8 +11,6 @@ import { OnboardingContextProvider, useOnboardingContext } from './context';
 import { Stepper } from 'components/stepper';
 import { OnboardingForm } from './form';
 import Step from './step';
-import ModeChoice from './steps/mode-choice';
-import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
@@ -43,14 +41,6 @@ const OnboardingStepper = () => {
 			onStepChange={ handleStepChange }
 			onExit={ handleExit }
 		>
-			<Step name="mode">
-				<ModeChoice />
-			</Step>
-			<Step name="personal">
-				<OnboardingForm>
-					<PersonalDetails />
-				</OnboardingForm>
-			</Step>
 			<Step name="business">
 				<OnboardingForm>
 					<BusinessDetails />
@@ -66,6 +56,7 @@ const OnboardingStepper = () => {
 	);
 };
 
+// TODO: WE CAN PROBABLY JUST ATTACH THIS ON A SERVER LEVEL (URL AND BUSINESS DATA)
 const initialData = wcpaySettings.onboardingFlowState?.data ?? {
 	business_name: wcSettings?.siteTitle,
 	url:

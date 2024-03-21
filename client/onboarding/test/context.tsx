@@ -42,7 +42,7 @@ describe( 'OnboardingContext', () => {
 			);
 		};
 
-		const initialData = { url: 'Initial' };
+		const initialData = { country: 'US' };
 
 		render(
 			<OnboardingContextProvider initialData={ initialData }>
@@ -51,19 +51,21 @@ describe( 'OnboardingContext', () => {
 		);
 
 		expect(
-			screen.getByText( 'data: {"url":"Initial"}' )
+			screen.getByText( 'data: {"country":"US"}' )
 		).toBeInTheDocument();
 		expect( screen.getByText( 'errors: {}' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'touched: {}' ) ).toBeInTheDocument();
 
 		user.click( screen.getByText( 'Update Data' ) );
 
-		expect( screen.getByText( 'data: {"url":"URL"}' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'errors: {"url":"Required"}' )
+			screen.getByText( 'data: {"country":"US"}' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'touched: {"url":true}' )
+			screen.getByText( 'errors: {"country":"Required"}' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'touched: {"country":true}' )
 		).toBeInTheDocument();
 	} );
 

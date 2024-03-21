@@ -178,14 +178,7 @@ describe( 'BusinessDetails', () => {
 				<BusinessDetails />
 			</OnboardingContextProvider>
 		);
-		const businessNameField = screen.getByLabelText(
-			strings.fields.business_name
-		);
-		const urlField = screen.getByLabelText( strings.fields.url );
 		const countryField = screen.getByText( strings.placeholders.country );
-
-		user.type( businessNameField, 'John Doe LLC' );
-		user.type( urlField, 'https://johndoe.com' );
 
 		expect(
 			screen.queryByText( strings.placeholders.business_type )
@@ -221,8 +214,6 @@ describe( 'BusinessDetails', () => {
 		user.click( mccField );
 		user.click( screen.getByText( 'Popular Software' ) );
 
-		expect( businessNameField ).toHaveValue( 'John Doe LLC' );
-		expect( urlField ).toHaveValue( 'https://johndoe.com' );
 		expect( countryField ).toHaveTextContent( 'United States' );
 		expect( businessTypeField ).toHaveTextContent( 'Company' );
 		expect( companyStructureField ).toHaveTextContent(

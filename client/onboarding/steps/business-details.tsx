@@ -52,8 +52,6 @@ const BusinessDetails: React.FC = () => {
 
 	return (
 		<>
-			<OnboardingTextField name="business_name" />
-			<OnboardingTextField name="url" />
 			<OnboardingSelectField
 				name="country"
 				options={ countries }

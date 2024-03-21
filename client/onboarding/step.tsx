@@ -23,7 +23,6 @@ interface Props {
 const Step: React.FC< Props > = ( { name, children } ) => {
 	const { trackAbandoned } = useTrackAbandoned();
 	const { progress, prevStep, exit } = useStepperContext();
-	const width = `${ progress * 100 }%`;
 
 	const handleExit = () => {
 		trackAbandoned( 'exit' );
@@ -32,7 +31,6 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 
 	return (
 		<>
-			<div className="stepper__progress" style={ { width } } />
 			<div className="stepper__nav">
 				<button
 					type="button"

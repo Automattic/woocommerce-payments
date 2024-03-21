@@ -14,8 +14,6 @@ import { ListItem as GroupedSelectItem } from 'components/grouped-select-control
 import {
 	GroupedSelectField,
 	GroupedSelectFieldProps,
-	PhoneNumberField,
-	PhoneNumberFieldProps,
 	SelectField,
 	SelectFieldProps,
 	TextField,
@@ -85,38 +83,6 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = (
 				if ( event.key === 'Enter' ) validate();
 			} }
 			error={ error() }
-			{ ...props }
-		/>
-	);
-};
-
-interface OnboardingPhoneNumberFieldProps
-	extends Partial< PhoneNumberFieldProps > {
-	name: keyof OnboardingFields;
-}
-
-export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldProps > = (
-	props
-) => {
-	const { name } = props;
-	const { data, setData, temp, setTemp, touched } = useOnboardingContext();
-	const { validate, error } = useValidation( name );
-
-	return (
-		<PhoneNumberField
-			label={ strings.fields[ name ] }
-			value={ data[ name ] || '' }
-			country={ temp.phoneCountryCode || wcpaySettings.connect.country }
-			onChange={ ( value: string, phoneCountryCode: string ) => {
-				setTemp( { phoneCountryCode } );
-				setData( { [ name ]: value } );
-				if ( touched[ name ] ) validate( value );
-			} }
-			onBlur={ () => validate() }
-			error={ error() }
-			onKeyDown={ ( event: React.KeyboardEvent< HTMLInputElement > ) => {
-				if ( event.key === 'Enter' ) validate();
-			} }
 			{ ...props }
 		/>
 	);

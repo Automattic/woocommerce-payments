@@ -16,99 +16,9 @@ const documentationUrls = {
 
 export default {
 	steps: {
-		mode: {
-			heading: __(
-				'Let’s get your store ready to accept payments',
-				'woocommerce-payments'
-			),
-			subheading: __(
-				'Select the option that best fits your needs.',
-				'woocommerce-payments'
-			),
-			label: __(
-				'I’d like to set up payments for my store',
-				'woocommerce-payments'
-			),
-			note: __(
-				'You’ll need to provide details to verify that you’re the owner of the account. If you’re setting up payments for someone else, choose sandbox mode.',
-				'woocommerce-payments'
-			),
-			continue: {
-				live: __( 'Continue', 'woocommerce-payments' ),
-				test: __( 'Continue in sandbox mode', 'woocommerce-payments' ),
-			},
-			sandboxModeNotice: interpolateComponents( {
-				mixedString: __(
-					'Sandbox mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-					'woocommerce-payments'
-				),
-				components: {
-					learnMoreLink: (
-						// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							href={ documentationUrls.sandboxMode }
-							target="_blank"
-							rel="noreferrer"
-						/>
-					),
-				},
-			} ),
-			tos: interpolateComponents( {
-				mixedString: sprintf(
-					__(
-						/* translators: %1$s: WooPayments, %2$s: WooPay  */
-						'By using %1$s, you agree to the {{tosLink}}Terms of Service{{/tosLink}} (including %2$s {{merchantTermsLink}}merchant terms{{/merchantTermsLink}}) and acknowledge that you have read our {{privacyPolicyLink}}Privacy Policy{{/privacyPolicyLink}}.',
-						'woocommerce-payments'
-					),
-					'WooPayments',
-					'WooPay'
-				),
-				components: {
-					tosLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							rel="external noopener noreferrer"
-							target="_blank"
-							href={ documentationUrls.tos }
-						/>
-					),
-					merchantTermsLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							rel="external noopener noreferrer"
-							target="_blank"
-							href={ documentationUrls.merchantTerms }
-						/>
-					),
-					privacyPolicyLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							rel="external noopener noreferrer"
-							target="_blank"
-							href={ documentationUrls.privacyPolicy }
-						/>
-					),
-				},
-			} ),
-		},
-		personal: {
-			heading: __(
-				'First, you’ll need to create an account',
-				'woocommerce-payments'
-			),
-			subheading: __(
-				'The information below should reflect that of the business owner or an authorized team member.',
-				'woocommerce-payments'
-			),
-			notice: __(
-				'We’ll use the email address to contact you with any important notifications related to your account, and the phone number will only be used to protect your account with two-factor authentication.',
-				'woocommerce-payments'
-			),
-		},
 		business: {
 			heading: __(
-				'Tell us about your business',
+				'Let’s get your store ready to accept payments',
 				'woocommerce-payments'
 			),
 			subheading: __(
@@ -138,15 +48,6 @@ export default {
 		},
 	},
 	fields: {
-		email: __( 'What’s your email address?', 'woocommerce-payments' ),
-		'individual.first_name': __( 'First name', 'woocommerce-payments' ),
-		'individual.last_name': __( 'Last name', 'woocommerce-payments' ),
-		phone: __( 'What’s your mobile phone number?', 'woocommerce-payments' ),
-		business_name: __(
-			'What’s the legal name of your business?',
-			'woocommerce-payments'
-		),
-		url: __( 'What’s your business website?', 'woocommerce-payments' ),
 		country: __(
 			'Where is your business legally registered?',
 			'woocommerce-payments'
@@ -174,24 +75,6 @@ export default {
 	},
 	errors: {
 		generic: __( 'Please provide a response', 'woocommerce-payments' ),
-		'individual.first_name': __(
-			'Please provide a first name',
-			'woocommerce-payments'
-		),
-		'individual.last_name': __(
-			'Please provide a last name',
-			'woocommerce-payments'
-		),
-		email: __( 'Please provide a valid email', 'woocommerce-payments' ),
-		phone: __(
-			'Please provide a valid phone number',
-			'woocommerce-payments'
-		),
-		url: __( 'Please provide a valid website', 'woocommerce-payments' ),
-		business_name: __(
-			'Please provide a business name',
-			'woocommerce-payments'
-		),
 		country: __( 'Please provide a country', 'woocommerce-payments' ),
 		business_type: __(
 			'Please provide a business type',
@@ -243,6 +126,43 @@ export default {
 		'We have restored your previous session. You can pick up where you left off, or go back to a previous step to make changes. ',
 		'woocommerce-payments'
 	),
+	tos: interpolateComponents( {
+		mixedString: sprintf(
+			__(
+				/* translators: %1$s: WooPayments, %2$s: WooPay  */
+				'By using %1$s, you agree to be bound by our {{tosLink}}Terms of Service{{/tosLink}} (including %2$s {{merchantTermsLink}}merchant terms{{/merchantTermsLink}}) and acknowledge that you have read our {{privacyPolicyLink}}Privacy Policy{{/privacyPolicyLink}}.',
+				'woocommerce-payments'
+			),
+			'WooPayments',
+			'WooPay'
+		),
+		components: {
+			tosLink: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					rel="external noopener noreferrer"
+					target="_blank"
+					href={ documentationUrls.tos }
+				/>
+			),
+			merchantTermsLink: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					rel="external noopener noreferrer"
+					target="_blank"
+					href={ documentationUrls.merchantTerms }
+				/>
+			),
+			privacyPolicyLink: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					rel="external noopener noreferrer"
+					target="_blank"
+					href={ documentationUrls.privacyPolicy }
+				/>
+			),
+		},
+	} ),
 	continue: __( 'Continue', 'woocommerce-payments' ),
 	back: __( 'Back', 'woocommerce-payments' ),
 };
