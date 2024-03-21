@@ -9,3 +9,11 @@
 		margin-bottom: 1em;
 	}
 }
+
+.settings-section__controls {
+	input[type='checkbox'] {
+		&:disabled {
+			cursor: not-allowed;
+		}
+	}
+}
