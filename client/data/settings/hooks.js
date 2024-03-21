@@ -469,6 +469,11 @@ export const useWooPayShowIncompatibilityNotice = () =>
 		select( STORE_NAME ).getShowWooPayIncompatibilityNotice()
 	);
 
+export const useExpressCheckoutShowIncompatibilityNotice = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getShowExpressCheckoutIncompatibilityNotice()
+	);
+
 export const useStripeBilling = () => {
 	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
 
