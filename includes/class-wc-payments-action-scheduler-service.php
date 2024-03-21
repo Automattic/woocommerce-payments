@@ -39,7 +39,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
-        WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->order_service       = $order_service;
