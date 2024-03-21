@@ -16,10 +16,20 @@ export const shippingAddressChangeHandler = async ( api, event ) => {
 
 	// Possible statuses success, fail, invalid_payer_name, invalid_payer_email, invalid_payer_phone, invalid_shipping_address.
 	event.updateWith( {
-		status: response.result,
-		shippingOptions: response.shipping_options,
-		total: response.total,
-		displayItems: response.displayItems,
+		status: 'success',
+		// TODO ~FR: it shouldn't be a problem for product pages, but on cart pages with potentially multiple packages, things might get sketchy.
+		shippingOptions: response.shipping_rates[ 0 ].shipping_rates.map(
+			( rate ) => ( {
+				id: rate.rate_id,
+				label: rate.name,
+				amount: rate.price,
+			} )
+		),
+		total: response.totals.total_price,
+		displayItems: response.items.map( ( item ) => ( {
+			label: item.name,
+			amount: item.prices.price,
+		} ) ),
 	} );
 };
 

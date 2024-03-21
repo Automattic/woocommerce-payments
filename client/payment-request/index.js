@@ -287,13 +287,15 @@ jQuery( ( $ ) => {
 				wcpayPaymentRequest.paymentAborted = true;
 			} );
 
-			paymentRequest.on( 'shippingaddresschange', ( event ) =>
-				shippingAddressChangeHandler( api, event )
-			);
+			paymentRequest.on( 'shippingaddresschange', ( event ) => {
+				//TODO ~FR: send new shipping address to cart API.
+				shippingAddressChangeHandler( api, event );
+			} );
 
-			paymentRequest.on( 'shippingoptionchange', ( event ) =>
-				shippingOptionChangeHandler( api, event )
-			);
+			paymentRequest.on( 'shippingoptionchange', ( event ) => {
+				//TODO ~FR: select shipping option on cart API.
+				shippingOptionChangeHandler( api, event );
+			} );
 
 			paymentRequest.on( 'paymentmethod', ( event ) => {
 				const handler = options.handler ?? paymentMethodHandler;
