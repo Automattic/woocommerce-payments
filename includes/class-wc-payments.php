@@ -271,13 +271,6 @@ class WC_Payments {
 	private static $incentives_service;
 
 	/**
-	 * Instance of WC_Payments_Express_Checkout_Button_Helper, created in init function.
-	 *
-	 * @var WC_Payments_Express_Checkout_Button_Helper
-	 */
-	private static $express_checkout_helper;
-
-	/**
 	 * Instance of Compatibility_Service, created in init function
 	 *
 	 * @var Compatibility_Service
