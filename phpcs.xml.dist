@@ -65,6 +65,10 @@
 
 	<rule ref="Squiz.Commenting.FunctionCommentThrowTag.Missing" />
 
+	<rule ref="Universal.Files.SeparateFunctionsFromOO.Mixed">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
 	<!-- We don't need to do nonce checks in unit test code -->
 	<rule ref="WordPress.Security.NonceVerification.Recommended">
 		<exclude-pattern>tests/</exclude-pattern>
