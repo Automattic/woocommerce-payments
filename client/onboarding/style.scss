@@ -85,6 +85,21 @@ body.wcpay-onboarding__body {
 			}
 		}
 
+		.wcpay-onboarding__inline-notice {
+			background-color: $gray-0;
+		}
+
+		.wcpay-onboarding__tos {
+			font-size: 12px;
+		}
+
+		.complete-business-info-task__option-description {
+			font-size: 12px;
+			color: $gray-700;
+			line-height: 16px;
+			margin-top: 4px;
+		}
+
 		.loading-step {
 			max-width: 520px;
 			position: absolute;

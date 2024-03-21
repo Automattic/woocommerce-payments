@@ -38,11 +38,11 @@ export default {
 		},
 		loading: {
 			heading: __(
-				'Let’s get you set up for payments',
+				'One last step! Verify your identity with our partner',
 				'woocommerce-payments'
 			),
 			subheading: __(
-				'Confirm your identity with our partner',
+				'This will take place in a secure environment through our partner. Once your business details are verified, you’ll be redirected back to your store dashboard.',
 				'woocommerce-payments'
 			),
 		},
@@ -163,6 +163,10 @@ export default {
 			),
 		},
 	} ),
+	inlineNotice: {
+		title: __( 'Business Location:', 'woocommerce-payments' ),
+		action: __( 'Change', 'woocommerce-payments' ),
+	},
 	continue: __( 'Continue', 'woocommerce-payments' ),
 	back: __( 'Back', 'woocommerce-payments' ),
 };
