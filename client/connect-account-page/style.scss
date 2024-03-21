@@ -6,11 +6,11 @@
 	}
 
 	&__heading {
-		padding: $gap-larger $gap-large 0;
+		padding: $gap-large $gap-large 0;
 
 		img {
 			height: 22px;
-			margin-bottom: $gap-smaller;
+			margin-bottom: $gap-large;
 		}
 
 		@media screen and ( min-width: $break-small ) {
@@ -207,8 +207,17 @@
 		}
 	}
 	&__sandbox-mode-panel {
+		.components-panel__body.is-opened {
+			padding: $gap-large;
+			h2 {
+				margin: -24px -24px 5px;
+			}
+		}
 		h2 {
-			@include wp-subtitle;
+			button {
+				@include wp-subtitle;
+				padding: $gap $gap-largest $gap $gap-large !important;
+			}
 		}
 		.components-notice {
 			margin-top: 8px;

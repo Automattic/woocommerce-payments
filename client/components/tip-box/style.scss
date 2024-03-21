@@ -1,5 +1,4 @@
 .wcpay-component-tip-box {
-	@include wc-others-caption;
 	display: grid;
 	grid-template-columns: 24px 1fr;
 	column-gap: $gap-smaller;
