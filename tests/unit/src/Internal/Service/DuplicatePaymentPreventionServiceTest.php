@@ -17,7 +17,7 @@ use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\SessionService;
 use WCPAY_UnitTestCase;
-use \PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Level3 data service unit tests.
