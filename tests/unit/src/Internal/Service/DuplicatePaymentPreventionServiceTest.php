@@ -89,7 +89,7 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 			$this->mock_legacy_proxy,
 		];
 
-		$this->sut = new DuplicatePaymentPreventionService( ... $this->deps );
+		$this->sut = new DuplicatePaymentPreventionService( ...$this->deps );
 	}
 
 	public function test_init_hooks() {
