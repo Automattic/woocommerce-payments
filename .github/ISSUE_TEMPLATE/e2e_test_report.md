@@ -20,10 +20,6 @@ assignees: ''
       339 | 			selector
  -->
 
-**GitHub jobs where this spec is failing**:
-<!-- Can you list all the jobs where the test failing? e.g. "WC - latest | wcpay - shopper", "WC - beta | wcpay - shopper" etc. -->
-- 
-
 ### Additional context
 <!-- Any additional context or details you think might be helpful. -->
 <!-- Ticket numbers/links, plugin versions, system statuses etc. -->
