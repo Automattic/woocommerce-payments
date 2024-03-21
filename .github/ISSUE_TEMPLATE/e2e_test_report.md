@@ -10,6 +10,7 @@ assignees: ''
 ### Description
 <!-- Before reporting an issue, are you sure this e2e test is failing consistently? -->
 <!-- Add a clear and concise description of what the issue is. Please, be as descriptive as possible. -->
+<!-- Make sure you include relevant details such as what test/spec is failing and the link of the job where it started failing. -->
 
 **Output from the test failure**:
 <!-- Chunk of the output from the test failure. It doesn't need to be the entire output, just the relevant part. e.g.
@@ -17,7 +18,7 @@ assignees: ''
       336 | 	);
     > 337 | 	const selector = await page.waitForSelector(
           | 	                              ^
-      339 | 			selector
+      339 | 			'selector'
  -->
 
 ### Additional context
