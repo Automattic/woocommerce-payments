@@ -11,14 +11,14 @@ assignees: ''
 <!-- Before reporting an issue, are you sure this e2e test is failing consistently? -->
 <!-- Add a clear and concise description of what the issue is. Please, be as descriptive as possible. -->
 
-**Error**:
-<!-- The error that the e2e test indicates. -->
-
-**Spec**:
-<!-- The test file that's triggering this error. -->
-
-**Relevant line(s) of code**:
-<!-- Line of code that is triggering this error. -->
+**Output from the test failure**:
+<!-- Chunk of the output from the test failure. It doesn't need to be the entire output, just the relevant part. e.g.
+    TimeoutError: waiting for selector "..." failed: timeout 100000ms exceeded
+      336 | 	);
+    > 337 | 	const selector = await page.waitForSelector(
+          | 	                              ^
+      339 | 			selector
+ -->
 
 **GitHub jobs where this spec is failing**:
 <!-- Can you list all the jobs where the test failing? e.g. "WC - latest | wcpay - shopper", "WC - beta | wcpay - shopper" etc. -->
