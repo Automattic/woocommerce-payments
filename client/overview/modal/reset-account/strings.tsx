@@ -13,7 +13,7 @@ export default {
 	title: __( 'Reset account', 'woocommerce-payments' ),
 	description: isInDevMode()
 		? __(
-				'If you want to start your testing over, you can reset your account and onboard again.',
+				'In sandbox mode, you can reset your account and onboard again at any time. Please note that all current WooPayments account details, test transactions, and deposits history will be lost.',
 				'woocommerce-payments'
 		  )
 		: __(
