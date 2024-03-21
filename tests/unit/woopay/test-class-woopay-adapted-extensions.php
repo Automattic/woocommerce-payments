@@ -31,7 +31,7 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 	 */
 	private $woopay_adapted_extensions = null;
 
-	public function setUp() : void {
+	public function setUp(): void {
 		parent::setUp();
 
 		add_action(

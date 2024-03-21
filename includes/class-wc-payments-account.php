@@ -315,7 +315,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Account statement descriptor.
 	 */
-	public function get_statement_descriptor() : string {
+	public function get_statement_descriptor(): string {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
 	}
@@ -325,7 +325,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Account statement descriptor.
 	 */
-	public function get_statement_descriptor_kanji() : string {
+	public function get_statement_descriptor_kanji(): string {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['statement_descriptor_kanji'] ) ? $account['statement_descriptor_kanji'] : '';
 	}
@@ -335,7 +335,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Account statement descriptor.
 	 */
-	public function get_statement_descriptor_kana() : string {
+	public function get_statement_descriptor_kana(): string {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['statement_descriptor_kana'] ) ? $account['statement_descriptor_kana'] : '';
 	}
@@ -345,7 +345,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Business profile name.
 	 */
-	public function get_business_name() : string {
+	public function get_business_name(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['name'] ) ? $account['business_profile']['name'] : '';
 	}
@@ -355,7 +355,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Business profile url.
 	 */
-	public function get_business_url() : string {
+	public function get_business_url(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['url'] ) ? $account['business_profile']['url'] : '';
 	}
@@ -365,7 +365,7 @@ class WC_Payments_Account {
 	 *
 	 * @return array Business profile support address.
 	 */
-	public function get_business_support_address() : array {
+	public function get_business_support_address(): array {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['support_address'] ) ? $account['business_profile']['support_address'] : [];
 	}
@@ -375,7 +375,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Business profile support email.
 	 */
-	public function get_business_support_email() : string {
+	public function get_business_support_email(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['support_email'] ) ? $account['business_profile']['support_email'] : '';
 	}
@@ -385,7 +385,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Business profile support phone.
 	 */
-	public function get_business_support_phone() : string {
+	public function get_business_support_phone(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['support_phone'] ) ? $account['business_profile']['support_phone'] : '';
 	}
@@ -395,7 +395,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string branding logo.
 	 */
-	public function get_branding_logo() : string {
+	public function get_branding_logo(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['branding']['logo'] ) ? $account['branding']['logo'] : '';
 	}
@@ -405,7 +405,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string branding icon.
 	 */
-	public function get_branding_icon() : string {
+	public function get_branding_icon(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['branding']['icon'] ) ? $account['branding']['icon'] : '';
 	}
@@ -415,7 +415,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string branding primary color.
 	 */
-	public function get_branding_primary_color() : string {
+	public function get_branding_primary_color(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['branding']['primary_color'] ) ? $account['branding']['primary_color'] : '';
 	}
@@ -425,7 +425,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string branding secondary color.
 	 */
-	public function get_branding_secondary_color() : string {
+	public function get_branding_secondary_color(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['branding']['secondary_color'] ) ? $account['branding']['secondary_color'] : '';
 	}

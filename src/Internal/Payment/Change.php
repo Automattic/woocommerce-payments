@@ -52,7 +52,7 @@ class Change {
 	 *
 	 * @return string Identifier or key for the changed value.
 	 */
-	public function get_key() : string {
+	public function get_key(): string {
 		return $this->key;
 	}
 
