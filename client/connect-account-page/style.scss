@@ -206,4 +206,20 @@
 			}
 		}
 	}
+	&__sandbox-mode-panel {
+		h2 {
+			@include wp-subtitle;
+		}
+		.components-notice {
+			margin-top: 8px;
+		}
+		button.is-secondary {
+			width: 100%;
+			justify-content: center;
+			@media screen and ( min-width: $break-small ) {
+				width: auto;
+				justify-content: left;
+			}
+		}
+	}
 }

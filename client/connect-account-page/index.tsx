@@ -211,10 +211,10 @@ const ConnectAccountPage: React.FC = () => {
 						</div>
 					</Card>
 					{ incentive && <Incentive { ...incentive } /> }
-					<Panel>
+					<Panel className="connect-account-page__sandbox-mode-panel">
 						<PanelBody
-							title="I'm setting up a store for someone else."
-							initialOpen={ true }
+							title={ strings.sandboxMode.title }
+							initialOpen={ false }
 						>
 							<InlineNotice
 								icon

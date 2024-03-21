@@ -95,9 +95,17 @@ export default {
 		}
 	),
 	sandboxMode: {
-		description: __(
-			'This option will set up WooPayments in sandbox mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+		title: __(
+			"I'm setting up a store for someone else.",
 			'woocommerce-payments'
+		),
+		description: sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'This option will set up %s in sandbox mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
 		),
 	},
 	sandboxModeNotice: interpolateComponents( {
