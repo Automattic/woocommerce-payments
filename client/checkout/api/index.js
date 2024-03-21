@@ -470,7 +470,6 @@ export default class WCPayAPI {
 			return Promise.reject();
 		}
 
-		// TODO ~FR: send updated info to cart with cart token, and update accordingly.
 		return window.wp.apiFetch( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/update-customer',
@@ -488,15 +487,21 @@ export default class WCPayAPI {
 	 * @param {Object} shippingOption Shipping option.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestUpdateShippingDetails( shippingOption ) {
-		return this.request(
-			getPaymentRequestAjaxURL( 'update_shipping_method' ),
-			{
-				security: getPaymentRequestData( 'nonce' )?.update_shipping,
-				shipping_method: [ shippingOption.id ],
-				is_product_page: getPaymentRequestData( 'is_product_page' ),
-			}
-		);
+	async paymentRequestUpdateShippingDetails( shippingOption ) {
+		if ( ! this.paymentRequestCartInfo ) {
+			return Promise.reject();
+		}
+
+		return window.wp.apiFetch( {
+			method: 'POST',
+			path: '/wc/store/v1/cart/select-shipping-rate',
+			headers: {
+				Nonce: this.paymentRequestCartInfo.nonce,
+				'Cart-Token': this.paymentRequestCartInfo.cartToken,
+			},
+			// TODO ~FR: send correct package id
+			data: { package_id: 0, rate_id: shippingOption.id },
+		} );
 	}
 
 	/**
@@ -573,12 +578,46 @@ export default class WCPayAPI {
 		// TODO ~FR: this is the juicy stuff
 		return window.wp.apiFetch( {
 			method: 'POST',
-			path: '/wc/store/v1/cart/add-item',
+			path: '/wc/store/v1/checkout',
 			headers: {
 				Nonce: this.paymentRequestCartInfo.nonce,
 				'Cart-Token': this.paymentRequestCartInfo.cartToken,
 			},
-			data: productData,
+			data: {
+				customer_note: paymentData.order_comments,
+				billing_address: {
+					first_name: paymentData.billing_first_name,
+					last_name: paymentData.billing_last_name,
+					// TODO ~FR
+					company: '',
+					address_1: paymentData.billing_address_1,
+					address_2: paymentData.billing_address_2,
+					city: paymentData.billing_city,
+					state: paymentData.billing_state,
+					postcode: paymentData.billing_postcode,
+					country: paymentData.billing_country,
+					email: paymentData.billing_email,
+					phone: paymentData.billing_phone,
+				},
+				payment_method: 'woocommerce_payments',
+				payment_data: [
+					{
+						// TODO ~FR
+						key: 'payment_request_type',
+						value: paymentData.payment_request_type,
+					},
+					{
+						// TODO ~FR
+						key: 'wcpay-fraud-prevention-token',
+						value: paymentData[ 'wcpay-fraud-prevention-token' ],
+					},
+					{
+						// TODO ~FR
+						key: 'wcpay-payment-method',
+						value: paymentData[ 'wcpay-payment-method' ],
+					},
+				],
+			},
 		} );
 	}
 
