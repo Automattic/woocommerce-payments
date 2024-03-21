@@ -16,8 +16,8 @@ import {
 	getMccsFlatList,
 } from 'onboarding/utils';
 import { BusinessType } from 'onboarding/types';
-import InlineNotice from 'wcpay/components/inline-notice';
-import strings from 'wcpay/onboarding/strings';
+import InlineNotice from 'components/inline-notice';
+import strings from 'onboarding/strings';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
