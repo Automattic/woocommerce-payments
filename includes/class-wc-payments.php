@@ -558,7 +558,7 @@ class WC_Payments {
 
 		self::maybe_display_express_checkout_buttons();
 
-		self::maybe_enable_woopay_direct_checkout();
+		self::maybe_init_woopay_direct_checkout();
 
 		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
 		$enabled_bnpl_payment_methods = array_intersect(
@@ -1471,7 +1471,7 @@ class WC_Payments {
 	 *
 	 * @return void
 	 */
-	public static function maybe_enable_woopay_direct_checkout() {
+	public static function maybe_init_woopay_direct_checkout() {
 		if ( ! WC_Payments_Features::is_woopay_enabled() || ! WC_Payments_Features::is_woopay_direct_checkout_enabled() ) {
 			return;
 		}
