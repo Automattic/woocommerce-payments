@@ -55,6 +55,16 @@
 		<exclude-pattern>src</exclude-pattern>
 	</rule>
 
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="manage_woocommerce" />
+				<element value="pay_for_order" />
+				<element value="read_private_shop_orders" />
+			</property>
+		</properties>
+	</rule>
+
 	<rule ref="Generic.Commenting">
 		<exclude-pattern>tests/</exclude-pattern>
 	</rule>
