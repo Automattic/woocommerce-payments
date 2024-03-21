@@ -201,7 +201,7 @@ class WC_Payments_Status {
 							$adv_fraud_settings = json_decode( wp_json_encode( $this->gateway->get_option( 'advanced_fraud_protection_settings' ) ), true );
 							$list               = array_filter(
 								array_map(
-									function( $rule ) {
+									function ( $rule ) {
 										if ( empty( $rule['key'] ) ) {
 											return null;
 										}

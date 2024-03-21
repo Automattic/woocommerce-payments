@@ -566,14 +566,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_action_hook_exception_returns_response() {
 		add_action(
 			'woocommerce_payments_before_webhook_delivery',
-			function() {
+			function () {
 				throw new Exception( 'Crash before' );
 			}
 		);
 
 		add_action(
 			'woocommerce_payments_after_webhook_delivery',
-			function() {
+			function () {
 				throw new Exception( 'Crash after' );
 			}
 		);

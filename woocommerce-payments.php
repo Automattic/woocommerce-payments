@@ -162,7 +162,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 			return;
 		}
 
-		$is_plugin_active = function( $plugin_name ) {
+		$is_plugin_active = function ( $plugin_name ) {
 			$plugin_slug = "$plugin_name/$plugin_name.php";
 
 			// Check if the specified $plugin_name is in the process of being activated via the Admin > Plugins screen.
@@ -399,7 +399,7 @@ add_action( 'woocommerce_blocks_loaded', 'register_woopay_extension' );
  */
 add_action(
 	'before_woocommerce_init',
-	function() {
+	function () {
 		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
 			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woocommerce-payments/woocommerce-payments.php', true );
 		}

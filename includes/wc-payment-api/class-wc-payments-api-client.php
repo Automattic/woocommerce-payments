@@ -760,7 +760,7 @@ class WC_Payments_API_Client {
 				// Sort by date desc, then by type desc as specified in events_order.
 				usort(
 					$timeline['data'],
-					function( $a, $b ) {
+					function ( $a, $b ) {
 						$result = $b['datetime'] <=> $a['datetime'];
 						if ( 0 !== $result ) {
 							return $result;

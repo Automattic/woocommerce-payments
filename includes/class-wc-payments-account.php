@@ -1847,7 +1847,7 @@ class WC_Payments_Account {
 		}
 
 		// Fetch the last 10 actioned wcpay-promo admin notifications.
-		$add_like_clause = function( $where_clause ) {
+		$add_like_clause = function ( $where_clause ) {
 			return $where_clause . " AND name like 'wcpay-promo-%'";
 		};
 
@@ -2023,7 +2023,7 @@ class WC_Payments_Account {
 
 		return $this->database_cache->get_or_add(
 			Database_Cache::TRACKING_INFO_KEY,
-			function(): array {
+			function (): array {
 				return $this->payments_api_client->get_tracking_info();
 			},
 			'is_array', // We expect an array back from the cache.

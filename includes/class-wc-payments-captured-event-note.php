@@ -409,7 +409,7 @@ class WC_Payments_Captured_Event_Note {
 			[ 'decimals' => $num_decimals ]
 		);
 
-		$func_remove_ending_zeros = function( $str ) {
+		$func_remove_ending_zeros = function ( $str ) {
 			return rtrim( $str, '0' );
 		};
 

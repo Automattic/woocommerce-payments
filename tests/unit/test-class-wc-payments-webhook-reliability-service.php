@@ -203,7 +203,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 							$this->greaterThanOrEqual( time() ),
 							WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION,
 							$this->callback(
-								function( $args ) use ( $event_id ) {
+								function ( $args ) use ( $event_id ) {
 									$this->assertSame( [ 'event_id' => $event_id ], $args );
 									return true;
 								}

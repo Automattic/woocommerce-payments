@@ -608,7 +608,7 @@ abstract class Request {
 	 * @return array        The difference between the two arrays.
 	 */
 	private function array_diff( $array1, $array2 ) {
-		$arr_to_json = function( $item ) {
+		$arr_to_json = function ( $item ) {
 			return is_array( $item ) ? wp_json_encode( $item ) : $item;
 		};
 

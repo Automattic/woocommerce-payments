@@ -3811,7 +3811,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) ) {
 			$enabled_payment_methods = array_filter(
 				$enabled_payment_methods,
-				static function( $method ) {
+				static function ( $method ) {
 					return Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $method;
 				}
 			);
@@ -4268,7 +4268,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
-		$check_if_usable = function( array $address ): bool {
+		$check_if_usable = function ( array $address ): bool {
 			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
 		};
 

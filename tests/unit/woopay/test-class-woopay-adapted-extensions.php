@@ -36,14 +36,14 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 
 		add_action(
 			'woocommerce_blocks_checkout_block_registration',
-			function( $integration_registry ) {
+			function ( $integration_registry ) {
 				$integration_registry->register( new WC_Points_Rewards_Integration() );
 			}
 		);
 
 		add_action(
 			'woocommerce_blocks_checkout_block_registration',
-			function( $integration_registry ) {
+			function ( $integration_registry ) {
 				$integration_registry->register( new WC_GC_Checkout_Blocks_Integration() );
 			}
 		);

@@ -49,7 +49,7 @@ function _manually_load_plugin() {
 	// subscriptions funtionality.
 	add_filter(
 		'pre_option__wcpay_feature_subscriptions',
-		function() {
+		function () {
 			return '1';
 		}
 	);
