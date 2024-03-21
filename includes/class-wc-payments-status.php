@@ -83,7 +83,8 @@ class WC_Payments_Status {
 	/**
 	 * Renders WCPay information on the status page.
 	 */
-	public function render_status_report_section() { ?>
+	public function render_status_report_section() {
+ ?>
 	<table class="wc_status_table widefat" cellspacing="0">
 		<thead>
 			<tr>
