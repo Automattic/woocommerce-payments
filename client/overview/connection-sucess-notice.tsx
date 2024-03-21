@@ -40,7 +40,7 @@ const ConnectionSuccessNotice: React.FC = () => {
 			/>
 		);
 	};
-	const isPoDisabledOrCompleted = ! ( isPoEnabled && ! isPoComplete );
+	const isPoDisabledOrCompleted = ! isPoEnabled || isPoComplete;
 	return ! isDismissed && ! onboardingTestMode && isPoDisabledOrCompleted ? (
 		<Card className="wcpay-connection-success">
 			<DismissMenu />
