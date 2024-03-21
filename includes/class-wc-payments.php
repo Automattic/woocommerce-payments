@@ -271,6 +271,13 @@ class WC_Payments {
 	private static $incentives_service;
 
 	/**
+	 * Instance of WC_Payments_Express_Checkout_Button_Helper, created in init function.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Helper
+	 */
+	private static $express_checkout_helper;
+
+	/**
 	 * Instance of Compatibility_Service, created in init function
 	 *
 	 * @var Compatibility_Service
@@ -548,6 +555,9 @@ class WC_Payments {
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 		self::$apple_pay_registration->init_hooks();
+
+		$express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
+		self::set_express_checkout_helper( $express_checkout_helper );
 
 		self::maybe_display_express_checkout_buttons();
 
@@ -1160,6 +1170,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Express_Checkout_Button_Helper instance.
+	 *
+	 * @return WC_Payments_Express_Checkout_Button_Helper instance.
+	 */
+	public static function get_express_checkout_helper() {
+		return self::$express_checkout_helper;
+	}
+
+	/**
 	 * Returns the Database_Cache instance.
 	 *
 	 * @return Database_Cache Database_Cache instance.
@@ -1184,6 +1203,15 @@ class WC_Payments {
 	 */
 	public static function set_gateway( $gateway ) {
 		self::$card_gateway = $gateway;
+	}
+
+	/**
+	 * Sets the express checkout helper instance.
+	 *
+	 * @param WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper The express checkout helper instance.
+	 */
+	public static function set_express_checkout_helper( $express_checkout_helper ) {
+		self::$express_checkout_helper = $express_checkout_helper;
 	}
 
 	/**
@@ -1489,9 +1517,8 @@ class WC_Payments {
 		add_action(
 			'wp_enqueue_scripts',
 			function () {
-				$express_checkout_helper            = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
-				$is_express_button_disabled_on_cart = $express_checkout_helper->is_cart()
-					&& ! $express_checkout_helper->is_available_at( 'cart', WC_Payments_WooPay_Button_Handler::BUTTON_LOCATIONS );
+				$is_express_button_disabled_on_cart = self::get_express_checkout_helper()->is_cart()
+					&& ! self::get_express_checkout_helper()->is_available_at( 'cart', WC_Payments_WooPay_Button_Handler::BUTTON_LOCATIONS );
 				// If the express checkout button is disabled on the cart page, the common config
 				// script needs to be enqueued to ensure wcpayConfig is available on the cart page.
 				if ( $is_express_button_disabled_on_cart ) {
@@ -1530,10 +1557,9 @@ class WC_Payments {
 	 */
 	public static function maybe_display_express_checkout_buttons() {
 		if ( WC_Payments_Features::are_payments_enabled() ) {
-			$express_checkout_helper                 = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
-			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), $express_checkout_helper );
-			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, $express_checkout_helper );
-			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, $express_checkout_helper );
+			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), self::get_express_checkout_helper() );
+			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, self::get_express_checkout_helper() );
+			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, self::get_express_checkout_helper() );
 			$express_checkout_button_display_handler->init();
 		}
 	}
