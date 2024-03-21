@@ -15,7 +15,7 @@ use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 
 // Need to use WC_Mock_Data_Store.
-require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
+require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';
 
 /**
  * WC_Payments_Webhook_Processing_Service unit tests.
