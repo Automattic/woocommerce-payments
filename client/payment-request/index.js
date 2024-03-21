@@ -23,6 +23,7 @@ import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
+	// TODO ~FR: investigate need for `has_block`
 	if (
 		wcpayPaymentRequestParams.has_block &&
 		! wcpayPaymentRequestParams.is_pay_for_order
@@ -91,6 +92,7 @@ jQuery( ( $ ) => {
 		getAttributes: function () {
 			const select = $( '.variations_form' ).find( '.variations select' );
 			const data = {};
+			const attributes = [];
 			let count = 0;
 			let chosen = 0;
 
@@ -106,12 +108,27 @@ jQuery( ( $ ) => {
 
 				count++;
 				data[ attributeName ] = value;
+				attributes.push( {
+					// TODO ~FR: the Store API accepts the variable attribute's label, rather than an internal identifier:
+					// https://github.com/woocommerce/woocommerce-blocks/blob/trunk/src/StoreApi/docs/cart.md#add-item
+					// Unfortunately, I couldn't find a better way to get the label from the page,
+					// other than querying the variation's relative `label`.
+					// It's an unfortunate hack - which doesn't even work when labels have special characters in them.
+					attribute: document.querySelector(
+						`label[for="${ attributeName.replace(
+							'attribute_',
+							''
+						) }"]`
+					).innerHTML,
+					value,
+				} );
 			} );
 
 			return {
-				count: count,
+				count,
 				chosenCount: chosen,
-				data: data,
+				data,
+				attributes,
 			};
 		},
 
@@ -184,14 +201,15 @@ jQuery( ( $ ) => {
 			}
 
 			const data = {
-				product_id: productId,
+				id: productId,
 				qty: $( '.quantity .qty' ).val(),
-				attributes: $( '.variations_form' ).length
-					? wcpayPaymentRequest.getAttributes().data
+				variation: $( '.variations_form' ).length
+					? wcpayPaymentRequest.getAttributes().attributes
 					: [],
 			};
 
 			// Add extension data to the POST body
+			// TODO ~FR: investigate functionality with other extensions (e.g.: bookable products).
 			const formData = $( 'form.cart' ).serializeArray();
 			$.each( formData, ( i, field ) => {
 				if ( /^(addon-|wc_)/.test( field.name ) ) {
@@ -338,9 +356,9 @@ jQuery( ( $ ) => {
 
 		/**
 		 * Creates a wrapper around a function that ensures a function can not
-		 * called in rappid succesion. The function can only be executed once and then agin after
+		 * called in rapid succession. The function can only be executed once and then agin after
 		 * the wait time has expired.  Even if the wrapper is called multiple times, the wrapped
-		 * function only excecutes once and then blocks until the wait time expires.
+		 * function only executes once and then blocks until the wait time expires.
 		 *
 		 * @param {int} wait       Milliseconds wait for the next time a function can be executed.
 		 * @param {Function} func       The function to be wrapped.
@@ -404,9 +422,9 @@ jQuery( ( $ ) => {
 		},
 
 		attachProductPageEventListeners: ( prButton, paymentRequest ) => {
-			let paymentRequestError = [];
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
+			// TODO ~FR: look at this
 			prButton.on( 'click', ( evt ) => {
 				trackPaymentRequestButtonClick( 'product' );
 
@@ -442,12 +460,6 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				if ( paymentRequestError.length > 0 ) {
-					evt.preventDefault();
-					window.alert( paymentRequestError );
-					return;
-				}
-
 				wcpayPaymentRequest.addToCart();
 			} );
 
@@ -466,7 +478,8 @@ jQuery( ( $ ) => {
 			$( document.body ).on( 'woocommerce_variation_has_changed', () => {
 				wcpayPaymentRequest.blockPaymentRequestButton();
 
-				$.when( wcpayPaymentRequest.getSelectedProductData() )
+				wcpayPaymentRequest
+					.getSelectedProductData()
 					.then( ( response ) => {
 						/**
 						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
@@ -508,27 +521,27 @@ jQuery( ( $ ) => {
 					'.qty',
 					wcpayPaymentRequest.debounce( 250, () => {
 						wcpayPaymentRequest.blockPaymentRequestButton();
-						paymentRequestError = [];
 
-						$.when(
-							wcpayPaymentRequest.getSelectedProductData()
-						).then( ( response ) => {
-							if (
-								! wcpayPaymentRequest.paymentAborted &&
-								wcpayPaymentRequestParams.product
-									.needs_shipping === response.needs_shipping
-							) {
-								paymentRequest.update( {
-									total: response.total,
-									displayItems: response.displayItems,
-								} );
-							} else {
-								wcpayPaymentRequest.reInitPaymentRequest(
-									response
-								);
-							}
-							wcpayPaymentRequest.unblockPaymentRequestButton();
-						} );
+						wcpayPaymentRequest
+							.getSelectedProductData()
+							.then( ( response ) => {
+								if (
+									! wcpayPaymentRequest.paymentAborted &&
+									wcpayPaymentRequestParams.product
+										.needs_shipping ===
+										response.needs_shipping
+								) {
+									paymentRequest.update( {
+										total: response.total,
+										displayItems: response.displayItems,
+									} );
+								} else {
+									wcpayPaymentRequest.reInitPaymentRequest(
+										response
+									);
+								}
+								wcpayPaymentRequest.unblockPaymentRequestButton();
+							} );
 					} )
 				);
 		},
@@ -613,18 +626,15 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				const {
-					total: { amount: total },
-					displayItems,
-					order,
-				} = wcpayPaymentRequestPayForOrderParams;
-
 				wcpayPaymentRequest.startPaymentRequest( {
 					stripe: api.getStripe(),
 					requestShipping: false,
-					total,
-					displayItems,
-					handler: payForOrderHandler( order ),
+					total: wcpayPaymentRequestPayForOrderParams.total.amount,
+					displayItems:
+						wcpayPaymentRequestPayForOrderParams.displayItems,
+					handler: payForOrderHandler(
+						wcpayPaymentRequestPayForOrderParams.order
+					),
 				} );
 			} else if ( wcpayPaymentRequestParams.is_product_page ) {
 				wcpayPaymentRequest.startPaymentRequest( {
@@ -682,7 +692,7 @@ jQuery( ( $ ) => {
 
 	// Listen for the WC Bookings wc_bookings_calculate_costs event to complete
 	// and add the bookable product to the cart, using the response to update the
-	// payment request request params with correct totals.
+	// payment request params with correct totals.
 	$( document ).ajaxComplete( function ( event, xhr, settings ) {
 		if ( wcBookingFormChanged ) {
 			if (
@@ -692,7 +702,9 @@ jQuery( ( $ ) => {
 			) {
 				wcpayPaymentRequest.blockPaymentRequestButton();
 				wcBookingFormChanged = false;
-				return wcpayPaymentRequest.addToCart().then( ( response ) => {
+
+				wcpayPaymentRequest.addToCart().then( ( response ) => {
+					// TODO ~FR: investigate functionality with other extensions (e.g.: bookable products).
 					wcpayPaymentRequestParams.product.total = response.total;
 					wcpayPaymentRequestParams.product.displayItems =
 						response.displayItems;

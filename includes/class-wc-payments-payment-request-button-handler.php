@@ -162,6 +162,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
+		// TODO ~FR: still needed?
 		WC()->session->set_customer_session_cookie( true );
 	}
 
@@ -711,6 +712,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		$payment_request_params = [
+			// TODO ~FR: audit of these parameters to determine which ones are still needed.
 			'ajax_url'           => admin_url( 'admin-ajax.php' ),
 			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'             => [

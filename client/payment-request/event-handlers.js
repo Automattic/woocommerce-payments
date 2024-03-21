@@ -9,6 +9,7 @@ import {
 } from './utils';
 
 export const shippingAddressChangeHandler = async ( api, event ) => {
+	// TODO ~FR: send updated info to cart with cart token, and update accordingly.
 	const response = await api.paymentRequestCalculateShippingOptions(
 		normalizeShippingAddress( event.shippingAddress )
 	);
@@ -23,6 +24,7 @@ export const shippingAddressChangeHandler = async ( api, event ) => {
 };
 
 export const shippingOptionChangeHandler = async ( api, event ) => {
+	// TODO ~FR: send updated info to cart with cart token, and update accordingly.
 	const response = await api.paymentRequestUpdateShippingDetails(
 		event.shippingOption
 	);

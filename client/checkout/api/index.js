@@ -27,6 +27,7 @@ export default class WCPayAPI {
 		this.stripePlatform = null;
 		this.request = request;
 		this.isWooPayRequesting = false;
+		this.paymentRequestCartInfo = null;
 	}
 
 	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
@@ -435,6 +436,28 @@ export default class WCPayAPI {
 			} );
 	}
 
+	async paymentRequestMaybeInitCartInfo() {
+		if ( this.paymentRequestCartInfo ) {
+			return Promise.resolve();
+		}
+
+		const response = await window.wp.apiFetch( {
+			method: 'GET',
+			path: '/wc/store/v1/cart',
+			// omitting credentials, to create a new cart object separate from the user's cart.
+			credentials: 'omit',
+			// parse: false to ensure we can get the response headers
+			parse: false,
+		} );
+
+		this.paymentRequestCartInfo = {
+			nonce: response.headers.get( 'Nonce' ),
+			cartToken: response.headers.get( 'Cart-Token' ),
+		};
+
+		return Promise.resolve();
+	}
+
 	/**
 	 * Submits shipping address to get available shipping options
 	 * from Payment Request button.
@@ -487,10 +510,18 @@ export default class WCPayAPI {
 	 * @param {Object} productData Product data.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestAddToCart( productData ) {
-		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
-			security: getPaymentRequestData( 'nonce' )?.add_to_cart,
-			...productData,
+	async paymentRequestAddToCart( productData ) {
+		await this.paymentRequestMaybeInitCartInfo();
+
+		// TODO ~FR: this is the juicy stuff
+		return window.wp.apiFetch( {
+			method: 'POST',
+			path: '/wc/store/v1/cart/add-item',
+			headers: {
+				Nonce: this.paymentRequestCartInfo.nonce,
+				'Cart-Token': this.paymentRequestCartInfo.cartToken,
+			},
+			data: productData,
 		} );
 	}
 
