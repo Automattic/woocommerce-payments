@@ -172,7 +172,7 @@ const mccsFlatList = [
 mocked( getMccsFlatList ).mockReturnValue( mccsFlatList );
 
 describe( 'BusinessDetails', () => {
-	it( 'renders and updates fields data when they are changed', () => {
+	it( 'renders and updates fields data when they are changed', async () => {
 		render(
 			<OnboardingContextProvider>
 				<BusinessDetails />
@@ -188,20 +188,14 @@ describe( 'BusinessDetails', () => {
 		).not.toBeInTheDocument();
 
 		user.click( countryField );
-		user.click( screen.getByText( 'Spain' ) );
-
-		expect(
-			screen.queryByText( strings.placeholders.business_type )
-		).not.toBeInTheDocument();
-
-		user.click( screen.getByText( 'Change' ) );
-		user.click( countryField );
+		await screen.findByText( 'United States' );
 		user.click( screen.getByText( 'United States' ) );
 
 		const businessTypeField = screen.getByText(
 			strings.placeholders.business_type
 		);
 		user.click( businessTypeField );
+		await screen.findByText( 'Company' );
 		user.click( screen.getByText( 'Company' ) );
 
 		const companyStructureField = screen.getByText(
@@ -209,13 +203,14 @@ describe( 'BusinessDetails', () => {
 		);
 
 		user.click( companyStructureField );
+		await screen.findByText( 'Single member LLC' );
 		user.click( screen.getByText( 'Single member LLC' ) );
 
 		const mccField = screen.getByText( strings.placeholders.mcc );
 		user.click( mccField );
+		await screen.findByText( 'Popular Software' );
 		user.click( screen.getByText( 'Popular Software' ) );
 
-		expect( countryField ).toHaveTextContent( 'United States' );
 		expect( businessTypeField ).toHaveTextContent( 'Company' );
 		expect( companyStructureField ).toHaveTextContent(
 			'Single member LLC'

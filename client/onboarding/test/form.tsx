@@ -137,7 +137,7 @@ describe( 'Onboarding Form', () => {
 			userEvent.type( textField, 'Less than $250k' );
 
 			expect( setData ).toHaveBeenCalledWith( {
-				'individual.first_name': 'Less than $250k',
+				annual_revenue: 'Less than $250k',
 			} );
 
 			expect( validate ).not.toHaveBeenCalled();
