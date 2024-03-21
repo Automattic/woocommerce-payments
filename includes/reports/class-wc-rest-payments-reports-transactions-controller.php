@@ -384,5 +384,4 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 
 		return $this->add_additional_fields_schema( $schema );
 	}
-
 }

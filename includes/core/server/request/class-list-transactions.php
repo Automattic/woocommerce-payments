@@ -310,5 +310,4 @@ class List_Transactions extends Paginated {
 
 		return new Response( $response );
 	}
-
 }

@@ -144,5 +144,4 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 
 		$this->assertEquals( 'JPY', $next_order->get_currency() );
 	}
-
 }

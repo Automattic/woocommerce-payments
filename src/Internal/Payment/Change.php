@@ -73,5 +73,4 @@ class Change {
 	public function get_new_value() {
 		return $this->new_value;
 	}
-
 }

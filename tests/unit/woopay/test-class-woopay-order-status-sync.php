@@ -173,5 +173,4 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		$webhook->set_status( 'active' );
 		$webhook->save();
 	}
-
 }

@@ -445,5 +445,4 @@ class WC_Payments_Checkout {
 			$this->gateway = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 		}
 	}
-
 }

@@ -490,5 +490,4 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 			],
 		];
 	}
-
 }

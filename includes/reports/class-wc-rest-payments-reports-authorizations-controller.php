@@ -391,5 +391,4 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 
 		return $this->add_additional_fields_schema( $schema );
 	}
-
 }

@@ -106,5 +106,4 @@ class WC_Payments_Dependency_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertIsString( $result );
 		$this->assertStringContainsStringIgnoringCase( 'You have installed a development version of WooPayments which requires files to be built', $result );
 	}
-
 }

@@ -488,5 +488,4 @@ class OrderService {
 		}
 		return $order;
 	}
-
 }
