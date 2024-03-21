@@ -1908,7 +1908,7 @@ class WC_Payments_API_Client {
 
 			// Use exponential backoff to not overload backend.
 			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
-			$retries++;
+			++$retries;
 		}
 
 		// @todo We don't always return an array. `extract_response_body` can also return a string. We should standardize this!
