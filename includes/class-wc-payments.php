@@ -553,6 +553,8 @@ class WC_Payments {
 
 		self::maybe_init_woopay_direct_checkout();
 
+		self::maybe_enqueue_woopay_common_config_script();
+
 		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
 		$enabled_bnpl_payment_methods = array_intersect(
 			Payment_Method::BNPL_PAYMENT_METHODS,
@@ -1471,6 +1473,54 @@ class WC_Payments {
 
 		$woopay_direct_checkout = new WC_Payments_WooPay_Direct_Checkout();
 		$woopay_direct_checkout->init();
+	}
+
+	/**
+	 * Enqueues the common config script if the WooPay Direct Checkout flow is
+	 * enabled and the express checkout button is disabled on the cart page.
+	 *
+	 * @return void
+	 */
+	public static function maybe_enqueue_woopay_common_config_script() {
+		if ( ! WC_Payments_Features::is_woopay_direct_checkout_enabled() ) {
+			return;
+		}
+
+		add_action(
+			'wp_enqueue_scripts',
+			function () {
+				$express_checkout_helper            = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
+				$is_express_button_disabled_on_cart = $express_checkout_helper->is_cart()
+					&& ! $express_checkout_helper->is_available_at( 'cart', WC_Payments_WooPay_Button_Handler::BUTTON_LOCATIONS );
+				// If the express checkout button is disabled on the cart page, the common config
+				// script needs to be enqueued to ensure wcpayConfig is available on the cart page.
+				if ( $is_express_button_disabled_on_cart ) {
+					try {
+						// is_test() throws if the class 'Mode' has not been initialized.
+						$is_test_mode = WC_Payments::mode()->is_test();
+					} catch ( Exception $e ) {
+						// Default to false if the class 'Mode' has not been initialized.
+						$is_test_mode = false;
+					}
+
+					wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
+					wp_localize_script(
+						'WCPAY_WOOPAY_COMMON_CONFIG',
+						'wcpayConfig',
+						[
+							'woopayHost'           => WooPay_Utilities::get_woopay_url(),
+							'testMode'             => $is_test_mode,
+							'wcAjaxUrl'            => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+							'woopaySessionNonce'   => wp_create_nonce( 'woopay_session_nonce' ),
+							'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
+							'platformTrackerNonce' => wp_create_nonce( 'platform_tracks_nonce' ),
+							'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
+						]
+					);
+					wp_enqueue_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
+				}
+			}
+		);
 	}
 
 	/**
