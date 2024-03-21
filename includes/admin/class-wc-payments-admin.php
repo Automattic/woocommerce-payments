@@ -229,7 +229,7 @@ class WC_Payments_Admin {
 						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
 					</b>
 					<?php
-						echo sprintf(
+						printf(
 							/* translators: %s: WooPayments*/
 							esc_html__( 'The selected currency is not available for the country set in your %s account.', 'woocommerce-payments' ),
 							'WooPayments'

@@ -268,7 +268,7 @@ function wcpay_show_old_jetpack_notice() {
 		<p><b>WooPayments</b></p>
 		<p>
 			<?php
-				echo sprintf(
+				printf(
 					/* translators: %1 WooPayments. */
 					esc_html( __( 'The version of Jetpack installed is too old to be used with %1$s. %1$s has been disabled. Please deactivate or update Jetpack.', 'woocommerce-payments' ) ),
 					'WooPayments'
