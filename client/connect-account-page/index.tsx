@@ -5,8 +5,16 @@
  */
 import React, { useEffect, useState } from 'react';
 import { render } from '@wordpress/element';
-import { Button, Card, CardBody, Notice } from '@wordpress/components';
+import {
+	Button,
+	Card,
+	CardBody,
+	Notice,
+	Panel,
+	PanelBody,
+} from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -22,6 +30,7 @@ import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
 import './style.scss';
 import { trackModeSelected } from 'onboarding/tracking';
+import InlineNotice from 'components/inline-notice';
 
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
@@ -33,6 +42,7 @@ const ConnectAccountPage: React.FC = () => {
 		wcpaySettings.errorMessage
 	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
+	const [ isSandboxModeClicked, setSandboxModeClicked ] = useState( false );
 	const {
 		connectUrl,
 		connect: { availableCountries, country },
@@ -125,6 +135,18 @@ const ConnectAccountPage: React.FC = () => {
 		window.location.href = connectUrl;
 	};
 
+	const handleEnableSandboxMode = async () => {
+		setSandboxModeClicked( true );
+
+		trackModeSelected( 'test' );
+
+		const url = addQueryArgs( connectUrl, {
+			test_mode: true,
+			create_builder_account: true,
+		} );
+		window.location.href = url;
+	};
+
 	return (
 		<Page isNarrow className="connect-account-page">
 			{ errorMessage && (
@@ -189,12 +211,28 @@ const ConnectAccountPage: React.FC = () => {
 						</div>
 					</Card>
 					{ incentive && <Incentive { ...incentive } /> }
-					<Card>
-						<CardBody>
-							{ /* eslint-disable-next-line react/no-unescaped-entities */ }
-							<p>I'm setting up a store for someone else.</p>
-						</CardBody>
-					</Card>
+					<Panel>
+						<PanelBody
+							title="I'm setting up a store for someone else."
+							initialOpen={ true }
+						>
+							<InlineNotice
+								icon
+								status="info"
+								isDismissible={ false }
+							>
+								{ strings.sandboxMode.description }
+							</InlineNotice>
+							<Button
+								variant="secondary"
+								isBusy={ isSandboxModeClicked }
+								disabled={ isSandboxModeClicked }
+								onClick={ handleEnableSandboxMode }
+							>
+								{ strings.button.sandbox }
+							</Button>
+						</PanelBody>
+					</Panel>
 				</>
 			) }
 		</Page>

@@ -17,6 +17,7 @@ export default {
 			'Verify business details',
 			'woocommerce-payments'
 		),
+		sandbox: __( 'Enable sandbox mode', 'woocommerce-payments' ),
 	},
 	heading: ( firstName?: string ): string =>
 		sprintf(
@@ -93,9 +94,15 @@ export default {
 			),
 		}
 	),
+	sandboxMode: {
+		description: __(
+			'This option will set up WooPayments in sandbox mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+			'woocommerce-payments'
+		),
+	},
 	sandboxModeNotice: interpolateComponents( {
 		mixedString: __(
-			'Sandbox mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+			'Sandbox mode is enabled, only test accounts will be created. If you want to process live transactions, please {{learnMoreLink}}disable it{{/learnMoreLink}}.',
 			'woocommerce-payments'
 		),
 		components: {
