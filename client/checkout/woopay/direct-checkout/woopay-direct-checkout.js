@@ -169,7 +169,7 @@ class WooPayDirectCheckout {
 			);
 		}
 
-		if ( ! this.validateEncryptedSessionData( redirectData ) ) {
+		if ( ! this.isValidEncryptedSessionData( redirectData ) ) {
 			throw new Error( 'Invalid encrypted session data.' );
 		}
 
@@ -389,22 +389,6 @@ class WooPayDirectCheckout {
 		} catch ( error ) {
 			return false;
 		}
-	}
-
-	/**
-	 * Validate minimum session data.
-	 *
-	 * @param {Object} encryptedSessionData The encrypted session data to be used in URL.
-	 *
-	 * @return {boolean} True if all required fields are present, false otherwise.
-	 */
-	static validateEncryptedSessionData( encryptedSessionData ) {
-		return (
-			encryptedSessionData?.blog_id &&
-			encryptedSessionData?.data?.session &&
-			encryptedSessionData?.data?.iv &&
-			encryptedSessionData?.data?.hash
-		);
 	}
 
 	/**

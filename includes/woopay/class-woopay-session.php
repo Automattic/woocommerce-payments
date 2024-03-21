@@ -564,6 +564,10 @@ class WooPay_Session {
 	 * @return array Array of minimum session data used by WooPay or false on failures.
 	 */
 	public static function get_woopay_minimum_session_data() {
+		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
+			return [];
+		}
+		
 		$blog_id = Jetpack_Options::get_option('id');
 		if ( empty( $blog_id ) ) {
 			return [];
