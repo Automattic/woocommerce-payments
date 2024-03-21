@@ -3903,7 +3903,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				 * @deprecated 7.4.0 Use {@see 'wcpay_elements_appearance'} instead.
 				 * @since 7.3.0
 				 */
-				$appearance = apply_filters_deprecated( 'wcpay_upe_appearance', $appearance, $is_blocks_checkout );
+				$appearance = apply_filters_deprecated( 'wcpay_upe_appearance', [ $appearance, $is_blocks_checkout ], '7.4.0', 'wcpay_elements_appearance' );
 			}
 
 			/**
