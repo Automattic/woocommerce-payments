@@ -33,6 +33,6 @@ assignees: ''
 <!-- Optional: add comments here to explain your decision. -->
 
 > [!Important]
-> As assignee, you're also responsible for reviewing this label and change it, if needed.
-> - [ ] I have reviewed this label and it's matching the actual reason why this e2e test was broken.
-<!-- Leave the above for who picks up this issue. -->
+> Please, ensure when closing this issue (PR fix) that only one `e2e: broken` label is added and it is accurate.
+> - [ ] I confirmed there's only one `e2e: broken` label in this issue and it is accurate.
+<!-- Leave the above for who's fixing this issue. -->
