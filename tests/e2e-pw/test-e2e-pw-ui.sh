@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "🎭 Running Playwright e2e tests in interactive UI mode.";
 echo "";
