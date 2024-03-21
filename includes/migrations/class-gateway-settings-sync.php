@@ -62,17 +62,20 @@ class Gateway_Settings_Sync {
 	}
 
 	/**
-	 * Deletes the active webhook.
+	 * Syncs gateway setting objects.
 	 */
 	private function sync() {
 		$enabled_payment_methods = $this->main_gateway->get_option( 'upe_enabled_payment_method_ids', [] );
 
 		foreach ( $this->all_registered_gateways as $gateway ) {
-			if ( in_array( $gateway->get_stripe_id(), $enabled_payment_methods, true ) ) {
-				$gateway->enable();
-				$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
-			} else {
-				$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+			// Skip the main gateway as it's settings are already in sync.
+			if ( 'card' !== $gateway->get_stripe_id() ) {
+				if ( in_array( $gateway->get_stripe_id(), $enabled_payment_methods, true ) ) {
+					$gateway->enable();
+					$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+				} else {
+					$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+				}
 			}
 		}
 	}
