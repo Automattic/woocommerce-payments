@@ -2,12 +2,7 @@
  * Internal dependencies
  */
 
-export type OnboardingSteps =
-	| 'mode'
-	| 'personal'
-	| 'business'
-	| 'store'
-	| 'loading';
+export type OnboardingSteps = 'personal' | 'business' | 'store' | 'loading';
 
 export type OnboardingFields = {
 	email?: string;

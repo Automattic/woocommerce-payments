@@ -36,9 +36,18 @@ const OnboardingStepper = () => {
 		persistFlowState( step, data );
 	};
 
+	const initialStep = () => {
+		// since mode step is not part of the stepper anymore, we need to overwrite it
+		const currentStep = wcpaySettings.onboardingFlowState?.current_step;
+		if ( currentStep && currentStep === 'mode' ) {
+			return 'personal';
+		}
+		return currentStep;
+	};
+
 	return (
 		<Stepper
-			initialStep={ wcpaySettings.onboardingFlowState?.current_step }
+			initialStep={ initialStep() }
 			onStepChange={ handleStepChange }
 			onExit={ handleExit }
 		>
