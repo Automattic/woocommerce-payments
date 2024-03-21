@@ -24,9 +24,15 @@ assignees: ''
 <!-- Any additional context or details you think might be helpful. -->
 <!-- Ticket numbers/links, plugin versions, system statuses etc. -->
 
----
+### Priority
+<!-- Add a priority label based on your best judgement (quick is fine). -->
+<!-- Optional: add comments here to explain your decision or highlight any questions/potential risks. -->
 
-- [ ] Added priority label.
-<!-- For the priority label, use your best judgement. -->
-- [ ] Added e2e label.
-<!-- Add one of the "e2e: broken flow/test/environment" labels. See their description and try to match it with the actual issue. -->
+### Reason why this e2e test is broken
+<!-- Add one of the "e2e: broken flow/test/environment" labels based on your best judgement (quick is fine). -->
+<!-- Optional: add comments here to explain your decision. -->
+
+> [!Important]
+> As assignee, you're also responsible for reviewing this label and change it, if needed.
+> - [ ] I have reviewed this label and it's matching the actual reason why this e2e test was broken.
+<!-- Leave the above for who picks up this issue. -->
