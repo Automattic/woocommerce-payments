@@ -58,7 +58,6 @@ class WC_Payments_DB {
 			},
 			$orders
 		);
-
 	}
 
 	/**

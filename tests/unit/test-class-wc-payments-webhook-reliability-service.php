@@ -70,7 +70,6 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$this->mock_webhook_processing_service
 		);
-
 	}
 	/**
 	 * Test that necessary filters are added when the WC_Payments_Webhook_Reliability_Service instance is created.
@@ -260,7 +259,6 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 				[ 'evt_111', 'evt_222' ],
 			],
 		];
-
 	}
 
 	/**

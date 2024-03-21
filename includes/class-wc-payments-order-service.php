@@ -1138,7 +1138,6 @@ class WC_Payments_Order_Service {
 			// Log the error and don't block checkout.
 			Logger::log( 'Error saving transaction fee into metadata for the order ' . $order->get_id() . ': ' . $e->getMessage() );
 		}
-
 	}
 
 	/**
@@ -1495,7 +1494,6 @@ class WC_Payments_Order_Service {
 			),
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
-
 	}
 
 	/**

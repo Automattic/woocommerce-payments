@@ -141,7 +141,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$result = $method->invoke( $this->analytics );
 
 		$this->assertTrue( $result );
-
 	}
 
 	public function test_register_customer_currencies_for_empty_customer_currencies() {

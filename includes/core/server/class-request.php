@@ -733,7 +733,6 @@ abstract class Request {
 				'wcpay_core_extend_class_not_subclass'
 			);
 		}
-
 	}
 
 	/**
@@ -821,6 +820,5 @@ abstract class Request {
 			return;
 		}
 		throw new Invalid_Request_Parameter_Exception( 'Invalid request api route', 'wcpay_core_invalid_request_parameter_api_route_not_defined' );
-
 	}
 }

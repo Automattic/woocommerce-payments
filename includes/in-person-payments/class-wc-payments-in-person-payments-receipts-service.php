@@ -152,7 +152,6 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 			$charge['payment_method_details']['card_present']['receipt'],
 			'Error validating receipt information'
 		);
-
 	}
 
 	/**

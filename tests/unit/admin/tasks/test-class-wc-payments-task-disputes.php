@@ -88,7 +88,6 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		// "By <date> – <count> days left to respond"
 		$this->assertMatchesRegularExpression( '/By \w+ \d{1,2}, \d{4} – \d+ days left to respond/', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
-
 	}
 
 	public function test_disputes_task_with_single_dispute_within_24h() {
@@ -120,7 +119,6 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		// "Respond today by <time> <AM|PM>"
 		$this->assertMatchesRegularExpression( '/Respond today by \d{1,2}:\d{2} \w{2}/', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
-
 	}
 
 	public function test_disputes_task_with_multiple_disputes_within_7days() {

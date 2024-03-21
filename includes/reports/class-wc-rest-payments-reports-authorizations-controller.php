@@ -95,7 +95,6 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 		}
 
 		return rest_ensure_response( $data );
-
 	}
 
 	/**

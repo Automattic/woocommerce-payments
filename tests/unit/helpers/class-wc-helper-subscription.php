@@ -275,6 +275,5 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function set_customer_id( $customer_id = null ) {
 		$this->customer_id = $customer_id ?? get_current_user_id();
-
 	}
 }

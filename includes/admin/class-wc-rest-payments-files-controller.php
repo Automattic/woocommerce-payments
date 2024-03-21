@@ -62,7 +62,6 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [],
 			]
 		);
-
 	}
 
 	/**
@@ -134,7 +133,6 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 				'Content-Disposition' => 'inline',
 			]
 		);
-
 	}
 
 	/**

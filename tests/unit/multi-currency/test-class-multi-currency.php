@@ -409,7 +409,6 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->assertStringContainsString( '&pound;', WC()->cart->get_total() );
 		$this->assertStringNotContainsString( '&#36;', WC()->cart->get_total() );
-
 	}
 
 	public function test_update_selected_currency_by_url_does_not_set_session_when_parameter_not_set() {

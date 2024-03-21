@@ -207,7 +207,6 @@ class WC_Payments_Task_Disputes extends Task {
 			),
 			count( (array) $this->disputes_due_within_7d )
 		);
-
 	}
 
 	/**
