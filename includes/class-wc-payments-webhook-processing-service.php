@@ -757,7 +757,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @return string The failure message.
 	 */
-	private function get_failure_message_from_error( $error ):string {
+	private function get_failure_message_from_error( $error ): string {
 		$code         = $error['code'] ?? '';
 		$decline_code = $error['decline_code'] ?? '';
 		$message      = $error['message'] ?? '';
