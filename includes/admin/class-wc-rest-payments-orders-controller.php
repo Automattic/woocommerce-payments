@@ -231,9 +231,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$generated_card = $intent->get_charge()->get_payment_method_details()['card_present']['generated_card'];
 				$token = $this->token_service->add_payment_method_to_user( $generated_card, $order->get_user() );
 				$this->gateway->add_token_to_order( $order, $token );
-				$subscriptions = wcs_get_subscriptions_for_order( $order_id );
-				$first_subscription = reset( $subscriptions );
-				WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $first_subscription, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+				foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+					$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+					if ( !wcs_is_manual_renewal_required() ) {
+						$subscription->set_requires_manual_renewal( false );
+					}
+					$subscription->save();
+				}
 			}
 			// Actualize order status.
 			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'] );
