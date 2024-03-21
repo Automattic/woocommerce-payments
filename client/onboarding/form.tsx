@@ -45,7 +45,11 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 			} }
 		>
 			{ children }
-			<Button isPrimary type="submit" className="stepper__cta">
+			<Button
+				variant={ 'primary' }
+				type="submit"
+				className="stepper__cta"
+			>
 				{ strings.continue }
 			</Button>
 		</form>
