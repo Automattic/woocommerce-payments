@@ -194,6 +194,7 @@ describe( 'BusinessDetails', () => {
 			screen.queryByText( strings.placeholders.business_type )
 		).not.toBeInTheDocument();
 
+		user.click( screen.getByText( 'Change' ) );
 		user.click( countryField );
 		user.click( screen.getByText( 'United States' ) );
 

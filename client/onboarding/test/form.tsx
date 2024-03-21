@@ -123,7 +123,7 @@ describe( 'Onboarding Form', () => {
 			);
 			const errorMessage = screen.getByText( 'error message' );
 
-			expect( textField ).toHaveValue( 'John' );
+			expect( textField ).toHaveValue( 'Less than $250k' );
 			expect( errorMessage ).toBeInTheDocument();
 		} );
 
@@ -134,10 +134,10 @@ describe( 'Onboarding Form', () => {
 				'What is your estimated annual Ecommerce revenue (USD)?'
 			);
 			textField.focus(); // Workaround for `type` not triggering focus.
-			userEvent.type( textField, 'John' );
+			userEvent.type( textField, 'Less than $250k' );
 
 			expect( setData ).toHaveBeenCalledWith( {
-				'individual.first_name': 'John',
+				'individual.first_name': 'Less than $250k',
 			} );
 
 			expect( validate ).not.toHaveBeenCalled();
