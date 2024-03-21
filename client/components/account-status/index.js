@@ -24,6 +24,7 @@ import StatusChip from './status-chip';
 import './style.scss';
 import './shared.scss';
 import { AccountTools } from './account-tools';
+import { isInDevMode } from 'wcpay/utils';
 
 const AccountStatusCard = ( props ) => {
 	const { title, children, value } = props;
@@ -103,7 +104,7 @@ const AccountStatusDetails = ( props ) => {
 					}
 				/>
 			</AccountStatusItem>
-			{ ! accountStatus.detailsSubmitted && (
+			{ ( ! accountStatus.detailsSubmitted || isInDevMode() ) && (
 				<AccountTools accountLink={ accountStatus.accountLink } />
 			) }
 			{ accountFees.length > 0 && (
