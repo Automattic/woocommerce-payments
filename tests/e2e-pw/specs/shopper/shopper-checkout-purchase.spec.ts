@@ -12,7 +12,6 @@ import * as shopper from '../../utils/shopper';
 
 test.describe( 'Successful purchase', () => {
 	test.beforeEach( async ( { page } ) => {
-		await page.goto( '/cart/' );
 		await shopper.addCartProduct( page );
 
 		await page.goto( '/checkout/' );
