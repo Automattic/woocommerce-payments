@@ -289,6 +289,7 @@ class WC_Payments_Account {
 			'paymentsEnabled'       => $account['payments_enabled'],
 			'detailsSubmitted'      => $account['details_submitted'] ?? true,
 			'deposits'              => $account['deposits'] ?? [],
+			'depositsStatus'        => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
 			'currentDeadline'       => $account['current_deadline'] ?? false,
 			'pastDue'               => $account['has_overdue_requirements'] ?? false,
 			'accountLink'           => $this->get_login_url(),
@@ -1054,8 +1055,9 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
-			$incentive   = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
-			$progressive = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+			$incentive              = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
+			$progressive            = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+			$create_builder_account = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
 
 			// Track connection start.
 			if ( ! isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
@@ -1072,7 +1074,9 @@ class WC_Payments_Account {
 			}
 
 			$source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
-			if ( in_array(
+			// Redirect to the onboarding flow page if the account is not onboarded otherwise to the overview page.
+			// Builder accounts are handled below and redirected to Stripe KYC directly.
+			if ( ! $create_builder_account && in_array(
 				$source,
 				[
 					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
@@ -1115,7 +1119,7 @@ class WC_Payments_Account {
 			}
 
 			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT === $source ) {
-				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled() || WC_Payments::mode()->is_dev();
 
 				// Delete the account.
 				$this->payments_api_client->delete_account( $test_mode );

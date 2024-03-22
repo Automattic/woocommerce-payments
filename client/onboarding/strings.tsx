@@ -7,8 +7,6 @@ import interpolateComponents from '@automattic/interpolate-components';
 import React from 'react';
 
 const documentationUrls = {
-	sandboxMode:
-		'https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/',
 	tos: 'https://wordpress.com/tos/',
 	merchantTerms: 'https://wordpress.com/tos/#more-woopay-specifically',
 	privacyPolicy: 'https://automattic.com/privacy/',
@@ -37,23 +35,6 @@ export default {
 				live: __( 'Continue', 'woocommerce-payments' ),
 				test: __( 'Continue in sandbox mode', 'woocommerce-payments' ),
 			},
-			sandboxModeNotice: interpolateComponents( {
-				mixedString: __(
-					'Sandbox mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-					'woocommerce-payments'
-				),
-				components: {
-					learnMoreLink: (
-						// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							href={ documentationUrls.sandboxMode }
-							target="_blank"
-							rel="noreferrer"
-						/>
-					),
-				},
-			} ),
 			tos: interpolateComponents( {
 				mixedString: sprintf(
 					__(

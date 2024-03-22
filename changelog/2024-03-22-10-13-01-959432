@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Bump WC tested up to version to 8.7.0 and set Requires Plugins header.
