@@ -238,6 +238,77 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->mock_pr->should_show_woopay_button() );
 	}
 
+	public function test_should_only_load_common_config_script() {
+		// Ensure we are on the cart page.
+		$this->mock_express_checkout_helper
+			->method( 'is_cart' )
+			->willReturn( true );
+		// Ensure the express button is not available in the cart page.
+		$this->mock_express_checkout_helper
+			->expects( $this->any() )
+			->method( 'is_available_at' )
+			->with( 'cart' )
+			->willReturn( false );
+
+		WC_Payments::set_express_checkout_helper( $this->mock_express_checkout_helper );
+
+		// Since the express button is not available in the cart page, the
+		// WCPAY_WOOPAY_EXPRESS_BUTTON handle should not be enqueued.
+		$this->mock_pr->scripts();
+
+		// Since the express button is not available in the cart page, the
+		// WCPAY_WOOPAY_COMMON_CONFIG handle should be enqueued.
+		$is_direct_checkout_enabled = true;
+		WC_Payments::maybe_enqueue_woopay_common_config_script( $is_direct_checkout_enabled );
+		wp_enqueue_scripts();
+
+		$this->assertFalse( wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'enqueued' ) );
+		$this->assertTrue( wp_script_is( 'WCPAY_WOOPAY_COMMON_CONFIG', 'enqueued' ) );
+
+		// Cleanup.
+		wp_dequeue_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
+		wp_deregister_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
+	}
+
+	public function test_should_not_load_common_config_script() {
+		// Ensure WooPay is enabled.
+		$this->mock_pr
+			->expects( $this->any() )
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
+		// Ensure WooPay is available in the given country.
+		$this->mock_woopay_utilities
+			->expects( $this->once() )
+			->method( 'is_country_available' )
+			->willReturn( true );
+		// Ensure we are on the cart page.
+		$this->mock_express_checkout_helper
+			->expects( $this->any() )
+			->method( 'is_cart' )
+			->willReturn( true );
+		// Ensure the express button is available in the cart page.
+		$this->mock_express_checkout_helper
+			->expects( $this->any() )
+			->method( 'is_available_at' )
+			->with( 'cart', WC_Payments_WooPay_Button_Handler::BUTTON_LOCATIONS )
+			->willReturn( true );
+
+		WC_Payments::set_express_checkout_helper( $this->mock_express_checkout_helper );
+
+		// Since the express button is available in the cart page, the
+		// WCPAY_WOOPAY_EXPRESS_BUTTON handle should be enqueued.
+		$this->mock_pr->scripts();
+
+		// Since the express button is available in the cart page, the
+		// WCPAY_WOOPAY_COMMON_CONFIG handle should not be enqueued.
+		$is_direct_checkout_enabled = true;
+		WC_Payments::maybe_enqueue_woopay_common_config_script( $is_direct_checkout_enabled );
+		wp_enqueue_scripts();
+
+		$this->assertTrue( wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'enqueued' ) );
+		$this->assertFalse( wp_script_is( 'WCPAY_WOOPAY_COMMON_CONFIG', 'enqueued' ) );
+	}
+
 	public function test_should_show_woopay_button_unsupported_product_at_checkout() {
 		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_false' );
 

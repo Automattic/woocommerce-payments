@@ -7,21 +7,17 @@ import React, { useEffect } from 'react';
  * Internal dependencies
  */
 import Page from 'components/page';
-import { OnboardingContextProvider, useOnboardingContext } from './context';
+import { OnboardingContextProvider } from './context';
 import { Stepper } from 'components/stepper';
 import { OnboardingForm } from './form';
 import Step from './step';
-import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
 import { trackStarted } from './tracking';
 import './style.scss';
-import { persistFlowState } from './utils';
 
 const OnboardingStepper = () => {
-	const { data } = useOnboardingContext();
-
 	const handleExit = () => {
 		if (
 			window.history.length > 1 &&
@@ -31,35 +27,10 @@ const OnboardingStepper = () => {
 		window.location.href = wcSettings.adminUrl;
 	};
 
-	const handleStepChange = ( step: string ) => {
-		window.scroll( 0, 0 );
-		persistFlowState( step, data );
-	};
-
-	const initialStep = () => {
-		// since mode step is not part of the stepper anymore, we need to overwrite it
-		// Remove it in a future version, once enough time has passed that people won't be likely to have mode or personal saved as this value.
-		const currentStep = wcpaySettings.onboardingFlowState?.current_step;
-		if (
-			currentStep &&
-			( currentStep === 'mode' || currentStep === 'personal' )
-		) {
-			return 'business';
-		}
-		return currentStep;
-	};
+	const handleStepChange = () => window.scroll( 0, 0 );
 
 	return (
-		<Stepper
-			initialStep={ initialStep() }
-			onStepChange={ handleStepChange }
-			onExit={ handleExit }
-		>
-			<Step name="personal">
-				<OnboardingForm>
-					<PersonalDetails />
-				</OnboardingForm>
-			</Step>
+		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>
 			<Step name="business">
 				<OnboardingForm>
 					<BusinessDetails />
@@ -75,7 +46,7 @@ const OnboardingStepper = () => {
 	);
 };
 
-const initialData = wcpaySettings.onboardingFlowState?.data ?? {
+const initialData = {
 	business_name: wcSettings?.siteTitle,
 	url:
 		location.hostname === 'localhost'
