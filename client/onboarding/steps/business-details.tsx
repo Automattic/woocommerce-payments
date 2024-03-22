@@ -121,7 +121,9 @@ const BusinessDetails: React.FC = () => {
 				selectedBusinessType &&
 				selectedBusinessStructure &&
 				selectedMcc && (
-					<p className={ 'wcpay-onboarding__tos' }>{ strings.tos }</p>
+					<span className={ 'wcpay-onboarding__tos' }>
+						{ strings.tos }
+					</span>
 				) }
 		</>
 	);
