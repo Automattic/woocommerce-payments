@@ -52,7 +52,6 @@ export type Event =
 	| 'wcpay_inbox_action_click'
 	| 'wcpay_inbox_note_view'
 	| 'wcpay_onboarding_flow_started'
-	| 'wcpay_onboarding_flow_mode_selected'
 	| 'wcpay_onboarding_flow_step_completed'
 	| 'wcpay_onboarding_flow_hidden'
 	| 'wcpay_onboarding_flow_exited'
