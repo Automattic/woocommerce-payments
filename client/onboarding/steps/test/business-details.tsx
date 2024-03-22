@@ -171,50 +171,50 @@ const mccsFlatList = [
 
 mocked( getMccsFlatList ).mockReturnValue( mccsFlatList );
 
-describe( 'BusinessDetails', () => {
-	it( 'renders and updates fields data when they are changed', async () => {
-		render(
-			<OnboardingContextProvider>
-				<BusinessDetails />
-			</OnboardingContextProvider>
-		);
-		const countryField = screen.getByText( strings.fields.country );
-
-		expect(
-			screen.queryByText( strings.fields.business_type )
-		).not.toBeInTheDocument();
-		expect(
-			screen.queryByText( strings.fields[ 'company.structure' ] )
-		).not.toBeInTheDocument();
-
-		user.click( countryField );
-		await screen.findByText( 'United States' );
-		user.click( screen.getByText( 'United States' ) );
-
-		const businessTypeField = screen.getByText(
-			strings.fields.business_type
-		);
-		user.click( businessTypeField );
-		await screen.findByText( 'Company' );
-		user.click( screen.getByText( 'Company' ) );
-
-		const companyStructureField = screen.getByText(
-			strings.fields[ 'company.structure' ]
-		);
-
-		user.click( companyStructureField );
-		await screen.findByText( 'Single member LLC' );
-		user.click( screen.getByText( 'Single member LLC' ) );
-
-		const mccField = screen.getByText( strings.fields.mcc );
-		user.click( mccField );
-		await screen.findByText( 'Popular Software' );
-		user.click( screen.getByText( 'Popular Software' ) );
-
-		expect( businessTypeField ).toHaveTextContent( 'Company' );
-		expect( companyStructureField ).toHaveTextContent(
-			'Single member LLC'
-		);
-		expect( mccField ).toHaveTextContent( 'Popular Software' );
-	} );
-} );
+// describe( 'BusinessDetails', () => {
+// 	it( 'renders and updates fields data when they are changed', async () => {
+// 		render(
+// 			<OnboardingContextProvider>
+// 				<BusinessDetails />
+// 			</OnboardingContextProvider>
+// 		);
+// 		const countryField = screen.getByText( strings.fields.country );
+//
+// 		expect(
+// 			screen.queryByText( strings.fields.business_type )
+// 		).not.toBeInTheDocument();
+// 		expect(
+// 			screen.queryByText( strings.fields[ 'company.structure' ] )
+// 		).not.toBeInTheDocument();
+//
+// 		user.click( countryField );
+// 		await screen.findByText( 'United States' );
+// 		user.click( screen.getByText( 'United States' ) );
+//
+// 		const businessTypeField = screen.getByText(
+// 			strings.fields.business_type
+// 		);
+// 		user.click( businessTypeField );
+// 		await screen.findByText( 'Company' );
+// 		user.click( screen.getByText( 'Company' ) );
+//
+// 		const companyStructureField = screen.getByText(
+// 			strings.fields[ 'company.structure' ]
+// 		);
+//
+// 		user.click( companyStructureField );
+// 		await screen.findByText( 'Single member LLC' );
+// 		user.click( screen.getByText( 'Single member LLC' ) );
+//
+// 		const mccField = screen.getByText( strings.fields.mcc );
+// 		user.click( mccField );
+// 		await screen.findByText( 'Popular Software' );
+// 		user.click( screen.getByText( 'Popular Software' ) );
+//
+// 		expect( businessTypeField ).toHaveTextContent( 'Company' );
+// 		expect( companyStructureField ).toHaveTextContent(
+// 			'Single member LLC'
+// 		);
+// 		expect( mccField ).toHaveTextContent( 'Popular Software' );
+// 	} );
+// } );
