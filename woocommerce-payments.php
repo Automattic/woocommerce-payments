@@ -68,6 +68,11 @@ if ( ! $is_autoloading_ready ) {
 
 /**
  * Initialize the Jetpack functionalities: connection, identity crisis, etc.
+ *
+ * PSR-11 containers declares to throw an un-throwable interface
+ * (it does not extend Throwable), and Psalm does not accept it.
+ *
+ * @psalm-suppress MissingThrowsDocblock
  */
 function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
@@ -101,7 +106,7 @@ function wcpay_jetpack_init() {
 		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce';
 		if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
 			try {
-				$cot_controller = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class ); // phpcs:ignore MissingThrowsDocblock
+				$cot_controller = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class );
 				if ( $cot_controller->custom_orders_table_usage_is_enabled() ) {
 					$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce_HPOS_Orders';
 				}
