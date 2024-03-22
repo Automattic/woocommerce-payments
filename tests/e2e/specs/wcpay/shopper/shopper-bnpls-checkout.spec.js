@@ -23,11 +23,12 @@ const cardTestingPreventionStates = [
 ];
 
 // Skipping due to test failure – missing selector when changing account currency #8354
-describe.skip.each( cardTestingPreventionStates )(
+describe.each( cardTestingPreventionStates )(
 	'BNPL checkout',
 	( { cardTestingPreventionEnabled } ) => {
 		beforeAll( async () => {
 			await merchant.login();
+			await merchantWCP.activateMulticurrency();
 			await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 			if ( cardTestingPreventionEnabled ) {
 				await merchantWCP.enableCardTestingProtection();
