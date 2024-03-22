@@ -172,6 +172,23 @@ describe( 'Onboarding Form', () => {
 	} );
 
 	describe( 'OnboardingSelectField', () => {
+		it( 'renders OnboardingTextField component with defaultValue props ', () => {
+			data = { business_type: 'individual' };
+			error.mockReturnValue( 'error message' );
+
+			render(
+				<OnboardingSelectField
+					name="business_type"
+					defaultValue={ { key: 'individual', name: 'individual' } }
+				/>
+			);
+
+			const selectField = screen.getByRole( 'button' );
+			const errorMessage = screen.getByText( 'error message' );
+			expect( selectField ).toHaveTextContent( 'individual' );
+			expect( errorMessage ).toBeInTheDocument();
+		} );
+
 		it( 'renders OnboardingTextField component with provided props ', () => {
 			data = { business_type: 'individual' };
 			error.mockReturnValue( 'error message' );
