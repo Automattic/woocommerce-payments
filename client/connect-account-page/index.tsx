@@ -29,7 +29,6 @@ import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
 import './style.scss';
-import { trackModeSelected } from 'onboarding/tracking';
 import InlineNotice from 'components/inline-notice';
 
 const ConnectAccountPage: React.FC = () => {
@@ -130,15 +129,11 @@ const ConnectAccountPage: React.FC = () => {
 			return handleLocationCheck();
 		}
 
-		trackModeSelected( 'live' );
-
 		window.location.href = connectUrl;
 	};
 
 	const handleEnableSandboxMode = async () => {
 		setSandboxModeClicked( true );
-
-		trackModeSelected( 'test' );
 
 		const url = addQueryArgs( connectUrl, {
 			test_mode: true,
