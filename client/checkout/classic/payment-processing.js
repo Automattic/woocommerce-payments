@@ -398,6 +398,37 @@ export async function mountStripePaymentElement( api, domElement ) {
 	upeElement.mount( domElement );
 }
 
+export async function mountStripePaymentMethodMessagingElement(
+	api,
+	domElement,
+	cartData
+) {
+	const paymentMethodType = domElement.dataset.paymentMethodType;
+	const appearance = await initializeAppearance( api );
+
+	appearance.variables.fontSizeBase = '13px';
+
+	try {
+		const paymentMethodMessagingElement = api
+			.getStripe()
+			.elements()
+			.create( 'paymentMethodMessaging', {
+				currency: cartData.currency,
+				amount: Number( cartData.amount ),
+				countryCode: cartData.country, // Customer's country or base country of the store.
+				appearance: appearance,
+				fonts: getFontRulesFromPage(),
+				paymentMethodTypes: [ paymentMethodType ],
+				displayType: 'promotional_text',
+			} );
+
+		return paymentMethodMessagingElement.mount( domElement );
+	} finally {
+		// Resolve the promise even if the element mounting fails.
+		return Promise.resolve();
+	}
+}
+
 /**
  * Creates and confirms a setup intent using the provided ID, then appends the confirmed setup intent to the given jQuery form.
  *
