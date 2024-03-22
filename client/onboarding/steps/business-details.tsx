@@ -61,7 +61,6 @@ const BusinessDetails: React.FC = () => {
 				<InlineNotice
 					isDismissible={ false }
 					buttonVariant={ 'link' }
-					className={ 'wcpay-onboarding__inline-notice' }
 					actions={ [
 						{
 							label: strings.inlineNotice.action,
@@ -70,10 +69,10 @@ const BusinessDetails: React.FC = () => {
 					] }
 					status="info"
 				>
-					<span>
+					<div className="wcpay-inline-notice__content__title">
 						{ strings.inlineNotice.title }{ ' ' }
 						<b>{ selectedCountry.name }</b>
-					</span>
+					</div>
 				</InlineNotice>
 			) }
 			{ ! selectedCountry && (
