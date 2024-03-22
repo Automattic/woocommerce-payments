@@ -178,13 +178,13 @@ describe( 'BusinessDetails', () => {
 				<BusinessDetails />
 			</OnboardingContextProvider>
 		);
-		const countryField = screen.getByText( strings.placeholders.country );
+		const countryField = screen.getByText( strings.fields.country );
 
 		expect(
-			screen.queryByText( strings.placeholders.business_type )
+			screen.queryByText( strings.fields.business_type )
 		).not.toBeInTheDocument();
 		expect(
-			screen.queryByText( strings.placeholders[ 'company.structure' ] )
+			screen.queryByText( strings.fields[ 'company.structure' ] )
 		).not.toBeInTheDocument();
 
 		user.click( countryField );
@@ -192,21 +192,21 @@ describe( 'BusinessDetails', () => {
 		user.click( screen.getByText( 'United States' ) );
 
 		const businessTypeField = screen.getByText(
-			strings.placeholders.business_type
+			strings.fields.business_type
 		);
 		user.click( businessTypeField );
 		await screen.findByText( 'Company' );
 		user.click( screen.getByText( 'Company' ) );
 
 		const companyStructureField = screen.getByText(
-			strings.placeholders[ 'company.structure' ]
+			strings.fields[ 'company.structure' ]
 		);
 
 		user.click( companyStructureField );
 		await screen.findByText( 'Single member LLC' );
 		user.click( screen.getByText( 'Single member LLC' ) );
 
-		const mccField = screen.getByText( strings.placeholders.mcc );
+		const mccField = screen.getByText( strings.fields.mcc );
 		user.click( mccField );
 		await screen.findByText( 'Popular Software' );
 		user.click( screen.getByText( 'Popular Software' ) );

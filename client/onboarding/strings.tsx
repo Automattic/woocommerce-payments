@@ -86,22 +86,8 @@ export default {
 		),
 	},
 	placeholders: {
-		country: __(
-			'Select the primary country of your business',
-			'woocommerce-payments'
-		),
-		business_type: __(
-			'Select the legal structure of your business',
-			'woocommerce-payments'
-		),
-		'company.structure': __(
-			'Select the legal category of your business',
-			'woocommerce-payments'
-		),
-		mcc: __(
-			'Select the primary industry of your business',
-			'woocommerce-payments'
-		),
+		generic: __( 'Select an option', 'woocommerce-payments' ),
+		country: __( 'Select a country', 'woocommerce-payments' ),
 		annual_revenue: __(
 			'Select your annual revenue',
 			'woocommerce-payments'
@@ -126,7 +112,7 @@ export default {
 		mixedString: sprintf(
 			__(
 				/* translators: %1$s: WooPayments, %2$s: WooPay  */
-				'By using %1$s, you agree to be bound by our {{tosLink}}Terms of Service{{/tosLink}} (including %2$s {{merchantTermsLink}}merchant terms{{/merchantTermsLink}}) and acknowledge that you have read our {{privacyPolicyLink}}Privacy Policy{{/privacyPolicyLink}}.',
+				'By using %1$s, you agree to be bound by our {{tosLink}}Terms of Service{{/tosLink}} (including {{merchantTermsLink}}%2$s merchant terms{{/merchantTermsLink}}) and acknowledge that you have read our {{privacyPolicyLink}}Privacy Policy{{/privacyPolicyLink}}.',
 				'woocommerce-payments'
 			),
 			'WooPayments',
