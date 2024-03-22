@@ -8,7 +8,7 @@ import { initializeBnplSiteMessaging } from './bnpl-site-messaging';
 import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 
-jQuery( function ( $ ) {
+jQuery( async function ( $ ) {
 	/**
 	 * Check for the existence of the `wcpayStripeSiteMessaging` variable on the window object.
 	 * This variable holds the configuration for Stripe site messaging and contains the following keys:
@@ -50,7 +50,7 @@ jQuery( function ( $ ) {
 	const VARIATION_ID_SELECTOR = 'input[name="variation_id"]';
 
 	const quantityInput = $( QUANTITY_INPUT_SELECTOR );
-	const bnplPaymentMessageElement = initializeBnplSiteMessaging();
+	const bnplPaymentMessageElement = await initializeBnplSiteMessaging();
 	const hasVariations = Object.keys( productVariations ).length > 1;
 
 	/**
