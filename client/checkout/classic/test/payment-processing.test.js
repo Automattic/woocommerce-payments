@@ -185,7 +185,8 @@ describe( 'Stripe Payment Element mounting', () => {
 
 		expect( getAppearance ).toHaveBeenCalled();
 		expect( apiMock.saveUPEAppearance ).toHaveBeenCalledWith(
-			appearanceMock
+			appearanceMock,
+			'shortcode_checkout'
 		);
 		expect( dispatchMock ).toHaveBeenCalled();
 	} );
