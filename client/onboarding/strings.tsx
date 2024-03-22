@@ -7,8 +7,6 @@ import interpolateComponents from '@automattic/interpolate-components';
 import React from 'react';
 
 const documentationUrls = {
-	sandboxMode:
-		'https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/',
 	tos: 'https://wordpress.com/tos/',
 	merchantTerms: 'https://wordpress.com/tos/#more-woopay-specifically',
 	privacyPolicy: 'https://automattic.com/privacy/',
@@ -16,6 +14,28 @@ const documentationUrls = {
 
 export default {
 	steps: {
+		mode: {
+			heading: __(
+				'Let’s get your store ready to accept payments',
+				'woocommerce-payments'
+			),
+			subheading: __(
+				'Select the option that best fits your needs.',
+				'woocommerce-payments'
+			),
+			label: __(
+				'I’d like to set up payments for my store',
+				'woocommerce-payments'
+			),
+			note: __(
+				'You’ll need to provide details to verify that you’re the owner of the account. If you’re setting up payments for someone else, choose sandbox mode.',
+				'woocommerce-payments'
+			),
+			continue: {
+				live: __( 'Continue', 'woocommerce-payments' ),
+				test: __( 'Continue in sandbox mode', 'woocommerce-payments' ),
+			},
+		},
 		business: {
 			heading: __(
 				'Let’s get your store ready to accept payments',

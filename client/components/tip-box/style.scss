@@ -1,9 +1,8 @@
 .wcpay-component-tip-box {
-	@include wc-others-caption;
 	display: grid;
 	grid-template-columns: 24px 1fr;
 	column-gap: $gap-smaller;
-	padding: $gap $gap-small $gap $gap-smaller;
+	padding: $gap $gap-small;
 	margin: $gap 0;
 
 	&:first-child {
@@ -29,6 +28,14 @@
 		background-color: $gray-0;
 		color: $gray-900;
 
+		.components-button.is-link {
+			color: #0063a1; // Gutenberg/Blue -10%
+		}
+	}
+	&.yellow {
+		fill: $gray-50;
+		background-color: #fef8ee;
+		color: $gray-900;
 		.components-button.is-link {
 			color: #0063a1; // Gutenberg/Blue -10%
 		}
