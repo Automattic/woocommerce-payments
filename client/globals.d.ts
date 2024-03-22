@@ -102,10 +102,6 @@ declare global {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
 		};
-		onboardingFlowState?: {
-			current_step: string;
-			data: OnboardingFields;
-		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
 		errorMessage: string;

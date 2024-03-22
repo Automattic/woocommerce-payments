@@ -16,11 +16,8 @@ import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
 import { trackStarted } from './tracking';
 import './style.scss';
-import { persistFlowState } from './utils';
 
 const OnboardingStepper = () => {
-	const { data } = useOnboardingContext();
-
 	const handleExit = () => {
 		if (
 			window.history.length > 1 &&
@@ -30,17 +27,10 @@ const OnboardingStepper = () => {
 		window.location.href = wcSettings.adminUrl;
 	};
 
-	const handleStepChange = ( step: string ) => {
-		window.scroll( 0, 0 );
-		persistFlowState( step, data );
-	};
+	const handleStepChange = () => window.scroll( 0, 0 );
 
 	return (
-		<Stepper
-			initialStep={ wcpaySettings.onboardingFlowState?.current_step }
-			onStepChange={ handleStepChange }
-			onExit={ handleExit }
-		>
+		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>
 			<Step name="business">
 				<OnboardingForm>
 					<BusinessDetails />
@@ -56,8 +46,7 @@ const OnboardingStepper = () => {
 	);
 };
 
-// TODO: WE CAN PROBABLY JUST ATTACH THIS ON A SERVER LEVEL (URL AND BUSINESS DATA)
-const initialData = wcpaySettings.onboardingFlowState?.data ?? {
+const initialData = {
 	business_name: wcSettings?.siteTitle,
 	url:
 		location.hostname === 'localhost'

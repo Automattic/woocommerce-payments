@@ -1437,9 +1437,6 @@ class WC_Payments_Account {
 			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
 
-		// Clear persisted onboarding flow state.
-		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
-
 		if ( ! $collect_payout_requirements ) {
 			// Clear onboarding related account options if this is an initial onboarding attempt.
 			WC_Payments_Onboarding_Service::clear_account_options();

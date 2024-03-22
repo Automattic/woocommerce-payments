@@ -9,7 +9,6 @@ import ChevronLeft from 'gridicons/dist/chevron-left';
  * Internal dependencies
  */
 import { useStepperContext } from 'components/stepper';
-import RestoredStateBanner from './restored-state-banner';
 import { OnboardingSteps } from './types';
 import { useTrackAbandoned } from './tracking';
 import strings from './strings';
@@ -22,8 +21,7 @@ interface Props {
 
 const Step: React.FC< Props > = ( { name, children } ) => {
 	const { trackAbandoned } = useTrackAbandoned();
-	const { progress, prevStep, exit } = useStepperContext();
-
+	const { prevStep, exit } = useStepperContext();
 	const handleExit = () => {
 		trackAbandoned( 'exit' );
 		exit();
@@ -54,7 +52,6 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 				</button>
 			</div>
 			<div className="stepper__wrapper">
-				<RestoredStateBanner />
 				<h1 className="stepper__heading">
 					{ strings.steps[ name ].heading }
 				</h1>

@@ -86,14 +86,3 @@ export const getMccsFlatList = (): ListItem[] => {
 		];
 	}, [] as ListItem[] );
 };
-
-export const persistFlowState = (
-	currentStep: string,
-	data: OnboardingFields
-): Promise< void > =>
-	apiFetch( {
-		path: `${ NAMESPACE }/onboarding/flow-state`,
-		method: 'POST',
-		data: { current_step: currentStep, data },
-		parse: false,
-	} );
