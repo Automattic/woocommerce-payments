@@ -563,7 +563,7 @@ class WC_Payments {
 
 		self::maybe_init_woopay_direct_checkout();
 
-		self::maybe_enqueue_woopay_common_config_script();
+		self::maybe_enqueue_woopay_common_config_script( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 
 		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
 		$enabled_bnpl_payment_methods = array_intersect(
@@ -1544,10 +1544,12 @@ class WC_Payments {
 	 * Enqueues the common config script if the WooPay Direct Checkout flow is
 	 * enabled and the express checkout button is disabled on the cart page.
 	 *
+	 * @param bool $should_enqueue Whether the script should be enqueued.
+	 *
 	 * @return void
 	 */
-	public static function maybe_enqueue_woopay_common_config_script() {
-		if ( ! WC_Payments_Features::is_woopay_direct_checkout_enabled() ) {
+	public static function maybe_enqueue_woopay_common_config_script( $should_enqueue ) {
+		if ( ! $should_enqueue ) {
 			return;
 		}
 
