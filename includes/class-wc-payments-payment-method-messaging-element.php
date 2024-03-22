@@ -97,6 +97,16 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			]
 		);
 
+		// Ensure wcpayConfig is available in the page.
+		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
+		wp_add_inline_script(
+			'WCPAY_PRODUCT_DETAILS',
+			"
+			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
+			",
+			'before'
+		);
+
 		return '<div id="payment-method-message"></div>';
 	}
 }
