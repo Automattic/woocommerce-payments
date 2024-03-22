@@ -62,6 +62,7 @@ const BusinessDetails: React.FC = () => {
 			<OnboardingTextField name="url" />
 			<OnboardingSelectField
 				name="country"
+				defaultValue={ selectedCountry as Item }
 				options={ countries }
 				onChange={ handleTiedChange }
 			/>
