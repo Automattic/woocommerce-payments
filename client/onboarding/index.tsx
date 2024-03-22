@@ -11,7 +11,6 @@ import { OnboardingContextProvider, useOnboardingContext } from './context';
 import { Stepper } from 'components/stepper';
 import { OnboardingForm } from './form';
 import Step from './step';
-import ModeChoice from './steps/mode-choice';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
@@ -37,15 +36,25 @@ const OnboardingStepper = () => {
 		persistFlowState( step, data );
 	};
 
+	const initialStep = () => {
+		// since mode step is not part of the stepper anymore, we need to overwrite it
+		// Remove it in a future version, once enough time has passed that people won't be likely to have mode or personal saved as this value.
+		const currentStep = wcpaySettings.onboardingFlowState?.current_step;
+		if (
+			currentStep &&
+			( currentStep === 'mode' || currentStep === 'personal' )
+		) {
+			return 'business';
+		}
+		return currentStep;
+	};
+
 	return (
 		<Stepper
-			initialStep={ wcpaySettings.onboardingFlowState?.current_step }
+			initialStep={ initialStep() }
 			onStepChange={ handleStepChange }
 			onExit={ handleExit }
 		>
-			<Step name="mode">
-				<ModeChoice />
-			</Step>
 			<Step name="personal">
 				<OnboardingForm>
 					<PersonalDetails />
