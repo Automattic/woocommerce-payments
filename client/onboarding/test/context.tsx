@@ -23,13 +23,13 @@ describe( 'OnboardingContext', () => {
 			} = useOnboardingContext();
 			const handleClick = () => {
 				setData( {
-					url: 'URL',
+					business_type: 'Individual',
 				} );
 				setErrors( {
-					url: 'Required',
+					business_type: 'Required',
 				} );
 				setTouched( {
-					url: true,
+					business_type: true,
 				} );
 			};
 			return (
@@ -42,7 +42,7 @@ describe( 'OnboardingContext', () => {
 			);
 		};
 
-		const initialData = { url: 'Initial' };
+		const initialData = { business_type: 'Individual' };
 
 		render(
 			<OnboardingContextProvider initialData={ initialData }>
@@ -51,19 +51,21 @@ describe( 'OnboardingContext', () => {
 		);
 
 		expect(
-			screen.getByText( 'data: {"url":"Initial"}' )
+			screen.getByText( 'data: {"business_type":"Individual"}' )
 		).toBeInTheDocument();
 		expect( screen.getByText( 'errors: {}' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'touched: {}' ) ).toBeInTheDocument();
 
 		user.click( screen.getByText( 'Update Data' ) );
 
-		expect( screen.getByText( 'data: {"url":"URL"}' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'errors: {"url":"Required"}' )
+			screen.getByText( 'data: {"business_type":"Individual"}' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'touched: {"url":true}' )
+			screen.getByText( 'errors: {"business_type":"Required"}' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'touched: {"business_type":true}' )
 		).toBeInTheDocument();
 	} );
 
