@@ -334,31 +334,7 @@ class WooPay_Session {
 
 		$session = self::get_init_session_request( $order_id, $key, $billing_email );
 
-		$store_blog_token = ( WooPay_Utilities::get_woopay_url() === WooPay_Utilities::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
-
-		$message = wp_json_encode( $session );
-
-		// Generate an initialization vector (IV) for encryption.
-		$iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
-
-		// Encrypt the JSON session.
-		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $iv );
-
-		// Create an HMAC hash for data integrity.
-		$hash = hash_hmac( 'sha256', $session_encrypted, $store_blog_token );
-
-		$data = [
-			'session' => $session_encrypted,
-			'iv'      => $iv,
-			'hash'    => $hash,
-		];
-
-		$response = [
-			'blog_id' => Jetpack_Options::get_option( 'id' ),
-			'data'    => array_map( 'base64_encode', $data ),
-		];
-
-		return $response;
+		return WooPay_Utilities::encrypt_and_sign_data( $session );
 	}
 
 	/**
@@ -369,7 +345,7 @@ class WooPay_Session {
 	 * @param string|null $billing_email Pay-for-order billing email.
 	 * @return array The initial session request data without email and user_session.
 	 */
-	private static function get_init_session_request( $order_id = null, $key = null, $billing_email = null ) {
+	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null ) {
 		$user             = wp_get_current_user();
 		$is_pay_for_order = null !== $order_id;
 		$order            = wc_get_order( $order_id );
@@ -554,6 +530,58 @@ class WooPay_Session {
 		}
 
 		wp_send_json( self::get_frontend_init_session_request() );
+	}
+
+	/**
+	 * Used to initialize woopay session on frontend
+	 *
+	 * @return void
+	 */
+	public static function ajax_get_woopay_minimum_session_data() {
+		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		$blog_id = Jetpack_Options::get_option('id');
+		if ( empty( $blog_id ) ) {
+			wp_send_json_error(
+				__( 'Could not determine the blog ID.', 'woocommerce-payments' ),
+				503
+			);
+		}
+
+		wp_send_json( self::get_woopay_minimum_session_data() );
+	}
+
+	/**
+	 * Return WooPay minimum session data.
+	 * 
+	 * @return array Array of minimum session data used by WooPay or false on failures.
+	 */
+	public static function get_woopay_minimum_session_data() {
+		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
+			return [];
+		}
+		
+		$blog_id = Jetpack_Options::get_option('id');
+		if ( empty( $blog_id ) ) {
+			return [];
+		}
+
+		$data = [
+			'blog_id'           => $blog_id,
+			'blog_rest_url'     => get_rest_url(),
+			'blog_checkout_url' => wc_get_checkout_url(),
+			'session_nonce'     => self::create_woopay_nonce( get_current_user_id() ),
+			'store_api_token'   => self::init_store_api_token(),
+		];
+
+		return WooPay_Utilities::encrypt_and_sign_data( $data );
 	}
 
 	/**

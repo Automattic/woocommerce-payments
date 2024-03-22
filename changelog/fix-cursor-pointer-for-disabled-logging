@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix the cursor pointer when hovering over disabled checkboxes in Advanced Settings
