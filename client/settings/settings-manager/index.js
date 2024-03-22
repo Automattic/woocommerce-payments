@@ -65,7 +65,7 @@ const GeneralSettingsDescription = () => (
 			{ sprintf(
 				/* translators: %s: WooPayments */
 				__(
-					'Enable or disable %s on your store and turn on test mode to simulate transactions.',
+					'Enable or disable %s on your store.',
 					'woocommerce-payments'
 				),
 				'WooPayments'
