@@ -92,17 +92,27 @@ function wcpay_jetpack_init() {
 		]
 	);
 
-	// When only WooPayments is active, minimize the data to send back to WPcom for supporting Woo Mobile apps.
+	// When only WooPayments is active, minimize the data to send back to WPCOM, tied to merchant's privacy settings.
+	$sync_modules = [
+		'Automattic\\Jetpack\\Sync\\Modules\\Options',
+		'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
+	];
+	if ( WC_Site_Tracking::is_tracking_enabled() ) {
+		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce';
+		if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
+			$cot_controller = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class );
+			if ( $cot_controller->custom_orders_table_usage_is_enabled() ) {
+				$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce_HPOS_Orders';
+			}
+		}
+	}
+
 	$jetpack_config->ensure(
 		'sync',
 		array_merge_recursive(
 			\Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS,
 			[
-				'jetpack_sync_modules'           =>
-					[
-						'Automattic\\Jetpack\\Sync\\Modules\\Options',
-						'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
-					],
+				'jetpack_sync_modules'           => $sync_modules,
 				'jetpack_sync_options_whitelist' =>
 					[
 						'active_plugins',
