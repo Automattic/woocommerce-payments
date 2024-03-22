@@ -100,9 +100,13 @@ function wcpay_jetpack_init() {
 	if ( WC_Site_Tracking::is_tracking_enabled() ) {
 		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce';
 		if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
-			$cot_controller = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class );
-			if ( $cot_controller->custom_orders_table_usage_is_enabled() ) {
-				$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce_HPOS_Orders';
+			try {
+				$cot_controller = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class );
+				if ( $cot_controller->custom_orders_table_usage_is_enabled() ) {
+					$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce_HPOS_Orders';
+				}
+			} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+				// Do nothing.
 			}
 		}
 	}
