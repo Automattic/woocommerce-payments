@@ -1539,6 +1539,7 @@ class WC_Payments {
 					'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
 					'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),
 					'ajaxUrl'                       => admin_url( 'admin-ajax.php' ),
+					'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
 				]
 			);
 			wp_enqueue_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
