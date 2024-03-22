@@ -217,6 +217,12 @@
 			button {
 				@include wp-subtitle;
 				padding: $gap $gap-largest $gap $gap-large !important;
+				&:focus {
+					box-shadow: none !important;
+				}
+				&:hover {
+					background: #fff !important;
+				}
 			}
 		}
 		.components-notice {

@@ -14,10 +14,6 @@ const isValid = ( name: keyof OnboardingFields, value?: string ): boolean => {
 	if ( ! value ) return false;
 
 	switch ( name ) {
-		case 'email':
-			return value.includes( '@' );
-		case 'phone':
-			return /^\+\d{7,}$/.test( value );
 		default:
 			return true;
 	}
