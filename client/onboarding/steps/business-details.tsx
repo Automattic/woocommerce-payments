@@ -76,44 +76,52 @@ const BusinessDetails: React.FC = () => {
 				</InlineNotice>
 			) }
 			{ ! selectedCountry && (
-				<OnboardingSelectField
-					name="country"
-					options={ countries }
-					onChange={ handleTiedChange }
-				/>
+				<span data-testid={ 'country-select' }>
+					<OnboardingSelectField
+						name="country"
+						options={ countries }
+						onChange={ handleTiedChange }
+					/>
+				</span>
 			) }
 			{ selectedCountry && selectedCountry.types.length > 0 && (
-				<OnboardingSelectField
-					name="business_type"
-					options={ selectedCountry.types }
-					onChange={ handleTiedChange }
-				>
-					{ ( item: Item & BusinessType ) => (
-						<div>
-							<div>{ item.name }</div>
-							<div className="complete-business-info-task__option-description">
-								{ item.description }
+				<span data-testid={ 'business-type-select' }>
+					<OnboardingSelectField
+						name="business_type"
+						options={ selectedCountry.types }
+						onChange={ handleTiedChange }
+					>
+						{ ( item: Item & BusinessType ) => (
+							<div>
+								<div>{ item.name }</div>
+								<div className="complete-business-info-task__option-description">
+									{ item.description }
+								</div>
 							</div>
-						</div>
-					) }
-				</OnboardingSelectField>
+						) }
+					</OnboardingSelectField>
+				</span>
 			) }
 			{ selectedBusinessType &&
 				selectedBusinessType.structures.length > 0 && (
-					<OnboardingSelectField
-						name="company.structure"
-						options={ selectedBusinessType.structures }
-						onChange={ handleTiedChange }
-					/>
+					<span data-testid={ 'business-structure-select' }>
+						<OnboardingSelectField
+							name="company.structure"
+							options={ selectedBusinessType.structures }
+							onChange={ handleTiedChange }
+						/>
+					</span>
 				) }
 			{ selectedCountry &&
 				selectedBusinessType &&
 				selectedBusinessStructure && (
-					<OnboardingGroupedSelectField
-						name="mcc"
-						options={ mccsFlatList }
-						searchable
-					/>
+					<span data-testid={ 'mcc-select' }>
+						<OnboardingGroupedSelectField
+							name="mcc"
+							options={ mccsFlatList }
+							searchable
+						/>
+					</span>
 				) }
 
 			{ selectedCountry &&
