@@ -38,9 +38,13 @@ const OnboardingStepper = () => {
 
 	const initialStep = () => {
 		// since mode step is not part of the stepper anymore, we need to overwrite it
+		// Remove it in a future version, once enough time has passed that people won't be likely to have mode or personal saved as this value.
 		const currentStep = wcpaySettings.onboardingFlowState?.current_step;
-		if ( currentStep && currentStep === 'mode' ) {
-			return 'personal';
+		if (
+			currentStep &&
+			( currentStep === 'mode' || currentStep === 'personal' )
+		) {
+			return 'business';
 		}
 		return currentStep;
 	};
