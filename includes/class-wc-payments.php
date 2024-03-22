@@ -588,12 +588,14 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-additional-payment-methods-admin-notes-removal.php';
 		require_once __DIR__ . '/migrations/class-link-woopay-mutual-exclusion-handler.php';
+		require_once __DIR__ . '/migrations/class-gateway-settings-sync.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Additional_Payment_Methods_Admin_Notes_Removal(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
@@ -1052,6 +1054,10 @@ class WC_Payments {
 		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
 		$reports_authorizations_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
+		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
+		$woopay_session_controller->register_routes();
+
 	}
 
 	/**
@@ -1133,6 +1139,15 @@ class WC_Payments {
 	 */
 	public static function get_payment_method_map() {
 		return self::$payment_method_map;
+	}
+
+	/**
+	 * Returns Payment Gateway map.
+	 *
+	 * @return array
+	 */
+	public static function get_payment_gateway_map() {
+		return self::$payment_gateway_map;
 	}
 
 	/**
@@ -1415,6 +1430,7 @@ class WC_Payments {
 			add_action( 'wc_ajax_wcpay_init_woopay', [ WooPay_Session::class, 'ajax_init_woopay' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_session', [ WooPay_Session::class, 'ajax_get_woopay_session' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
+			add_action( 'wc_ajax_wcpay_get_woopay_minimum_session_data', [ WooPay_Session::class, 'ajax_get_woopay_minimum_session_data' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
 			// We should remove this once both features are available by default in the WC minimum supported version.
