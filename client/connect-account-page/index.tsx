@@ -97,16 +97,21 @@ const ConnectAccountPage: React.FC = () => {
 		document.body.appendChild( container );
 	};
 
-	const handleSetup = async () => {
-		setSubmitted( true );
-
+	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
 		recordEvent( 'wcpay_connect_account_clicked', {
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
 			is_new_onboarding_flow: isNewFlowEnabled,
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
+			sandbox_mode: sandboxMode,
 		} );
+	};
+
+	const handleSetup = async () => {
+		setSubmitted( true );
+
+		trackConnectAccountClicked( false );
 
 		// If there is an incentive available, request promo activation before redirecting.
 		// Display an error message if the request fails.
@@ -134,6 +139,8 @@ const ConnectAccountPage: React.FC = () => {
 
 	const handleEnableSandboxMode = async () => {
 		setSandboxModeClicked( true );
+
+		trackConnectAccountClicked( true );
 
 		const url = addQueryArgs( connectUrl, {
 			test_mode: true,
