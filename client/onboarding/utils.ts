@@ -7,10 +7,9 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from 'data/constants';
 import { ListItem } from 'components/grouped-select-control';
 import businessTypeDescriptionStrings from './translations/descriptions';
-import { Country, OnboardingFields } from './types';
+import { Country } from './types';
 
 export const fromDotNotation = (
 	record: Record< string, unknown >
