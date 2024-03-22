@@ -36,7 +36,7 @@ class Response implements ArrayAccess {
 	 * @param mixed $offset The key to check.
 	 * @return bool
 	 */
-	public function offsetExists( $offset ) : bool {
+	public function offsetExists( $offset ): bool {
 		return isset( $this->data[ $offset ] );
 	}
 

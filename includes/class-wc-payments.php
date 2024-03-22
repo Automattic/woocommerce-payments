@@ -1062,7 +1062,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
 		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
 		$woopay_session_controller->register_routes();
-
 	}
 
 	/**
