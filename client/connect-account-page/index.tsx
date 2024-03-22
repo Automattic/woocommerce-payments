@@ -51,7 +51,7 @@ const ConnectAccountPage: React.FC = () => {
 	const isCountrySupported = !! availableCountries[ country ];
 
 	const SandboxModeNotice = () => (
-		<BannerNotice status="warning" isDismissible={ false }>
+		<BannerNotice icon status="warning" isDismissible={ false }>
 			{ strings.sandboxModeNotice }
 		</BannerNotice>
 	);
