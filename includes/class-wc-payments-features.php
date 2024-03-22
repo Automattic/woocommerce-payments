@@ -269,7 +269,7 @@ class WC_Payments_Features {
 	/**
 	 * Checks whether WooPay Direct Checkout is enabled.
 	 *
-	 * @return bool
+	 * @return bool True if Direct Checkout is enabled, false otherwise.
 	 */
 	public static function is_woopay_direct_checkout_enabled() {
 		$account_cache                   = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
