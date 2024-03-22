@@ -102,7 +102,7 @@ function wcpay_jetpack_init() {
 		'Automattic\\Jetpack\\Sync\\Modules\\Options',
 		'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
 	];
-	if ( WC_Site_Tracking::is_tracking_enabled() ) {
+	if ( class_exists( 'WC_Site_Tracking' ) && WC_Site_Tracking::is_tracking_enabled() ) {
 		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce';
 		if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
 			try {
