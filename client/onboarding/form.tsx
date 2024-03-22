@@ -113,7 +113,8 @@ export const OnboardingSelectField = < ItemType extends SelectItem >( {
 				( item ) => item.key === data[ name ]
 			) }
 			placeholder={
-				( strings.placeholders as Record< string, string > )[ name ]
+				( strings.placeholders as Record< string, string > )[ name ] ??
+				strings.placeholders.generic
 			}
 			onChange={ ( { selectedItem } ) => {
 				if ( onChange ) {
@@ -153,7 +154,8 @@ export const OnboardingGroupedSelectField = <
 				( item ) => item.key === data[ name ]
 			) }
 			placeholder={
-				( strings.placeholders as Record< string, string > )[ name ]
+				( strings.placeholders as Record< string, string > )[ name ] ??
+				strings.placeholders.generic
 			}
 			onChange={ ( { selectedItem } ) => {
 				if ( onChange ) {
