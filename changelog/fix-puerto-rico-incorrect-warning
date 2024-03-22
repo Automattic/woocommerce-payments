@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix an incorrect warning about Puerto Rico being unsupported by WooPayments
