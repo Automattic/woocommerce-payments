@@ -119,7 +119,6 @@ class Create_And_Confirm_Setup_Intention extends Request {
 	 */
 	public function set_mandate_data( array $mandate_data ) {
 		$this->set_param( 'mandate_data', $mandate_data );
-
 	}
 
 	/**

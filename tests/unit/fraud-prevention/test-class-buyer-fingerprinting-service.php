@@ -49,7 +49,7 @@ class Buyer_Fingerprinting_Service_Test extends WCPAY_UnitTestCase {
 		$ip_country  = Country_Code::UNITED_KINGDOM;
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function() use ( $ip_country ) {
+			function () use ( $ip_country ) {
 				return $ip_country;
 			}
 		);

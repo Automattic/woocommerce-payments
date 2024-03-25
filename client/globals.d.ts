@@ -1,11 +1,7 @@
 /**
  * Internal dependencies
  */
-import type {
-	MccsDisplayTreeItem,
-	Country,
-	OnboardingFields,
-} from 'onboarding/types';
+import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 
 declare global {
 	const wcpaySettings: {
@@ -45,6 +41,7 @@ declare global {
 				minimum_manual_deposit_amounts: Record< string, number >;
 				minimum_scheduled_deposit_amounts: Record< string, number >;
 			};
+			depositsStatus?: string;
 			currentDeadline?: bigint;
 			detailsSubmitted?: boolean;
 			pastDue?: boolean;
@@ -100,10 +97,6 @@ declare global {
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
-		};
-		onboardingFlowState?: {
-			current_step: string;
-			data: OnboardingFields;
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;

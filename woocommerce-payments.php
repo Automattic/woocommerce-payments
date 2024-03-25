@@ -8,10 +8,11 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
- * WC tested up to: 8.6.0
+ * WC tested up to: 8.7.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
  * Version: 7.3.0
+ * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
  */
@@ -68,6 +69,11 @@ if ( ! $is_autoloading_ready ) {
 
 /**
  * Initialize the Jetpack functionalities: connection, identity crisis, etc.
+ *
+ * PSR-11 containers declares to throw an un-throwable interface
+ * (it does not extend Throwable), and Psalm does not accept it.
+ *
+ * @psalm-suppress MissingThrowsDocblock
  */
 function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
@@ -92,17 +98,31 @@ function wcpay_jetpack_init() {
 		]
 	);
 
-	// When only WooPayments is active, minimize the data to send back to WPcom for supporting Woo Mobile apps.
+	// When only WooPayments is active, minimize the data to send back to WPCOM, tied to merchant's privacy settings.
+	$sync_modules = [
+		'Automattic\\Jetpack\\Sync\\Modules\\Options',
+		'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
+	];
+	if ( class_exists( 'WC_Site_Tracking' ) && WC_Site_Tracking::is_tracking_enabled() ) {
+		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce';
+		if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
+			try {
+				$cot_controller = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class );
+				if ( $cot_controller->custom_orders_table_usage_is_enabled() ) {
+					$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce_HPOS_Orders';
+				}
+			} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+				// Do nothing.
+			}
+		}
+	}
+
 	$jetpack_config->ensure(
 		'sync',
 		array_merge_recursive(
 			\Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS,
 			[
-				'jetpack_sync_modules'           =>
-					[
-						'Automattic\\Jetpack\\Sync\\Modules\\Options',
-						'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
-					],
+				'jetpack_sync_modules'           => $sync_modules,
 				'jetpack_sync_options_whitelist' =>
 					[
 						'active_plugins',
@@ -162,7 +182,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 			return;
 		}
 
-		$is_plugin_active = function( $plugin_name ) {
+		$is_plugin_active = function ( $plugin_name ) {
 			$plugin_slug = "$plugin_name/$plugin_name.php";
 
 			// Check if the specified $plugin_name is in the process of being activated via the Admin > Plugins screen.
@@ -268,7 +288,7 @@ function wcpay_show_old_jetpack_notice() {
 		<p><b>WooPayments</b></p>
 		<p>
 			<?php
-				echo sprintf(
+				printf(
 					/* translators: %1 WooPayments. */
 					esc_html( __( 'The version of Jetpack installed is too old to be used with %1$s. %1$s has been disabled. Please deactivate or update Jetpack.', 'woocommerce-payments' ) ),
 					'WooPayments'
@@ -399,7 +419,7 @@ add_action( 'woocommerce_blocks_loaded', 'register_woopay_extension' );
  */
 add_action(
 	'before_woocommerce_init',
-	function() {
+	function () {
 		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
 			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woocommerce-payments/woocommerce-payments.php', true );
 		}
