@@ -23,7 +23,7 @@ const cardTestingPreventionStates = [
 ];
 
 // Skipping due to test failure – missing selector when changing account currency #8354
-describe.skip.each( cardTestingPreventionStates )(
+describe.each( cardTestingPreventionStates )(
 	'BNPL checkout',
 	( { cardTestingPreventionEnabled } ) => {
 		beforeAll( async () => {
