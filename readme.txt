@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 7.4.0 - 2024-03-27 =
+= 7.4.0-test-3 - unreleased =
 * Add - Add account reset for sandboxes
 * Add - Add a loading spinner to the "Proceed to Checkout" button in shortcode cart.
 * Add - Add data telemetry for the Proceed to Checkout button and the WooPay direct checkout.
