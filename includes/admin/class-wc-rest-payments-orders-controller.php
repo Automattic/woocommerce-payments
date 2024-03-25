@@ -68,7 +68,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		$this->gateway          = $gateway;
 		$this->customer_service = $customer_service;
 		$this->order_service    = $order_service;
-		$this->token_service = $token_service;
+		$this->token_service    = $token_service;
 	}
 
 	/**
@@ -226,7 +226,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
-			// Add payment method for future subscription payments
+			// Add payment method for future subscription payments.
 			if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
 				$generated_card = $intent->get_charge()->get_payment_method_details()['card_present']['generated_card'] ?? null;
 				// If we don't get a generated card, e.g. because a digital wallet was used, we can still return that the initial payment was successful.
@@ -236,7 +236,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 					$this->gateway->add_token_to_order( $order, $token );
 					foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
 						$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-						if ( !( function_exists( 'wcs_is_manual_renewal_required' ) && wcs_is_manual_renewal_required() ) ) {
+						if ( ! ( function_exists( 'wcs_is_manual_renewal_required' ) && wcs_is_manual_renewal_required() ) ) {
 							$subscription->set_requires_manual_renewal( false );
 						}
 						$subscription->save();

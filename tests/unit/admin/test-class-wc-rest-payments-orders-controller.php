@@ -1757,13 +1757,13 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
-				'charge' => [
+				'charge'   => [
 					'payment_method_details' => [
-						'type' => 'card_present',
+						'type'         => 'card_present',
 						'card_present' => [
 							'generated_card' => $generated_card_id,
 						],
-					]
+					],
 				],
 				'metadata' => [
 					'order_id' => $order->get_id(),
@@ -1800,8 +1800,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_token_service
 			->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
-			->with( $generated_card_id,
-			$this->isInstanceOf( WP_User::class ));
+			->with(
+				$generated_card_id,
+				$this->isInstanceOf( WP_User::class )
+			);
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
@@ -1812,7 +1814,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		);
 
 		$response = $this->controller->capture_terminal_payment( $request );
-		$this->assertEquals(200, $response->get_status() );
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	/**
@@ -1850,12 +1852,11 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
-				'charge' => [
+				'charge'   => [
 					'payment_method_details' => [
-						'type' => 'card_present',
-						'card_present' => [
-						],
-					]
+						'type'         => 'card_present',
+						'card_present' => [],
+					],
 				],
 				'metadata' => [
 					'order_id' => $order->get_id(),
