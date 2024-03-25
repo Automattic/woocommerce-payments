@@ -99,6 +99,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$response = $this->controller->get_summary( $request );
 		$this->assertSame( [], $response->get_data() );
+
 	}
 
 	public function test_get_summary_error() {

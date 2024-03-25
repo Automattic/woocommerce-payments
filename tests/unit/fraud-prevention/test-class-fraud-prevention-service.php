@@ -136,4 +136,5 @@ class Fraud_Prevention_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $is_valid );
 	}
+
 }
