@@ -713,4 +713,5 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		return $mock_order;
 	}
+
 }

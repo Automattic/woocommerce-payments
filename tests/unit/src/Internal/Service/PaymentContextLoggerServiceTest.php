@@ -172,4 +172,5 @@ class PaymentContextLoggerServiceTest extends WCPAY_UnitTestCase {
 			->with( $expected_log );
 		$this->sut->log_changes( $this->mock_payment_context );
 	}
+
 }
