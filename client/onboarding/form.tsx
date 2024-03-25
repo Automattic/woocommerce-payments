@@ -95,7 +95,6 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = (
 interface OnboardingSelectFieldProps< ItemType >
 	extends Partial< Omit< SelectFieldProps< ItemType >, 'onChange' > > {
 	name: keyof OnboardingFields;
-	defaultValue?: ItemType | null;
 	onChange?: ( name: keyof OnboardingFields, item?: ItemType | null ) => void;
 }
 
@@ -103,17 +102,16 @@ export const OnboardingSelectField = < ItemType extends SelectItem >( {
 	onChange,
 	...rest
 }: OnboardingSelectFieldProps< ItemType > ): JSX.Element => {
-	const { name, defaultValue } = rest;
+	const { name } = rest;
 	const { data, setData } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
 	return (
 		<SelectField
 			label={ strings.fields[ name ] }
-			value={
-				defaultValue ||
-				rest.options?.find( ( item ) => item.key === data[ name ] )
-			}
+			value={ rest.options?.find(
+				( item ) => item.key === data[ name ]
+			) }
 			placeholder={
 				( strings.placeholders as Record< string, string > )[ name ] ??
 				strings.placeholders.generic
