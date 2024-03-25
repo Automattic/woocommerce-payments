@@ -4,6 +4,7 @@
 import { recordUserEvent } from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
+import { renderBNPLCartMessaging } from './blocks/product-details';
 
 const recordProceedToCheckoutButtonClick = () => {
 	recordUserEvent( 'wcpay_proceed_to_checkout_button_click', {
@@ -66,4 +67,12 @@ const registerClassicCartCollateralsObserver = () => {
 window.addEventListener( 'load', () => {
 	addProceedToCheckoutTracking();
 	registerClassicCartCollateralsObserver();
+} );
+
+const { registerPlugin } = window.wp.plugins;
+
+// Register BNPL site messaging on the cart block.
+registerPlugin( 'bnpl-site-messaging', {
+	render: renderBNPLCartMessaging,
+	scope: 'woocommerce-checkout',
 } );

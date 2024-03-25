@@ -118,9 +118,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPE_APPEARANCE_TRANSIENT                         = 'wcpay_upe_appearance';
 	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT               = 'wcpay_wc_blocks_upe_appearance';
 	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_product_page_appearance';
+	const UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_classic_cart_appearance';
+	const UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT         = 'wcpay_upe_bnpl_cart_block_appearance';
 	const UPE_APPEARANCE_THEME_TRANSIENT                   = 'wcpay_upe_appearance_theme';
 	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT         = 'wcpay_wc_blocks_upe_appearance_theme';
 	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_product_page_appearance_theme';
+	const UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_classic_cart_appearance_theme';
+	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT   = 'wcpay_upe_bnpl_cart_block_appearance_theme';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -3887,7 +3891,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$elements_location = isset( $_POST['elements_location'] ) ? wc_clean( wp_unslash( $_POST['elements_location'] ) ) : null;
 			$appearance        = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
 
-			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page' ];
+			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block' ];
 			if ( ! $elements_location || ! in_array( $elements_location, $valid_locations, true ) ) {
 				throw new Exception(
 					__( 'Unable to update UPE appearance values at this time.', 'woocommerce-payments' )
@@ -3909,7 +3913,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			/**
 			 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
 			 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
-			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', or 'bnpl_product_page'.
+			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block'.
 			 *
 			 * @since 7.4.0
 			 */
@@ -3919,11 +3923,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
 				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
 				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
+				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT,
+				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT,
 			][ $elements_location ];
 			$appearance_theme_transient = [
 				'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
 				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
 				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
+				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
 			][ $elements_location ];
 
 			if ( null !== $appearance ) {
@@ -3952,9 +3960,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		delete_transient( self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT );
 		delete_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
 		delete_transient( self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT );
 	}
 
 	/**

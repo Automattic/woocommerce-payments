@@ -16,15 +16,28 @@ import apiRequest from 'wcpay/checkout/utils/request';
  * @param {Object} api The API object used to save the UPE configuration.
  * @return {Promise<Object>} The appearance object for the UPE.
  */
-async function initializeAppearance( api ) {
-	const appearance = getUPEConfig( 'upeBnplProductPageAppearance' );
+const elementsLocations = {
+	bnplProductPage: {
+		configKey: 'upeBnplProductPageAppearance',
+		appearanceKey: 'bnpl_product_page',
+	},
+	bnplClassicCart: {
+		configKey: 'upeBnplClassicCartAppearance',
+		appearanceKey: 'bnpl_classic_cart',
+	},
+};
+
+async function initializeAppearance( api, location ) {
+	const { configKey, appearanceKey } = elementsLocations[ location ];
+
+	const appearance = getUPEConfig( configKey );
 	if ( appearance ) {
 		return Promise.resolve( appearance );
 	}
 
 	return await api.saveUPEAppearance(
-		getAppearance( 'bnpl_product_page' ),
-		'bnpl_product_page'
+		getAppearance( appearanceKey ),
+		appearanceKey
 	);
 }
 
@@ -43,9 +56,11 @@ export const initializeBnplSiteMessaging = async () => {
 	} = window.wcpayStripeSiteMessaging;
 
 	let amount;
+	let elementLocation = 'bnplProductPage';
 
 	if ( isCart || isCartBlock ) {
 		amount = parseInt( cartTotal, 10 ) || 0;
+		elementLocation = 'bnplClassicCart';
 	} else {
 		amount = parseInt( productVariations.base_product.amount, 10 ) || 0;
 	}
@@ -53,14 +68,14 @@ export const initializeBnplSiteMessaging = async () => {
 	let paymentMessageElement;
 
 	if ( ! isCartBlock ) {
-    const api = new WCPayAPI(
-      {
-        publishableKey: publishableKey,
-        accountId: accountId,
-        locale: locale,
-      },
-      apiRequest
-    );
+		const api = new WCPayAPI(
+			{
+				publishableKey: publishableKey,
+				accountId: accountId,
+				locale: locale,
+			},
+			apiRequest
+		);
 
 		const options = {
 			amount: amount,
@@ -68,11 +83,11 @@ export const initializeBnplSiteMessaging = async () => {
 			paymentMethodTypes: paymentMethods || [],
 			countryCode: country, // Customer's country or base country of the store.
 		};
-    
-    const elementsOptions = {
-      appearance: await initializeAppearance( api ),
-      fonts: getFontRulesFromPage(),
-    };
+
+		const elementsOptions = {
+			appearance: await initializeAppearance( api, elementLocation ),
+			fonts: getFontRulesFromPage(),
+		};
 
 		paymentMessageElement = api
 			.getStripe()
