@@ -19,8 +19,7 @@ use WP_REST_Request;
  */
 class List_Transactions extends Paginated {
 
-	use Date_Parameters;
-	use Order_Info;
+	use Date_Parameters, Order_Info;
 
 	const DEFAULT_PARAMS = [
 		'sort'      => 'date',
@@ -310,4 +309,5 @@ class List_Transactions extends Paginated {
 
 		return new Response( $response );
 	}
+
 }

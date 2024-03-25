@@ -55,4 +55,5 @@ class WCPay_Multi_Currency_Settings_Tests extends WCPAY_UnitTestCase {
 			[ 'admin_print_scripts', 'maybe_add_print_emoji_detection_script' ],
 		];
 	}
+
 }

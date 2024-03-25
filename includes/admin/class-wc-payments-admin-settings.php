@@ -57,7 +57,7 @@ class WC_Payments_Admin_Settings {
 				<p>
 					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
 					<?php
-						printf(
+						echo sprintf(
 							/* translators: %s: WooPayments */
 							esc_html__( "All transactions are simulated. Customers can't make real purchases through %s.", 'woocommerce-payments' ),
 							'WooPayments'

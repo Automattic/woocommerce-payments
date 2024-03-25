@@ -62,4 +62,5 @@ class WC_REST_Payments_Capital_Controller extends WC_Payments_REST_Controller {
 		$request->assign_hook( 'wcpay_get_loans_request' );
 		return $request->handle_rest_request();
 	}
+
 }
