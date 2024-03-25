@@ -42,6 +42,11 @@
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8436 is closed. -->
 		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.Found" />
 		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed" />
+
+		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8437 is clsoed. -->
+		<exclude name="WooCommerce.Commenting.CommentHooks.MissingHookComment" />
+		<exclude name="WooCommerce.Commenting.CommentHooks.MissingSinceComment" />
+		<exclude name="WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle" />
 	</rule>
 
 	<!-- Disallow long array syntax -->
