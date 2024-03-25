@@ -544,4 +544,16 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 			'VND (decimal currency) - not skip symbol' => [ 123456, 'VND', false, [], '123.456 ₫ VND' ],
 		];
 	}
+
+	public function test_get_filtered_error_status_code_with_exception() {
+		$this->assertSame( 400, WC_Payments_Utils::get_filtered_error_status_code( new Exception( 'Just an exception' ) ) );
+	}
+
+	public function test_get_filtered_error_status_code_with_api_exception() {
+		$this->assertSame( 401, WC_Payments_Utils::get_filtered_error_status_code( new \WCPay\Exceptions\API_Exception( 'Error: Your card has insufficient funds.', 'card_declined', 401 ) ) );
+	}
+
+	public function test_get_filtered_error_status_code_with_api_exception_and_402_status() {
+		$this->assertSame( 400, WC_Payments_Utils::get_filtered_error_status_code( new \WCPay\Exceptions\API_Exception( 'Error: Your card was declined.', 'card_declined', 402 ) ) );
+	}
 }
