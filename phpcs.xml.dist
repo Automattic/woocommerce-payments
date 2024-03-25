@@ -38,6 +38,10 @@
 		<exclude name="WordPress.WP.AlternativeFunctions.unlink_unlink" />
 		<exclude name="WordPress.WP.AlternativeFunctions.file_system_operations_touch" />
 		<exclude name="WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents" />
+
+		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8436 is closed. -->
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.Found" />
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed" />
 	</rule>
 
 	<!-- Disallow long array syntax -->
