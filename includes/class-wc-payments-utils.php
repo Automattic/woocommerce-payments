@@ -594,10 +594,19 @@ class WC_Payments_Utils {
 	 * @return  int
 	 */
 	public static function get_filtered_error_status_code( Exception $e ) : int {
+		$status_code = null;
 		if ( $e instanceof API_Exception ) {
-			return $e->get_http_code() ?? 400;
+			$status_code = $e->get_http_code();
 		}
-		return 400;
+
+		// Hosting companies might use the 402 status code to return a custom error page.
+		// When 402 is returned by Stripe, let's return 400 instead.
+		// The frontend doesn't make use of the status code.
+		if ( 402 === $status_code ) {
+			$status_code = 400;
+		}
+
+		return $status_code ?? 400;
 	}
 
 	/**

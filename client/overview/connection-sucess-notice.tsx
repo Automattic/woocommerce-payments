@@ -40,46 +40,25 @@ const ConnectionSuccessNotice: React.FC = () => {
 			/>
 		);
 	};
-
-	return ! isDismissed && ! onboardingTestMode ? (
+	const isPoDisabledOrCompleted = ! isPoEnabled || isPoComplete;
+	return ! isDismissed && ! onboardingTestMode && isPoDisabledOrCompleted ? (
 		<Card className="wcpay-connection-success">
-			{ /* Show dismiss button only at the end of Progressive Onboarding //
-			or at the end of the full KYC flow. */ }
-			{ ! ( isPoEnabled && ! isPoComplete ) && <DismissMenu /> }
+			<DismissMenu />
 			<img src={ ConfettiImage } alt="confetti" />
-			{ isPoEnabled && ! isPoComplete ? (
-				<>
-					<h2>
-						{ __(
-							"You're ready to start selling!",
-							'woocommerce-payments'
-						) }
-					</h2>
-					<p>
-						{ __(
-							'Congratulations! Take a moment to celebrate and look out for the first sale.',
-							'woocommerce-payments'
-						) }
-					</p>
-				</>
-			) : (
-				<>
-					{ accountStatus !== 'complete' ? (
-						<h2>
-							{ __(
-								'Congratulations! Your store is being verified.',
-								'woocommerce-payments'
-							) }
-						</h2>
-					) : (
-						<h2>
-							{ __(
-								'Congratulations! Your store has been verified.',
-								'woocommerce-payments'
-							) }
-						</h2>
+			{ accountStatus !== 'complete' ? (
+				<h2>
+					{ __(
+						'Congratulations! Your store is being verified.',
+						'woocommerce-payments'
 					) }
-				</>
+				</h2>
+			) : (
+				<h2>
+					{ __(
+						'Congratulations! Your store has been verified.',
+						'woocommerce-payments'
+					) }
+				</h2>
 			) }
 		</Card>
 	) : null;

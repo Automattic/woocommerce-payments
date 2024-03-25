@@ -105,4 +105,12 @@
 			color: $wp-green-70;
 		}
 	}
+
+	// Special case for link variant button.
+	button.wcpay-inline-notice__action {
+		&.is-link {
+			text-decoration: none; // Remove underline.
+			box-shadow: none; // Remove box shadow.
+		}
+	}
 }
