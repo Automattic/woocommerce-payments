@@ -485,16 +485,16 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'billing_details' => [
 						'address' => [
+							'city'        => 'WooCity',
 							'country'     => Country_Code::UNITED_STATES,
 							'line1'       => 'WooAddress',
 							'line2'       => '',
-							'city'        => 'WooCity',
-							'state'       => 'NY',
 							'postal_code' => '12345',
+							'state'       => 'NY',
 						],
 						'email'   => 'admin@example.org',
-						'phone'   => '555-32123',
 						'name'    => 'Jeroen Sormani',
+						'phone'   => '555-32123',
 					],
 				]
 			);
