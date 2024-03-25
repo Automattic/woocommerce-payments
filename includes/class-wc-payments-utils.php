@@ -592,7 +592,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return  int
 	 */
-	public static function get_filtered_error_status_code( Exception $e ) : int {
+	public static function get_filtered_error_status_code( Exception $e ): int {
 		$status_code = null;
 		if ( $e instanceof API_Exception ) {
 			$status_code = $e->get_http_code();

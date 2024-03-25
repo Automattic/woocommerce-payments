@@ -412,7 +412,7 @@ class MultiCurrency {
 
 		return $this->database_cache->get_or_add(
 			Database_Cache::CURRENCIES_KEY,
-			function() {
+			function () {
 				try {
 					$currency_data = $this->payments_api_client->get_currency_rates( strtolower( get_woocommerce_currency() ) );
 					return [
@@ -646,7 +646,7 @@ class MultiCurrency {
 		// This allows to keep the alphabetical sorting by name.
 		$enabled_currencies = array_filter(
 			$available_currencies,
-			function( $currency ) use ( $enabled_currency_codes ) {
+			function ( $currency ) use ( $enabled_currency_codes ) {
 				return in_array( $currency->get_code(), $enabled_currency_codes, true );
 			}
 		);
@@ -1405,7 +1405,7 @@ class MultiCurrency {
 		// Simulate client currency from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_currency_name',
-			function( $selected_currency_name ) use ( $simulation_currency_name ) {
+			function ( $selected_currency_name ) use ( $simulation_currency_name ) {
 				return $simulation_currency_name;
 			}
 		);
@@ -1413,7 +1413,7 @@ class MultiCurrency {
 		// Simulate client country from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_country',
-			function( $selected_country ) use ( $simulation_country ) {
+			function ( $selected_country ) use ( $simulation_country ) {
 				return $simulation_country;
 			}
 		);
@@ -1425,7 +1425,6 @@ class MultiCurrency {
 
 		// Skip recalculating the cart to prevent infinite loop in simulation.
 		remove_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
-
 	}
 
 	/**
@@ -1498,7 +1497,7 @@ class MultiCurrency {
 		$params = $this->simulation_params;
 		add_filter(
 			'wp_footer',
-			function() use ( $params ) {
+			function () use ( $params ) {
 				?>
 			<script type="text/javascript" id="wcpay_multi_currency-simulation-script">
 				// Add simulation overrides to all links.

@@ -141,7 +141,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_SEPA::class, $token );
-
 	}
 
 	/**
@@ -164,7 +163,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_SEPA::class, $token );
-
 	}
 
 	/**
