@@ -64,5 +64,6 @@ class Allowed_Payment_Request_Button_Sizes_Update {
 				'small'
 			);
 		}
+
 	}
 }

@@ -86,4 +86,5 @@ class Core_Request_Generic_Test extends WCPAY_UnitTestCase {
 		$this->expectException( Server_Response_Exception::class );
 		$response->offsetUnset( $key );
 	}
+
 }

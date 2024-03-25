@@ -45,6 +45,7 @@ class WC_Payments_Dependency_Service {
 		}
 
 		return empty( $this->get_invalid_dependencies( true ) );
+
 	}
 
 	/**
@@ -106,6 +107,7 @@ class WC_Payments_Dependency_Service {
 		}
 
 		return $invalid_dependencies;
+
 	}
 
 	/**
