@@ -47,6 +47,18 @@
 		<exclude name="WooCommerce.Commenting.CommentHooks.MissingHookComment" />
 		<exclude name="WooCommerce.Commenting.CommentHooks.MissingSinceComment" />
 		<exclude name="WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle" />
+
+		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8438 is closed. -->
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.boolFound" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.elseFound" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.arrayFound" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.classFound" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.matchFound" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.objectFound" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.returnFound" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound" />
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.functionFound" />
 	</rule>
 
 	<!-- Disallow long array syntax -->
