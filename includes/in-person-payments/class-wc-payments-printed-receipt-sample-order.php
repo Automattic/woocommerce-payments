@@ -73,4 +73,5 @@ class WC_Payments_Printed_Receipt_Sample_Order extends WC_Order {
 	public function get_data(): array {
 		return self::PREVIEW_RECEIPT_ORDER_DATA;
 	}
+
 }

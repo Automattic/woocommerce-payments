@@ -71,6 +71,8 @@ final class Generic extends Request {
 				$this->set( $key, $value );
 			}
 		}
+
+		return $this;
 	}
 
 	/**

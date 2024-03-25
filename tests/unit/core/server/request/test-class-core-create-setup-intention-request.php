@@ -78,4 +78,6 @@ class Create_Setup_Intention_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'POST', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::SETUP_INTENTS_API, $request->get_api() );
 	}
+
+
 }

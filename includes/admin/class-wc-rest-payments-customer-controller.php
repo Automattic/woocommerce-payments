@@ -277,4 +277,5 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 			],
 		];
 	}
+
 }

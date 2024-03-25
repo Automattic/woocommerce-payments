@@ -409,6 +409,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->assertStringContainsString( '&pound;', WC()->cart->get_total() );
 		$this->assertStringNotContainsString( '&#36;', WC()->cart->get_total() );
+
 	}
 
 	public function test_update_selected_currency_by_url_does_not_set_session_when_parameter_not_set() {
@@ -439,7 +440,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function () {
+			function() {
 				return 'CL';
 			}
 		);
@@ -454,7 +455,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function () {
+			function() {
 				return Country_Code::CANADA;
 			}
 		);
@@ -471,7 +472,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function () {
+			function() {
 				return Country_Code::CANADA;
 			}
 		);
@@ -488,7 +489,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function () {
+			function() {
 				return Country_Code::CANADA;
 			}
 		);
@@ -511,7 +512,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		// Arrange: Add a filter to return a non US country.
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function () {
+			function() {
 				return Country_Code::CANADA;
 			}
 		);
@@ -541,7 +542,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function () {
+			function() {
 				return Country_Code::CANADA;
 			}
 		);
@@ -557,7 +558,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, Country_Code::UNITED_STATES );
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function () {
+			function() {
 				return Country_Code::UNITED_STATES;
 			}
 		);
@@ -571,7 +572,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function () {
+			function() {
 				return Country_Code::UNITED_STATES;
 			}
 		);
@@ -1479,7 +1480,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	private function mock_theme( $theme ) {
 		add_filter(
 			'stylesheet',
-			function () use ( $theme ) {
+			function() use ( $theme ) {
 				return $theme;
 			}
 		);
