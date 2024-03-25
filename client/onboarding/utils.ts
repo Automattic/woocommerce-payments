@@ -42,6 +42,18 @@ export const getBusinessTypes = (): Country[] => {
 	);
 };
 
+export const getMccFromIndustry = (): string | undefined => {
+	const industry = wcSettings.admin.onboarding.profile.industry?.[ 0 ];
+	if ( ! industry ) {
+		return undefined;
+	}
+
+	const industryToMcc =
+		wcpaySettings?.onboardingFieldsData?.industry_to_mcc || {};
+
+	return industryToMcc[ industry ];
+};
+
 export const getMccsFlatList = (): ListItem[] => {
 	const data = wcpaySettings?.onboardingFieldsData?.mccs_display_tree;
 

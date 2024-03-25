@@ -9,6 +9,7 @@ import React, { useEffect } from 'react';
 import Page from 'components/page';
 import { OnboardingContextProvider } from './context';
 import { Stepper } from 'components/stepper';
+import { getMccFromIndustry } from 'onboarding/utils';
 import { OnboardingForm } from './form';
 import Step from './step';
 import BusinessDetails from './steps/business-details';
@@ -48,6 +49,7 @@ const OnboardingStepper = () => {
 
 const initialData = {
 	business_name: wcSettings?.siteTitle,
+	mcc: getMccFromIndustry(),
 	url:
 		location.hostname === 'localhost'
 			? 'https://wcpay.test'
