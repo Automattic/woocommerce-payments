@@ -29,8 +29,7 @@ class WC_Payments_File_Service {
 	 *
 	 * @return bool
 	 */
-	public function is_file_public( string $purpose ) : bool {
+	public function is_file_public( string $purpose ): bool {
 		return in_array( $purpose, static::FILE_PURPOSE_PUBLIC, true );
 	}
-
 }

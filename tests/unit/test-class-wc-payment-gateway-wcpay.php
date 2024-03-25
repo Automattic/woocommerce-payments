@@ -46,7 +46,7 @@ use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 
 // Need to use WC_Mock_Data_Store.
-require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
+require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -3358,7 +3358,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_router = $this->createMock( Router::class );
 		wcpay_get_test_container()->replace( Router::class, $mock_router );
 
-		$checker = function( $factors ) use ( $factor_name, $value ) {
+		$checker = function ( $factors ) use ( $factor_name, $value ) {
 			$is_in_array = in_array( $factor_name, $factors, true );
 			return $value ? $is_in_array : ! $is_in_array;
 		};
@@ -3486,7 +3486,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private function get_gateways_excluding( $excluded_payment_method_ids ) {
 		return array_filter(
 			$this->gateways,
-			function( $gateway ) use ( $excluded_payment_method_ids ) {
+			function ( $gateway ) use ( $excluded_payment_method_ids ) {
 				return ! in_array( $gateway->get_payment_method()->get_id(), $excluded_payment_method_ids, true );
 			}
 		);
@@ -3496,7 +3496,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return ( array_values(
 			array_filter(
 				$this->gateways,
-				function( $gateway ) use ( $payment_method_id ) {
+				function ( $gateway ) use ( $payment_method_id ) {
 					return $payment_method_id === $gateway->get_payment_method()->get_id();
 				}
 			)
