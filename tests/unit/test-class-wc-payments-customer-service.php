@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\Constraint\IsEqualCanonicalizing;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Country_Code;
 use WCPay\Database_Cache;
@@ -482,21 +483,23 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'update_payment_method' )
 			->with(
 				'pm_mock',
-				[
-					'billing_details' => [
-						'address' => [
-							'country'     => Country_Code::UNITED_STATES,
-							'line1'       => 'WooAddress',
-							'line2'       => '',
-							'city'        => 'WooCity',
-							'state'       => 'NY',
-							'postal_code' => '12345',
+				new IsEqualCanonicalizing(
+					[
+						'billing_details' => [
+							'address' => [
+								'country'     => Country_Code::UNITED_STATES,
+								'line1'       => 'WooAddress',
+								'line2'       => '',
+								'city'        => 'WooCity',
+								'state'       => 'NY',
+								'postal_code' => '12345',
+							],
+							'email'   => 'admin@example.org',
+							'phone'   => '555-32123',
+							'name'    => 'Jeroen Sormani',
 						],
-						'email'   => 'admin@example.org',
-						'phone'   => '555-32123',
-						'name'    => 'Jeroen Sormani',
-					],
-				]
+					]
+				)
 			);
 
 		$order = WC_Helper_Order::create_order();
@@ -519,15 +522,17 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'update_payment_method' )
 			->with(
 				'pm_mock',
-				[
-					'billing_details' => [
-						'address' => [
-							'postal_code' => '12345',
+				new IsEqualCanonicalizing(
+					[
+						'billing_details' => [
+							'address' => [
+								'postal_code' => '12345',
+							],
+							'email'   => 'admin@example.org',
+							'name'    => 'Jeroen Sormani',
 						],
-						'email'   => 'admin@example.org',
-						'name'    => 'Jeroen Sormani',
-					],
-				]
+					]
+				)
 			);
 
 		$order = WC_Helper_Order::create_order();
