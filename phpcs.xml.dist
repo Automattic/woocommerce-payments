@@ -28,6 +28,11 @@
 		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
 		<exclude name="Squiz.Commenting.FunctionComment.EmptyThrows"/>
 		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
+
+		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8434 is closed. -->
+		<exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped" />
+		<exclude name="WordPress.Security.EscapeOutput.OutputNotEscaped" />
+		<exclude name="WordPress.Security.ValidatedSanitizedInput.InputNotValidated" />
 	</rule>
 
 	<!-- Disallow long array syntax -->
