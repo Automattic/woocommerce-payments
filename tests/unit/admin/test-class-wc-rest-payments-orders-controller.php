@@ -1744,4 +1744,164 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 		return new WC_Payments_API_Charge( $this->mock_charge_id, 1500, $created );
 	}
+
+	public function test_capture_terminal_payment_with_subscription_product_sets_generated_card_on_user() {
+		$order = $this->create_mock_order();
+
+		$subscription = new WC_Subscription();
+		$subscription->set_parent( $order );
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+
+		$generated_card_id = 'pm_generatedCardId';
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'charge' => [
+					'payment_method_details' => [
+						'type' => 'card_present',
+						'card_present' => [
+							'generated_card' => $generated_card_id,
+						],
+					]
+				],
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->with( $this->isInstanceOf( WC_Order::class ) )
+			->willReturn(
+				[
+					'status' => Intent_Status::SUCCEEDED,
+					'id'     => $this->mock_intent_id,
+				]
+			);
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' )
+			->with(
+				$this->isInstanceOf( WC_Order::class ),
+				$mock_intent,
+			);
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->with( $generated_card_id,
+			$this->isInstanceOf( WP_User::class ));
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_terminal_payment( $request );
+		$this->assertEquals(200, $response->get_status() );
+	}
+
+	/**
+	 * Cleanup after all tests.
+	 */
+	public static function tear_down_after_class() {
+		WC_Subscriptions::set_wcs_order_contains_subscription( null );
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+		parent::tear_down_after_class();
+	}
+
+	private function mock_wcs_order_contains_subscription( $value ) {
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function ( $order ) use ( $value ) {
+				return $value;
+			}
+		);
+	}
+
+	private function mock_wcs_get_subscriptions_for_order( $value ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order ) use ( $value ) {
+				return $value;
+			}
+		);
+	}
+
+	public function test_capture_terminal_payment_with_subscription_product_returns_success_even_if_no_generated_card() {
+		$order = $this->create_mock_order();
+
+		$subscription = new WC_Subscription();
+		$subscription->set_parent( $order );
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'charge' => [
+					'payment_method_details' => [
+						'type' => 'card_present',
+						'card_present' => [
+						],
+					]
+				],
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->with( $this->isInstanceOf( WC_Order::class ) )
+			->willReturn(
+				[
+					'status' => Intent_Status::SUCCEEDED,
+					'id'     => $this->mock_intent_id,
+				]
+			);
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' )
+			->with(
+				$this->isInstanceOf( WC_Order::class ),
+				$mock_intent,
+			);
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_terminal_payment( $request );
+		$this->assertSame( 200, $response->status );
+	}
 }
