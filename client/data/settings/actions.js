@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
 import ACTION_TYPES from './action-types';
 import { NAMESPACE, STORE_NAME } from '../constants';
 
-export function updateSettingsValues( payload ) {
+function updateSettingsValues( payload ) {
 	return {
 		type: ACTION_TYPES.SET_SETTINGS_VALUES,
 		payload,

@@ -7,11 +7,7 @@ import { apiFetch } from '@wordpress/data-controls';
 /**
  * Internal dependencies
  */
-import {
-	saveSettings,
-	updateIsSavingSettings,
-	updateSettingsValues,
-} from '../actions';
+import { saveSettings, updateIsSavingSettings } from '../actions';
 
 jest.mock( '@wordpress/data' );
 jest.mock( '@wordpress/data-controls' );
@@ -84,12 +80,13 @@ describe( 'Settings actions tests', () => {
 			// Simulate the response from the apiFetch call and proceed to the next yield
 			// Since the actual fetching process is mocked, pass the apiResponse to the next saveGenerator step directly
 			next = saveGenerator.next( apiResponse );
-			expect( next.value ).toEqual(
-				updateSettingsValues( {
+			expect( next.value ).toEqual( {
+				type: 'SET_SETTINGS_VALUES',
+				payload: {
 					payment_method_statuses:
 						apiResponse.data.payment_method_statuses,
-				} )
-			);
+				},
+			} );
 
 			next = saveGenerator.next(); // Skip the success notice
 			next = saveGenerator.next(); // Move to updateIsSavingSettings(false)
