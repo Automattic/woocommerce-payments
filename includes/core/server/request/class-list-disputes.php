@@ -66,12 +66,12 @@ class List_Disputes extends Paginated {
 	/**
 	 * Set match.
 	 *
-	 * @param string $match Match.
+	 * @param string $match_value Match.
 	 *
 	 * @return void
 	 */
-	public function set_match( string $match ) {
-		$this->set_param( 'match', $match );
+	public function set_match( string $match_value ) {
+		$this->set_param( 'match', $match_value );
 	}
 
 	/**
@@ -134,7 +134,7 @@ class List_Disputes extends Paginated {
 	public function set_search( $search ) {
 		if ( ! is_string( $search ) && ! is_array( $search ) ) {
 			throw new Invalid_Request_Parameter_Exception(
-				__( 'The search parameter must be a string, or an array of strings.', 'woocommerce-payments' ),
+				esc_html__( 'The search parameter must be a string, or an array of strings.', 'woocommerce-payments' ),
 				'wcpay_core_invalid_request_parameter_invalid_search'
 			);
 		}
