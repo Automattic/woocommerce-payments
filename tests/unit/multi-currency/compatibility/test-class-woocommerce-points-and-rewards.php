@@ -134,4 +134,5 @@ class WCPay_Multi_Currency_WooCommercePointsAndRewards_Tests extends WCPAY_UnitT
 			[ 20, '1:10', '1:200' ],
 		];
 	}
+
 }
