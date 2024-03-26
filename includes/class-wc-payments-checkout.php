@@ -383,6 +383,7 @@ class WC_Payments_Checkout {
 					<?php
 						$testing_instructions = $this->gateway->get_payment_method()->get_testing_instructions();
 					if ( false !== $testing_instructions ) {
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
 							$testing_instructions,
