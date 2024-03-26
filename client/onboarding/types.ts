@@ -2,20 +2,9 @@
  * Internal dependencies
  */
 
-export type OnboardingSteps =
-	| 'mode'
-	| 'personal'
-	| 'business'
-	| 'store'
-	| 'loading';
+export type OnboardingSteps = 'business' | 'store' | 'loading';
 
 export type OnboardingFields = {
-	email?: string;
-	'individual.first_name'?: string;
-	'individual.last_name'?: string;
-	phone?: string;
-	business_name?: string;
-	url?: string;
 	country?: string;
 	business_type?: string;
 	'company.structure'?: string;
@@ -24,11 +13,11 @@ export type OnboardingFields = {
 	go_live_timeframe?: string;
 };
 
-export interface POEligibleResult {
+export interface PoEligibleResult {
 	result: 'eligible' | 'not_eligible';
 }
 
-export interface POEligibleData {
+export interface PoEligibleData {
 	business: {
 		country: string;
 		type: string;
@@ -39,10 +28,6 @@ export interface POEligibleData {
 		go_live_timeframe: string;
 	};
 }
-
-export type TempData = {
-	phoneCountryCode?: string;
-};
 
 export interface Country {
 	key: string;
