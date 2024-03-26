@@ -15,16 +15,15 @@ import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
 import { trackStarted } from './tracking';
+import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 
 const OnboardingStepper = () => {
 	const handleExit = () => {
-		if (
-			window.history.length > 1 &&
-			document.referrer.includes( wcSettings.adminUrl )
-		)
-			return window.history.back();
-		window.location.href = wcSettings.adminUrl;
+		window.location.href = getAdminUrl( {
+			page: 'wc-admin',
+			path: '/payments/connect',
+		} );
 	};
 
 	const handleStepChange = () => window.scroll( 0, 0 );
