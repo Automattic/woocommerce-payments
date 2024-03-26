@@ -45,9 +45,8 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	 * @return string|void The HTML markup for the payment method message container.
 	 */
 	public function init() {
-		// Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
-		// in this case because it checks the page content for the block, which isn't present.
-		$is_cart_block = has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+
+		$is_cart_block = WC_Payments_Utils::is_cart_block();
 
 		if ( ! is_product() && ! is_cart() && ! $is_cart_block ) {
 			return;
