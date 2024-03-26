@@ -15,6 +15,7 @@
 	<exclude-pattern>./vendor/*</exclude-pattern>
 	<exclude-pattern>./vendor-dist/*</exclude-pattern>
 	<exclude-pattern>./lib/*</exclude-pattern>
+	<exclude-pattern>./bin/*</exclude-pattern>
 
 	<!-- Configs -->
 	<config name="minimum_supported_wp_version" value="6.0" />
@@ -68,6 +69,10 @@
 		<properties>
 			<property name="text_domain" type="array" value="woocommerce-payments" />
 		</properties>
+	</rule>
+
+	<rule ref="WordPress.Security">
+		<exclude-pattern>./tests/*</exclude-pattern>
 	</rule>
 
 	<rule ref="WordPress.Security.EscapeOutput">
