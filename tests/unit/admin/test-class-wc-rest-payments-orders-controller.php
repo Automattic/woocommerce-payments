@@ -1752,6 +1752,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$subscription->set_parent( $order );
 		$this->mock_wcs_order_contains_subscription( true );
 		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+		$this->mock_wcs_is_manual_renewal_required( false );
 
 		$generated_card_id = 'pm_generatedCardId';
 
@@ -1823,6 +1824,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public static function tear_down_after_class() {
 		WC_Subscriptions::set_wcs_order_contains_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+		WC_Subscriptions::set_wcs_is_manual_renewal_required( null );
 		parent::tear_down_after_class();
 	}
 
@@ -1837,6 +1839,14 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	private function mock_wcs_get_subscriptions_for_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
 			function ( $order ) use ( $value ) {
+				return $value;
+			}
+		);
+	}
+
+	private function mock_wcs_is_manual_renewal_required( $value ) {
+		WC_Subscriptions::set_wcs_is_manual_renewal_required(
+			function () use ( $value ) {
 				return $value;
 			}
 		);
