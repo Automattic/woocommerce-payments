@@ -263,6 +263,7 @@ class WC_Payments_Utils {
 			Country_Code::SLOVAKIA             => __( 'Slovakia', 'woocommerce-payments' ),
 			Country_Code::SINGAPORE            => __( 'Singapore', 'woocommerce-payments' ),
 			Country_Code::UNITED_STATES        => __( 'United States (US)', 'woocommerce-payments' ),
+			Country_Code::PUERTO_RICO          => __( 'Puerto Rico', 'woocommerce-payments' ),
 		];
 	}
 
