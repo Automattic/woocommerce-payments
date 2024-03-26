@@ -346,7 +346,7 @@ class WC_Payments_Utils {
 	 * @return array
 	 */
 	public static function get_billing_details_from_order( $order ) {
-		$billing_fields       = array_keys( wc()->checkout()->get_checkout_fields( 'billing' ) );
+		$billing_fields       = array_keys( WC()->checkout()->get_checkout_fields( 'billing' ) );
 		$address_field_to_key = [
 			'billing_city'      => 'city',
 			'billing_country'   => 'country',
@@ -372,7 +372,7 @@ class WC_Payments_Utils {
 			$billing_details['name'] = trim( $order->get_formatted_billing_full_name() );
 		}
 
-		return array_filter( $billing_details );
+		return $billing_details;
 	}
 
 	/**
