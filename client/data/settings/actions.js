@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
 import ACTION_TYPES from './action-types';
 import { NAMESPACE, STORE_NAME } from '../constants';
 
-function updateSettingsValues( payload ) {
+export function updateSettingsValues( payload ) {
 	return {
 		type: ACTION_TYPES.SET_SETTINGS_VALUES,
 		payload,
@@ -217,10 +217,14 @@ export function* saveSettings() {
 
 		yield updateIsSavingSettings( true, null );
 
-		yield apiFetch( {
+		const response = yield apiFetch( {
 			path: `${ NAMESPACE }/settings`,
 			method: 'post',
 			data: settings,
+		} );
+
+		yield updateSettingsValues( {
+			payment_method_statuses: response.data.payment_method_statuses,
 		} );
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
