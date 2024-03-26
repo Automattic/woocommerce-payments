@@ -101,25 +101,27 @@ describe( 'Settings actions tests', () => {
 			expect( saveGenerator.next().done ).toBeTruthy();
 		} );
 
-		// test( 'displays success notice after saving', () => {
-		// 	const apiResponse = {
-		// 		data: {
-		// 			payment_method_statuses: {
-		// 				bancontact: 'active',
-		// 			},
-		// 		},
-		// 	};
-		// 	apiFetch.mockReturnValue( { ...apiResponse } );
+		test( 'displays success notice after saving', () => {
+			const apiResponse = {
+				data: {
+					payment_method_statuses: {
+						bancontact: 'active',
+					},
+				},
+			};
+			apiFetch.mockReturnValue( { ...apiResponse } );
 
-		// 	// Execute the generator until the end
-		// 	const saveGenerator = saveSettings();
-		// 	while ( ! saveGenerator.next( apiResponse ).done ) {}
-		// 	expect( saveGenerator.next().done ).toBeTruthy();
+			// Execute the generator until the end
+			const saveGenerator = saveSettings();
+			while ( ! saveGenerator.next( apiResponse ).done ) {
+				// Intentionally empty
+			}
+			expect( saveGenerator.next().done ).toBeTruthy();
 
-		// 	expect(
-		// 		dispatch( 'core/notices' ).createSuccessNotice
-		// 	).toHaveBeenCalledWith( 'Settings saved.' );
-		// } );
+			expect(
+				dispatch( 'core/notices' ).createSuccessNotice
+			).toHaveBeenCalledWith( 'Settings saved.' );
+		} );
 
 		test( 'displays error notice if error is thrown', () => {
 			const saveGenerator = saveSettings();
