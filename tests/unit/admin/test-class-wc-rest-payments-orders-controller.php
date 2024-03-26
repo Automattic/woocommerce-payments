@@ -1816,6 +1816,99 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 		$response = $this->controller->capture_terminal_payment( $request );
 		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 'woocommerce_payments', $subscription->get_payment_method() );
+	}
+
+	/**
+	 * @dataProvider provider_capture_terminal_payment_with_subscription_product_sets_manual_renewal
+	 */
+	public function test_capture_terminal_payment_with_subscription_product_sets_manual_renewal( bool $manual_renewal_required_setting, bool $initial_subscription_manual_renewal, bool $expected_subscription_manual_renewal ) {
+		$order = $this->create_mock_order();
+
+		$subscription = new WC_Subscription();
+		$subscription->set_parent( $order );
+		$subscription->set_requires_manual_renewal( $initial_subscription_manual_renewal );
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+		$this->mock_wcs_is_manual_renewal_required( $manual_renewal_required_setting );
+
+		$generated_card_id = 'pm_generatedCardId';
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'charge'   => [
+					'payment_method_details' => [
+						'type'         => 'card_present',
+						'card_present' => [
+							'generated_card' => $generated_card_id,
+						],
+					],
+				],
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->with( $this->isInstanceOf( WC_Order::class ) )
+			->willReturn(
+				[
+					'status' => Intent_Status::SUCCEEDED,
+					'id'     => $this->mock_intent_id,
+				]
+			);
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' )
+			->with(
+				$this->isInstanceOf( WC_Order::class ),
+				$mock_intent,
+			);
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->with(
+				$generated_card_id,
+				$this->isInstanceOf( WP_User::class )
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_terminal_payment( $request );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( $expected_subscription_manual_renewal, $subscription->is_manual() );
+	}
+
+	/**
+	 * bool $manual_renewal_required_setting
+	 * bool $initial_subscription_manual_renewal
+	 * bool $expected_subscription_manual_renewal
+	 */
+	public function provider_capture_terminal_payment_with_subscription_product_sets_manual_renewal(): array {
+		return [
+			[ true, true, true ],
+			[ false, true, false ],
+			[ true, false, false ], // even if manual_renewal_required, we won't set it to manual_renewal if it started as automatic.
+			[ false, false, false ],
+		];
 	}
 
 	/**
