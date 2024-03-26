@@ -34,10 +34,6 @@ describe.each( cardTestingPreventionStates )(
 			}
 			await merchant.logout();
 			await shopper.login();
-			await shopperWCP.changeAccountCurrencyTo(
-				config.get( 'addresses.customer.billing' ),
-				'USD'
-			);
 		} );
 
 		afterAll( async () => {
