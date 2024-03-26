@@ -2,11 +2,15 @@
  * External dependencies
  */
 import config from 'config';
-const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
+const { shopper, merchant, withRestApi } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
+import {
+	fillCardDetails,
+	setupCheckout,
+	setupProductCheckout,
+} from '../../../utils/payments';
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
@@ -155,7 +159,17 @@ describe( 'Shopper Multi-Currency checkout', () => {
 		() => {
 			let wasStripeBillingEnabled;
 
+			const productSlug = 'subscription-no-signup-fee-product';
+			const customerBilling = config.get(
+				'addresses.subscriptions-customer.billing'
+			);
+
+			const currencies = [ 'USD', 'EUR' ];
+
 			beforeAll( async () => {
+				// Reset customer info.
+				withRestApi.deleteCustomerByEmail( customerBilling.email );
+
 				await merchant.login();
 				wasStripeBillingEnabled = await merchantWCP.isStripeBillingEnabled();
 				if ( ! wasStripeBillingEnabled ) {
@@ -165,6 +179,8 @@ describe( 'Shopper Multi-Currency checkout', () => {
 			} );
 
 			afterAll( async () => {
+				await shopper.logout();
+
 				if ( ! wasStripeBillingEnabled ) {
 					await merchant.login();
 					await merchantWCP.deactivateStripeBilling();
@@ -172,10 +188,38 @@ describe( 'Shopper Multi-Currency checkout', () => {
 				}
 			} );
 
-			it.todo( 'Place order with Stripe Billing in non-store currency' );
+			it( 'should place order via Stripe Billing in one currency', async () => {
+				// Setup cart and checkout.
+				await shopperWCP.goToShopWithCurrency( currencies[ 0 ] );
+				await shopperWCP.addToCartBySlug( productSlug );
+				// Make sure that the number of items in the cart is incremented first before adding another item.
+				await expect( page ).toMatchElement( '.cart-contents .count', {
+					text: new RegExp( '1 item' ),
+					timeout: 30000,
+				} );
+
+				await setupCheckout( customerBilling );
+
+				// Pay for subscription.
+				const card = config.get( 'cards.basic' );
+				await fillCardDetails( page, card );
+				await shopper.placeOrder();
+
+				await expect( page ).toMatch( 'Order received' );
+
+				const url = await page.url();
+				const orderId = url.match( /\/order-received\/(\d+)\// )[ 1 ];
+
+				await shopper.goToOrders();
+				const orderTotal = await getOrderTotalTextForOrder( orderId );
+
+				expect( orderTotal ).toEqual(
+					`$9.99 ${ currencies[ 0 ] } for 1 item`
+				);
+			} );
 
 			it.todo(
-				'Two Stripe Billing orders with different currencies cannot coexist'
+				'should not be able to place order via Stripe Billing in another currency'
 			);
 		}
 	);
