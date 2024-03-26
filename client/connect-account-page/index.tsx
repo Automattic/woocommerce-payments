@@ -9,14 +9,12 @@ import {
 	Button,
 	Card,
 	CardBody,
-	CardDivider,
 	Notice,
-	Icon,
+	Panel,
+	PanelBody,
 } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
-import { payment } from '@wordpress/icons';
-import globe from 'gridicons/dist/globe';
-import scheduled from 'gridicons/dist/scheduled';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -31,6 +29,7 @@ import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
 import './style.scss';
+import InlineNotice from 'components/inline-notice';
 
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
@@ -42,12 +41,20 @@ const ConnectAccountPage: React.FC = () => {
 		wcpaySettings.errorMessage
 	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
+	const [ isSandboxModeClicked, setSandboxModeClicked ] = useState( false );
 	const {
 		connectUrl,
 		connect: { availableCountries, country },
+		devMode,
 	} = wcpaySettings;
 
 	const isCountrySupported = !! availableCountries[ country ];
+
+	const SandboxModeNotice = () => (
+		<BannerNotice icon status="warning" isDismissible={ false }>
+			{ strings.sandboxModeNotice }
+		</BannerNotice>
+	);
 
 	useEffect( () => {
 		recordEvent( 'page_view', {
@@ -90,16 +97,21 @@ const ConnectAccountPage: React.FC = () => {
 		document.body.appendChild( container );
 	};
 
-	const handleSetup = async () => {
-		setSubmitted( true );
-
+	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
 		recordEvent( 'wcpay_connect_account_clicked', {
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
 			is_new_onboarding_flow: isNewFlowEnabled,
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
+			sandbox_mode: sandboxMode,
 		} );
+	};
+
+	const handleSetup = async () => {
+		setSubmitted( true );
+
+		trackConnectAccountClicked( false );
 
 		// If there is an incentive available, request promo activation before redirecting.
 		// Display an error message if the request fails.
@@ -125,6 +137,18 @@ const ConnectAccountPage: React.FC = () => {
 		window.location.href = connectUrl;
 	};
 
+	const handleEnableSandboxMode = async () => {
+		setSandboxModeClicked( true );
+
+		trackConnectAccountClicked( true );
+
+		const url = addQueryArgs( connectUrl, {
+			test_mode: true,
+			create_builder_account: true,
+		} );
+		window.location.href = url;
+	};
+
 	return (
 		<Page isNarrow className="connect-account-page">
 			{ errorMessage && (
@@ -147,61 +171,70 @@ const ConnectAccountPage: React.FC = () => {
 							{ strings.nonSupportedCountry }
 						</BannerNotice>
 					) }
+					{ devMode && <SandboxModeNotice /> }
 					<Card>
 						<div className="connect-account-page__heading">
 							<img src={ LogoImg } alt="logo" />
 							<h2>{ strings.heading( firstName ) }</h2>
 						</div>
 						<div className="connect-account-page__content">
-							<div className="connect-account-page__content-usp">
-								<Icon icon={ payment } />
-								{ strings.usp1 }
-								<Icon icon={ globe } />
-								{ strings.usp2 }
-								<Icon icon={ scheduled } />
-								{ strings.usp3 }
+							<InfoNotice />
+						</div>
+						<div className="connect-account-page__payment-methods">
+							<PaymentMethods />
+							<div className="connect-account-page__payment-methods__description">
+								<div>
+									<p>Deposits</p>
+									<span>Automatic - Daily</span>
+								</div>
+								<div className="connect-account-page__payment-methods__description__divider"></div>
+								<div>
+									<p>Payments capture</p>
+									<span>Capture on order</span>
+								</div>
+								<div className="connect-account-page__payment-methods__description__divider"></div>
+								<div>
+									<p>Recurring payments</p>
+									<span>Supported</span>
+								</div>
 							</div>
+						</div>
+						<div className="connect-account-page__buttons">
 							<Button
 								variant="primary"
 								isBusy={ isSubmitted }
 								disabled={ isSubmitted }
 								onClick={ handleSetup }
 							>
-								{ strings.button }
+								{ wcpaySettings.isJetpackConnected
+									? strings.button.jetpack_connected
+									: strings.button.jetpack_not_connected }
 							</Button>
-							<p>
-								{ wcpaySettings.isWooPayStoreCountryAvailable
-									? strings.agreementWithWooPay
-									: strings.agreement }
-							</p>
-						</div>
-						<CardDivider />
-						<div className="connect-account-page__payment-methods">
-							<PaymentMethods />
 						</div>
 					</Card>
 					{ incentive && <Incentive { ...incentive } /> }
-					<Card className="connect-account-page__details">
-						<h2>{ strings.stepsHeading }</h2>
-						<InfoNotice />
-						<div className="connect-account-page__steps">
-							<div className="connect-account-page__step">
-								<span>1</span>
-								<h3>{ strings.step1.heading }</h3>
-								<p>{ strings.step1.description }</p>
-							</div>
-							<div className="connect-account-page__step">
-								<span>2</span>
-								<h3>{ strings.step2.heading }</h3>
-								<p>{ strings.step2.description }</p>
-							</div>
-							<div className="connect-account-page__step">
-								<span>3</span>
-								<h3>{ strings.step3.heading }</h3>
-								<p>{ strings.step3.description }</p>
-							</div>
-						</div>
-					</Card>
+					<Panel className="connect-account-page__sandbox-mode-panel">
+						<PanelBody
+							title={ strings.sandboxMode.title }
+							initialOpen={ false }
+						>
+							<InlineNotice
+								icon
+								status="info"
+								isDismissible={ false }
+							>
+								{ strings.sandboxMode.description }
+							</InlineNotice>
+							<Button
+								variant="secondary"
+								isBusy={ isSandboxModeClicked }
+								disabled={ isSandboxModeClicked }
+								onClick={ handleEnableSandboxMode }
+							>
+								{ strings.button.sandbox }
+							</Button>
+						</PanelBody>
+					</Panel>
 				</>
 			) }
 		</Page>

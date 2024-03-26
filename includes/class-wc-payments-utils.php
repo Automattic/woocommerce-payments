@@ -263,6 +263,7 @@ class WC_Payments_Utils {
 			Country_Code::SLOVAKIA             => __( 'Slovakia', 'woocommerce-payments' ),
 			Country_Code::SINGAPORE            => __( 'Singapore', 'woocommerce-payments' ),
 			Country_Code::UNITED_STATES        => __( 'United States (US)', 'woocommerce-payments' ),
+			Country_Code::PUERTO_RICO          => __( 'Puerto Rico', 'woocommerce-payments' ),
 		];
 	}
 
@@ -572,6 +573,8 @@ class WC_Payments_Utils {
 				),
 				wp_strip_all_tags( html_entity_decode( $price ) )
 			);
+		} elseif ( $e instanceof API_Exception && 'amount_too_large' === $e->get_error_code() ) {
+			$error_message = $e->getMessage();
 		} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
@@ -591,10 +594,19 @@ class WC_Payments_Utils {
 	 * @return  int
 	 */
 	public static function get_filtered_error_status_code( Exception $e ) : int {
+		$status_code = null;
 		if ( $e instanceof API_Exception ) {
-			return $e->get_http_code() ?? 400;
+			$status_code = $e->get_http_code();
 		}
-		return 400;
+
+		// Hosting companies might use the 402 status code to return a custom error page.
+		// When 402 is returned by Stripe, let's return 400 instead.
+		// The frontend doesn't make use of the status code.
+		if ( 402 === $status_code ) {
+			$status_code = 400;
+		}
+
+		return $status_code ?? 400;
 	}
 
 	/**

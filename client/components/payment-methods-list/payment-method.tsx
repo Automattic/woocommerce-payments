@@ -270,8 +270,6 @@ const PaymentMethod = ( {
 						checked={ checked }
 						disabled={ disabled || locked }
 						onChange={ handleChange }
-						delayMsOnCheck={ 1500 }
-						delayMsOnUncheck={ 0 }
 						hideLabel
 						isAllowingManualCapture={ isAllowingManualCapture }
 						isSetupRequired={ isSetupRequired }
@@ -350,7 +348,7 @@ const PaymentMethod = ( {
 						) }
 						<a
 							// eslint-disable-next-line max-len
-							href="https://woo.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-deprecation"
+							href="https://woo.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-migration"
 							target="_blank"
 							rel="external noreferrer noopener"
 						>

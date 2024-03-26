@@ -9,7 +9,6 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import strings from './strings';
-import { isInDevMode } from 'utils';
 import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { trackAccountReset } from 'wcpay/onboarding/tracking';
@@ -30,8 +29,6 @@ const handleReset = () => {
 export const AccountTools: React.FC< Props > = ( props: Props ) => {
 	const accountLink = props.accountLink;
 	const [ modalVisible, setModalVisible ] = useState( false );
-
-	if ( isInDevMode() ) return null;
 
 	return (
 		<>

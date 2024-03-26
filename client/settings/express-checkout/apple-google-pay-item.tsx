@@ -10,15 +10,21 @@ import React from 'react';
  * Internal dependencies
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
-import { usePaymentRequestEnabledSettings } from 'wcpay/data';
+import {
+	usePaymentRequestEnabledSettings,
+	useExpressCheckoutShowIncompatibilityNotice,
+} from 'wcpay/data';
 import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
+import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
 	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
+
+	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
 
 	return (
 		<li
@@ -160,6 +166,9 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
+			{ showIncompatibilityNotice && (
+				<ExpressCheckoutIncompatibilityNotice />
+			) }
 		</li>
 	);
 };

@@ -3,25 +3,62 @@
  * Internal dependencies
  */
 import './style.scss';
+import WCPayAPI from 'wcpay/checkout/api';
+import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { getUPEConfig } from 'wcpay/utils/checkout';
+import apiRequest from 'wcpay/checkout/utils/request';
 
-export const initializeBnplSiteMessaging = () => {
+/**
+ * Initializes the appearance of the payment element by retrieving the UPE configuration
+ * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
+ * it is simply returned.
+ *
+ * @param {Object} api The API object used to save the UPE configuration.
+ * @return {Promise<Object>} The appearance object for the UPE.
+ */
+async function initializeAppearance( api ) {
+	const appearance = getUPEConfig( 'upeBnplProductPageAppearance' );
+	if ( appearance ) {
+		return Promise.resolve( appearance );
+	}
+
+	return await api.saveUPEAppearance(
+		getAppearance( 'bnpl_product_page' ),
+		'bnpl_product_page'
+	);
+}
+
+export const initializeBnplSiteMessaging = async () => {
 	const {
 		productVariations,
 		country,
+		locale,
+		accountId,
 		publishableKey,
 		paymentMethods,
 	} = window.wcpayStripeSiteMessaging;
 
-	// eslint-disable-next-line no-undef
-	const stripe = Stripe( publishableKey );
+	const api = new WCPayAPI(
+		{
+			publishableKey: publishableKey,
+			accountId: accountId,
+			locale: locale,
+		},
+		apiRequest
+	);
 	const options = {
 		amount: parseInt( productVariations.base_product.amount, 10 ) || 0,
 		currency: productVariations.base_product.currency || 'USD',
 		paymentMethodTypes: paymentMethods || [],
 		countryCode: country, // Customer's country or base country of the store.
 	};
-	const paymentMessageElement = stripe
-		.elements()
+	const elementsOptions = {
+		appearance: await initializeAppearance( api ),
+		fonts: getFontRulesFromPage(),
+	};
+	const paymentMessageElement = api
+		.getStripe()
+		.elements( elementsOptions )
 		.create( 'paymentMethodMessaging', options );
 	paymentMessageElement.mount( '#payment-method-message' );
 
