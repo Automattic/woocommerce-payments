@@ -371,4 +371,6 @@ class WC_REST_Payments_Payment_Intents_Create_Controller extends WC_Payments_RES
 
 		return rest_ensure_response( $prepared_item );
 	}
+
+
 }

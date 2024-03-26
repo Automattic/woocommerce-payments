@@ -83,4 +83,5 @@ class UserSettings {
 			$this->multi_currency->update_selected_currency( $currency_code );
 		}
 	}
+
 }

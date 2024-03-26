@@ -57,4 +57,5 @@ class Base_Constant_Test extends WCPAY_UnitTestCase {
 		$this->expectException( \InvalidArgumentException::class );
 		Payment_Method::search( 'foo' );
 	}
+
 }
