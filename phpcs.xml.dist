@@ -27,7 +27,7 @@
 		<!-- This rule is currently generating some false positives, it would be worth retrying after PHPCS upgrades -->
 		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
 		<exclude name="Squiz.Commenting.FunctionComment.EmptyThrows"/>
-		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found"/>
 	</rule>
 
 	<!-- Disallow long array syntax -->
@@ -55,16 +55,6 @@
 		<exclude-pattern>src</exclude-pattern>
 	</rule>
 
-	<rule ref="WordPress.WP.Capabilities">
-		<properties>
-			<property name="custom_capabilities" type="array">
-				<element value="manage_woocommerce" />
-				<element value="pay_for_order" />
-				<element value="read_private_shop_orders" />
-			</property>
-		</properties>
-	</rule>
-
 	<rule ref="Generic.Commenting">
 		<exclude-pattern>tests/</exclude-pattern>
 	</rule>
@@ -74,10 +64,6 @@
 	</rule>
 
 	<rule ref="Squiz.Commenting.FunctionCommentThrowTag.Missing" />
-
-	<rule ref="Universal.Files.SeparateFunctionsFromOO.Mixed">
-		<exclude-pattern>tests/</exclude-pattern>
-	</rule>
 
 	<!-- We don't need to do nonce checks in unit test code -->
 	<rule ref="WordPress.Security.NonceVerification.Recommended">
