@@ -31,13 +31,6 @@ export const trackStarted = ( source: string ): void => {
 	} );
 };
 
-export const trackModeSelected = ( mode: string ): void => {
-	recordEvent( 'wcpay_onboarding_flow_mode_selected', {
-		mode,
-		elapsed: stepElapsed(),
-	} );
-};
-
 export const trackStepCompleted = ( step: string ): void => {
 	// We only track a completed step once.
 	if ( trackedSteps.has( step ) ) return;

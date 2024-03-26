@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Ignore a PHPCS rule in two lines.
+
+

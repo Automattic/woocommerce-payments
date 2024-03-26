@@ -18,6 +18,7 @@ import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	useWooPayEnabledSettings,
+	useExpressCheckoutShowIncompatibilityNotice,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
@@ -27,6 +28,7 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	useWooPayEnabledSettings: jest.fn(),
+	useExpressCheckoutShowIncompatibilityNotice: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
 } ) );
 
@@ -253,5 +255,29 @@ describe( 'PaymentRequestSettings', () => {
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );
+	} );
+
+	it( 'triggers the hooks when the enable setting is being interacted with', () => {
+		useExpressCheckoutShowIncompatibilityNotice.mockReturnValue( true );
+
+		render( <PaymentRequestSettings section="enable" /> );
+
+		expect(
+			screen.queryByText(
+				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'triggers the hooks when the enable setting is being interacted with', () => {
+		useExpressCheckoutShowIncompatibilityNotice.mockReturnValue( false );
+
+		render( <PaymentRequestSettings section="enable" /> );
+
+		expect(
+			screen.queryByText(
+				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
+			)
+		).not.toBeInTheDocument();
 	} );
 } );

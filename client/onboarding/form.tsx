@@ -14,8 +14,6 @@ import { ListItem as GroupedSelectItem } from 'components/grouped-select-control
 import {
 	GroupedSelectField,
 	GroupedSelectFieldProps,
-	PhoneNumberField,
-	PhoneNumberFieldProps,
 	SelectField,
 	SelectFieldProps,
 	TextField,
@@ -47,7 +45,11 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 			} }
 		>
 			{ children }
-			<Button isPrimary type="submit" className="stepper__cta">
+			<Button
+				variant={ 'primary' }
+				type="submit"
+				className="stepper__cta"
+			>
 				{ strings.continue }
 			</Button>
 		</form>
@@ -90,38 +92,6 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = (
 	);
 };
 
-interface OnboardingPhoneNumberFieldProps
-	extends Partial< PhoneNumberFieldProps > {
-	name: keyof OnboardingFields;
-}
-
-export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldProps > = (
-	props
-) => {
-	const { name } = props;
-	const { data, setData, temp, setTemp, touched } = useOnboardingContext();
-	const { validate, error } = useValidation( name );
-
-	return (
-		<PhoneNumberField
-			label={ strings.fields[ name ] }
-			value={ data[ name ] || '' }
-			country={ temp.phoneCountryCode || wcpaySettings.connect.country }
-			onChange={ ( value: string, phoneCountryCode: string ) => {
-				setTemp( { phoneCountryCode } );
-				setData( { [ name ]: value } );
-				if ( touched[ name ] ) validate( value );
-			} }
-			onBlur={ () => validate() }
-			error={ error() }
-			onKeyDown={ ( event: React.KeyboardEvent< HTMLInputElement > ) => {
-				if ( event.key === 'Enter' ) validate();
-			} }
-			{ ...props }
-		/>
-	);
-};
-
 interface OnboardingSelectFieldProps< ItemType >
 	extends Partial< Omit< SelectFieldProps< ItemType >, 'onChange' > > {
 	name: keyof OnboardingFields;
@@ -143,7 +113,8 @@ export const OnboardingSelectField = < ItemType extends SelectItem >( {
 				( item ) => item.key === data[ name ]
 			) }
 			placeholder={
-				( strings.placeholders as Record< string, string > )[ name ]
+				( strings.placeholders as Record< string, string > )[ name ] ??
+				strings.placeholders.generic
 			}
 			onChange={ ( { selectedItem } ) => {
 				if ( onChange ) {
@@ -183,7 +154,8 @@ export const OnboardingGroupedSelectField = <
 				( item ) => item.key === data[ name ]
 			) }
 			placeholder={
-				( strings.placeholders as Record< string, string > )[ name ]
+				( strings.placeholders as Record< string, string > )[ name ] ??
+				strings.placeholders.generic
 			}
 			onChange={ ( { selectedItem } ) => {
 				if ( onChange ) {

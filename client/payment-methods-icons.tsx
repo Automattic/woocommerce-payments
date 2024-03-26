@@ -28,6 +28,8 @@ import WooAsset from 'assets/images/payment-methods/woo.svg?asset';
 import ApplePayAsset from 'assets/images/cards/apple-pay.svg?asset';
 import GooglePayAsset from 'assets/images/cards/google-pay.svg?asset';
 import DinersClubAsset from 'assets/images/cards/diners.svg?asset';
+import DiscoverAsset from 'assets/images/cards/discover.svg?asset';
+import CBAsset from 'assets/images/cards/cb.svg?asset';
 import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
 import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
 import CreditCardAsset from 'assets/images/payment-methods/cc.svg?asset';
@@ -83,9 +85,17 @@ export const CreditCardIcon = iconComponent(
 	__( 'Credit card / Debit card', 'woocommerce-payments' ),
 	false
 );
+export const CBIcon = iconComponent(
+	CBAsset,
+	__( 'Cartes Bancaires', 'woocommerce-payments' )
+);
 export const DinersClubIcon = iconComponent(
 	DinersClubAsset,
 	__( 'Diners Club', 'woocommerce-payments' )
+);
+export const DiscoverIcon = iconComponent(
+	DiscoverAsset,
+	__( 'Discover', 'woocommerce-payments' )
 );
 export const EpsIcon = iconComponent(
 	EpsAsset,
