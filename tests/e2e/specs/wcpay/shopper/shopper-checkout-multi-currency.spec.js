@@ -7,7 +7,12 @@ const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
-import { merchantWCP, shopperWCP } from '../../../utils';
+import {
+	RUN_SUBSCRIPTIONS_TESTS,
+	describeif,
+	merchantWCP,
+	shopperWCP,
+} from '../../../utils';
 
 const ORDER_RECEIVED_ORDER_TOTAL_SELECTOR =
 	'.woocommerce-order-overview__total';
@@ -144,4 +149,34 @@ describe( 'Shopper Multi-Currency checkout', () => {
 			}
 		} );
 	} );
+
+	describeif( RUN_SUBSCRIPTIONS_TESTS )(
+		'Subscriptions, Stripe Billing, and Multi-currency',
+		() => {
+			let wasStripeBillingEnabled;
+
+			beforeAll( async () => {
+				await merchant.login();
+				wasStripeBillingEnabled = await merchantWCP.isStripeBillingEnabled();
+				if ( ! wasStripeBillingEnabled ) {
+					await merchantWCP.activateStripeBilling();
+				}
+				await merchant.logout();
+			} );
+
+			afterAll( async () => {
+				if ( ! wasStripeBillingEnabled ) {
+					await merchant.login();
+					await merchantWCP.deactivateStripeBilling();
+					await merchant.logout();
+				}
+			} );
+
+			it.todo( 'Place order with Stripe Billing in non-store currency' );
+
+			it.todo(
+				'Two Stripe Billing orders with different currencies cannot coexist'
+			);
+		}
+	);
 } );

@@ -778,6 +778,28 @@ export const merchantWCP = {
 		} );
 	},
 
+	activateStripeBilling: async () => {
+		await merchantWCP.openWCPSettings();
+		await merchantWCP.setCheckboxByTestId( 'stripe-billing-toggle' );
+		await merchantWCP.wcpSettingsSaveChanges();
+	},
+
+	deactivateStripeBilling: async () => {
+		await merchantWCP.openWCPSettings();
+		await merchantWCP.unsetCheckboxByTestId( 'stripe-billing-toggle' );
+		await merchantWCP.wcpSettingsSaveChanges();
+	},
+
+	isStripeBillingEnabled: async () => {
+		await merchantWCP.openWCPSettings();
+		return await page.evaluate( () => {
+			const checkbox = document.querySelector(
+				"[data-testid='stripe-billing-toggle']"
+			);
+			return checkbox ? checkbox.checked : false;
+		} );
+	},
+
 	deactivateMulticurrency: async () => {
 		await merchantWCP.openWCPSettings();
 		await merchantWCP.unsetCheckboxByTestId( 'multi-currency-toggle' );
