@@ -52,7 +52,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @var WC_Payments_Token_Service
 	 */
-	protected $token_service;
+	private $token_service;
 
 	/**
 	 * WC_Payments_REST_Controller constructor.
@@ -243,6 +243,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 					}
 				}
 			}
+
 			// Actualize order status.
 			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'] );
 
@@ -254,7 +255,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to capture a terminal payment via REST API: ' . $e );
-			Logger::error( $e->getTraceAsString() );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
