@@ -1668,7 +1668,7 @@ class WC_Payments {
 		wp_enqueue_script( 'WCPAY_CART' );
 
 		if ( has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() ) ) {
-			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block' );
+			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-blocks-integration' ] );
 			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
 		}
 	}
