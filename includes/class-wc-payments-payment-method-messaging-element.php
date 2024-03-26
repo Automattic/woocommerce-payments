@@ -110,8 +110,6 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				'isCart'            => is_cart(),
 				'isCartBlock'       => $is_cart_block,
 				'cartTotal'         => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
-				'nonce'             => wp_create_nonce( 'wcpay-get-cart-details' ),
-				'wcAjaxUrl'         => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			]
 		);
 

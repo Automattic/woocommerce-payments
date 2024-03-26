@@ -574,8 +574,6 @@ class WC_Payments {
 			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
 			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
 			add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ] );
-
-			add_action( 'wc_ajax_wcpay_get_cart_total', [ __CLASS__, 'ajax_get_cart_total' ] );
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -1608,28 +1606,6 @@ class WC_Payments {
 	}
 
 	/**
-	 * Get cart total.
-	 */
-	public static function ajax_get_cart_total() {
-		check_ajax_referer( 'wcpay-get-cart-details', 'security' );
-
-		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
-			define( 'WOOCOMMERCE_CART', true );
-		}
-
-		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
-			define( 'WOOCOMMERCE_CHECKOUT', true );
-		}
-
-		WC()->cart->calculate_totals();
-
-		$cart_total    = WC()->cart->total;
-		$currency_code = get_woocommerce_currency();
-
-		wp_send_json( [ 'total' => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ) ] );
-	}
-
-	/**
 	 * Adds custom email field.
 	 */
 	public static function woopay_fields_before_billing_details() {
@@ -1690,6 +1666,11 @@ class WC_Payments {
 
 		self::register_script_with_dependencies( 'WCPAY_CART', 'dist/cart' );
 		wp_enqueue_script( 'WCPAY_CART' );
+
+		if ( has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() ) ) {
+			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block' );
+			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
+		}
 	}
 
 	/**

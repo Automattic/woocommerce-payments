@@ -4,9 +4,9 @@
 /**
  * Internal dependencies
  */
+import WCPayAPI from 'wcpay/checkout/api';
 import { initializeBnplSiteMessaging } from './bnpl-site-messaging';
 import request from 'wcpay/checkout/utils/request';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
 
 jQuery( async function ( $ ) {
 	/**
@@ -31,7 +31,19 @@ jQuery( async function ( $ ) {
 		productVariations,
 		productId,
 		isCart,
+		publishableKey,
+		accountId,
+		locale,
 	} = window.wcpayStripeSiteMessaging;
+
+	const api = new WCPayAPI(
+		{
+			publishableKey: publishableKey,
+			accountId: accountId,
+			locale: locale,
+		},
+		request
+	);
 
 	let baseProductAmount;
 	let productCurrency;
@@ -97,18 +109,6 @@ jQuery( async function ( $ ) {
 		);
 	};
 
-	const bnplGetCartTotal = () => {
-		return request(
-			buildAjaxURL(
-				window.wcpayStripeSiteMessaging.wcAjaxUrl,
-				'get_cart_total'
-			),
-			{
-				security: window.wcpayStripeSiteMessaging.nonce,
-			}
-		);
-	};
-
 	// Update BNPL message based on the quantity change
 	quantityInput.on( 'change', ( event ) => {
 		let amount = baseProductAmount;
@@ -126,8 +126,9 @@ jQuery( async function ( $ ) {
 	} );
 
 	$( document.body ).on( 'updated_cart_totals', () => {
-		bnplGetCartTotal().then( ( response ) => {
-			window.wcpayStripeSiteMessaging.cartTotal = response.total;
+		api.pmmeGetCartData().then( ( response ) => {
+			window.wcpayStripeSiteMessaging.cartTotal =
+				response?.totals?.total_price;
 			initializeBnplSiteMessaging();
 		} );
 	} );

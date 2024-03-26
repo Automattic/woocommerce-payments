@@ -1,4 +1,3 @@
-// global Stripe
 /**
  * External dependencies
  */

@@ -572,4 +572,25 @@ export default class WCPayAPI {
 			...paymentData,
 		} );
 	}
+
+	/**
+	 * Fetches the cart data from the woocommerce store api.
+	 *
+	 * @return {Object} JSON data.
+	 * @throws Error if the response is not ok.
+	 */
+	pmmeGetCartData() {
+		return fetch( `${ window.wcpayConfig.storeApiURL }/v1/cart`, {
+			method: 'GET',
+			credentials: 'same-origin',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		} ).then( ( response ) => {
+			if ( ! response.ok ) {
+				throw new Error( response.statusText );
+			}
+			return response.json();
+		} );
+	}
 }
