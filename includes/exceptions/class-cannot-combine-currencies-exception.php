@@ -16,7 +16,7 @@ class Cannot_Combine_Currencies_Exception extends API_Exception {
 	/**
 	 * Holds the attempted currency, extracted from the error message returned by the API.
 	 *
-	 * @var int
+	 * @var string
 	 */
 	private $currency;
 
