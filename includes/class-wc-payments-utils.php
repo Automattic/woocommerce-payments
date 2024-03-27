@@ -1091,7 +1091,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return bool
 	 *
-	 * * @psalm-suppress UndefinedFunction
+	 * @psalm-suppress UndefinedFunction
 	 */
 	public static function is_cart_block(): bool {
 		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
