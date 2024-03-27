@@ -90,7 +90,7 @@ function getAcceptDisputeProps( {
 	dispute: Dispute;
 	isDisputeAcceptRequestPending: boolean;
 } ): AcceptDisputeProps {
-	if ( isInquiry( dispute ) ) {
+	if ( isInquiry( dispute.status ) ) {
 		return {
 			acceptButtonLabel: __( 'Issue refund', 'woocommerce-payments' ),
 			acceptButtonTracksEvent: 'wcpay_dispute_inquiry_refund_modal_view',
@@ -204,7 +204,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		isDisputeAcceptRequestPending,
 	} );
 
-	const challengeButtonDefaultText = isInquiry( dispute )
+	const challengeButtonDefaultText = isInquiry( dispute.status )
 		? __( 'Submit evidence', 'woocommerce-payments' )
 		: __( 'Challenge dispute', 'woocommerce-payments' );
 
@@ -227,7 +227,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 
 					<DisputeSummaryRow dispute={ dispute } />
 
-					{ isInquiry( dispute ) ? (
+					{ isInquiry( dispute.status ) ? (
 						<InquirySteps
 							dispute={ dispute }
 							customer={ customer }
@@ -373,7 +373,9 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 												 * Handle the primary modal action.
 												 * If it's an inquiry, redirect to the order page; otherwise, continue with the default dispute acceptance.
 												 */
-												if ( isInquiry( dispute ) ) {
+												if (
+													isInquiry( dispute.status )
+												) {
 													viewOrder();
 												} else {
 													doAccept();

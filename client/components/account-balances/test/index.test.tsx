@@ -23,6 +23,7 @@ const mockAccount: AccountOverview.Account = {
 		weekly_anchor: 'Monday',
 		monthly_anchor: 1,
 	},
+	default_external_accounts: [],
 };
 
 // Mock the wcpaySettings localized variables needed by these tests.

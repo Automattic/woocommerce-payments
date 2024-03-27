@@ -114,11 +114,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
 
-	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE = 'upe_process_redirect_order_id_mismatched';
-	const UPE_APPEARANCE_TRANSIENT                   = 'wcpay_upe_appearance';
-	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT         = 'wcpay_wc_blocks_upe_appearance';
-	const UPE_APPEARANCE_THEME_TRANSIENT             = 'wcpay_upe_appearance_theme';
-	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT   = 'wcpay_wc_blocks_upe_appearance_theme';
+	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE       = 'upe_process_redirect_order_id_mismatched';
+	const UPE_APPEARANCE_TRANSIENT                         = 'wcpay_upe_appearance';
+	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT               = 'wcpay_wc_blocks_upe_appearance';
+	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_product_page_appearance';
+	const UPE_APPEARANCE_THEME_TRANSIENT                   = 'wcpay_upe_appearance_theme';
+	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT         = 'wcpay_wc_blocks_upe_appearance_theme';
+	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_product_page_appearance_theme';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -1726,7 +1728,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $response;
 		}
 
-		wc_reduce_stock_levels( $order_id );
+		wc_maybe_reduce_stock_levels( $order_id );
 		if ( isset( $cart ) ) {
 			$cart->empty_cart();
 		}
@@ -2281,46 +2283,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return new WP_Error( 'wcpay_edit_order_refund_failure', $e->getMessage() );
 		}
 
-		if ( empty( $reason ) ) {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: refund id */
-					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
-					[
-						'code' => '<code>',
-					]
-				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-				'WooPayments',
-				$refund['id']
-			);
-		} else {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
-					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
-					[
-						'code' => '<code>',
-					]
-				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-				'WooPayments',
-				$reason,
-				$refund['id']
-			);
+		$wc_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
+		if ( ! $wc_refund ) {
+			// translators: %1$: order id.
+			return new WP_Error( 'wcpay_edit_order_refund_not_found', sprintf( __( 'A refund cannot be found for order: %1$s', 'woocommerce-payments' ), $order->get_id() ) );
 		}
-
-		// Get the last created WC refund from order and save WCPay refund id as meta.
-		$wc_last_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order_id );
-		if ( $wc_last_refund ) {
-			$this->order_service->set_wcpay_refund_id_for_order( $wc_last_refund, $refund['id'] );
-			$this->order_service->set_wcpay_refund_transaction_id_for_order( $wc_last_refund, $refund['balance_transaction'] );
-			$wc_last_refund->save_meta_data();
-		}
-
-		$order->add_order_note( $note );
-		$this->order_service->set_wcpay_refund_status_for_order( $order, 'successful' );
-		$order->save();
+		// If the refund was successful, add a note to the order and update the refund status.
+		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund['id'], $refund['balance_transaction'] ?? null );
 
 		return true;
 	}
@@ -2432,8 +2401,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Overrides parent method so the option key is the same as the parent class.
 	 */
 	public function get_option_key() {
-		// Intentionally using self instead of static so options are loaded from main gateway settings.
-		return $this->plugin_id . self::GATEWAY_ID . '_settings';
+		return $this->plugin_id . $this->id . '_settings';
 	}
 
 
@@ -3916,19 +3884,47 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$is_blocks_checkout = isset( $_POST['is_blocks_checkout'] ) ? rest_sanitize_boolean( wc_clean( wp_unslash( $_POST['is_blocks_checkout'] ) ) ) : false;
-			$appearance         = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
+			$elements_location = isset( $_POST['elements_location'] ) ? wc_clean( wp_unslash( $_POST['elements_location'] ) ) : null;
+			$appearance        = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
+
+			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page' ];
+			if ( ! $elements_location || ! in_array( $elements_location, $valid_locations, true ) ) {
+				throw new Exception(
+					__( 'Unable to update UPE appearance values at this time.', 'woocommerce-payments' )
+				);
+			}
+
+			if ( in_array( $elements_location, [ 'blocks_checkout', 'shortcode_checkout' ], true ) ) {
+				$is_blocks_checkout = 'blocks_checkout' === $elements_location;
+				/**
+				 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
+				 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
+				 *
+				 * @deprecated 7.4.0 Use {@see 'wcpay_elements_appearance'} instead.
+				 * @since 7.3.0
+				 */
+				$appearance = apply_filters_deprecated( 'wcpay_upe_appearance', [ $appearance, $is_blocks_checkout ], '7.4.0', 'wcpay_elements_appearance' );
+			}
 
 			/**
 			 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
 			 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
+			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', or 'bnpl_product_page'.
 			 *
-			 * @since 7.3.0
+			 * @since 7.4.0
 			 */
-			$appearance = apply_filters( 'wcpay_upe_appearance', $appearance, $is_blocks_checkout );
+			$appearance = apply_filters( 'wcpay_elements_appearance', $appearance, $elements_location );
 
-			$appearance_transient       = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT : self::UPE_APPEARANCE_TRANSIENT;
-			$appearance_theme_transient = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT : self::UPE_APPEARANCE_THEME_TRANSIENT;
+			$appearance_transient       = [
+				'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
+				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
+				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
+			][ $elements_location ];
+			$appearance_theme_transient = [
+				'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
+				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
+				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+			][ $elements_location ];
 
 			if ( null !== $appearance ) {
 				set_transient( $appearance_transient, $appearance, DAY_IN_SECONDS );
@@ -3955,8 +3951,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function clear_upe_appearance_transient() {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
+		delete_transient( self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
 		delete_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
+		delete_transient( self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT );
 	}
 
 	/**

@@ -339,6 +339,16 @@ exports[`StatusChip renders restricted status 1`] = `
 </div>
 `;
 
+exports[`StatusChip renders under review status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Under review
+  </span>
+</div>
+`;
+
 exports[`StatusChip renders unknown status 1`] = `
 <div>
   <span

@@ -285,53 +285,6 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Add deposits and transactions menus for wcpay_empty_state_preview_mode_v1 experiment's treatment group.
-	 * This code can be removed once we're done with the experiment.
-	 */
-	public function add_payments_menu_for_treatment() {
-		wc_admin_register_page(
-			[
-				'id'         => 'wc-payments',
-				'title'      => __( 'Payments', 'woocommerce-payments' ),
-				'capability' => 'manage_woocommerce',
-				'path'       => '/payments/deposits',
-				'position'   => '55.7', // After WooCommerce & Product menu items.
-				'nav_args'   => [
-					'title'        => 'WooPayments',
-					'is_category'  => true,
-					'menuId'       => 'plugins',
-					'is_top_level' => true,
-				],
-			]
-		);
-
-		wc_admin_register_page( $this->admin_child_pages['wc-payments-deposits'] );
-		wc_admin_register_page( $this->admin_child_pages['wc-payments-transactions'] );
-		wc_admin_register_page(
-			[
-				'id'       => 'wc-payments-connect',
-				'title'    => __( 'Connect', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/connect',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 10,
-				],
-			]
-		);
-
-		WC_Payments_Utils::enqueue_style(
-			'wcpay-admin-css',
-			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'assets/css/admin.css' ),
-			'all',
-		);
-
-		$this->add_menu_notification_badge();
-	}
-
-	/**
 	 * Add payments menu items.
 	 */
 	public function add_payments_menu() {
@@ -375,7 +328,10 @@ class WC_Payments_Admin {
 			]
 		);
 
-		if ( $this->account->is_account_rejected() ) {
+		// Merchants are unable to see their deposits, transactions, disputes and settings if their account is rejected or under review.
+		// That's expected, because account under review is hard-blocked account that spends in a review pretty short time-frame.
+		// Either merchant gets approved and continues to use payments or they remain suspended and can't use payments.
+		if ( $this->account->is_account_rejected() || $this->account->is_account_under_review() ) {
 			// If the account is rejected, only show the overview page.
 			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
 			return;
@@ -849,7 +805,6 @@ class WC_Payments_Admin {
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'            => WC_Payments_Account::is_on_boarding_disabled(),
 			'onboardingFieldsData'          => $this->onboarding_service->get_fields_data( get_user_locale() ),
-			'onboardingFlowState'           => $this->onboarding_service->get_onboarding_flow_state(),
 			'errorMessage'                  => $error_message,
 			'featureFlags'                  => $this->get_frontend_feature_flags(),
 			'isSubscriptionsActive'         => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),

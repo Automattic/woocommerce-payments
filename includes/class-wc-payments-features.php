@@ -24,6 +24,7 @@ class WC_Payments_Features {
 	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
 	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
+	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME = '_wcpay_feature_payment_overview_widget';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -257,12 +258,25 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether WooPay Direct Checkout is enabled.
+	 * Checks whether Payment Overview Widget is enabled.
 	 *
 	 * @return bool
 	 */
+	public static function is_payment_overview_widget_ui_enabled(): bool {
+		return '1' === get_option( self::PAYMENT_OVERVIEW_WIDGET_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks whether WooPay Direct Checkout is enabled.
+	 *
+	 * @return bool True if Direct Checkout is enabled, false otherwise.
+	 */
 	public static function is_woopay_direct_checkout_enabled() {
-		return '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '0' ) && self::is_woopay_first_party_auth_enabled();
+		$account_cache                   = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		$is_direct_checkout_eligible     = is_array( $account_cache ) && ( $account_cache['platform_direct_checkout_eligible'] ?? false );
+		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
+
+		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopay_first_party_auth_enabled();
 	}
 
 	/**
@@ -381,6 +395,7 @@ class WC_Payments_Features {
 				'isPayForOrderFlowEnabled'       => self::is_pay_for_order_flow_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 				'isRefundControlsEnabled'        => self::is_streamline_refunds_enabled(),
+				'isPaymentOverviewWidgetEnabled' => self::is_payment_overview_widget_ui_enabled(),
 			]
 		);
 	}

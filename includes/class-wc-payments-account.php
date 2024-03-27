@@ -230,6 +230,21 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account is under review, assumes the value of false on any account retrieval error.
+	 * Returns false if the account is not connected.
+	 *
+	 * @return bool
+	 */
+	public function is_account_under_review(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return 'under_review' === $account['status'];
+	}
+
+	/**
 	 * Checks if the account "details_submitted" flag is true.
 	 * This is a proxy for telling if an account has completed onboarding.
 	 * If the "details_submitted" flag is false, it means that the account has not
@@ -1040,8 +1055,9 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
-			$incentive   = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
-			$progressive = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+			$incentive              = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
+			$progressive            = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+			$create_builder_account = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
 
 			// Track connection start.
 			if ( ! isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
@@ -1058,7 +1074,9 @@ class WC_Payments_Account {
 			}
 
 			$source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
-			if ( in_array(
+			// Redirect to the onboarding flow page if the account is not onboarded otherwise to the overview page.
+			// Builder accounts are handled below and redirected to Stripe KYC directly.
+			if ( ! $create_builder_account && in_array(
 				$source,
 				[
 					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
@@ -1070,6 +1088,14 @@ class WC_Payments_Account {
 			) ) {
 				// Redirect non-onboarded account to the onboarding flow, otherwise to payments overview page.
 				if ( ! $this->is_stripe_connected() ) {
+					$should_onboard_in_test_mode = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
+					if ( ! $should_onboard_in_test_mode && WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
+						// If there is no test mode in the URL informing us to onboard in test mode,
+						// but the onboarding test mode is enabled in our DB, we should disable it.
+						// This is most likely a leftover from a previous onboarding attempt.
+						WC_Payments_Onboarding_Service::set_test_mode( false );
+					}
+
 					$this->redirect_to_onboarding_flow_page( $source );
 				} else {
 					// Accounts with Stripe account connected will be redirected to the overview page.
@@ -1093,7 +1119,7 @@ class WC_Payments_Account {
 			}
 
 			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT === $source ) {
-				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled() || WC_Payments::mode()->is_dev();
 
 				// Delete the account.
 				$this->payments_api_client->delete_account( $test_mode );
@@ -1413,9 +1439,6 @@ class WC_Payments_Account {
 		if ( $test_mode ) {
 			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
-
-		// Clear persisted onboarding flow state.
-		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
 
 		if ( ! $collect_payout_requirements ) {
 			// Clear onboarding related account options if this is an initial onboarding attempt.
