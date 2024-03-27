@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 7.3.0
+Stable tag: 7.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,57 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 7.4.0 - 2024-03-27 =
+* Add - Add account reset for sandboxes
+* Add - Add a loading spinner to the "Proceed to Checkout" button in shortcode cart.
+* Add - Add data telemetry for the Proceed to Checkout button and the WooPay direct checkout.
+* Add - Added a notice about custom checkout fields conflicting with express checkouut
+* Add - Added a notice to inform the merchant when the payout bank account is in errored state
+* Add - Added a notice to the Deposits Listing screen when deposits are paused
+* Add - Add WooPay direct checkout flow behind a server-side feature flag.
+* Add - Add woopayMinimumSessionData in wcpayConfig when Express Checkout button's disabled o on car page.
+* Add - Customizing BNPL messaging with Appearance API
+* Add - Handle refunds triggered externally, outside WP Admin
+* Add - Preload WooPay session data for WooPay Direct Checkout flow.
+* Fix - Add empty validation when quering order by meta key and meta value
+* Fix - Add settings object for every gateway
+* Fix - Allow WooPay button preview on settings page
+* Fix - Apply the WooPay Direct Checkout flow only to the "Proceed to Checkout" button, in cthe classic cart.
+* Fix - Ensure card gateway is not running through the settings migration.
+* Fix - Ensure every gateway has individual settings object.
+* Fix - Ensure WooPay Direct Checkout continues to work as intended when WooPay Express Checkout is disabled on the cart page.
+* Fix - fix: "Add payment method" page initialization on missing UPE styles
+* Fix - fix: better error message when saved card and amount too large
+* Fix - Fixed a 1px gap on the right side of some payment method icons in transaction details.
+* Fix - Fixed Clearpay aria-label for UK sites
+* Fix - Fixes some instances where Stripe UPE styles add a black background to input fields.
+* Fix - Fix the cursor pointer when hovering over disabled checkboxes in Advanced Settings
+* Fix - Fix WooPay direct checkout eligibility checks.
+* Fix - Hide the option to refund in full from the transaction details menu when a transaction is partially refunded.
+* Fix - Inform hard blocked merchants they're under review
+* Fix - Load deposit overview only when deposit is present
+* Fix - Move test mode transactions notice to the top of the page.
+* Fix - Order completed and refunded emails are no longer sent when a dispute is closed.
+* Fix - Preventing stock quantity from being reduced twice.
+* Fix - Re-enable Direct-to-Checkout Feature Flag in WooPay OTP Iframe.
+* Fix - strtolower deprecation warning no longer appears on the Order Received and View Order pages when using PHP version 8.1+
+* Fix - Used client side navigation to improve the UX for "View Deposit History"
+* Fix - Uses WCPayAPI to initialise Stripe for BNPL payment element, includes necessary required parameters.
+* Update - Allow WooPay to request full session data from store.
+* Update - Clean up remaining unused code from a past experiment - `wcpay_empty_state_preview_mode`, done on Deposits list.
+* Update - Make the order note for `dispute funds withdrawn` event clearly mention that the dispute amount and fee would be deducted from the next deposit.
+* Update - Remove mention of test mode from general settings help text.
+* Update - Updated deposits API documentation to add default_external_accounts element
+* Update - Updates to reduce the amount of steps required during onboarding flow.
+* Update - Update the Payments Connect page design and logic
+* Update - Validate deposit id before sending a request to fetch deposit.
+* Dev - Bump WC tested up to version to 8.7.0 and set Requires Plugins header.
+* Dev - Ensure pre-push hook understands terminal & non-terminal environments
+* Dev - Fix a bug in Tracks where admin events were not recorded properly
+* Dev - Implement a feature flag for the Payment Overview widget.
+* Dev - Minor refactor to disputes utility function inInquiry to make it accept only dispute status as a param, instead of whole dispute object.
+* Dev - refactor: validator package bundle size improvements
 
 = 7.3.0 - 2024-03-06 =
 * Add - Added confirmation modals for order status changes with pending authorizations

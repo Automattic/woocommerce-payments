@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Ensure WooPay Direct Checkout continues to work as intended when WooPay Express Checkout is disabled on the cart page.
