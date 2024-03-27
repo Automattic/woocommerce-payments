@@ -305,6 +305,10 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 
 	const stripeLinkButton = document.createElement( 'button' );
 	stripeLinkButton.setAttribute( 'class', 'wcpay-stripelink-modal-trigger' );
+
+	const buttonHeight = 24;
+	const linkButtonRight = ( emailInput.offsetHeight - buttonHeight ) / 2;
+	stripeLinkButton.style.right = `${ linkButtonRight }px`;
 	stripeLinkButton.style.display = emailInput.value ? 'inline-block' : 'none';
 	stripeLinkButton.addEventListener( 'click', ( event ) => {
 		event.preventDefault();
