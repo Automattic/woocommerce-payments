@@ -123,6 +123,11 @@ class FrontendCurrencies {
 			// is explicity lower than the priority of 'get_price_decimal_separator'.
 			add_filter( 'wc_get_price_decimal_separator', [ $this, 'init_order_currency_from_query_vars' ], 900 );
 			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 901 );
+
+			if ( ! headers_sent() ) {
+				wc_setcookie( 'wcpay_currency', $this->multi_currency->get_selected_currency()->get_code() );
+				wc_setcookie( 'wcpay_currency_rate', $this->multi_currency->get_selected_currency()->get_rate() );
+			}
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
@@ -168,6 +173,7 @@ class FrontendCurrencies {
 		if ( empty( $this->woocommerce_currency ) ) {
 			$this->woocommerce_currency = $this->get_selected_currency_code();
 		}
+
 		return $this->woocommerce_currency;
 	}
 
