@@ -184,6 +184,9 @@ const OverviewPage = () => {
 							</ErrorBoundary>
 						</Card>
 					) }
+					<Card>
+						<AccountBalances />
+					</Card>
 					{
 						/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
 						isPaymentOverviewWidgetEnabled && (
@@ -194,9 +197,6 @@ const OverviewPage = () => {
 							</Card>
 						)
 					}
-					<Card>
-						<AccountBalances />
-					</Card>
 					<DepositsOverview />
 				</ErrorBoundary>
 			) }
