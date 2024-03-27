@@ -340,16 +340,16 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 						'test_mode'       => false,
 						'billing_details' => [
 							'address' => [
-								'city'        => $order->get_billing_city(),
 								'country'     => $order->get_billing_country(),
 								'line1'       => $order->get_billing_address_1(),
 								'line2'       => $order->get_billing_address_2(),
-								'postal_code' => $order->get_billing_postcode(),
+								'city'        => $order->get_billing_city(),
 								'state'       => $order->get_billing_state(),
+								'postal_code' => $order->get_billing_postcode(),
 							],
+							'phone'   => $order->get_billing_phone(),
 							'email'   => $order->get_billing_email(),
 							'name'    => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
-							'phone'   => $order->get_billing_phone(),
 						],
 					]
 				),

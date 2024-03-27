@@ -42,6 +42,23 @@ export const getBusinessTypes = (): Country[] => {
 	);
 };
 
+/**
+ * Get the MCC code for the selected industry.
+ *
+ * @return {string | undefined} The MCC code for the selected industry. Will return undefined if no industry is selected.
+ */
+export const getMccFromIndustry = (): string | undefined => {
+	const industry = wcSettings.admin.onboarding.profile.industry?.[ 0 ];
+	if ( ! industry ) {
+		return undefined;
+	}
+
+	const industryToMcc =
+		wcpaySettings?.onboardingFieldsData?.industry_to_mcc || {};
+
+	return industryToMcc[ industry ];
+};
+
 export const getMccsFlatList = (): ListItem[] => {
 	const data = wcpaySettings?.onboardingFieldsData?.mccs_display_tree;
 

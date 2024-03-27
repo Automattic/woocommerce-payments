@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Hide the option to refund in full from the transaction details menu when a transaction is partially refunded.
