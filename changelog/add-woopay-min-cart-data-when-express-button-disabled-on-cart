@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Add woopayMinimumSessionData in wcpayConfig when Express Checkout button's disabled o on car page.
