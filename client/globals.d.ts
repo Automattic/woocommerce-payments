@@ -97,6 +97,7 @@ declare global {
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
+			industry_to_mcc: { [ key: string ]: string };
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
@@ -150,6 +151,7 @@ declare global {
 			onboarding: {
 				profile: {
 					wccom_connected: boolean;
+					industry?: string[];
 				};
 			};
 			currentUserData: {
