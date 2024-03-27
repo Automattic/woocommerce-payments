@@ -2,7 +2,12 @@
  * External dependencies
  */
 import config from 'config';
-const { shopper, merchant, withRestApi } = require( '@woocommerce/e2e-utils' );
+const {
+	shopper,
+	merchant,
+	withRestApi,
+	uiUnblocked,
+} = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
@@ -17,6 +22,12 @@ import {
 	merchantWCP,
 	shopperWCP,
 } from '../../../utils';
+
+const notice = 'div.wc-block-components-notice-banner';
+const oldNotice = 'div.woocommerce-NoticeGroup > ul.woocommerce-error > li';
+const waitForBanner = async ( errorText ) => {
+	return shopperWCP.waitForErrorBanner( errorText, notice, oldNotice );
+};
 
 const ORDER_RECEIVED_ORDER_TOTAL_SELECTOR =
 	'.woocommerce-order-overview__total';
@@ -218,9 +229,29 @@ describe( 'Shopper Multi-Currency checkout', () => {
 				);
 			} );
 
-			it.todo(
-				'should not be able to place order via Stripe Billing in another currency'
-			);
+			it( 'should not be able to place order via Stripe Billing in another currency', async () => {
+				// Setup cart and checkout.
+				await shopperWCP.goToShopWithCurrency( currencies[ 1 ] );
+				await shopperWCP.addToCartBySlug( productSlug );
+				// Make sure that the number of items in the cart is incremented first before adding another item.
+				await expect( page ).toMatchElement( '.cart-contents .count', {
+					text: new RegExp( '1 item' ),
+					timeout: 30000,
+				} );
+
+				await setupCheckout( customerBilling );
+
+				// Pay for subscription.
+				const card = config.get( 'cards.basic' );
+				await fillCardDetails( page, card );
+
+				await expect( page ).toClick( '#place_order' );
+				await uiUnblocked();
+				await waitForBanner(
+					// eslint-disable-next-line max-len
+					'There was a problem creating your subscription. All your active subscriptions must use the same currency. You attempted to purchase a subscription in EUR but have another active subscription using USD.'
+				);
+			} );
 		}
 	);
 } );
