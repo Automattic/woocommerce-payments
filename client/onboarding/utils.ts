@@ -42,6 +42,11 @@ export const getBusinessTypes = (): Country[] => {
 	);
 };
 
+/**
+ * Get the MCC code for the selected industry.
+ *
+ * @return {string | undefined} The MCC code for the selected industry. Will return undefined if no industry is selected.
+ */
 export const getMccFromIndustry = (): string | undefined => {
 	const industry = wcSettings.admin.onboarding.profile.industry?.[ 0 ];
 	if ( ! industry ) {
