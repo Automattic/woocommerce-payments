@@ -2,15 +2,13 @@
  * External dependencies
  */
 import { set, toPairs } from 'lodash';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from 'data/constants';
 import { ListItem } from 'components/grouped-select-control';
 import businessTypeDescriptionStrings from './translations/descriptions';
-import { Country, OnboardingFields } from './types';
+import { Country } from './types';
 
 export const fromDotNotation = (
 	record: Record< string, unknown >
@@ -86,14 +84,3 @@ export const getMccsFlatList = (): ListItem[] => {
 		];
 	}, [] as ListItem[] );
 };
-
-export const persistFlowState = (
-	currentStep: string,
-	data: OnboardingFields
-): Promise< void > =>
-	apiFetch( {
-		path: `${ NAMESPACE }/onboarding/flow-state`,
-		method: 'POST',
-		data: { current_step: currentStep, data },
-		parse: false,
-	} );

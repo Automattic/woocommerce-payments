@@ -4,12 +4,22 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import { isInDevMode } from 'utils';
+
 export default {
 	title: __( 'Reset account', 'woocommerce-payments' ),
-	description: __(
-		'If you are experiencing problems completing account setup, or need to change the email/country associated with your account, you can reset your account and start from the beginning.',
-		'woocommerce-payments'
-	),
+	description: isInDevMode()
+		? __(
+				'In sandbox mode, you can reset your account and onboard again at any time. Please note that all current WooPayments account details, test transactions, and deposits history will be lost.',
+				'woocommerce-payments'
+		  )
+		: __(
+				'If you are experiencing problems completing account setup, or need to change the email/country associated with your account, you can reset your account and start from the beginning.',
+				'woocommerce-payments'
+		  ),
 	beforeContinue: __( 'Before you continue', 'woocommerce-payments' ),
 	step1: sprintf(
 		/* translators: %s: WooPayments. */
