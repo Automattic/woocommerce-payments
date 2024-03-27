@@ -69,7 +69,6 @@ const WooPaySettings = ( { section } ) => {
 					{ showIncompatibilityNotice && (
 						<WooPayIncompatibilityNotice />
 					) }
-					{ /* todo gh-8167 */ }
 					<CheckboxControl
 						checked={ isWooPayEnabled }
 						onChange={ updateIsWooPayEnabled }

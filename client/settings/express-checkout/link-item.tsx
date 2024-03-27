@@ -110,7 +110,6 @@ const LinkExpressCheckoutItem = (): React.ReactElement => {
 												'woocommerce-payments'
 											) }
 										</div>
-										{ /* todo gh-8167 */ }
 										<div className="express-checkout__description">
 											{
 												/* eslint-disable jsx-a11y/anchor-has-content */
