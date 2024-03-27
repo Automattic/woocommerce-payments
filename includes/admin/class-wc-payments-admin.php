@@ -854,6 +854,10 @@ class WC_Payments_Admin {
 			],
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
 			'trackingInfo'                  => $this->account->get_tracking_info(),
+			'transactionsData'              => [
+				'tpv' => $this->account->get_transactions_tpv(),
+			],
+
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );

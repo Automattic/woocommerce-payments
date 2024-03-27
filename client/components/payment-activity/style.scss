@@ -1,0 +1,78 @@
+.wcpay-payments-activity {
+	&__card__body {
+		text-align: center;
+		color: $studio-gray-30;
+	}
+
+	&__date__picker__wrapper {
+		display: flex;
+		flex-direction: row;
+		padding: 16px;
+	}
+
+	&__date__picker__ranges {
+		display: flex;
+		flex-direction: column;
+		min-width: 150px;
+	}
+
+	&__filters > * {
+		margin: 0 4px;
+	}
+
+	&__date__picker {
+		padding: 16px;
+		border-left: 1px solid $studio-gray-10;
+
+		.woocommerce-calendar {
+			border-top: none;
+			background-color: transparent;
+			height: fit-content;
+		}
+
+		.woocommerce-calendar > .woocommerce-calendar__inputs {
+			display: none;
+		}
+
+		.woocommerce-calendar
+			*:not( .CalendarDay__selected, .CalendarDay__selected_span ) {
+			background-color: transparent !important;
+		}
+
+		.CalendarDay__selected_end {
+			border-top-right-radius: 5px;
+			border-bottom-right-radius: 5px;
+		}
+
+		.CalendarDay__selected_start {
+			border-top-left-radius: 5px;
+			border-bottom-left-radius: 5px;
+		}
+
+		.CalendarDay__selected,
+		.CalendarDay__selected:hover {
+			background-color: #3a73f5;
+		}
+
+		.CalendarDay__selected_span {
+			background-color: #eee;
+			color: $studio-black;
+			border: 1px solid #eee !important;
+		}
+
+		.CalendarDay__selected_span:hover {
+			background-color: #3a73f5;
+			color: $studio-white;
+			border: 1px solid #eee;
+		}
+
+		.CalendarDay__default {
+			border: 1px solid $studio-white;
+		}
+	}
+
+	&__label__span {
+		margin-left: 4px;
+		color: $studio-gray-30;
+	}
+}

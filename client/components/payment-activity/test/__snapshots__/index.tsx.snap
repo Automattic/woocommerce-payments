@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PaymentActivity component Component renders an empty state 1`] = `
+<div>
+  <div
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
+  >
+    <div
+      class="css-mgwsf4-View-Content em57xhy0"
+    >
+      <div
+        class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardHeader"
+      >
+        You payment activity
+      </div>
+      <div
+        class="components-card__body components-card-body wcpay-payments-activity__card__body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <img
+          alt=""
+          src="assets/images/empty-activity-state.svg"
+        />
+        <p>
+          <strong>
+            No payments… yet!
+          </strong>
+        </p>
+        <p>
+          Once your first order comes in, you'll start seeing your payment activity right here.
+        </p>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+  </div>
+</div>
+`;

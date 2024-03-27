@@ -20,6 +20,9 @@ declare global {
 		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
+		transactionsData: {
+			tpv: number;
+		};
 		accountStatus: {
 			email?: string;
 			created: string;
@@ -170,5 +173,10 @@ declare global {
 		countries: Record< string, string >;
 		homeUrl: string;
 		siteTitle: string;
+		customerCurrencies: [
+			{
+				value: string;
+			}
+		];
 	};
 }
