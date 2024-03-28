@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Increase unit test coverage for WooPay direct checkout flow.
