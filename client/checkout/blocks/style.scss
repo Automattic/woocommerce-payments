@@ -48,9 +48,25 @@ button.wcpay-stripelink-modal-trigger:hover {
 	.wc-block-components-radio-control__label
 	span {
 	width: 95%;
+	display: flex;
+	align-items: center;
+	column-gap: 8px;
+	display: grid;
+	grid-template-columns: 1fr auto;
 
 	img {
 		float: right;
+		float: left;
+		height: 24px !important;
+		max-height: 24px !important;
+		grid-row: 1 / span 2;
+	}
+
+	.StripeElement {
+		width: 100%;
+		grid-column: 1 / span 2;
+		grid-row-start: 2;
+		pointer-events: none;
 	}
 }
 
@@ -63,6 +79,15 @@ button.wcpay-stripelink-modal-trigger:hover {
 		min-height: 30px;
 	}
 
+	label.wc-block-components-radio-control__option-checked {
+		.StripeElement {
+			display: none;
+		}
+		img {
+			grid-column: 2;
+			grid-row: 1;
+		}
+	}
 	/* stylelint-disable-next-line selector-id-pattern */
 	#radio-control-wc-payment-method-options-woocommerce_payments_affirm__label
 		img {

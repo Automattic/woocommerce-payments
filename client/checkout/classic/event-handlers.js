@@ -16,6 +16,7 @@ import {
 import {
 	processPayment,
 	mountStripePaymentElement,
+	mountStripePaymentMethodMessagingElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
 	maybeEnableStripeLink,
@@ -67,8 +68,13 @@ jQuery( function ( $ ) {
 		unblockUI( $forms );
 	} );
 
+	$( document.body ).on( 'update_checkout', () => {
+		removeStripePMMEContainers();
+	} );
+
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement();
+		injectStripePMMEContainers();
 	} );
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
@@ -148,6 +154,60 @@ jQuery( function ( $ ) {
 		! isPreviewing()
 	) {
 		handleWooPayEmailInput( '#billing_email', api );
+	}
+
+	function removeStripePMMEContainers() {
+		const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
+
+		for ( const method of bnplMethods ) {
+			const containerID = `stripe-pmme-container-${ method }`;
+			if ( document.getElementById( containerID ) ) {
+				document.getElementById( containerID ).remove();
+			}
+		}
+	}
+
+	async function injectStripePMMEContainers() {
+		const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
+		const labelBase = 'payment_method_woocommerce_payments_';
+		const paymentMethods = Object.keys(
+			getUPEConfig( 'paymentMethodsConfig' )
+		);
+		const cartData = await api.pmmeGetCartData();
+
+		for ( const method of paymentMethods ) {
+			if ( bnplMethods.includes( method ) ) {
+				const targetLabel = document.querySelector(
+					`label[for="${ labelBase }${ method }"]`
+				);
+				const containerID = `stripe-pmme-container-${ method }`;
+
+				if ( document.getElementById( containerID ) ) {
+					document.getElementById( containerID ).remove();
+				}
+
+				if ( targetLabel && ! document.getElementById( containerID ) ) {
+					const container = document.createElement( 'span' );
+					container.id = containerID;
+					container.dataset.paymentMethodType = method;
+					container.classList.add( 'stripe-pmme-container' );
+					targetLabel.appendChild( container );
+
+					await mountStripePaymentMethodMessagingElement(
+						api,
+						container,
+						{
+							amount: cartData?.totals?.total_price,
+							currency: cartData?.totals?.currency_code,
+							country:
+								cartData?.billing_address?.country ||
+								cartData?.shipping_address?.country ||
+								getUPEConfig( 'storeCountry' ),
+						}
+					);
+				}
+			}
+		}
 	}
 
 	function processPaymentIfNotUsingSavedMethod( $form ) {
