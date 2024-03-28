@@ -119,7 +119,11 @@ class WooPay_Utilities {
 	 * @return boolean
 	 */
 	public function should_save_platform_customer() {
-		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
+		$session_data = [];
+
+		if ( isset( WC()->session ) && WC()->session->has_session() ) {
+			$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
+		}
 
 		return ( isset( $_POST['save_user_in_woopay'] ) && filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['save_user_in_woopay'] ) && filter_var( $session_data['save_user_in_woopay'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
