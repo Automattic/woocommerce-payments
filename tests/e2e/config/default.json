@@ -8,7 +8,7 @@
     "customer": {
       "username": "customer",
       "password": "password",
-      "email": "e2e-wcpay-customer@woo.com"
+      "email": "customer@email.us" // TODO: this needs to be modified in the test for Klarna insted of here.
     },
     "subscriptions-customer": {
       "username": "subscriptions-customer",
@@ -57,7 +57,7 @@
         "city": "San Francisco",
         "state": "CA",
         "postcode": "94110",
-        "phone": "123456789",
+        "phone": "+13106683312", // TODO: this needs to be modified in the test for Klarna insted of here.
         "email": "e2e-wcpay-customer@woo.com"
       },
       "shipping": {
@@ -70,7 +70,7 @@
         "city": "San Francisco",
         "state": "CA",
         "postcode": "94110",
-        "phone": "123456789",
+        "phone": "+13106683312", // TODO: this needs to be modified in the test for Klarna insted of here.
         "email": "e2e-wcpay-customer@woo.com"
       }
     },
