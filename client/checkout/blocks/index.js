@@ -17,7 +17,7 @@ import WCPayAPI from '../api';
 import { SavedTokenHandler } from './saved-token-handler';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
-import paymentRequestPaymentMethod from '../../payment-request/blocks';
+// import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_BANCONTACT,
@@ -155,7 +155,7 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+// registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();

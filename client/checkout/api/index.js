@@ -27,6 +27,7 @@ export default class WCPayAPI {
 		this.stripePlatform = null;
 		this.request = request;
 		this.isWooPayRequesting = false;
+		this.paymentRequestCartInfo = null;
 	}
 
 	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
@@ -435,6 +436,28 @@ export default class WCPayAPI {
 			} );
 	}
 
+	async paymentRequestMaybeInitCartInfo() {
+		if ( this.paymentRequestCartInfo ) {
+			return Promise.resolve();
+		}
+
+		const response = await window.wp.apiFetch( {
+			method: 'GET',
+			path: '/wc/store/v1/cart',
+			// omitting credentials, to create a new cart object separate from the user's cart.
+			credentials: 'omit',
+			// parse: false to ensure we can get the response headers
+			parse: false,
+		} );
+
+		this.paymentRequestCartInfo = {
+			nonce: response.headers.get( 'Nonce' ),
+			cartToken: response.headers.get( 'Cart-Token' ),
+		};
+
+		return Promise.resolve();
+	}
+
 	/**
 	 * Submits shipping address to get available shipping options
 	 * from Payment Request button.
@@ -442,15 +465,20 @@ export default class WCPayAPI {
 	 * @param {Object} shippingAddress Shipping details.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestCalculateShippingOptions( shippingAddress ) {
-		return this.request(
-			getPaymentRequestAjaxURL( 'get_shipping_options' ),
-			{
-				security: getPaymentRequestData( 'nonce' )?.shipping,
-				is_product_page: getPaymentRequestData( 'is_product_page' ),
-				...shippingAddress,
-			}
-		);
+	async paymentRequestCalculateShippingOptions( shippingAddress ) {
+		if ( ! this.paymentRequestCartInfo ) {
+			return Promise.reject();
+		}
+
+		return window.wp.apiFetch( {
+			method: 'POST',
+			path: '/wc/store/v1/cart/update-customer',
+			headers: {
+				Nonce: this.paymentRequestCartInfo.nonce,
+				'Cart-Token': this.paymentRequestCartInfo.cartToken,
+			},
+			data: { shipping_address: shippingAddress },
+		} );
 	}
 
 	/**
@@ -459,15 +487,21 @@ export default class WCPayAPI {
 	 * @param {Object} shippingOption Shipping option.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestUpdateShippingDetails( shippingOption ) {
-		return this.request(
-			getPaymentRequestAjaxURL( 'update_shipping_method' ),
-			{
-				security: getPaymentRequestData( 'nonce' )?.update_shipping,
-				shipping_method: [ shippingOption.id ],
-				is_product_page: getPaymentRequestData( 'is_product_page' ),
-			}
-		);
+	async paymentRequestUpdateShippingDetails( shippingOption ) {
+		if ( ! this.paymentRequestCartInfo ) {
+			return Promise.reject();
+		}
+
+		return window.wp.apiFetch( {
+			method: 'POST',
+			path: '/wc/store/v1/cart/select-shipping-rate',
+			headers: {
+				Nonce: this.paymentRequestCartInfo.nonce,
+				'Cart-Token': this.paymentRequestCartInfo.cartToken,
+			},
+			// TODO ~FR: send correct package id
+			data: { package_id: 0, rate_id: shippingOption.id },
+		} );
 	}
 
 	/**
@@ -487,10 +521,18 @@ export default class WCPayAPI {
 	 * @param {Object} productData Product data.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestAddToCart( productData ) {
-		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
-			security: getPaymentRequestData( 'nonce' )?.add_to_cart,
-			...productData,
+	async paymentRequestAddToCart( productData ) {
+		await this.paymentRequestMaybeInitCartInfo();
+
+		// TODO ~FR: this is the juicy stuff
+		return window.wp.apiFetch( {
+			method: 'POST',
+			path: '/wc/store/v1/cart/add-item',
+			headers: {
+				Nonce: this.paymentRequestCartInfo.nonce,
+				'Cart-Token': this.paymentRequestCartInfo.cartToken,
+			},
+			data: productData,
 		} );
 	}
 
@@ -530,10 +572,52 @@ export default class WCPayAPI {
 	 * @param {Object} paymentData Order data.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestCreateOrder( paymentData ) {
-		return this.request( getPaymentRequestAjaxURL( 'create_order' ), {
-			_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
-			...paymentData,
+	async paymentRequestCreateOrder( paymentData ) {
+		if ( ! this.paymentRequestCartInfo ) return Promise.reject();
+
+		// TODO ~FR: this is the juicy stuff
+		return window.wp.apiFetch( {
+			method: 'POST',
+			path: '/wc/store/v1/checkout',
+			headers: {
+				Nonce: this.paymentRequestCartInfo.nonce,
+				'Cart-Token': this.paymentRequestCartInfo.cartToken,
+			},
+			data: {
+				customer_note: paymentData.order_comments,
+				billing_address: {
+					first_name: paymentData.billing_first_name,
+					last_name: paymentData.billing_last_name,
+					// TODO ~FR
+					company: '',
+					address_1: paymentData.billing_address_1,
+					address_2: paymentData.billing_address_2,
+					city: paymentData.billing_city,
+					state: paymentData.billing_state,
+					postcode: paymentData.billing_postcode,
+					country: paymentData.billing_country,
+					email: paymentData.billing_email,
+					phone: paymentData.billing_phone,
+				},
+				payment_method: 'woocommerce_payments',
+				payment_data: [
+					{
+						// TODO ~FR
+						key: 'payment_request_type',
+						value: paymentData.payment_request_type,
+					},
+					{
+						// TODO ~FR
+						key: 'wcpay-fraud-prevention-token',
+						value: paymentData[ 'wcpay-fraud-prevention-token' ],
+					},
+					{
+						// TODO ~FR
+						key: 'wcpay-payment-method',
+						value: paymentData[ 'wcpay-payment-method' ],
+					},
+				],
+			},
 		} );
 	}
 
