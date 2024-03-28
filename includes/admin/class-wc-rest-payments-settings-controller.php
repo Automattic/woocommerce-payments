@@ -434,6 +434,57 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Find duplicates.
+	 *
+	 * @param array $gateways All enabled gateways.
+	 * @return array Duplicated gateways.
+	 */
+	private function find_duplicates( $gateways ) {
+		// Use associative array for counting occurrences.
+		$counter                    = [];
+		$duplicated_payment_methods = [];
+
+		$gateway_ids = [
+			'apple_pay',
+			'applepay',
+			'google_pay',
+			'googlepay',
+			'affirm',
+			'afterpay',
+			'clearpay',
+			'klarna',
+			'credit_card',
+			'credicard',
+			'cc',
+			'bancontact',
+			'ideal',
+		];
+
+		// Only loop through gateways once.
+		foreach ( $gateways as $gateway ) {
+			foreach ( $gateway_ids as $keyword ) {
+				if ( strpos( $gateway->id, $keyword ) !== false ) {
+					// Increment counter or initialize if not exists.
+					if ( isset( $counter[ $keyword ] ) ) {
+						$counter[ $keyword ]++;
+					} else {
+						$counter[ $keyword ] = 1;
+					}
+
+					// If more than one occurrence, add to duplicates.
+					if ( $counter[ $keyword ] > 1 && method_exists($gateway, 'get_stripe_id')) {
+						$duplicated_payment_methods[ $gateway->get_stripe_id() ] = $gateway; // Use keys to prevent duplicates.
+					}
+					break; // Stop searching once a match is found for this gateway.
+				}
+			}
+		}
+
+		// Return duplicated gateway titles.
+		return array_keys( $duplicated_payment_methods );
+	}
+
+	/**
 	 * Retrieve settings.
 	 *
 	 * @return WP_REST_Response
@@ -469,11 +520,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			}
 		}
 
+		$enabled_gateways  = WC()->payment_gateways()->payment_gateways;
+		$gateways_to_check = [];
+		foreach ( $enabled_gateways as $gateway ) {
+			if ( 'yes' === $gateway->enabled ) {
+				$gateways_to_check[ $gateway->id ] = $gateway;
+			}
+		}
+		$duplicates = $this->find_duplicates( $enabled_gateways );
+		
 		return new WP_REST_Response(
 			[
 				'enabled_payment_method_ids'          => $enabled_payment_methods,
 				'available_payment_method_ids'        => $available_upe_payment_methods,
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
+				'duplicated_payment_method_ids' 	  => $duplicates,
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
 				'is_test_mode_enabled'                => WC_Payments::mode()->is_test(),

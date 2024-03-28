@@ -18,6 +18,7 @@ import {
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
 	useAccountDomesticCurrency,
+	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
 import PAYMENT_METHOD_IDS from './constants';
 
@@ -38,6 +39,8 @@ const PaymentMethods = () => {
 	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
+
+	const duplicatedPaymentMethodIds = useGetDuplicatedPaymentMethodIds();
 
 	// We filter link payment method since this will be displayed in other section (express checkout).
 	// We further split the available methods into pay later and non-pay later methods to sort them in the required order later.
