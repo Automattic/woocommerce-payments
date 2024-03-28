@@ -141,7 +141,7 @@ class Blocks_Data_Extractor {
 	 *
 	 * @return array
 	 */
-	public function get_checkout_schema_namespaces() : array {
+	public function get_checkout_schema_namespaces(): array {
 		$namespaces = [];
 
 		if (

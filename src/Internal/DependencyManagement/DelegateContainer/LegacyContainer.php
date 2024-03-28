@@ -33,7 +33,7 @@ class LegacyContainer implements ContainerInterface {
 		$method = $this->transform_class_to_method( $id );
 
 		if ( ! $this->has( $id ) ) {
-			throw new ContainerException( sprintf( 'Class (%s) is not being managed by the legacy container', $id ) );
+			throw new ContainerException( esc_html( sprintf( 'Class (%s) is not being managed by the legacy container', $id ) ) );
 		}
 
 		return $this->$method();

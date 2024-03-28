@@ -50,7 +50,7 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 		$this->mock_multi_currency
 			->method( 'get_price' )
 			->willReturnCallback(
-				function( $input ) {
+				function ( $input ) {
 					return $input * 2;
 				}
 			);
@@ -81,7 +81,7 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 		$this->mock_multi_currency
 			->method( 'get_price' )
 			->willReturnCallback(
-				function( $input ) {
+				function ( $input ) {
 					return $input * 2;
 				}
 			);
@@ -144,5 +144,4 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 
 		$this->assertEquals( 'JPY', $next_order->get_currency() );
 	}
-
 }

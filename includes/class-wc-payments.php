@@ -1065,7 +1065,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
 		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
 		$woopay_session_controller->register_routes();
-
 	}
 
 	/**
@@ -1388,7 +1387,7 @@ class WC_Payments {
 				<div class="notice wcpay-notice notice-error">
 					<p>
 					<?php
-					echo WC_Payments_Utils::esc_interpolated_html(
+					echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						sprintf(
 							/* translators: %1$s: WooCommerce, %2$s: WooPayments, a1: documentation URL */
 							__( 'The %1$s version you have installed is not compatible with %2$s for a Norwegian business. Please update %1$s to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
@@ -1866,7 +1865,7 @@ class WC_Payments {
 		<div class="notice wcpay-notice notice-error">
 			<p>
 			<?php
-			echo WC_Payments_Utils::esc_interpolated_html(
+			echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				sprintf(
 					$notice,
 					'WooCommerce',

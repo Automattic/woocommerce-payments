@@ -31,19 +31,19 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 	 */
 	private $woopay_adapted_extensions = null;
 
-	public function setUp() : void {
+	public function setUp(): void {
 		parent::setUp();
 
 		add_action(
 			'woocommerce_blocks_checkout_block_registration',
-			function( $integration_registry ) {
+			function ( $integration_registry ) {
 				$integration_registry->register( new WC_Points_Rewards_Integration() );
 			}
 		);
 
 		add_action(
 			'woocommerce_blocks_checkout_block_registration',
-			function( $integration_registry ) {
+			function ( $integration_registry ) {
 				$integration_registry->register( new WC_GC_Checkout_Blocks_Integration() );
 			}
 		);

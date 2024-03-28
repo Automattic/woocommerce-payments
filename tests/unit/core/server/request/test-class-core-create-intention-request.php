@@ -67,7 +67,7 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 		$request->set_currency_code( 'usd' );
 		add_filter(
 			'test_exception_will_throw_if_immutable_parameter_is_changed_when_filter_is_applied',
-			function() {
+			function () {
 				$new_class = new class( $this->mock_api_client, $this->mock_wc_payments_http_client) extends Create_Intention {
 
 				};

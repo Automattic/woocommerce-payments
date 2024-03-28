@@ -24,7 +24,7 @@ function record_tracker_events() {
 // Loaded on admin_init to ensure that we are in admin and that WC_Tracks is loaded.
 add_action(
 	'admin_init',
-	function() {
+	function () {
 		if ( ! class_exists( 'WC_Tracks' ) ) {
 			return;
 		}

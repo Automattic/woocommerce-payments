@@ -15,7 +15,7 @@ use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 
 // Need to use WC_Mock_Data_Store.
-require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
+require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';
 
 /**
  * WC_Payments_Webhook_Processing_Service unit tests.
@@ -229,7 +229,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
-
 	}
 
 	/**
@@ -538,7 +537,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
-
 	}
 
 	/**
@@ -568,14 +566,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_action_hook_exception_returns_response() {
 		add_action(
 			'woocommerce_payments_before_webhook_delivery',
-			function() {
+			function () {
 				throw new Exception( 'Crash before' );
 			}
 		);
 
 		add_action(
 			'woocommerce_payments_after_webhook_delivery',
-			function() {
+			function () {
 				throw new Exception( 'Crash after' );
 			}
 		);
@@ -881,7 +879,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
-
 	}
 
 	/**

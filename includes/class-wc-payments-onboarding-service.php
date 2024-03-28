@@ -259,7 +259,7 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return string The source or empty string if the source is unsupported.
 	 */
-	public static function get_source( string $referer, array $get_params ) : string {
+	public static function get_source( string $referer, array $get_params ): string {
 		$wcpay_connect_param = sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) );
 		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param ) {
 			return self::SOURCE_WCADMIN_PAYMENT_TASK;

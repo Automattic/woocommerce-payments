@@ -184,7 +184,7 @@ class WC_Payments_Incentives_Service {
 			if ( ! empty( $results ) ) {
 				$incentive = array_filter(
 					$results,
-					function( array $incentive ) {
+					function ( array $incentive ) {
 						return isset( $incentive['type'] ) && 'connect_page' === $incentive['type'];
 					}
 				)[0] ?? [];

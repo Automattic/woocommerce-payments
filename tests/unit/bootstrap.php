@@ -49,14 +49,14 @@ function _manually_load_plugin() {
 	// subscriptions funtionality.
 	add_filter(
 		'pre_option__wcpay_feature_subscriptions',
-		function() {
+		function () {
 			return '1';
 		}
 	);
 
 	update_option( '_wcpay_feature_allow_subscription_migrations', '1' );
 
-	$_plugin_dir = dirname( __FILE__ ) . '/../../';
+	$_plugin_dir = __DIR__ . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';
 
@@ -113,11 +113,11 @@ function _manually_load_plugin() {
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 // Need those polyfills to run tests in CI.
-require_once dirname( __FILE__ ) . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
+require_once __DIR__ . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
-require dirname( __FILE__ ) . '/../WCPAY_UnitTestCase.php';
+require __DIR__ . '/../WCPAY_UnitTestCase.php';
 
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {

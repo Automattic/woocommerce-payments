@@ -418,7 +418,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return array|null
 	 * @throws \Exception
 	 */
-	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ) :array {
+	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ): array {
 		$payment_methods = $request->get_param( 'payment_methods' );
 		if ( null === $payment_methods ) {
 			return $default_value;
@@ -446,7 +446,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return string|null
 	 * @throws \Exception
 	 */
-	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ) : string {
+	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ): string {
 		$capture_method = $request->get_param( 'capture_method' );
 		if ( null === $capture_method ) {
 			return $default_value;

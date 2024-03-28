@@ -93,4 +93,3 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 		return isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'];
 	}
 }
-

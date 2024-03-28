@@ -21,7 +21,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 *
 	 * @return string
 	 */
-	public function get_receipt_markup( array $settings, WC_Order $order, array $charge ) :string {
+	public function get_receipt_markup( array $settings, WC_Order $order, array $charge ): string {
 		$this->validate_settings( $settings );
 		$this->validate_charge( $charge );
 
@@ -90,7 +90,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 * @param  array $order the order.
 	 * @return array
 	 */
-	private function format_line_items( array $order ) :array {
+	private function format_line_items( array $order ): array {
 		$line_items_data = [];
 
 		foreach ( $order['line_items'] as $item ) {
@@ -152,7 +152,6 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 			$charge['payment_method_details']['card_present']['receipt'],
 			'Error validating receipt information'
 		);
-
 	}
 
 	/**
@@ -167,7 +166,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	private function validate_required_fields( array $required_fields, array $data, string $message ) {
 		foreach ( $required_fields as $required_key ) {
 			if ( ! array_key_exists( $required_key, $data ) ) {
-				throw new \RuntimeException( sprintf( '%s. Missing key: %s', $message, $required_key ) );
+				throw new \RuntimeException( esc_html( sprintf( '%s. Missing key: %s', $message, $required_key ) ) );
 			}
 		}
 	}

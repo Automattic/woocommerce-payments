@@ -102,7 +102,7 @@ class Create_And_Confirm_Setup_Intention extends Request {
 		// Hard to validate without hardcoding a list here.
 		if ( empty( $payment_methods ) ) {
 			throw new Invalid_Request_Parameter_Exception(
-				__( 'Intentions require at least one payment method', 'woocommerce-payments' ),
+				esc_html__( 'Intentions require at least one payment method', 'woocommerce-payments' ),
 				'wcpay_core_invalid_request_parameter_missing_payment_method_types'
 			);
 		}
@@ -119,7 +119,6 @@ class Create_And_Confirm_Setup_Intention extends Request {
 	 */
 	public function set_mandate_data( array $mandate_data ) {
 		$this->set_param( 'mandate_data', $mandate_data );
-
 	}
 
 	/**

@@ -42,10 +42,8 @@ abstract class Base_Constant implements \JsonSerializable {
 	private function __construct( string $value ) {
 		if ( $value instanceof static ) {
 			$value = $value->get_value();
-		} else {
-			if ( ! defined( static::class . "::$value" ) ) {
+		} elseif ( ! defined( static::class . "::$value" ) ) {
 				throw new \InvalidArgumentException( "Constant with name '$value' does not exist." );
-			}
 		}
 
 		$this->value = $value;

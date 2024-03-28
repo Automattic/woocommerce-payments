@@ -80,7 +80,7 @@ class Level3Service {
 		$order_items = array_values( $order->get_items( [ 'line_item', 'fee' ] ) );
 		$currency    = $order->get_currency();
 
-		$process_item  = function( $item ) use ( $currency ) {
+		$process_item  = function ( $item ) use ( $currency ) {
 			return $this->process_item( $item, $currency );
 		};
 		$items_to_send = array_map( $process_item, $order_items );
@@ -171,7 +171,7 @@ class Level3Service {
 		$items_count = count( $items );
 		$total_cost  = array_sum(
 			array_map(
-				function( $cost, $qty ) {
+				function ( $cost, $qty ) {
 					return $cost * $qty;
 				},
 				array_column( $items, 'unit_cost' ),

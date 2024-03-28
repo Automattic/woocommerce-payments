@@ -80,5 +80,4 @@ class WC_Payments_DB_Test extends WCPAY_UnitTestCase {
 		$result = $this->wcpay_db->order_from_charge_id( null );
 		$this->assertFalse( $result );
 	}
-
 }

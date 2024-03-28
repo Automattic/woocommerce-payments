@@ -17,7 +17,7 @@ use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\SessionService;
 use WCPAY_UnitTestCase;
-use \PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Level3 data service unit tests.
@@ -89,7 +89,7 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 			$this->mock_legacy_proxy,
 		];
 
-		$this->sut = new DuplicatePaymentPreventionService( ... $this->deps );
+		$this->sut = new DuplicatePaymentPreventionService( ...$this->deps );
 	}
 
 	public function test_init_hooks() {

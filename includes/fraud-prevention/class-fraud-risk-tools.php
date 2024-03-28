@@ -7,8 +7,8 @@
 
 namespace WCPay\Fraud_Prevention;
 
-require_once dirname( __FILE__ ) . '/models/class-check.php';
-require_once dirname( __FILE__ ) . '/models/class-rule.php';
+require_once __DIR__ . '/models/class-check.php';
+require_once __DIR__ . '/models/class-rule.php';
 
 use WC_Payments;
 use WC_Payments_Account;

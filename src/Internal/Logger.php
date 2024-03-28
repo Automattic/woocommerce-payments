@@ -59,7 +59,7 @@ class Logger {
 	 *     'info': Informational messages.
 	 *     'debug': Debug-level messages.
 	 */
-	public function log( $message, $level = 'info' ) : void {
+	public function log( $message, $level = 'info' ): void {
 		if ( ! $this->can_log() ) {
 			return;
 		}
@@ -92,7 +92,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function emergency( $message ) : void {
+	public function emergency( $message ): void {
 		$this->log( $message, WC_Log_Levels::EMERGENCY );
 	}
 
@@ -101,7 +101,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function alert( $message ) : void {
+	public function alert( $message ): void {
 		$this->log( $message, WC_Log_Levels::ALERT );
 	}
 
@@ -110,7 +110,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function critical( $message ) : void {
+	public function critical( $message ): void {
 		$this->log( $message, WC_Log_Levels::CRITICAL );
 	}
 
@@ -119,7 +119,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function error( $message ) : void {
+	public function error( $message ): void {
 		$this->log( $message, WC_Log_Levels::ERROR );
 	}
 
@@ -128,7 +128,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function warning( $message ) : void {
+	public function warning( $message ): void {
 		$this->log( $message, WC_Log_Levels::WARNING );
 	}
 
@@ -137,7 +137,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function notice( $message ) : void {
+	public function notice( $message ): void {
 		$this->log( $message, WC_Log_Levels::NOTICE );
 	}
 
@@ -146,7 +146,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function info( $message ) : void {
+	public function info( $message ): void {
 		$this->log( $message, WC_Log_Levels::INFO );
 	}
 
@@ -155,7 +155,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function debug( $message ) : void {
+	public function debug( $message ): void {
 		$this->log( $message, WC_Log_Levels::DEBUG );
 	}
 }

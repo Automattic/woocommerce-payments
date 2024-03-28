@@ -165,7 +165,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 		];
 		$this->mock_db_cache_factors( $cached_factors, false );
 
-		$filter_cb = function() use ( $replaced_factors ) {
+		$filter_cb = function () use ( $replaced_factors ) {
 			return $replaced_factors;
 		};
 		add_filter( 'wcpay_new_payment_process_enabled_factors', $filter_cb );
@@ -234,7 +234,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 	 * Ensures that a server error would handle exceptions correctly.
 	 */
 	public function test_get_cached_factors_handles_exceptions() {
-		$generator = function( $cb ) {
+		$generator = function ( $cb ) {
 			$this->mock_wcpay_request( Get_Payment_Process_Factors::class )
 				->expects( $this->once() )
 				->method( 'format_response' )

@@ -41,5 +41,4 @@ class Bancontact_Payment_Method extends UPE_Payment_Method {
 	public function get_testing_instructions() {
 		return '';
 	}
-
 }

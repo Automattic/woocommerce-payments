@@ -127,7 +127,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		add_filter(
 			'woocommerce_available_payment_gateways',
-			function() {
+			function () {
 				return [ 'woocommerce_payments' => $this->mock_wcpay_gateway ];
 			}
 		);

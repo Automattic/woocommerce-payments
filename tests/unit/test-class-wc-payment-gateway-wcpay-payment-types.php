@@ -306,7 +306,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( true );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function( $parent_order ) use ( $order ) {
+			function ( $parent_order ) use ( $order ) {
 				return $order;
 			}
 		);
@@ -330,6 +330,5 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 			->method( 'create_and_confirm_intention' );
 
 		$this->mock_wcpay_gateway->scheduled_subscription_payment( 100, $order );
-
 	}
 }

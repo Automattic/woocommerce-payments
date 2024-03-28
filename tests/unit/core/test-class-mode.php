@@ -25,7 +25,7 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 	 */
 	protected $mock_gateway;
 
-	public function setUp() : void {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->mode = $this->getMockBuilder( Mode::class )
@@ -33,7 +33,7 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 			->getMock();
 	}
 
-	public function tearDown() : void {
+	public function tearDown(): void {
 		remove_filter( 'wcpay_dev_mode', '__return_true' );
 		remove_filter( 'wcpay_test_mode', '__return_true' );
 

@@ -11,7 +11,7 @@ use WC_Payments_Account;
 use WCPay\Internal\Service\FraudPreventionService;
 use WCPay\Internal\Service\SessionService;
 use WCPAY_UnitTestCase;
-use \PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * FraudPreventionService tests

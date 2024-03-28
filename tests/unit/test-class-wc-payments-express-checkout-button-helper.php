@@ -140,7 +140,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		add_filter(
 			'wcpay_payment_request_total_label_suffix',
-			function() {
+			function () {
 				return ' (via WooPayments)';
 			}
 		);

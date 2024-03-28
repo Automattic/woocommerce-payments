@@ -49,11 +49,13 @@ class StateFactory {
 	public function create_state( string $state_class, PaymentContext $context ): AbstractPaymentState {
 		if ( ! is_subclass_of( $state_class, AbstractPaymentState::class ) ) {
 			throw new StateTransitionException(
-				sprintf(
+				esc_html(
+					sprintf(
 					// Translators: %1$s is the PHP class for a new payment state, %1$s is the state base class.
-					__( 'The class %1$s is not a subclass of %2$s', 'woocommerce-payments' ),
-					$state_class,
-					AbstractPaymentState::class
+						__( 'The class %1$s is not a subclass of %2$s', 'woocommerce-payments' ),
+						$state_class,
+						AbstractPaymentState::class
+					)
 				)
 			);
 		}

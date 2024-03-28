@@ -289,7 +289,6 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			WC()->session->get( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY ),
 			$customer_id
 		);
-
 	}
 
 	/**

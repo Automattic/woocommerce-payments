@@ -59,5 +59,3 @@ trait Date_Parameters {
 		}
 	}
 }
-
-

@@ -390,7 +390,6 @@ class WC_Payments_Captured_Event_Note {
 			self::format_exchange_rate( $exchange_rate, $to_currency ),
 			WC_Payments_Utils::format_explicit_currency( $to_display_amount, $to_currency, false )
 		);
-
 	}
 
 	/**
@@ -410,7 +409,7 @@ class WC_Payments_Captured_Event_Note {
 			[ 'decimals' => $num_decimals ]
 		);
 
-		$func_remove_ending_zeros = function( $str ) {
+		$func_remove_ending_zeros = function ( $str ) {
 			return rtrim( $str, '0' );
 		};
 

@@ -115,6 +115,5 @@ class StorefrontIntegration {
 				add_filter( 'woocommerce_breadcrumb_defaults', [ $this, 'modify_breadcrumb_defaults' ], 9999 );
 				add_action( 'wp_enqueue_scripts', [ $this, 'add_inline_css' ], 50 );
 		}
-
 	}
 }

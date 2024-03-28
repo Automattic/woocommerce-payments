@@ -159,7 +159,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && current_user_can( 'pay_for_order', $order_id ) ) {
 			add_filter(
 				'wcpay_payment_fields_js_config',
-				function( $js_config ) use ( $order ) {
+				function ( $js_config ) use ( $order ) {
 					$session       = wc()->session;
 					$session_email = '';
 

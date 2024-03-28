@@ -147,7 +147,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		add_filter(
 			'woocommerce_available_payment_gateways',
-			function() {
+			function () {
 				return [ 'woocommerce_payments' => $this->mock_wcpay_gateway ];
 			}
 		);

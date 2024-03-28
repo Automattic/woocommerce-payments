@@ -192,7 +192,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'wc_tax_enabled', '__return_true' );
 		add_filter(
 			'woocommerce_find_rates',
-			function() {
+			function () {
 				return [
 					1 =>
 					[
@@ -236,7 +236,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'wc_tax_enabled', '__return_true' );
 		add_filter(
 			'woocommerce_find_rates',
-			function() {
+			function () {
 				return [
 					1 =>
 						[

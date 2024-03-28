@@ -125,7 +125,7 @@ class InitialStateTest extends WCPAY_UnitTestCase {
 			$this->mock_failed_transaction_rate_limiter = $this->createMock( FailedTransactionRateLimiter::class ),
 		];
 
-		$this->sut = new InitialState( ... $this->mock_deps );
+		$this->sut = new InitialState( ...$this->mock_deps );
 		$this->sut->set_context( $this->mock_context );
 
 		/**
