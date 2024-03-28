@@ -472,8 +472,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					}
 
 					// If more than one occurrence, add to duplicates.
-					if ( $counter[ $keyword ] > 1 ) {
-						$duplicated_payment_methods[] = $gateway->title; // Use keys to prevent duplicates.
+					if ( $counter[ $keyword ] > 1 && method_exists($gateway, 'get_stripe_id')) {
+						$duplicated_payment_methods[ $gateway->get_stripe_id() ] = $gateway; // Use keys to prevent duplicates.
 					}
 					break; // Stop searching once a match is found for this gateway.
 				}
@@ -481,7 +481,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		// Return duplicated gateway titles.
-		return array_values( $duplicated_payment_methods );
+		return array_keys( $duplicated_payment_methods );
 	}
 
 	/**
@@ -527,13 +527,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				$gateways_to_check[ $gateway->id ] = $gateway;
 			}
 		}
-		$duplicate_finder = $this->find_duplicates( $enabled_gateways );
-
+		$duplicates = $this->find_duplicates( $enabled_gateways );
+		
 		return new WP_REST_Response(
 			[
 				'enabled_payment_method_ids'          => $enabled_payment_methods,
 				'available_payment_method_ids'        => $available_upe_payment_methods,
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
+				'duplicated_payment_method_ids' 	  => $duplicates,
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
 				'is_test_mode_enabled'                => WC_Payments::mode()->is_test(),
