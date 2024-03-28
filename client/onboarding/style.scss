@@ -186,4 +186,9 @@ body.wcpay-onboarding__body {
 			color: $gray-700;
 		}
 	}
+
+	// Hide Jetpack's JITM (Just in time messages) banners for onboarding.
+	.woocommerce-layout__jitm {
+		display: none;
+	}
 }
