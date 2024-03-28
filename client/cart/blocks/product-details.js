@@ -33,6 +33,11 @@ const isInEditor = () => {
 	return !! editorStore;
 };
 
+// BNPL only supports 2 decimal places.
+const normalizeAmount = ( amount, decimalPlaces = 2 ) => {
+	return amount * Math.pow( 10, 2 - decimalPlaces );
+};
+
 const { ExperimentalOrderMeta } = window.wc.blocksCheckout;
 
 const ProductDetail = ( { cart, context } ) => {
@@ -66,7 +71,11 @@ const ProductDetail = ( { cart, context } ) => {
 		return null;
 	}
 
-	const cartTotal = cart.cartTotals.total_price;
+	const cartTotal = normalizeAmount(
+		cart.cartTotals.total_price,
+		wcSettings.currency.precision
+	);
+
 	const {
 		country,
 		paymentMethods,

@@ -229,9 +229,8 @@ class WC_Payments_Checkout {
 		$payment_fields['wcBlocksUPEAppearanceTheme']        = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
 		$payment_fields['cartContainsSubscription']          = $this->gateway->is_subscription_item_in_cart();
 		$payment_fields['currency']                          = get_woocommerce_currency();
-		$cart_total                    = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
-		$payment_fields['cartTotal']   = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
-		$payment_fields['storeApiURL'] = get_rest_url( null, 'wc/store' );
+		$cart_total                  = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+		$payment_fields['cartTotal'] = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
