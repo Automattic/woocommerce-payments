@@ -409,6 +409,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-large-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
+		include_once __DIR__ . '/exceptions/class-cannot-combine-currencies-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
