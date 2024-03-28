@@ -5,6 +5,8 @@ import * as React from 'react';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
+import PaymentsActivityData from './payments-activity-data';
+
 /**
  * Internal dependencies.
  */
@@ -21,7 +23,7 @@ const PaymentActivity: React.FC = () => {
 				{ /* Filters go here */ }
 			</CardHeader>
 			<CardBody className="wcpay-payments-activity__card__body">
-				<>{ /* Sub components go here */ }</>
+				<PaymentsActivityData />
 			</CardBody>
 		</Card>
 	);
