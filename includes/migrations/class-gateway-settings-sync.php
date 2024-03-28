@@ -7,6 +7,7 @@
 
 namespace WCPay\Migrations;
 
+use Exception;
 use WC_Payment_Gateway_WCPay;
 
 defined( 'ABSPATH' ) || exit;
@@ -63,20 +64,14 @@ class Gateway_Settings_Sync {
 
 	/**
 	 * Syncs gateway setting objects.
+	 *
+	 * @throws Exception
 	 */
 	private function sync() {
 		$enabled_payment_methods = $this->main_gateway->get_option( 'upe_enabled_payment_method_ids', [] );
 
 		foreach ( $this->all_registered_gateways as $gateway ) {
-			// Skip the main gateway as it's settings are already in sync.
-			if ( 'card' !== $gateway->get_stripe_id() ) {
-				if ( in_array( $gateway->get_stripe_id(), $enabled_payment_methods, true ) ) {
-					$gateway->enable();
-					$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
-				} else {
-					$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
-				}
-			}
+			throw new Exception( 'Migration unsuccessful.' );
 		}
 	}
 }
