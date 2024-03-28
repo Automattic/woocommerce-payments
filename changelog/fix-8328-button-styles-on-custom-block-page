@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add checks for cart and checkout blocks to enqueue_style call.

@@ -269,14 +269,14 @@ class WC_Payments_Features {
 	/**
 	 * Checks whether WooPay Direct Checkout is enabled.
 	 *
-	 * @return bool
+	 * @return bool True if Direct Checkout is enabled, false otherwise.
 	 */
 	public static function is_woopay_direct_checkout_enabled() {
 		$account_cache                   = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 		$is_direct_checkout_eligible     = is_array( $account_cache ) && ( $account_cache['platform_direct_checkout_eligible'] ?? false );
-		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '0' );
+		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 
-		return ( $is_direct_checkout_eligible || $is_direct_checkout_flag_enabled ) && self::is_woopay_first_party_auth_enabled();
+		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopay_first_party_auth_enabled();
 	}
 
 	/**

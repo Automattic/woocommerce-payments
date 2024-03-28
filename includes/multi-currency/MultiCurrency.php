@@ -561,7 +561,7 @@ class MultiCurrency {
 			if ( ! is_numeric( $manual_rate ) || 0 >= $manual_rate ) {
 				$message = 'Invalid manual currency rate passed to update_single_currency_settings: ' . $manual_rate;
 				Logger::error( $message );
-				throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 );
+				throw new InvalidCurrencyRateException( esc_html( $message ), 'wcpay_multi_currency_invalid_currency_rate', 500 );
 			}
 			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
 		}
@@ -935,7 +935,7 @@ class MultiCurrency {
 		if ( 0 >= $from_currency_rate ) {
 			$message = 'Invalid rate for from_currency in get_raw_conversion: ' . $from_currency_rate;
 			Logger::error( $message );
-			throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 );
+			throw new InvalidCurrencyRateException( esc_html( $message ), 'wcpay_multi_currency_invalid_currency_rate', 500 );
 		}
 
 		$amount = $amount * ( $to_currency_rate / $from_currency_rate );
@@ -1019,6 +1019,8 @@ class MultiCurrency {
 		$notice_id = md5( $message );
 
 		echo '<p class="woocommerce-store-notice demo_store" data-notice-id="' . esc_attr( $notice_id . 2 ) . '" style="display:none;">';
+		// No need to escape here as the function called handles it.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo \WC_Payments_Utils::esc_interpolated_html(
 			$message,
 			[
@@ -1624,7 +1626,7 @@ class MultiCurrency {
 	private function log_and_throw_invalid_currency_exception( $method, $currency_code, $code = 500 ) {
 		$message = 'Invalid currency passed to ' . $method . ': ' . $currency_code;
 		Logger::error( $message );
-		throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', $code );
+		throw new InvalidCurrencyException( esc_html( $message ), 'wcpay_multi_currency_invalid_currency', esc_html( $code ) );
 	}
 
 	/**

@@ -238,6 +238,13 @@ export const getShowWooPayIncompatibilityNotice = ( state ) => {
 	return getSettings( state ).show_woopay_incompatibility_notice || false;
 };
 
+export const getShowExpressCheckoutIncompatibilityNotice = ( state ) => {
+	return (
+		getSettings( state ).show_express_checkout_incompatibility_notice ||
+		false
+	);
+};
+
 export const getIsStripeBillingEnabled = ( state ) => {
 	return getSettings( state ).is_stripe_billing_enabled || false;
 };

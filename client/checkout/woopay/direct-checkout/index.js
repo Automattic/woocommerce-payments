@@ -26,14 +26,14 @@ window.addEventListener( 'load', async () => {
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-			WooPayDirectCheckout.redirectToWooPay( checkoutElements );
+			WooPayDirectCheckout.redirectToWooPay( checkoutElements, true );
 		}
 
 		return;
 	}
 
-	// Pass true to append '&checkout_redirect=1' and let WooPay decide the checkout flow.
-	WooPayDirectCheckout.redirectToWooPay( checkoutElements, true );
+	// Pass false to indicate we are not sure if the user is logged in or not.
+	WooPayDirectCheckout.redirectToWooPay( checkoutElements, false );
 } );
 
 jQuery( ( $ ) => {

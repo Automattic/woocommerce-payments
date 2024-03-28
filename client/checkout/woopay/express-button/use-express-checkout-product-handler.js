@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import validator from 'validator';
+import isEmail from 'validator/lib/isEmail';
 import { __ } from '@wordpress/i18n';
 
 const useExpressCheckoutProductHandler = ( api ) => {
@@ -49,7 +49,7 @@ const useExpressCheckoutProductHandler = ( api ) => {
 			if (
 				! data.wc_gc_giftcard_to_multiple
 					.split( ',' )
-					.every( ( email ) => validator.isEmail( email.trim() ) )
+					.every( ( email ) => isEmail( email.trim() ) )
 			) {
 				alert(
 					__(
@@ -62,7 +62,7 @@ const useExpressCheckoutProductHandler = ( api ) => {
 		}
 
 		if ( data.hasOwnProperty( 'wc_gc_giftcard_to' ) ) {
-			if ( ! validator.isEmail( data.wc_gc_giftcard_to ) ) {
+			if ( ! isEmail( data.wc_gc_giftcard_to ) ) {
 				alert(
 					__(
 						'Please type only valid emails',

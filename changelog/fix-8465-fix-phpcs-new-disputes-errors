@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Address update PHPCS error - a single one recommending escaping an exception message
