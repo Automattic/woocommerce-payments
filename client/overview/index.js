@@ -29,10 +29,10 @@ import SetupLivePaymentsModal from './modal/setup-live-payments';
 import strings from './strings';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
+import Survey from './survey';
+import { WcPayOverviewSurveyContextProvider } from './survey/context';
 import { useDisputes, useGetSettings, useSettings } from 'data';
 import './style.scss';
-import Survey from 'wcpay/overview/survey';
-import { WcPayOverviewSurveyContextProvider } from 'wcpay/overview/survey/context';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
