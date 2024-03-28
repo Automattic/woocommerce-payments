@@ -1,4 +1,11 @@
+/**
+ * External dependencies
+ */
 import { useDispatch, useSelect } from '@wordpress/data';
+
+/**
+ * Internal dependencies
+ */
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
 
 /**
