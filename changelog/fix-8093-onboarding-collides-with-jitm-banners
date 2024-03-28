@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix collision between WooPayments header and Woo Express survey banner.
