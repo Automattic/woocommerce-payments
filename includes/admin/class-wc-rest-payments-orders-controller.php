@@ -340,15 +340,14 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Returns customer id from order. Create or update customer if needed.
-	 * Use-cases: It was used by older versions of our Mobile apps in their workflows.
-	 *
-	 * @deprecated 3.9.0
+	 * Use-cases:
+	 *  - It was used by older versions of our mobile apps to add the customer details to Payment Intents.
+	 *  - It is used by the apps to set customer details on Payment Intents for an order containing subscriptions. Required for capturing renewal payments off session.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function create_customer( $request ) {
-		wc_deprecated_function( __FUNCTION__, '3.9.0' );
 		try {
 			$order_id = $request['order_id'];
 
