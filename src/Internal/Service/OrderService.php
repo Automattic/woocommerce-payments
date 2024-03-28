@@ -478,10 +478,12 @@ class OrderService {
 		$order = $this->legacy_proxy->call_function( 'wc_get_order', $order_id );
 		if ( ! $order instanceof WC_Order ) {
 			throw new Order_Not_Found_Exception(
-				sprintf(
+				esc_html(
+					sprintf(
 					// Translators: %d is the ID of an order.
-					__( 'The requested order (ID %d) was not found.', 'woocommerce-payments' ),
-					$order_id
+						__( 'The requested order (ID %d) was not found.', 'woocommerce-payments' ),
+						$order_id
+					)
 				),
 				'order_not_found'
 			);
