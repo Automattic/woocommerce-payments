@@ -169,8 +169,8 @@ body.wcpay-onboarding__body {
 		}
 	}
 
-	// Reposition JITM banners below the fixed onboarding header.
-	.jitm-banner {
-		margin-top: 100px;
+	// Hide Jetpack's JITM (Just in time messages) banners for onboarding.
+	.woocommerce-layout__jitm {
+		display: none;
 	}
 }
