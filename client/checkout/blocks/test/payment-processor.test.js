@@ -12,7 +12,7 @@ import { PaymentElement } from '@stripe/react-stripe-js';
 jest.mock( 'wcpay/checkout/classic/payment-processing', () => ( {
 	validateElements: jest.fn().mockResolvedValue(),
 } ) );
-jest.mock( '../../utils', () => ( {
+jest.mock( 'wcpay/checkout/blocks/utils', () => ( {
 	useCustomerData: jest.fn().mockReturnValue( { billingAddress: {} } ),
 } ) );
 jest.mock( '../hooks', () => ( {
