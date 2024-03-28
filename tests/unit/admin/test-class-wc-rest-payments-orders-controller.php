@@ -875,9 +875,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 404, $data['status'] );
 	}
 
-	/**
-	 * @expectedDeprecated create_customer
-	 */
 	public function test_create_customer_invalid_order_id() {
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
@@ -894,9 +891,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 404, $data['status'] );
 	}
 
-	/**
-	 * @expectedDeprecated create_customer
-	 */
 	public function test_create_customer_from_order_guest_without_customer_id() {
 		$order         = WC_Helper_Order::create_order( 0 );
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
@@ -963,9 +957,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	/**
-	 * @expectedDeprecated create_customer
-	 */
 	public function test_create_customer_from_order_guest_with_customer_id() {
 		$order         = WC_Helper_Order::create_order( 0 );
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
@@ -1016,9 +1007,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'cus_guest', $result_order->get_meta( '_stripe_customer_id' ) );
 	}
 
-	/**
-	 * @expectedDeprecated create_customer
-	 */
 	public function test_create_customer_from_order_non_guest_with_customer_id() {
 		$order         = WC_Helper_Order::create_order();
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
@@ -1060,9 +1048,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'cus_exist', $result_order->get_meta( '_stripe_customer_id' ) );
 	}
 
-	/**
-	 * @expectedDeprecated create_customer
-	 */
 	public function test_create_customer_from_order_with_invalid_status() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_status( Order_Status::COMPLETED );
@@ -1095,9 +1080,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 400, $data['status'] );
 	}
 
-	/**
-	 * @expectedDeprecated create_customer
-	 */
 	public function test_create_customer_from_order_non_guest_with_customer_id_from_order_meta() {
 		$order         = WC_Helper_Order::create_order();
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
@@ -1140,9 +1122,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'cus_exist', $result_order->get_meta( '_stripe_customer_id' ) );
 	}
 
-	/**
-	 * @expectedDeprecated create_customer
-	 */
 	public function test_create_customer_from_order_non_guest_without_customer_id() {
 		$order         = WC_Helper_Order::create_order();
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order );
