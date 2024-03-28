@@ -1,0 +1,89 @@
+.wcpay-overview__survey__container {
+	.survey_container {
+		display: flex;
+		flex-direction: row;
+		position: relative;
+
+		span {
+			margin: auto;
+			text-align: center;
+			display: inline-block;
+		}
+
+		.close_container {
+			position: absolute;
+			right: 0;
+			margin-top: -11px;
+			margin-right: -11px;
+
+			.has-icon {
+				margin-top: 7px;
+			}
+		}
+
+		.padding_right_7 {
+			padding-right: 7px;
+		}
+
+		.padding_right_14 {
+			padding-right: 14px;
+		}
+
+		.emoticons_container {
+			line-height: 45px;
+			align-items: center;
+			flex-grow: 1;
+			justify-content: left;
+			display: flex;
+			flex-direction: row;
+
+			div {
+				float: left;
+			}
+			button {
+				vertical-align: middle;
+				padding-top: 4px;
+				height: 30px;
+				span {
+					font-size: 17px;
+				}
+			}
+			.selected {
+				background-color: #ecf2f8;
+			}
+
+			.has-icon {
+				min-width: 32px;
+			}
+
+			.padding_left_10 {
+				padding-left: 10px;
+			}
+
+			@media ( max-width: 600px ) {
+				.padding_left_10 {
+					padding-left: 10px;
+					display: block;
+				}
+			}
+		}
+	}
+
+	.comment_container {
+		max-width: 450px;
+		margin: auto;
+
+		.survey-bottom-disclaimer {
+			font-size: 11px;
+			color: #757575;
+			font-style: italic;
+		}
+	}
+
+	.close_survey {
+		position: absolute;
+		top: 0;
+		right: 0;
+		margin-top: 7px;
+	}
+}
