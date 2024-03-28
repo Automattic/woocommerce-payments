@@ -1,0 +1,15 @@
+.wcpay-payments-activity {
+	&__card {
+		padding: 24px 24px 16px 24px;
+
+		&__header {
+			padding: 0 !important;
+			margin-bottom: 32px;
+		}
+
+		&__body {
+			text-align: center;
+			color: $studio-gray-30;
+		}
+	}
+}
