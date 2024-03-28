@@ -127,6 +127,7 @@ declare global {
 		trackingInfo?: {
 			hosting_provider: string;
 		};
+		isOverviewSurveySubmitted: boolean;
 	};
 
 	const wc: {

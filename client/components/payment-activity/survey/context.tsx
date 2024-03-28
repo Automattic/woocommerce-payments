@@ -7,8 +7,8 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from 'wcpay/data/constants';
-import { OverviewSurveyFields } from 'wcpay/overview/survey/types';
+import { NAMESPACE } from 'data/constants';
+import type { OverviewSurveyFields } from './types';
 
 const useContextValue = ( initialState = {} as OverviewSurveyFields ) => {
 	const [ surveySubmitted, setSurveySubmitted ] = useState(

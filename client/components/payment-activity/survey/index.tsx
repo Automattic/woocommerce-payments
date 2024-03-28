@@ -18,11 +18,11 @@ import { createInterpolateElement, useState } from '@wordpress/element';
 /**
  * Internal dependencies.
  */
-import './style.scss';
-import Emoticons from 'wcpay/overview/survey/emoticons';
+import type { OverviewSurveyFields } from './types';
 import { useOverviewSurveyContext } from './context';
-import { OverviewSurveyFields } from 'wcpay/overview/survey/types';
-import close from 'wcpay/overview/survey/icons/close';
+import Emoticons from './emoticons';
+import close from './icons/close';
+import './style.scss';
 
 const Survey = () => {
 	const { status } = useOverviewSurveyContext();

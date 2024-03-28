@@ -29,8 +29,6 @@ import SetupLivePaymentsModal from './modal/setup-live-payments';
 import strings from './strings';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
-import Survey from './survey';
-import { WcPayOverviewSurveyContextProvider } from './survey/context';
 import { useDisputes, useGetSettings, useSettings } from 'data';
 import './style.scss';
 
@@ -125,18 +123,12 @@ const OverviewPage = () => {
 			return { payment_method: key, fee: value };
 		} )
 		.filter( ( e ) => e && e.fee !== undefined );
-	const isOverviewSurveySubmitted =
-		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
 	return (
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
 			<JetpackIdcNotice />
-			{ ! isOverviewSurveySubmitted && isPaymentOverviewWidgetEnabled && (
-				<WcPayOverviewSurveyContextProvider>
-					<Survey />
-				</WcPayOverviewSurveyContextProvider>
-			) }
+
 			{ showLoanOfferError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(

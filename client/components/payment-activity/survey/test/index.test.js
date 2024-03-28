@@ -5,10 +5,13 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
 
-import Survey from 'wcpay/overview/survey';
+/**
+ * Internal dependencies
+ */
+import Survey from '..';
 import WcPayOverviewSurveyContext, {
 	WcPayOverviewSurveyContextProvider,
-} from 'wcpay/overview/survey/context';
+} from '../context';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 jest.mock( '@wordpress/data' );
