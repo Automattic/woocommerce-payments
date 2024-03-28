@@ -216,10 +216,16 @@ jQuery( function ( $ ) {
 
 		// We need to just find one field with missing information. If even only one is missing, just return early.
 		return Boolean(
-			billingFieldsToValidate.find(
-				( fieldName ) =>
-					! document.querySelector( `#${ fieldName }` )?.value
-			)
+			billingFieldsToValidate.find( ( fieldName ) => {
+				const $field = document.querySelector( `#${ fieldName }` );
+				const $formRow = $field.closest( '.form-row' );
+				const isRequired = $formRow.classList.contains(
+					'validate-required'
+				);
+				const hasValue = $field?.value;
+
+				return isRequired && ! hasValue;
+			} )
 		);
 	}
 } );
