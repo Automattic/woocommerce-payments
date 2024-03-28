@@ -1265,7 +1265,7 @@ class WC_Payments_Order_Service {
 		);
 
 		if ( is_wp_error( $refund ) ) {
-			throw new Exception( $refund->get_error_message() );
+			throw new Exception( esc_html( $refund->get_error_message() ) );
 		}
 
 		return $refund;
@@ -1915,7 +1915,7 @@ class WC_Payments_Order_Service {
 		$order = $this->is_order_type_object( $order ) ? $order : wc_get_order( $order );
 		if ( ! $this->is_order_type_object( $order ) ) {
 			throw new Order_Not_Found_Exception(
-				__( 'The requested order was not found.', 'woocommerce-payments' ),
+				esc_html__( 'The requested order was not found.', 'woocommerce-payments' ),
 				'order_not_found'
 			);
 		}
