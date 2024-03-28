@@ -87,5 +87,12 @@ tests/e2e/screenshots
 # E2E Performance test results
 tests/e2e/reports
 
+# E2E Playwright
+/playwright-report/
+/blob-report/
+tests/e2e-pw/.auth/
+tests/e2e-pw/test-results/
+tests/e2e-pw/playwright/.cache/
+tests/e2e-pw/tests/e2e-pw/.auth/*
 # Slate docs
 docs/rest-api/build/*
