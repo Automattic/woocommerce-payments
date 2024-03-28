@@ -29,6 +29,7 @@ declare const global: {
 			tc_url: string;
 		};
 		isWooPayStoreCountryAvailable?: boolean;
+		isJetpackConnected: boolean;
 	};
 };
 
@@ -53,6 +54,7 @@ describe( 'ConnectAccountPage', () => {
 				availableCountries: { US: 'United States (US)' },
 			},
 			isWooPayStoreCountryAvailable: false,
+			isJetpackConnected: true,
 		};
 	} );
 
@@ -84,7 +86,7 @@ describe( 'ConnectAccountPage', () => {
 		render( <ConnectAccountPage /> );
 
 		userEvent.click(
-			screen.getByRole( 'button', { name: 'Finish setup' } )
+			screen.getByRole( 'button', { name: 'Verify business details' } )
 		);
 
 		await waitFor( () => {
@@ -104,7 +106,7 @@ describe( 'ConnectAccountPage', () => {
 		mocked( apiFetch ).mockRejectedValueOnce( new Error() );
 
 		userEvent.click(
-			screen.getByRole( 'button', { name: 'Finish setup' } )
+			screen.getByRole( 'button', { name: 'Verify business details' } )
 		);
 
 		await waitFor( () => {
@@ -128,6 +130,7 @@ describe( 'ConnectAccountPage', () => {
 					US: 'United States (US)',
 				},
 			},
+			isJetpackConnected: true,
 		};
 		render( <ConnectAccountPage /> );
 
@@ -148,10 +151,11 @@ describe( 'ConnectAccountPage', () => {
 					US: 'United States (US)',
 				},
 			},
+			isJetpackConnected: true,
 		};
 		render( <ConnectAccountPage /> );
 		userEvent.click(
-			screen.getByRole( 'button', { name: 'Finish setup' } )
+			screen.getByRole( 'button', { name: 'Verify business details' } )
 		);
 
 		const modalSelector =
