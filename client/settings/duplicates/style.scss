@@ -1,0 +1,11 @@
+.payment-methods-container {
+	display: flex;
+	justify-content: start; /* Aligns items to the start of the container */
+	align-items: center; /* Centers items vertically */
+	gap: 10px; /* Adjust the space between items as needed */
+}
+
+.payment-method__icon-wrapper {
+	/* Add styles here if needed, for example: */
+	flex: 0 0 auto; /* Do not grow or shrink */
+}

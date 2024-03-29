@@ -25,6 +25,7 @@ import ErrorBoundary from '../../components/error-boundary';
 import { useDepositDelayDays, useSettings } from '../../data';
 import FraudProtection from '../fraud-protection';
 import { isDefaultSiteLanguage } from 'wcpay/utils';
+import Duplicates from '../duplicates';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -33,9 +34,25 @@ const PaymentMethodsDescription = () => (
 		</h2>
 		<p>
 			{ __(
-				'Add and edit payments available to customers at checkout. ' +
+				'Ad and edit payments availabdle to customers at checkout. ' +
 					'Based on their device type, location, and purchase history, ' +
 					'your customers will only see the most relevant payment methods.',
+				'woocommerce-payments'
+			) }
+		</p>
+	</>
+);
+
+const DuplicatedPaymentMethodsDescription = () => (
+	<>
+		<h2>
+			{ __( 'Duplicated payment methods ' + '', 'woocommerce-payments' ) }
+		</h2>
+		<p>
+			{ __(
+				'The list of payment methods which are enabled by WooPayments ' +
+					'but also enabled by other payment plugins on your site. ' +
+					'Use this list to refine and improve shopper experience.',
 				'woocommerce-payments'
 			) }
 		</p>
@@ -219,6 +236,16 @@ const SettingsManager = () => {
 				<LoadableSettingsSection numLines={ 60 }>
 					<ErrorBoundary>
 						<PaymentMethods />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
+				description={ DuplicatedPaymentMethodsDescription }
+				id="duplicated-payment-methods"
+			>
+				<LoadableSettingsSection numLines={ 60 }>
+					<ErrorBoundary>
+						<Duplicates />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
