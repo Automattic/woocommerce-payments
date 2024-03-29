@@ -2991,15 +2991,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// If the ruleset can't be parsed, skip updating.
 		$ruleset = $this->get_advanced_fraud_protection_settings();
-		if ( 'error' === $ruleset || ! is_array( $ruleset ) ) {
+		if (
+			'error' === $ruleset
+			|| ! is_array( $ruleset )
+			|| ! Fraud_Risk_Tools::is_valid_ruleset_array( $ruleset )
+		) {
 			return;
 		}
 
 		$needs_update = false;
 		foreach ( $ruleset as &$rule_array ) {
-			if ( Fraud_Risk_Tools::RULE_INTERNATIONAL_IP_ADDRESS === $rule_array['key'] ) {
+			if ( isset( $rule_array['key'] ) && Fraud_Risk_Tools::RULE_INTERNATIONAL_IP_ADDRESS === $rule_array['key'] ) {
 				$new_rule_array = Fraud_Risk_Tools::get_international_ip_address_rule()->to_array();
-				if ( wp_json_encode( $rule_array['check'] ) !== wp_json_encode( $new_rule_array['check'] ) ) {
+				if ( isset( $rule_array['check'] )
+					&& isset( $new_rule_array['check'] )
+					&& wp_json_encode( $rule_array['check'] ) !== wp_json_encode( $new_rule_array['check'] )
+				) {
 					$rule_array   = $new_rule_array;
 					$needs_update = true;
 				}

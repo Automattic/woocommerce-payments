@@ -125,6 +125,22 @@ class Fraud_Risk_Tools {
 	}
 
 	/**
+	 * Validates the array to see if it's a valid ruleset.
+	 *
+	 * @param   array $array  The array to validate.
+	 *
+	 * @return  bool         Whether if the given array is a ruleset, or not.
+	 */
+	public static function is_valid_ruleset_array( array $array ) {
+		foreach ( $array as $rule ) {
+			if ( ! Rule::validate_array( $rule ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * Returns the international IP address rule.
 	 *
 	 * @return  Rule  International IP address rule object.
