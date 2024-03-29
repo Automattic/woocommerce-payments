@@ -44,6 +44,7 @@ interface PaymentMethodProps {
 	locked: boolean;
 	isPoEnabled: boolean;
 	isPoComplete: boolean;
+	isDuplicate: boolean;
 }
 
 const PaymentMethodLabel = ( {
@@ -116,6 +117,7 @@ const PaymentMethod = ( {
 	locked,
 	isPoEnabled,
 	isPoComplete,
+	isDuplicate,
 }: PaymentMethodProps ): React.ReactElement => {
 	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
 	const isPoInProgress =
@@ -275,6 +277,7 @@ const PaymentMethod = ( {
 						isSetupRequired={ isSetupRequired }
 						setupTooltip={ getTooltipContent( id ) as any }
 						needsAttention={ needsAttention }
+						isDuplicate={ isDuplicate }
 					/>
 				</div>
 				<div className="payment-method__text-container">

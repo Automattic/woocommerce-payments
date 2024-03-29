@@ -1,6 +1,12 @@
 .loadable-checkbox {
 	position: relative;
 
+	.checkbox-wrapper {
+		.components-checkbox-control__checked {
+			fill: #ffeb53;
+		}
+	}
+
 	&__spinner {
 		background: var( --wp-admin-theme-color );
 		width: 24px;

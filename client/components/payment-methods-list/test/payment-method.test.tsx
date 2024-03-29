@@ -43,6 +43,7 @@ describe( 'PaymentMethod', () => {
 				locked={ false }
 				isPoEnabled={ false }
 				isPoComplete={ false }
+				isDuplicate={ false }
 			/>
 		);
 	};
@@ -101,6 +102,7 @@ describe( 'PaymentMethod', () => {
 				required={ false }
 				isPoEnabled={ false }
 				isPoComplete={ false }
+				isDuplicate={ false }
 			/>
 		);
 	};

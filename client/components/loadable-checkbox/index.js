@@ -28,6 +28,7 @@ const LoadableCheckboxControl = ( {
 	delayMsOnCheck = 0,
 	delayMsOnUncheck = 0,
 	needsAttention = false,
+	isDuplicate = false,
 } ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const [ checkedState, setCheckedState ] = useState( checked );
@@ -50,6 +51,9 @@ const LoadableCheckboxControl = ( {
 	useEffect( () => {
 		setCheckedState( checked );
 	}, [ setCheckedState, checked ] );
+
+	const ConditionalWrapper = ( { condition, wrapper, children } ) =>
+		condition ? wrapper( children ) : children;
 
 	return (
 		<div
@@ -125,12 +129,26 @@ const LoadableCheckboxControl = ( {
 					</HoverTooltip>
 				</div>
 			) : (
-				<CheckboxControl
-					label={ label }
-					checked={ checkedState }
-					disabled={ disabled }
-					onChange={ ( status ) => handleOnChange( status ) }
-				/>
+				<ConditionalWrapper
+					condition={ isDuplicate }
+					wrapper={ ( children ) => (
+						<HoverTooltip
+							content={
+								'This payment method is enabled by other plugins as well. Consider reviewing to improve shopper experience.'
+							}
+							className="wcpay-tooltip__tooltip--dark"
+						>
+							<div className="checkbox-wrapper">{ children }</div>
+						</HoverTooltip>
+					) }
+				>
+					<CheckboxControl
+						label={ label }
+						checked={ checkedState }
+						disabled={ disabled }
+						onChange={ ( status ) => handleOnChange( status ) }
+					/>
+				</ConditionalWrapper>
 			) }
 		</div>
 	);
