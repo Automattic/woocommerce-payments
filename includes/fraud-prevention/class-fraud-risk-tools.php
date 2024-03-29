@@ -12,8 +12,6 @@ require_once dirname( __FILE__ ) . '/models/class-rule.php';
 
 use WC_Payments;
 use WC_Payments_Account;
-use WC_Payments_Features;
-use WC_Payments_API_Client;
 use WCPay\Fraud_Prevention\Models\Check;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Currency_Code;
@@ -127,6 +125,23 @@ class Fraud_Risk_Tools {
 	}
 
 	/**
+	 * Returns the international IP address rule.
+	 *
+	 * @return  Rule  International IP address rule object.
+	 */
+	public static function get_international_ip_address_rule() {
+		return new Rule(
+			self::RULE_INTERNATIONAL_IP_ADDRESS,
+			Rule::FRAUD_OUTCOME_REVIEW,
+			Check::check(
+				'ip_country',
+				self::get_selling_locations_type_operator(),
+				self::get_selling_locations_string()
+			)
+		);
+	}
+
+	/**
 	 * Returns the standard protection rules.
 	 *
 	 * @return  array
@@ -134,15 +149,7 @@ class Fraud_Risk_Tools {
 	public static function get_standard_protection_settings() {
 		$rules = [
 			// REVIEW An order originates from an IP address outside your country.
-			new Rule(
-				self::RULE_INTERNATIONAL_IP_ADDRESS,
-				Rule::FRAUD_OUTCOME_REVIEW,
-				Check::check(
-					'ip_country',
-					self::get_selling_locations_type_operator(),
-					self::get_selling_locations_string()
-				)
-			),
+			self::get_international_ip_address_rule(),
 			// REVIEW An order exceeds $1,000.00 or 10 items.
 			new Rule(
 				self::RULE_ORDER_ITEMS_THRESHOLD,
