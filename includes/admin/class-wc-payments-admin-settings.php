@@ -44,8 +44,92 @@ class WC_Payments_Admin_Settings {
 	 */
 	public function init_hooks() {
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
+		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_duplicates_warning' ] );
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ $this, 'add_plugin_links' ] );
 	}
+
+	/**
+	 * Add notice explaining test mode when it's enabled.
+	 */
+	public function display_duplicates_warning() {
+		$enabled_gateways  = WC()->payment_gateways()->payment_gateways;
+		$gateways_to_check = [];
+		foreach ( $enabled_gateways as $gateway ) {
+			if ( 'yes' === $gateway->enabled ) {
+				$gateways_to_check[ $gateway->id ] = $gateway;
+			}
+		}
+		$duplicates = $this->find_duplicates( $enabled_gateways );
+
+		if ( ! empty( $duplicates ) ) {
+			?>
+			<div id="wcpay-test-mode-notice" class="notice notice-warning">
+				<p>
+					<b><?php esc_html_e( 'Duplicated payment methods: ', 'woocommerce-payments' ); ?></b>
+					<?php
+						echo sprintf(
+							/* translators: %s: WooPayments */
+							esc_html__( 'There are duplicated payment methods enabled', 'woocommerce-payments' ),
+							'WooPayments'
+						);
+					?>
+				</p>
+			</div>
+			<?php
+		}
+	}
+
+		/**
+		 * Find duplicates.
+		 *
+		 * @param array $gateways All enabled gateways.
+		 * @return array Duplicated gateways.
+		 */
+	private function find_duplicates( $gateways ) {
+		// Use associative array for counting occurrences.
+		$counter                    = [];
+		$duplicated_payment_methods = [];
+
+		$gateway_ids = [
+			'apple_pay',
+			'applepay',
+			'google_pay',
+			'googlepay',
+			'affirm',
+			'afterpay',
+			'clearpay',
+			'klarna',
+			'credit_card',
+			'credicard',
+			'cc',
+			'bancontact',
+			'ideal',
+		];
+
+		// Only loop through gateways once.
+		foreach ( $gateways as $gateway ) {
+			foreach ( $gateway_ids as $keyword ) {
+				if ( strpos( $gateway->id, $keyword ) !== false ) {
+					// Increment counter or initialize if not exists.
+					if ( isset( $counter[ $keyword ] ) ) {
+						$counter[ $keyword ]++;
+					} else {
+						$counter[ $keyword ] = 1;
+					}
+
+					// If more than one occurrence, add to duplicates.
+					if ( $counter[ $keyword ] > 1 && method_exists( $gateway, 'get_stripe_id' ) ) {
+						$duplicated_payment_methods[ $gateway->get_stripe_id() ] = $gateway; // Use keys to prevent duplicates.
+					}
+					break; // Stop searching once a match is found for this gateway.
+				}
+			}
+		}
+
+		// Return duplicated gateway titles.
+		return array_keys( $duplicated_payment_methods );
+	}
+
 
 	/**
 	 * Add notice explaining test mode when it's enabled.
