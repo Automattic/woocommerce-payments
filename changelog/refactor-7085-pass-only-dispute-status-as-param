@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Minor refactor to disputes utility function inInquiry to make it accept only dispute status as a param, instead of whole dispute object.
