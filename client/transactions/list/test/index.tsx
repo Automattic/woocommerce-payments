@@ -319,10 +319,10 @@ describe( 'Transactions list', () => {
 		} );
 
 		test( 'sorts by default field date', () => {
-			sortBy( 'Date and time in UTC' );
+			sortBy( 'Date and time' );
 			expectSortingToBe( 'date', 'asc' );
 
-			sortBy( 'Date and time in UTC' );
+			sortBy( 'Date and time' );
 			expectSortingToBe( 'date', 'desc' );
 		} );
 
