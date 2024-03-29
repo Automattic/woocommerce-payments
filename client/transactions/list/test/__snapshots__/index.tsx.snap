@@ -248,7 +248,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
@@ -1237,7 +1237,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
@@ -2223,7 +2223,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
@@ -2900,7 +2900,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
@@ -3963,7 +3963,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
@@ -4994,7 +4994,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
