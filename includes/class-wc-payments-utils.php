@@ -1097,4 +1097,16 @@ class WC_Payments_Utils {
 	public static function is_cart_page(): bool {
 		return is_cart() || has_block( 'woocommerce/cart' );
 	}
+
+	/**
+	 * Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
+	 * in this case because it checks the page content for the block, which isn't present.
+	 *
+	 * @return bool
+	 *
+	 * @psalm-suppress UndefinedFunction
+	 */
+	public static function is_cart_block(): bool {
+		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+	}
 }
