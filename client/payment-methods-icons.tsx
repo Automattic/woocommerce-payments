@@ -34,22 +34,30 @@ import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
 import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
 import CreditCardAsset from 'assets/images/payment-methods/cc.svg?asset';
 import './style.scss';
+import { HoverTooltip } from './components/tooltip';
 
 const iconComponent = (
 	src: string,
 	alt: string,
 	outline = true
 ): ReactImgFuncComponent => ( { className, ...props } ) => (
-	<img
-		className={ classNames(
-			'payment-method__icon',
-			outline ? '' : 'no-outline',
-			className
-		) }
-		src={ src }
-		alt={ alt }
-		{ ...props }
-	/>
+	<HoverTooltip
+		content={
+			'This payment method is enabled by other plugins as well. Consider reviewing to improve shopper experience.'
+		}
+		className="wcpay-tooltip__tooltip--dark"
+	>
+		<img
+			className={ classNames(
+				'payment-method__icon',
+				outline ? '' : 'no-outline',
+				className
+			) }
+			src={ src }
+			alt={ alt }
+			{ ...props }
+		/>
+	</HoverTooltip>
 );
 
 export const AffirmIcon = iconComponent(
