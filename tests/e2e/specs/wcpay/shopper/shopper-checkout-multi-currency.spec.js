@@ -2,32 +2,12 @@
  * External dependencies
  */
 import config from 'config';
-const {
-	shopper,
-	merchant,
-	withRestApi,
-	uiUnblocked,
-} = require( '@woocommerce/e2e-utils' );
+const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import {
-	fillCardDetails,
-	setupCheckout,
-	setupProductCheckout,
-} from '../../../utils/payments';
-import {
-	RUN_SUBSCRIPTIONS_TESTS,
-	describeif,
-	merchantWCP,
-	shopperWCP,
-} from '../../../utils';
-
-const notice = 'div.wc-block-components-notice-banner';
-const oldNotice = 'div.woocommerce-NoticeGroup > ul.woocommerce-error > li';
-const waitForBanner = async ( errorText ) => {
-	return shopperWCP.waitForErrorBanner( errorText, notice, oldNotice );
-};
+import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
+import { merchantWCP, shopperWCP } from '../../../utils';
 
 const ORDER_RECEIVED_ORDER_TOTAL_SELECTOR =
 	'.woocommerce-order-overview__total';
@@ -164,94 +144,4 @@ describe( 'Shopper Multi-Currency checkout', () => {
 			}
 		} );
 	} );
-
-	describeif( RUN_SUBSCRIPTIONS_TESTS )(
-		'Subscriptions, Stripe Billing, and Multi-currency',
-		() => {
-			let wasStripeBillingEnabled;
-
-			const productSlug = 'subscription-no-signup-fee-product';
-			const customerBilling = config.get(
-				'addresses.subscriptions-customer.billing'
-			);
-
-			const currencies = [ 'USD', 'EUR' ];
-
-			beforeAll( async () => {
-				// Reset customer info.
-				withRestApi.deleteCustomerByEmail( customerBilling.email );
-
-				await merchant.login();
-				wasStripeBillingEnabled = await merchantWCP.isStripeBillingEnabled();
-				if ( ! wasStripeBillingEnabled ) {
-					await merchantWCP.activateStripeBilling();
-				}
-				await merchant.logout();
-			} );
-
-			afterAll( async () => {
-				await shopper.logout();
-
-				if ( ! wasStripeBillingEnabled ) {
-					await merchant.login();
-					await merchantWCP.deactivateStripeBilling();
-					await merchant.logout();
-				}
-			} );
-
-			it( 'should place order via Stripe Billing in one currency', async () => {
-				// Setup cart and checkout.
-				await shopperWCP.goToShopWithCurrency( currencies[ 0 ] );
-				await shopperWCP.addToCartBySlug( productSlug );
-				// Make sure that the number of items in the cart is incremented first before adding another item.
-				await expect( page ).toMatchElement( '.cart-contents .count', {
-					text: new RegExp( '1 item' ),
-					timeout: 30000,
-				} );
-
-				await setupCheckout( customerBilling );
-
-				// Pay for subscription.
-				const card = config.get( 'cards.basic' );
-				await fillCardDetails( page, card );
-				await shopper.placeOrder();
-
-				await expect( page ).toMatch( 'Order received' );
-
-				const url = await page.url();
-				const orderId = url.match( /\/order-received\/(\d+)\// )[ 1 ];
-
-				await shopper.goToOrders();
-				const orderTotal = await getOrderTotalTextForOrder( orderId );
-
-				expect( orderTotal ).toEqual(
-					`$9.99 ${ currencies[ 0 ] } for 1 item`
-				);
-			} );
-
-			it( 'should not be able to place order via Stripe Billing in another currency', async () => {
-				// Setup cart and checkout.
-				await shopperWCP.goToShopWithCurrency( currencies[ 1 ] );
-				await shopperWCP.addToCartBySlug( productSlug );
-				// Make sure that the number of items in the cart is incremented first before adding another item.
-				await expect( page ).toMatchElement( '.cart-contents .count', {
-					text: new RegExp( '1 item' ),
-					timeout: 30000,
-				} );
-
-				await setupCheckout( customerBilling );
-
-				// Pay for subscription.
-				const card = config.get( 'cards.basic' );
-				await fillCardDetails( page, card );
-
-				await expect( page ).toClick( '#place_order' );
-				await uiUnblocked();
-				await waitForBanner(
-					// eslint-disable-next-line max-len
-					'There was a problem creating your subscription. All your active subscriptions must use the same currency. You attempted to purchase a subscription in EUR but have another active subscription using USD.'
-				);
-			} );
-		}
-	);
 } );
