@@ -60,7 +60,7 @@ class Get_Request_Test extends WCPAY_UnitTestCase {
 		$request->set_api( WC_Payments_API_Client::DEPOSITS_API );
 		add_filter(
 			'test_exception_will_throw_if_invalid_api_route_is_set_when_filter_is_applied',
-			function() {
+			function () {
 				$new_class = new class( $this->mock_api_client, $this->mock_wc_payments_http_client) extends Get_Request {
 
 				};
