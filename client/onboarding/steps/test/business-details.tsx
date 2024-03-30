@@ -11,7 +11,6 @@ import { mocked } from 'ts-jest/utils';
  */
 import BusinessDetails from '../business-details';
 import { OnboardingContextProvider } from '../../context';
-import strings from '../../strings';
 import {
 	getAvailableCountries,
 	getBusinessTypes,

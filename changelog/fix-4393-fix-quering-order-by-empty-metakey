@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add empty validation when quering order by meta key and meta value
