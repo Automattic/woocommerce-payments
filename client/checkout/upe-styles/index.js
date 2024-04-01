@@ -74,6 +74,40 @@ const appearanceSelectors = {
 			'body',
 		],
 	},
+	bnplClassicCart: {
+		appendTarget: '.cart .quantity',
+		upeThemeInputSelector: '.cart .quantity .qty',
+		upeThemeLabelSelector: '.cart .quantity label',
+		rowElement: 'div',
+		validClasses: [ 'input-text' ],
+		invalidClasses: [ 'input-text', 'has-error' ],
+		backgroundSelectors: [
+			'#payment-method-message',
+			'#main .entry-content .cart_totals',
+			'#main .entry-content',
+			'#main',
+			'body',
+		],
+	},
+	bnplCartBlock: {
+		appendTarget: '.wc-block-cart .wc-block-components-quantity-selector',
+		upeThemeInputSelector:
+			'.wc-block-cart .wc-block-components-quantity-selector .wc-block-components-quantity-selector__input',
+		upeThemeLabelSelector: '.wc-block-components-text-input',
+		rowElement: 'div',
+		validClasses: [ 'wc-block-components-text-input' ],
+		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
+		backgroundSelectors: [
+			'.wc-block-components-bnpl-wrapper',
+			'.wc-block-components-order-meta',
+			'.wc-block-components-totals-wrapper',
+			'.wp-block-woocommerce-cart-order-summary-block',
+			'.wp-block-woocommerce-cart-totals-block',
+			'.wp-block-woocommerce-cart .wc-block-cart',
+			'.wp-block-woocommerce-cart',
+			'body',
+		],
+	},
 
 	/**
 	 * Update selectors to use alternate if not present on DOM.
@@ -119,6 +153,12 @@ const appearanceSelectors = {
 				break;
 			case 'bnpl_product_page':
 				appearanceSelector = this.bnplProductPage;
+				break;
+			case 'bnpl_classic_cart':
+				appearanceSelector = this.bnplClassicCart;
+				break;
+			case 'bnpl_cart_block':
+				appearanceSelector = this.bnplCartBlock;
 				break;
 		}
 

@@ -471,7 +471,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 			$payment_tokens = $order->get_payment_tokens();
 			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
-
 	}
 
 	public function test_card_is_saved_when_updating_subscription_payment_method() {

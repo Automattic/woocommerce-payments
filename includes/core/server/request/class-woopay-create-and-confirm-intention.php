@@ -43,5 +43,4 @@ class WooPay_Create_And_Confirm_Intention extends Create_And_Confirm_Intention {
 	public function set_save_payment_method_to_platform( $save = true ) {
 		$this->set_param( 'save_payment_method_to_platform', $save );
 	}
-
 }

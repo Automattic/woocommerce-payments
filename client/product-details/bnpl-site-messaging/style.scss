@@ -15,3 +15,20 @@
 		margin-bottom: var( --wc-bnpl-margin-bottom );
 	}
 }
+
+.cart_totals {
+	&:has( + #payment-method-message.ready ) {
+		margin-bottom: 0;
+	}
+
+	#payment-method-message.ready {
+		margin-bottom: var( --wc-bnpl-margin-bottom );
+		padding: 0 1em;
+	}
+}
+
+.wc-block-components-totals-wrapper.slot-wrapper
+	.wc-block-components-bnpl-wrapper {
+	padding-left: 17px;
+	padding-right: 17px;
+}
