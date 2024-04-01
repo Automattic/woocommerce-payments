@@ -94,6 +94,29 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.5.0-test-1 - unreleased =
+* Add - Add a parent wrapper component for Payment Activity widget. This will be visible on the Payments Overview page
+* Add - Add BNPL messaging to cart page.
+* Add - Improve payment settings UX.
+* Add - Prepopulate Vertical selection in the onboarding form based on Woo Core selection.
+* Fix - Address PHPCS reports in checkout classes.
+* Fix - fix: error message on 402 status code
+* Fix - Fix an incorrect warning about Puerto Rico being unsupported by WooPayments
+* Fix - Fix collision between WooPayments header and Woo Express survey banner.
+* Fix - Fixed billing address error for subscription without some billing details
+* Fix - Fixed optional billing field validation
+* Fix - Remove redundant message after the account is onboarded
+* Update - Remove ToS acceptance copy from all entrypoints in MOX
+* Update - Remove unwanted css overrides on the Payment activity widget wrapper
+* Update - Update MOX cancellation to consistently redirect back to the payment connect page.
+* Dev - Address update PHPCS error - a single one recommending escaping an exception message
+* Dev - Escaping error logs and ignoring noticese where there are no issues.
+* Dev - Fix e2e tests for BNPL checkout
+* Dev - Fixed phpcs errors
+* Dev - Fixes to comply with updates to PHPCS linter.
+* Dev - refactor: reduce wp-data dependency on shortcode checkout
+* Dev - Updated PHPCS and sniffs used for static analysis
+
 = 7.4.0 - 2024-03-27 =
 * Add - Add account reset for sandboxes
 * Add - Add a loading spinner to the "Proceed to Checkout" button in shortcode cart.
