@@ -62,6 +62,12 @@
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.functionFound" />
 	</rule>
 
+	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">
+		<properties>
+			<property name="ignoreUnusedRegexp" value="/^unused_/"/>
+		</properties>
+	</rule>
+
 	<!-- Disallow long array syntax -->
 	<rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
 
