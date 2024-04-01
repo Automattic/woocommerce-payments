@@ -66,6 +66,5 @@ class List_Authorizations_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $filters['key'], $params['key'] );
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::AUTHORIZATIONS_API, $request->get_api() );
-
 	}
 }

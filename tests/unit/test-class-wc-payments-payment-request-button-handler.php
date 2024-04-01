@@ -131,7 +131,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		add_filter(
 			'woocommerce_find_rates',
-			function() {
+			function () {
 				return [
 					1 =>
 						[
@@ -319,7 +319,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		// Add fake packages to the cart.
 		add_filter(
 			'woocommerce_cart_shipping_packages',
-			function() {
+			function () {
 				return [
 					'fake_package_1',
 					'fake_package_2',
@@ -511,7 +511,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$mock_product = $this->create_mock_subscription( 'subscription' );
 		add_filter(
 			'test_deposit_get_product',
-			function() use ( $mock_product ) {
+			function () use ( $mock_product ) {
 				return $mock_product;
 			}
 		);
@@ -529,7 +529,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$mock_product = $this->create_mock_subscription( 'subscription_variation' );
 		add_filter(
 			'test_deposit_get_product',
-			function() use ( $mock_product ) {
+			function () use ( $mock_product ) {
 				return $mock_product;
 			}
 		);
@@ -560,7 +560,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$mock_product = $this->create_mock_subscription( 'subscription' );
 		add_filter(
 			'test_deposit_get_product',
-			function() use ( $mock_product ) {
+			function () use ( $mock_product ) {
 				return $mock_product;
 			}
 		);
