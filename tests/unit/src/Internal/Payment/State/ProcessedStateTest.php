@@ -168,5 +168,4 @@ class ProcessedStateTest extends WCPAY_UnitTestCase {
 
 		$this->sut->complete_processing();
 	}
-
 }
