@@ -68,6 +68,11 @@
 		</properties>
 	</rule>
 
+	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable">
+		<exclude-pattern>templates/emails/</exclude-pattern>
+		<exclude-pattern>includes/in-person-payments/templates/</exclude-pattern>
+	</rule>
+
 	<!-- Disallow long array syntax -->
 	<rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
 
