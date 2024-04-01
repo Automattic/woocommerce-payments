@@ -1162,8 +1162,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
+			// Since the AVS mismatch is part of the advanced fraud prevention, we need to consider that as a blocked order.
+			$blocked_by_avs_mismatch_fraud_rule = $this->is_blocked_by_avs_verification_fraud_rule( $e );
+
 			// We set this variable to be used in following checks.
-			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
+			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code() || $blocked_by_avs_mismatch_fraud_rule;
 
 			do_action( 'woocommerce_payments_order_failed', $order, $e );
 
@@ -2918,6 +2921,43 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->maybe_refresh_fraud_protection_settings();
 		$transient_value = get_transient( 'wcpay_fraud_protection_settings' );
 		return false === $transient_value ? 'error' : $transient_value;
+	}
+
+	/**
+	 * Checks if a fraud protection rule is enabled.
+	 *
+	 * @param string $rule The rule to check.
+	 *
+	 * @return bool True if the rule is enabled, false otherwise.
+	 */
+	protected function is_fraud_rule_enabled( string $rule ): bool {
+		$settings = $this->get_advanced_fraud_protection_settings();
+
+		if ( ! is_array( $settings ) ) {
+			return false;
+		}
+
+		foreach ( $settings as $setting ) {
+			if ( $rule === $setting['key'] ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks if the transaction was blocked by the AVS verification fraud rule.
+	 *
+	 * @param Exception $e The exception to check.
+	 *
+	 * @return bool True if the transaction was blocked by the AVS verification fraud rule, false otherwise.
+	 */
+	protected function is_blocked_by_avs_verification_fraud_rule( Exception $e ): bool {
+		$is_avs_verification_rule_enabled = $this->is_fraud_rule_enabled( 'avs_verification' );
+		$is_incorrect_zip_error           = $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code();
+
+		return $is_avs_verification_rule_enabled && $is_incorrect_zip_error;
 	}
 
 	/**
