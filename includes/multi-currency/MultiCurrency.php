@@ -1651,7 +1651,7 @@ class MultiCurrency {
 	 * respectively, and are intended exclusively for caching purposes, not for application logic.
 	 */
 	private function maybe_add_cache_cookies() {
-		if ( ! headers_sent() ) {
+		if ( ! headers_sent() && ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			wc_setcookie( 'wcpay_currency', $this->get_selected_currency()->get_code() );
 			wc_setcookie( 'wcpay_currency_rate', $this->get_selected_currency()->get_rate() );
 		}
