@@ -127,7 +127,7 @@ declare global {
 		trackingInfo?: {
 			hosting_provider: string;
 		};
-		all_time_tpv: number;
+		lifetimeTPV: number;
 	};
 
 	const wc: {

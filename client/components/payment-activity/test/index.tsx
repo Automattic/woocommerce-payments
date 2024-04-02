@@ -11,7 +11,7 @@ import PaymentActivity from '..';
 
 declare const global: {
 	wcpaySettings: {
-		all_time_tpv: number;
+		lifetimeTPV: number;
 	};
 };
 
@@ -23,7 +23,7 @@ describe( 'PaymentActivity component', () => {
 	} );
 
 	it( 'should render an empty state', () => {
-		global.wcpaySettings.all_time_tpv = 0;
+		global.wcpaySettings.lifetimeTPV = 0;
 
 		const { container, getByText } = render( <PaymentActivity /> );
 

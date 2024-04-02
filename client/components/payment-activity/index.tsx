@@ -14,8 +14,8 @@ import interpolateComponents from '@automattic/interpolate-components';
 import './style.scss';
 
 const PaymentActivity: React.FC = () => {
-	const { all_time_tpv: allTimeTPV } = wcpaySettings;
-	const hasAtLeastOnePayment = allTimeTPV !== 0; // placeholder for testing.
+	const { lifetimeTPV } = wcpaySettings;
+	const hasAtLeastOnePayment = lifetimeTPV !== 0; // placeholder for testing.
 
 	return (
 		<Card>
