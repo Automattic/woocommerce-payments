@@ -155,11 +155,8 @@ const getColumns = (
 		},
 		{
 			key: 'date',
-			label: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
-			screenReaderLabel: __(
-				'Date and time in UTC',
-				'woocommerce-payments'
-			),
+			label: __( 'Date / Time', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',
