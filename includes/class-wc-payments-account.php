@@ -2095,6 +2095,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get the all-time total payment volume.
+	 *
+	 * @return int|null The all-time total payment volume, or null if not available.
+	 */
+	public function get_all_time_tpv() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['all_time_tpv'] ) ? $account['all_time_tpv'] : 0;
+	}
+
+	/**
 	 * Get user data to send to the onboarding flow.
 	 *
 	 * @return array The user data.
