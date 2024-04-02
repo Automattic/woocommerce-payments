@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Fatal Error showing when connect to Jetpack on localhost
