@@ -75,11 +75,17 @@ export const handleWooPayEmailInput = async (
 
 	//Checks if customer has clicked the back button to prevent auto redirect
 	const searchParams = new URLSearchParams( window.location.search );
+	const isSkipWoopayCookieSet = /skip_woopay=1/.test( document.cookie );
 	const customerClickedBackButton =
 		( typeof performance !== 'undefined' &&
 			performance.getEntriesByType( 'navigation' )[ 0 ].type ===
 				'back_forward' ) ||
-		searchParams.get( 'skip_woopay' ) === 'true';
+		searchParams.get( 'skip_woopay' ) === 'true' ||
+		isSkipWoopayCookieSet; // We enforce and extend the skipping to the entire user session.
+
+	if ( customerClickedBackButton && ! isSkipWoopayCookieSet ) {
+		document.cookie = 'skip_woopay=1; path=/';
+	}
 
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
