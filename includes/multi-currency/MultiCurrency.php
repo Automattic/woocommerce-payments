@@ -815,7 +815,6 @@ class MultiCurrency {
 		} else {
 			add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
 		}
-
 	}
 
 	/**
@@ -1645,8 +1644,8 @@ class MultiCurrency {
 	/**
 	 * Sets cache cookies for currency code and exchange rate.
 	 *
-	 * This private method sets 'wcpay_currency' and 'wcpay_currency_rate' cookies if HTTP headers 
-	 * have not been sent. These cookies store the selected currency's code and its exchange rate, 
+	 * This private method sets 'wcpay_currency' and 'wcpay_currency_rate' cookies if HTTP headers
+	 * have not been sent. These cookies store the selected currency's code and its exchange rate,
 	 * respectively, and are intended exclusively for caching purposes, not for application logic.
 	 */
 	private function maybe_add_cache_cookies() {
