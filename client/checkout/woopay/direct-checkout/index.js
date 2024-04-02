@@ -15,7 +15,10 @@ import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-d
 let isThirdPartyCookieEnabled = false;
 
 window.addEventListener( 'load', async () => {
-	if ( ! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ) {
+	if (
+		! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ||
+		WooPayDirectCheckout.shouldSkipWooPay()
+	) {
 		return;
 	}
 
@@ -38,7 +41,10 @@ window.addEventListener( 'load', async () => {
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_cart_totals', async () => {
-		if ( ! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ) {
+		if (
+			! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ||
+			WooPayDirectCheckout.shouldSkipWooPay()
+		) {
 			return;
 		}
 
