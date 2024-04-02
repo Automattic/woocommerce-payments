@@ -161,7 +161,7 @@ class Check {
 		if ( 0 < count(
 			array_filter(
 				$checks,
-				function( $check ) {
+				function ( $check ) {
 					return ! ( $check instanceof Check ); }
 			)
 		) ) {
@@ -207,7 +207,7 @@ class Check {
 			return [
 				'operator' => $this->operator,
 				'checks'   => array_map(
-					function( Check $check ) {
+					function ( Check $check ) {
 						return $check->to_array();
 					},
 					$this->checks
