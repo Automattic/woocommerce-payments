@@ -11,7 +11,9 @@ import './style.scss';
 const PaymentsDataHighlights: React.FC = () => {
 	return (
 		<>
-			<div className="payments-data-highlights">COMING SOON</div>
+			<div className="payments-data-highlights">
+				{ /* Sub components go here */ }
+			</div>
 		</>
 	);
 };

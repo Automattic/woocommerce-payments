@@ -14,11 +14,8 @@ import './style.scss';
 
 const PaymentActivity: React.FC = () => {
 	return (
-		<Card className="wcpay-payments-activity__card">
-			<CardHeader
-				className="wcpay-payments-activity__card__header"
-				isBorderless={ true }
-			>
+		<Card>
+			<CardHeader>
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
 				{ /* Filters go here */ }
 			</CardHeader>

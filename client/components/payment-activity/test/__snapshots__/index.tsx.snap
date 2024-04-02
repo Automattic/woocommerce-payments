@@ -3,7 +3,7 @@
 exports[`PaymentActivity component should render 1`] = `
 <div>
   <div
-    class="components-surface components-card wcpay-payments-activity__card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -11,14 +11,14 @@ exports[`PaymentActivity component should render 1`] = `
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header wcpay-payments-activity__card__header css-sz55ca-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium-borderless em57xhy0"
+        class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Your payment activity
       </div>
       <div
-        class="components-card__body components-card-body wcpay-payments-activity__card__body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >

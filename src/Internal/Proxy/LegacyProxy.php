@@ -63,7 +63,7 @@ class LegacyProxy {
 	 */
 	public function get_global( string $name ) {
 		if ( ! $this->has_global( $name ) ) {
-			throw new ProxyException( sprintf( 'The global "%s" is not set.', $name ) );
+			throw new ProxyException( esc_html( sprintf( 'The global "%s" is not set.', $name ) ) );
 		}
 
 		return $GLOBALS[ $name ];
