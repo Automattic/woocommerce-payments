@@ -1644,12 +1644,12 @@ class MultiCurrency {
 	/**
 	 * Sets cache cookies for currency code and exchange rate.
 	 *
-	 * This method sets 'wcpay_currency' and 'wcpay_currency_rate' cookies in frontend
-	 * requests. These cookies store the selected currency's code and its exchange rate,
+	 * This private method sets 'wcpay_currency' and 'wcpay_currency_rate' cookies if HTTP headers
+	 * have not been sent. These cookies store the selected currency's code and its exchange rate,
 	 * respectively, and are intended exclusively for caching purposes, not for application logic.
 	 */
 	private function maybe_add_cache_cookies() {
-		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
+		if ( ! headers_sent() && ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			wc_setcookie( 'wcpay_currency', $this->get_selected_currency()->get_code() );
 			wc_setcookie( 'wcpay_currency_rate', $this->get_selected_currency()->get_rate() );
 		}
