@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Transaction listing incorrectly labeled times as UTC
+Remove incorrect "UTC" label from the time column of Transactions page
