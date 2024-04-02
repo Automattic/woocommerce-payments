@@ -96,7 +96,7 @@ class Duplicate_Payment_Prevention_Service {
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch attached payment intent: ' . $e );
 			return;
-		};
+		}
 
 		if ( ! $intent->is_authorized() ) {
 			return;

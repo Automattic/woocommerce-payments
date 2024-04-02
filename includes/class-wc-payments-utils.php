@@ -338,28 +338,41 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Extract the billing details from the WC order
+	 * Extract the billing details from the WC order.
+	 * It only returns the fields that are present in the billing section of the checkout.
 	 *
 	 * @param WC_Order $order Order to extract the billing details from.
 	 *
 	 * @return array
 	 */
 	public static function get_billing_details_from_order( $order ) {
-		$billing_details = [
-			'address' => [
-				'city'        => $order->get_billing_city(),
-				'country'     => $order->get_billing_country(),
-				'line1'       => $order->get_billing_address_1(),
-				'line2'       => $order->get_billing_address_2(),
-				'postal_code' => $order->get_billing_postcode(),
-				'state'       => $order->get_billing_state(),
-			],
-			'email'   => $order->get_billing_email(),
-			'name'    => trim( $order->get_formatted_billing_full_name() ),
-			'phone'   => $order->get_billing_phone(),
+		$billing_fields       = array_keys( WC()->checkout()->get_checkout_fields( 'billing' ) );
+		$address_field_to_key = [
+			'billing_city'      => 'city',
+			'billing_country'   => 'country',
+			'billing_address_1' => 'line1',
+			'billing_address_2' => 'line2',
+			'billing_postcode'  => 'postal_code',
+			'billing_state'     => 'state',
 		];
+		$field_to_key         = [
+			'billing_email' => 'email',
+			'billing_phone' => 'phone',
+		];
+		$billing_details      = [ 'address' => [] ];
+		foreach ( $billing_fields as $field ) {
+			if ( isset( $address_field_to_key[ $field ] ) ) {
+				$billing_details['address'][ $address_field_to_key[ $field ] ] = $order->{"get_{$field}"}();
+			} elseif ( isset( $field_to_key[ $field ] ) ) {
+				$billing_details[ $field_to_key[ $field ] ] = $order->{"get_{$field}"}();
+			}
+		}
 
-		return array_filter( $billing_details );
+		if ( in_array( 'billing_first_name', $billing_fields, true ) && in_array( 'billing_last_name', $billing_fields, true ) ) {
+			$billing_details['name'] = trim( $order->get_formatted_billing_full_name() );
+		}
+
+		return $billing_details;
 	}
 
 	/**
@@ -593,7 +606,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return  int
 	 */
-	public static function get_filtered_error_status_code( Exception $e ) : int {
+	public static function get_filtered_error_status_code( Exception $e ): int {
 		$status_code = null;
 		if ( $e instanceof API_Exception ) {
 			$status_code = $e->get_http_code();
@@ -1083,5 +1096,17 @@ class WC_Payments_Utils {
 	 */
 	public static function is_cart_page(): bool {
 		return is_cart() || has_block( 'woocommerce/cart' );
+	}
+
+	/**
+	 * Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
+	 * in this case because it checks the page content for the block, which isn't present.
+	 *
+	 * @return bool
+	 *
+	 * @psalm-suppress UndefinedFunction
+	 */
+	public static function is_cart_block(): bool {
+		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
 	}
 }
