@@ -8,7 +8,7 @@
 
 		&__body {
 			text-align: center;
-			color: $gray-100;
+			color: $gray-100; // to be removed.
 			padding: 0 !important;
 		}
 	}
@@ -49,7 +49,7 @@
 		}
 	}
 
-	.other-payments-data {
+	.payments-data-highlights {
 		display: flex;
 		flex: 3;
 	}

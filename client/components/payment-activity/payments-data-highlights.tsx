@@ -8,12 +8,12 @@ import * as React from 'react';
  */
 import './style.scss';
 
-const OtherPaymentsData: React.FC = () => {
+const PaymentsDataHighlights: React.FC = () => {
 	return (
 		<>
-			<div className="other-payments-data">COMING SOON</div>
+			<div className="payments-data-highlights">COMING SOON</div>
 		</>
 	);
 };
 
-export default OtherPaymentsData;
+export default PaymentsDataHighlights;
