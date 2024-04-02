@@ -27,7 +27,7 @@ describe( 'PaymentActivity component', () => {
 
 		const { container, getByText } = render( <PaymentActivity /> );
 
-		getByText( 'No payments...yet!' );
+		expect( getByText( 'No payments…yet!' ) ).toBeInTheDocument();
 		expect( container ).toMatchSnapshot();
 	} );
 } );
