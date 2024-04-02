@@ -164,7 +164,7 @@ class WC_Payments_Session_Service {
 
 		$char_length   = strlen( $include_chars );
 		$random_string = '';
-		for ( $i = 0; $i < $length; $i ++ ) {
+		for ( $i = 0; $i < $length; $i++ ) {
 			$random_string .= $include_chars [ wp_rand( 0, $char_length - 1 ) ];
 		}
 

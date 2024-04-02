@@ -10,21 +10,17 @@ import { __ } from '@wordpress/i18n';
  */
 import Survey from './survey';
 import { WcPayOverviewSurveyContextProvider } from './survey/context';
-import './style.scss';
 
 const PaymentActivity: React.FC = () => {
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
 	return (
-		<Card className="wcpay-payments-activity__card">
-			<CardHeader
-				className="wcpay-payments-activity__card__header"
-				isBorderless={ true }
-			>
+		<Card>
+			<CardHeader>
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
 				{ /* Filters go here */ }
 			</CardHeader>
-			<CardBody className="wcpay-payments-activity__card__body">
+			<CardBody>
 				<>{ /* Sub components go here */ }</>
 			</CardBody>
 			{ ! isOverviewSurveySubmitted && (

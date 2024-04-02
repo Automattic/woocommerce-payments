@@ -38,62 +38,6 @@ export default {
 		'Earn recurring revenue and get deposits into your bank account.',
 		'woocommerce-payments'
 	),
-	agreement: createInterpolateElement(
-		__(
-			'By clicking “Finish setup”, you agree to the <a1>Terms of Service</a1> and acknowledge that you have read our <a2>Privacy Policy</a2>.',
-			'woocommerce-payments'
-		),
-		{
-			a1: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://wordpress.com/tos"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-			a2: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://automattic.com/privacy/"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-		}
-	),
-	agreementWithWooPay: createInterpolateElement(
-		__(
-			'By clicking “Finish setup”, you agree to the <a1>Terms of Service</a1> (including WooPay <a3>merchant terms</a3>) and acknowledge that you have read our <a2>Privacy Policy</a2>.',
-			'woocommerce-payments'
-		),
-		{
-			a1: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://wordpress.com/tos"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-			a2: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://automattic.com/privacy/"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-			a3: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://wordpress.com/tos/#more-woopay-specifically"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-		}
-	),
 	sandboxMode: {
 		title: __(
 			"I'm setting up a store for someone else.",

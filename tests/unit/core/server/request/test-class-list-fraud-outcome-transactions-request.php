@@ -67,7 +67,6 @@ class List_Fraud_Outcome_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $search_term, $params['search_term'] );
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::FRAUD_OUTCOMES_API . '/status/' . $status, $request->get_api() );
-
 	}
 	public function test_list_fraud_outcome_transactions_request_using_from_rest_request_function() {
 		$page        = 2;
