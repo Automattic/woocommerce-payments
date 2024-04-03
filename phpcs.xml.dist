@@ -65,7 +65,7 @@
 
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">
 		<properties>
-			<property name="ignoreUnusedRegexp" value="/^unused_/"/>
+			<property name="ignoreUnusedRegexp" value="/^_unused_/"/>
 		</properties>
 	</rule>
 
