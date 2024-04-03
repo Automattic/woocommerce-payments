@@ -68,10 +68,6 @@ jQuery( function ( $ ) {
 		unblockUI( $forms );
 	} );
 
-	$( document.body ).on( 'update_checkout', () => {
-		removeStripePMMEContainers();
-	} );
-
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement();
 		injectStripePMMEContainers();
@@ -156,17 +152,6 @@ jQuery( function ( $ ) {
 		handleWooPayEmailInput( '#billing_email', api );
 	}
 
-	function removeStripePMMEContainers() {
-		const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
-
-		for ( const method of bnplMethods ) {
-			const containerID = `stripe-pmme-container-${ method }`;
-			if ( document.getElementById( containerID ) ) {
-				document.getElementById( containerID ).remove();
-			}
-		}
-	}
-
 	async function injectStripePMMEContainers() {
 		const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 		const labelBase = 'payment_method_woocommerce_payments_';
@@ -183,15 +168,18 @@ jQuery( function ( $ ) {
 				const containerID = `stripe-pmme-container-${ method }`;
 
 				if ( document.getElementById( containerID ) ) {
-					document.getElementById( containerID ).remove();
+					document.getElementById( containerID ).innerHTML = '';
 				}
 
-				if ( targetLabel && ! document.getElementById( containerID ) ) {
-					const container = document.createElement( 'span' );
-					container.id = containerID;
-					container.dataset.paymentMethodType = method;
-					container.classList.add( 'stripe-pmme-container' );
-					targetLabel.appendChild( container );
+				if ( targetLabel ) {
+					let container = document.getElementById( containerID );
+					if ( ! container ) {
+						container = document.createElement( 'span' );
+						container.id = containerID;
+						container.dataset.paymentMethodType = method;
+						container.classList.add( 'stripe-pmme-container' );
+						targetLabel.appendChild( container );
+					}
 
 					await mountStripePaymentMethodMessagingElement(
 						api,
