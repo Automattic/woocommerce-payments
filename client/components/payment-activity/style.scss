@@ -16,8 +16,10 @@
 .payments-activity-data {
 	display: flex;
 	padding: 24px;
-	border-top: 1px solid $gray-200;
-	border-bottom: 1px solid $gray-200;
+
+	@include breakpoint( '<660px' ) {
+		flex-direction: column;
+	}
 
 	.total-payments-volume {
 		display: flex;
