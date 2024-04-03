@@ -817,7 +817,6 @@ class MultiCurrency {
 		}
 
 		$this->maybe_add_cache_cookie();
-
 	}
 
 	/**
@@ -1653,7 +1652,7 @@ class MultiCurrency {
 	 */
 	private function maybe_add_cache_cookie() {
 		if ( ! headers_sent() && ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
-			wc_setcookie( 'wcpay_currency', sprintf( "%s_%s", $this->get_selected_currency()->get_code(), $this->get_selected_currency()->get_rate() ) );
+			wc_setcookie( 'wcpay_currency', sprintf( '%s_%s', $this->get_selected_currency()->get_code(), $this->get_selected_currency()->get_rate() ) );
 		}
 	}
 }
