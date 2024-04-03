@@ -15,6 +15,7 @@ import { getUPEConfig } from 'utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
 import WCPayAPI from '../api';
 import { SavedTokenHandler } from './saved-token-handler';
+import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
@@ -37,10 +38,6 @@ import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
-import {
-	Elements,
-	PaymentMethodMessagingElement,
-} from '@stripe/react-stripe-js';
 
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,
@@ -112,47 +109,13 @@ Object.entries( enabledPaymentMethodsConfig )
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
 			label: (
-				<>
-					<span>
-						{ upeConfig.title }
-						{ upeName !== 'card' && (
-							<>
-								<Elements
-									stripe={ api.getStripeForUPE( upeName ) }
-									options={ {
-										appearance: stripeAppearance ?? {},
-									} }
-								>
-									<PaymentMethodMessagingElement
-										options={ {
-											amount:
-												getUPEConfig( 'cartTotal' ) ||
-												0,
-											currency: getUPEConfig(
-												'currency'
-											),
-											paymentMethodTypes: [ upeName ],
-											countryCode:
-												window.wcBlocksCheckoutData
-													.billingCountry ||
-												window.wcBlocksCheckoutData
-													.storeCountry, // Customer's country or base country of the store.
-											displayType: 'promotional_text',
-										} }
-									/>
-								</Elements>
-							</>
-						) }
-						<img
-							src={
-								upeAppearanceTheme === 'night'
-									? upeConfig.darkIcon
-									: upeConfig.icon
-							}
-							alt={ upeConfig.title }
-						/>
-					</span>
-				</>
+				<PaymentMethodLabel
+					api={ api }
+					upeConfig={ upeConfig }
+					upeName={ upeName }
+					stripeAppearance={ stripeAppearance }
+					upeAppearanceTheme={ upeAppearanceTheme }
+				/>
 			),
 			ariaLabel: 'WooPayments',
 			supports: {
