@@ -7,7 +7,6 @@ import React from 'react';
  * Internal dependencies
  */
 import type { Rating } from './types';
-import { sanitizeHTML } from 'utils/sanitize';
 
 const strings: Record< Rating, string > = {
 	'very-unhappy': '&#128542;',
@@ -23,7 +22,7 @@ interface Props {
 	disabled: boolean;
 	currentRating?: Rating;
 }
-const Emoticons: React.FC< Props > = ( {
+const Emoticon: React.FC< Props > = ( {
 	rating,
 	setReviewRating,
 	disabled,
@@ -54,4 +53,4 @@ const Emoticons: React.FC< Props > = ( {
 	);
 };
 
-export default Emoticons;
+export default Emoticon;

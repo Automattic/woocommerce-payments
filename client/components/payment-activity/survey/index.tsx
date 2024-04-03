@@ -14,7 +14,7 @@ import { createInterpolateElement, useState } from '@wordpress/element';
  */
 import type { OverviewSurveyFields, Rating } from './types';
 import { useOverviewSurveyContext } from './context';
-import Emoticons from './emoticons';
+import Emoticon from './emoticon';
 import close from './icons/close';
 import './style.scss';
 
@@ -74,7 +74,7 @@ const Survey: React.FC = () => {
 								<span className="padding_left_10">
 									{ ratings.map( ( rating ) => {
 										return (
-											<Emoticons
+											<Emoticon
 												key={ rating }
 												disabled={
 													'pending' === status
