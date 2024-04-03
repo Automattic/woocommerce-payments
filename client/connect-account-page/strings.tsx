@@ -5,17 +5,26 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import interpolateComponents from '@automattic/interpolate-components';
 
 export default {
-	button: __( 'Finish setup', 'woocommerce-payments' ),
+	button: {
+		jetpack_not_connected: __(
+			'Connect your store',
+			'woocommerce-payments'
+		),
+		jetpack_connected: __(
+			'Verify business details',
+			'woocommerce-payments'
+		),
+		sandbox: __( 'Enable sandbox mode', 'woocommerce-payments' ),
+	},
 	heading: ( firstName?: string ): string =>
 		sprintf(
-			/* translators: %s: first name of the merchant, if it exists. */
-			__(
-				'Hi%s, run your business and manage your payments all in one place, with no setup costs or monthly fees.',
-				'woocommerce'
-			),
-			firstName ? ` ${ firstName }` : ''
+			/* translators: %s: first name of the merchant, if it exists, %s: WooPayments. */
+			__( 'Hi%s, Welcome to %s!', 'woocommerce' ),
+			firstName ? ` ${ firstName }` : '',
+			'WooPayments'
 		),
 	usp1: __(
 		'Offer card payments, Apple Pay, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
@@ -29,75 +38,49 @@ export default {
 		'Earn recurring revenue and get deposits into your bank account.',
 		'woocommerce-payments'
 	),
-	agreement: createInterpolateElement(
-		__(
-			'By clicking “Finish setup”, you agree to the <a1>Terms of Service</a1> and acknowledge that you have read our <a2>Privacy Policy</a2>.',
+	sandboxMode: {
+		title: __(
+			"I'm setting up a store for someone else.",
 			'woocommerce-payments'
 		),
-		{
-			a1: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://wordpress.com/tos"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
+		description: sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'This option will set up %s in sandbox mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+				'woocommerce-payments'
 			),
-			a2: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://automattic.com/privacy/"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-		}
-	),
-	agreementWithWooPay: createInterpolateElement(
-		__(
-			'By clicking “Finish setup”, you agree to the <a1>Terms of Service</a1> (including WooPay <a3>merchant terms</a3>) and acknowledge that you have read our <a2>Privacy Policy</a2>.',
+			'WooPayments'
+		),
+	},
+	sandboxModeNotice: interpolateComponents( {
+		mixedString: __(
+			'Sandbox mode is enabled, only test accounts will be created. If you want to process live transactions, please {{learnMoreLink}}disable it{{/learnMoreLink}}.',
 			'woocommerce-payments'
 		),
-		{
-			a1: (
+		components: {
+			learnMoreLink: (
+				// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
 				// eslint-disable-next-line jsx-a11y/anchor-has-content
 				<a
-					href="https://wordpress.com/tos"
+					href="https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
 					target="_blank"
-					rel="noopener noreferrer"
+					rel="noreferrer"
 				/>
 			),
-			a2: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://automattic.com/privacy/"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-			a3: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://wordpress.com/tos/#more-woopay-specifically"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-		}
-	),
-	paymentMethods: __(
-		'WooPayments is pre-integrated with popular payment options:',
-		'woocommerce-payments'
-	),
+		},
+	} ),
 	infoNotice: {
-		description: __(
-			"In order to receive deposits with WooPayments, you'll need to share business details to verify who you are.",
-			'woocommerce-payments'
-		),
-		button: __(
-			'Learn more about how to receive deposits.',
-			'woocommerce-payments'
-		),
+		description: {
+			jetpack_connected: __(
+				"You'll need to verify your business and payment details to ",
+				'woocommerce-payments'
+			),
+			jetpack_not_connected: __(
+				'To ensure safe and secure transactions, a WordPress.com account is required before you can verify your business details.',
+				'woocommerce-payments'
+			),
+		},
+		button: __( 'enable deposits.', 'woocommerce-payments' ),
 	},
 	infoModal: {
 		title: sprintf(

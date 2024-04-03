@@ -191,7 +191,7 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 		handleWooPayEmailInput( '#email', api, true );
 	}
 
-	if ( getUPEConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
+	if ( getUPEConfig( 'shouldShowWooPayButton' ) ) {
 		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
 	}
 }

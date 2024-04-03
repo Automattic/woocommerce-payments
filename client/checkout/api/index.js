@@ -410,13 +410,13 @@ export default class WCPayAPI {
 	 * Saves the calculated UPE appearance values in a transient.
 	 *
 	 * @param {Object} appearance The UPE appearance object with style values
-	 * @param {string} isBlocksCheckout 'true' if save request is for Blocks Checkout. Default 'false'.
+	 * @param {string} elementsLocation The location of the elements.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	saveUPEAppearance( appearance, isBlocksCheckout = 'false' ) {
+	saveUPEAppearance( appearance, elementsLocation ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
-			is_blocks_checkout: isBlocksCheckout,
+			elements_location: elementsLocation,
 			appearance: JSON.stringify( appearance ),
 			action: 'save_upe_appearance',
 			// eslint-disable-next-line camelcase

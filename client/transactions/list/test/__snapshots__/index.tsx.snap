@@ -248,19 +248,19 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
                       >
-                        Date and time in UTC
+                        Date and time
                       </span>
                     </button>
                     <span
                       class="screen-reader-text"
                       id="header-15-0"
                     >
-                      Sort by Date and time in UTC in ascending order
+                      Sort by Date and time in ascending order
                     </span>
                   </th>
                   <th
@@ -1237,19 +1237,19 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
                       >
-                        Date and time in UTC
+                        Date and time
                       </span>
                     </button>
                     <span
                       class="screen-reader-text"
                       id="header-16-0"
                     >
-                      Sort by Date and time in UTC in ascending order
+                      Sort by Date and time in ascending order
                     </span>
                   </th>
                   <th
@@ -2223,19 +2223,19 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
                       >
-                        Date and time in UTC
+                        Date and time
                       </span>
                     </button>
                     <span
                       class="screen-reader-text"
                       id="header-0-0"
                     >
-                      Sort by Date and time in UTC in ascending order
+                      Sort by Date and time in ascending order
                     </span>
                   </th>
                   <th
@@ -2900,19 +2900,19 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
                       >
-                        Date and time in UTC
+                        Date and time
                       </span>
                     </button>
                     <span
                       class="screen-reader-text"
                       id="header-14-0"
                     >
-                      Sort by Date and time in UTC in ascending order
+                      Sort by Date and time in ascending order
                     </span>
                   </th>
                   <th
@@ -3963,19 +3963,19 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
                       >
-                        Date and time in UTC
+                        Date and time
                       </span>
                     </button>
                     <span
                       class="screen-reader-text"
                       id="header-1-0"
                     >
-                      Sort by Date and time in UTC in ascending order
+                      Sort by Date and time in ascending order
                     </span>
                   </th>
                   <th
@@ -4994,19 +4994,19 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       <span
                         aria-hidden="true"
                       >
-                        Date / Time (UTC)
+                        Date / Time
                       </span>
                       <span
                         class="screen-reader-text"
                       >
-                        Date and time in UTC
+                        Date and time
                       </span>
                     </button>
                     <span
                       class="screen-reader-text"
                       id="header-11-0"
                     >
-                      Sort by Date and time in UTC in ascending order
+                      Sort by Date and time in ascending order
                     </span>
                   </th>
                   <th

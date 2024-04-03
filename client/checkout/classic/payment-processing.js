@@ -50,7 +50,10 @@ async function initializeAppearance( api ) {
 		return Promise.resolve( appearance );
 	}
 
-	return await api.saveUPEAppearance( getAppearance() );
+	return await api.saveUPEAppearance(
+		getAppearance( 'shortcode_checkout' ),
+		'shortcode_checkout'
+	);
 }
 
 /**

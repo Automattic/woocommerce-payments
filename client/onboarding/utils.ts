@@ -2,15 +2,13 @@
  * External dependencies
  */
 import { set, toPairs } from 'lodash';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from 'data/constants';
 import { ListItem } from 'components/grouped-select-control';
 import businessTypeDescriptionStrings from './translations/descriptions';
-import { Country, OnboardingFields } from './types';
+import { Country } from './types';
 
 export const fromDotNotation = (
 	record: Record< string, unknown >
@@ -42,6 +40,23 @@ export const getBusinessTypes = (): Country[] => {
 			} ) )
 			.sort( ( a, b ) => a.name.localeCompare( b.name ) ) || []
 	);
+};
+
+/**
+ * Get the MCC code for the selected industry.
+ *
+ * @return {string | undefined} The MCC code for the selected industry. Will return undefined if no industry is selected.
+ */
+export const getMccFromIndustry = (): string | undefined => {
+	const industry = wcSettings.admin.onboarding.profile.industry?.[ 0 ];
+	if ( ! industry ) {
+		return undefined;
+	}
+
+	const industryToMcc =
+		wcpaySettings?.onboardingFieldsData?.industry_to_mcc || {};
+
+	return industryToMcc[ industry ];
 };
 
 export const getMccsFlatList = (): ListItem[] => {
@@ -86,14 +101,3 @@ export const getMccsFlatList = (): ListItem[] => {
 		];
 	}, [] as ListItem[] );
 };
-
-export const persistFlowState = (
-	currentStep: string,
-	data: OnboardingFields
-): Promise< void > =>
-	apiFetch( {
-		path: `${ NAMESPACE }/onboarding/flow-state`,
-		method: 'POST',
-		data: { current_step: currentStep, data },
-		parse: false,
-	} );

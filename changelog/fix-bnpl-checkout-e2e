@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Fix e2e tests for BNPL checkout

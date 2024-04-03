@@ -50,7 +50,7 @@ class WC_Payments_DB {
 		);
 
 		return array_map(
-			function ( WC_Order $order ) : array {
+			function ( WC_Order $order ): array {
 				return [
 					'order'     => $order,
 					'charge_id' => $order->get_meta( self::META_KEY_CHARGE_ID ),
@@ -58,7 +58,6 @@ class WC_Payments_DB {
 			},
 			$orders
 		);
-
 	}
 
 	/**
@@ -86,6 +85,11 @@ class WC_Payments_DB {
 	 * @return null|string
 	 */
 	private function order_id_from_meta_key_value( $meta_key, $meta_value ) {
+
+		// Don't proceed if the meta key or value is empty.
+		if ( ! $meta_key || ! $meta_value ) {
+			return null;
+		}
 		$orders = wc_get_orders(
 			[
 				'limit'      => 1,
