@@ -2946,23 +2946,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks if the transaction was blocked by fraud rules.
 	 *
-	 * @param string $error_code The error code to check.
+	 * @param string|null $error_code The error code to check.
 	 *
 	 * @return bool True if the transaction was blocked by fraud rules.
 	 */
-	private function is_blocked_by_fraud_rules( string $error_code ): bool {
+	private function is_blocked_by_fraud_rules( ?string $error_code ): bool {
 		return 'wcpay_blocked_by_fraud_rule' === $error_code;
 	}
 
 	/**
 	 * Checks if the transaction was blocked by the AVS verification fraud rule.
 	 *
-	 * @param string $error_code The error code to check.
-	 * @param string $error_type The error type to check.
+	 * @param string|null $error_code The error code to check.
+	 * @param string|null $error_type The error type to check.
 	 *
 	 * @return bool True if the transaction was blocked by the AVS verification fraud rule, false otherwise.
 	 */
-	private function is_blocked_by_avs_verification_fraud_rule( string $error_code, string $error_type ): bool {
+	private function is_blocked_by_avs_verification_fraud_rule( ?string $error_code, ?string $error_type ): bool {
 		$is_avs_verification_rule_enabled = $this->is_fraud_rule_enabled( 'avs_verification' );
 		$is_incorrect_zip_error           = 'card_error' === $error_type && 'incorrect_zip' === $error_code;
 
@@ -2977,12 +2977,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool True if the transaction was blocked by fraud rules, false otherwise.
 	 */
 	protected function is_blocked_due_to_fraud_rules( Exception $e ): bool {
-		if ( ! $e instanceof API_Exception ) {
+		if ( ! ( $e instanceof API_Exception ) ) {
 			return false;
 		}
 
-		$error_code = $e->get_error_code();
-		$error_type = $e->get_error_type();
+		$error_code = $e->get_error_code() ?? null;
+		$error_type = $e->get_error_type() ?? null;
 
 		$blocked_by_fraud_rules = $this->is_blocked_by_fraud_rules( $error_code );
 
