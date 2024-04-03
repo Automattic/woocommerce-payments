@@ -2,7 +2,14 @@
  * Internal dependencies
  */
 
+export type Rating =
+	| 'very-unhappy'
+	| 'unhappy'
+	| 'neutral'
+	| 'happy'
+	| 'very-happy';
+
 export type OverviewSurveyFields = {
-	rating?: string;
+	rating?: Rating;
 	comments?: string;
 };

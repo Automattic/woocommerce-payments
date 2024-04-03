@@ -12,13 +12,13 @@ import { createInterpolateElement, useState } from '@wordpress/element';
 /**
  * Internal dependencies.
  */
-import type { OverviewSurveyFields } from './types';
+import type { OverviewSurveyFields, Rating } from './types';
 import { useOverviewSurveyContext } from './context';
 import Emoticons from './emoticons';
 import close from './icons/close';
 import './style.scss';
 
-const Survey = () => {
+const Survey: React.FC = () => {
 	const { status } = useOverviewSurveyContext();
 	const {
 		setSurveySubmitted,
@@ -29,29 +29,35 @@ const Survey = () => {
 
 	const [ showComponent, setShowComponent ] = useState( true );
 
-	const currentRating = surveyAnswers.rating ?? '';
-	const ratingWithComment = [ 'very-unhappy', 'unhappy', 'neutral' ];
-	const ratings = [
+	const currentRating = surveyAnswers.rating;
+	const ratingWithComment: Rating[] = [
+		'very-unhappy',
+		'unhappy',
+		'neutral',
+	];
+	const ratings: Rating[] = [
 		'very-unhappy',
 		'unhappy',
 		'neutral',
 		'happy',
 		'very-happy',
 	];
-	const showComment = ratingWithComment.includes( currentRating );
-	const setReviewRating = function ( value: string ) {
+	const showComment =
+		currentRating && ratingWithComment.includes( currentRating );
+
+	const setReviewRating = function ( value?: Rating ) {
 		const answers: OverviewSurveyFields = {
 			...surveyAnswers,
 			rating: value,
 		};
 		setSurveyAnswers( answers );
-		if ( ! ratingWithComment.includes( value ) && '' !== value ) {
+		if ( value && ! ratingWithComment.includes( value ) ) {
 			setSurveySubmitted( answers );
 		}
 	};
 
 	if ( ! showComponent ) {
-		return <></>;
+		return null;
 	}
 
 	return (
@@ -91,7 +97,7 @@ const Survey = () => {
 									className="components-button has-icon"
 									aria-label="Close dialog"
 									onClick={ () => {
-										setReviewRating( '' );
+										setReviewRating( undefined );
 									} }
 								>
 									<Icon
@@ -152,7 +158,7 @@ const Survey = () => {
 							variant={ 'secondary' }
 							disabled={ 'pending' === status }
 							onClick={ () => {
-								setReviewRating( '' );
+								setReviewRating( undefined );
 							} }
 						>
 							{ __( 'Cancel', 'woocommerce-payments' ) }
