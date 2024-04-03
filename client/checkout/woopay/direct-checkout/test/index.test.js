@@ -76,6 +76,7 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
+		WooPayDirectCheckout.getCheckoutRedirectElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 
@@ -89,7 +90,10 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
 		).toHaveBeenCalled();
-		expect( WooPayDirectCheckout.redirectToWooPay ).toHaveBeenCalled();
+		expect( WooPayDirectCheckout.redirectToWooPay ).toHaveBeenCalledWith(
+			expect.any( Array ),
+			true
+		);
 	} );
 
 	it( 'calls `redirectToWooPay` method with "checkout_redirect" if third-party cookies are disabled', async () => {
@@ -115,7 +119,7 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		).not.toHaveBeenCalled();
 		expect( WooPayDirectCheckout.redirectToWooPay ).toHaveBeenCalledWith(
 			expect.any( Array ),
-			true
+			false
 		);
 	} );
 } );
@@ -152,6 +156,7 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
+		WooPayDirectCheckout.getCheckoutRedirectElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 
@@ -167,7 +172,10 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
 		).toHaveBeenCalled();
-		expect( WooPayDirectCheckout.redirectToWooPay ).toHaveBeenCalled();
+		expect( WooPayDirectCheckout.redirectToWooPay ).toHaveBeenCalledWith(
+			expect.any( Array ),
+			true
+		);
 	} );
 
 	it( 'calls `redirectToWooPay` method with "checkout_redirect" if third-party cookies are disabled', async () => {
@@ -197,7 +205,7 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 		).not.toHaveBeenCalled();
 		expect( WooPayDirectCheckout.redirectToWooPay ).toHaveBeenCalledWith(
 			expect.any( Array ),
-			true
+			false
 		);
 	} );
 } );
