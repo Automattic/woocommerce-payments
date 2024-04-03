@@ -5,12 +5,11 @@ import * as React from 'react';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
-import PaymentsActivityData from './payments-activity-data';
-
 /**
  * Internal dependencies.
  */
 import './style.scss';
+import PaymentsActivityData from './payments-activity-data';
 
 const PaymentActivity: React.FC = () => {
 	return (
