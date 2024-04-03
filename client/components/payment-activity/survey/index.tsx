@@ -125,7 +125,7 @@ const Survey: React.FC = () => {
 							value={ surveyAnswers.comments ?? '' }
 							readOnly={ disableForm }
 						/>
-						<p className="survey-bottom-disclaimer">
+						<p className="comment_container__disclaimer">
 							{ createInterpolateElement(
 								__(
 									'Your feedback will be only be shared with WooCommerce and treated pursuant to our <a>privacy policy</a>.',

@@ -46,7 +46,7 @@
 		max-width: $inner-container-max-width;
 		margin: auto;
 
-		.survey-bottom-disclaimer {
+		&__disclaimer {
 			font-size: 11px;
 			color: $wp-gray-40;
 			font-style: italic;
