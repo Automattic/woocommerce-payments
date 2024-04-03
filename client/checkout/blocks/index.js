@@ -71,12 +71,6 @@ const api = new WCPayAPI(
 );
 
 const stripeAppearance = getUPEConfig( 'wcBlocksUPEAppearance' );
-// TODO: This needs to be handled on the backend for this specific implementation of PMME.
-// TODO: Also check if this re-renders correctly if the cart updates.
-
-if ( stripeAppearance?.variables ) {
-	stripeAppearance.variables.fontSizeBase = '13px';
-}
 
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )

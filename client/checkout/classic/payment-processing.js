@@ -409,18 +409,17 @@ export async function mountStripePaymentMethodMessagingElement(
 	const paymentMethodType = domElement.dataset.paymentMethodType;
 	const appearance = await initializeAppearance( api );
 
-	appearance.variables.fontSizeBase = '13px';
-
 	try {
 		const paymentMethodMessagingElement = api
 			.getStripe()
-			.elements()
+			.elements( {
+				appearance: appearance,
+				fonts: getFontRulesFromPage(),
+			} )
 			.create( 'paymentMethodMessaging', {
 				currency: cartData.currency,
 				amount: Number( cartData.amount ),
 				countryCode: cartData.country, // Customer's country or base country of the store.
-				appearance: appearance,
-				fonts: getFontRulesFromPage(),
 				paymentMethodTypes: [ paymentMethodType ],
 				displayType: 'promotional_text',
 			} );
