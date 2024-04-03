@@ -815,6 +815,9 @@ class MultiCurrency {
 		} else {
 			add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
 		}
+
+		$this->maybe_add_cache_cookies();
+
 	}
 
 	/**
