@@ -19,8 +19,6 @@ jest.mock( '@wordpress/data' );
 describe( 'WcPayOverviewSurveyContextProvider', () => {
 	afterEach( () => {
 		jest.clearAllMocks();
-
-		apiFetch.mockResolvedValue( true );
 	} );
 
 	afterAll( () => {

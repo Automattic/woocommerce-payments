@@ -22,6 +22,89 @@ exports[`PaymentActivity component should render 1`] = `
         data-wp-c16t="true"
         data-wp-component="CardBody"
       />
+      <div
+        class="components-flex components-card__footer components-card-footer css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardFooter"
+      >
+        <div
+          class="wcpay-overview__survey__container"
+        >
+          <div
+            class="survey_container"
+          >
+            <div
+              class="emoticons_container"
+            >
+              <span>
+                How do you like your new finance overview?
+                <span
+                  class="padding_left_10"
+                >
+                  <button
+                    class="components-button has-icon"
+                    type="button"
+                  >
+                    <span
+                      aria-label="emoticon"
+                      role="img"
+                    >
+                      😞
+                    </span>
+                  </button>
+                  <button
+                    class="components-button has-icon"
+                    type="button"
+                  >
+                    <span
+                      aria-label="emoticon"
+                      role="img"
+                    >
+                      🫤
+                    </span>
+                  </button>
+                  <button
+                    class="components-button has-icon"
+                    type="button"
+                  >
+                    <span
+                      aria-label="emoticon"
+                      role="img"
+                    >
+                      😑
+                    </span>
+                  </button>
+                  <button
+                    class="components-button has-icon"
+                    type="button"
+                  >
+                    <span
+                      aria-label="emoticon"
+                      role="img"
+                    >
+                      🙂
+                    </span>
+                  </button>
+                  <button
+                    class="components-button has-icon"
+                    type="button"
+                  >
+                    <span
+                      aria-label="emoticon"
+                      role="img"
+                    >
+                      😍
+                    </span>
+                  </button>
+                </span>
+              </span>
+            </div>
+            <div
+              class="close_container"
+            />
+          </div>
+        </div>
+      </div>
     </div>
     <div
       aria-hidden="true"
