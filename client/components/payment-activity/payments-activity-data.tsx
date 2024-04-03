@@ -2,7 +2,6 @@
  * External dependencies
  */
 import * as React from 'react';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
