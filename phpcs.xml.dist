@@ -7,15 +7,15 @@
 	<arg name="extensions" value="php"/>
 
     <!-- Exclude paths -->
-	<exclude-pattern>./dev/*</exclude-pattern>
-	<exclude-pattern>./dist/*</exclude-pattern>
-	<exclude-pattern>./release/*</exclude-pattern>
-	<exclude-pattern>./docker/*</exclude-pattern>
-	<exclude-pattern>./node_modules/*</exclude-pattern>
-	<exclude-pattern>./vendor/*</exclude-pattern>
-	<exclude-pattern>./vendor-dist/*</exclude-pattern>
-	<exclude-pattern>./lib/*</exclude-pattern>
-	<exclude-pattern>./bin/*</exclude-pattern>
+	<exclude-pattern type="relative">./dev/*</exclude-pattern>
+	<exclude-pattern type="relative">./dist/*</exclude-pattern>
+	<exclude-pattern type="relative">./release/*</exclude-pattern>
+	<exclude-pattern type="relative">./docker/*</exclude-pattern>
+	<exclude-pattern type="relative">./node_modules/*</exclude-pattern>
+	<exclude-pattern type="relative">./vendor/*</exclude-pattern>
+	<exclude-pattern type="relative">./vendor-dist/*</exclude-pattern>
+	<exclude-pattern type="relative">./lib/*</exclude-pattern>
+	<exclude-pattern type="relative">./bin/*</exclude-pattern>
 
 	<!-- Configs -->
 	<config name="minimum_supported_wp_version" value="6.0" />
