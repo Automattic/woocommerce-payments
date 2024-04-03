@@ -1162,11 +1162,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-			// Since the AVS mismatch is part of the advanced fraud prevention, we need to consider that as a blocked order.
-			$blocked_by_avs_mismatch_fraud_rule = $this->is_blocked_by_avs_verification_fraud_rule( $e );
-
 			// We set this variable to be used in following checks.
-			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code() || $blocked_by_avs_mismatch_fraud_rule;
+			$blocked_due_to_fraud_rules = $this->is_blocked_due_to_fraud_rules( $e );
 
 			do_action( 'woocommerce_payments_order_failed', $order, $e );
 
@@ -2947,17 +2944,52 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if the transaction was blocked by fraud rules.
+	 *
+	 * @param string $error_code The error code to check.
+	 *
+	 * @return bool True if the transaction was blocked by fraud rules.
+	 */
+	private function is_blocked_by_fraud_rules( string $error_code ): bool {
+		return 'wcpay_blocked_by_fraud_rule' === $error_code;
+	}
+
+	/**
 	 * Checks if the transaction was blocked by the AVS verification fraud rule.
 	 *
-	 * @param Exception $e The exception to check.
+	 * @param string $error_code The error code to check.
+	 * @param string $error_type The error type to check.
 	 *
 	 * @return bool True if the transaction was blocked by the AVS verification fraud rule, false otherwise.
 	 */
-	protected function is_blocked_by_avs_verification_fraud_rule( Exception $e ): bool {
+	private function is_blocked_by_avs_verification_fraud_rule( string $error_code, string $error_type ): bool {
 		$is_avs_verification_rule_enabled = $this->is_fraud_rule_enabled( 'avs_verification' );
-		$is_incorrect_zip_error           = $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code();
+		$is_incorrect_zip_error           = 'card_error' === $error_type && 'incorrect_zip' === $error_code;
 
 		return $is_avs_verification_rule_enabled && $is_incorrect_zip_error;
+	}
+
+	/**
+	 * Checks if the transaction was blocked due to fraud rules.
+	 *
+	 * @param Exception $e The exception to check.
+	 *
+	 * @return bool True if the transaction was blocked by fraud rules, false otherwise.
+	 */
+	protected function is_blocked_due_to_fraud_rules( Exception $e ): bool {
+		if ( ! $e instanceof API_Exception ) {
+			return false;
+		}
+
+		$error_code = $e->get_error_code();
+		$error_type = $e->get_error_type();
+
+		$blocked_by_fraud_rules = $this->is_blocked_by_fraud_rules( $error_code );
+
+		// Since the AVS mismatch is part of the advanced fraud prevention, we need to consider that as a blocked order.
+		$blocked_by_avs_mismatch = $this->is_blocked_by_avs_verification_fraud_rule( $error_code, $error_type );
+
+		return $blocked_by_fraud_rules || $blocked_by_avs_mismatch;
 	}
 
 	/**
