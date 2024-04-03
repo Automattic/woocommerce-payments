@@ -13,7 +13,7 @@ import Loadable from '../loadable';
 /**
  * Props for the PaymentDataHighlightBlock component.
  *
- * @typedef {Object} PaymentDataHighlightBlockProps
+ * @typedef {Object} PaymentDataTileProps
  *
  * @property {string} id					The payment data highlight block id. Used to link the title and amount.
  * @property {string} title					The payment data highlight block title.
@@ -22,7 +22,7 @@ import Loadable from '../loadable';
  * @property {number} [amount]				Optional. The payment data highlight block amount.
  * @property {boolean} [isLoading]			Optional. Whether the payment data highlight block is loading.
  */
-interface PaymentDataHighlightBlockProps {
+interface PaymentDataTileProps {
 	id: string;
 	title: string;
 	currencyCode: string;
@@ -34,11 +34,11 @@ interface PaymentDataHighlightBlockProps {
 /**
  * Renders a block that highlights payment data.
  *
- * @param {PaymentDataHighlightBlockProps} props   Payment data highlight block props. See `PaymentDataHighlightBlockProps` interface.
+ * @param {PaymentDataTileProps} props   Payment data highlight block props. See `PaymentDataHighlightBlockProps` interface.
  *
  * @return {JSX.Element} Rendered payment data highlight block element.
  */
-const PaymentsDataHighlightBlock: React.FC< PaymentDataHighlightBlockProps > = ( {
+const PaymentsDataTile: React.FC< PaymentDataTileProps > = ( {
 	id,
 	title,
 	currencyCode,
@@ -67,4 +67,4 @@ const PaymentsDataHighlightBlock: React.FC< PaymentDataHighlightBlockProps > = (
 	);
 };
 
-export default PaymentsDataHighlightBlock;
+export default PaymentsDataTile;

@@ -7,36 +7,42 @@ import * as React from 'react';
  * Internal dependencies.
  */
 import './style.scss';
-import PaymentsDataHighlightBlock from './payments-data-highlight-block';
+import PaymentsDataTile from './payments-data-tile';
 import { paymentsDataHighlightsStrings } from './strings';
+import {
+	PaymentDataChargeTooltip,
+	PaymentDataFeesTooltip,
+} from './payment-data-highlights-tooltips';
 
 const PaymentsDataHighlights: React.FC = () => {
 	return (
 		<>
 			<div className="payments-data-highlights">
-				<PaymentsDataHighlightBlock
+				<PaymentsDataTile
 					id="payments-data-highlights__charges"
 					title={ paymentsDataHighlightsStrings.charges }
 					currencyCode="USD"
 					amount={ 123456 }
+					tooltip={ <PaymentDataChargeTooltip /> }
 				/>
-				<PaymentsDataHighlightBlock
+				<PaymentsDataTile
 					id="payments-data-highlights__refunds"
 					title={ paymentsDataHighlightsStrings.refunds }
 					currencyCode="USD"
 					amount={ 123456 }
 				/>
-				<PaymentsDataHighlightBlock
+				<PaymentsDataTile
 					id="payments-data-highlights__disputes"
 					title={ paymentsDataHighlightsStrings.disputes }
 					currencyCode="USD"
 					amount={ 123456 }
 				/>
-				<PaymentsDataHighlightBlock
+				<PaymentsDataTile
 					id="payments-data-highlights__fees"
 					title={ paymentsDataHighlightsStrings.fees }
 					currencyCode="USD"
 					amount={ 123456 }
+					tooltip={ <PaymentDataFeesTooltip /> }
 				/>
 			</div>
 		</>
