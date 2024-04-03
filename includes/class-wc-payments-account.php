@@ -2053,7 +2053,12 @@ class WC_Payments_Account {
 		);
 
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			$this->payments_api_client->start_server_connection( $onboarding_url );
+			try {
+				$this->payments_api_client->start_server_connection( $onboarding_url );
+			} catch ( API_Exception $e ) {
+				// If we can't connect to the server, return, the error will be shown on the relevant page.
+				return;
+			}
 		} else {
 			$this->redirect_to( $onboarding_url );
 		}

@@ -531,6 +531,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 
 			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
+
+			add_action( 'woocommerce_settings_save_general', [ $this, 'update_fraud_rules_based_on_general_options' ], 20 );
 		}
 
 		$this->maybe_init_subscriptions_hooks();
@@ -2973,6 +2975,48 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Set the static flag to prevent duplicate calls to this method.
 			$runonce = true;
+		}
+	}
+
+	/**
+	 * Updates the fraud rules depending on some settings when those settings have changed.
+	 *
+	 * @return  void           This is a readonly action.
+	 */
+	public function update_fraud_rules_based_on_general_options() {
+		// If the protection level is not "advanced", no need to run this, because it won't contain the IP country filter.
+		if ( 'advanced' !== $this->get_current_protection_level() ) {
+			return;
+		}
+
+		// If the ruleset can't be parsed, skip updating.
+		$ruleset = $this->get_advanced_fraud_protection_settings();
+		if (
+			'error' === $ruleset
+			|| ! is_array( $ruleset )
+			|| ! Fraud_Risk_Tools::is_valid_ruleset_array( $ruleset )
+		) {
+			return;
+		}
+
+		$needs_update = false;
+		foreach ( $ruleset as &$rule_array ) {
+			if ( isset( $rule_array['key'] ) && Fraud_Risk_Tools::RULE_INTERNATIONAL_IP_ADDRESS === $rule_array['key'] ) {
+				$new_rule_array = Fraud_Risk_Tools::get_international_ip_address_rule()->to_array();
+				if ( isset( $rule_array['check'] )
+					&& isset( $new_rule_array['check'] )
+					&& wp_json_encode( $rule_array['check'] ) !== wp_json_encode( $new_rule_array['check'] )
+				) {
+					$rule_array   = $new_rule_array;
+					$needs_update = true;
+				}
+			}
+		}
+
+		// Update the possibly changed values on the server, and the transient.
+		if ( $needs_update ) {
+			$this->payments_api_client->save_fraud_ruleset( $ruleset );
+			set_transient( 'wcpay_fraud_protection_settings', $ruleset, DAY_IN_SECONDS );
 		}
 	}
 
