@@ -14,12 +14,14 @@ const useContextValue = ( initialState = {} as OverviewSurveyFields ) => {
 	const [ surveySubmitted, setSurveySubmitted ] = useState(
 		Boolean( false )
 	);
-	const [ status, setStatus ] = useState( 'resolved' );
+	const [ responseStatus, setResponseStatus ] = useState<
+		'pending' | 'resolved' | 'error'
+	>( 'resolved' );
 	const [ surveyAnswers, setSurveyAnswers ] = useState( initialState );
 
 	const submitSurvey = useCallback(
 		async ( answers: OverviewSurveyFields ) => {
-			setStatus( 'pending' );
+			setResponseStatus( 'pending' );
 			try {
 				await apiFetch( {
 					path: `${ NAMESPACE }/upe_survey/payments-overview`,
@@ -27,18 +29,18 @@ const useContextValue = ( initialState = {} as OverviewSurveyFields ) => {
 					data: answers,
 				} );
 				setSurveySubmitted( true );
-				setStatus( 'resolved' );
+				setResponseStatus( 'resolved' );
 			} catch ( e ) {
-				setStatus( 'error' );
+				setResponseStatus( 'error' );
 				setSurveySubmitted( false );
 			}
 		},
-		[ setStatus, setSurveySubmitted ]
+		[ setResponseStatus, setSurveySubmitted ]
 	);
 
 	return {
 		setSurveySubmitted: submitSurvey,
-		status,
+		responseStatus,
 		surveySubmitted,
 		surveyAnswers,
 		setSurveyAnswers,

@@ -19,7 +19,7 @@ import close from './icons/close';
 import './style.scss';
 
 const Survey: React.FC = () => {
-	const { status } = useOverviewSurveyContext();
+	const { responseStatus } = useOverviewSurveyContext();
 	const {
 		setSurveySubmitted,
 		surveySubmitted,
@@ -44,6 +44,7 @@ const Survey: React.FC = () => {
 	];
 	const showComment =
 		currentRating && ratingWithComment.includes( currentRating );
+	const disableForm = 'pending' === responseStatus;
 
 	const setReviewRating = function ( value?: Rating ) {
 		const answers: OverviewSurveyFields = {
@@ -75,7 +76,7 @@ const Survey: React.FC = () => {
 								return (
 									<Emoticon
 										key={ rating }
-										disabled={ 'pending' === status }
+										disabled={ disableForm }
 										rating={ rating }
 										setReviewRating={ setReviewRating }
 										currentRating={ currentRating }
@@ -122,7 +123,7 @@ const Survey: React.FC = () => {
 								);
 							} }
 							value={ surveyAnswers.comments ?? '' }
-							readOnly={ 'pending' === status }
+							readOnly={ disableForm }
 						/>
 						<p className="survey-bottom-disclaimer">
 							{ createInterpolateElement(
@@ -143,10 +144,11 @@ const Survey: React.FC = () => {
 							) }
 						</p>
 					</div>
+
 					<div className="wcpay-confirmation-modal__footer">
 						<Button
-							variant={ 'secondary' }
-							disabled={ 'pending' === status }
+							variant={ 'tertiary' }
+							disabled={ disableForm }
 							onClick={ () => {
 								setReviewRating( undefined );
 							} }
@@ -155,8 +157,8 @@ const Survey: React.FC = () => {
 						</Button>
 						<Button
 							variant={ 'primary' }
-							isBusy={ 'pending' === status }
-							disabled={ 'pending' === status }
+							isBusy={ disableForm }
+							disabled={ disableForm }
 							onClick={ () =>
 								setSurveySubmitted( surveyAnswers )
 							}
