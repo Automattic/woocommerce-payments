@@ -128,7 +128,6 @@ const OverviewPage = () => {
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
 			<JetpackIdcNotice />
-
 			{ showLoanOfferError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(

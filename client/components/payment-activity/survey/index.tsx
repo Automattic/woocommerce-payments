@@ -5,9 +5,10 @@
  */
 import React from 'react';
 import { HorizontalRule } from '@wordpress/primitives';
-import { Button, TextareaControl, Icon } from '@wordpress/components';
+import { Button, TextareaControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
+import { Icon, closeSmall } from '@wordpress/icons';
 
 /**
  * Internal dependencies.
@@ -15,7 +16,6 @@ import { createInterpolateElement, useState } from '@wordpress/element';
 import type { OverviewSurveyFields, Rating } from './types';
 import { useOverviewSurveyContext } from './context';
 import Emoticon from './emoticon';
-import close from './icons/close';
 import './style.scss';
 
 const Survey: React.FC = () => {
@@ -96,7 +96,7 @@ const Survey: React.FC = () => {
 									setReviewRating( undefined );
 								} }
 							>
-								<Icon icon={ close } type="close" size={ 32 } />
+								<Icon icon={ closeSmall } size={ 28 } />
 							</button>
 						) }
 					</div>
@@ -191,7 +191,7 @@ const Survey: React.FC = () => {
 								setShowComponent( false );
 							} }
 						>
-							<Icon icon={ close } type="close" size={ 32 } />
+							<Icon icon={ closeSmall } size={ 28 } />
 						</button>
 					</div>
 				</>
