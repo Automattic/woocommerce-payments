@@ -422,7 +422,7 @@ class WC_Payments_Subscription_Service {
 				throw new Exception(
 					sprintf(
 						// Translators: %1$s and %2$s are both currency codes, e.g. `USD` or `EUR`.
-						__( 'There was a problem creating your subscription. All your active subscriptions must use the same currency. You attempted to purchase a subscription in %1$s but have another active subscription using %2$s.', 'woocommerce-payments' ),
+						__( 'The subscription couldn\'t be created because it uses a different currency (%1$s) from your existing subscriptions (%2$s). Please ensure all subscriptions use the same currency.', 'woocommerce-payments' ),
 						$subscription->get_currency(),
 						$e->get_currency()
 					)
