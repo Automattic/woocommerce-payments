@@ -25,6 +25,10 @@
 	<rule ref="WooCommerce-Core" >
 		<exclude name="Generic.Commenting.Todo"/>
 
+		<!-- These sniffs are superceded by the VariableAnalysis sniffs. -->
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.Found" />
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed" />
+
 		<!-- This rule is currently generating some false positives, it would be worth retrying after PHPCS upgrades -->
 		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
 		<exclude name="Squiz.Commenting.FunctionComment.EmptyThrows"/>
@@ -41,8 +45,6 @@
 		<exclude name="WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents" />
 
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8436 is closed. -->
-		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.Found" />
-		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed" />
 		<exclude name="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable" />
 
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8437 is clsoed. -->
