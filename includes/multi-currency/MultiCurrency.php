@@ -314,7 +314,7 @@ class MultiCurrency {
 		// Update the customer currencies option after an order status change.
 		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_update_customer_currencies_option' ] );
 
-		$this->maybe_add_cache_cookies();
+		$this->maybe_add_cache_cookie();
 
 		static::$is_initialized = true;
 	}
@@ -816,7 +816,7 @@ class MultiCurrency {
 			add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
 		}
 
-		$this->maybe_add_cache_cookies();
+		$this->maybe_add_cache_cookie();
 
 	}
 
@@ -1645,16 +1645,15 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Sets cache cookies for currency code and exchange rate.
+	 * Sets the cache cookie for currency code and exchange rate.
 	 *
-	 * This private method sets 'wcpay_currency' and 'wcpay_currency_rate' cookies if HTTP headers
-	 * have not been sent. These cookies store the selected currency's code and its exchange rate,
-	 * respectively, and are intended exclusively for caching purposes, not for application logic.
+	 * This private method sets the 'wcpay_currency' cookie if HTTP headers
+	 * have not been sent. This cookie stores the selected currency's code and its exchange rate,
+	 * and is intended exclusively for caching purposes, not for application logic.
 	 */
-	private function maybe_add_cache_cookies() {
+	private function maybe_add_cache_cookie() {
 		if ( ! headers_sent() && ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
-			wc_setcookie( 'wcpay_currency', $this->get_selected_currency()->get_code() );
-			wc_setcookie( 'wcpay_currency_rate', $this->get_selected_currency()->get_rate() );
+			wc_setcookie( 'wcpay_currency', sprintf( "%s+%s", $this->get_selected_currency()->get_code(), $this->get_selected_currency()->get_rate() ) );
 		}
 	}
 }
