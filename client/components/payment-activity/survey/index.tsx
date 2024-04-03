@@ -61,35 +61,30 @@ const Survey: React.FC = () => {
 	}
 
 	return (
-		<div className="wcpay-overview__survey__container">
+		<div className="wcpay-payments-activity__survey">
 			{ ! surveySubmitted && (
 				<>
 					<div className="survey_container">
 						<div className="emoticons_container">
-							<span>
-								{ __(
-									'How do you like your new finance overview?',
-									'woocommerce-payments'
-								) }
-								<span className="padding_left_10">
-									{ ratings.map( ( rating ) => {
-										return (
-											<Emoticon
-												key={ rating }
-												disabled={
-													'pending' === status
-												}
-												rating={ rating }
-												setReviewRating={
-													setReviewRating
-												}
-												currentRating={ currentRating }
-											/>
-										);
-									} ) }
-								</span>
-							</span>
+							{ __(
+								'How do you like your new finance overview?',
+								'woocommerce-payments'
+							) }
+							<div className="emoticons_container__emoticons">
+								{ ratings.map( ( rating ) => {
+									return (
+										<Emoticon
+											key={ rating }
+											disabled={ 'pending' === status }
+											rating={ rating }
+											setReviewRating={ setReviewRating }
+											currentRating={ currentRating }
+										/>
+									);
+								} ) }
+							</div>
 						</div>
+
 						<div className="close_container">
 							{ showComment && (
 								<button

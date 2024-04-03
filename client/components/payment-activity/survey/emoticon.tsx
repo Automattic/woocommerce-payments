@@ -33,23 +33,21 @@ const Emoticon: React.FC< Props > = ( {
 		( rating === currentRating ? ' selected' : '' );
 
 	return (
-		<>
-			<button
-				disabled={ disabled }
-				type="button"
-				className={ buttonCss }
-				onClick={ function () {
-					setReviewRating( rating );
-				} }
-			>
-				<span
-					role="img"
-					aria-label={ rating }
-					// eslint-disable-next-line react/no-danger
-					dangerouslySetInnerHTML={ { __html: strings[ rating ] } }
-				/>
-			</button>
-		</>
+		<button
+			disabled={ disabled }
+			type="button"
+			className={ buttonCss }
+			onClick={ function () {
+				setReviewRating( rating );
+			} }
+		>
+			<span
+				role="img"
+				aria-label={ rating }
+				// eslint-disable-next-line react/no-danger
+				dangerouslySetInnerHTML={ { __html: strings[ rating ] } }
+			/>
+		</button>
 	);
 };
 
