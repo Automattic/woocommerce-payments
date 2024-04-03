@@ -333,9 +333,9 @@ class Fraud_Risk_Tools {
 		$selling_locations_type = get_option( 'woocommerce_allowed_countries', 'all' );
 		switch ( $selling_locations_type ) {
 			case 'specific':
-				return implode( '|', get_option( 'woocommerce_specific_allowed_countries', [] ) );
+				return strtolower( implode( '|', get_option( 'woocommerce_specific_allowed_countries', [] ) ) );
 			case 'all_except':
-				return implode( '|', get_option( 'woocommerce_all_except_countries', [] ) );
+				return strtolower( implode( '|', get_option( 'woocommerce_all_except_countries', [] ) ) );
 			case 'all':
 				return '';
 			default:
