@@ -90,7 +90,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'ip_country',
 				'operator' => 'not_in',
-				'value'    => 'US|CA',
+				'value'    => 'us|ca',
 			],
 		],
 		[
@@ -134,7 +134,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'ip_country',
 				'operator' => 'in',
-				'value'    => 'US|CA',
+				'value'    => 'us|ca',
 			],
 		],
 		[
