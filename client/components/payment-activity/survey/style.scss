@@ -1,74 +1,54 @@
 .wcpay-payments-activity__survey {
+	$inner-container-max-width: 513px;
+
+	position: relative;
+	width: 100%;
+
 	.survey_container {
+		margin: 0 auto;
+		max-width: $inner-container-max-width;
 		display: flex;
-		flex-direction: row;
-		position: relative;
+		gap: 5px;
+		justify-content: space-between;
+		align-items: center;
 
-		span {
-			margin: auto;
-			text-align: center;
-			display: inline-block;
-		}
-
-		.close_container {
-			position: absolute;
-			right: 0;
-			margin-top: -11px;
-			margin-right: -11px;
-
-			.has-icon {
-				margin-top: 7px;
-			}
-		}
-
-		.padding_right_7 {
-			padding-right: 7px;
-		}
-
-		.padding_right_14 {
-			padding-right: 14px;
-		}
-
-		.emoticons_container {
+		&__emoticons {
 			line-height: 45px;
-			align-items: center;
-			flex-grow: 1;
-			justify-content: left;
 			display: flex;
-			flex-direction: row;
+			justify-content: flex-end;
 
-			button {
-				vertical-align: middle;
-				padding-top: 4px;
-				height: 30px;
-				span {
-					font-size: 17px;
-				}
+			.components-button {
+				font-size: 18px;
 			}
+
 			.selected {
-				background-color: #ecf2f8;
+				background-color: $wp-blue-0;
 			}
 
 			.has-icon {
 				min-width: 32px;
 			}
+		}
 
-			@media ( max-width: 600px ) {
-				.padding_left_10 {
-					padding-left: 10px;
-					display: block;
-				}
-			}
+		@media ( max-width: 600px ) {
+			flex-direction: column;
 		}
 	}
 
+	.close_container {
+		// line-height: 45px;
+		position: absolute;
+		top: 0;
+		right: 0;
+	}
+
 	.comment_container {
-		max-width: 513px;
+		max-width: $inner-container-max-width;
 		margin: auto;
 
 		.survey-bottom-disclaimer {
 			font-size: 11px;
-			color: #757575;
+			color: $wp-gray-40;
 			font-style: italic;
 		}
 	}

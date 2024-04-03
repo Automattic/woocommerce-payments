@@ -65,44 +65,39 @@ const Survey: React.FC = () => {
 			{ ! surveySubmitted && (
 				<>
 					<div className="survey_container">
-						<div className="emoticons_container">
-							{ __(
-								'How do you like your new finance overview?',
-								'woocommerce-payments'
-							) }
-							<div className="emoticons_container__emoticons">
-								{ ratings.map( ( rating ) => {
-									return (
-										<Emoticon
-											key={ rating }
-											disabled={ 'pending' === status }
-											rating={ rating }
-											setReviewRating={ setReviewRating }
-											currentRating={ currentRating }
-										/>
-									);
-								} ) }
-							</div>
-						</div>
+						{ __(
+							'How do you like your new payment activity dashboard?',
+							'woocommerce-payments'
+						) }
 
-						<div className="close_container">
-							{ showComment && (
-								<button
-									type="button"
-									className="components-button has-icon"
-									aria-label="Close dialog"
-									onClick={ () => {
-										setReviewRating( undefined );
-									} }
-								>
-									<Icon
-										icon={ close }
-										type="close"
-										size={ 32 }
+						<div className="survey_container__emoticons">
+							{ ratings.map( ( rating ) => {
+								return (
+									<Emoticon
+										key={ rating }
+										disabled={ 'pending' === status }
+										rating={ rating }
+										setReviewRating={ setReviewRating }
+										currentRating={ currentRating }
 									/>
-								</button>
-							) }
+								);
+							} ) }
 						</div>
+					</div>
+
+					<div className="close_container">
+						{ showComment && (
+							<button
+								type="button"
+								className="components-button has-icon"
+								aria-label="Close dialog"
+								onClick={ () => {
+									setReviewRating( undefined );
+								} }
+							>
+								<Icon icon={ close } type="close" size={ 32 } />
+							</button>
+						) }
 					</div>
 				</>
 			) }
@@ -175,11 +170,7 @@ const Survey: React.FC = () => {
 				<>
 					<div className="survey_container">
 						<span>
-							<span
-								className="padding_right_7"
-								role="img"
-								aria-label="Thank you!"
-							>
+							<span role="img" aria-label="Thank you!">
 								🙌
 							</span>
 							{ __(
