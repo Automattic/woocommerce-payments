@@ -68,7 +68,7 @@ describe( 'WooPayDirectCheckout', () => {
 
 		test( 'should redirect not logged in user to WooPay minimum session URL', async () => {
 			WooPayDirectCheckout.getWooPayMinimumSessionUrl.mockResolvedValue(
-				'https://pay.woo.com/woopay?checkout_redirect=1&blog_id=1&session=1&iv=1&hash=1'
+				'https://woopay.test/woopay?checkout_redirect=1&blog_id=1&session=1&iv=1&hash=1'
 			);
 
 			WooPayDirectCheckout.redirectToWooPay( elements, false );
@@ -82,13 +82,13 @@ describe( 'WooPayDirectCheckout', () => {
 			).toHaveBeenCalled();
 			expect( WooPayDirectCheckout.teardown ).toHaveBeenCalled();
 			expect( window.location.href ).toBe(
-				'https://pay.woo.com/woopay?checkout_redirect=1&blog_id=1&session=1&iv=1&hash=1'
+				'https://woopay.test/woopay?checkout_redirect=1&blog_id=1&session=1&iv=1&hash=1'
 			);
 		} );
 
 		test( 'should redirect logged in user to WooPay checkout URL', async () => {
 			WooPayDirectCheckout.getWooPayCheckoutUrl.mockResolvedValue(
-				'https://pay.woo.com/woopay?platform_checkout_key=1234567890'
+				'https://woopay.test/woopay?platform_checkout_key=1234567890'
 			);
 
 			WooPayDirectCheckout.redirectToWooPay( elements, true );
@@ -102,7 +102,7 @@ describe( 'WooPayDirectCheckout', () => {
 			).toHaveBeenCalled();
 			expect( WooPayDirectCheckout.teardown ).toHaveBeenCalled();
 			expect( window.location.href ).toBe(
-				'https://pay.woo.com/woopay?platform_checkout_key=1234567890'
+				'https://woopay.test/woopay?platform_checkout_key=1234567890'
 			);
 		} );
 
