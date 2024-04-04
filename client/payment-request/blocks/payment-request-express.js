@@ -75,8 +75,8 @@ const PaymentRequestExpressComponent = ( {
 		onPaymentRequestAvailable( paymentRequestType );
 	} );
 
-	const onPaymentRequestButtonClick = () => {
-		onButtonClick();
+	const onPaymentRequestButtonClick = ( evt ) => {
+		onButtonClick( evt, paymentRequest );
 
 		const paymentRequestTypeEvents = {
 			google_pay: 'gpay_button_click',
