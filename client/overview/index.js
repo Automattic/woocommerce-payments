@@ -198,11 +198,9 @@ const OverviewPage = () => {
 						{
 							/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
 							isPaymentOverviewWidgetEnabled && (
-								<Card>
-									<ErrorBoundary>
-										<PaymentActivity />
-									</ErrorBoundary>
-								</Card>
+								<ErrorBoundary>
+									<PaymentActivity />
+								</ErrorBoundary>
 							)
 						}
 						<DepositsOverview />
