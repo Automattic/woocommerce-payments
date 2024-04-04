@@ -79,7 +79,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 				'WCPAY_BLOCKS_CHECKOUT',
 				'var wcBlocksCheckoutData = ' . wp_json_encode(
 					[
-						'amount'         => WC()->cart->get_total( false ),
+						'amount'         => WC()->cart->get_total( '' ),
 						'currency'       => get_woocommerce_currency(),
 						'storeCountry'   => WC()->countries->get_base_country(),
 						'billingCountry' => WC()->customer->get_billing_country(),
