@@ -2104,9 +2104,9 @@ class WC_Payments_Account {
 	 *
 	 * @return int|null The all-time total payment volume, or null if not available.
 	 */
-	public function get_lifetime_tpv() {
+	public function get_lifetime_total_payments_value() {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['lifetime_tpv'] ) ? $account['lifetime_tpv'] : 0;
+		return ! empty( $account ) && isset( $account['lifetime_total_payments_value'] ) ? $account['lifetime_total_payments_value'] : 0;
 	}
 
 	/**
