@@ -3,80 +3,77 @@
 exports[`WcPayOverviewSurveyContextProvider test survey initial display 1`] = `
 <div>
   <div
-    class="wcpay-overview__survey__container"
+    class="components-flex components-card__footer components-card-footer css-oc4v7j-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-small em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="CardFooter"
   >
     <div
-      class="survey_container"
+      class="wcpay-payments-activity__survey"
     >
       <div
-        class="emoticons_container"
+        class="survey_container"
       >
-        <span>
-          How do you like your new finance overview?
-          <span
-            class="padding_left_10"
+        Are those metrics helpful?
+        <div
+          class="survey_container__emoticons"
+        >
+          <button
+            class="components-button has-icon"
+            type="button"
           >
-            <button
-              class="components-button has-icon"
-              type="button"
+            <span
+              aria-label="very-unhappy"
+              role="img"
             >
-              <span
-                aria-label="emoticon"
-                role="img"
-              >
-                😞
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
+              😞
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="unhappy"
+              role="img"
             >
-              <span
-                aria-label="emoticon"
-                role="img"
-              >
-                🫤
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
+              🫤
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="neutral"
+              role="img"
             >
-              <span
-                aria-label="emoticon"
-                role="img"
-              >
-                😑
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
+              😑
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="happy"
+              role="img"
             >
-              <span
-                aria-label="emoticon"
-                role="img"
-              >
-                🙂
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
+              🙂
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="very-happy"
+              role="img"
             >
-              <span
-                aria-label="emoticon"
-                role="img"
-              >
-                😍
-              </span>
-            </button>
-          </span>
-        </span>
+              😍
+            </span>
+          </button>
+        </div>
       </div>
-      <div
-        class="close_container"
-      />
     </div>
   </div>
 </div>
@@ -85,76 +82,76 @@ exports[`WcPayOverviewSurveyContextProvider test survey initial display 1`] = `
 exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`] = `
 <div>
   <div
-    class="wcpay-overview__survey__container"
+    class="components-flex components-card__footer components-card-footer css-oc4v7j-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-small em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="CardFooter"
   >
     <div
-      class="survey_container"
+      class="wcpay-payments-activity__survey"
     >
       <div
-        class="emoticons_container"
+        class="survey_container"
       >
-        <span>
-          How do you like your new finance overview?
-          <span
-            class="padding_left_10"
+        Are those metrics helpful?
+        <div
+          class="survey_container__emoticons"
+        >
+          <button
+            class="components-button has-icon"
+            type="button"
           >
-            <button
-              class="components-button has-icon"
-              type="button"
+            <span
+              aria-label="very-unhappy"
+              role="img"
             >
-              <span
-                aria-label="emoticon"
-                role="img"
-              >
-                😞
-              </span>
-            </button>
-            <button
-              class="components-button has-icon selected"
-              type="button"
+              😞
+            </span>
+          </button>
+          <button
+            class="components-button has-icon selected"
+            type="button"
+          >
+            <span
+              aria-label="unhappy"
+              role="img"
             >
-              <span
-                aria-label="emoticon"
-                role="img"
-              >
-                🫤
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
+              🫤
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="neutral"
+              role="img"
             >
-              <span
-                aria-label="emoticon"
-                role="img"
-              >
-                😑
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
+              😑
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="happy"
+              role="img"
             >
-              <span
-                aria-label="emoticon"
-                role="img"
-              >
-                🙂
-              </span>
-            </button>
-            <button
-              class="components-button has-icon"
-              type="button"
+              🙂
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="very-happy"
+              role="img"
             >
-              <span
-                aria-label="emoticon"
-                role="img"
-              >
-                😍
-              </span>
-            </button>
-          </span>
-        </span>
+              😍
+            </span>
+          </button>
+        </div>
       </div>
       <div
         class="close_container"
@@ -167,10 +164,9 @@ exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`
           <svg
             aria-hidden="true"
             focusable="false"
-            height="24"
-            type="close"
+            height="28"
             viewBox="0 0 24 24"
-            width="24"
+            width="28"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
@@ -179,59 +175,59 @@ exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`
           </svg>
         </button>
       </div>
-    </div>
-    <hr />
-    <div
-      class="comment_container"
-    >
+      <hr />
       <div
-        class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+        class="comment_container"
       >
         <div
-          class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+          class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
         >
-          <label
-            class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
-            for="inspector-textarea-control-1"
+          <div
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
-            Why do you feel that way? (optional)
-          </label>
-          <textarea
-            class="components-textarea-control__input css-zika3g-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
-            id="inspector-textarea-control-1"
-            rows="4"
-          />
+            <label
+              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+              for="inspector-textarea-control-1"
+            >
+              Why do you feel that way? (optional)
+            </label>
+            <textarea
+              class="components-textarea-control__input css-zika3g-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+              id="inspector-textarea-control-1"
+              rows="4"
+            />
+          </div>
         </div>
-      </div>
-      <p
-        class="survey-bottom-disclaimer"
-      >
-        Your feedback will be only be shared with WooCommerce and treated pursuant to our 
-        <a
-          href="https://automattic.com/privacy/"
-          rel="noreferrer"
-          target="_blank"
+        <p
+          class="comment_container__disclaimer"
         >
-          privacy policy
-        </a>
-        .
-      </p>
-    </div>
-    <div
-      class="wcpay-confirmation-modal__footer"
-    >
-      <button
-        class="components-button is-secondary"
-        type="button"
+          Your feedback will be only be shared with WooCommerce and treated pursuant to our 
+          <a
+            href="https://automattic.com/privacy/"
+            rel="noreferrer"
+            target="_blank"
+          >
+            privacy policy
+          </a>
+          .
+        </p>
+      </div>
+      <div
+        class="wcpay-confirmation-modal__footer"
       >
-        Cancel
-      </button>
-      <button
-        class="components-button is-primary"
-        type="button"
-      >
-        Send
-      </button>
+        <button
+          class="components-button is-tertiary"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Send
+        </button>
+      </div>
     </div>
   </div>
 </div>

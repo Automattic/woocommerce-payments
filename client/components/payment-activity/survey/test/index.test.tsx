@@ -14,7 +14,9 @@ import WcPayOverviewSurveyContext, {
 } from '../context';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
-jest.mock( '@wordpress/data' );
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
+} ) );
 
 describe( 'WcPayOverviewSurveyContextProvider', () => {
 	afterEach( () => {
@@ -40,7 +42,7 @@ describe( 'WcPayOverviewSurveyContextProvider', () => {
 			setSurveySubmitted: expect.any( Function ),
 			surveyAnswers: {},
 			surveySubmitted: false,
-			status: 'resolved',
+			responseStatus: 'resolved',
 		} );
 	} );
 
@@ -51,9 +53,7 @@ describe( 'WcPayOverviewSurveyContextProvider', () => {
 			</WcPayOverviewSurveyContextProvider>
 		);
 
-		const surveyText = screen.getByText(
-			'How do you like your new finance overview?'
-		);
+		const surveyText = screen.getByText( 'Are those metrics helpful?' );
 		expect( surveyText ).toBeInTheDocument();
 
 		const buttons = screen.getAllByRole( 'button' );
