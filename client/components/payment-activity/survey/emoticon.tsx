@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React from 'react';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -18,28 +19,24 @@ const strings: Record< Rating, string > = {
 
 interface Props {
 	rating: Rating;
-	setReviewRating: ( rating: Rating ) => void;
+	onClick: ( event: React.MouseEvent< HTMLButtonElement > ) => void;
 	disabled: boolean;
-	currentRating?: Rating;
+	isSelected: boolean;
 }
 const Emoticon: React.FC< Props > = ( {
 	rating,
-	setReviewRating,
+	onClick,
 	disabled,
-	currentRating,
+	isSelected,
 } ) => {
-	const buttonCss =
-		'components-button has-icon' +
-		( rating === currentRating ? ' selected' : '' );
-
 	return (
 		<button
 			disabled={ disabled }
 			type="button"
-			className={ buttonCss }
-			onClick={ function () {
-				setReviewRating( rating );
-			} }
+			onClick={ onClick }
+			className={ classNames( 'components-button', 'has-icon', {
+				selected: isSelected,
+			} ) }
 		>
 			<span
 				role="img"

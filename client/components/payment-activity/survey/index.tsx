@@ -102,17 +102,15 @@ const Survey: React.FC = () => {
 					) }
 
 					<div className="survey_container__emoticons">
-						{ ratings.map( ( rating ) => {
-							return (
-								<Emoticon
-									key={ rating }
-									disabled={ disableForm }
-									rating={ rating }
-									setReviewRating={ setReviewRating }
-									currentRating={ currentRating }
-								/>
-							);
-						} ) }
+						{ ratings.map( ( rating ) => (
+							<Emoticon
+								key={ rating }
+								disabled={ disableForm }
+								rating={ rating }
+								onClick={ () => setReviewRating( rating ) }
+								isSelected={ rating === currentRating }
+							/>
+						) ) }
 					</div>
 				</div>
 
