@@ -4,6 +4,11 @@
 	position: relative;
 	width: 100%;
 
+	.components-button.has-icon {
+		min-width: 32px;
+		height: 32px;
+	}
+
 	.survey_container {
 		margin: 0 auto;
 		max-width: $inner-container-max-width;
@@ -12,16 +17,14 @@
 		justify-content: center;
 		align-items: center;
 
+		span[role='img'] {
+			line-height: 32px;
+			font-size: 20px;
+		}
+
 		&__emoticons {
-			line-height: 45px;
 			display: flex;
 			justify-content: flex-end;
-
-			.components-button.has-icon {
-				font-size: 20px;
-				min-width: 32px;
-				height: 32px;
-			}
 
 			.selected {
 				background-color: $wp-blue-0;
@@ -52,12 +55,5 @@
 			color: $wp-gray-40;
 			font-style: italic;
 		}
-	}
-
-	.close_survey {
-		position: absolute;
-		top: 0;
-		right: 0;
-		margin-top: 7px;
 	}
 }

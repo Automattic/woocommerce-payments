@@ -15,7 +15,7 @@ import type { OverviewSurveyFields } from './types';
 type ResponseStatus = 'pending' | 'resolved' | 'error';
 
 const useContextValue = ( initialState: OverviewSurveyFields = {} ) => {
-	const [ surveySubmitted, setSurveySubmitted ] = useState( true );
+	const [ surveySubmitted, setSurveySubmitted ] = useState( false );
 	const [ responseStatus, setResponseStatus ] = useState< ResponseStatus >(
 		'resolved'
 	);

@@ -65,15 +65,13 @@ const Survey: React.FC = () => {
 		return (
 			<div className="wcpay-payments-activity__survey">
 				<div className="survey_container">
-					<span>
-						<span role="img" aria-label="Thank you!">
-							🙌
-						</span>
-						{ __(
-							'We appreciate your feedback!',
-							'woocommerce-payments'
-						) }
+					<span role="img" aria-label="Thank you!">
+						🙌
 					</span>
+					{ __(
+						'We appreciate your feedback!',
+						'woocommerce-payments'
+					) }
 				</div>
 
 				<div className="close_container">
