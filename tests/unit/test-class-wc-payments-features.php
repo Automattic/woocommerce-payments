@@ -32,8 +32,8 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
-		$reflection = new ReflectionClass( WC_Payments_Features::class );
-		$constants  = $reflection->getConstants();
+		$reflection   = new ReflectionClass( WC_Payments_Features::class );
+		$constants    = $reflection->getConstants();
 		$option_array = array_filter(
 			$constants,
 			function ( $key ) {
@@ -188,7 +188,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->mock_cache->method( 'get' )->willReturn(
 			[
 				'platform_checkout_eligible'        => true,
-				'platform_direct_checkout_eligible' => true
+				'platform_direct_checkout_eligible' => true,
 			]
 		);
 		$this->assertTrue( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
@@ -201,7 +201,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->mock_cache->method( 'get' )->willReturn(
 			[
 				'platform_checkout_eligible'        => true,
-				'platform_direct_checkout_eligible' => false
+				'platform_direct_checkout_eligible' => false,
 			]
 		);
 		$this->assertFalse( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
@@ -214,7 +214,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->mock_cache->method( 'get' )->willReturn(
 			[
 				'platform_checkout_eligible'        => false,
-				'platform_direct_checkout_eligible' => true
+				'platform_direct_checkout_eligible' => true,
 			]
 		);
 		$this->assertFalse( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
