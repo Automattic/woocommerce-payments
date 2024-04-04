@@ -66,7 +66,7 @@ describe( 'WooPayDirectCheckout', () => {
 			).not.toBeNull();
 		} );
 
-		test( 'should redirect not logged in user to WooPay minimum session URL', async () => {
+		it( 'should redirect not logged in user to WooPay minimum session URL', async () => {
 			WooPayDirectCheckout.getWooPayMinimumSessionUrl.mockResolvedValue(
 				'https://woopay.test/woopay?checkout_redirect=1&blog_id=1&session=1&iv=1&hash=1'
 			);
@@ -86,7 +86,7 @@ describe( 'WooPayDirectCheckout', () => {
 			);
 		} );
 
-		test( 'should redirect logged in user to WooPay checkout URL', async () => {
+		it( 'should redirect logged in user to WooPay checkout URL', async () => {
 			WooPayDirectCheckout.getWooPayCheckoutUrl.mockResolvedValue(
 				'https://woopay.test/woopay?platform_checkout_key=1234567890'
 			);
@@ -106,7 +106,7 @@ describe( 'WooPayDirectCheckout', () => {
 			);
 		} );
 
-		test( 'should redirect to merchant checkout if WooPay checkout URL is not available', async () => {
+		it( 'should redirect to merchant checkout if WooPay checkout URL is not available', async () => {
 			// Throw an error to simulate a failure in getting the WooPay checkout URL.
 			WooPayDirectCheckout.getWooPayCheckoutUrl.mockRejectedValue(
 				new Error( 'Could not retrieve WooPay checkout URL.' )
