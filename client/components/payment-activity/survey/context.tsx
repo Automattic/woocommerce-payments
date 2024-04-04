@@ -3,6 +3,8 @@
  */
 import React, { createContext, useState, useCallback, useContext } from 'react';
 import apiFetch from '@wordpress/api-fetch';
+import { useDispatch } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -19,6 +21,8 @@ const useContextValue = ( initialState = {} as OverviewSurveyFields ) => {
 	>( 'resolved' );
 	const [ surveyAnswers, setSurveyAnswers ] = useState( initialState );
 
+	const { createErrorNotice } = useDispatch( 'core/notices' );
+
 	const submitSurvey = useCallback(
 		async ( answers: OverviewSurveyFields ) => {
 			setResponseStatus( 'pending' );
@@ -33,9 +37,15 @@ const useContextValue = ( initialState = {} as OverviewSurveyFields ) => {
 			} catch ( e ) {
 				setResponseStatus( 'error' );
 				setSurveySubmitted( false );
+				createErrorNotice(
+					__(
+						'An error occurred while submitting the survey. Please try again.',
+						'woocommerce-payments'
+					)
+				);
 			}
 		},
-		[ setResponseStatus, setSurveySubmitted ]
+		[ setResponseStatus, setSurveySubmitted, createErrorNotice ]
 	);
 
 	return {
