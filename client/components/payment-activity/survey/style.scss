@@ -8,8 +8,8 @@
 		margin: 0 auto;
 		max-width: $inner-container-max-width;
 		display: flex;
-		gap: 5px;
-		justify-content: space-between;
+		gap: 10px;
+		justify-content: center;
 		align-items: center;
 
 		&__emoticons {
@@ -17,16 +17,14 @@
 			display: flex;
 			justify-content: flex-end;
 
-			.components-button {
-				font-size: 18px;
+			.components-button.has-icon {
+				font-size: 20px;
+				min-width: 32px;
+				height: 32px;
 			}
 
 			.selected {
 				background-color: $wp-blue-0;
-			}
-
-			.has-icon {
-				min-width: 32px;
 			}
 		}
 
@@ -36,15 +34,18 @@
 	}
 
 	.close_container {
-		// line-height: 45px;
 		position: absolute;
 		top: 0;
 		right: 0;
 	}
 
+	hr {
+		margin: 16px auto;
+	}
+
 	.comment_container {
 		max-width: $inner-container-max-width;
-		margin: auto;
+		margin: 0 auto;
 
 		&__disclaimer {
 			font-size: 11px;

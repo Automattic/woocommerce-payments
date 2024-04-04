@@ -26,7 +26,7 @@ const PaymentActivity: React.FC = () => {
 				<PaymentsActivityData />
 			</CardBody>
 			{ ! isOverviewSurveySubmitted && (
-				<CardFooter size="extraSmall">
+				<CardFooter size="small">
 					<WcPayOverviewSurveyContextProvider>
 						<Survey />
 					</WcPayOverviewSurveyContextProvider>
