@@ -337,7 +337,7 @@ export function maybeEnableStripeLink( api ) {
 				if ( billingEmailInput.value !== '' ) {
 					const linkButtonTop =
 						billingEmailInput.offsetTop +
-						( billingEmailInput.offsetHeight - 32 ) / 2;
+						( billingEmailInput.offsetHeight - 40 ) / 2;
 					const stripeLinkButton = document.querySelector(
 						'.wcpay-stripelink-modal-trigger'
 					);

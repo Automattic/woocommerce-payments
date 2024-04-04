@@ -31,12 +31,10 @@ button.wcpay-stripelink-modal-trigger {
 	display: none;
 	position: absolute;
 	right: 5px;
-	width: 32px;
-	height: 32px;
-	background: url( 'assets/images/payment-methods/link-circle.svg?asset' )
-		no-repeat center;
-	background-size: contain;
-	padding: 0;
+	width: 64px;
+	height: 40px;
+	background: no-repeat url( 'assets/images/payment-methods/link.svg?asset' );
+	background-color: transparent;
 	cursor: pointer;
 	border: none;
 }
