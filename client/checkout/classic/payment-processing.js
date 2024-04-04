@@ -335,18 +335,14 @@ export function maybeEnableStripeLink( api ) {
 					'billing_email'
 				);
 				if ( billingEmailInput.value !== '' ) {
-					const buttonHeight = 24;
 					const linkButtonTop =
 						billingEmailInput.offsetTop +
-						( billingEmailInput.offsetHeight - buttonHeight ) / 2;
-					const linkButtonRight =
-						( billingEmailInput.offsetHeight - buttonHeight ) / 2;
+						( billingEmailInput.offsetHeight - 32 ) / 2;
 					const stripeLinkButton = document.querySelector(
 						'.wcpay-stripelink-modal-trigger'
 					);
 					stripeLinkButton.style.display = 'block';
 					stripeLinkButton.style.top = `${ linkButtonTop }px`;
-					stripeLinkButton.style.right = `${ linkButtonRight }px`;
 				}
 
 				// Handle StripeLink button click.
