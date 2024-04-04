@@ -19,12 +19,12 @@ import Emoticon from './emoticon';
 import './style.scss';
 
 const Survey: React.FC = () => {
-	const { responseStatus } = useOverviewSurveyContext();
 	const {
-		setSurveySubmitted,
+		responseStatus,
 		surveySubmitted,
 		surveyAnswers,
 		setSurveyAnswers,
+		setSurveySubmitted,
 	} = useOverviewSurveyContext();
 
 	const [ showComponent, setShowComponent ] = useState( true );
