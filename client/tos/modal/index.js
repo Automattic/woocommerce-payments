@@ -73,7 +73,11 @@ const TosModalUI = ( { onAccept, onDecline, isBusy, hasError } ) => {
 					{ message }
 				</div>
 				<div className="woocommerce-payments__tos-footer">
-					<Button isSecondary onClick={ onDecline } isBusy={ isBusy }>
+					<Button
+						isSecondary
+						onClick={ onDecline }
+						disabled={ isBusy }
+					>
 						{ __( 'Decline', 'woocommerce-payments' ) }
 					</Button>
 
