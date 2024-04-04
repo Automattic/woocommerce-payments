@@ -61,51 +61,74 @@ const Survey: React.FC = () => {
 		return null;
 	}
 
-	return (
-		<div className="wcpay-payments-activity__survey">
-			{ ! surveySubmitted && (
-				<>
-					<div className="survey_container">
+	if ( surveySubmitted ) {
+		return (
+			<div className="wcpay-payments-activity__survey">
+				<div className="survey_container">
+					<span>
+						<span role="img" aria-label="Thank you!">
+							🙌
+						</span>
 						{ __(
-							'Are those metrics helpful?',
+							'We appreciate your feedback!',
 							'woocommerce-payments'
 						) }
+					</span>
+				</div>
 
-						<div className="survey_container__emoticons">
-							{ ratings.map( ( rating ) => {
-								return (
-									<Emoticon
-										key={ rating }
-										disabled={ disableForm }
-										rating={ rating }
-										setReviewRating={ setReviewRating }
-										currentRating={ currentRating }
-									/>
-								);
-							} ) }
-						</div>
-					</div>
+				<div className="close_container">
+					<button
+						type="button"
+						className="components-button has-icon"
+						aria-label="Close dialog"
+						onClick={ () => {
+							setShowComponent( false );
+						} }
+					>
+						<Icon icon={ closeSmall } size={ 28 } />
+					</button>
+				</div>
+			</div>
+		);
+	}
 
-					<div className="close_container">
-						{ showComment && (
-							<button
-								type="button"
-								className="components-button has-icon"
-								aria-label="Close dialog"
-								onClick={ () => {
-									setReviewRating( undefined );
-								} }
-							>
-								<Icon icon={ closeSmall } size={ 28 } />
-							</button>
-						) }
-					</div>
-				</>
-			) }
+	return (
+		<div className="wcpay-payments-activity__survey">
+			<div className="survey_container">
+				{ __( 'Are those metrics helpful?', 'woocommerce-payments' ) }
 
-			{ ! surveySubmitted && showComment && (
+				<div className="survey_container__emoticons">
+					{ ratings.map( ( rating ) => {
+						return (
+							<Emoticon
+								key={ rating }
+								disabled={ disableForm }
+								rating={ rating }
+								setReviewRating={ setReviewRating }
+								currentRating={ currentRating }
+							/>
+						);
+					} ) }
+				</div>
+			</div>
+
+			{ showComment && (
 				<>
+					<div className="close_container">
+						<button
+							type="button"
+							className="components-button has-icon"
+							aria-label="Close dialog"
+							onClick={ () => {
+								setReviewRating( undefined );
+							} }
+						>
+							<Icon icon={ closeSmall } size={ 28 } />
+						</button>
+					</div>
+
 					<HorizontalRule />
+
 					<div className="comment_container">
 						<TextareaControl
 							label={ __(
@@ -165,34 +188,6 @@ const Survey: React.FC = () => {
 						>
 							{ __( 'Send', 'woocommerce-payments' ) }
 						</Button>
-					</div>
-				</>
-			) }
-			{ surveySubmitted && (
-				<>
-					<div className="survey_container">
-						<span>
-							<span role="img" aria-label="Thank you!">
-								🙌
-							</span>
-							{ __(
-								'We appreciate your feedback!',
-								'woocommerce-payments'
-							) }
-						</span>
-					</div>
-
-					<div className="close_survey">
-						<button
-							type="button"
-							className="components-button has-icon"
-							aria-label="Close dialog"
-							onClick={ () => {
-								setShowComponent( false );
-							} }
-						>
-							<Icon icon={ closeSmall } size={ 28 } />
-						</button>
 					</div>
 				</>
 			) }

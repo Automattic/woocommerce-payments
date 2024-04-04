@@ -12,13 +12,13 @@ import { __ } from '@wordpress/i18n';
 import { NAMESPACE } from 'data/constants';
 import type { OverviewSurveyFields } from './types';
 
-const useContextValue = ( initialState = {} as OverviewSurveyFields ) => {
-	const [ surveySubmitted, setSurveySubmitted ] = useState(
-		Boolean( false )
+type ResponseStatus = 'pending' | 'resolved' | 'error';
+
+const useContextValue = ( initialState: OverviewSurveyFields = {} ) => {
+	const [ surveySubmitted, setSurveySubmitted ] = useState( true );
+	const [ responseStatus, setResponseStatus ] = useState< ResponseStatus >(
+		'resolved'
 	);
-	const [ responseStatus, setResponseStatus ] = useState<
-		'pending' | 'resolved' | 'error'
-	>( 'resolved' );
 	const [ surveyAnswers, setSurveyAnswers ] = useState( initialState );
 
 	const { createErrorNotice } = useDispatch( 'core/notices' );
@@ -76,7 +76,7 @@ export const WcPayOverviewSurveyContextProvider: React.FC< {
 export const useOverviewSurveyContext = (): ContextValue => {
 	const context = useContext( WcPayOverviewSurveyContext );
 	if ( ! context ) {
-		throw new Error( 'An error occured when using survey context' );
+		throw new Error( 'An error occurred when using survey context' );
 	}
 	return context;
 };
