@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Ignore alternative function WordPress PHPCS sniffs in the GH workflows and tests
