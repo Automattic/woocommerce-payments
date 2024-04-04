@@ -2,7 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Card, CardBody, CardFooter, CardHeader } from '@wordpress/components';
+import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -25,12 +25,11 @@ const PaymentActivity: React.FC = () => {
 			<CardBody className="wcpay-payments-activity__card__body">
 				<PaymentsActivityData />
 			</CardBody>
+
 			{ ! isOverviewSurveySubmitted && (
-				<CardFooter size="small">
-					<WcPayOverviewSurveyContextProvider>
-						<Survey />
-					</WcPayOverviewSurveyContextProvider>
-				</CardFooter>
+				<WcPayOverviewSurveyContextProvider>
+					<Survey />
+				</WcPayOverviewSurveyContextProvider>
 			) }
 		</Card>
 	);

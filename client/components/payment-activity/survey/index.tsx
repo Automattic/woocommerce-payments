@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { HorizontalRule } from '@wordpress/primitives';
-import { Button, TextareaControl } from '@wordpress/components';
+import { Button, CardFooter, TextareaControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
 import { Icon, closeSmall } from '@wordpress/icons';
@@ -63,133 +63,140 @@ const Survey: React.FC = () => {
 
 	if ( surveySubmitted ) {
 		return (
-			<div className="wcpay-payments-activity__survey">
-				<div className="survey_container">
-					<span role="img" aria-label="Thank you!">
-						🙌
-					</span>
-					{ __(
-						'We appreciate your feedback!',
-						'woocommerce-payments'
-					) }
-				</div>
+			<CardFooter size="small">
+				<div className="wcpay-payments-activity__survey">
+					<div className="survey_container">
+						<span role="img" aria-label="Thank you!">
+							🙌
+						</span>
+						{ __(
+							'We appreciate your feedback!',
+							'woocommerce-payments'
+						) }
+					</div>
 
-				<div className="close_container">
-					<button
-						type="button"
-						className="components-button has-icon"
-						aria-label="Close dialog"
-						onClick={ () => {
-							setShowComponent( false );
-						} }
-					>
-						<Icon icon={ closeSmall } size={ 28 } />
-					</button>
-				</div>
-			</div>
-		);
-	}
-
-	return (
-		<div className="wcpay-payments-activity__survey">
-			<div className="survey_container">
-				{ __( 'Are those metrics helpful?', 'woocommerce-payments' ) }
-
-				<div className="survey_container__emoticons">
-					{ ratings.map( ( rating ) => {
-						return (
-							<Emoticon
-								key={ rating }
-								disabled={ disableForm }
-								rating={ rating }
-								setReviewRating={ setReviewRating }
-								currentRating={ currentRating }
-							/>
-						);
-					} ) }
-				</div>
-			</div>
-
-			{ showComment && (
-				<>
 					<div className="close_container">
 						<button
 							type="button"
 							className="components-button has-icon"
 							aria-label="Close dialog"
 							onClick={ () => {
-								setReviewRating( undefined );
+								setShowComponent( false );
 							} }
 						>
 							<Icon icon={ closeSmall } size={ 28 } />
 						</button>
 					</div>
+				</div>
+			</CardFooter>
+		);
+	}
 
-					<HorizontalRule />
+	return (
+		<CardFooter size="small">
+			<div className="wcpay-payments-activity__survey">
+				<div className="survey_container">
+					{ __(
+						'Are those metrics helpful?',
+						'woocommerce-payments'
+					) }
 
-					<div className="comment_container">
-						<TextareaControl
-							label={ __(
-								'Why do you feel that way? (optional)',
-								'woocommerce-payments'
-							) }
-							onChange={ ( text ) => {
-								setSurveyAnswers(
-									(
-										prev: OverviewSurveyFields
-									): OverviewSurveyFields => ( {
-										...prev,
-										comments: text,
-									} )
-								);
-							} }
-							value={ surveyAnswers.comments ?? '' }
-							readOnly={ disableForm }
-						/>
-						<p className="comment_container__disclaimer">
-							{ createInterpolateElement(
-								__(
-									'Your feedback will be only be shared with WooCommerce and treated pursuant to our <a>privacy policy</a>.',
+					<div className="survey_container__emoticons">
+						{ ratings.map( ( rating ) => {
+							return (
+								<Emoticon
+									key={ rating }
+									disabled={ disableForm }
+									rating={ rating }
+									setReviewRating={ setReviewRating }
+									currentRating={ currentRating }
+								/>
+							);
+						} ) }
+					</div>
+				</div>
+
+				{ showComment && (
+					<>
+						<div className="close_container">
+							<button
+								type="button"
+								className="components-button has-icon"
+								aria-label="Close dialog"
+								onClick={ () => {
+									setReviewRating( undefined );
+								} }
+							>
+								<Icon icon={ closeSmall } size={ 28 } />
+							</button>
+						</div>
+
+						<HorizontalRule />
+
+						<div className="comment_container">
+							<TextareaControl
+								label={ __(
+									'Why do you feel that way? (optional)',
 									'woocommerce-payments'
-								),
-								{
-									a: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											href="https://automattic.com/privacy/"
-											target="_blank"
-											rel="noreferrer"
-										/>
+								) }
+								onChange={ ( text ) => {
+									setSurveyAnswers(
+										(
+											prev: OverviewSurveyFields
+										): OverviewSurveyFields => ( {
+											...prev,
+											comments: text,
+										} )
+									);
+								} }
+								value={ surveyAnswers.comments ?? '' }
+								readOnly={ disableForm }
+							/>
+							<p className="comment_container__disclaimer">
+								{ createInterpolateElement(
+									__(
+										'Your feedback will be only be shared with WooCommerce and treated pursuant to our <a>privacy policy</a>.',
+										'woocommerce-payments'
 									),
-								}
-							) }
-						</p>
-					</div>
+									{
+										a: (
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												href="https://automattic.com/privacy/"
+												target="_blank"
+												rel="noreferrer"
+											/>
+										),
+									}
+								) }
+							</p>
+						</div>
 
-					<div className="wcpay-confirmation-modal__footer">
-						<Button
-							variant={ 'tertiary' }
-							disabled={ disableForm }
-							onClick={ () => {
-								setReviewRating( undefined );
-							} }
-						>
-							{ __( 'Cancel', 'woocommerce-payments' ) }
-						</Button>
-						<Button
-							variant={ 'primary' }
-							isBusy={ disableForm }
-							disabled={ disableForm }
-							onClick={ () =>
-								setSurveySubmitted( surveyAnswers )
-							}
-						>
-							{ __( 'Send', 'woocommerce-payments' ) }
-						</Button>
-					</div>
-				</>
-			) }
-		</div>
+						<div className="wcpay-confirmation-modal__footer">
+							<Button
+								variant={ 'tertiary' }
+								disabled={ disableForm }
+								onClick={ () => {
+									setReviewRating( undefined );
+								} }
+							>
+								{ __( 'Cancel', 'woocommerce-payments' ) }
+							</Button>
+							<Button
+								variant={ 'primary' }
+								isBusy={ disableForm }
+								disabled={ disableForm }
+								onClick={ () =>
+									setSurveySubmitted( surveyAnswers )
+								}
+							>
+								{ __( 'Send', 'woocommerce-payments' ) }
+							</Button>
+						</div>
+					</>
+				) }
+			</div>
+		</CardFooter>
 	);
 };
 export default Survey;
