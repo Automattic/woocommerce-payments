@@ -9,6 +9,10 @@ import { render } from '@testing-library/react';
  */
 import PaymentActivity from '..';
 
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
+} ) );
+
 declare const global: {
 	wcpaySettings: {
 		accountStatus: {
