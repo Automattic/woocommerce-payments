@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 
 import EmptyStateAsset from 'assets/images/payment-activity-empty-state.svg?asset';
 import interpolateComponents from '@automattic/interpolate-components';
+import PaymentsActivityData from './payments-activity-data';
 import './style.scss';
 
 const PaymentActivity: React.FC = () => {
@@ -29,6 +30,7 @@ const PaymentActivity: React.FC = () => {
 					<>
 						{ /* Total TPV tile goes here */ }
 						{ /* Charges, refunds, disputes, fees tiles go here */ }
+						<PaymentsActivityData />
 					</>
 				) : (
 					<div className="wcpay-payments-activity__card__body__empty-state-wrapper">
