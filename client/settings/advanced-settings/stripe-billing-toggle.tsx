@@ -60,6 +60,7 @@ const StripeBillingToggle: React.FC< Props > = ( { onChange } ) => {
 					),
 				},
 			} ) }
+			data-testid={ 'stripe-billing-toggle' }
 		/>
 	);
 };
