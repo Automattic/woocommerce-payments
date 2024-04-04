@@ -16,9 +16,11 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
+use WCPay\Constants\Currency_Code;
 use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
+use WCPay\Exceptions\Cannot_Combine_Currencies_Exception;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -2046,6 +2048,26 @@ class WC_Payments_API_Client {
 				$error_type    = $response_body['error']['type'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
 				$this->maybe_act_on_fraud_prevention( $response_body['code'] );
+
+				if (
+					'invalid_request_error' === $response_body['code']
+					&& 0 === strpos( $response_body['message'], 'You cannot combine currencies on a single customer.' )
+				) {
+					// Get the currency, which is the last part of the error message,
+					// and remove the period from the end of the error message.
+					$message  = $response_body['message'];
+					$currency = substr( $message, -4 );
+					$currency = strtoupper( substr( $currency, 0, 3 ) );
+
+					// Only throw the error if we can find a valid currency.
+					if ( false !== Currency_Code::search( $currency ) ) {
+						throw new Cannot_Combine_Currencies_Exception(
+							$message,
+							$currency,
+							$response_code
+						);
+					}
+				}
 
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
