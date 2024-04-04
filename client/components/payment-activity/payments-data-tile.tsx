@@ -47,13 +47,16 @@ const PaymentsDataTile: React.FC< PaymentDataTileProps > = ( {
 	isLoading = false,
 } ) => {
 	return (
-		<div className="payments-data-highlights__item">
-			<p id={ id } className="payments-data-highlights__item__title">
+		<div className="wcpay-payments-data-highlights__item">
+			<p
+				id={ id }
+				className="wcpay-payments-data-highlights__item__label"
+			>
 				<span>{ title }</span>
 				{ ! isLoading && tooltip }
 			</p>
 			<p
-				className="payments-data-highlights__item__amount"
+				className="wcpay-payments-data-highlights__item__amount"
 				aria-labelledby={ id }
 			>
 				<Loadable

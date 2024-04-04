@@ -17,12 +17,12 @@ const TotalPaymentsVolume: React.FC = () => {
 
 	return (
 		<>
-			<div className="total-payments-volume">
-				<div className="total-payments-volume__heading">
+			<div className="wcpay-payments-activity-data__tpv">
+				<div className="wcpay-payments-activity-data__tpv__label">
 					{ __( 'Total payments volume', 'woocommerce-payments' ) }
 					<HelpOutlineIcon />
 				</div>
-				<div className="total-payments-volume__body">
+				<div className="wcpay-payments-activity-data__tpv__amount">
 					{ formatCurrency( 3000, accountDefaultCurrency ) }
 				</div>
 			</div>

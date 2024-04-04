@@ -13,33 +13,37 @@
 	}
 }
 
-.payments-activity-data {
+.wcpay-payments-activity-data {
 	display: flex;
-	padding: 24px;
+	align-items: flex-start;
+	//flex: 1 0 0;
+	justify-content: space-between;
 
 	@include breakpoint( '<660px' ) {
 		flex-direction: column;
 	}
 
-	.total-payments-volume {
+	&__tpv {
 		display: flex;
 		flex: 2;
 		flex-direction: column;
 		align-items: flex-start;
+		align-self: stretch;
+		padding: 24px;
 
-		&__heading {
-			font-size: 16px;
-			font-weight: 600;
+		&__label {
+			font-size: 12px;
+			font-weight: 400;
 			line-height: 16px;
-			color: $gray-900;
+			color: $gray-700;
+			margin-bottom: 8px;
 		}
 
-		&__body {
-			font-size: 24px;
-			font-weight: 600;
+		&__amount {
+			font-size: 20px;
+			font-weight: 500;
 			color: $gray-900;
-			line-height: 32px;
-			margin-top: 14px;
+			line-height: 28px;
 		}
 
 		.gridicon {
@@ -50,20 +54,18 @@
 		}
 	}
 
-	.payments-data-highlights {
+	.wcpay-payments-data-highlights {
 		display: flex;
 		flex: 3;
-		justify-content: space-between;
 		flex-wrap: wrap;
 
 		&__item {
-			width: 180px;
+			width: 170px;
+			padding: 24px;
 			border-left: 1px solid $gray-200;
 			text-align: left;
-			padding: 0 0 16px 16px;
-			margin-bottom: 16px;
 
-			&__title {
+			&__label {
 				font-size: 12px;
 				font-weight: 400;
 				line-height: 16px;
@@ -72,10 +74,10 @@
 			}
 
 			&__amount {
-				font-size: 16px;
-				font-weight: 600;
-				line-height: 24px;
+				font-size: 20px;
+				font-weight: 500;
 				color: $gray-900;
+				line-height: 28px;
 				margin: 0;
 			}
 		}

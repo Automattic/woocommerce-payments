@@ -17,28 +17,28 @@ import {
 const PaymentsDataHighlights: React.FC = () => {
 	return (
 		<>
-			<div className="payments-data-highlights">
+			<div className="wcpay-payments-data-highlights">
 				<PaymentsDataTile
-					id="payments-data-highlights__charges"
+					id="wcpay-payments-data-highlights__charges"
 					title={ paymentsDataHighlightsStrings.charges }
 					currencyCode="USD"
 					amount={ 123456 }
 					tooltip={ <PaymentDataChargeTooltip /> }
 				/>
 				<PaymentsDataTile
-					id="payments-data-highlights__refunds"
+					id="wcpay-payments-data-highlights__refunds"
 					title={ paymentsDataHighlightsStrings.refunds }
 					currencyCode="USD"
 					amount={ 123456 }
 				/>
 				<PaymentsDataTile
-					id="payments-data-highlights__disputes"
+					id="wcpay-payments-data-highlights__disputes"
 					title={ paymentsDataHighlightsStrings.disputes }
 					currencyCode="USD"
 					amount={ 123456 }
 				/>
 				<PaymentsDataTile
-					id="payments-data-highlights__fees"
+					id="wcpay-payments-data-highlights__fees"
 					title={ paymentsDataHighlightsStrings.fees }
 					currencyCode="USD"
 					amount={ 123456 }

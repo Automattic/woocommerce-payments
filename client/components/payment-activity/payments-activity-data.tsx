@@ -13,7 +13,7 @@ import './style.scss';
 
 const PaymentsActivityData: React.FC = () => {
 	return (
-		<div className="payments-activity-data">
+		<div className="wcpay-payments-activity-data">
 			<TotalPaymentsVolume />
 			<PaymentsDataHighlights />
 		</div>
