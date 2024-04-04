@@ -130,7 +130,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 		$wpcom_request_body = json_decode( wp_remote_retrieve_body( $wpcom_request ) );
 
 		if ( ! is_wp_error( $wpcom_request ) ) {
-			update_option( 'wcpay_survey_overview', true );
+			update_option( 'wcpay_survey_payment_overview_submitted', true );
 		}
 
 		return new WP_REST_Response( $wpcom_request_body, wp_remote_retrieve_response_code( $wpcom_request ) );
