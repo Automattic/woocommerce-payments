@@ -8,4 +8,5 @@ export const paymentsDataHighlightsStrings = {
 	refunds: __( 'Refunds', 'woocommerce-payments' ),
 	disputes: __( 'Disputes', 'woocommerce-payments' ),
 	fees: __( 'Fees', 'woocommerce-payments' ),
+	totalPaymentsVolume: __( 'Total payments volume', 'woocommerce-payments' ),
 };

@@ -35,15 +35,67 @@
 
 	@include breakpoint( '<660px' ) {
 		flex-direction: column;
+		padding: 24px;
 	}
 
-	&__tpv {
+	.wcpay-payments-data-highlights {
 		display: flex;
-		flex: 2;
-		flex-direction: column;
+		flex: 3;
+		flex-wrap: wrap;
+
+		&__item {
+			padding: 24px;
+			border-left: 1px solid $gray-200;
+			text-align: left;
+			flex: 1;
+
+			&__label {
+				@include label-styles;
+				margin: 0 0 8px 0;
+			}
+
+			&__amount {
+				@include amount-styles;
+				margin: 0 0 8px 0;
+			}
+
+			&__report-link {
+				text-decoration: none;
+			}
+
+			@include breakpoint( '<660px' ) {
+				border-left: none;
+				border-bottom: 1px solid $gray-200;
+				padding: 16px 0;
+			}
+		}
+
+		@include breakpoint( '<660px' ) {
+			flex-direction: column;
+			align-self: stretch;
+		}
+	}
+
+	#wcpay-payments-data-highlights {
+		&__charges,
+		&__refunds {
+			border-bottom: 1px solid $gray-200;
+		}
+
+		&__fees {
+			@include breakpoint( '<660px' ) {
+				border-bottom: none;
+				padding-bottom: 0;
+			}
+		}
+	}
+}
+
+#wcpay-payments-activity-data {
+	&__total-payments-volume {
 		align-items: flex-start;
 		align-self: stretch;
-		padding: 24px;
+		flex: 2;
 
 		&__label {
 			@include label-styles;
@@ -53,34 +105,8 @@
 			@include amount-styles;
 		}
 
-		.gridicon {
-			height: 16px;
-			width: 16px;
-			margin-left: 4px;
-			vertical-align: text-bottom;
-		}
-	}
-
-	.wcpay-payments-data-highlights {
-		display: flex;
-		flex: 3;
-		flex-wrap: wrap;
-
-		&__item {
-			width: 170px;
-			padding: 24px;
-			border-left: 1px solid $gray-200;
-			text-align: left;
-
-			&__label {
-				@include label-styles;
-				margin: 0 0 8px 0;
-			}
-
-			&__amount {
-				@include amount-styles;
-				margin: 0;
-			}
+		@include breakpoint( '<660px' ) {
+			border-bottom: 1px solid $gray-200;
 		}
 	}
 }

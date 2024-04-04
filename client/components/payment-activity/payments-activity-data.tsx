@@ -6,15 +6,23 @@ import * as React from 'react';
 /**
  * Internal dependencies.
  */
-import TotalPaymentsVolume from './total-payments-volume';
 import PaymentsDataHighlights from './payments-data-highlights';
+import PaymentsDataTile from './payments-data-tile';
+import { paymentsDataHighlightsStrings } from './strings';
+import { TotalPaymentsVolumeTooltip } from './payment-data-highlights-tooltips';
 
 import './style.scss';
 
 const PaymentsActivityData: React.FC = () => {
 	return (
 		<div className="wcpay-payments-activity-data">
-			<TotalPaymentsVolume />
+			<PaymentsDataTile
+				id="wcpay-payments-activity-data__total-payments-volume"
+				title={ paymentsDataHighlightsStrings.totalPaymentsVolume }
+				currencyCode="USD"
+				amount={ 123456789 }
+				tooltip={ <TotalPaymentsVolumeTooltip /> }
+			/>
 			<PaymentsDataHighlights />
 		</div>
 	);

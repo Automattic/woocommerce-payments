@@ -2,6 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -21,6 +22,7 @@ import Loadable from '../loadable';
  * @property {React.ReactElement} tooltip	The tooltip element.
  * @property {number} [amount]				Optional. The payment data highlight block amount.
  * @property {boolean} [isLoading]			Optional. Whether the payment data highlight block is loading.
+ * @property {string} [reportLink]			Optional. The report link.
  */
 interface PaymentDataTileProps {
 	id: string;
@@ -29,6 +31,7 @@ interface PaymentDataTileProps {
 	tooltip?: React.ReactElement;
 	amount?: number;
 	isLoading?: boolean;
+	reportLink?: string;
 }
 
 /**
@@ -45,13 +48,11 @@ const PaymentsDataTile: React.FC< PaymentDataTileProps > = ( {
 	tooltip,
 	amount = 0,
 	isLoading = false,
+	reportLink = '#',
 } ) => {
 	return (
-		<div className="wcpay-payments-data-highlights__item">
-			<p
-				id={ id }
-				className="wcpay-payments-data-highlights__item__label"
-			>
+		<div id={ id } className="wcpay-payments-data-highlights__item">
+			<p className="wcpay-payments-data-highlights__item__label">
 				<span>{ title }</span>
 				{ ! isLoading && tooltip }
 			</p>
@@ -66,6 +67,14 @@ const PaymentsDataTile: React.FC< PaymentDataTileProps > = ( {
 					value={ formatCurrency( amount, currencyCode ) }
 				/>
 			</p>
+			{ reportLink && (
+				<a
+					href={ reportLink }
+					className="wcpay-payments-data-highlights__item__report-link"
+				>
+					{ __( 'View Report', 'woocommerce_payments' ) }
+				</a>
+			) }
 		</div>
 	);
 };
