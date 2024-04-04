@@ -13,7 +13,7 @@ import { Icon, closeSmall } from '@wordpress/icons';
 /**
  * Internal dependencies.
  */
-import type { OverviewSurveyFields, Rating } from './types';
+import type { Rating } from './types';
 import { useOverviewSurveyContext } from './context';
 import Emoticon from './emoticon';
 import './style.scss';
@@ -47,11 +47,13 @@ const Survey: React.FC = () => {
 	const disableForm = 'pending' === responseStatus;
 
 	const setReviewRating = function ( value?: Rating ) {
-		const answers: OverviewSurveyFields = {
+		const answers = {
 			...surveyAnswers,
 			rating: value,
 		};
 		setSurveyAnswers( answers );
+
+		// If the user selects a rating that does not require a comment, submit the survey immediately.
 		if ( value && ! ratingWithComment.includes( value ) ) {
 			setSurveySubmitted( answers );
 		}
@@ -138,14 +140,10 @@ const Survey: React.FC = () => {
 									'woocommerce-payments'
 								) }
 								onChange={ ( text ) => {
-									setSurveyAnswers(
-										(
-											prev: OverviewSurveyFields
-										): OverviewSurveyFields => ( {
-											...prev,
-											comments: text,
-										} )
-									);
+									setSurveyAnswers( ( prev ) => ( {
+										...prev,
+										comments: text,
+									} ) );
 								} }
 								value={ surveyAnswers.comments ?? '' }
 								readOnly={ disableForm }
