@@ -448,31 +448,15 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Find duplicates.
 	 *
-	 * @param array $gateways All enabled gateways.
 	 * @return array Duplicated gateways.
 	 */
-	private function find_duplicates( $gateways ) {
-		// $payment_method_classes = [
-		// CC_Payment_Method::class,
-		// Bancontact_Payment_Method::class,
-		// Sepa_Payment_Method::class,
-		// Giropay_Payment_Method::class,
-		// Sofort_Payment_Method::class,
-		// P24_Payment_Method::class,
-		// Ideal_Payment_Method::class,
-		// Becs_Payment_Method::class,
-		// Eps_Payment_Method::class,
-		// Link_Payment_Method::class,
-		// Affirm_Payment_Method::class,
-		// Afterpay_Payment_Method::class,
-		// Klarna_Payment_Method::class,
-		// ];
-
-		$gateway_ids = [
+	private function find_duplicates() {
+		$keywords = [
 			// Credit card.
 			'credit_card' => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'credicard'   => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'creditcard'  => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'cc'          => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'card'        => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 
 			// Google Pay/Apple Pay.
 			'apple_pay'   => 'apple_pay',
@@ -496,38 +480,36 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			'klarna'      => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
 
-		$gateways_enabled_at_least_once = [];
+		$gateways_qualified_by_duplicates_detector = [];
 
-		// Only loop through gateways once.
-		foreach ( $gateways as $gateway ) {
-			foreach ( $gateway_ids as $keyword => $value ) {
-				if ( strpos( $gateway->id, $keyword ) !== false ) {
-					$gateways_enabled_at_least_once[ $value ][] = $gateway->id;
+		foreach ( WC()->payment_gateways()->payment_gateways as $gateway ) {
+			foreach ( $keywords as $keyword => $stripe_id ) {
+				if ( 'yes' === $gateway->enabled && strpos( $gateway->id, $keyword ) !== false ) {
+					$gateways_qualified_by_duplicates_detector[ $stripe_id ][] = $gateway->id;
 					break;
 				}
 			}
 		}
 
-		foreach ( $gateways_enabled_at_least_once as $gateway_id => $gateway_ids ) {
+		foreach ( $gateways_qualified_by_duplicates_detector as $gateway_id => $gateway_ids ) {
 			if ( count( $gateway_ids ) < 2 ) {
-				unset( $gateways_enabled_at_least_once[ $gateway_id ] );
+				unset( $gateways_qualified_by_duplicates_detector[ $gateway_id ] );
 			}
 		}
 
-		$gateways_to_skip     = array_values( WC_Payments::get_payment_gateway_map() );
-		$gateways_to_skip_ids = array_map(
+		$gateways_to_skip = array_map(
 			function( $gateway ) {
 				return $gateway->id;
 			},
-			$gateways_to_skip
+			WC_Payments::get_payment_gateway_map()
 		);
 
-		foreach ( $gateways_enabled_at_least_once as $gateway_id => $gateway_ids ) {
-			$gateway_ids                                   = array_diff( $gateway_ids, $gateways_to_skip_ids );
-			$gateways_enabled_at_least_once[ $gateway_id ] = $gateway_ids;
+		foreach ( $gateways_qualified_by_duplicates_detector as $gateway_id => $gateway_ids ) {
+			$gateway_ids = array_diff( $gateway_ids, $gateways_to_skip );
+			$gateways_qualified_by_duplicates_detector[ $gateway_id ] = $gateway_ids;
 		}
 
-		return $gateways_enabled_at_least_once;
+		return $gateways_qualified_by_duplicates_detector;
 	}
 
 	/**
@@ -566,14 +548,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			}
 		}
 
-		$enabled_gateways  = WC()->payment_gateways()->payment_gateways;
-		$gateways_to_check = [];
-		foreach ( $enabled_gateways as $gateway ) {
-			if ( 'yes' === $gateway->enabled ) {
-				$gateways_to_check[ $gateway->id ] = $gateway;
-			}
-		}
-		$duplicates = $this->find_duplicates( $gateways_to_check );
+		$duplicates = $this->find_duplicates();
 
 		return new WP_REST_Response(
 			[
