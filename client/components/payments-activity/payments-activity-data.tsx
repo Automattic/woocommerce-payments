@@ -9,7 +9,7 @@ import * as React from 'react';
 import PaymentsDataHighlights from './payments-data-highlights';
 import PaymentsDataTile from './payments-data-tile';
 import { paymentsDataHighlightsStrings } from './strings';
-import { TotalPaymentsVolumeTooltip } from './payment-data-highlights-tooltips';
+import { TotalPaymentsVolumeTooltip } from './payments-data-highlights-tooltips';
 
 import './style.scss';
 

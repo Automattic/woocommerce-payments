@@ -12,9 +12,9 @@ import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
 
 /**
- * Props for the PaymentDataHighlightBlock component.
+ * Props for the PaymentsDataHighlightBlock component.
  *
- * @typedef {Object} PaymentDataTileProps
+ * @typedef {Object} PaymentsDataTileProps
  *
  * @property {string} id					The payment data highlight block id. Used to link the title and amount.
  * @property {string} title					The payment data highlight block title.
@@ -24,7 +24,7 @@ import Loadable from '../loadable';
  * @property {boolean} [isLoading]			Optional. Whether the payment data highlight block is loading.
  * @property {string} [reportLink]			Optional. The report link.
  */
-interface PaymentDataTileProps {
+interface PaymentsDataTileProps {
 	id: string;
 	title: string;
 	currencyCode: string;
@@ -37,11 +37,11 @@ interface PaymentDataTileProps {
 /**
  * Renders a block that highlights payment data.
  *
- * @param {PaymentDataTileProps} props   Payment data highlight block props. See `PaymentDataHighlightBlockProps` interface.
+ * @param {PaymentsDataTileProps} props   Payment data highlight block props. See `PaymentDataHighlightBlockProps` interface.
  *
  * @return {JSX.Element} Rendered payment data highlight block element.
  */
-const PaymentsDataTile: React.FC< PaymentDataTileProps > = ( {
+const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 	id,
 	title,
 	currencyCode,

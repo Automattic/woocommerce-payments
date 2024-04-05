@@ -27,10 +27,10 @@ export const TotalPaymentsVolumeTooltip: React.FC = () => {
 	);
 };
 
-export const PaymentDataChargeTooltip: React.FC = () => {
+export const PaymentsDataChargeTooltip: React.FC = () => {
 	return (
 		<ClickTooltip
-			className="payment-data-highlights__charges__tooltip"
+			className="payments-data-highlights__charges__tooltip"
 			buttonIcon={ <HelpOutlineIcon /> }
 			buttonLabel={ __( 'Charges tooltip', 'woocommerce-payments' ) }
 			content={ __( 'test charge content' ) }
@@ -38,10 +38,10 @@ export const PaymentDataChargeTooltip: React.FC = () => {
 	);
 };
 
-export const PaymentDataFeesTooltip: React.FC = () => {
+export const PaymentsDataFeesTooltip: React.FC = () => {
 	return (
 		<ClickTooltip
-			className="payment-data-highlights__fees__tooltip"
+			className="payments-data-highlights__fees__tooltip"
 			buttonIcon={ <HelpOutlineIcon /> }
 			buttonLabel={ __( 'Fees tooltip', 'woocommerce-payments' ) }
 			content={ __( 'test fees content', 'woocommerce-payments' ) }

@@ -10,9 +10,9 @@ import './style.scss';
 import PaymentsDataTile from './payments-data-tile';
 import { paymentsDataHighlightsStrings } from './strings';
 import {
-	PaymentDataChargeTooltip,
-	PaymentDataFeesTooltip,
-} from './payment-data-highlights-tooltips';
+	PaymentsDataChargeTooltip,
+	PaymentsDataFeesTooltip,
+} from './payments-data-highlights-tooltips';
 
 const PaymentsDataHighlights: React.FC = () => {
 	return (
@@ -23,7 +23,7 @@ const PaymentsDataHighlights: React.FC = () => {
 					title={ paymentsDataHighlightsStrings.charges }
 					currencyCode="USD"
 					amount={ 123456 }
-					tooltip={ <PaymentDataChargeTooltip /> }
+					tooltip={ <PaymentsDataChargeTooltip /> }
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__refunds"
@@ -42,7 +42,7 @@ const PaymentsDataHighlights: React.FC = () => {
 					title={ paymentsDataHighlightsStrings.fees }
 					currencyCode="USD"
 					amount={ 123456 }
-					tooltip={ <PaymentDataFeesTooltip /> }
+					tooltip={ <PaymentsDataFeesTooltip /> }
 				/>
 			</div>
 		</>
