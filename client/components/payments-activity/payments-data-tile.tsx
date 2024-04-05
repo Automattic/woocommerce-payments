@@ -2,6 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
+import { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -50,31 +51,40 @@ const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 	isLoading = false,
 	reportLink = '#',
 } ) => {
+	const [ showReportLink, setShowReportLink ] = useState( false );
+
 	return (
-		<div id={ id } className="wcpay-payments-data-highlights__item">
+		<div
+			id={ id }
+			className="wcpay-payments-data-highlights__item"
+			onMouseEnter={ () => setShowReportLink( true ) }
+			onMouseLeave={ () => setShowReportLink( false ) }
+		>
 			<p className="wcpay-payments-data-highlights__item__label">
 				<span>{ title }</span>
 				{ ! isLoading && tooltip }
 			</p>
-			<p
-				className="wcpay-payments-data-highlights__item__amount"
-				aria-labelledby={ id }
-			>
-				<Loadable
-					isLoading={ isLoading }
-					display="inline"
-					placeholder="loading amount"
-					value={ formatCurrency( amount, currencyCode ) }
-				/>
-			</p>
-			{ reportLink && (
-				<a
-					href={ reportLink }
-					className="wcpay-payments-data-highlights__item__report-link"
+			<div className="wcpay-payments-data-highlights__item__wrapper">
+				<p
+					className="wcpay-payments-data-highlights__item__wrapper__amount"
+					aria-labelledby={ id }
 				>
-					{ __( 'View Report', 'woocommerce_payments' ) }
-				</a>
-			) }
+					<Loadable
+						isLoading={ isLoading }
+						display="inline"
+						placeholder="loading amount"
+						value={ formatCurrency( amount, currencyCode ) }
+					/>
+				</p>
+				{ showReportLink && (
+					<a
+						href={ reportLink }
+						className="wcpay-payments-data-highlights__item__wrapper__report-link"
+					>
+						{ __( 'View Report', 'woocommerce_payments' ) }
+					</a>
+				) }
+			</div>
 		</div>
 	);
 };

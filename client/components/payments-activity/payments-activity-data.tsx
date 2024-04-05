@@ -20,7 +20,7 @@ const PaymentsActivityData: React.FC = () => {
 				id="wcpay-payments-activity-data__total-payments-volume"
 				title={ paymentsDataHighlightsStrings.totalPaymentsVolume }
 				currencyCode="USD"
-				amount={ 123456789 }
+				amount={ 156373 }
 				tooltip={ <TotalPaymentsVolumeTooltip /> }
 			/>
 			<PaymentsDataHighlights />

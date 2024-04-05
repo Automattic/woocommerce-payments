@@ -42,7 +42,11 @@
 		&__item {
 			padding: 24px;
 			border-left: 1px solid $gray-200;
-			text-align: left;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			align-items: flex-start;
+			min-height: 129px;
 			flex: 1 0 0;
 
 			&__label {
@@ -50,25 +54,47 @@
 				margin: 0 0 8px 0;
 			}
 
-			&__amount {
-				@include amount-styles;
-				margin: 0 0 8px 0;
-			}
+			&__wrapper {
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				width: 100%;
 
-			&__report-link {
-				text-decoration: none;
+				@include breakpoint( '<660px' ) {
+					flex-direction: row;
+					justify-content: space-between;
+					align-items: center;
+				}
+
+				&__amount {
+					@include amount-styles;
+					margin: 0 0 8px 0;
+
+					@include breakpoint( '<660px' ) {
+						margin: 0;
+					}
+				}
+
+				&__report-link {
+					text-decoration: none;
+					font-size: 12px;
+
+					@include breakpoint( '<660px' ) {
+						min-height: unset;
+					}
+				}
 			}
 
 			@include breakpoint( '<660px' ) {
 				border-left: none;
 				border-bottom: 1px solid $gray-200;
 				padding: 16px 0;
+				min-height: unset;
 			}
 		}
 
 		@include breakpoint( '<660px' ) {
 			flex-direction: column;
-			align-self: stretch;
 		}
 	}
 
@@ -91,7 +117,7 @@
 	&__total-payments-volume {
 		border-left: none;
 		align-self: stretch;
-		flex: 1;
+		flex: 1 0 0;
 
 		&__label {
 			@include label-styles;
