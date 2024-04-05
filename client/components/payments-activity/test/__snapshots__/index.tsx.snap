@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PaymentActivity component should render 1`] = `
+exports[`PaymentsActivity component should render 1`] = `
 <div>
   <div
     class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
@@ -74,7 +74,7 @@ exports[`PaymentActivity component should render 1`] = `
 </div>
 `;
 
-exports[`PaymentActivity component should render an empty state 1`] = `
+exports[`PaymentsActivity component should render an empty state 1`] = `
 <div>
   <div
     class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"

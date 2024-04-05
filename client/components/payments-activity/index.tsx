@@ -14,7 +14,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import PaymentsActivityData from './payments-activity-data';
 import './style.scss';
 
-const PaymentActivity: React.FC = () => {
+const PaymentsActivity: React.FC = () => {
 	const { lifetimeTPV } = wcpaySettings;
 	const hasAtLeastOnePayment = lifetimeTPV > 0;
 
@@ -58,4 +58,4 @@ const PaymentActivity: React.FC = () => {
 	);
 };
 
-export default PaymentActivity;
+export default PaymentsActivity;

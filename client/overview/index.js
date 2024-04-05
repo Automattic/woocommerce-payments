@@ -20,7 +20,7 @@ import ErrorBoundary from 'components/error-boundary';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import Page from 'components/page';
-import PaymentActivity from 'components/payment-activity';
+import PaymentsActivity from 'wcpay/components/payments-activity';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
@@ -199,7 +199,7 @@ const OverviewPage = () => {
 							/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
 							isPaymentOverviewWidgetEnabled && (
 								<ErrorBoundary>
-									<PaymentActivity />
+									<PaymentsActivity />
 								</ErrorBoundary>
 							)
 						}
