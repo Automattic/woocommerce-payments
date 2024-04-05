@@ -13,6 +13,13 @@ export default ( {
 	stripeAppearance,
 	upeAppearanceTheme,
 } ) => {
+	const cartData = wp.data.select( 'wc/store/cart' ).getCartData();
+
+	// Stripe expects the amount to be sent as the minor unit of 2 digits.
+	const amount =
+		cartData.totals.total_price *
+		Math.pow( 10, 2 - cartData.totals.currency_minor_unit );
+
 	return (
 		<>
 			<span>
@@ -27,25 +34,12 @@ export default ( {
 						>
 							<PaymentMethodMessagingElement
 								options={ {
-									amount:
-										parseInt(
-											wp.data
-												.select( 'wc/store/cart' )
-												.getCartData().totals
-												.total_price,
-											10
-										) || 0,
+									amount: parseInt( amount, 10 ) || 0,
 									currency:
-										wp.data
-											.select( 'wc/store/cart' )
-											.getCartData().totals
-											.currency_code || 'USD',
+										cartData.totals.currency_code || 'USD',
 									paymentMethodTypes: [ upeName ],
 									countryCode:
-										wp.data
-											.select( 'wc/store/cart' )
-											.getCartData().billingAddress
-											.country ||
+										cartData.billingAddress.country ||
 										window.wcBlocksCheckoutData
 											.storeCountry, // Customer's country or base country of the store.
 									displayType: 'promotional_text',
