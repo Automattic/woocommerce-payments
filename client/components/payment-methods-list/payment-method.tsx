@@ -25,6 +25,8 @@ import { getDocumentationUrlForDisabledPaymentMethod } from '../payment-method-d
 import Pill from '../pill';
 import InlineNotice from '../inline-notice';
 import './payment-method.scss';
+import { ExternalLink } from '@wordpress/components';
+import { getAdminUrl } from 'wcpay/utils';
 
 interface PaymentMethodProps {
 	id: string;
@@ -368,13 +370,24 @@ const PaymentMethod = ( {
 					className="duplicate__notice"
 				>
 					<span>
-						{ sprintf(
-							__(
-								'This payment method is a duplicate of %s.',
+						{ interpolateComponents( {
+							mixedString: __(
+								'This payment method is enabled by other plugins as well, consider reviewing to improve shopper experience. {{reviewExtension}}Review duplicate extension{{/reviewExtension}}.',
 								'woocommerce-payments'
 							),
-							duplicatesData[ id ].join( ', ' )
-						) }
+							components: {
+								reviewExtension: (
+									// eslint-disable-next-line max-len
+									<ExternalLink
+										href={ getAdminUrl( {
+											page: 'wc-settings',
+											tab: 'checkout',
+											section: duplicatesData[ id ][ 0 ],
+										} ) }
+									/>
+								),
+							},
+						} ) }
 					</span>
 				</InlineNotice>
 			) }

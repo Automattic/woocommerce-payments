@@ -543,7 +543,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				$gateways_to_check[ $gateway->id ] = $gateway;
 			}
 		}
-		$duplicates = $this->find_duplicates( $enabled_gateways );
+		$duplicates = $this->find_duplicates( $gateways_to_check );
 
 		return new WP_REST_Response(
 			[
