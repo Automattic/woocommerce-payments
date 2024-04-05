@@ -220,6 +220,9 @@ const PaymentMethods = () => {
 											wcpaySettings?.progressiveOnboarding
 												?.isComplete
 										}
+										duplicatesData={
+											duplicatedPaymentMethodIds
+										}
 									/>
 								);
 							}

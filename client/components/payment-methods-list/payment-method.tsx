@@ -44,6 +44,7 @@ interface PaymentMethodProps {
 	locked: boolean;
 	isPoEnabled: boolean;
 	isPoComplete: boolean;
+	duplicatesData: Record< string, string[] >;
 }
 
 const PaymentMethodLabel = ( {
@@ -116,6 +117,7 @@ const PaymentMethod = ( {
 	locked,
 	isPoEnabled,
 	isPoComplete,
+	duplicatesData,
 }: PaymentMethodProps ): React.ReactElement => {
 	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
 	const isPoInProgress =
@@ -144,6 +146,7 @@ const PaymentMethod = ( {
 		isPoInProgress ||
 		upeCapabilityStatuses.REJECTED === status;
 	const shouldDisplayNotice = id === 'sofort';
+	const isDuplicate = duplicatesData[ id ]?.length > 0;
 
 	const needsOverlay =
 		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
@@ -354,6 +357,24 @@ const PaymentMethod = ( {
 						>
 							{ __( 'Learn more', 'woocommerce-payments' ) }
 						</a>
+					</span>
+				</InlineNotice>
+			) }
+			{ isDuplicate && (
+				<InlineNotice
+					status="warning"
+					icon={ true }
+					isDismissible={ false }
+					className="duplicate__notice"
+				>
+					<span>
+						{ sprintf(
+							__(
+								'This payment method is a duplicate of %s.',
+								'woocommerce-payments'
+							),
+							duplicatesData[ id ].join( ', ' )
+						) }
 					</span>
 				</InlineNotice>
 			) }

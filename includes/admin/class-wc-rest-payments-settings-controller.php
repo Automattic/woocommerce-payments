@@ -8,6 +8,12 @@
 use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
+use WCPay\Payment_Methods\Affirm_Payment_Method;
+use WCPay\Payment_Methods\Afterpay_Payment_Method;
+use WCPay\Payment_Methods\Bancontact_Payment_Method;
+use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Ideal_Payment_Method;
+use WCPay\Payment_Methods\Klarna_Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -445,43 +451,53 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$duplicated_payment_methods = [];
 
 		$gateway_ids = [
-			'apple_pay',
-			'applepay',
-			'google_pay',
-			'googlepay',
-			'affirm',
-			'afterpay',
-			'clearpay',
-			'klarna',
-			'credit_card',
-			'credicard',
-			'cc',
-			'bancontact',
-			'ideal',
+			'apple_pay'   => 'apple_pay',
+			'applepay'    => 'applepay',
+			'google_pay'  => 'google_pay',
+			'googlepay'   => 'googlepay',
+			'affirm'      => Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'afterpay'    => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'clearpay'    => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'klarna'      => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'credit_card' => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'credicard'   => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'cc'          => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'bancontact'  => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'ideal'       => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
+
+		$gateways_enabled_at_least_once = [];
 
 		// Only loop through gateways once.
 		foreach ( $gateways as $gateway ) {
-			foreach ( $gateway_ids as $keyword ) {
+			foreach ( $gateway_ids as $keyword => $value ) {
 				if ( strpos( $gateway->id, $keyword ) !== false ) {
-					// Increment counter or initialize if not exists.
-					if ( isset( $counter[ $keyword ] ) ) {
-						$counter[ $keyword ]++;
-					} else {
-						$counter[ $keyword ] = 1;
-					}
-
-					// If more than one occurrence, add to duplicates.
-					if ( $counter[ $keyword ] > 1 && method_exists($gateway, 'get_stripe_id')) {
-						$duplicated_payment_methods[ $gateway->get_stripe_id() ] = $gateway; // Use keys to prevent duplicates.
-					}
-					break; // Stop searching once a match is found for this gateway.
+					$gateways_enabled_at_least_once[ $value ][] = $gateway->id;
+					break;
 				}
 			}
 		}
 
-		// Return duplicated gateway titles.
-		return array_keys( $duplicated_payment_methods );
+		foreach ( $gateways_enabled_at_least_once as $gateway_id => $gateway_ids ) {
+			if ( count( $gateway_ids ) < 2 ) {
+				unset( $gateways_enabled_at_least_once[ $gateway_id ] );
+			}
+		}
+
+		$gateways_to_skip     = array_values( WC_Payments::get_payment_gateway_map() );
+		$gateways_to_skip_ids = array_map(
+			function( $gateway ) {
+				return $gateway->id;
+			},
+			$gateways_to_skip
+		);
+
+		foreach ( $gateways_enabled_at_least_once as $gateway_id => $gateway_ids ) {
+			$gateway_ids                                   = array_diff( $gateway_ids, $gateways_to_skip_ids );
+			$gateways_enabled_at_least_once[ $gateway_id ] = $gateway_ids;
+		}
+
+		return $gateways_enabled_at_least_once;
 	}
 
 	/**
@@ -528,13 +544,13 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			}
 		}
 		$duplicates = $this->find_duplicates( $enabled_gateways );
-		
+
 		return new WP_REST_Response(
 			[
 				'enabled_payment_method_ids'          => $enabled_payment_methods,
 				'available_payment_method_ids'        => $available_upe_payment_methods,
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
-				'duplicated_payment_method_ids' 	  => $duplicates,
+				'duplicated_payment_method_ids'       => $duplicates,
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
 				'is_test_mode_enabled'                => WC_Payments::mode()->is_test(),
