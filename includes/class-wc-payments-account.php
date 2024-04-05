@@ -2100,6 +2100,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get the all-time total payment volume.
+	 *
+	 * @return int The all-time total payment volume, or null if not available.
+	 */
+	public function get_lifetime_total_payments_volume(): int {
+		$account = $this->get_cached_account_data();
+		return (int) ! empty( $account ) && isset( $account['lifetime_total_payments_volume'] ) ? $account['lifetime_total_payments_volume'] : 0;
+	}
+
+	/**
 	 * Get user data to send to the onboarding flow.
 	 *
 	 * @return array The user data.
