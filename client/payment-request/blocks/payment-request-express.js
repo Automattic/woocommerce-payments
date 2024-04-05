@@ -75,8 +75,8 @@ const PaymentRequestExpressComponent = ( {
 		onPaymentRequestAvailable( paymentRequestType );
 	} );
 
-	const onPaymentRequestButtonClick = () => {
-		onButtonClick();
+	const onPaymentRequestButtonClick = ( event ) => {
+		onButtonClick( event, paymentRequest );
 
 		const paymentRequestTypeEvents = {
 			google_pay: 'gpay_button_click',
@@ -84,8 +84,9 @@ const PaymentRequestExpressComponent = ( {
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
-			const event = paymentRequestTypeEvents[ paymentRequestType ];
-			recordUserEvent( event, {
+			const paymentRequestEvent =
+				paymentRequestTypeEvents[ paymentRequestType ];
+			recordUserEvent( paymentRequestEvent, {
 				source: wcpayPaymentRequestParams?.button_context,
 			} );
 		}
