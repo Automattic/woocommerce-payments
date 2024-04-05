@@ -19,9 +19,9 @@ import {
 	DiscoverIcon,
 	GooglePayIcon,
 	MastercardIcon,
-	SofortIcon,
 	VisaIcon,
 	WooIcon,
+	KlarnaIcon,
 } from 'wcpay/payment-methods-icons';
 
 const PaymentMethods: React.FC = () => {
@@ -38,14 +38,14 @@ const PaymentMethods: React.FC = () => {
 				<GooglePayIcon />
 				{ wcpaySettings.isWooPayStoreCountryAvailable && <WooIcon /> }
 				<WooIcon />
-				<SofortIcon />
+				<KlarnaIcon />
 				<AffirmIcon />
 				{ 'GB' === wcpaySettings?.connect?.country ? (
 					<ClearpayIcon />
 				) : (
 					<AfterpayIcon />
 				) }
-				<span>& more.</span>
+				<span>& more</span>
 			</div>
 		</>
 	);
