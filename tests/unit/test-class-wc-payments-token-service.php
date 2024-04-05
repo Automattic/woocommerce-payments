@@ -100,7 +100,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
 	}
 
-	public function test_add_cobranded_token_to_user() {
+	public function test_add_cobranded_token_to_user_with_preferred_network() {
 		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [
 			'id'   => 'pm_mock',
@@ -110,6 +110,31 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 				'last4'     => '4242',
 				'exp_month' => 6,
 				'exp_year'  => $expiry_year,
+			],
+			'type' => Payment_Method::CARD,
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEquals( 'cartes_bancaires', $token->get_card_type() );
+		$this->assertEquals( '4242', $token->get_last4() );
+		$this->assertEquals( '06', $token->get_expiry_month() );
+		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
+	}
+
+	public function test_add_cobranded_token_to_user_with_display_brand() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
+			'card' => [
+				'brand'         => 'visa',
+				'display_brand' => 'cartes_bancaires',
+				'last4'         => '4242',
+				'exp_month'     => 6,
+				'exp_year'      => $expiry_year,
 			],
 			'type' => Payment_Method::CARD,
 		];
@@ -286,7 +311,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
 	}
 
-	public function test_add_cobranded_payment_method_to_user() {
+	public function test_add_cobranded_payment_method_to_user_with_preferred_network() {
 		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [
 			'id'   => 'pm_mock',
@@ -296,6 +321,37 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 				'last4'     => '4242',
 				'exp_month' => 6,
 				'exp_year'  => $expiry_year,
+			],
+			'type' => Payment_Method::CARD,
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->with( 'pm_mock' )
+			->willReturn( $mock_payment_method );
+
+		$token = $this->token_service->add_payment_method_to_user( $mock_payment_method['id'], wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEquals( 'cartes_bancaires', $token->get_card_type() );
+		$this->assertEquals( '4242', $token->get_last4() );
+		$this->assertEquals( '06', $token->get_expiry_month() );
+		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
+	}
+
+	public function test_add_cobranded_payment_method_to_user_with_display_brand() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
+			'card' => [
+				'brand'         => 'visa',
+				'display_brand' => 'cartes_bancaires',
+				'last4'         => '4242',
+				'exp_month'     => 6,
+				'exp_year'      => $expiry_year,
 			],
 			'type' => Payment_Method::CARD,
 		];
