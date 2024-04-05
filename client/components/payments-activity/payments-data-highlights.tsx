@@ -21,27 +21,27 @@ const PaymentsDataHighlights: React.FC = () => {
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__charges"
 					title={ paymentsDataHighlightsStrings.charges }
-					currencyCode="USD"
-					amount={ 123456 }
+					currencyCode="EUR"
+					amount={ 314300 }
 					tooltip={ <PaymentsDataChargeTooltip /> }
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__refunds"
 					title={ paymentsDataHighlightsStrings.refunds }
-					currencyCode="USD"
-					amount={ 123456 }
+					currencyCode="EUR"
+					amount={ 153200 }
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__disputes"
 					title={ paymentsDataHighlightsStrings.disputes }
-					currencyCode="USD"
-					amount={ 123456 }
+					currencyCode="EUR"
+					amount={ 4727 }
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__fees"
 					title={ paymentsDataHighlightsStrings.fees }
-					currencyCode="USD"
-					amount={ 123456 }
+					currencyCode="EUR"
+					amount={ 9429 }
 					tooltip={ <PaymentsDataFeesTooltip /> }
 				/>
 			</div>
