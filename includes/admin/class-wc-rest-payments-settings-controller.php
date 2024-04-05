@@ -11,9 +11,15 @@ use WCPay\Constants\Track_Events;
 use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
+use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
+use WCPay\Payment_Methods\P24_Payment_Method;
+use WCPay\Payment_Methods\Sepa_Payment_Method;
+use WCPay\Payment_Methods\Sofort_Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -446,24 +452,48 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return array Duplicated gateways.
 	 */
 	private function find_duplicates( $gateways ) {
-		// Use associative array for counting occurrences.
-		$counter                    = [];
-		$duplicated_payment_methods = [];
+		// $payment_method_classes = [
+		// CC_Payment_Method::class,
+		// Bancontact_Payment_Method::class,
+		// Sepa_Payment_Method::class,
+		// Giropay_Payment_Method::class,
+		// Sofort_Payment_Method::class,
+		// P24_Payment_Method::class,
+		// Ideal_Payment_Method::class,
+		// Becs_Payment_Method::class,
+		// Eps_Payment_Method::class,
+		// Link_Payment_Method::class,
+		// Affirm_Payment_Method::class,
+		// Afterpay_Payment_Method::class,
+		// Klarna_Payment_Method::class,
+		// ];
 
 		$gateway_ids = [
+			// Credit card.
+			'credit_card' => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'credicard'   => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'cc'          => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+
+			// Google Pay/Apple Pay.
 			'apple_pay'   => 'apple_pay',
 			'applepay'    => 'applepay',
 			'google_pay'  => 'google_pay',
 			'googlepay'   => 'googlepay',
+
+			// APMs including BNPLs.
+			'bancontact'  => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'sepa'        => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'giropay'     => Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'sofort'      => Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'p24'         => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'przelewy24'  => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'ideal'       => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'becs'        => Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'eps'         => Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'affirm'      => Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'afterpay'    => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'clearpay'    => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'klarna'      => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'credit_card' => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'credicard'   => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'cc'          => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'bancontact'  => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'ideal'       => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
 
 		$gateways_enabled_at_least_once = [];
