@@ -3,6 +3,7 @@
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
+import { normalizeCurrencyToMinorUnit } from 'wcpay/checkout/utils';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
 	appendFingerprintInputToForm,
@@ -418,7 +419,10 @@ export async function mountStripePaymentMethodMessagingElement(
 			} )
 			.create( 'paymentMethodMessaging', {
 				currency: cartData.currency,
-				amount: Number( cartData.amount ),
+				amount: normalizeCurrencyToMinorUnit(
+					cartData.amount,
+					cartData.decimalPlaces
+				),
 				countryCode: cartData.country, // Customer's country or base country of the store.
 				paymentMethodTypes: [ paymentMethodType ],
 				displayType: 'promotional_text',

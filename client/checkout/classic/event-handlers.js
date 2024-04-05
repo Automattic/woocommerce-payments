@@ -187,6 +187,8 @@ jQuery( function ( $ ) {
 						{
 							amount: cartData?.totals?.total_price,
 							currency: cartData?.totals?.currency_code,
+							decimalPlaces:
+								cartData?.totals?.currency_minor_unit,
 							country:
 								cartData?.billing_address?.country ||
 								cartData?.shipping_address?.country ||

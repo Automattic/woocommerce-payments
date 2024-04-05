@@ -5,6 +5,7 @@ import {
 	Elements,
 	PaymentMethodMessagingElement,
 } from '@stripe/react-stripe-js';
+import { normalizeCurrencyToMinorUnit } from '../utils';
 
 export default ( {
 	api,
@@ -16,9 +17,10 @@ export default ( {
 	const cartData = wp.data.select( 'wc/store/cart' ).getCartData();
 
 	// Stripe expects the amount to be sent as the minor unit of 2 digits.
-	const amount =
-		cartData.totals.total_price *
-		Math.pow( 10, 2 - cartData.totals.currency_minor_unit );
+	const amount = normalizeCurrencyToMinorUnit(
+		cartData.totals.total_price,
+		cartData.totals.currency_minor_unit
+	);
 
 	return (
 		<>
