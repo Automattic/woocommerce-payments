@@ -1,4 +1,4 @@
 Significance: minor
 Type: add
 
-Add an empty state view for the Payments Activity widget. This is shown when the merchant is yet to have any transacitons over WooPayments.
+Not user-facing: hidden behind feature flag. Add an empty state view for the Payments Activity widget. This is shown when the merchant is yet to have any transactions over WooPayments.
