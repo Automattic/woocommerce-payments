@@ -16,7 +16,7 @@ import './style.scss';
 
 const PaymentActivity: React.FC = () => {
 	const { lifetimeTPV } = wcpaySettings;
-	const hasAtLeastOnePayment = lifetimeTPV !== 0;
+	const hasAtLeastOnePayment = lifetimeTPV > 0;
 
 	return (
 		<Card>
