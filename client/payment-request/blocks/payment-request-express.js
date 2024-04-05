@@ -84,8 +84,9 @@ const PaymentRequestExpressComponent = ( {
 		};
 
 		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
-			const event = paymentRequestTypeEvents[ paymentRequestType ];
-			recordUserEvent( event, {
+			const paymentRequestEvent =
+				paymentRequestTypeEvents[ paymentRequestType ];
+			recordUserEvent( paymentRequestEvent, {
 				source: wcpayPaymentRequestParams?.button_context,
 			} );
 		}
