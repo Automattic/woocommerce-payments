@@ -421,15 +421,6 @@ class WooPayDirectCheckout {
 	static isEncryptedSessionDataPrefetched() {
 		return typeof this.encryptedSessionDataPromise?.then === 'function';
 	}
-
-	/**
-	 * Checks if a session cookie is set in order to determine if the user has opted to skip WooPay.
-	 *
-	 * @return {boolean} True if the user has opted to skip WooPay.
-	 */
-	static shouldSkipWooPay() {
-		return /skip_woopay=1/.test( document.cookie );
-	}
 }
 
 export default WooPayDirectCheckout;
