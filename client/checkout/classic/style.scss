@@ -38,7 +38,9 @@
 	}
 }
 
-li.wc_payment_method:has( label .stripe-pmme-container ) {
+li.wc_payment_method:has( .input-radio:not( :checked )
+		+ label
+		.stripe-pmme-container ) {
 	display: grid !important;
 	grid-template-columns: min-content 1fr;
 	grid-template-rows: auto auto;
@@ -47,28 +49,11 @@ li.wc_payment_method:has( label .stripe-pmme-container ) {
 	.input-radio {
 		grid-row: 1;
 		grid-column: 1;
-
-		&:checked {
-			+ label {
-				.stripe-pmme-container {
-					display: none;
-				}
-
-				img {
-					grid-column: 2;
-				}
-			}
-		}
 	}
 
 	label {
-		// TODO: On Storefront, this makes it look...not good. We need to figure out a good baseline style for this.
-		// display: grid !important;
-		flex-grow: 1;
-		grid-template-columns: 1fr auto;
 		grid-column: 2;
 		grid-row: 1;
-		align-items: center;
 	}
 
 	img {
@@ -85,5 +70,25 @@ li.wc_payment_method:has( label .stripe-pmme-container ) {
 
 	.payment_box {
 		flex: 0 0 100%;
+		grid-row: 2;
+		grid-column: 1 / span 2;
+	}
+}
+
+li.wc_payment_method:has( .input-radio:checked
+		+ label
+		.stripe-pmme-container ) {
+	display: block !important;
+
+	.input-radio:checked {
+		+ label {
+			.stripe-pmme-container {
+				display: none;
+			}
+
+			img {
+				grid-column: 2;
+			}
+		}
 	}
 }
