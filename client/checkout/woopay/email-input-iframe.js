@@ -10,6 +10,7 @@ import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
+	shouldSkipWooPay,
 } from './utils';
 import { select } from '@wordpress/data';
 
@@ -75,7 +76,7 @@ export const handleWooPayEmailInput = async (
 
 	//Checks if customer has clicked the back button to prevent auto redirect
 	const searchParams = new URLSearchParams( window.location.search );
-	const isSkipWoopayCookieSet = /skip_woopay=1/.test( document.cookie );
+	const isSkipWoopayCookieSet = shouldSkipWooPay();
 	const customerClickedBackButton =
 		( typeof performance !== 'undefined' &&
 			performance.getEntriesByType( 'navigation' )[ 0 ].type ===

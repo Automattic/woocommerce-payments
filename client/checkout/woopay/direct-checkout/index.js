@@ -11,13 +11,14 @@ import { debounce } from 'lodash';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
 import { waitMilliseconds } from 'wcpay/checkout/woopay/direct-checkout/utils';
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
+import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
 
 let isThirdPartyCookieEnabled = false;
 
 window.addEventListener( 'load', async () => {
 	if (
 		! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ||
-		WooPayDirectCheckout.shouldSkipWooPay()
+		shouldSkipWooPay()
 	) {
 		return;
 	}
@@ -43,7 +44,7 @@ jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_cart_totals', async () => {
 		if (
 			! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ||
-			WooPayDirectCheckout.shouldSkipWooPay()
+			shouldSkipWooPay()
 		) {
 			return;
 		}
