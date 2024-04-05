@@ -1,9 +1,9 @@
 /**
  * Internal dependencies
  */
-import WooPayDirectCheckout from '../woopay-direct-checkout';
+import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
 
-describe( 'WooPay Direct Checkout', () => {
+describe( 'WooPay Utils', () => {
 	const originalDocumentCookie = window.document.cookie;
 
 	afterEach( () => {
@@ -19,9 +19,9 @@ describe( 'WooPay Direct Checkout', () => {
 			value: 'skip_woopay=1',
 		} );
 
-		const shouldSkipWooPay = WooPayDirectCheckout.shouldSkipWooPay();
+		const shouldSkip = shouldSkipWooPay();
 
-		expect( shouldSkipWooPay ).toBe( true );
+		expect( shouldSkip ).toBe( true );
 	} );
 
 	test( 'should skip WooPay returns false if cookie is not set', () => {
@@ -30,9 +30,9 @@ describe( 'WooPay Direct Checkout', () => {
 			value: 'something=else',
 		} );
 
-		const shouldSkipWooPay = WooPayDirectCheckout.shouldSkipWooPay();
+		const shouldSkip = shouldSkipWooPay();
 
-		expect( shouldSkipWooPay ).toBe( false );
+		expect( shouldSkip ).toBe( false );
 	} );
 
 	test( 'should not skip WooPay if skip_woopay cookie is set to 10', () => {
@@ -41,9 +41,9 @@ describe( 'WooPay Direct Checkout', () => {
 			value: 'skip_woopay=10',
 		} );
 
-		const shouldSkipWooPay = WooPayDirectCheckout.shouldSkipWooPay();
+		const shouldSkip = shouldSkipWooPay();
 
-		expect( shouldSkipWooPay ).toBe( false );
+		expect( shouldSkip ).toBe( false );
 	} );
 
 	test( 'should not skip WooPay if skip_woopay cookie is called something else', () => {
@@ -52,8 +52,8 @@ describe( 'WooPay Direct Checkout', () => {
 			value: 'sskip_woopay=1',
 		} );
 
-		const shouldSkipWooPay = WooPayDirectCheckout.shouldSkipWooPay();
+		const shouldSkip = shouldSkipWooPay();
 
-		expect( shouldSkipWooPay ).toBe( false );
+		expect( shouldSkip ).toBe( false );
 	} );
 } );
