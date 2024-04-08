@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 
 const TotalPaymentsVolume: React.FC = () => {
-	const { accountDefaultCurrency } = wcpaySettings;
+	const { accountDefaultCurrency, lifetimeTPV } = wcpaySettings;
 
 	return (
 		<>
@@ -23,7 +23,7 @@ const TotalPaymentsVolume: React.FC = () => {
 					<HelpOutlineIcon />
 				</div>
 				<div className="total-payments-volume__body">
-					{ formatCurrency( 3000, accountDefaultCurrency ) }
+					{ formatCurrency( lifetimeTPV, accountDefaultCurrency ) }
 				</div>
 			</div>
 		</>

@@ -49,7 +49,7 @@ exports[`PaymentsActivity component should render 1`] = `
             <div
               class="total-payments-volume__body"
             >
-              $30.00
+              $10.00
             </div>
           </div>
           <div
