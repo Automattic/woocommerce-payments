@@ -25,7 +25,9 @@ import { recordUserEvent } from 'tracks';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
-	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
+	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState(
+		window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO || false
+	);
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );

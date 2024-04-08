@@ -57,6 +57,16 @@ class WooPay_Save_User {
 		);
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY', 'dist/woopay' );
 
+		$account_data = WC_Payments::get_account_service()->get_cached_account_data();
+
+		wp_localize_script(
+			'WCPAY_WOOPAY',
+			'woopayCheckout',
+			[
+				'PRE_CHECK_SAVE_MY_INFO' => $account_data['pre_check_save_my_info']
+			]
+		);
+
 		wp_enqueue_script( 'WCPAY_WOOPAY' );
 	}
 
