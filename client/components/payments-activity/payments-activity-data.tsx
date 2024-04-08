@@ -16,16 +16,14 @@ import {
 
 import './style.scss';
 import { getAdminUrl } from 'wcpay/utils';
-import { getIsManualCaptureEnabled } from 'wcpay/data/settings/selectors';
 
 const PaymentsActivityData: React.FC = () => {
-	const isManualCaptureEnabled = getIsManualCaptureEnabled();
 	return (
 		<div className="wcpay-payments-activity-data">
 			<PaymentsDataTile
 				id="wcpay-payments-activity-data__total-payments-volume"
 				label={ __( 'Total payments volume', 'woocommerce-payments' ) }
-				currencyCode="USD"
+				currencyCode="EUR"
 				amount={ 156373 }
 				tooltip={ <TotalPaymentsVolumeTooltip /> }
 				reportLink={ getAdminUrl( {
@@ -40,14 +38,12 @@ const PaymentsActivityData: React.FC = () => {
 					currencyCode="EUR"
 					amount={ 314300 }
 					tooltip={ <PaymentsDataChargeTooltip /> }
-					reportLink={
-						isManualCaptureEnabled &&
-						getAdminUrl( {
-							page: 'wc-admin',
-							path: '/payments/transactions',
-							tab: 'uncaptured-page',
-						} )
-					}
+					reportLink={ getAdminUrl( {
+						page: 'wc-admin',
+						path: '/payments/transactions',
+						filter: 'advanced',
+						type_is: 'charge',
+					} ) }
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__refunds"
