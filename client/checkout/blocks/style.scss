@@ -44,10 +44,10 @@ button.wcpay-stripelink-modal-trigger:hover {
 	border-color: transparent;
 }
 
-.wc-block-checkout__payment-method
-	.wc-block-components-radio-control__label
-	span {
-	width: 95%;
+.wc-block-checkout__payment-method {
+	.wc-block-components-radio-control__label {
+		span {
+			width: 95%;
 
 	&:has( .StripeElement ) {
 		display: grid;
@@ -72,6 +72,17 @@ button.wcpay-stripelink-modal-trigger:hover {
 			grid-row: 1 / span 2;
 			grid-column: 2;
 		}
+	}
+}
+
+#remember-me {
+	margin-top: 36px;
+
+	h2 {
+		font-size: 18px;
+		font-weight: 600;
+		line-height: 21.6px;
+		letter-spacing: -0.01em;
 	}
 }
 
