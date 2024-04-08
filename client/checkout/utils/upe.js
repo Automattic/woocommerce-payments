@@ -2,8 +2,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { WC_STORE_CART, getPaymentMethodsConstants } from '../constants';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { getPaymentMethodsConstants } from '../constants';
 
 /**
  * Generates terms parameter for UPE, with value set for reusable payment methods
@@ -182,32 +181,6 @@ export function dispatchChangeEventFor( element ) {
 	const event = new Event( 'change', { bubbles: true } );
 	element.dispatchEvent( event );
 }
-
-/**
- *
- * Custom React hook that provides customer data and related functions for managing customer information.
- * The hook retrieves customer data from the WC_STORE_CART selector and dispatches actions to modify billing and shipping addresses.
- *
- * @return {Object} An object containing customer data and functions for managing customer information.
- */
-export const useCustomerData = () => {
-	const customerData = useSelect( ( select ) =>
-		select( WC_STORE_CART ).getCustomerData()
-	);
-	const {
-		setShippingAddress,
-		setBillingData,
-		setBillingAddress,
-	} = useDispatch( WC_STORE_CART );
-
-	return {
-		// Backward compatibility billingData/billingAddress
-		billingAddress: customerData.billingAddress || customerData.billingData,
-		// Backward compatibility setBillingData/setBillingAddress
-		setBillingAddress: setBillingAddress || setBillingData,
-		setShippingAddress,
-	};
-};
 
 /**
  * Returns the prepared set of options needed to initialize the Stripe elements for UPE in Block Checkout.

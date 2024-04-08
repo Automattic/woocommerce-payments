@@ -221,6 +221,10 @@ class WC_Payments_Checkout {
 		$payment_fields['upeAppearance']                     = get_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['upeBnplProductPageAppearance']      = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
 		$payment_fields['upeBnplProductPageAppearanceTheme'] = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT );
+		$payment_fields['upeBnplClassicCartAppearance']      = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
+		$payment_fields['upeBnplClassicCartAppearanceTheme'] = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT );
+		$payment_fields['upeBnplCartBlockAppearance']        = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT );
+		$payment_fields['upeBnplCartBlockAppearanceTheme']   = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT );
 		$payment_fields['wcBlocksUPEAppearance']             = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['wcBlocksUPEAppearanceTheme']        = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
 		$payment_fields['cartContainsSubscription']          = $this->gateway->is_subscription_item_in_cart();
@@ -354,7 +358,7 @@ class WC_Payments_Checkout {
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
-				function() use ( $payment_fields ) {
+				function () use ( $payment_fields ) {
 					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
 				}
 			);
@@ -449,5 +453,4 @@ class WC_Payments_Checkout {
 			$this->gateway = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 		}
 	}
-
 }
