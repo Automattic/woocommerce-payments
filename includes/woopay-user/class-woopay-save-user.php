@@ -42,7 +42,7 @@ class WooPay_Save_User {
 			return;
 		}
 
-		if ( ! $this->woopay_util->is_country_available( $gateways['woocommerce_payments'] ) ) {
+		if ( ! $this->woopay_util->is_country_available() ) {
 			return;
 		}
 
