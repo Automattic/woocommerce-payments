@@ -73,7 +73,7 @@ class Duplicates_Finder {
 				if ( strpos( $gateway->id, $keyword ) !== false ) {
 					// Increment counter or initialize if not exists.
 					if ( isset( $counter[ $keyword ] ) ) {
-						$counter[ $keyword ]++;
+						++$counter[ $keyword ];
 					} else {
 						$counter[ $keyword ] = 1;
 					}

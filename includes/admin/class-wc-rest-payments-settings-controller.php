@@ -446,6 +446,29 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Map plugin-specific card gateway IDs for Stripe and WooPayments plugins to 'card',
+	 * so that the duplicates detector can identify them.
+	 *
+	 * @param array $gateways Gateways to prepare.
+	 * @return array Mapped gateways.
+	 */
+	private function prepare_card_gateways( $gateways ) {
+		foreach ( $gateways as $gateway ) {
+			if ( 'yes' === $gateway->enabled ) {
+				if ( 'stripe' === $gateway->id ) {
+					$gateway->id = 'card';
+				}
+
+				if ( 'woocommerce_payments' === $gateway->id ) {
+					$gateway->id = 'card';
+				}
+			}
+		}
+
+		return $gateways;
+	}
+
+	/**
 	 * Find duplicates.
 	 *
 	 * @return array Duplicated gateways.
@@ -481,8 +504,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		];
 
 		$gateways_qualified_by_duplicates_detector = [];
+		$gateways                                  = $this->prepare_card_gateways( WC()->payment_gateways()->payment_gateways );
 
-		foreach ( WC()->payment_gateways()->payment_gateways as $gateway ) {
+		foreach ( $gateways as $gateway ) {
 			foreach ( $keywords as $keyword => $stripe_id ) {
 				if ( 'yes' === $gateway->enabled && strpos( $gateway->id, $keyword ) !== false ) {
 					$gateways_qualified_by_duplicates_detector[ $stripe_id ][] = $gateway->id;
@@ -495,18 +519,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			if ( count( $gateway_ids ) < 2 ) {
 				unset( $gateways_qualified_by_duplicates_detector[ $gateway_id ] );
 			}
-		}
-
-		$gateways_to_skip = array_map(
-			function( $gateway ) {
-				return $gateway->id;
-			},
-			WC_Payments::get_payment_gateway_map()
-		);
-
-		foreach ( $gateways_qualified_by_duplicates_detector as $gateway_id => $gateway_ids ) {
-			$gateway_ids = array_diff( $gateway_ids, $gateways_to_skip );
-			$gateways_qualified_by_duplicates_detector[ $gateway_id ] = $gateway_ids;
 		}
 
 		return $gateways_qualified_by_duplicates_detector;
