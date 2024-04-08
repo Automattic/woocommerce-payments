@@ -15,8 +15,11 @@ import {
 } from './payments-data-highlights-tooltips';
 
 import './style.scss';
+import { getAdminUrl } from 'wcpay/utils';
+import { getIsManualCaptureEnabled } from 'wcpay/data/settings/selectors';
 
 const PaymentsActivityData: React.FC = () => {
+	const isManualCaptureEnabled = getIsManualCaptureEnabled();
 	return (
 		<div className="wcpay-payments-activity-data">
 			<PaymentsDataTile
@@ -25,7 +28,10 @@ const PaymentsActivityData: React.FC = () => {
 				currencyCode="USD"
 				amount={ 156373 }
 				tooltip={ <TotalPaymentsVolumeTooltip /> }
-				reportLink="#"
+				reportLink={ getAdminUrl( {
+					page: 'wc-admin',
+					path: '/payments/transactions',
+				} ) }
 			/>
 			<div className="wcpay-payments-data-highlights">
 				<PaymentsDataTile
@@ -34,21 +40,37 @@ const PaymentsActivityData: React.FC = () => {
 					currencyCode="EUR"
 					amount={ 314300 }
 					tooltip={ <PaymentsDataChargeTooltip /> }
-					reportLink="#"
+					reportLink={
+						isManualCaptureEnabled &&
+						getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/transactions',
+							tab: 'uncaptured-page',
+						} )
+					}
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__refunds"
 					label={ __( 'Refunds', 'woocommerce-payments' ) }
 					currencyCode="EUR"
 					amount={ 153200 }
-					reportLink="#"
+					reportLink={ getAdminUrl( {
+						page: 'wc-admin',
+						path: '/payments/transactions',
+						filter: 'advanced',
+						type_is: 'refund',
+					} ) }
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__disputes"
 					label={ __( 'Disputes', 'woocommerce-payments' ) }
 					currencyCode="EUR"
 					amount={ 4727 }
-					reportLink="#"
+					reportLink={ getAdminUrl( {
+						page: 'wc-admin',
+						path: '/payments/disputes',
+						filter: 'awaiting_response',
+					} ) }
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__fees"
