@@ -2,7 +2,6 @@
  * External dependencies
  */
 import * as React from 'react';
-import { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -30,15 +29,8 @@ const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 	isLoading = false,
 	reportLink,
 } ) => {
-	const [ showReportLink, setShowReportLink ] = useState( false );
-
 	return (
-		<div
-			id={ id }
-			className="wcpay-payments-data-highlights__item"
-			onMouseEnter={ () => setShowReportLink( true ) }
-			onMouseLeave={ () => setShowReportLink( false ) }
-		>
+		<div id={ id } className="wcpay-payments-data-highlights__item">
 			<p className="wcpay-payments-data-highlights__item__label">
 				<span>{ label }</span>
 				{ ! isLoading && tooltip }
@@ -55,7 +47,7 @@ const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 						value={ formatCurrency( amount, currencyCode ) }
 					/>
 				</p>
-				{ reportLink && showReportLink && (
+				{ reportLink && (
 					<a
 						href={ reportLink }
 						className="wcpay-payments-data-highlights__item__wrapper__report-link"

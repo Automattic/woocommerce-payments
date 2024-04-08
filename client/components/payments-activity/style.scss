@@ -50,6 +50,12 @@
 			min-height: 129px;
 			flex: 1 0 0;
 
+			&:hover {
+				.wcpay-payments-data-highlights__item__wrapper__report-link {
+					visibility: visible;
+				}
+			}
+
 			&__label {
 				@include label-styles;
 				margin: 0 0 8px 0;
@@ -79,9 +85,11 @@
 				&__report-link {
 					text-decoration: none;
 					font-size: 12px;
+					visibility: hidden;
 
 					@include breakpoint( '<660px' ) {
 						min-height: unset;
+						visibility: visible;
 					}
 				}
 			}
