@@ -42,17 +42,28 @@ export default defineConfig( {
 		//=* Increase expect timeout to 10 seconds. See https://playwright.dev/docs/test-timeouts#set-expect-timeout-in-the-config.*/
 		timeout: 10 * 1000,
 	},
-	snapshotPathTemplate:
-		'{testDir}/__snapshots__/{testFilePath}/{arg}_{projectName}{ext}',
+	snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{arg}{ext}',
 
 	/* Configure projects for major browsers */
 	projects: [
 		{
-			name: 'chromium',
+			name: 'basic',
 			use: { ...devices[ 'Desktop Chrome' ] },
+			testMatch: /basic.spec.ts/,
 			dependencies: [ 'setup' ],
 		},
-
+		{
+			name: 'merchant',
+			use: { ...devices[ 'Desktop Chrome' ] },
+			testDir: './specs/merchant',
+			dependencies: [ 'setup' ],
+		},
+		{
+			name: 'shopper',
+			use: { ...devices[ 'Desktop Chrome' ] },
+			testDir: './specs/shopper',
+			dependencies: [ 'setup' ],
+		},
 		// Setup project
 		{ name: 'setup', testMatch: /.*\.setup\.ts/ },
 	],
