@@ -855,6 +855,7 @@ class WC_Payments_Admin {
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
 			'isOverviewSurveySubmitted'     => get_option( 'wcpay_survey_payment_overview_submitted', false ),
 			'trackingInfo'                  => $this->account->get_tracking_info(),
+			'lifetimeTPV'                   => $this->account->get_lifetime_total_payments_volume(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );

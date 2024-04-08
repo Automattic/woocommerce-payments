@@ -128,6 +128,7 @@ declare global {
 			hosting_provider: string;
 		};
 		isOverviewSurveySubmitted: boolean;
+		lifetimeTPV: number;
 	};
 
 	const wc: {
