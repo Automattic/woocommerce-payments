@@ -12,11 +12,15 @@ import { __ } from '@wordpress/i18n';
 import EmptyStateAsset from 'assets/images/payment-activity-empty-state.svg?asset';
 import interpolateComponents from '@automattic/interpolate-components';
 import PaymentsActivityData from './payments-activity-data';
+import Survey from './survey';
+import { WcPayOverviewSurveyContextProvider } from './survey/context';
 import './style.scss';
 
 const PaymentsActivity: React.FC = () => {
 	const { lifetimeTPV } = wcpaySettings;
 	const hasAtLeastOnePayment = lifetimeTPV > 0;
+	const isOverviewSurveySubmitted =
+		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
 	return (
 		<Card>
@@ -54,6 +58,12 @@ const PaymentsActivity: React.FC = () => {
 					</div>
 				) }
 			</CardBody>
+
+			{ ! isOverviewSurveySubmitted && hasAtLeastOnePayment && (
+				<WcPayOverviewSurveyContextProvider>
+					<Survey />
+				</WcPayOverviewSurveyContextProvider>
+			) }
 		</Card>
 	);
 };
