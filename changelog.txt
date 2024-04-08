@@ -1,5 +1,41 @@
 *** WooPayments Changelog ***
 
+= 7.5.0-test-2 - 2024-xx-xx =
+* Add - Add a parent wrapper component for Payment Activity widget. This will be visible on the Payments Overview page
+* Add - Add BNPL messaging to cart page.
+* Add - Improve payment settings UX.
+* Add - Not user-facing: hidden behind feature flag. Add an empty state view for the Payments Activity widget. This is shown when the merchant is yet to have any transactions over WooPayments.
+* Add - Prepopulate Vertical selection in the onboarding form based on Woo Core selection.
+* Fix - Add an instructive error message when customer tries to use 2 different currencies for Stripe Billing subscriptions.
+* Fix - Address PHPCS reports in checkout classes.
+* Fix - Change IP country rule after country settings are changed in WC settings page
+* Fix - fix: error message on 402 status code
+* Fix - Fix an incorrect warning about Puerto Rico being unsupported by WooPayments
+* Fix - Fix collision between WooPayments header and Woo Express survey banner.
+* Fix - Fix Decline button state for Accept loading on ToS modal
+* Fix - Fixed Afterpay logo size on settings page
+* Fix - Fixed billing address error for subscription without some billing details
+* Fix - Fixed optional billing field validation
+* Fix - Fix Fatal Error showing when connect to Jetpack on localhost
+* Fix - Fix JS error when clicking GPay button on blocks checkout with subscription (w/sign up fee) in cart.
+* Fix - Fix payment icons on connect page (Klarna, Afterpay)
+* Fix - Remove incorrect "UTC" label from the time column of Transactions page
+* Fix - Remove redundant message after the account is onboarded
+* Update - Remove ToS acceptance copy from all entrypoints in MOX
+* Update - Remove unwanted css overrides on the Payment activity widget wrapper
+* Update - Replace deprecated filter.
+* Update - Updated Link by Stripe logo
+* Update - Update MOX cancellation to consistently redirect back to the payment connect page.
+* Dev - Address update PHPCS error - a single one recommending escaping an exception message
+* Dev - Escaping error logs and ignoring noticese where there are no issues.
+* Dev - Fix e2e tests for BNPL checkout
+* Dev - Fixed phpcs errors
+* Dev - Fixes to comply with updates to PHPCS linter.
+* Dev - Ignore alternative function WordPress PHPCS sniffs in the GH workflows and tests
+* Dev - Payments Activity - add scaffolding for Total Payment Volume.
+* Dev - refactor: reduce wp-data dependency on shortcode checkout
+* Dev - Updated PHPCS and sniffs used for static analysis
+
 = 7.4.0 - 2024-03-27 =
 * Add - Add account reset for sandboxes
 * Add - Add a loading spinner to the "Proceed to Checkout" button in shortcode cart.
