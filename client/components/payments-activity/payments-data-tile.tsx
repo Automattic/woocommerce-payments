@@ -11,23 +11,9 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
-
-/**
- * Props for the PaymentsDataHighlightBlock component.
- *
- * @typedef {Object} PaymentsDataTileProps
- *
- * @property {string} id					The payment data highlight block id. Used to link the title and amount.
- * @property {string} title					The payment data highlight block title.
- * @property {string} currencyCode			Currency code of the payment data highlight block.
- * @property {React.ReactElement} tooltip	The tooltip element.
- * @property {number} [amount]				Optional. The payment data highlight block amount.
- * @property {boolean} [isLoading]			Optional. Whether the payment data highlight block is loading.
- * @property {string} [reportLink]			Optional. The report link.
- */
 interface PaymentsDataTileProps {
 	id: string;
-	title: string;
+	label: string;
 	currencyCode: string;
 	tooltip?: React.ReactElement;
 	amount?: number;
@@ -35,21 +21,14 @@ interface PaymentsDataTileProps {
 	reportLink?: string;
 }
 
-/**
- * Renders a block that highlights payment data.
- *
- * @param {PaymentsDataTileProps} props   Payment data highlight block props. See `PaymentDataHighlightBlockProps` interface.
- *
- * @return {JSX.Element} Rendered payment data highlight block element.
- */
 const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 	id,
-	title,
+	label,
 	currencyCode,
 	tooltip,
 	amount = 0,
 	isLoading = false,
-	reportLink = '#',
+	reportLink,
 } ) => {
 	const [ showReportLink, setShowReportLink ] = useState( false );
 
@@ -61,7 +40,7 @@ const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 			onMouseLeave={ () => setShowReportLink( false ) }
 		>
 			<p className="wcpay-payments-data-highlights__item__label">
-				<span>{ title }</span>
+				<span>{ label }</span>
 				{ ! isLoading && tooltip }
 			</p>
 			<div className="wcpay-payments-data-highlights__item__wrapper">
@@ -76,7 +55,7 @@ const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 						value={ formatCurrency( amount, currencyCode ) }
 					/>
 				</p>
-				{ showReportLink && (
+				{ reportLink && showReportLink && (
 					<a
 						href={ reportLink }
 						className="wcpay-payments-data-highlights__item__wrapper__report-link"

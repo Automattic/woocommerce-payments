@@ -28,6 +28,7 @@
 
 .wcpay-payments-activity-data {
 	display: flex;
+	width: 100%;
 
 	@include breakpoint( '<660px' ) {
 		flex-direction: column;
