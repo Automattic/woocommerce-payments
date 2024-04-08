@@ -15,6 +15,8 @@ import { trackAccountReset } from 'wcpay/onboarding/tracking';
 
 interface Props {
 	accountLink: string;
+	poEnabled: boolean;
+	poComplete: boolean;
 	openModal: () => void;
 }
 
@@ -27,7 +29,13 @@ const handleReset = () => {
 };
 
 export const AccountTools: React.FC< Props > = ( props: Props ) => {
-	const accountLink = props.accountLink;
+	let accountLink = props.accountLink;
+	const isPoInProgress = props.poEnabled && ! props.poComplete;
+	if ( isPoInProgress ) {
+		accountLink = addQueryArgs( wcpaySettings.connectUrl, {
+			collect_payout_requirements: true,
+		} );
+	}
 	const [ modalVisible, setModalVisible ] = useState( false );
 
 	return (

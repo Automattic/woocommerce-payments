@@ -105,7 +105,13 @@ const AccountStatusDetails = ( props ) => {
 				/>
 			</AccountStatusItem>
 			{ ( ! accountStatus.detailsSubmitted || isInDevMode() ) && (
-				<AccountTools accountLink={ accountStatus.accountLink } />
+				<AccountTools
+					accountLink={ accountStatus.accountLink }
+					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
+					poComplete={
+						accountStatus.progressiveOnboarding.isComplete
+					}
+				/>
 			) }
 			{ accountFees.length > 0 && (
 				<AccountFees accountFees={ accountFees } />
