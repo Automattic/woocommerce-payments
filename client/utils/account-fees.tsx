@@ -124,12 +124,12 @@ export const formatMethodFeesTooltip = (
 
 	const total = {
 		percentage_rate:
-			accountFees.base.percentage_rate +
-			accountFees.additional.percentage_rate +
+			accountFees.base.percentage_rate * discountAdjustedFeeRate +
+			accountFees.additional.percentage_rate * discountAdjustedFeeRate +
 			accountFees.fx.percentage_rate,
 		fixed_rate:
-			accountFees.base.fixed_rate +
-			accountFees.additional.fixed_rate +
+			accountFees.base.fixed_rate * discountAdjustedFeeRate +
+			accountFees.additional.fixed_rate * discountAdjustedFeeRate +
 			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
 	};
@@ -165,12 +165,7 @@ export const formatMethodFeesTooltip = (
 			{ hasFees( accountFees.fx ) ? (
 				<div>
 					<div>Foreign exchange fee</div>
-					<div>
-						{ getFeeDescriptionString(
-							accountFees.fx,
-							discountAdjustedFeeRate
-						) }
-					</div>
+					<div>{ getFeeDescriptionString( accountFees.fx, 1 ) }</div>
 				</div>
 			) : (
 				''
@@ -178,10 +173,7 @@ export const formatMethodFeesTooltip = (
 			<div>
 				<div>Total per transaction</div>
 				<div className={ 'wcpay-fees-tooltip__bold' }>
-					{ getFeeDescriptionString(
-						total,
-						discountAdjustedFeeRate
-					) }
+					{ getFeeDescriptionString( total, 1 ) }
 				</div>
 			</div>
 			{ wcpaySettings &&
