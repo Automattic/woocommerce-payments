@@ -27,18 +27,22 @@
 }
 
 .wcpay-payments-activity-data {
-	display: flex;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
 	width: 100%;
 
 	@include breakpoint( '<660px' ) {
-		flex-direction: column;
+		grid-template-columns: 1fr;
 		padding: 24px;
 	}
 
 	.wcpay-payments-data-highlights {
-		display: flex;
-		flex: 1 0 0;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+
+		@include breakpoint( '<660px' ) {
+			grid-template-columns: 1fr;
+		}
 
 		&__item {
 			padding: 24px;
@@ -48,7 +52,6 @@
 			justify-content: flex-start;
 			align-items: flex-start;
 			min-height: 129px;
-			flex: 1 0 0;
 
 			&:hover {
 				.wcpay-payments-data-highlights__item__wrapper__report-link {
@@ -126,7 +129,6 @@
 	&__total-payments-volume {
 		border-left: none;
 		align-self: stretch;
-		flex: 1 0 0;
 
 		&__label {
 			@include label-styles;
