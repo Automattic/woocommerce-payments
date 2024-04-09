@@ -44,6 +44,25 @@ export const normalizeOrderData = ( paymentData ) => {
 		paymentRequestType = 'google_pay';
 	}
 
+    // Add selected shipping method from the non-recurring cart
+    const shipping_methods = {};
+    shipping_methods[0] = paymentData?.shippingOption?.id ?? null;
+
+    // Get the shipping methods from the recurring cart
+    const recurring_shipping_els = document.querySelectorAll('.shipping.recurring-total input');
+    if ( recurring_shipping_els.length ) {
+        // If recurring shipping methods exit, loop the shipping methods and attach to the posted object
+        for ( const el of recurring_shipping_els ) {
+            // If the shipping method is checkbox and active pass the index/value
+            if ( el.type === 'checkbox' && el.checked === true ) {
+                shipping_methods[el.dataset.index] = el.value;
+            // Else just pass the index/value
+            } else if ( el.type !== 'checkbox' ) {
+                shipping_methods[el.dataset.index] = el.value;
+            }
+        }
+    }
+
 	return {
 		billing_first_name:
 			name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
@@ -69,7 +88,7 @@ export const normalizeOrderData = ( paymentData ) => {
 		shipping_city: shipping?.city ?? '',
 		shipping_state: shipping?.region ?? '',
 		shipping_postcode: shipping?.postalCode ?? '',
-		shipping_method: [ paymentData?.shippingOption?.id ?? null ],
+		shipping_method: shipping_methods,
 		order_comments: '',
 		payment_method: 'woocommerce_payments',
 		ship_to_different_address: 1,
