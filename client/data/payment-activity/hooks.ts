@@ -9,12 +9,13 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_NAME } from '../constants';
 
-export const usePaymentActivityData = () =>
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const usePaymentActivityData = ( query: any ) =>
 	useSelect( ( select ) => {
 		const { getPaymentActivityData, isResolving } = select( STORE_NAME );
-
+		const x = getPaymentActivityData( query );
 		return {
-			data: getPaymentActivityData(),
+			paymentActivityData: x,
 			isLoading: isResolving( 'getPaymentActivityData', [] ),
 		};
 	}, [] );

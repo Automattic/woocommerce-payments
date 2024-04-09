@@ -5,10 +5,9 @@
  */
 import TYPES from './action-types';
 
-export function updatePaymentActivity( query, data ) {
+export function updatePaymentActivity( data ) {
 	return {
 		type: TYPES.SET_PAYMENT_ACTIVITY_DATA,
-		query,
 		data,
 	};
 }
