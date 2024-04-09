@@ -249,6 +249,7 @@ class WooPayDirectCheckout {
 			spinner.classList.add( 'wc-block-components-spinner' );
 			spinner.style.position = 'relative';
 			spinner.style.fontSize = 'unset';
+			spinner.style.display = 'inline';
 			// Remove the existing content of the button.
 			// Set innerHTML to '&nbsp;' to keep the button's height.
 			element.innerHTML = '&nbsp;';
