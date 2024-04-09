@@ -71,7 +71,7 @@ function triggerCancelAuthorizationModal(
 				<a
 					target="_blank"
 					href={
-						'https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#authorize-vs-capture'
+						'https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#authorize-vs-capture'
 					}
 					rel="noopener noreferrer"
 				>
@@ -84,7 +84,7 @@ function triggerCancelAuthorizationModal(
 			cancelAuthorization: (
 				<a
 					target="_blank"
-					href="https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#cancelling-authorizations"
+					href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#cancelling-authorizations"
 					rel="noopener noreferrer"
 				>
 					{ __( 'cancel the payment', 'woocommerce-payments' ) }
@@ -140,7 +140,7 @@ function triggerCaptureAuthorizationModal(
 				<a
 					target="_blank"
 					href={
-						'https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#authorize-vs-capture'
+						'https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#authorize-vs-capture'
 					}
 					rel="noopener noreferrer"
 				>
@@ -154,7 +154,7 @@ function triggerCaptureAuthorizationModal(
 				<a
 					target="_blank"
 					href={
-						'https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-payments'
+						'https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-payments'
 					}
 					rel="noopener noreferrer"
 				>
@@ -271,7 +271,7 @@ function handleCancelledStatus(
 				howtoIssueRefunds: (
 					<a
 						target="_blank"
-						href="https://woo.com/document/woopayments/managing-money/#refunds"
+						href="https://woocommerce.com/document/woopayments/managing-money/#refunds"
 						rel="noopener noreferrer"
 					>
 						{ __( 'how to issue refunds', 'woocommerce-payments' ) }
