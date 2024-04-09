@@ -10,6 +10,13 @@
 		.components-modal__content {
 			padding: 0 36px 36px;
 		}
+
+		.components-button.has-icon {
+			position: absolute;
+			top: 18px;
+			left: auto;
+			right: 18px;
+		}
 	}
 
 	&__payment-icons {
@@ -35,7 +42,6 @@
 	}
 
 	p {
-		padding: 1.5em 0 !important;
 		text-align: center;
 	}
 
