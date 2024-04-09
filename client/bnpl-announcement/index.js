@@ -72,7 +72,14 @@ const Dialog = () => {
 			</div>
 			<p>
 				{ __(
-					'Boost conversions and give your shoppers additional buying power, with buy now, pay later — now available in your WooPayments dashboard *.',
+					'Boost conversions and give your shoppers additional buying power,',
+					'woocommerce-payments'
+				) }
+				<br></br>
+				{ __( 'with buy now, pay later — ', 'woocommerce-payments' ) }
+				<br></br>
+				{ __(
+					'now available in your WooPayments dashboard *.',
 					'woocommerce-payments'
 				) }
 			</p>

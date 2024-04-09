@@ -22,7 +22,12 @@
 
 	&__fine-print {
 		font-size: 10px;
-		text-align: right;
+		text-align: right !important;
+	}
+
+	h1,
+	p {
+		text-align: center;
 	}
 
 	.components-external-link {
