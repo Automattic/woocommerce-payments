@@ -12,4 +12,3 @@ export function updatePaymentActivity( query, data ) {
 		data,
 	};
 }
-
