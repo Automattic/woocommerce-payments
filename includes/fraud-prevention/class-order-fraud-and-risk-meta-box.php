@@ -137,7 +137,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 				}
 
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
-				$callout_url = 'https://woo.com/document/woopayments/fraud-and-disputes/fraud-protection/';
+				$callout_url = 'https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/';
 				$callout_url = add_query_arg( 'status_is', 'fraud-meta-box-not-wcpay-learn-more', $callout_url );
 				echo '<p>' . esc_html( $description ) . '</p><a href="' . esc_url( $callout_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;

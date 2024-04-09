@@ -695,7 +695,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									a: (
 										// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
 										<a
-											href="https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+											href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
 											target="_blank"
 											rel="noreferer"
 										/>
