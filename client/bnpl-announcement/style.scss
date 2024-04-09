@@ -6,6 +6,10 @@
 			max-width: 500px;
 			margin-top: auto;
 		}
+
+		.components-modal__content {
+			padding: 0 36px 36px;
+		}
 	}
 
 	&__payment-icons {
@@ -25,8 +29,13 @@
 		text-align: right !important;
 	}
 
-	h1,
+	h1 {
+		text-align: center;
+		width: 100%;
+	}
+
 	p {
+		padding: 1.5em 0 !important;
 		text-align: center;
 	}
 
