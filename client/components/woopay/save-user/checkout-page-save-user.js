@@ -35,6 +35,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
 
+	if ( window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO ) {
+		recordUserEvent( 'checkout_save_my_info_click', {
+			status: 'checked',
+		} );
+	}
+
 	const getPhoneFieldValue = () => {
 		let phoneFieldValue = '';
 		if ( isBlocksCheckout ) {
