@@ -2,8 +2,10 @@
  * External dependencies
  */
 import * as React from 'react';
+import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { formatCurrency } from 'wcpay/utils/currency';
+import { usePaymentActivityData } from 'wcpay/data';
 
 import { __ } from '@wordpress/i18n';
 
@@ -12,8 +14,21 @@ import { __ } from '@wordpress/i18n';
  */
 import './style.scss';
 
+const getDateRange = () => {
+	return {
+		date_start: moment()
+			.subtract( 7, 'd' )
+			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
+		date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
+	};
+};
+
 const TotalPaymentsVolume: React.FC = () => {
-	const { accountDefaultCurrency, lifetimeTPV } = wcpaySettings;
+	const { accountDefaultCurrency } = wcpaySettings;
+
+	const {
+		paymentActivityData: { total_payments_volume: totalPaymentsVolume },
+	} = usePaymentActivityData( getDateRange() );
 
 	return (
 		<>
@@ -23,7 +38,10 @@ const TotalPaymentsVolume: React.FC = () => {
 					<HelpOutlineIcon />
 				</div>
 				<div className="total-payments-volume__body">
-					{ formatCurrency( lifetimeTPV, accountDefaultCurrency ) }
+					{ formatCurrency(
+						totalPaymentsVolume,
+						accountDefaultCurrency
+					) }
 				</div>
 			</div>
 		</>
