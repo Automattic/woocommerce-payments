@@ -85,7 +85,9 @@ export const handleWooPayEmailInput = async (
 		isSkipWoopayCookieSet; // We enforce and extend the skipping to the entire user session.
 
 	if ( customerClickedBackButton && ! isSkipWoopayCookieSet ) {
-		document.cookie = 'skip_woopay=1; path=/';
+		const now = new Date();
+		const followingDay = new Date( now.getTime() + 24 * 60 * 60 * 1000 ); // 24 hours later
+		document.cookie = `skip_woopay=1; path=/; expires=${ followingDay.toUTCString() }`;
 	}
 
 	// Track the current state of the header. This default
