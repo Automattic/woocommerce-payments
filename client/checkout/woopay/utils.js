@@ -81,3 +81,16 @@ export const shouldSkipWooPay = () => {
 		skipWooPayCookieSplit[ 1 ].trim() === '1'
 	);
 };
+
+/**
+ * Deletes the skip_woopay cookie.
+ * This should be called when the user explicitly opts to pay with WooPay.
+ */
+export const deleteSkipWooPayCookie = () => {
+	if ( ! shouldSkipWooPay() ) {
+		return;
+	}
+
+	document.cookie =
+		'skip_woopay=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+};

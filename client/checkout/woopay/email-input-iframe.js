@@ -11,6 +11,7 @@ import {
 	validateEmail,
 	appendRedirectionParams,
 	shouldSkipWooPay,
+	deleteSkipWooPayCookie,
 } from './utils';
 import { select } from '@wordpress/data';
 
@@ -488,6 +489,7 @@ export const handleWooPayEmailInput = async (
 
 		clearTimeout( timer );
 		spinner.remove();
+		deleteSkipWooPayCookie();
 
 		timer = setTimeout( () => {
 			if ( validateEmail( email ) ) {
