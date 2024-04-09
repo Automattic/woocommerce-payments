@@ -5,8 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Core\Server\Request;
-use WCPay\Exceptions\API_Exception;
+use WCPay\Core\Server\Request\Get_Reporting_Payment_Activity;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -51,13 +50,16 @@ class WC_REST_Payments_Reporting_Controller extends WC_Payments_REST_Controller 
 	}
 
 	/**
-	 * Retrieve transaction to respond with via API.
+	 * Retrieve the Payment Activity data.
 	 *
-	 * @param WP_REST_Request $request Full data about the request.
+	 * @param WP_REST_Request $request The request.
+	 * @return array
 	 */
-	public function get_payment_activity( $request ) {
-		$wcpay_request = Request::get( WC_Payments_API_Client::REPORTING_API );
-		$wcpay_request->assign_hook( 'wcpay_get_payment_activity' );
+	public function get_payment_activity( $request ): array {
+		$wcpay_request = Get_Reporting_Payment_Activity::create();
+		$wcpay_request->set_date_start( $request->get_param( 'date_start' ) );
+		$wcpay_request->set_date_end( $request->get_param( 'date_end' ) );
+		$wcpay_request->set_timezone( $request->get_param( 'timezone' ) );
 		return $wcpay_request->handle_rest_request();
 	}
 }
