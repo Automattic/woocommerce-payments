@@ -2,21 +2,23 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, CheckboxControl } from '@wordpress/components';
+import { Button, CheckboxControl, ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import React from 'react';
 
 /**
  * Internal dependencies
  */
-import { getPaymentMethodSettingsUrl } from '../../utils';
+import { getAdminUrl, getPaymentMethodSettingsUrl } from '../../utils';
 import {
 	usePaymentRequestEnabledSettings,
 	useExpressCheckoutShowIncompatibilityNotice,
+	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
 import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const [
@@ -25,6 +27,12 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
 
 	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
+	const duplicatedPaymentMethods = useGetDuplicatedPaymentMethodIds() as Record<
+		string,
+		string[]
+	>;
+	const isDuplicate =
+		duplicatedPaymentMethods?.apple_pay_google_pay?.length > 0;
 
 	return (
 		<li
@@ -168,6 +176,38 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 			</div>
 			{ showIncompatibilityNotice && (
 				<ExpressCheckoutIncompatibilityNotice />
+			) }
+			{ isDuplicate && (
+				<InlineNotice
+					status="warning"
+					icon={ true }
+					isDismissible={ false }
+					className="duplicate__notice"
+				>
+					<span>
+						{ interpolateComponents( {
+							mixedString: __(
+								'This payment method is enabled by other plugins as well, consider reviewing to improve shopper experience. {{reviewExtension}}Review duplicate extension{{/reviewExtension}}.',
+								'woocommerce-payments'
+							),
+							components: {
+								reviewExtension: (
+									// eslint-disable-next-line max-len
+									<ExternalLink
+										href={ getAdminUrl( {
+											page: 'wc-settings',
+											tab: 'checkout',
+											// TODO fix the proper link
+											section:
+												duplicatedPaymentMethods
+													?.apple_pay_google_pay[ 0 ],
+										} ) }
+									/>
+								),
+							},
+						} ) }
+					</span>
+				</InlineNotice>
 			) }
 		</li>
 	);
