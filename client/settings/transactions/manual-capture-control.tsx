@@ -70,7 +70,7 @@ const ManualCaptureControl = (): JSX.Element => {
 									),
 									components: {
 										a: (
-											<ExternalLink href="https://woo.com/in-person-payments/" />
+											<ExternalLink href="https://woocommerce.com/in-person-payments/" />
 										),
 									},
 							  } )
