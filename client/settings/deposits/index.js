@@ -166,7 +166,7 @@ const DepositsSchedule = () => {
 						learnMoreLink: (
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
 							<a
-								href="https://woo.com/document/woopayments/deposits/deposit-schedule/"
+								href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/"
 								target="_blank"
 								rel="noreferrer noopener"
 							/>
@@ -189,7 +189,7 @@ const DepositsSchedule = () => {
 						learnMoreLink: (
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
 							<a
-								href="https://woo.com/document/woopayments/deposits/deposit-schedule/"
+								href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/"
 								target="_blank"
 								rel="noreferrer noopener"
 							/>

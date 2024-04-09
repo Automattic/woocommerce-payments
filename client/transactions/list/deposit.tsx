@@ -52,7 +52,7 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 					),
 					components: {
 						learnMoreLink: (
-							<ExternalLink href="https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-funds" />
+							<ExternalLink href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#pending-funds" />
 						),
 					},
 				} ) }

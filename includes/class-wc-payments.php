@@ -409,6 +409,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-large-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
+		include_once __DIR__ . '/exceptions/class-cannot-combine-currencies-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
@@ -1690,7 +1691,7 @@ class WC_Payments {
 		wp_enqueue_script( 'WCPAY_CART' );
 
 		if ( WC_Payments_Utils::is_cart_block() ) {
-			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-blocks-integration' ] );
+			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-cart-block-frontend' ] );
 			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
 		}
 	}

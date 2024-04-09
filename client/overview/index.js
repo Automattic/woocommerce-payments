@@ -20,7 +20,7 @@ import ErrorBoundary from 'components/error-boundary';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import Page from 'components/page';
-import PaymentActivity from 'components/payment-activity';
+import PaymentsActivity from 'wcpay/components/payments-activity';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
@@ -158,7 +158,7 @@ const OverviewPage = () => {
 								{
 									label: strings.notice.actions.learnMore,
 									url:
-										'https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/',
+										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/',
 									urlTarget: '_blank',
 								},
 						  ]
@@ -198,11 +198,9 @@ const OverviewPage = () => {
 						{
 							/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
 							isPaymentOverviewWidgetEnabled && (
-								<Card>
-									<ErrorBoundary>
-										<PaymentActivity />
-									</ErrorBoundary>
-								</Card>
+								<ErrorBoundary>
+									<PaymentsActivity />
+								</ErrorBoundary>
 							)
 						}
 						<DepositsOverview />
