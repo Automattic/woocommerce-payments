@@ -1,0 +1,44 @@
+.wcpay-bnpl-announcement {
+	&.wcpay-confirmation-modal.wcpay-confirmation-modal {
+		margin-top: 25%;
+
+		@media screen and ( min-width: 600px ) {
+			max-width: 500px;
+			margin-top: auto;
+		}
+	}
+
+	&__payment-icons {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-wrap: nowrap;
+		gap: 17px;
+
+		.payment-method__icon {
+			margin-right: 0;
+		}
+	}
+
+	&__fine-print {
+		font-size: 10px;
+		text-align: right;
+	}
+
+	.components-external-link {
+		padding: 6px 12px;
+		align-items: center;
+		display: flex;
+	}
+
+	.components-button.is-primary {
+		background: $studio-woocommerce-purple-60;
+
+		&:hover {
+			background: $studio-woocommerce-purple-70;
+		}
+		&:active {
+			background: $studio-woocommerce-purple-80;
+		}
+	}
+}

@@ -55,6 +55,7 @@ function wcpay_activated() {
 function wcpay_deactivated() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::remove_woo_admin_notes();
+	delete_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed' );
 }
 
 register_activation_hook( __FILE__, 'wcpay_activated' );
