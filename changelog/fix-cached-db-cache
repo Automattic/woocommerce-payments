@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Clear WP cache on writes inside Database_Cache
