@@ -71,13 +71,13 @@ exports[`PaymentsActivity component should render 1`] = `
                 aria-labelledby="wcpay-payments-activity-data__total-payments-volume"
                 class="wcpay-payments-data-highlights__item__wrapper__amount"
               >
-                $1,563.73
+                €1,563.73
               </p>
               <a
                 class="wcpay-payments-data-highlights__item__wrapper__report-link"
                 href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions"
               >
-                View Report
+                View report
               </a>
             </div>
           </div>
@@ -132,6 +132,12 @@ exports[`PaymentsActivity component should render 1`] = `
                 >
                   €3,143.00
                 </p>
+                <a
+                  class="wcpay-payments-data-highlights__item__wrapper__report-link"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&type_is=charge"
+                >
+                  View report
+                </a>
               </div>
             </div>
             <div
@@ -158,7 +164,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   class="wcpay-payments-data-highlights__item__wrapper__report-link"
                   href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&type_is=refund"
                 >
-                  View Report
+                  View report
                 </a>
               </div>
             </div>
@@ -186,7 +192,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   class="wcpay-payments-data-highlights__item__wrapper__report-link"
                   href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes&filter=awaiting_response"
                 >
-                  View Report
+                  View report
                 </a>
               </div>
             </div>
