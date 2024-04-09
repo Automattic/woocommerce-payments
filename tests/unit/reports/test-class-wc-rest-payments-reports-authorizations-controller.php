@@ -79,7 +79,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_param( 'match', 'any' );
 		$request->set_param( 'order_id', 123 );
-		$request->set_param( 'customer_email', 'test@woo.com' );
+		$request->set_param( 'customer_email', 'test@woocommerce.com' );
 		$request->set_param( 'payment_method_type', 'visa' );
 
 		$mock_request = $this->mock_wcpay_request( List_Authorizations::class );
@@ -89,7 +89,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 				[
 					'match'             => 'any',
 					'order_id_is'       => 123,
-					'customer_email_is' => 'test@woo.com',
+					'customer_email_is' => 'test@woocommerce.com',
 					'source_is'         => 'visa',
 				],
 			);
@@ -196,7 +196,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 					'source'            => 'visa',
 					'source_identifier' => '4242',
 					'customer_name'     => 'Test One',
-					'customer_email'    => 'test1@woo.com',
+					'customer_email'    => 'test1@woocommerce.com',
 					'customer_country'  => Country_Code::UNITED_STATES,
 					'fees'              => 312,
 					'currency'          => 'eur',
@@ -221,7 +221,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 					'source'            => 'visa',
 					'source_identifier' => '4242',
 					'customer_name'     => 'Test Two',
-					'customer_email'    => 'test2@woo.com',
+					'customer_email'    => 'test2@woocommerce.com',
 					'customer_country'  => Country_Code::UNITED_STATES,
 					'fees'              => 98,
 					'currency'          => 'eur',
@@ -246,7 +246,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 					'source'            => 'mastercard',
 					'source_identifier' => '4242',
 					'customer_name'     => 'Test One',
-					'customer_email'    => 'test1@woo.com',
+					'customer_email'    => 'test1@woocommerce.com',
 					'customer_country'  => Country_Code::UNITED_STATES,
 					'fees'              => 312,
 					'currency'          => 'eur',
@@ -277,7 +277,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 				'fees'             => 312,
 				'customer'         => [
 					'name'    => 'Test One',
-					'email'   => 'test1@woo.com',
+					'email'   => 'test1@woocommerce.com',
 					'country' => Country_Code::UNITED_STATES,
 				],
 				'net_amount'       => 6988,
@@ -298,7 +298,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 				'fees'             => 98,
 				'customer'         => [
 					'name'    => 'Test Two',
-					'email'   => 'test2@woo.com',
+					'email'   => 'test2@woocommerce.com',
 					'country' => Country_Code::UNITED_STATES,
 				],
 				'net_amount'       => 1702,
@@ -319,7 +319,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 				'fees'             => 312,
 				'customer'         => [
 					'name'    => 'Test One',
-					'email'   => 'test1@woo.com',
+					'email'   => 'test1@woocommerce.com',
 					'country' => Country_Code::UNITED_STATES,
 				],
 				'net_amount'       => 6988,
@@ -328,5 +328,4 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 			],
 		];
 	}
-
 }

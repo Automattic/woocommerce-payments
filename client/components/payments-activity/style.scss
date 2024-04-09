@@ -1,0 +1,54 @@
+.wcpay-payments-activity {
+	&__card {
+		&__body {
+			&__empty-state-wrapper {
+				text-align: center;
+				color: #949494;
+				padding: 16px 0 19px;
+			}
+		}
+	}
+}
+
+.payments-activity-data {
+	display: flex;
+	padding: 24px;
+
+	@include breakpoint( '<660px' ) {
+		flex-direction: column;
+	}
+
+	.total-payments-volume {
+		display: flex;
+		flex: 2;
+		flex-direction: column;
+		align-items: flex-start;
+
+		&__heading {
+			font-size: 16px;
+			font-weight: 600;
+			line-height: 16px;
+			color: $gray-900;
+		}
+
+		&__body {
+			font-size: 24px;
+			font-weight: 600;
+			color: $gray-900;
+			line-height: 32px;
+			margin-top: 14px;
+		}
+
+		.gridicon {
+			height: 16px;
+			width: 16px;
+			margin-left: 4px;
+			vertical-align: text-bottom;
+		}
+	}
+
+	.payments-data-highlights {
+		display: flex;
+		flex: 3;
+	}
+}

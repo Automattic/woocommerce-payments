@@ -6,7 +6,7 @@
  */
 
 // WC_Mock_WC_Data is needed to mock '*_meta_data' methods required in tests.
-require_once dirname( __FILE__ ) . '/class-wc-mock-wc-data.php';
+require_once __DIR__ . '/class-wc-mock-wc-data.php';
 
 /**
  * Class WC_Subscription.
@@ -275,6 +275,5 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function set_customer_id( $customer_id = null ) {
 		$this->customer_id = $customer_id ?? get_current_user_id();
-
 	}
 }

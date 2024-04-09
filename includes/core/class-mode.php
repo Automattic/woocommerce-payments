@@ -68,7 +68,7 @@ class Mode {
 		/**
 		 * Allows WooPayments to enter dev (aka sandbox) mode.
 		 *
-		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/
+		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/
 		 * @param bool $dev_mode The pre-determined dev mode.
 		 */
 		$this->dev_mode = (bool) apply_filters( 'wcpay_dev_mode', $dev_mode );
@@ -82,7 +82,7 @@ class Mode {
 		/**
 		 * Allows WooPayments to enter test mode.
 		 *
-		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
+		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
 		 * @param bool $test_mode The pre-determined test mode.
 		 */
 		$this->test_mode = (bool) apply_filters( 'wcpay_test_mode', $test_mode );
@@ -94,7 +94,7 @@ class Mode {
 	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
 	 */
-	public function is_live() : bool {
+	public function is_live(): bool {
 		$this->maybe_init();
 		return ! $this->test_mode && ! $this->dev_mode;
 	}
@@ -105,7 +105,7 @@ class Mode {
 	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
 	 */
-	public function is_test() : bool {
+	public function is_test(): bool {
 		$this->maybe_init();
 
 		return $this->test_mode;
@@ -117,7 +117,7 @@ class Mode {
 	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
 	 */
-	public function is_dev() : bool {
+	public function is_dev(): bool {
 		$this->maybe_init();
 		return $this->dev_mode;
 	}
@@ -157,7 +157,7 @@ class Mode {
 	 *
 	 * @return bool Whether `WCPAY_DEV_MODE` is defined and true.
 	 */
-	protected function is_wcpay_dev_mode_defined() : bool {
+	protected function is_wcpay_dev_mode_defined(): bool {
 		return(
 			defined( 'WCPAY_DEV_MODE' )
 			&& WCPAY_DEV_MODE
