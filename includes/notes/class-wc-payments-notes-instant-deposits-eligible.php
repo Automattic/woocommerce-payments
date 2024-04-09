@@ -41,7 +41,7 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 					__( "Get immediate access to your funds when you need them – including nights, weekends, and holidays. With %s' <a>Instant Deposits feature</a>, you're able to transfer your earnings to a debit card within minutes.", 'woocommerce-payments' ),
 					'WooPayments'
 				),
-				[ 'a' => '<a href="https://woo.com/document/woopayments/deposits/instant-deposits/">' ]
+				[ 'a' => '<a href="https://woocommerce.com/document/woopayments/deposits/instant-deposits/">' ]
 			)
 		);
 		$note->set_content_data( (object) [] );
@@ -51,7 +51,7 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 		$note->add_action(
 			self::NOTE_NAME,
 			__( 'Request an instant deposit', 'woocommerce-payments' ),
-			'https://woo.com/document/woopayments/deposits/instant-deposits/#request-an-instant-deposit',
+			'https://woocommerce.com/document/woopayments/deposits/instant-deposits/#request-an-instant-deposit',
 			'unactioned',
 			true
 		);
