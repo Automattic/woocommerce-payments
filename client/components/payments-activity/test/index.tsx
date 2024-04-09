@@ -7,10 +7,11 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import PaymentActivity from '..';
+import PaymentsActivity from '..';
 
 declare const global: {
 	wcpaySettings: {
+		lifetimeTPV: number;
 		accountStatus: {
 			deposits: {
 				restrictions: string;
@@ -29,9 +30,10 @@ declare const global: {
 	};
 };
 
-describe( 'PaymentActivity component', () => {
+describe( 'PaymentsActivity component', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
+			lifetimeTPV: 1000,
 			accountStatus: {
 				deposits: {
 					restrictions: 'deposits_unrestricted',
@@ -69,8 +71,17 @@ describe( 'PaymentActivity component', () => {
 	} );
 
 	it( 'should render', () => {
-		const { container } = render( <PaymentActivity /> );
+		const { container } = render( <PaymentsActivity /> );
 
+		expect( container ).toMatchSnapshot();
+	} );
+
+	it( 'should render an empty state', () => {
+		global.wcpaySettings.lifetimeTPV = 0;
+
+		const { container, getByText } = render( <PaymentsActivity /> );
+
+		expect( getByText( 'No payments…yet!' ) ).toBeInTheDocument();
 		expect( container ).toMatchSnapshot();
 	} );
 } );
