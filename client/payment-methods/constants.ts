@@ -38,6 +38,7 @@ export const PAYMENT_METHOD_TITLES = {
 	bancontact: __( 'Bancontact', 'woocommerce-payments' ),
 	card: __( 'Card Payment', 'woocommerce-payments' ),
 	card_present: __( 'In-Person Card Payment', 'woocommerce-payments' ),
+	cartes_bancaires: __( 'Cartes Bancaires', 'woocommerce-payments' ),
 	diners: __( 'Diners Club', 'woocommerce-payments' ),
 	discover: __( 'Discover', 'woocommerce-payments' ),
 	eps: __( 'EPS', 'woocommerce-payments' ),
