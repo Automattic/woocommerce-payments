@@ -126,6 +126,7 @@ const Survey: React.FC = () => {
 								onClick={ () => {
 									setReviewRating( undefined );
 								} }
+								disabled={ disableForm }
 							>
 								<Icon icon={ closeSmall } size={ 28 } />
 							</button>
