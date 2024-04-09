@@ -149,6 +149,58 @@ export const initializeBnplSiteMessaging = async () => {
 			document
 				.getElementById( 'payment-method-message' )
 				.classList.add( 'ready' );
+
+			// On the cart page, get the height of the PMME after it's rendered and store it in a CSS variable. This helps
+			// prevent layout shifts when the PMME is loaded asynchronously upon cart total update.
+			if ( isCart ) {
+				// An element that won't be removed with the cart total update.
+				const cartCollaterals = document.querySelector(
+					'.cart-collaterals'
+				);
+				const wcBnplHeight = getComputedStyle( cartCollaterals )
+					.getPropertyValue( '--wc-bnpl-height' )
+					.trim();
+
+				if ( wcBnplHeight ) {
+					return;
+				}
+
+				const pmme = document.getElementById(
+					'payment-method-message'
+				);
+				const pmmeContainer = document.querySelector(
+					'.cart_totals .__PrivateStripeElement'
+				);
+				setTimeout( () => {
+					const pmmeComputedStyle = window.getComputedStyle( pmme );
+					const pmmeHeight = parseFloat( pmmeComputedStyle.height );
+					const pmmeMarginBottom = parseFloat( bottomMargin );
+					const pmmeTotalHeight = pmmeHeight + pmmeMarginBottom;
+
+					const pmmeContainerComputedStyle = window.getComputedStyle(
+						pmmeContainer
+					);
+					const pmmeContainerHeight = parseFloat(
+						pmmeContainerComputedStyle.height
+					);
+
+					cartCollaterals.style.setProperty(
+						'--wc-bnpl-height',
+						pmmeTotalHeight + 'px'
+					);
+					cartCollaterals.style.setProperty(
+						'--wc-bnpl-container-height',
+						pmmeContainerHeight - 12 + 'px'
+					);
+
+					cartCollaterals.style.setProperty(
+						'--wc-bnpl-loader-margin',
+						pmmeMarginBottom + 2 + 'px'
+					);
+
+					pmme.style.setProperty( '--wc-bnpl-margin-bottom', '-4px' );
+				}, '1000' );
+			}
 		} );
 	}
 
