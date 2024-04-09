@@ -13,9 +13,9 @@ import { STORE_NAME } from '../constants';
 export const usePaymentActivityData = ( query: any ) =>
 	useSelect( ( select ) => {
 		const { getPaymentActivityData, isResolving } = select( STORE_NAME );
-		const x = getPaymentActivityData( query );
+
 		return {
-			paymentActivityData: x,
+			paymentActivityData: getPaymentActivityData( query ),
 			isLoading: isResolving( 'getPaymentActivityData', [] ),
 		};
 	}, [] );
