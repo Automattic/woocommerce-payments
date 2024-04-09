@@ -158,7 +158,7 @@ const OverviewPage = () => {
 								{
 									label: strings.notice.actions.learnMore,
 									url:
-										'https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/',
+										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/',
 									urlTarget: '_blank',
 								},
 						  ]
