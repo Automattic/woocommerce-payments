@@ -52,7 +52,7 @@ const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 						href={ reportLink }
 						className="wcpay-payments-data-highlights__item__wrapper__report-link"
 					>
-						{ __( 'View Report', 'woocommerce_payments' ) }
+						{ __( 'View report', 'woocommerce_payments' ) }
 					</a>
 				) }
 			</div>
