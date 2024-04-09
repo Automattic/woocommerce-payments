@@ -35,16 +35,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
 
-	useEffect( () => {
-		if ( window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO ) {
-			recordUserEvent( 'checkout_save_my_info_click', {
-				status: 'checked',
-			} );
-		}
-		// We only want to run this once.
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [] );
-
 	const getPhoneFieldValue = () => {
 		let phoneFieldValue = '';
 		if ( isBlocksCheckout ) {
