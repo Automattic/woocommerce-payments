@@ -39,6 +39,17 @@ describe( 'PaymentsDataTile', () => {
 		},
 	};
 
+	test( 'renders correctly', () => {
+		const { container } = render(
+			<PaymentsDataTile
+				id="total-payments"
+				currencyCode="USD"
+				label="Total Payments"
+			/>
+		);
+		expect( container ).toMatchSnapshot();
+	} );
+
 	test( 'renders label correctly', () => {
 		const label = 'Total Payments';
 		render(
