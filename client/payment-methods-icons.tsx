@@ -17,6 +17,7 @@ import P24Asset from 'assets/images/payment-methods/p24.svg?asset';
 import IdealAsset from 'assets/images/payment-methods/ideal.svg?asset';
 import BankDebitAsset from 'assets/images/payment-methods/bank-debit.svg?asset';
 import AffirmAsset from 'assets/images/payment-methods/affirm-badge.svg?asset';
+import AffirmLogoAsset from 'assets/images/payment-methods/affirm-logo.svg?asset';
 import AfterpayAsset from 'assets/images/payment-methods/afterpay-logo.svg?asset';
 import AfterpayPillAsset from 'assets/images/payment-methods/afterpay-badge.svg?asset';
 import ClearpayAsset from 'assets/images/payment-methods/clearpay.svg?asset';
@@ -56,6 +57,10 @@ const iconComponent = (
 
 export const AffirmIcon = iconComponent(
 	AffirmAsset,
+	__( 'Affirm', 'woocommerce-payments' )
+);
+export const AffirmLogoIcon = iconComponent(
+	AffirmLogoAsset,
 	__( 'Affirm', 'woocommerce-payments' )
 );
 export const AfterpayIcon = iconComponent(

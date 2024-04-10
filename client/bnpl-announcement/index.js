@@ -13,7 +13,7 @@ import { recordEvent } from 'tracks';
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import {
-	AffirmIcon,
+	AffirmLogoIcon,
 	AfterpayPillIcon,
 	ClearpayIcon,
 	KlarnaPillIcon,
@@ -67,7 +67,7 @@ const Dialog = () => {
 			<div className="wcpay-bnpl-announcement__payment-icons">
 				<KlarnaPillIcon />
 				<AfterpayClearpayIcon />
-				<AffirmIcon />
+				<AffirmLogoIcon />
 			</div>
 			<h1
 				aria-labelledby={ __(
