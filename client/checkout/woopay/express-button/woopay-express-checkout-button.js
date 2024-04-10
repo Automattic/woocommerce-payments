@@ -16,7 +16,10 @@ import { recordUserEvent } from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 import interpolateComponents from '@automattic/interpolate-components';
-import { appendRedirectionParams } from 'wcpay/checkout/woopay/utils';
+import {
+	appendRedirectionParams,
+	deleteSkipWooPayCookie,
+} from 'wcpay/checkout/woopay/utils';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
@@ -135,6 +138,8 @@ export const WoopayExpressCheckoutButton = ( {
 				source: context,
 			} );
 
+			deleteSkipWooPayCookie();
+
 			if ( ! canAddProductToCart() ) {
 				return;
 			}
@@ -182,6 +187,8 @@ export const WoopayExpressCheckoutButton = ( {
 			recordUserEvent( 'woopay_button_click', {
 				source: context,
 			} );
+
+			deleteSkipWooPayCookie();
 
 			if ( ! canAddProductToCart() ) {
 				return;

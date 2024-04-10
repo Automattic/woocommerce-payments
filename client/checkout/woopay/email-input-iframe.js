@@ -10,6 +10,8 @@ import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
+	shouldSkipWooPay,
+	deleteSkipWooPayCookie,
 } from './utils';
 
 export const handleWooPayEmailInput = async (
@@ -74,11 +76,19 @@ export const handleWooPayEmailInput = async (
 
 	//Checks if customer has clicked the back button to prevent auto redirect
 	const searchParams = new URLSearchParams( window.location.search );
+	const isSkipWoopayCookieSet = shouldSkipWooPay();
 	const customerClickedBackButton =
 		( typeof performance !== 'undefined' &&
 			performance.getEntriesByType( 'navigation' )[ 0 ].type ===
 				'back_forward' ) ||
-		searchParams.get( 'skip_woopay' ) === 'true';
+		searchParams.get( 'skip_woopay' ) === 'true' ||
+		isSkipWoopayCookieSet; // We enforce and extend the skipping to the entire user session.
+
+	if ( customerClickedBackButton && ! isSkipWoopayCookieSet ) {
+		const now = new Date();
+		const followingDay = new Date( now.getTime() + 24 * 60 * 60 * 1000 ); // 24 hours later
+		document.cookie = `skip_woopay=1; path=/; expires=${ followingDay.toUTCString() }`;
+	}
 
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
@@ -538,6 +548,7 @@ export const handleWooPayEmailInput = async (
 				break;
 			case 'redirect_to_woopay_skip_session_init':
 				if ( e.data.redirectUrl ) {
+					deleteSkipWooPayCookie();
 					window.location = appendRedirectionParams(
 						e.data.redirectUrl
 					);
@@ -557,6 +568,7 @@ export const handleWooPayEmailInput = async (
 							return;
 						}
 						if ( response.result === 'success' ) {
+							deleteSkipWooPayCookie();
 							window.location = response.url;
 						} else {
 							showErrorMessage();
