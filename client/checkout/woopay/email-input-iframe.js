@@ -489,7 +489,6 @@ export const handleWooPayEmailInput = async (
 
 		clearTimeout( timer );
 		spinner.remove();
-		deleteSkipWooPayCookie();
 
 		timer = setTimeout( () => {
 			if ( validateEmail( email ) ) {
@@ -569,6 +568,7 @@ export const handleWooPayEmailInput = async (
 							return;
 						}
 						if ( response.result === 'success' ) {
+							deleteSkipWooPayCookie();
 							window.location = response.url;
 						} else {
 							showErrorMessage();
