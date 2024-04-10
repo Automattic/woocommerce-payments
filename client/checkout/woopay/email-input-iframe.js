@@ -549,6 +549,7 @@ export const handleWooPayEmailInput = async (
 				break;
 			case 'redirect_to_woopay_skip_session_init':
 				if ( e.data.redirectUrl ) {
+					deleteSkipWooPayCookie();
 					window.location = appendRedirectionParams(
 						e.data.redirectUrl
 					);
