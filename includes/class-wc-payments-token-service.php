@@ -86,7 +86,7 @@ class WC_Payments_Token_Service {
 				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
 				$token->set_expiry_month( $payment_method[ Payment_Method::CARD ]['exp_month'] );
 				$token->set_expiry_year( $payment_method[ Payment_Method::CARD ]['exp_year'] );
-				$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['brand'] ) );
+				$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['display_brand'] ?? $payment_method[ Payment_Method::CARD ]['networks']['preferred'] ?? $payment_method[ Payment_Method::CARD ]['brand'] ) );
 				$token->set_last4( $payment_method[ Payment_Method::CARD ]['last4'] );
 
 		}
