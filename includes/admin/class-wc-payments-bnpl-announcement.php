@@ -60,7 +60,7 @@ class WC_Payments_Bnpl_Announcement {
 		}
 
 		// Time boxed - Campaign expires after 90 days.
-		if ( time() > strtotime( '2024-07-15' ) ) {
+		if ( time() > strtotime( '2024-07-15 00:00:00' ) ) {
 			return;
 		}
 
@@ -127,7 +127,7 @@ class WC_Payments_Bnpl_Announcement {
 
 		// at least 3 purchases (on any payment method).
 		$woopayments_successful_orders_count = $this->get_woopayments_successful_orders_count();
-		if ( $woopayments_successful_orders_count > 3 ) {
+		if ( $woopayments_successful_orders_count >= 3 ) {
 			return;
 		}
 
