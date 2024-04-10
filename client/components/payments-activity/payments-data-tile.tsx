@@ -11,13 +11,34 @@ import './style.scss';
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
 interface PaymentsDataTileProps {
-	id: string; // id of the element can be used for CSS styling
-	label: string; // The label appears as title of the tile
-	currencyCode: string; // The currency to be displayed in the tile
-	tooltip?: React.ReactElement; // For optionally passing the ClickTooltip component
-	amount?: number; // The amount to be displayed in the tile
-	isLoading?: boolean; // Loading state of the tile
-	reportLink?: string; // Optional hover link to view report
+	/**
+	 * The id for the tile, can be used for CSS styling.
+	 */
+	id: string;
+	/**
+	 * Label for the amount in the tile.
+	 */
+	label: string;
+	/**
+	 * The currency code for the amount displayed.
+	 */
+	currencyCode: string;
+	/**
+	 * For optionally passing a ClickTooltip component.
+	 */
+	tooltip?: React.ReactElement;
+	/**
+	 * The amount to be displayed in the tile.
+	 */
+	amount?: number;
+	/**
+	 * Loading state of the tile.
+	 */
+	isLoading?: boolean;
+	/**
+	 * Optional hover link to view report.
+	 */
+	reportLink?: string;
 }
 
 const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
