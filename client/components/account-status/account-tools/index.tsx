@@ -15,8 +15,7 @@ import { trackAccountReset } from 'wcpay/onboarding/tracking';
 
 interface Props {
 	accountLink: string;
-	poEnabled: boolean;
-	poComplete: boolean;
+	detailsSubmitted: boolean;
 	openModal: () => void;
 }
 
@@ -29,13 +28,8 @@ const handleReset = () => {
 };
 
 export const AccountTools: React.FC< Props > = ( props: Props ) => {
-	let accountLink = props.accountLink;
-	const isPoInProgress = props.poEnabled && ! props.poComplete;
-	if ( isPoInProgress ) {
-		accountLink = addQueryArgs( wcpaySettings.connectUrl, {
-			collect_payout_requirements: true,
-		} );
-	}
+	const accountLink = props.accountLink;
+	const detailsSubmitted = props.detailsSubmitted;
 	const [ modalVisible, setModalVisible ] = useState( false );
 
 	return (
@@ -46,13 +40,15 @@ export const AccountTools: React.FC< Props > = ( props: Props ) => {
 				<p>{ strings.description }</p>
 				{ /* Use wrapping div to keep buttons grouped together. */ }
 				<div className="account-tools__actions">
-					<Button
-						variant={ 'secondary' }
-						href={ accountLink }
-						target={ '_blank' }
-					>
-						{ strings.finish }
-					</Button>
+					{ ! detailsSubmitted && (
+						<Button
+							variant={ 'secondary' }
+							href={ accountLink }
+							target={ '_blank' }
+						>
+							{ strings.finish }
+						</Button>
+					) }
 					<Button
 						variant={ 'tertiary' }
 						onClick={ () => setModalVisible( true ) }

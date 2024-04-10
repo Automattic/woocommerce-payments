@@ -106,11 +106,8 @@ const AccountStatusDetails = ( props ) => {
 			</AccountStatusItem>
 			{ ( ! accountStatus.detailsSubmitted || isInDevMode() ) && (
 				<AccountTools
-					accountLink={ accountStatus.accountLink }
-					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
-					poComplete={
-						accountStatus.progressiveOnboarding.isComplete
-					}
+					accountLink={ wcpaySettings.connectUrl }
+					detailsSubmitted={ accountStatus.detailsSubmitted }
 				/>
 			) }
 			{ accountFees.length > 0 && (

@@ -16,7 +16,6 @@ const openModal = jest.fn();
 declare const global: {
 	wcpaySettings: {
 		devMode: boolean;
-		connectUrl: string;
 	};
 };
 
@@ -24,56 +23,47 @@ describe( 'AccountTools', () => {
 	it( 'should render in live mode', () => {
 		global.wcpaySettings = {
 			devMode: false,
-			connectUrl: '/connect',
 		};
 
 		const { container } = render(
 			<AccountTools
 				accountLink={ accountLink }
-				poEnabled={ false }
-				poComplete={ false }
+				detailsSubmitted={ false }
 				openModal={ openModal }
 			/>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 
-	it( 'should not render in sandbox mode', () => {
+	it( 'should render in sandbox mode', () => {
 		global.wcpaySettings = {
 			devMode: true,
-			connectUrl: '/connect',
+		};
+
+		const { container } = render(
+			<AccountTools
+				accountLink={ accountLink }
+				detailsSubmitted={ false }
+				openModal={ openModal }
+			/>
+		);
+
+		expect( container ).toMatchSnapshot();
+	} );
+
+	it( 'should render in sandbox mode for details submitted account without finish setup button', () => {
+		global.wcpaySettings = {
+			devMode: true,
 		};
 
 		render(
 			<AccountTools
 				accountLink={ accountLink }
-				poEnabled={ false }
-				poComplete={ false }
+				detailsSubmitted={ true }
 				openModal={ openModal }
 			/>
 		);
 
-		expect(
-			screen.queryByText(
-				'If you are experiencing problems completing account setup, or need to change the email/country associated with your account, you can reset your account and start from the beginning.'
-			)
-		).not.toBeInTheDocument();
-	} );
-
-	it( 'should render for po accounts', () => {
-		global.wcpaySettings = {
-			devMode: false,
-			connectUrl: '/connect',
-		};
-
-		const { container } = render(
-			<AccountTools
-				accountLink={ accountLink }
-				poEnabled={ true }
-				poComplete={ false }
-				openModal={ openModal }
-			/>
-		);
-		expect( container ).toMatchSnapshot();
+		expect( screen.queryByText( 'Finish setup' ) ).not.toBeInTheDocument();
 	} );
 } );
