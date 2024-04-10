@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
+import { Link } from '@woocommerce/components';
 interface PaymentsDataTileProps {
 	/**
 	 * The id for the tile, can be used for CSS styling.
@@ -69,12 +70,9 @@ const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 					/>
 				</p>
 				{ reportLink && (
-					<a
-						href={ reportLink }
-						className="wcpay-payments-data-highlights__item__wrapper__report-link"
-					>
+					<Link href={ reportLink }>
 						{ __( 'View report', 'woocommerce_payments' ) }
-					</a>
+					</Link>
 				) }
 			</div>
 		</div>

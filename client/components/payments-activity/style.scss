@@ -54,8 +54,8 @@
 			min-height: 129px;
 
 			&:hover {
-				.wcpay-payments-data-highlights__item__wrapper__report-link {
-					visibility: visible;
+				.wcpay-payments-data-highlights__item__wrapper a {
+					opacity: 1;
 				}
 			}
 
@@ -85,14 +85,18 @@
 					}
 				}
 
-				&__report-link {
+				a {
 					text-decoration: none;
 					font-size: 12px;
-					visibility: hidden;
+					opacity: 0;
+
+					&:focus {
+						opacity: 1;
+					}
 
 					@include breakpoint( '<660px' ) {
 						min-height: unset;
-						visibility: visible;
+						opacity: 1;
 					}
 				}
 			}
