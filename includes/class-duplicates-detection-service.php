@@ -66,7 +66,7 @@ class Duplicates_Detection_Service {
 		$enabled_gateways = array_filter(
 			$gateways,
 			function ( $gateway ) {
-				return 'yes' === $gateway->enabled;
+				return $this->is_gateway_enabled( $gateway );
 			}
 		);
 
@@ -118,12 +118,7 @@ class Duplicates_Detection_Service {
 			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
 
-		$enabled_gateways = array_filter(
-			$gateways,
-			function ( $gateway ) {
-				return 'yes' === $gateway->enabled;
-			}
-		);
+		$enabled_gateways = $this->filter_enabled_gateways_only( $gateways );
 
 		foreach ( $enabled_gateways as $gateway ) {
 			foreach ( $keywords as $keyword => $stripe_id ) {
@@ -183,5 +178,21 @@ class Duplicates_Detection_Service {
 				unset( $duplicates[ $gateway_id ] );
 			}
 		}
+	}
+
+	/**
+	 * Filter enabled gateways only.
+	 *
+	 * @param array $gateways All gateways including disabled ones.
+	 *
+	 * @return array Enabled gateways only.
+	 */
+	private function filter_enabled_gateways_only( $gateways ) {
+		return array_filter(
+			$gateways,
+			function ( $gateway ) {
+				return 'yes' === $gateway->enabled;
+			}
+		);
 	}
 }
