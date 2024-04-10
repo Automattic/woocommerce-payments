@@ -24,6 +24,10 @@ import {
 	useWooPayEnabledSettings,
 } from '../../data';
 
+const isPaymentRequestSettingsPage = () =>
+	document.getElementById( 'wcpay-express-checkout-settings-container' )
+		?.dataset.methodId === 'payment_request';
+
 /**
  * stripePromise is used to pass into <Elements>'s stripe props.
  * The stripe prop in <Elements> can't be change once passed in.
@@ -32,6 +36,8 @@ import {
  */
 
 const BrowserHelpText = () => {
+	if ( ! isPaymentRequestSettingsPage() ) return null;
+
 	let browser = 'Google Chrome';
 	let paymentMethodName = 'Google Pay';
 
@@ -56,7 +62,7 @@ const BrowserHelpText = () => {
 };
 
 const buttonSizeToPxMap = {
-	default: 40,
+	small: 40,
 	medium: 48,
 	large: 56,
 };
@@ -120,7 +126,7 @@ const PaymentRequestButtonPreview = () => {
 								theme: theme,
 								height: `${
 									buttonSizeToPxMap[ size ] ||
-									buttonSizeToPxMap.default
+									buttonSizeToPxMap.medium
 								}px`,
 								size,
 							} }
@@ -142,7 +148,7 @@ const PaymentRequestButtonPreview = () => {
 											theme: theme,
 											height: `${
 												buttonSizeToPxMap[ size ] ||
-												buttonSizeToPxMap.default
+												buttonSizeToPxMap.medium
 											}px`,
 										},
 									},
@@ -160,16 +166,19 @@ const PaymentRequestButtonPreview = () => {
 					) }
 				</InlineNotice>
 			) }
-			{ isPaymentRequestEnabled && ! isLoading && ! paymentRequest && (
-				<InlineNotice icon status="info" isDismissible={ false }>
-					{ __(
-						'To preview the Apple Pay and Google Pay buttons, ' +
-							'ensure your device is configured to accept Apple Pay or Google Pay, ' +
-							'and view this page using the Safari or Chrome browsers.',
-						'woocommerce-payments'
-					) }
-				</InlineNotice>
-			) }
+			{ isPaymentRequestSettingsPage() &&
+				isPaymentRequestEnabled &&
+				! isLoading &&
+				! paymentRequest && (
+					<InlineNotice icon status="info" isDismissible={ false }>
+						{ __(
+							'To preview the Apple Pay and Google Pay buttons, ' +
+								'ensure your device is configured to accept Apple Pay or Google Pay, ' +
+								'and view this page using the Safari or Chrome browsers.',
+							'woocommerce-payments'
+						) }
+					</InlineNotice>
+				) }
 			<BrowserHelpText />
 		</>
 	);

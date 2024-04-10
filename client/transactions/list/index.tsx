@@ -31,7 +31,11 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'data/index';
+import {
+	useTransactions,
+	useTransactionsSummary,
+	useReportingExportLanguage,
+} from 'data/index';
 import { Transaction } from 'data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
@@ -39,8 +43,17 @@ import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { displayStatus as displayDepositStatus } from 'deposits/strings';
-import { formatStringValue } from 'utils';
-import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import {
+	formatStringValue,
+	isExportModalDismissed,
+	getExportLanguage,
+	isDefaultSiteLanguage,
+} from 'utils';
+import {
+	formatCurrency,
+	formatExplicitCurrency,
+	formatExportAmount,
+} from 'utils/currency';
 import { getChargeChannel } from 'utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
@@ -48,13 +61,15 @@ import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import DownloadButton from 'components/download-button';
+import CSVExportModal from 'components/csv-export-modal';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { applyThousandSeparator } from '../../utils/index.js';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'payment-methods/constants';
+import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -164,9 +179,40 @@ const getColumns = (
 			isLeftAligned: true,
 		},
 		{
+			key: 'customer_currency',
+			label: __( 'Paid Currency', 'woocommerce-payments' ),
+			screenReaderLabel: __(
+				'Customer Currency',
+				'woocommerce-payments'
+			),
+			isSortable: true,
+			visible: false,
+		},
+		{
+			key: 'customer_amount',
+			label: __( 'Amount Paid', 'woocommerce-payments' ),
+			screenReaderLabel: __(
+				'Amount in Customer Currency',
+				'woocommerce-payments'
+			),
+			isNumeric: true,
+			isSortable: true,
+			visible: false,
+		},
+		{
+			key: 'deposit_currency',
+			label: __( 'Deposit Currency', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Deposit Currency', 'woocommerce-payments' ),
+			isSortable: true,
+			visible: false,
+		},
+		{
 			key: 'amount',
 			label: __( 'Amount', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Amount', 'woocommerce-payments' ),
+			screenReaderLabel: __(
+				'Amount in Deposit Curency',
+				'woocommerce-payments'
+			),
 			isNumeric: true,
 			isSortable: true,
 		},
@@ -201,8 +247,8 @@ const getColumns = (
 		},
 		{
 			key: 'source',
-			label: __( 'Source', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Source', 'woocommerce-payments' ),
+			label: __( 'Payment Method', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Payment Method', 'woocommerce-payments' ),
 			cellClassName: 'is-center-aligned',
 		},
 		{
@@ -233,6 +279,14 @@ const getColumns = (
 			isLeftAligned: true,
 		},
 		includeDeposit && {
+			key: 'deposit_id',
+			label: __( 'Deposit ID', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Deposit ID', 'woocommerce-payments' ),
+			cellClassName: 'deposit',
+			isLeftAligned: true,
+			visible: false,
+		},
+		includeDeposit && {
 			key: 'deposit',
 			label: __( 'Deposit date', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Deposit date', 'woocommerce-payments' ),
@@ -259,6 +313,12 @@ export const TransactionsList = (
 		transactionsSummary,
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
+
+	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
+
+	const [
+		exportLanguage,
+	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const columnsToDisplay = useMemo(
 		() =>
@@ -329,12 +389,6 @@ export const TransactionsList = (
 			txn.customer_email
 		);
 
-		const deposit = (
-			<Deposit
-				depositId={ txn.deposit_id ?? '' }
-				dateAvailable={ txn.available_on }
-			/>
-		);
 		const currency = txn.currency.toUpperCase();
 
 		const dataType = txn.metadata ? txn.metadata.charge_type : txn.type;
@@ -343,7 +397,7 @@ export const TransactionsList = (
 			const fromAmount = txn.customer_amount ? txn.customer_amount : 0;
 
 			return {
-				value: amount / 100,
+				value: formatExportAmount( amount, currency ),
 				display: clickable(
 					<ConvertedAmount
 						amount={ amount }
@@ -357,8 +411,10 @@ export const TransactionsList = (
 		const formatFees = () => {
 			const isCardReader =
 				txn.metadata && txn.metadata.charge_type === 'card_reader_fee';
-			const feeAmount =
-				( isCardReader ? txn.amount : txn.fees * -1 ) / 100;
+			const feeAmount = formatExportAmount(
+				isCardReader ? txn.amount : txn.fees * -1,
+				currency
+			);
 			return {
 				value: feeAmount,
 				display: clickable(
@@ -371,14 +427,32 @@ export const TransactionsList = (
 				),
 			};
 		};
-
-		const depositStatus = txn.deposit_status
-			? displayDepositStatus[ txn.deposit_status ]
-			: '';
+		const formatCustomerAmount = () => {
+			return {
+				value: formatExportAmount(
+					txn.customer_amount,
+					txn.customer_currency
+				),
+				display: clickable(
+					formatCurrency( txn.customer_amount, txn.customer_currency )
+				),
+			};
+		};
 
 		const isFinancingType =
 			-1 !==
 			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
+
+		const deposit = ! isFinancingType && (
+			<Deposit
+				depositId={ txn.deposit_id }
+				dateAvailable={ txn.available_on }
+			/>
+		);
+
+		const depositStatus = txn.deposit_status
+			? displayDepositStatus[ txn.deposit_status ]
+			: '';
 
 		// Map transaction into table row.
 		const data = {
@@ -457,11 +531,20 @@ export const TransactionsList = (
 				value: txn.customer_country,
 				display: clickable( txn.customer_country ),
 			},
+			customer_currency: {
+				value: txn.customer_currency.toUpperCase(),
+				display: clickable( txn.customer_currency.toUpperCase() ),
+			},
+			customer_amount: formatCustomerAmount(),
+			deposit_currency: {
+				value: txn.currency.toUpperCase(),
+				display: clickable( txn.currency.toUpperCase() ),
+			},
 			amount: formatAmount(),
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
 			fees: formatFees(),
 			net: {
-				value: txn.net / 100,
+				value: formatExportAmount( txn.net, currency ),
 				display: clickable(
 					formatExplicitCurrency( txn.net, currency )
 				),
@@ -469,6 +552,10 @@ export const TransactionsList = (
 			risk_level: {
 				value: calculateRiskMapping( txn.risk_level ),
 				display: clickable( riskLevel ),
+			},
+			deposit_id: {
+				value: txn.deposit_id,
+				display: txn.deposit_id,
 			},
 			deposit: { value: txn.available_on, display: deposit },
 			deposit_status: {
@@ -513,6 +600,113 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
+	const endpointExport = async ( language: string ) => {
+		// We destructure page and path to get the right params.
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { page, path, ...params } = getQuery();
+		const userEmail = wcpaySettings.currentUserEmail;
+
+		const locale = getExportLanguage( language, exportLanguage );
+		const {
+			date_after: dateAfter,
+			date_before: dateBefore,
+			date_between: dateBetween,
+			match,
+			search,
+			type_is: typeIs,
+			type_is_not: typeIsNot,
+			source_device_is: sourceDeviceIs,
+			source_device_is_not: sourceDeviceIsNot,
+			channel_is: channelIs,
+			channel_is_not: channelIsNot,
+			customer_country_is: customerCountryIs,
+			customer_country_is_not: customerCountryIsNot,
+			risk_level_is: riskLevelIs,
+			risk_level_is_not: riskLevelIsNot,
+			customer_currency_is: customerCurrencyIs,
+			customer_currency_is_not: customerCurrencyIsNot,
+		} = params;
+		const depositId = props.depositId;
+
+		const isFiltered =
+			!! dateAfter ||
+			!! dateBefore ||
+			!! dateBetween ||
+			!! search ||
+			!! typeIs ||
+			!! typeIsNot ||
+			!! channelIs ||
+			!! channelIsNot ||
+			!! customerCountryIs ||
+			!! customerCountryIsNot ||
+			!! riskLevelIs ||
+			!! riskLevelIsNot ||
+			!! sourceDeviceIs ||
+			!! sourceDeviceIsNot;
+
+		const confirmThreshold = 10000;
+		const confirmMessage = sprintf(
+			__(
+				"You are about to export %d transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
+				'woocommerce-payments'
+			),
+			totalRows
+		);
+
+		if (
+			isFiltered ||
+			totalRows < confirmThreshold ||
+			window.confirm( confirmMessage )
+		) {
+			try {
+				await apiFetch( {
+					path: getTransactionsCSV( {
+						userEmail,
+						locale,
+						dateAfter,
+						dateBefore,
+						dateBetween,
+						match,
+						search,
+						typeIs,
+						typeIsNot,
+						sourceDeviceIs,
+						sourceDeviceIsNot,
+						customerCurrencyIs,
+						customerCurrencyIsNot,
+						channelIs,
+						channelIsNot,
+						customerCountryIs,
+						customerCountryIsNot,
+						riskLevelIs,
+						riskLevelIsNot,
+						depositId,
+					} ),
+					method: 'POST',
+				} );
+
+				createNotice(
+					'success',
+					sprintf(
+						__(
+							'Your export will be emailed to %s',
+							'woocommerce-payments'
+						),
+						userEmail
+					)
+				);
+			} catch {
+				createNotice(
+					'error',
+					__(
+						'There was a problem generating your export.',
+						'woocommerce-payments'
+					)
+				);
+			}
+		}
+	};
+
 	const onDownload = async () => {
 		setIsDownloading( true );
 
@@ -520,116 +714,25 @@ export const TransactionsList = (
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
-		const userEmail = wcpaySettings.currentUserEmail;
 
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.TRANSACTIONS_DOWNLOAD_CSV_CLICK,
-			{
-				location: props.depositId ? 'deposit_details' : 'transactions',
-				download_type: downloadType,
-				exported_transactions: rows.length,
-				total_transactions: transactionsSummary.count,
-			}
-		);
+		recordEvent( 'wcpay_transactions_download_csv_click', {
+			location: props.depositId ? 'deposit_details' : 'transactions',
+			download_type: downloadType,
+			exported_transactions: rows.length,
+			total_transactions: transactionsSummary.count,
+		} );
 
 		if ( 'endpoint' === downloadType ) {
-			const {
-				date_after: dateAfter,
-				date_before: dateBefore,
-				date_between: dateBetween,
-				match,
-				search,
-				type_is: typeIs,
-				type_is_not: typeIsNot,
-				source_device_is: sourceDeviceIs,
-				source_device_is_not: sourceDeviceIsNot,
-				customer_currency_is: customerCurrencyIs,
-				customer_currency_is_not: customerCurrencyIsNot,
-			} = params;
-			const depositId = props.depositId;
-
-			const isFiltered =
-				!! dateAfter ||
-				!! dateBefore ||
-				!! dateBetween ||
-				!! search ||
-				!! typeIs ||
-				!! typeIsNot ||
-				!! sourceDeviceIsNot;
-
-			const confirmThreshold = 10000;
-			const confirmMessage = sprintf(
-				__(
-					"You are about to export %d transactions. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
-					'woocommerce-payments'
-				),
-				totalRows
-			);
-
-			if (
-				isFiltered ||
-				totalRows < confirmThreshold ||
-				window.confirm( confirmMessage )
-			) {
-				try {
-					const {
-						exported_transactions: exportedTransactions,
-					} = await apiFetch( {
-						path: getTransactionsCSV( {
-							userEmail,
-							dateAfter,
-							dateBefore,
-							dateBetween,
-							match,
-							search,
-							typeIs,
-							typeIsNot,
-							sourceDeviceIs,
-							sourceDeviceIsNot,
-							customerCurrencyIs,
-							customerCurrencyIsNot,
-							depositId,
-						} ),
-						method: 'POST',
-					} );
-
-					createNotice(
-						'success',
-						sprintf(
-							__(
-								'Your export will be emailed to %s',
-								'woocommerce-payments'
-							),
-							userEmail
-						)
-					);
-
-					wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-						exported_transactions: exportedTransactions,
-						total_transactions: exportedTransactions,
-						download_type: downloadType,
-					} );
-				} catch {
-					createNotice(
-						'error',
-						__(
-							'There was a problem generating your export.',
-							'woocommerce-payments'
-						)
-					);
-				}
+			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
+				setCSVExportModalOpen( true );
+			} else {
+				endpointExport( '' );
 			}
 		} else {
 			downloadCSVFile(
 				generateCSVFileName( title, params ),
 				generateCSVDataFromTable( columnsToDisplay, rows )
 			);
-
-			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-				exported_transactions: rows.length,
-				total_transactions: transactionsSummary.count,
-				download_type: downloadType,
-			} );
 		}
 
 		setIsDownloading( false );
@@ -702,6 +805,16 @@ export const TransactionsList = (
 		}
 	}
 
+	const closeModal = () => {
+		setCSVExportModalOpen( false );
+	};
+
+	const exportTransactions = ( language: string ) => {
+		endpointExport( language );
+
+		closeModal();
+	};
+
 	const showFilters = ! props.depositId;
 	const storeCurrencies =
 		transactionsSummary.store_currencies ||
@@ -752,6 +865,17 @@ export const TransactionsList = (
 					),
 				] }
 			/>
+
+			{ ! isDefaultSiteLanguage() &&
+				! isExportModalDismissed() &&
+				isCSVExportModalOpen && (
+					<CSVExportModal
+						onClose={ closeModal }
+						onSubmit={ exportTransactions }
+						totalItems={ totalRows }
+						exportType={ 'transactions' }
+					/>
+				) }
 		</Page>
 	);
 };

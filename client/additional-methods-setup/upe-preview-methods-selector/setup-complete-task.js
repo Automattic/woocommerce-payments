@@ -2,22 +2,21 @@
  * External dependencies
  */
 import React from 'react';
-import { useEffect, useContext } from '@wordpress/element';
+import { useContext } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
-import WizardTaskContext from '../wizard/task/context';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { useEnabledPaymentMethodIds } from '../../data';
 import WizardContext from '../wizard/wrapper/context';
 import PaymentMethodIcon from '../../settings/payment-method-icon';
 import './setup-complete-task.scss';
+import paymentMethodsMap from 'wcpay/payment-methods-map';
 
 const SetupCompleteMessaging = () => {
 	const [ enabledPaymentMethods ] = useEnabledPaymentMethodIds();
@@ -63,7 +62,9 @@ const EnabledMethodsList = () => {
 		<ul className="wcpay-wizard-task__description-element setup-complete-task__enabled-methods-list">
 			{ enabledPaymentMethods.map( ( methodId ) => (
 				<li key={ methodId }>
-					<PaymentMethodIcon name={ methodId } showName={ false } />
+					<PaymentMethodIcon
+						Icon={ paymentMethodsMap[ methodId ].icon }
+					/>
 				</li>
 			) ) }
 		</ul>
@@ -71,19 +72,9 @@ const EnabledMethodsList = () => {
 };
 
 const SetupComplete = () => {
-	const { isActive } = useContext( WizardTaskContext );
 	const {
 		featureFlags: { multiCurrency },
 	} = useContext( WCPaySettingsContext );
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
-
-	useEffect( () => {
-		if ( ! isActive ) {
-			return;
-		}
-
-		window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = true;
-	}, [ isActive, updateOptions ] );
 
 	return (
 		<WizardTaskItem

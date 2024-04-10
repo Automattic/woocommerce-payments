@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Store the correct subscription start date in postmeta and ordermeta when HPOS and data syncing is being used.

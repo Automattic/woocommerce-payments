@@ -21,7 +21,7 @@ import Container from './container';
 import useWooPayUser from '../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import WooPayIcon from 'assets/images/woopay.svg?asset';
-import wcpayTracks from 'tracks';
+import { recordUserEvent } from 'tracks';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -30,14 +30,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
 	const [ isInfoFlyoutVisible, setIsInfoFlyoutVisible ] = useState( false );
-	const setInfoFlyoutVisible = useCallback(
-		() => setIsInfoFlyoutVisible( true ),
-		[]
-	);
-	const setInfoFlyoutNotVisible = useCallback(
-		() => setIsInfoFlyoutVisible( false ),
-		[]
-	);
+	const [ hasShownInfoFlyout, setHasShownInfoFlyout ] = useState( false );
+
+	const toggleTooltip = () => {
+		setIsInfoFlyoutVisible( ! isInfoFlyoutVisible );
+	};
 	const isRegisteredUser = useWooPayUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
@@ -76,7 +73,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				? {}
 				: {
 						save_user_in_woopay: isSaveDetailsChecked,
-						woopay_source_url: window.location.href,
+						woopay_source_url:
+							wcSettings?.storePages?.checkout?.permalink,
 						woopay_is_blocks: true,
 						woopay_viewport: `${ viewportWidth }x${ viewportHeight }`,
 						woopay_user_phone_field: {
@@ -94,6 +92,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		[ isSaveDetailsChecked, phoneNumber, viewportWidth, viewportHeight ]
 	);
 
+	const handleCountryDropdownClick = useCallback( () => {
+		recordUserEvent( 'checkout_woopay_save_my_info_country_click' );
+	}, [] );
+
 	const handleCheckboxClick = ( e ) => {
 		const isChecked = e.target.checked;
 		if ( isChecked ) {
@@ -106,13 +108,27 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		}
 		setIsSaveDetailsChecked( isChecked );
 
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_SAVE_MY_INFO_CLICK,
-			{
-				status: isChecked ? 'checked' : 'unchecked',
-			}
-		);
+		recordUserEvent( 'checkout_save_my_info_click', {
+			status: isChecked ? 'checked' : 'unchecked',
+		} );
 	};
+
+	useEffect( () => {
+		// Record Tracks event when the mobile number is entered.
+		if ( isPhoneValid ) {
+			recordUserEvent( 'checkout_woopay_save_my_info_mobile_enter' );
+		}
+	}, [ isPhoneValid ] );
+
+	useEffect( () => {
+		// Record Tracks event when user clicks on the info icon for the first time.
+		if ( isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
+			setHasShownInfoFlyout( true );
+			recordUserEvent( 'checkout_save_my_info_tooltip_click' );
+		} else if ( ! isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
+			setHasShownInfoFlyout( false );
+		}
+	}, [ isInfoFlyoutVisible, hasShownInfoFlyout ] );
 
 	useEffect( () => {
 		const formSubmitButton = isBlocksCheckout
@@ -228,22 +244,17 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						className="woopay-logo"
 						alt="WooPay"
 					/>
-					<Icon
-						icon={ info }
-						size={ 20 }
-						className={ `info-icon ${
-							isInfoFlyoutVisible ? 'focused' : ''
+					<button
+						className={ `info-button ${
+							isInfoFlyoutVisible ? 'flyout-visible' : ''
 						}` }
-						onMouseOver={ setInfoFlyoutVisible }
-						onMouseOut={ setInfoFlyoutNotVisible }
-					/>
-					<div
-						className="save-details-flyout"
-						onMouseOver={ setInfoFlyoutVisible }
-						onFocus={ setInfoFlyoutVisible }
-						onMouseOut={ setInfoFlyoutNotVisible }
-						onBlur={ setInfoFlyoutNotVisible }
+						type="button"
+						onClick={ toggleTooltip }
+						onBlur={ toggleTooltip }
 					>
+						<Icon icon={ info } size={ 20 } className="info-icon" />
+					</button>
+					<div className="save-details-flyout">
 						<div>
 							<LockIconG size={ 16 } />
 						</div>
@@ -261,6 +272,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 											target="_blank"
 											href="https://woocommerce.com/document/woopay-customer-documentation/"
 											rel="noopener noreferrer"
+											onClick={ () => {
+												recordUserEvent(
+													'checkout_save_my_info_tooltip_learn_more_click'
+												);
+											} }
 										>
 											{ __(
 												'Learn more',
@@ -281,7 +297,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						<input
 							type="hidden"
 							name="woopay_source_url"
-							value={ window.location.href }
+							value={
+								wcSettings?.storePages?.checkout?.permalink
+							}
 						/>
 						<input
 							type="hidden"
@@ -292,6 +310,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							value={ phoneNumber }
 							onValueChange={ setPhoneNumber }
 							onValidationChange={ onPhoneValidationChange }
+							onCountryDropdownClick={
+								handleCountryDropdownClick
+							}
 							inputProps={ {
 								name:
 									'woopay_user_phone_field[no-country-code]',

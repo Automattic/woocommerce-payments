@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Migrate away from hooking into actions in certain classes

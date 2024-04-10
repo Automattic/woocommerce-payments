@@ -7,6 +7,7 @@
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Cannot_Combine_Currencies_Exception;
 use WCPay\Logger;
 
 /**
@@ -398,7 +399,7 @@ class WC_Payments_Subscription_Service {
 			$this->set_wcpay_subscription_item_ids( $subscription, $response['items']['data'] );
 
 			if ( isset( $response['discounts'] ) ) {
-				$this->set_wcpay_discount_ids( $subscription, $response['discounts'] );
+				static::set_wcpay_discount_ids($subscription, $response['discounts']);
 			}
 
 			if ( ! empty( $response['latest_invoice'] ) ) {
@@ -415,6 +416,15 @@ class WC_Payments_Subscription_Service {
 						wc_price( $subscription->get_total() ),
 						'<strong>',
 						'</strong>'
+					)
+				);
+			} elseif ( $e instanceof Cannot_Combine_Currencies_Exception ) {
+				throw new Exception(
+					sprintf(
+						// Translators: %1$s and %2$s are both currency codes, e.g. `USD` or `EUR`.
+						__( 'The subscription couldn\'t be created because it uses a different currency (%1$s) from your existing subscriptions (%2$s). Please ensure all subscriptions use the same currency.', 'woocommerce-payments' ),
+						$subscription->get_currency(),
+						$e->get_currency()
 					)
 				);
 			}
@@ -480,7 +490,7 @@ class WC_Payments_Subscription_Service {
 		// Check if the subscription is a WCPay subscription before proceeding.
 		// In stores that have WC Subscriptions active, or previously had WC S,
 		// this method may be called with regular tokenised subscriptions.
-		if ( ! $this->is_wcpay_subscription( $subscription ) ) {
+		if ( ! static::is_wcpay_subscription($subscription) ) {
 			return;
 		}
 
@@ -513,7 +523,7 @@ class WC_Payments_Subscription_Service {
 	 */
 	public function suspend_subscription( WC_Subscription $subscription ) {
 		// Check if the subscription is a WCPay subscription before proceeding.
-		if ( ! $this->is_wcpay_subscription( $subscription ) ) {
+		if ( ! static::is_wcpay_subscription($subscription) ) {
 			Logger::log(
 				sprintf(
 					'Aborting WC_Payments_Subscription_Service::suspend_subscription; subscription is a tokenised (non WCPay) subscription. WC ID: %d.',
@@ -569,7 +579,7 @@ class WC_Payments_Subscription_Service {
 		$subscription = wcs_get_subscription( $subscription_id );
 
 		if ( $subscription && self::is_wcpay_subscription( $subscription ) ) {
-			$wcpay_subscription_id   = $this->get_wcpay_subscription_id( $subscription );
+			$wcpay_subscription_id   = static::get_wcpay_subscription_id($subscription);
 			$wcpay_payment_method_id = $token->get_token();
 
 			if ( $wcpay_subscription_id && $wcpay_payment_method_id ) {
@@ -790,13 +800,7 @@ class WC_Payments_Subscription_Service {
 			$data[] = [
 				'metadata'   => $this->get_item_metadata( $item ),
 				'quantity'   => $item->get_quantity(),
-				'price_data' => $this->format_item_price_data(
-					$subscription->get_currency(),
-					$this->product_service->get_wcpay_product_id( $item->get_product() ),
-					$item->get_subtotal() / $item->get_quantity(),
-					$subscription->get_billing_period(),
-					$subscription->get_billing_interval()
-				),
+				'price_data' => static::format_item_price_data($subscription->get_currency(), $this->product_service->get_wcpay_product_id( $item->get_product() ), $item->get_subtotal() / $item->get_quantity(), $subscription->get_billing_period(), $subscription->get_billing_interval()),
 			];
 		}
 
@@ -896,7 +900,7 @@ class WC_Payments_Subscription_Service {
 	 * @return array|null Updated wcpay subscription or null if there was an error.
 	 */
 	private function update_subscription( WC_Subscription $subscription, array $data ) {
-		$wcpay_subscription_id = $this->get_wcpay_subscription_id( $subscription );
+		$wcpay_subscription_id = static::get_wcpay_subscription_id($subscription);
 		$response              = null;
 
 		if ( ! $wcpay_subscription_id ) {
@@ -1090,6 +1094,6 @@ class WC_Payments_Subscription_Service {
 			]
 		);
 
-		return count( $active_wcpay_subscriptions ) > 0;
+		return (is_countable($active_wcpay_subscriptions) ? count( $active_wcpay_subscriptions ) : 0) > 0;
 	}
 }

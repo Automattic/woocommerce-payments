@@ -121,7 +121,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 	public function test_get_cached_connect_incentive_non_supported_country() {
 		add_filter(
 			'woocommerce_countries_base_country',
-			function() {
+			function () {
 				return '__';
 			}
 		);
@@ -242,7 +242,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 	private function mock_wp_remote_get( $response ) {
 		add_filter(
 			'pre_http_request',
-			function() use ( $response ) {
+			function () use ( $response ) {
 				return $response;
 			}
 		);
@@ -261,7 +261,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			'tc_url'      => 'incentive_tc_url',
 		],
 		// This is the hash of the test store context:
-		// 'country' => 'US',
+		// 'country' => Country_Code::UNITED_STATES,
 		// 'locale' => 'en_US',
 		// 'has_orders' => false,
 		// 'has_payments' => false,

@@ -4,6 +4,7 @@
   {
     "type": "captured",
     "amount": 10000,
+    "amount_captured": 10000,
     "fee": 320,
     "fee_rates": {
       "percentage": 0.039,
@@ -27,22 +28,21 @@
     },
     "currency": "USD",
     "datetime": 1651996460,
-    "deposit": {
-      "id": "wcpay_estimated_daily_usd_1652572800",
-      "arrival_date": "1652572800"
-    },
+    "deposit": null,
     "transaction_id": "txn_3Kx4w12EFxam75ai0W5q4669",
     "transaction_details": {
       "customer_currency": "USD",
       "customer_amount": 10000,
+      "customer_amount_captured": 10000,
       "customer_fee": 320,
       "store_currency": "USD",
       "store_amount": 10000,
+      "store_amount_captured": 10000,
       "store_fee": 320
     }
   },
   "expectation": {
-    "feeString": "Fee (3.9% + $0.30): $-3.20",
+    "feeString": "Fee (3.9% + $0.30): -$3.20",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-international": "International card fee: 1%"

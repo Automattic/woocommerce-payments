@@ -13,8 +13,6 @@ import {
 	getDeposit,
 	getDeposits,
 	getDepositQueryError,
-	getDepositsOverview,
-	getDepositsOverviewError,
 	getInstantDeposit,
 	getAllDepositsOverviews,
 	getAllDepositsOverviewsError,
@@ -120,52 +118,6 @@ describe( 'Deposits selectors', () => {
 	} );
 } );
 
-describe( 'Deposits overview selectors', () => {
-	const filledSuccessState = {
-		deposits: {
-			overview: {
-				data: {
-					last_deposit: null,
-					next_deposit: null,
-					balance: { object: 'balance' },
-					deposits_schedule: { interval: 'daily' },
-				},
-			},
-		},
-	};
-	const filledErrorState = {
-		deposits: {
-			overview: {
-				error: {
-					code: 'error',
-				},
-			},
-		},
-	};
-
-	test( 'Returns undefined when overview is not present', () => {
-		expect( getDepositsOverview( emptyState ) ).toStrictEqual( undefined );
-	} );
-
-	test( 'Returns undefined when overview error is not present', () => {
-		expect( getDepositsOverviewError( emptyState ) ).toStrictEqual(
-			undefined
-		);
-	} );
-
-	test( 'Returns deposits overview from state', () => {
-		expect( getDepositsOverview( filledSuccessState ) ).toStrictEqual(
-			filledSuccessState.deposits.overview.data
-		);
-	} );
-
-	test( 'Returns deposits overview error from state', () => {
-		expect( getDepositsOverviewError( filledErrorState ) ).toStrictEqual(
-			filledErrorState.deposits.overview.error
-		);
-	} );
-} );
-
 describe( 'Deposits overviews selectors', () => {
 	const filledErrorState = {
 		deposits: {
@@ -221,13 +173,11 @@ describe( 'Deposits overviews selectors', () => {
 
 		// Check the grouping
 		checkResult( first.lastPaid, 'deposit.last_paid', first );
-		checkResult( first.nextScheduled, 'deposit.next_scheduled', first );
 		checkResult( first.pending, 'balance.pending', first );
 		checkResult( first.available, 'balance.available', first );
 		checkResult( first.instant, 'balance.instant', first );
 
 		checkResult( second.lastPaid, 'deposit.last_paid', second );
-		checkResult( second.nextScheduled, 'deposit.next_scheduled', second );
 		checkResult( second.pending, 'balance.pending', second );
 		checkResult( second.available, 'balance.available', second );
 		checkResult( second.instant, 'balance.instant', second );

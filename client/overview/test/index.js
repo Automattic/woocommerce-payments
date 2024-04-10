@@ -52,9 +52,10 @@ jest.mock( '@wordpress/data', () => ( {
 } ) );
 jest.mock( '@wordpress/data-controls' );
 jest.mock( 'wcpay/data', () => ( {
-	useSettings: jest.fn().mockReturnValue( {
-		settings: { enabled_payment_method_ids: [ 'foo', 'bar' ] },
-	} ),
+	useGetSettings: jest
+		.fn()
+		.mockReturnValue( { enabled_payment_method_ids: [ 'foo', 'bar' ] } ),
+	useSettings: jest.fn().mockReturnValue( {} ),
 	useDisputes: jest
 		.fn()
 		.mockReturnValue( { disputes: [], isLoading: false } ),
@@ -294,32 +295,6 @@ describe( 'Overview page', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'displays SetupRealPayments if onboardingTestMode is true', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			onboardingTestMode: true,
-		};
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.getByText( 'Set up real payments on your store' )
-		).toBeInTheDocument();
-	} );
-
-	it( 'does not displays SetupRealPayments if onboardingTestMode is false', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			onboardingTestMode: false,
-		};
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( 'Set up real payments on your store' )
-		).not.toBeInTheDocument();
-	} );
-
 	it( 'displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is true', () => {
 		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
 
@@ -328,17 +303,12 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.getByText(
-				'You’re eligible to start selling now and fast-track the setup process.'
-			)
+			screen.getByText( 'You’re ready to sell.' )
 		).toBeInTheDocument();
 	} );
 
 	it( 'does not displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is false', () => {
-		const query = () =>
-			screen.queryByText(
-				'You’re eligible to start selling now and fast-track the setup process.'
-			);
+		const query = () => screen.queryByText( 'You’re ready to sell.' );
 
 		render( <OverviewPage /> );
 

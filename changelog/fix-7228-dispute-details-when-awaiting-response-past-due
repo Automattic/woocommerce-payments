@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Behind feature flag: Show dispute details on the transaction details screen when a dispute is awaiting response and past due
-
-

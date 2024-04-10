@@ -12,6 +12,7 @@ use WC_Payments_Account;
 use WC_Payments_API_Abstract_Intention;
 use WC_Payments_API_Charge;
 use WC_Payments_API_Payment_Intention;
+use WC_Payments_Explicit_Price_Formatter;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WC_Payments_Utils;
@@ -162,15 +163,12 @@ class OrderService {
 
 		$currency = strtolower( $order->get_currency() );
 		$amount   = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-
-		$user = $order->get_user();
-		if ( false === $user ) { // Default to the current user.
-			$user = $this->legacy_proxy->call_function( 'wp_get_current_user' );
-		}
+		$user     = $order->get_user();
 
 		$context->set_currency( $currency );
 		$context->set_amount( $amount );
-		$context->set_user_id( $user->ID );
+		// In case we don't have user, we are setting user id to be 0 which could cause more harm since we don't have a real user.
+		$context->set_user_id( $user->ID ?? null );
 	}
 
 	/**
@@ -188,29 +186,88 @@ class OrderService {
 	) {
 		$order = $this->get_order( $order_id );
 
-		$charge    = null;
-		$charge_id = null;
+		$charge                 = null;
+		$charge_id              = null;
+		$payment_transaction_id = null;
 		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
-			$charge    = $intent->get_charge();
-			$charge_id = $intent->get_charge()->get_id();
+			$charge                 = $intent->get_charge();
+			$charge_id              = $intent->get_charge()->get_id();
+			$payment_transaction    = $charge ? $charge->get_balance_transaction() : null;
+			$payment_transaction_id = $payment_transaction['id'] ?? '';
 		}
 
-		$this->legacy_service->attach_intent_info_to_order(
+		$this->legacy_service->attach_intent_info_to_order__legacy(
 			$order,
 			$intent->get_id(),
 			$intent->get_status(),
 			$context->get_payment_method()->get_id(),
 			$context->get_customer_id(),
 			$charge_id,
-			$context->get_currency()
+			$context->get_currency(),
+			$payment_transaction_id,
 		);
 
 		$this->legacy_service->attach_transaction_fee_to_order( $order, $charge );
 		$this->legacy_service->update_order_status_from_intent( $order, $intent );
+		$this->set_mode( $order_id, $context->get_mode() );
 
 		if ( ! is_null( $charge ) ) {
 			$this->attach_exchange_info_to_order( $order_id, $charge );
 		}
+	}
+
+	/**
+	 * Sets the '_wcpay_mode' meta data on an order.
+	 *
+	 * @param string $order_id The order id.
+	 * @param string $mode  Mode from the context.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_mode( string $order_id, string $mode ): void {
+		$order = $this->get_order( $order_id );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $mode );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Gets the '_wcpay_mode' meta data on an order.
+	 *
+	 * @param string $order_id The order id.
+	 *
+	 * @return string The mode.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_mode( string $order_id ): string {
+		$order = $this->get_order( $order_id );
+		return $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, true );
+	}
+
+	/**
+	 * Updates the order with the necessary details whenever an intent requires action.
+	 *
+	 * @param int                                $order_id ID of the order.
+	 * @param WC_Payments_API_Abstract_Intention $intent   Remote object. To be abstracted soon.
+	 * @param PaymentContext                     $context  Context for the payment.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function update_order_from_intent_that_requires_action(
+		int $order_id,
+		WC_Payments_API_Abstract_Intention $intent,
+		PaymentContext $context
+	) {
+		$order = $this->get_order( $order_id );
+
+		$this->legacy_service->attach_intent_info_to_order__legacy(
+			$order,
+			$intent->get_id(),
+			$intent->get_status(),
+			$context->get_payment_method()->get_id(),
+			$context->get_customer_id(),
+			'',
+			$context->get_currency()
+		);
+
+		$this->legacy_service->update_order_status_from_intent( $order, $intent );
 	}
 
 	/**
@@ -255,6 +312,155 @@ class OrderService {
 	}
 
 	/**
+	 * Gets currently attached intent ID of the order.
+	 *
+	 * @param int $order_id Order ID.
+	 *
+	 * @return string|null Intent ID for the order. Null if no intent ID attached to order.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_intent_id( int $order_id ): ?string {
+		$order     = $this->get_order( $order_id );
+		$intent_id = (string) $order->get_meta( '_intent_id', true );
+		if ( empty( $intent_id ) ) {
+			return null;
+		}
+		return $intent_id;
+	}
+
+	/**
+	 * Gets cart hash for the given order ID.
+	 *
+	 * @param int $order_id ID of the order.
+	 *
+	 * @return string Cart hash for the order.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_cart_hash( int $order_id ): string {
+		$order = $this->get_order( $order_id );
+		return $order->get_cart_hash();
+	}
+
+	/**
+	 * Gets customer ID for the given order ID.
+	 *
+	 * @param int $order_id ID of the order.
+	 *
+	 * @return int Customer ID for the order.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_customer_id( int $order_id ): int {
+		return $this->get_order( $order_id )->get_customer_id();
+	}
+
+	/**
+	 * Checks if the order has one of paid statuses.
+	 *
+	 * @param int $order_id ID of the order.
+	 *
+	 * @return bool True if the order has one of paid statuses, false otherwise.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function is_paid( int $order_id ): bool {
+		return $this->get_order( $order_id )
+			->has_status(
+				$this->legacy_proxy->call_function( 'wc_get_is_paid_statuses' )
+			);
+	}
+
+	/**
+	 * Checks if the order has one of pending statuses.
+	 *
+	 * @param int $order_id ID of the order.
+	 *
+	 * @return bool True if the order has one of pending statuses, false otherwise.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function is_pending( int $order_id ) {
+		return $this->get_order( $order_id )
+			->has_status(
+				$this->legacy_proxy->call_function( 'wc_get_is_pending_statuses' )
+			);
+	}
+
+	/**
+	 * Validate phone number provided in the order.
+	 *
+	 * @param  int $order_id ID of the order.
+	 *
+	 * @return bool
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function is_valid_phone_number( int $order_id ): bool {
+		$order = $this->get_order( $order_id );
+		return strlen( $order->get_billing_phone() ) < 20;
+	}
+
+	/**
+	 * Adds note to order.
+	 *
+	 * @param int    $order_id  ID of the order.
+	 * @param string $note      Note content.
+	 *
+	 * @return int Note ID.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function add_note( int $order_id, string $note ): int {
+		return $this->get_order( $order_id )->add_order_note( $note );
+	}
+
+	/**
+	 * Adds a note to order when rate limiter is triggered.
+	 *
+	 * @param int $order_id ID of the order.
+	 *
+	 * @return int Note ID.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function add_rate_limiter_note( int $order_id ) {
+		$order = $this->get_order( $order_id );
+
+		$wc_price       = $this->legacy_proxy->call_function( 'wc_price', $order->get_total(), [ 'currency' => $order->get_currency() ] );
+		$explicit_price = $this->legacy_proxy->call_static(
+			WC_Payments_Explicit_Price_Formatter::class,
+			'get_explicit_price',
+			$wc_price,
+			$order
+		);
+
+		$note = sprintf(
+			$this->legacy_proxy->call_static(
+				WC_Payments_Utils::class,
+				'esc_interpolated_html',
+				/* translators: %1: the failed payment amount */
+				__(
+					'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.',
+					'woocommerce-payments'
+				),
+				[
+					'strong' => '<strong>',
+				]
+			),
+			$explicit_price
+		);
+
+		return $order->add_order_note( $note );
+	}
+
+	/**
+	 * Deletes order.
+	 *
+	 * @param int  $order_id     ID of the order.
+	 * @param bool $force_delete Should the order be deleted permanently.
+	 *
+	 * @return bool Result of the deletion.
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function delete( int $order_id, bool $force_delete = false ): bool {
+		return $this->get_order( $order_id )->delete( $force_delete );
+	}
+
+	/**
 	 * Retrieves the order object.
 	 *
 	 * This method should be only used internally within this service.
@@ -272,10 +478,12 @@ class OrderService {
 		$order = $this->legacy_proxy->call_function( 'wc_get_order', $order_id );
 		if ( ! $order instanceof WC_Order ) {
 			throw new Order_Not_Found_Exception(
-				sprintf(
+				esc_html(
+					sprintf(
 					// Translators: %d is the ID of an order.
-					__( 'The requested order (ID %d) was not found.', 'woocommerce-payments' ),
-					$order_id
+						__( 'The requested order (ID %d) was not found.', 'woocommerce-payments' ),
+						$order_id
+					)
 				),
 				'order_not_found'
 			);

@@ -299,27 +299,74 @@ class WC_Payments_Invoice_Service {
 
 		$charge = $intent_object->get_charge();
 
-		$this->order_service->attach_intent_info_to_order(
-			$order,
-			$intent_id,
-			$intent_object->get_status(),
-			$intent_object->get_payment_method_id(),
-			$intent_object->get_customer_id(),
-			$charge ? $charge->get_id() : null,
-			$intent_object->get_currency()
-		);
+		$this->order_service->attach_intent_info_to_order( $order, $intent_object );
 	}
 
 	/**
 	 * Sends a request to server to record the store's context for an invoice payment.
 	 *
 	 * @param string $invoice_id The subscription invoice ID.
+	 *
+	 * @return array
+	 * @throws API_Exception
 	 */
 	public function record_subscription_payment_context( string $invoice_id ) {
-		$this->payments_api_client->update_invoice(
+		return $this->payments_api_client->update_invoice(
 			$invoice_id,
 			[
 				'subscription_context' => class_exists( 'WC_Subscriptions' ) && WC_Payments_Features::is_stripe_billing_enabled() ? 'stripe_billing' : 'legacy_wcpay_subscription',
+			]
+		);
+	}
+
+	/**
+	 * Sends a request to server to update transaction details.
+	 *
+	 * @param array    $invoice Invoice details.
+	 * @param WC_Order $order Order details.
+	 *
+	 * @return void
+	 * @throws API_Exception
+	 */
+	public function update_transaction_details( array $invoice, WC_Order $order ) {
+		if ( ! isset( $invoice['charge'] ) ) {
+			return;
+		}
+
+		$charge = $this->payments_api_client->get_charge( $invoice['charge'] );
+		if ( !isset( $charge['balance_transaction'] ) || !isset( $charge['balance_transaction']['id'] ) ) {
+			return;
+		}
+
+		$this->payments_api_client->update_transaction(
+			$charge['balance_transaction']['id'],
+			[
+				'customer_first_name' => $order->get_billing_first_name(),
+				'customer_last_name'  => $order->get_billing_last_name(),
+				'customer_email'      => $order->get_billing_email(),
+				'customer_country'    => $order->get_billing_country(),
+			]
+		);
+
+	}
+
+	/**
+	 * Update a charge with the order id from invoice.
+	 *
+	 * @param array $invoice
+	 * @param int   $order_id
+	 *
+	 * @return void
+	 * @throws API_Exception
+	 */
+	public function update_charge_details( array $invoice, int $order_id ) {
+		if ( ! isset( $invoice['charge'] ) ) {
+			return;
+		}
+		$this->payments_api_client->update_charge(
+			$invoice['charge'],
+			[
+				'metadata' => ['order_id' => $order_id ],
 			]
 		);
 	}

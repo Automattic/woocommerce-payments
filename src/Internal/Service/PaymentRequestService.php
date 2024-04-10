@@ -33,7 +33,8 @@ class PaymentRequestService {
 		$request->set_currency_code( $context->get_currency() );
 		$request->set_payment_method( $context->get_payment_method()->get_id() );
 		$request->set_customer( $context->get_customer_id() );
-		$request->set_capture_method( $context->should_capture_manually() );
+		// We are using the automatic capture, but intent signature accepts manual capture, so we have to change bool here.
+		$request->set_capture_method( ! $context->should_capture_automatically() );
 		$request->set_metadata( $context->get_metadata() );
 		$request->set_level3( $context->get_level3_data() );
 		$request->set_payment_methods( [ 'card' ] ); // Initial payment process only supports cards.

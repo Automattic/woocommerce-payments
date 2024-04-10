@@ -39,7 +39,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->checkout_service    = new Checkout_Service();
 		$this->request             = new Create_And_Confirm_Intention( $this->createMock( WC_Payments_API_Client::class ), $this->createMock( WC_Payments_Http_Interface::class ) );
-		$this->payment_information = new Payment_Information( 'pm_mock', wc_create_order(), Payment_Type::SINGLE(), null );
+		$this->payment_information = new Payment_Information( 'pm_mock', wc_create_order(), Payment_Type::SINGLE(), null, null, null, null, '', 'card' );
 	}
 
 	public function test_exception_will_throw_if_base_request_parameter_is_invalid() {

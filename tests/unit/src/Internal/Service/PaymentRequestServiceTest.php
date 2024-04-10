@@ -48,15 +48,15 @@ class PaymentRequestServiceTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_create_intent( $fingerprint ) {
 		$context_data = [
-			'get_amount'              => 123,
-			'get_currency'            => 'usd',
-			'get_payment_method'      => new NewPaymentMethod( 'pm_XYZ' ),
-			'get_customer_id'         => 'cus_XYZ',
-			'should_capture_manually' => false,
-			'get_metadata'            => [ 'metadata' ],
-			'get_level3_data'         => [ 'level3data' ],
-			'get_cvc_confirmation'    => 'confirmation',
-			'get_fingerprint'         => $fingerprint,
+			'get_amount'                   => 123,
+			'get_currency'                 => 'usd',
+			'get_payment_method'           => new NewPaymentMethod( 'pm_XYZ' ),
+			'get_customer_id'              => 'cus_XYZ',
+			'should_capture_automatically' => false,
+			'get_metadata'                 => [ 'metadata' ],
+			'get_level3_data'              => [ 'level3data' ],
+			'get_cvc_confirmation'         => 'confirmation',
+			'get_fingerprint'              => $fingerprint,
 		];
 
 		$request_data = [
@@ -64,7 +64,7 @@ class PaymentRequestServiceTest extends WCPAY_UnitTestCase {
 			'set_currency_code'    => 'usd',
 			'set_payment_method'   => 'pm_XYZ',
 			'set_customer'         => 'cus_XYZ',
-			'set_capture_method'   => false, // No manual capture.
+			'set_capture_method'   => true, // By default, the automatic capture is set to false.
 			'set_metadata'         => [ 'metadata' ],
 			'set_level3'           => [ 'level3data' ],
 			'set_payment_methods'  => [ 'card' ],

@@ -23,7 +23,6 @@ import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
-import InlineNotice from '../inline-notice';
 
 interface DepositRowProps {
 	deposit: CachedDeposit;
@@ -76,28 +75,9 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 		return <></>;
 	}
 
-	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
-	// The notice is added after the oldest pending or in_transit deposit.
-	const oldestPendingDepositId = [ ...deposits ]
-		.reverse()
-		.find(
-			( deposit ) =>
-				'pending' === deposit.status || 'in_transit' === deposit.status
-		)?.id;
 	const depositRows = deposits.map( ( deposit ) => (
 		<Fragment key={ deposit.id }>
 			<DepositTableRow deposit={ deposit } />
-			{ deposit.id === oldestPendingDepositId && (
-				<InlineNotice
-					className="wcpay-deposits-overview__business-day-delay-notice"
-					status="info"
-					icon
-					children={
-						'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched'
-					}
-					isDismissible={ false }
-				/>
-			) }
 		</Fragment>
 	) );
 

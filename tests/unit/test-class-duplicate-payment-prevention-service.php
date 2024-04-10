@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
@@ -76,7 +77,6 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->service->check_against_session_processing_order( $current_order );
 
 		// Assert: the result of check_against_session_processing_order.
-		$this->assertSame( 'yes', $result['wcpay_upe_paid_for_previous_order'] );
 		$this->assertSame( 'success', $result['result'] );
 		$this->assertStringContainsString( $return_url, $result['redirect'] );
 
@@ -266,14 +266,13 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->service->check_payment_intent_attached_to_order_succeeded( $order );
 
 		// Assert: the result of check_intent_attached_to_order_succeeded.
-		$this->assertSame( 'yes', $result['wcpay_upe_previous_successful_intent'] );
 		$this->assertSame( 'success', $result['result'] );
 		$this->assertStringContainsString( $return_url, $result['redirect'] );
 	}
 
 	public function provider_check_payment_intent_attached_to_order_succeeded_return_redirection(): array {
 		$ret = [];
-		foreach ( WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS as $status ) {
+		foreach ( Intent_Status::AUTHORIZED_STATUSES as $status ) {
 			$ret[ 'Intent status ' . $status ] = [ $status ];
 		}
 

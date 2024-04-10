@@ -17,10 +17,8 @@
 		height: auto;
 	}
 
-	&.has-icon-border {
-		svg {
-			box-shadow: 0 0 0 1px #ddd;
-			border-radius: 2px;
-		}
+	.payment-method__icon {
+		order: initial;
+		margin-right: 3px;
 	}
 }

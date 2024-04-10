@@ -9,23 +9,29 @@ The `WCPay\Core\Server\Request\List_Transactions` class is used to construct the
 ## Parameters
 
 
-| Parameter                  | Setter                                                     | Immutable | Required | Default value |
-|----------------------------|------------------------------------------------------------|:---------:|:--------:|:-------------:|
-| `customer_currency_is`     | `set_customer_currency_is( string $customer_currency_is )` |     -     |    -     |       -       |
-| `customer_currency_is_not` | `set_customer_currency_is_not( string $currency )`         |     -     |    -     |       -       |
-| `deposit_id`               | `set_deposit_id( $deposit_id )`                            |     -     |    -     |       -       |
-| `loan_id_is`               | `set_loan_id_is( string $loan_id )`                        |     -     |    -     |       -       |
-| `match`                    | `set_match( string $match )`                               |     -     |    -     |       -       |
-| `page`                     | `set_page( int $page )`                                    |    Yes    |    -     |       -       |
-| `pagesize`                 | `set_page_size( int $page_size )`                          |    Yes    |    -     |     `25`      |
-| `search`                   | `set_search( array $search )`                              |     -     |    -     |       -       |
-| `sort`                     | `set_sort_by( string $sort )`                              |    Yes    |    -     |  `'created'`  |
-| `direction`                | `set_sort_direction( string $direction )`                  |    Yes    |    -     |   `'desc'`    |
-| `store_currency_is`        | `set_store_currency_is( string $currency )`                |     -     |    -     |       -       |
-| `type_is`                  | `set_type_is( string $type_is )`                           |     -     |    -     |       -       |
-| `type_is_not`              | `set_type_is_not( string $type_is_not )`                   |     -     |    -     |       -       |
-| `source_device_is`         | `set_source_device_is( string $source_device_is )`         |     -     |    -     |       -       |
-| `source_device_is_not`     | `set_source_device_is_not( string $source_device_is_not )` |     -     |    -     |       -       |
+| Parameter                  | Setter                                                          | Immutable | Required | Default value |
+|----------------------------|-----------------------------------------------------------------|:---------:|:--------:|:-------------:|
+| `customer_currency_is`     | `set_customer_currency_is( string $customer_currency_is )`      |     -     |    -     |       -       |
+| `customer_currency_is_not` | `set_customer_currency_is_not( string $currency )`              |     -     |    -     |       -       |
+| `deposit_id`               | `set_deposit_id( $deposit_id )`                                 |     -     |    -     |       -       |
+| `loan_id_is`               | `set_loan_id_is( string $loan_id )`                             |     -     |    -     |       -       |
+| `match`                    | `set_match( string $match )`                                    |     -     |    -     |       -       |
+| `page`                     | `set_page( int $page )`                                         |    Yes    |    -     |       -       |
+| `pagesize`                 | `set_page_size( int $page_size )`                               |    Yes    |    -     |     `25`      |
+| `search`                   | `set_search( array $search )`                                   |     -     |    -     |       -       |
+| `sort`                     | `set_sort_by( string $sort )`                                   |    Yes    |    -     |  `'created'`  |
+| `direction`                | `set_sort_direction( string $direction )`                       |    Yes    |    -     |   `'desc'`    |
+| `store_currency_is`        | `set_store_currency_is( string $currency )`                     |     -     |    -     |       -       |
+| `type_is`                  | `set_type_is( string $type_is )`                                |     -     |    -     |       -       |
+| `type_is_not`              | `set_type_is_not( string $type_is_not )`                        |     -     |    -     |       -       |
+| `source_device_is`         | `set_source_device_is( string $source_device_is )`              |     -     |    -     |       -       |
+| `source_device_is_not`     | `set_source_device_is_not( string $source_device_is_not )`      |     -     |    -     |       -       |
+| `channel_is`               | `set_channel_is( string $channel_is )`                          |     -     |    -     |       -       |
+| `channel_is_not`           | `set_channel_is_not( string $channel_is_not )`                  |     -     |    -     |       -       |
+| `customer_country_is`      | `set_customer_country_is( string $customer_country_is )`        |     -     |    -     |       -       |
+| `customer_country_is_not`  | `set_customer_country_is_not( string $customer_country_is_not )`|     -     |    -     |       -       |
+| `risk_level_is`            | `set_risk_level_is( string $risk_level_is )`                    |     -     |    -     |       -       |
+| `risk_level_is_not`        | `set_risk_level_is_not( string $risk_level_is_not )`            |     -     |    -     |       -       |
 
 
 ## Filter
@@ -52,5 +58,11 @@ $request->set_type_is( $type_is );
 $request->set_type_is_not( $type_is_not );
 $request->set_source_device_is( $source_device_is );
 $request->set_source_device_is_not( $source_device_is_not );
+$request->set_channel_is( $channel_is );
+$request->set_channel_is_not( $channel_is_not );
+$request->set_customer_country_is( $customer_country_is );
+$request->set_customer_country_not( $customer_country_is_not );
+$request->set_risk_level_is( $risk_level_is );
+$request->set_risk_level_is_not( $risk_level_is_not );
 $request->send();
 ```

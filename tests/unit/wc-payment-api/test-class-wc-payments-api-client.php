@@ -5,8 +5,10 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Code;
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Internal\Logger;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
@@ -296,6 +298,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'create_live_account'         => true,
 						'progressive'                 => false,
 						'collect_payout_requirements' => false,
+						'compatibility_data'          => $this->get_mock_compatibility_data(),
 					]
 				),
 				true,
@@ -517,7 +520,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->payments_api_client->create_terminal_location(
 			'Example',
 			[
-				'country' => 'US',
+				'country' => Country_Code::UNITED_STATES,
 			]
 		);
 	}
@@ -526,7 +529,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$location = [
 			'display_name' => 'Example',
 			'address'      => [
-				'country' => 'US',
+				'country' => Country_Code::UNITED_STATES,
 				'line1'   => 'Some Str. 2',
 			],
 			'metadata'     => [],
@@ -791,13 +794,11 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
-		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
+		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
 			->setMethods( [ 'log' ] )
 			->getMock();
-
-		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
-		$logger_ref->setAccessible( true );
-		$logger_ref->setValue( null, $mock_logger );
+		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode() );
+		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
 
 		WC_Payments::mode()->dev();
 
@@ -832,9 +833,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$request_method->setAccessible( false );
 
 		// clean up.
-		$logger_ref->setAccessible( true );
-		$logger_ref->setValue( null, null );
 		WC_Payments::mode()->live();
+		wcpay_get_test_container()->reset_all_replacements();
 	}
 
 	/**
@@ -908,7 +908,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
 	}
 
-	public function get_onboarding_po_eligible() {
+	public function test_get_onboarding_po_eligible() {
 		$this->set_http_mock_response(
 			200,
 			[
@@ -919,7 +919,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		$po_eligible = $this->payments_api_client->get_onboarding_po_eligible(
 			[
-				'country' => 'US',
+				'country' => Country_Code::UNITED_STATES,
 				'type'    => 'company',
 				'mcc'     => 'most_popular__software_services',
 			],
@@ -1204,6 +1204,54 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			[ [], 'intentions', 'GET' ]
 		);
 	}
+
+	public function test_update_compatibility_data() {
+		// Arrange: Set expectation and return for remote_request.
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		// Act: Get the result of updating the data.
+		$result = $this->payments_api_client->update_compatibility_data(
+			[
+				'woocommerce_core_version' => WC_VERSION,
+			]
+		);
+
+		// Assert: Confirm we get the expected response.
+		$this->assertSame( 'success', $result['result'] );
+	}
+
+	public function test_get_tracking_info() {
+		$expect = [ 'hosting-provider' => 'test' ];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( $expect ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->get_tracking_info();
+
+		$this->assertEquals( $expect, $result );
+	}
+
 	/**
 	 * Set up http mock response.
 	 *
@@ -1260,6 +1308,30 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 70, $data['timeout'] );
 		$this->assertArrayHasKey( 'connect_timeout', $data );
 		$this->assertSame( 70, $data['connect_timeout'] );
+	}
 
+	/**
+	 * Returns the mock compatibility data.
+	 *
+	 * @param array $args If any values need to be overridden, the values can be added here.
+	 *
+	 * @return array
+	 */
+	private function get_mock_compatibility_data( array $args = [] ): array {
+		return array_merge(
+			[
+				'woopayments_version' => WCPAY_VERSION_NUMBER,
+				'woocommerce_version' => WC_VERSION,
+				'blog_theme'          => 'default',
+				'active_plugins'      => [],
+				'post_types_count'    => [
+					'post'       => 0,
+					'page'       => 0,
+					'attachment' => 0,
+					'product'    => 0,
+				],
+			],
+			$args
+		);
 	}
 }

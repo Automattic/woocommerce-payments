@@ -115,7 +115,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 				<li>
 					{ createInterpolateElement(
 						__(
-							'Challenge <challengeIcon/> or accept <acceptIcon/> the dispute by <dueByDate/>.',
+							'Challenge <challengeIcon/> or accept <acceptIcon/> the dispute by <dueByDate/>',
 							'woocommerce-payments'
 						),
 						{
@@ -155,6 +155,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 							dueByDate: (
 								<DisputeDueByDate
 									dueBy={ dispute.evidence_details.due_by }
+									showRemainingDays={ false }
 								/>
 							),
 						}

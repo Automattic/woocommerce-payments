@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Code;
+
 /**
  * WC_Payments_Localization_Service_Test unit tests.
  */
@@ -156,7 +158,7 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 					],
 				],
 			],
-			$this->localization_service->get_country_locale_data( 'BR' )
+			$this->localization_service->get_country_locale_data( Country_Code::BRAZIL )
 		);
 	}
 

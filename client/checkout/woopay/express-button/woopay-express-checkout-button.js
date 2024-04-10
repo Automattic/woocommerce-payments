@@ -1,8 +1,9 @@
 /**
  * External dependencies
  */
-import { sprintf, __ } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -11,16 +12,27 @@ import WoopayIcon from './woopay-icon';
 import WoopayIconLight from './woopay-icon-light';
 import { expressCheckoutIframe } from './express-checkout-iframe';
 import useExpressCheckoutProductHandler from './use-express-checkout-product-handler';
-import wcpayTracks from 'tracks';
+import { recordUserEvent } from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
-import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import interpolateComponents from '@automattic/interpolate-components';
+import {
+	appendRedirectionParams,
+	deleteSkipWooPayCookie,
+} from 'wcpay/checkout/woopay/utils';
+import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
+const ButtonTypeTextMap = {
+	default: __( 'WooPay', 'woocommerce-payments' ),
+	buy: __( 'Buy with WooPay', 'woocommerce-payments' ),
+	donate: __( 'Donate with WooPay', 'woocommerce-payments' ),
+	book: __( 'Book with WooPay', 'woocommerce-payments' ),
+};
+
 export const WoopayExpressCheckoutButton = ( {
-	listenForCartChanges = {},
+	listenForCartChanges,
 	isPreview = false,
 	buttonSettings,
 	api,
@@ -31,30 +43,24 @@ export const WoopayExpressCheckoutButton = ( {
 		narrow: 'narrow',
 		wide: 'wide',
 	};
-	const sessionDataPromiseRef = useRef( null );
-	const initWoopayRef = useRef( null );
+	const onClickCallbackRef = useRef( null );
 	const buttonRef = useRef( null );
 	const isLoadingRef = useRef( false );
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
+	const [ isLoading, setIsLoading ] = useState( false );
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
 	);
 
-	const text =
-		buttonType !== 'default'
-			? sprintf(
-					__( `%s with`, 'woocommerce-payments' ),
-					buttonType.charAt( 0 ).toUpperCase() +
-						buttonType.slice( 1 ).toLowerCase()
-			  )
-			: '';
+	const buttonText =
+		ButtonTypeTextMap[ buttonType || 'default' ] ??
+		ButtonTypeTextMap.default;
+
 	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
 
-	const {
-		addToCart,
-		getProductData,
-		isAddToCartDisabled,
-	} = useExpressCheckoutProductHandler( api, isProductPage );
+	const { addToCart, getProductData } = useExpressCheckoutProductHandler(
+		api
+	);
 	const getProductDataRef = useRef( getProductData );
 	const addToCartRef = useRef( addToCart );
 
@@ -72,65 +78,90 @@ export const WoopayExpressCheckoutButton = ( {
 
 	useEffect( () => {
 		if ( ! isPreview ) {
-			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.WOOPAY_BUTTON_LOAD,
-				{
-					source: context,
-				}
-			);
+			recordUserEvent( 'woopay_button_load', {
+				source: context,
+			} );
 		}
 	}, [ isPreview, context ] );
 
-	const defaultOnClick = useCallback(
+	const canAddProductToCart = useCallback( () => {
+		if ( ! isProductPage ) {
+			return true;
+		}
+
+		const addToCartButton = document.querySelector(
+			'.single_add_to_cart_button'
+		);
+
+		if (
+			addToCartButton &&
+			( addToCartButton.disabled ||
+				addToCartButton.classList.contains( 'disabled' ) )
+		) {
+			if (
+				addToCartButton.classList.contains(
+					'wc-variation-is-unavailable'
+				)
+			) {
+				window.alert(
+					window?.wc_add_to_cart_variation_params
+						?.i18n_unavailable_text ||
+						__(
+							'Sorry, this product is unavailable. Please choose a different combination.',
+							'woocommerce-payments'
+						)
+				);
+			} else {
+				window.alert(
+					__(
+						'Please select your product options before proceeding.',
+						'woocommerce-payments'
+					)
+				);
+			}
+
+			return false;
+		}
+
+		return true;
+	}, [ isProductPage ] );
+
+	const onClickOtpFlow = useCallback(
 		( e ) => {
-			e.preventDefault();
+			e?.preventDefault();
 
 			if ( isPreview ) {
 				return; // eslint-disable-line no-useless-return
 			}
 
-			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.WOOPAY_BUTTON_CLICK,
-				{
-					source: context,
-				}
-			);
+			recordUserEvent( 'woopay_button_click', {
+				source: context,
+			} );
+
+			deleteSkipWooPayCookie();
+
+			if ( ! canAddProductToCart() ) {
+				return;
+			}
 
 			if ( isProductPage ) {
-				if ( isAddToCartDisabled ) {
-					alert(
-						window.wc_add_to_cart_variation_params
-							?.i18n_make_a_selection_text ||
-							__(
-								'Please select all required options to continue.',
-								'woocommerce-payments'
-							)
-					);
-					return;
-				}
-
 				const productData = getProductDataRef.current();
 				if ( ! productData ) {
 					return;
 				}
 
-				addToCartRef
-					.current( productData )
-					.then( ( res ) => {
-						if ( res.error ) {
-							if ( res.submit ) {
-								// Some extensions needs to submit the form
-								// to show error messages.
-								document.querySelector( 'form.cart' ).submit();
-							}
-							return;
+				addToCartRef.current( productData ).then( ( res ) => {
+					if ( res.error ) {
+						if ( res.submit ) {
+							// Some extensions needs to submit the form
+							// to show error messages.
+							document.querySelector( 'form.cart' ).submit();
 						}
+						return;
+					}
 
-						expressCheckoutIframe( api, context, emailSelector );
-					} )
-					.catch( () => {
-						// handle error.
-					} );
+					expressCheckoutIframe( api, context, emailSelector );
+				} );
 			} else {
 				expressCheckoutIframe( api, context, emailSelector );
 			}
@@ -139,114 +170,80 @@ export const WoopayExpressCheckoutButton = ( {
 			api,
 			context,
 			emailSelector,
-			isAddToCartDisabled,
 			isPreview,
 			isProductPage,
+			canAddProductToCart,
 		]
 	);
 
-	const newIframe = useCallback( () => {
-		if ( ! getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
-			return;
-		}
+	const onClickFirstPartyAuthFlow = useCallback(
+		( e ) => {
+			e.preventDefault();
 
-		const getWoopayOtpUrl = () => {
-			const tracksUserId = JSON.stringify(
-				getConfig( 'tracksUserIdentity' )
-			);
+			if ( isPreview || isLoadingRef.current ) {
+				return;
+			}
 
-			const urlParams = new URLSearchParams();
-			urlParams.append( 'testMode', getConfig( 'testMode' ) );
-			urlParams.append( 'source_url', window.location.href );
-			urlParams.append( 'tracksUserIdentity', tracksUserId );
+			recordUserEvent( 'woopay_button_click', {
+				source: context,
+			} );
 
-			return (
-				getConfig( 'woopayHost' ) + '/connect/?' + urlParams.toString()
-			);
-		};
+			deleteSkipWooPayCookie();
 
-		const iframe = document.createElement( 'iframe' );
-		iframe.src = getWoopayOtpUrl();
-		iframe.height = 0;
-		iframe.style.visibility = 'hidden';
-		iframe.style.position = 'absolute';
-		iframe.style.top = '0';
+			if ( ! canAddProductToCart() ) {
+				return;
+			}
 
-		iframe.addEventListener( 'load', () => {
-			// Change button's onClick handle to use express checkout flow.
-			initWoopayRef.current = ( e ) => {
-				e.preventDefault();
+			// Set isLoadingRef to true to prevent multiple clicks.
+			isLoadingRef.current = true;
+			setIsLoading( true );
 
-				if ( isPreview || isLoadingRef.current ) {
+			if ( isProductPage ) {
+				const productData = getProductDataRef.current();
+
+				if ( ! productData ) {
 					return;
 				}
 
-				// Set isLoadingRef to true to prevent multiple clicks.
-				isLoadingRef.current = true;
+				if ( typeof listenForCartChanges?.stop === 'function' ) {
+					// Temporarily stop listening for cart changes to prevent
+					// rendering a new button + iFrame when the cart is updated.
+					listenForCartChanges.stop();
+				}
 
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_BUTTON_CLICK,
-					{
-						source: context,
+				addToCartRef.current( productData ).then( () => {
+					if ( typeof listenForCartChanges?.start === 'function' ) {
+						// Start listening for cart changes, again.
+						listenForCartChanges.start();
 					}
-				);
+					WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
+						_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+					} )
+						.then( async ( response ) => {
+							if (
+								response?.blog_id &&
+								response?.data?.session
+							) {
+								const sessionResponse = await WooPayFirstPartyAuth.sendPreemptiveSessionDataToWooPay(
+									response
+								);
 
-				if ( isProductPage ) {
-					const productData = getProductDataRef.current();
+								if ( sessionResponse?.is_error ) {
+									onClickOtpFlow( null );
 
-					if ( ! productData ) {
-						return;
-					}
+									onClickCallbackRef.current = onClickOtpFlow;
+									isLoadingRef.current = false;
+									setIsLoading( false );
+									return;
+								}
 
-					if ( listenForCartChanges.stop ) {
-						// Temporarily stop listening for cart changes to prevent
-						// rendering a new button + iFrame when the cart is updated.
-						listenForCartChanges.stop();
-					}
-
-					addToCartRef.current( productData ).then( () => {
-						if ( listenForCartChanges.start ) {
-							// Start listening for cart changes, again.
-							listenForCartChanges.start();
-						}
-						request(
-							buildAjaxURL(
-								getConfig( 'wcAjaxUrl' ),
-								'get_woopay_session'
-							),
-							{
-								_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+								window.location.href = appendRedirectionParams(
+									sessionResponse.redirect_url
+								);
+							} else {
+								onClickCallbackRef.current = onClickOtpFlow;
+								throw new Error( response?.data );
 							}
-						)
-							.then( ( response ) => {
-								iframe.contentWindow.postMessage(
-									{
-										action: 'setPreemptiveSessionData',
-										value: response,
-									},
-									getConfig( 'woopayHost' )
-								);
-							} )
-							.catch( () => {
-								const errorMessage = __(
-									'Something went wrong. Please try again.',
-									'woocommerce-payments'
-								);
-								showErrorMessage( context, errorMessage );
-								isLoadingRef.current = false;
-							} );
-					} );
-				} else {
-					// Non-product pages already have pre-fetched session data.
-					sessionDataPromiseRef.current
-						?.then( ( response ) => {
-							iframe.contentWindow.postMessage(
-								{
-									action: 'setPreemptiveSessionData',
-									value: response,
-								},
-								getConfig( 'woopayHost' )
-							);
 						} )
 						.catch( () => {
 							const errorMessage = __(
@@ -255,88 +252,116 @@ export const WoopayExpressCheckoutButton = ( {
 							);
 							showErrorMessage( context, errorMessage );
 							isLoadingRef.current = false;
+							setIsLoading( false );
 						} );
-				}
-			};
-		} );
+				} );
+			} else {
+				WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
+					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+					order_id: getConfig( 'order_id' ),
+					key: getConfig( 'key' ),
+					billing_email: getConfig( 'billing_email' ),
+				} )
+					.then( async ( response ) => {
+						if ( response?.blog_id && response?.data?.session ) {
+							const sessionResponse = await WooPayFirstPartyAuth.sendPreemptiveSessionDataToWooPay(
+								response
+							);
 
-		return iframe;
-	}, [ isProductPage, context, isPreview, listenForCartChanges ] );
+							if ( sessionResponse?.is_error ) {
+								onClickOtpFlow( null );
+
+								onClickCallbackRef.current = onClickOtpFlow;
+								isLoadingRef.current = false;
+								setIsLoading( false );
+								return;
+							}
+
+							window.location.href = appendRedirectionParams(
+								sessionResponse.redirect_url
+							);
+						} else {
+							onClickCallbackRef.current = onClickOtpFlow;
+							throw new Error( response?.data );
+						}
+					} )
+					?.catch( () => {
+						const errorMessage = __(
+							'Something went wrong. Please try again.',
+							'woocommerce-payments'
+						);
+						showErrorMessage( context, errorMessage );
+						isLoadingRef.current = false;
+						setIsLoading( false );
+					} );
+			}
+		},
+		[
+			canAddProductToCart,
+			context,
+			isPreview,
+			isProductPage,
+			listenForCartChanges,
+			onClickOtpFlow,
+		]
+	);
 
 	useEffect( () => {
-		if ( isPreview || ! getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
-			return;
+		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
+			onClickCallbackRef.current = onClickFirstPartyAuthFlow;
+			WooPayFirstPartyAuth.init();
+		} else {
+			onClickCallbackRef.current = onClickOtpFlow;
 		}
+	}, [ onClickFirstPartyAuthFlow, onClickOtpFlow ] );
 
-		if ( ! isProductPage ) {
-			// Start to pre-fetch session data for non-product pages.
-			sessionDataPromiseRef.current = request(
-				buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
-				{
-					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-				}
-			).then( ( response ) => response );
-		}
-
-		buttonRef.current.parentElement.style.position = 'relative';
-		buttonRef.current.parentElement.appendChild( newIframe() );
-
-		const onMessage = ( event ) => {
-			const isFromWoopayHost = getConfig( 'woopayHost' ).startsWith(
-				event.origin
-			);
-			const isSessionDataSuccess =
-				event.data.action === 'set_preemptive_session_data_success';
-			const isSessionDataError =
-				event.data.action === 'set_preemptive_session_data_error';
-			const isSessionDataResponse =
-				isSessionDataSuccess || isSessionDataError;
-			if ( ! isFromWoopayHost || ! isSessionDataResponse ) {
-				return;
-			}
-
-			if ( isSessionDataSuccess ) {
-				window.location.href = event.data.value.redirect_url;
-			} else if ( isSessionDataError ) {
-				const errorMessage = __(
-					'WooPay is unavailable at this time. Please try again.',
-					'woocommerce-payments'
-				);
-				showErrorMessage( context, errorMessage );
-
-				// Set button's default onClick handle to use modal checkout flow.
-				initWoopayRef.current = defaultOnClick;
+	useEffect( () => {
+		const handlePageShow = ( event ) => {
+			// Re-enable the button after navigating back/forward to the page if bfcache is used.
+			if ( event?.persisted ) {
 				isLoadingRef.current = false;
+				setIsLoading( false );
 			}
 		};
 
-		window.addEventListener( 'message', onMessage );
+		window.addEventListener( 'pageshow', handlePageShow );
 
 		return () => {
-			window.removeEventListener( 'message', onMessage );
+			window.removeEventListener( 'pageshow', handlePageShow );
 		};
-	}, [ context, defaultOnClick, isPreview, isProductPage, newIframe ] );
-
-	useEffect( () => {
-		// Set button's default onClick handle to use modal checkout flow.
-		initWoopayRef.current = defaultOnClick;
-	}, [ defaultOnClick ] );
+	}, [] );
 
 	return (
 		<button
 			ref={ buttonRef }
 			key={ `${ buttonType }-${ theme }-${ size }` }
-			aria-label={ buttonType !== 'default' ? text : __( 'WooPay' ) }
-			onClick={ ( e ) => initWoopayRef.current( e ) }
-			className="woopay-express-button"
+			aria-label={ buttonText }
+			onClick={ ( e ) => onClickCallbackRef.current( e ) }
+			className={ classNames( 'woopay-express-button', {
+				'is-loading': isLoading,
+			} ) }
 			data-type={ buttonType }
 			data-size={ size }
 			data-theme={ theme }
 			data-width-type={ buttonWidthType }
 			style={ { height: `${ height }px` } }
+			disabled={ isLoading }
 		>
-			{ text }
-			<ThemedWooPayIcon />
+			{ isLoading ? (
+				<span className="wc-block-components-spinner" />
+			) : (
+				<>
+					{ interpolateComponents( {
+						mixedString: buttonText.replace(
+							ButtonTypeTextMap.default,
+							'{{wooPayLogo /}}'
+						),
+						components: {
+							wooPayLogo: <ThemedWooPayIcon />,
+						},
+					} ) }
+				</>
+			) }
 		</button>
 	);
 };

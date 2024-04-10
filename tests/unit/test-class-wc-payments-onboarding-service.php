@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPay\Database_Cache;
 
 /**
@@ -40,7 +41,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_business_types = [
 		[
-			'key'   => 'US',
+			'key'   => Country_Code::UNITED_STATES,
 			'name'  => 'United States (US)',
 			'types' => [
 				[
@@ -146,12 +147,12 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_onboarding_required_verification_information' )
-			->with( 'US', 'company', 'sole_propietorship' )
+			->with( Country_Code::UNITED_STATES, 'company', 'sole_propietorship' )
 			->willReturn( $mock_requirements );
 
 		$this->assertEquals(
 			$mock_requirements,
-			$this->onboarding_service->get_required_verification_information( 'US', 'company', 'sole_propietorship' )
+			$this->onboarding_service->get_required_verification_information( Country_Code::UNITED_STATES, 'company', 'sole_propietorship' )
 		);
 	}
 
@@ -219,23 +220,35 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		delete_option( 'wcpay_onboarding_test_mode' );
 	}
 
-	public function test_get_onboarding_flow_state() {
-		$this->assertNull( $this->onboarding_service->get_onboarding_flow_state() );
-
-		update_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION, [] );
-
-		$this->assertEquals( [], $this->onboarding_service->get_onboarding_flow_state() );
-
-		delete_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION );
+	/**
+	 * @dataProvider data_get_source
+	 */
+	public function test_get_source( $expected, $referer, $get_params ) {
+		$this->assertEquals( $expected, WC_Payments_Onboarding_Service::get_source( $referer, $get_params ) );
 	}
 
-	public function test_set_onboarding_flow_state() {
-		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION ) );
-
-		$this->onboarding_service->set_onboarding_flow_state( [] );
-
-		$this->assertEquals( [], get_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION ) );
-
-		delete_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION );
+	public function data_get_source() {
+		return [
+			[ 'wcadmin-payment-task', 'any', [ 'wcpay-connect' => 'WCADMIN_PAYMENT_TASK' ] ],
+			[ 'wcadmin-settings-page', '/wp-admin/admin.php?page=wc-settings&tab=checkout', [ 'wcpay-connect' => '1' ] ],
+			[ 'wcadmin-incentive-page', '/wp-admin/admin.php?page=wc-admin&path=%2Fwc-pay-welcome-page', [ 'wcpay-connect' => '1' ] ],
+			[ 'wcpay-connect-page', '/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect', [ 'wcpay-connect' => '1' ] ],
+			[
+				'wcpay-setup-live-payments',
+				'any',
+				[
+					'wcpay-connect'                      => '1',
+					'wcpay-disable-onboarding-test-mode' => '1',
+				],
+			],
+			[
+				'wcpay-reset-account',
+				'any',
+				[
+					'wcpay-connect'       => '1',
+					'wcpay-reset-account' => '1',
+				],
+			],
+		];
 	}
 }

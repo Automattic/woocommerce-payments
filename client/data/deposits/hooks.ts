@@ -24,11 +24,15 @@ export const useDeposit = (
 ): { deposit: CachedDeposit; isLoading: boolean } =>
 	useSelect(
 		( select ) => {
-			const { getDeposit, isResolving } = select( STORE_NAME );
+			const { getDeposit, isResolving, hasFinishedResolution } = select(
+				STORE_NAME
+			);
 
 			return {
 				deposit: getDeposit( id ),
-				isLoading: isResolving( 'getDeposit', [ id ] ),
+				isLoading:
+					! hasFinishedResolution( 'getDeposit', [ id ] ) ||
+					isResolving( 'getDeposit', [ id ] ),
 			};
 		},
 		[ id ]
@@ -75,25 +79,6 @@ export const useDepositIncludesLoan = (
 	);
 };
 
-export const useDepositsOverview = (): {
-	overviewError: unknown;
-	isLoading: boolean;
-	overview: unknown;
-} =>
-	useSelect( ( select ) => {
-		const {
-			getDepositsOverview,
-			getDepositsOverviewError,
-			isResolving,
-		} = select( STORE_NAME );
-
-		return {
-			overview: getDepositsOverview(),
-			overviewError: getDepositsOverviewError(),
-			isLoading: isResolving( 'getDepositsOverview' ),
-		};
-	} );
-
 export const useAllDepositsOverviews = (): AccountOverview.OverviewsResponse =>
 	useSelect( ( select ) => {
 		const {
@@ -124,8 +109,8 @@ export const useDeposits = ( {
 	date_between: dateBetween,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
-}: Query ): CachedDeposits =>
-	useSelect(
+}: Query ): CachedDeposits => {
+	return useSelect(
 		( select ) => {
 			const {
 				getDeposits,
@@ -176,6 +161,7 @@ export const useDeposits = ( {
 			statusIsNot,
 		]
 	);
+};
 
 export const useDepositsSummary = ( {
 	match,
@@ -185,8 +171,8 @@ export const useDepositsSummary = ( {
 	date_between: dateBetween,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
-}: Query ): DepositsSummaryCache =>
-	useSelect(
+}: Query ): DepositsSummaryCache => {
+	return useSelect(
 		( select ) => {
 			const { getDepositsSummary, isResolving } = select( STORE_NAME );
 
@@ -215,20 +201,21 @@ export const useDepositsSummary = ( {
 			statusIsNot,
 		]
 	);
+};
 
 export const useInstantDeposit = (
-	transactionIds: string[]
+	currency: string
 ): { inProgress: boolean; submit: () => void; deposit: unknown } => {
 	const { deposit, inProgress } = useSelect( ( select ) => {
 		const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
 		return {
-			deposit: getInstantDeposit( [ transactionIds ] ),
-			inProgress: isResolving( 'getInstantDeposit', [ transactionIds ] ),
+			deposit: getInstantDeposit( [ currency ] ),
+			inProgress: isResolving( 'getInstantDeposit', [ currency ] ),
 		};
 	} );
 	const { submitInstantDeposit } = useDispatch( STORE_NAME );
-	const submit = () => submitInstantDeposit( transactionIds );
+	const submit = () => submitInstantDeposit( currency );
 
 	return { deposit, inProgress, submit };
 };

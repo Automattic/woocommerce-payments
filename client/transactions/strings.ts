@@ -19,7 +19,7 @@ export const displayType = {
 	dispute: __( 'Dispute', 'woocommerce-payments' ),
 	dispute_reversal: __( 'Dispute reversal', 'woocommerce-payments' ),
 	card_reader_fee: __( 'Reader fee', 'woocommerce-payments' ),
-	financing_payout: __( 'Loan dispersement', 'woocommerce-payments' ),
+	financing_payout: __( 'Loan disbursement', 'woocommerce-payments' ),
 	financing_paydown: __( 'Loan repayment', 'woocommerce-payments' ),
 };
 
@@ -27,4 +27,17 @@ export const displayType = {
 export const sourceDevice = {
 	android: __( 'Android', 'woocommerce-payments' ),
 	ios: __( 'iPhone', 'woocommerce-payments' ),
+};
+
+// Mapping of transaction channel type string.
+export const channel = {
+	online: __( 'Online', 'woocommerce-payments' ),
+	in_person: __( 'In-Person', 'woocommerce-payments' ),
+};
+
+// Mapping of transaction risk level string.
+export const riskLevel = {
+	'0': __( 'Normal', 'woocommerce-payments' ),
+	'1': __( 'Elevated', 'woocommerce-payments' ),
+	'2': __( 'Highest', 'woocommerce-payments' ),
 };

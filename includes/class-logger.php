@@ -7,8 +7,7 @@
 
 namespace WCPay;
 
-use WC_Logger;
-use WC_Payments;
+use WCPay\Internal\Logger as InternalLogger;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -16,14 +15,6 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * A wrapper class for interacting with WC_Logger.
  */
 class Logger {
-	/**
-	 * The holding property for our WC_Logger instance.
-	 *
-	 * @var WC_Logger $logger
-	 */
-	private static $logger;
-
-	const LOG_FILENAME = 'woocommerce-payments';
 
 	/**
 	 * Add a log entry.
@@ -45,21 +36,7 @@ class Logger {
 	 *     'debug': Debug-level messages.
 	 */
 	public static function log( $message, $level = 'info' ) {
-		if ( ! self::can_log() ) {
-			return;
-		}
-
-		self::init_logger();
-		self::$logger->log( $level, $message, [ 'source' => self::LOG_FILENAME ] );
-	}
-
-	/**
-	 * Initiate logger property with the WooCommerce core logger only if it's not set already
-	 */
-	public static function init_logger() {
-		if ( ! isset( self::$logger ) && ! is_object( self::$logger ) ) {
-			self::$logger = wc_get_logger();
-		}
+		wcpay_get_container()->get( InternalLogger::class )->log( $message );
 	}
 
 	/**
@@ -68,19 +45,7 @@ class Logger {
 	 * @return bool Depending on the enable_logging setting.
 	 */
 	public static function can_log() {
-		if ( ! function_exists( 'wc_get_logger' ) ) {
-			return false;
-		}
-
-		if ( is_null( WC_Payments::get_gateway() ) ) {
-			return false;
-		}
-
-		if ( WC_Payments::mode()->is_dev() ) {
-			return true;
-		}
-
-		return 'yes' === WC_Payments::get_gateway()->get_option( 'enable_logging' );
+		return wcpay_get_container()->get( InternalLogger::class )->can_log();
 	}
 
 	/**

@@ -35,7 +35,6 @@ class FactorTest extends WCPAY_UnitTestCase {
 			'WCPAY_SUBSCRIPTION_SIGNUP',
 			'IPP_CAPTURE',
 			'STRIPE_LINK',
-			'DEFERRED_INTENT_SPLIT_UPE',
 			'PAYMENT_REQUEST',
 		];
 

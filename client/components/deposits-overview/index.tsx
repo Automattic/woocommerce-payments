@@ -2,87 +2,239 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Card, CardHeader } from '@wordpress/components';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardFooter,
+	CardHeader,
+} from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
  */
+import { getAdminUrl } from 'wcpay/utils';
+import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { recordEvent } from 'tracks';
+import Loadable from 'components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
-import strings from './strings';
-import NextDepositDetails from './next-deposit';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
-import SuspendedDepositNotice from './suspended-deposit-notice';
-import DepositsOverviewFooter from './footer';
-import DepositOverviewSectionHeading from './section-heading';
+import {
+	DepositMinimumBalanceNotice,
+	DepositTransitDaysNotice,
+	NegativeBalanceDepositsPausedNotice,
+	NewAccountWaitingPeriodNotice,
+	NoFundsAvailableForDepositNotice,
+	SuspendedDepositNotice,
+	DepositFailureNotice,
+} from './deposit-notices';
+import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import useRecentDeposits from './hooks';
 import './style.scss';
 
-const DepositsOverview = (): JSX.Element => {
+const DepositsOverview: React.FC = () => {
 	const {
 		account,
 		overview,
 		isLoading: isLoadingOverview,
 	} = useSelectedCurrencyOverview();
-
-	let currency = wcpaySettings.accountDefaultCurrency;
-
-	if ( overview?.currency ) {
-		currency = overview.currency;
-	}
-
+	const isDepositsUnrestricted =
+		wcpaySettings.accountStatus.deposits?.restrictions ===
+		'deposits_unrestricted';
+	const selectedCurrency =
+		overview?.currency || wcpaySettings.accountDefaultCurrency;
 	const { isLoading: isLoadingDeposits, deposits } = useRecentDeposits(
-		currency
+		selectedCurrency
 	);
-
-	const hasNextDeposit = !! overview?.nextScheduled;
 
 	const isLoading = isLoadingOverview || isLoadingDeposits;
 
-	// This card isn't shown if there are no deposits, so we can bail early.
-	if ( ! hasNextDeposit && ! isLoading && deposits.length === 0 ) {
-		return <></>;
+	const availableFunds = overview?.available?.amount ?? 0;
+	const pendingFunds = overview?.pending?.amount ?? 0;
+	const totalFunds = availableFunds + pendingFunds;
+
+	const minimumDepositAmount =
+		wcpaySettings.accountStatus.deposits
+			?.minimum_scheduled_deposit_amounts?.[ selectedCurrency ] ?? 0;
+	const isAboveMinimumDepositAmount = availableFunds >= minimumDepositAmount;
+	// If the total balance is negative, deposits may be paused.
+	const isNegativeBalanceDepositsPaused = totalFunds < 0;
+	// When there are funds pending but no available funds, deposits are paused.
+	const isDepositAwaitingPendingFunds =
+		availableFunds === 0 && pendingFunds > 0;
+	const hasCompletedWaitingPeriod =
+		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
+	const canChangeDepositSchedule =
+		! account?.deposits_blocked && hasCompletedWaitingPeriod;
+	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
+	const hasRecentDeposits = ! isLoading && deposits?.length > 0 && !! account;
+	const hasScheduledDeposits = hasAutomaticScheduledDeposits(
+		account?.deposits_schedule?.interval
+	);
+	const hasErroredExternalAccount =
+		account?.default_external_accounts?.some(
+			( externalAccount ) =>
+				externalAccount.currency === selectedCurrency &&
+				externalAccount.status === 'errored'
+		) ?? false;
+
+	const navigateToDepositsHistory = () => {
+		recordEvent( 'wcpay_overview_deposits_view_history_click' );
+
+		const history = getHistory();
+		history.push(
+			getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/deposits',
+			} )
+		);
+	};
+
+	// Show a loading state if the page is still loading.
+	if ( isLoading ) {
+		return (
+			<Card className="wcpay-deposits-overview">
+				<CardHeader>
+					{ __( 'Deposits', 'woocommerce-payments' ) }
+				</CardHeader>
+
+				<CardBody className="wcpay-deposits-overview__schedule__container">
+					<Loadable
+						isLoading
+						placeholder={
+							<DepositSchedule
+								depositsSchedule={ {
+									delay_days: 0,
+									interval: 'daily',
+									monthly_anchor: 1,
+									weekly_anchor: 'monday',
+								} }
+							/>
+						}
+					/>
+				</CardBody>
+			</Card>
+		);
+	}
+
+	if (
+		! hasCompletedWaitingPeriod &&
+		availableFunds === 0 &&
+		pendingFunds === 0
+	) {
+		// If still in new account waiting period and account has no transactions,
+		// don't render deposits card (nothing to show).
+		return null;
 	}
 
 	return (
 		<Card className="wcpay-deposits-overview">
-			<CardHeader>{ strings.heading }</CardHeader>
-			{ /* Only show the next deposit section if the page is loading or if deposits are not blocked. */ }
-			{ ( isLoading || ! account?.deposits_blocked ) && (
-				<>
-					<DepositOverviewSectionHeading
-						title={ strings.nextDeposit.title }
-						text={ strings.nextDeposit.description }
-						isLoading={ isLoading }
+			<CardHeader>
+				{ __( 'Deposits', 'woocommerce-payments' ) }
+			</CardHeader>
+
+			{ /* Deposit schedule message */ }
+			{ isDepositsUnrestricted && !! account && hasScheduledDeposits && (
+				<CardBody className="wcpay-deposits-overview__schedule__container">
+					<DepositSchedule
+						depositsSchedule={ account.deposits_schedule }
 					/>
-					<NextDepositDetails
-						isLoading={ isLoading }
-						overview={ overview }
-					/>
-				</>
+				</CardBody>
 			) }
-			{ /* Only show the deposit history section if the page is finished loading and there are deposits. */ }
-			{ ! isLoading && !! account && !! deposits && deposits.length > 0 && (
-				<>
-					{ account.deposits_blocked ? (
-						<DepositOverviewSectionHeading
-							title={ strings.depositHistoryHeading }
-							children={ <SuspendedDepositNotice /> }
-						/>
-					) : (
-						<DepositOverviewSectionHeading
-							title={ strings.depositHistoryHeading }
-							text={
-								<DepositSchedule
-									{ ...account.deposits_schedule }
+
+			{ /* Notices */ }
+			<CardBody className="wcpay-deposits-overview__notices__container">
+				{ account?.deposits_blocked ? (
+					<SuspendedDepositNotice />
+				) : (
+					<>
+						{ isDepositsUnrestricted &&
+							! isDepositAwaitingPendingFunds &&
+							! hasErroredExternalAccount && (
+								<DepositTransitDaysNotice />
+							) }
+						{ ! hasCompletedWaitingPeriod && (
+							<NewAccountWaitingPeriodNotice />
+						) }
+						{ hasCompletedWaitingPeriod &&
+							isDepositAwaitingPendingFunds && (
+								<NoFundsAvailableForDepositNotice />
+							) }
+						{ isNegativeBalanceDepositsPaused && (
+							<NegativeBalanceDepositsPausedNotice />
+						) }
+						{ hasErroredExternalAccount && (
+							<DepositFailureNotice
+								updateAccountLink={
+									wcpaySettings.accountStatus.accountLink
+								}
+							/>
+						) }
+						{ availableFunds > 0 &&
+							! isAboveMinimumDepositAmount && (
+								<DepositMinimumBalanceNotice
+									minimumDepositAmountFormatted={ formatExplicitCurrency(
+										minimumDepositAmount,
+										selectedCurrency
+									) }
 								/>
-							}
-						/>
-					) }
+							) }
+					</>
+				) }
+			</CardBody>
+
+			{ hasRecentDeposits && (
+				<>
+					<CardBody className="wcpay-deposits-overview__heading">
+						<span className="wcpay-deposits-overview__heading__title">
+							{ __( 'Deposit history', 'woocommerce-payments' ) }
+						</span>
+					</CardBody>
 					<RecentDepositsList deposits={ deposits } />
 				</>
 			) }
-			<DepositsOverviewFooter />
+
+			{ ( hasRecentDeposits || canChangeDepositSchedule ) && (
+				<CardFooter className="wcpay-deposits-overview__footer">
+					{ hasRecentDeposits && (
+						<Button
+							variant="secondary"
+							onClick={ navigateToDepositsHistory }
+						>
+							{ __(
+								'View full deposits history',
+								'woocommerce-payments'
+							) }
+						</Button>
+					) }
+
+					{ canChangeDepositSchedule && (
+						<Button
+							variant="tertiary"
+							href={
+								getAdminUrl( {
+									page: 'wc-settings',
+									tab: 'checkout',
+									section: 'woocommerce_payments',
+								} ) + '#deposit-schedule'
+							}
+							onClick={ () =>
+								recordEvent(
+									'wcpay_overview_deposits_change_schedule_click'
+								)
+							}
+						>
+							{ __(
+								'Change deposit schedule',
+								'woocommerce-payments'
+							) }
+						</Button>
+					) }
+				</CardFooter>
+			) }
 		</Card>
 	);
 };

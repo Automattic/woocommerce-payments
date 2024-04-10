@@ -8,17 +8,32 @@ export interface Account {
 	deposits_blocked: boolean;
 	deposits_disabled: boolean;
 	deposits_schedule: {
+		/**
+		 * Number of days it takes for a charge to become available for deposit.
+		 */
 		delay_days: number;
-		interval: string;
+		/**
+		 * Deposit schedule interval. 'manual' means deposits are not scheduled.
+		 */
+		interval: 'manual' | 'daily' | 'weekly' | 'monthly';
+		/**
+		 * Weekly anchor is a day of the week eg 'monday'
+		 */
 		weekly_anchor: string;
+		/**
+		 * The day of the month when available funds are paid out, specified as a number between 1–31. 29 - 31 will instead use the last day of a shorter month.
+		 */
 		monthly_anchor: number;
 	};
+	default_external_accounts: {
+		currency: string;
+		status: string;
+	}[];
 }
 
 export interface Balance {
 	amount: number;
 	currency: string;
-	deposits_count?: number;
 	source_types: Record< string, never >[];
 }
 
@@ -42,13 +57,11 @@ export interface InstantBalance {
 	fee: number;
 	net: number;
 	fee_percentage: number;
-	transaction_ids: Array< string >;
 }
 
 export interface Overview {
 	currency: string;
 	lastPaid: Deposit | undefined;
-	nextScheduled: Deposit | undefined;
 	pending: Balance | undefined;
 	available: Balance | undefined;
 	instant: InstantBalance | undefined;
@@ -56,8 +69,8 @@ export interface Overview {
 
 export interface OverviewsResponse {
 	overviews: {
-		account: Account;
-		currencies: Array< Overview >;
+		account: Account | null;
+		currencies: Overview[];
 	};
 	isLoading: boolean;
 }

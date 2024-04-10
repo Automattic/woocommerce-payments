@@ -86,3 +86,6 @@ tests/e2e/screenshots
 
 # E2E Performance test results
 tests/e2e/reports
+
+# Slate docs
+docs/rest-api/build/*

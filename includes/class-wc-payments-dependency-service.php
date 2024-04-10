@@ -45,7 +45,6 @@ class WC_Payments_Dependency_Service {
 		}
 
 		return empty( $this->get_invalid_dependencies( true ) );
-
 	}
 
 	/**
@@ -84,7 +83,7 @@ class WC_Payments_Dependency_Service {
 		$invalid_dependencies = [];
 
 		// Either ignore the account connection check or check if there's a cached account connection.
-		$ignore_when_account_is_connected = $check_account_connection && $this->has_cached_account_connection();
+		$ignore_when_account_is_connected = $check_account_connection && self::has_cached_account_connection();
 
 		if ( ! $this->is_woo_core_active() ) {
 			$invalid_dependencies[] = self::WOOCORE_NOT_FOUND;
@@ -107,7 +106,6 @@ class WC_Payments_Dependency_Service {
 		}
 
 		return $invalid_dependencies;
-
 	}
 
 	/**

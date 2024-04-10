@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Change IP country rule after country settings are changed in WC settings page

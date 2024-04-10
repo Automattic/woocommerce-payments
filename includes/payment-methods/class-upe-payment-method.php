@@ -64,7 +64,6 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Should payment method be restricted to only domestic payments.
 	 * E.g. only to Stripe's connected account currency.
-	 * gs
 	 *
 	 * @var boolean
 	 */
@@ -73,7 +72,7 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Represent payment total limitations for the payment method (per-currency).
 	 *
-	 * @var array<string,array<string,int>>
+	 * @var array<string,array<string,array<string,int>>>
 	 */
 	protected $limits_per_currency = [];
 
@@ -83,6 +82,13 @@ abstract class UPE_Payment_Method {
 	 * @var string
 	 */
 	protected $icon_url;
+
+	/**
+	 * Payment method icon URL for dark themes (optional)
+	 *
+	 * @var string
+	 */
+	protected $dark_icon_url;
 
 	/**
 	 * Supported customer locations for which charges for a payment method can be processed
@@ -113,11 +119,12 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Returns payment method title
 	 *
-	 * @param array|bool $payment_details Optional payment details from charge object.
+	 * @param string|null $account_country Country of merchants account.
+	 * @param array|false $payment_details Optional payment details from charge object.
 	 *
 	 * @return string
 	 */
-	public function get_title( $payment_details = false ) {
+	public function get_title( string $account_country = null, $payment_details = false ) {
 		return $this->title;
 	}
 
@@ -131,12 +138,24 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns boolean dependent on whether payment method
-	 * can be used at checkout
+	 * Determines whether the payment method is restricted to the Stripe account's currency.
+	 * E.g.: Afterpay/Clearpay and Affirm only supports domestic payments; Klarna also implements a simplified version of these market restrictions.
 	 *
 	 * @return bool
 	 */
-	public function is_enabled_at_checkout() {
+	public function has_domestic_transactions_restrictions() {
+		return $this->accept_only_domestic_payment;
+	}
+
+	/**
+	 * Returns boolean dependent on whether payment method
+	 * can be used at checkout
+	 *
+	 * @param string $account_country Country of merchants account.
+	 *
+	 * @return bool
+	 */
+	public function is_enabled_at_checkout( string $account_country ) {
 		if ( $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription() ) {
 			return $this->is_reusable();
 		}
@@ -149,7 +168,16 @@ abstract class UPE_Payment_Method {
 			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) ) {
 				$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
 				if ( $amount > 0 ) {
-					$range            = $this->limits_per_currency[ $currency ];
+					$range = null;
+					if ( isset( $this->limits_per_currency[ $currency ][ $account_country ] ) ) {
+						$range = $this->limits_per_currency[ $currency ][ $account_country ];
+					} elseif ( isset( $this->limits_per_currency[ $currency ]['default'] ) ) {
+						$range = $this->limits_per_currency[ $currency ]['default'];
+					}
+					// If there is no range specified for the currency-country pair we don't support it and return false.
+					if ( null === $range ) {
+						return false;
+					}
 					$is_valid_minimum = null === $range['min'] || $amount >= $range['min'];
 					$is_valid_maximum = null === $range['max'] || $amount <= $range['max'];
 					return $is_valid_minimum && $is_valid_maximum;
@@ -182,7 +210,7 @@ abstract class UPE_Payment_Method {
 	public function is_currency_valid( string $account_domestic_currency, $order_id = null ) {
 		$current_store_currency = $this->get_currency( $order_id );
 
-		if ( $this->accept_only_domestic_payment ) {
+		if ( $this->has_domestic_transactions_restrictions() ) {
 			if ( strtolower( $current_store_currency ) !== strtolower( $account_domestic_currency ) ) {
 				return false;
 			}
@@ -213,10 +241,21 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Returns the payment method icon URL or an empty string.
 	 *
+	 * @param string|null $account_country Optional account country.
 	 * @return string
 	 */
-	public function get_icon() {
+	public function get_icon( string $account_country = null ) {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
+	}
+
+	/**
+	 * Returns icon to use on dark themes.
+	 *
+	 * @param string|null $account_country Optional account country.
+	 * @return string
+	 */
+	public function get_dark_icon( string $account_country = null ) {
+		return isset( $this->dark_icon_url ) ? $this->dark_icon_url : $this->get_icon( $account_country );
 	}
 
 	/**

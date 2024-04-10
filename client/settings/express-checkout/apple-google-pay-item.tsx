@@ -10,16 +10,21 @@ import React from 'react';
  * Internal dependencies
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
-import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
-import GooglePay from 'assets/images/cards/google-pay.svg?asset';
-import { usePaymentRequestEnabledSettings } from 'wcpay/data';
+import {
+	usePaymentRequestEnabledSettings,
+	useExpressCheckoutShowIncompatibilityNotice,
+} from 'wcpay/data';
 import { PaymentRequestEnabledSettingsHook } from './interfaces';
+import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
+import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
 	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
+
+	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
 
 	return (
 		<li
@@ -41,7 +46,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					<div>
 						<div className="express-checkout__subgroup">
 							<div className="express-checkout__icon">
-								<img src={ ApplePay } alt="Apple Pay" />
+								<ApplePayIcon />
 							</div>
 							<div className="express-checkout__label express-checkout__label-mobile">
 								{ __( 'Apple Pay', 'woocommerce-payments' ) }
@@ -96,7 +101,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 						</div>
 						<div className="express-checkout__subgroup">
 							<div className="express-checkout__icon">
-								<img src={ GooglePay } alt="Google Pay" />
+								<GooglePayIcon />
 							</div>
 							<div className="express-checkout__label express-checkout__label-mobile">
 								{ __( 'Google Pay', 'woocommerce-payments' ) }
@@ -161,6 +166,9 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
+			{ showIncompatibilityNotice && (
+				<ExpressCheckoutIncompatibilityNotice />
+			) }
 		</li>
 	);
 };

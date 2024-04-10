@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Ensure renewal orders paid via the Block Checkout are correctly linked to their subscription.

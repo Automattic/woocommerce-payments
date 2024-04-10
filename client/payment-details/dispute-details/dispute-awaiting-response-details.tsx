@@ -25,7 +25,7 @@ import {
  */
 import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
@@ -82,15 +82,18 @@ interface AcceptDisputeProps {
 /**
  * Disputes and Inquiries have different text for buttons and the modal.
  * They also have different icons and tracks events. This function returns the correct props.
- *
- * @param dispute
  */
-function getAcceptDisputeProps( dispute: Dispute ): AcceptDisputeProps {
-	if ( isInquiry( dispute ) ) {
+function getAcceptDisputeProps( {
+	dispute,
+	isDisputeAcceptRequestPending,
+}: {
+	dispute: Dispute;
+	isDisputeAcceptRequestPending: boolean;
+} ): AcceptDisputeProps {
+	if ( isInquiry( dispute.status ) ) {
 		return {
 			acceptButtonLabel: __( 'Issue refund', 'woocommerce-payments' ),
-			acceptButtonTracksEvent:
-				wcpayTracks.events.DISPUTE_INQUIRY_REFUND_MODAL_VIEW,
+			acceptButtonTracksEvent: 'wcpay_dispute_inquiry_refund_modal_view',
 			modalTitle: __( 'Issue a refund?', 'woocommerce-payments' ),
 			modalLines: [
 				{
@@ -112,14 +115,13 @@ function getAcceptDisputeProps( dispute: Dispute ): AcceptDisputeProps {
 				'View order to issue refund',
 				'woocommerce-payments'
 			),
-			modalButtonTracksEvent:
-				wcpayTracks.events.DISPUTE_INQUIRY_REFUND_CLICK,
+			modalButtonTracksEvent: 'wcpay_dispute_inquiry_refund_click',
 		};
 	}
 
 	return {
 		acceptButtonLabel: __( 'Accept dispute', 'woocommerce-payments' ),
-		acceptButtonTracksEvent: wcpayTracks.events.DISPUTE_ACCEPT_MODAL_VIEW,
+		acceptButtonTracksEvent: 'wcpay_dispute_accept_modal_view',
 		modalTitle: __( 'Accept the dispute?', 'woocommerce-payments' ),
 		modalLines: [
 			{
@@ -146,8 +148,10 @@ function getAcceptDisputeProps( dispute: Dispute ): AcceptDisputeProps {
 				),
 			},
 		],
-		modalButtonLabel: __( 'Accept dispute', 'woocommerce-payments' ),
-		modalButtonTracksEvent: wcpayTracks.events.DISPUTE_ACCEPT_CLICK,
+		modalButtonLabel: isDisputeAcceptRequestPending
+			? __( 'Accepting…', 'woocommerce-payments' )
+			: __( 'Accept dispute', 'woocommerce-payments' ),
+		modalButtonTracksEvent: 'wcpay_dispute_accept_click',
 	};
 }
 
@@ -157,7 +161,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	chargeCreated,
 	orderUrl,
 } ) => {
-	const { doAccept, isLoading } = useDisputeAccept( dispute );
+	const {
+		doAccept,
+		isLoading: isDisputeAcceptRequestPending,
+	} = useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
 
 	const now = moment();
@@ -170,7 +177,11 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		featureFlags: { isDisputeIssuerEvidenceEnabled },
 	} = useContext( WCPaySettingsContext );
 
-	const onModalClose = () => {
+	const handleModalClose = () => {
+		// Don't allow the user to close the modal if the accept request is in progress.
+		if ( isDisputeAcceptRequestPending ) {
+			return;
+		}
 		setModalOpen( false );
 	};
 
@@ -188,9 +199,12 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		);
 	};
 
-	const disputeAcceptAction = getAcceptDisputeProps( dispute );
+	const disputeAcceptAction = getAcceptDisputeProps( {
+		dispute,
+		isDisputeAcceptRequestPending,
+	} );
 
-	const challengeButtonDefaultText = isInquiry( dispute )
+	const challengeButtonDefaultText = isInquiry( dispute.status )
 		? __( 'Submit evidence', 'woocommerce-payments' )
 		: __( 'Challenge dispute', 'woocommerce-payments' );
 
@@ -213,7 +227,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 
 					<DisputeSummaryRow dispute={ dispute } />
 
-					{ isInquiry( dispute ) ? (
+					{ isInquiry( dispute.status ) ? (
 						<InquirySteps
 							dispute={ dispute }
 							customer={ customer }
@@ -239,7 +253,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							<Link
 								href={
 									// Prevent the user navigating to the challenge screen if the accept request is in progress.
-									isLoading
+									isDisputeAcceptRequestPending
 										? ''
 										: getAdminUrl( {
 												page: 'wc-admin',
@@ -251,13 +265,14 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							>
 								<Button
 									variant="primary"
-									disabled={ isLoading }
+									data-testid="challenge-dispute-button"
+									disabled={ isDisputeAcceptRequestPending }
 									onClick={ () => {
-										wcpayTracks.recordEvent(
-											wcpayTracks.events
-												.DISPUTE_CHALLENGE_CLICK,
+										recordEvent(
+											'wcpay_dispute_challenge_clicked',
 											{
 												dispute_status: dispute.status,
+												on_page: 'transaction_details',
 											}
 										);
 									} }
@@ -273,12 +288,14 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 
 							<Button
 								variant="tertiary"
-								disabled={ isLoading }
+								disabled={ isDisputeAcceptRequestPending }
+								data-testid="open-accept-dispute-modal-button"
 								onClick={ () => {
-									wcpayTracks.recordEvent(
+									recordEvent(
 										disputeAcceptAction.acceptButtonTracksEvent,
 										{
 											dispute_status: dispute.status,
+											on_page: 'transaction_details',
 										}
 									);
 									setModalOpen( true );
@@ -291,7 +308,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							{ isModalOpen && (
 								<Modal
 									title={ disputeAcceptAction.modalTitle }
-									onRequestClose={ onModalClose }
+									onRequestClose={ handleModalClose }
 									className="transaction-details-dispute-accept-modal"
 								>
 									<p>
@@ -322,7 +339,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 									>
 										<Button
 											variant="tertiary"
-											onClick={ onModalClose }
+											disabled={
+												isDisputeAcceptRequestPending
+											}
+											onClick={ handleModalClose }
 										>
 											{ __(
 												'Cancel',
@@ -331,20 +351,31 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										</Button>
 										<Button
 											variant="primary"
+											isBusy={
+												isDisputeAcceptRequestPending
+											}
+											disabled={
+												isDisputeAcceptRequestPending
+											}
+											data-testid="accept-dispute-button"
 											onClick={ () => {
-												wcpayTracks.recordEvent(
+												recordEvent(
 													disputeAcceptAction.modalButtonTracksEvent,
 													{
 														dispute_status:
 															dispute.status,
+														on_page:
+															'transaction_details',
 													}
 												);
-												setModalOpen( false );
+
 												/**
 												 * Handle the primary modal action.
 												 * If it's an inquiry, redirect to the order page; otherwise, continue with the default dispute acceptance.
 												 */
-												if ( isInquiry( dispute ) ) {
+												if (
+													isInquiry( dispute.status )
+												) {
 													viewOrder();
 												} else {
 													doAccept();

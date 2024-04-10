@@ -14,6 +14,7 @@ import { useSettings } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {} ),
+	useGetSettings: jest.fn().mockReturnValue( {} ),
 } ) );
 
 describe( 'SaveSettingsSection', () => {

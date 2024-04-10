@@ -13,8 +13,10 @@ use WC_Payments_Account;
 use WC_Payments_API_Charge;
 use WC_Payments_API_Payment_Intention;
 use WC_Payments_API_Setup_Intention;
+use WC_Payments_Explicit_Price_Formatter;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
+use WC_Payments_Utils;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Payment\PaymentContext;
@@ -277,18 +279,11 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$mock_order->expects( $this->once() )
 			->method( 'get_user' )
 			->willReturn( $user ?? false );
-		if ( ! $user ) {
-			$user     = $this->createMock( WP_User::class );
-			$user->ID = 10;
 
-			$this->mock_legacy_proxy->expects( $this->once() )
-				->method( 'call_function' )
-				->with( 'wp_get_current_user' )
-				->willReturn( $user );
-		}
+		// Mock set user id.
 		$mock_context->expects( $this->once() )
 			->method( 'set_user_id' )
-			->with( 10 );
+			->with( $user->ID ?? null );
 
 		// Act.
 		$this->sut->import_order_data_to_payment_context( $this->order_id, $mock_context );
@@ -319,7 +314,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		// Create a mock order that will be used.
 		$mock_order = $this->createMock( WC_Order::class );
-		$this->sut->expects( $this->once() )
+		$this->sut->expects( $this->exactly( 2 ) )
 			->method( 'get_order' )
 			->with( $this->order_id )
 			->willReturn( $mock_order );
@@ -337,7 +332,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 				->willReturn( $mock_charge );
 		}
 
-		// Prepare all parameters for `attach_intent_info_to_order`.
+		// Prepare all parameters for `attach_intent_info_to_order__legacy`.
 		$intent->expects( $this->once() )
 			->method( 'get_id' )
 			->willReturn( $intent_id );
@@ -355,9 +350,12 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$mock_context->expects( $this->once() )
 			->method( 'get_currency' )
 			->willReturn( $currency );
+		$mock_context->expects( $this->once() )
+			->method( 'get_mode' )
+			->willReturn( 'prod' );
 
 		$this->mock_legacy_service->expects( $this->once() )
-			->method( 'attach_intent_info_to_order' )
+			->method( 'attach_intent_info_to_order__legacy' )
 			->with(
 				$mock_order,
 				$intent_id,
@@ -383,6 +381,53 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		// Act.
 		$this->sut->update_order_from_successful_intent( $this->order_id, $intent, $mock_context );
+	}
+
+	/**
+	 * Test for the `update_order_from_intent_that_requires_action` method.
+	 */
+	public function test_update_order_from_intent_that_requires_action() {
+		$intent_id         = 'pi_XYZ';
+		$intent_status     = 'success';
+		$customer_id       = 'cus_XYZ';
+		$currency          = 'usd';
+		$payment_method_id = 'pm_XYZ';
+
+		// Prepare the context, and all needed getters.
+		$mock_context = $this->createMock( PaymentContext::class );
+		$mock_context->expects( $this->once() )->method( 'get_payment_method' )->willReturn( new NewPaymentMethod( $payment_method_id ) );
+		$mock_context->expects( $this->once() )->method( 'get_customer_id' )->willReturn( $customer_id );
+		$mock_context->expects( $this->once() )->method( 'get_currency' )->willReturn( $currency );
+
+		// Create a mock order that will be used, and return it.
+		$mock_order = $this->createMock( WC_Order::class );
+		$this->sut->expects( $this->once() )
+			->method( 'get_order' )
+			->with( $this->order_id )
+			->willReturn( $mock_order );
+
+		// Prepare the intent, and all expected getters.
+		$mock_intent = $this->createMock( WC_Payments_API_Payment_Intention::class );
+		$mock_intent->expects( $this->once() )->method( 'get_id' )->willReturn( $intent_id );
+		$mock_intent->expects( $this->once() )->method( 'get_status' )->willReturn( $intent_status );
+
+		$this->mock_legacy_service->expects( $this->once() )
+			->method( 'attach_intent_info_to_order__legacy' )
+			->with(
+				$mock_order,
+				$intent_id,
+				$intent_status,
+				$payment_method_id,
+				$customer_id,
+				null,
+				$currency
+			);
+
+		$this->mock_legacy_service->expects( $this->once() )
+			->method( 'update_order_status_from_intent' )
+			->with( $mock_order, $mock_intent );
+
+		$this->sut->update_order_from_intent_that_requires_action( $this->order_id, $mock_intent, $mock_context );
 	}
 
 	public function provider_attach_exchange_info_to_order() {
@@ -458,6 +503,197 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		// Act.
 		$this->sut->attach_exchange_info_to_order( $this->order_id, $mock_charge );
+	}
+
+	public function provider_get_intent_id() {
+		return [
+			'No attached intent'    => [ null, null ],
+			'Empty string attached' => [ '', null ],
+			'Intent ID attached'    => [ 'pi_123', 'pi_123' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_get_intent_id
+	 */
+	public function test_get_intent_id( $meta_value, $expected ) {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_intent_id' )
+			->willReturn( $meta_value );
+
+		$result = $this->sut->get_intent_id( $this->order_id );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_get_cart_hash() {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_cart_hash' )
+			->willReturn( 'abc123' );
+
+		$result = $this->sut->get_cart_hash( $this->order_id );
+		$this->assertSame( 'abc123', $result );
+	}
+
+	public function test_get_customer_id() {
+		$customer_id = 123456;
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_customer_id' )
+			->willReturn( $customer_id );
+
+		$result = $this->sut->get_customer_id( $this->order_id );
+		$this->assertSame( $customer_id, $result );
+	}
+
+	public function test_is_paid() {
+		$paid_statuses = [ 'processing', 'completed' ];
+		$expected      = true;
+
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'wc_get_is_paid_statuses' )
+			->willReturn( $paid_statuses );
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( $paid_statuses )
+			->willReturn( $expected );
+
+		$result = $this->sut->is_paid( $this->order_id );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_is_pending() {
+		$pending_statuses = [ 'pending' ];
+		$expected         = false;
+
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'wc_get_is_pending_statuses' )
+			->willReturn( $pending_statuses );
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( $pending_statuses )
+			->willReturn( $expected );
+
+		$result = $this->sut->is_pending( $this->order_id );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function provider_is_valid_phone_number(): array {
+		return [
+			'valid phone number'                         => [ '1234567890', true ],
+			'invalid phone number - more than 20 digits' => [ '123456789012345678901', false ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_is_valid_phone_number
+	 */
+	public function test_is_valid_phone_number( $phone_number, $expected ) {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_billing_phone' )
+			->willReturn( $phone_number );
+
+		$result = $this->sut->is_valid_phone_number( $this->order_id );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_add_note() {
+		$note_id      = 321;
+		$note_content = 'Note content';
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with( $note_content )
+			->willReturn( $note_id );
+
+		$result = $this->sut->add_note( $this->order_id, $note_content );
+		$this->assertSame( $note_id, $result );
+	}
+
+	public function test_add_rate_limiter_note() {
+		$mock_order = $this->mock_get_order();
+		$mock_order->expects( $this->once() )
+			->method( 'get_total' )
+			->willReturn( 50.12 );
+		$mock_order->expects( $this->once() )
+			->method( 'get_currency' )
+			->willReturn( 'EUR' );
+
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'wc_price', 50.12, [ 'currency' => 'EUR' ] )
+			->willReturn( '€50.12' );
+
+		$first_call     = [
+			WC_Payments_Explicit_Price_Formatter::class,
+			'get_explicit_price',
+			'€50.12',
+			$mock_order,
+		];
+		$second_call    = [
+			WC_Payments_Utils::class,
+			'esc_interpolated_html',
+			'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.',
+			[ 'strong' => '<strong>' ],
+		];
+		$explicit_price = '€50.12 EUR';
+		$note_content   = 'A payment of €50.12 EUR <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.';
+		$this->mock_legacy_proxy->expects( $this->exactly( 2 ) )
+			->method( 'call_static' )
+			->withConsecutive( $first_call, $second_call )
+			->willReturnOnConsecutiveCalls( $explicit_price, $note_content );
+
+		$note_id = 777;
+		$mock_order->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with( $note_content )
+			->willReturn( $note_id );
+
+		$result = $this->sut->add_rate_limiter_note( $this->order_id );
+		$this->assertSame( $note_id, $result );
+	}
+
+	public function test_delete_order() {
+		$force_delete = false;
+		$expected     = true;
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'delete' )
+			->with( $force_delete )
+			->willReturn( $expected );
+
+		$result = $this->sut->delete( $this->order_id, $force_delete );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_set_mode() {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with( '_wcpay_mode', 'prod' );
+		$this->sut->set_mode( $this->order_id, 'prod' );
+	}
+
+	public function test_get_mode() {
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_wcpay_mode', true )
+			->willReturn( 'test' );
+		$result = $this->sut->get_mode( $this->order_id, true );
+		$this->assertSame( 'test', $result );
 	}
 
 	/**

@@ -85,6 +85,7 @@ interface Props {
 	 * - `label`: `string` containing the text of the button/link
 	 * - `url`: `string` OR `onClick`: `( event: SyntheticEvent ) => void` to specify
 	 *    what the action does.
+	 * - `urlTarget`: `string` (optional) to specify the target attribute of the link.
 	 * - `className`: `string` (optional) to add custom classes to the button styles.
 	 * - `variant`: `'primary' | 'secondary' | 'link'` (optional) You can denote a
 	 *    primary button action for a notice by passing a value of `primary`.
@@ -101,6 +102,7 @@ interface Props {
 		className?: string;
 		variant?: Button.Props[ 'variant' ];
 		url?: string;
+		urlTarget?: string;
 		onClick?: React.MouseEventHandler< HTMLAnchorElement >;
 	} >;
 	/**
@@ -152,6 +154,7 @@ const BannerNotice: React.FC< Props > = ( {
 									variant,
 									onClick,
 									url,
+									urlTarget,
 								},
 								index
 							) => {
@@ -169,6 +172,7 @@ const BannerNotice: React.FC< Props > = ( {
 										variant={ computedVariant }
 										onClick={ url ? undefined : onClick }
 										className={ buttonCustomClasses }
+										target={ urlTarget }
 									>
 										{ label }
 									</Button>

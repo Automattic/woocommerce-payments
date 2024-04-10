@@ -51,6 +51,9 @@ declare const global: {
 				};
 			};
 		};
+		countries: {
+			[ key: string ]: string;
+		};
 	};
 	wcpaySettings: {
 		storeCurrency: string;
@@ -110,11 +113,15 @@ describe( 'Advanced fraud protection settings', () => {
 			admin: {
 				preloadSettings: {
 					general: {
-						woocommerce_allowed_countries: 'all',
+						woocommerce_allowed_countries: 'specific',
 						woocommerce_all_except_countries: [],
-						woocommerce_specific_allowed_countries: [],
+						woocommerce_specific_allowed_countries: [ 'CA', 'US' ],
 					},
 				},
+			},
+			countries: {
+				CA: 'Canada',
+				US: 'United States',
 			},
 		};
 

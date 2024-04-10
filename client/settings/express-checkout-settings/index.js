@@ -17,9 +17,11 @@ import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import WooIcon from 'assets/images/payment-methods/woo.svg?asset';
-import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
-import GooglePay from 'assets/images/cards/google-pay.svg?asset';
+import {
+	ApplePayIcon,
+	GooglePayIcon,
+	WooIcon,
+} from 'wcpay/payment-methods-icons';
 
 const methods = {
 	woopay: {
@@ -30,7 +32,7 @@ const methods = {
 				description: () => (
 					<>
 						<div className="express-checkout-settings__icon">
-							<img src={ WooIcon } alt="WooPay" />
+							<WooIcon />
 						</div>
 						<p>
 							{ __(
@@ -77,10 +79,10 @@ const methods = {
 					<>
 						<div className="express-checkout-settings__icons">
 							<div className="express-checkout-settings__icon">
-								<img src={ ApplePay } alt="Apple Pay" />
+								<ApplePayIcon />
 							</div>
 							<div className="express-checkout-settings__icon">
-								<img src={ GooglePay } alt="Google Pay" />
+								<GooglePayIcon />
 							</div>
 						</div>
 						<p>

@@ -11,7 +11,7 @@ import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
  * @param {Object} billingData The billing data, which was collected from the checkout block.
  * @param {string} fingerprint User fingerprint.
  *
- * @return {Object} The `onPaymentProcessing` response object, including a type and meta data/error message.
+ * @return {Object} The `onPaymentSetup` response object, including a type and meta data/error message.
  */
 const generatePaymentMethod = async (
 	api,
@@ -39,9 +39,7 @@ const generatePaymentMethod = async (
 			paymentMethod: { id },
 		} = await request.send();
 
-		const fraudPreventionToken = document
-			.querySelector( '#wcpay-fraud-prevention-token' )
-			?.getAttribute( 'value' );
+		const fraudPreventionToken = window.wcpayFraudPreventionToken;
 
 		return {
 			type: 'success',

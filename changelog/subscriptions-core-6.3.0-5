@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Ensure the order needs processing transient is deleted when a subscription order (eg renewal) is created. Fixes issues with renewal orders going straight to a completed status.

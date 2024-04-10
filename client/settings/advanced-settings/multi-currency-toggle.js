@@ -46,6 +46,7 @@ const MultiCurrencyToggle = () => {
 			} ) }
 			checked={ isMultiCurrencyEnabled }
 			onChange={ handleMultiCurrencyStatusChange }
+			data-testid="multi-currency-toggle"
 		/>
 	);
 };

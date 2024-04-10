@@ -17,8 +17,14 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Onboarding_Service {
 
-	const TEST_MODE_OPTION             = 'wcpay_onboarding_test_mode';
-	const ONBOARDING_FLOW_STATE_OPTION = 'wcpay_onboarding_flow_state';
+	const TEST_MODE_OPTION                    = 'wcpay_onboarding_test_mode';
+	const ONBOARDING_ELIGIBILITY_MODAL_OPTION = 'wcpay_onboarding_eligibility_modal_dismissed';
+	const SOURCE_WCADMIN_PAYMENT_TASK         = 'wcadmin-payment-task';
+	const SOURCE_WCADMIN_SETTINGS_PAGE        = 'wcadmin-settings-page';
+	const SOURCE_WCADMIN_INCENTIVE_PAGE       = 'wcadmin-incentive-page';
+	const SOURCE_WCPAY_CONNECT_PAGE           = 'wcpay-connect-page';
+	const SOURCE_WCPAY_RESET_ACCOUNT          = 'wcpay-reset-account';
+	const SOURCE_WCPAY_SETUP_LIVE_PAYMENTS    = 'wcpay-setup-live-payments';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -200,31 +206,22 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Get the onboarding flow state.
-	 *
-	 * @return ?array The onboarding flow state, or null if not set.
-	 */
-	public function get_onboarding_flow_state(): ?array {
-		return get_option( self::ONBOARDING_FLOW_STATE_OPTION, null );
-	}
-
-	/**
-	 * Set the onboarding flow state.
-	 *
-	 * @param array $value The onboarding flow state.
-	 * @return bool Whether the option was updated successfully.
-	 */
-	public function set_onboarding_flow_state( array $value ): bool {
-		return update_option( self::ONBOARDING_FLOW_STATE_OPTION, $value );
-	}
-
-	/**
-	 * Clear the onboarding flow state.
+	 * Clear any account options we may want to reset when a new onboarding flow is initialised.
+	 * Currently, just deletes the option which stores whether the eligibility modal has been dismissed.
 	 *
 	 * @return boolean Whether the option was deleted successfully.
 	 */
-	public static function clear_onboarding_flow_state(): bool {
-		return delete_option( self::ONBOARDING_FLOW_STATE_OPTION );
+	public static function clear_account_options(): bool {
+		return delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
+	}
+
+	/**
+	 * Set the onboarding eligibility modal dismissed option to true.
+	 *
+	 * @return void
+	 */
+	public static function set_onboarding_eligibility_modal_dismissed(): void {
+		update_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION, true );
 	}
 
 	/**
@@ -252,5 +249,38 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public static function is_test_mode_enabled(): bool {
 		return get_option( self::TEST_MODE_OPTION );
+	}
+
+	/**
+	 * Gets the source from the referer and URL params.
+	 *
+	 * @param string $referer    The referer.
+	 * @param array  $get_params GET params.
+	 *
+	 * @return string The source or empty string if the source is unsupported.
+	 */
+	public static function get_source( string $referer, array $get_params ): string {
+		$wcpay_connect_param = sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) );
+		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param ) {
+			return self::SOURCE_WCADMIN_PAYMENT_TASK;
+		}
+		// Payments tab in Woo Admin Settings page.
+		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
+			return self::SOURCE_WCADMIN_SETTINGS_PAGE;
+		}
+		// Payments tab in the sidebar.
+		if ( false !== strpos( $referer, 'path=%2Fwc-pay-welcome-page' ) ) {
+			return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
+		}
+		if ( false !== strpos( $referer, 'path=%2Fpayments%2Fconnect' ) ) {
+			return self::SOURCE_WCPAY_CONNECT_PAGE;
+		}
+		if ( isset( $get_params['wcpay-disable-onboarding-test-mode'] ) ) {
+			return self::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS;
+		}
+		if ( isset( $get_params['wcpay-reset-account'] ) ) {
+			return self::SOURCE_WCPAY_RESET_ACCOUNT;
+		}
+		return '';
 	}
 }

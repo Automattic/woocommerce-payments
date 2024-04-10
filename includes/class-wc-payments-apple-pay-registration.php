@@ -71,7 +71,14 @@ class WC_Payments_Apple_Pay_Registration {
 		$this->payments_api_client     = $payments_api_client;
 		$this->account                 = $account;
 		$this->gateway                 = $gateway;
+	}
 
+	/**
+	 * Initializes this class's hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ], 5 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_on_update' ] );
 		add_action( 'init', [ $this, 'init' ] );
@@ -423,14 +430,14 @@ class WC_Payments_Apple_Pay_Registration {
 					<?php echo esc_html( $verification_failed_without_error ); ?>
 					<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
 				</p>
-			<?php else : ?>
+<?php else : ?>
 				<p>
 					<strong><?php echo esc_html( $payment_request_button_text ); ?></strong>
 					<?php echo esc_html( $verification_failed_with_error ); ?>
 					<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
 				</p>
 				<p><i><?php echo wp_kses( make_clickable( esc_html( $this->apple_pay_verify_notice ) ), $allowed_html ); ?></i></p>
-			<?php endif; ?>
+<?php endif; ?>
 			<p><?php echo $check_log_text; /* @codingStandardsIgnoreLine */ ?></p>
 		</div>
 		<?php

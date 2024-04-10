@@ -195,6 +195,7 @@ cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --
 
 echo "Installing and activating Storefront theme..."
 cli wp theme install storefront --activate
+cli wp theme install twentytwentyfour
 
 echo "Adding basic WooCommerce settings..."
 cli wp option set woocommerce_store_address "60 29th Street"
@@ -209,6 +210,26 @@ cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
 
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages
+
+# Start - Workaround for > WC 8.3 compatibility by updating cart & checkout pages to use shortcode.
+# To be removed when WooPayments L-2 support is >= WC 8.3
+INSTALLED_WC_VERSION=$(cli_debug wp plugin get woocommerce --field=version)
+IS_WORKAROUND_REQUIRED=$(cli_debug wp eval "echo version_compare(\"$INSTALLED_WC_VERSION\", \"8.3\", \">=\");")
+
+if [[ "$IS_WORKAROUND_REQUIRED" = "1" ]]; then
+	echo "Updating cart & checkout pages for WC > 8.3 compatibility..."
+	# Get cart & checkout page IDs.
+	CART_PAGE_ID=$(cli_debug wp option get woocommerce_cart_page_id)
+	CHECKOUT_PAGE_ID=$(cli_debug wp option get woocommerce_checkout_page_id)
+
+	CART_SHORTCODE="<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->"
+	CHECKOUT_SHORTCODE="<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->"
+
+	# Update cart & checkout pages to use shortcode.
+	cli wp post update "$CART_PAGE_ID" --post_content="$CART_SHORTCODE"
+	cli wp post update "$CHECKOUT_PAGE_ID" --post_content="$CHECKOUT_SHORTCODE"
+fi
+# End - Workaround for > WC 8.3 compatibility by updating cart & checkout pages to use shortcode.
 
 echo "Importing some sample data..."
 cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
@@ -303,12 +324,6 @@ else
 	echo "Skipping install of Action Scheduler"
 fi
 
-if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
-	echo "Install and activate the latest release of WooCommerce Blocks"
-	cli wp plugin install woo-gutenberg-products-block --activate
-else
-	echo "Skipping install of WooCommerce Blocks"
-fi
 
 echo "Creating screenshots directory"
 mkdir -p $WCP_ROOT/screenshots

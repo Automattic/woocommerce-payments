@@ -22,6 +22,19 @@ class WooCommerceDeposits extends BaseCompatibility {
 	 */
 	protected function init() {
 		if ( class_exists( 'WC_Deposits' ) ) {
+			/*
+			 * Multi-currency support was added to WooCommerce Deposits in version 2.0.1.
+			 *
+			 * This prevents the loading of the compatibility class for Deposits in versions
+			 * of Deposits that support multi-currency.
+			 *
+			 * @see https://github.com/woocommerce/woocommerce-deposits/pull/425
+			 * @see https://github.com/woocommerce/woocommerce-deposits/issues/506
+			 */
+			if ( version_compare( WC_DEPOSITS_VERSION, '2.0.1', '>=' ) ) {
+				return;
+			}
+
 			// Add compatibility filters here.
 			add_action( 'woocommerce_deposits_create_order', [ $this, 'modify_order_currency' ] );
 			add_filter( 'woocommerce_get_cart_contents', [ $this, 'modify_cart_item_deposit_amounts' ] );
@@ -91,7 +104,7 @@ class WooCommerceDeposits extends BaseCompatibility {
 		// We need to get the original order from the first item meta.
 		$order            = wc_get_order( $order_id );
 		$order_items      = $order->get_items();
-		$first_order_item = 0 < count( $order_items ) ? reset( $order_items ) : null;
+		$first_order_item = 0 < ( is_countable( $order_items ) ? count( $order_items ) : 0 ) ? reset( $order_items ) : null;
 
 		if ( ! $first_order_item ) {
 			return;

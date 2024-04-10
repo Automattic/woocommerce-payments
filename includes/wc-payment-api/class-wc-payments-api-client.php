@@ -10,14 +10,17 @@ defined( 'ABSPATH' ) || exit;
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Amount_Too_Large_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
+use WCPay\Constants\Currency_Code;
 use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
+use WCPay\Exceptions\Cannot_Combine_Currencies_Exception;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -72,8 +75,10 @@ class WC_Payments_API_Client {
 	const VAT_API                      = 'vat';
 	const LINKS_API                    = 'links';
 	const AUTHORIZATIONS_API           = 'authorizations';
+	const FRAUD_SERVICES_API           = 'accounts/fraud_services';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
+	const COMPATIBILITY_API            = 'compatibility';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -82,13 +87,20 @@ class WC_Payments_API_Client {
 		'client_secret',
 		'email',
 		'name',
+		'first_name',
+		'last_name',
 		'phone',
+		'company',
+		'address_1',
+		'address_2',
 		'line1',
 		'line2',
 		'postal_code',
+		'postcode',
 		'state',
 		'city',
 		'country',
+		'company',
 		'customer_name',
 		'customer_email',
 	];
@@ -241,15 +253,15 @@ class WC_Payments_API_Client {
 	 * Trigger a manual deposit.
 	 *
 	 * @param string $type Type of deposit. Only "instant" is supported for now.
-	 * @param string $transaction_ids Comma-separated list of transaction IDs that will be associated with this deposit.
+	 * @param string $currency The deposit currency.
 	 * @return array The new deposit object.
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function manual_deposit( $type, $transaction_ids ) {
+	public function manual_deposit( $type, $currency ) {
 		return $this->request(
 			[
-				'type'            => $type,
-				'transaction_ids' => $transaction_ids,
+				'type'     => $type,
+				'currency' => $currency,
 			],
 			self::DEPOSITS_API,
 			self::POST
@@ -325,7 +337,7 @@ class WC_Payments_API_Client {
 		}
 
 		return [
-			'count'      => count( $fraud_outcomes ),
+			'count'      => is_countable( $fraud_outcomes ) ? count( $fraud_outcomes ) : 0,
 			'total'      => (int) $total,
 			'currencies' => array_unique( $currencies ),
 		];
@@ -406,12 +418,13 @@ class WC_Payments_API_Client {
 	 * @param array  $filters    The filters to be used in the query.
 	 * @param string $user_email The email to search for.
 	 * @param string $deposit_id The deposit to filter on.
+	 * @param string $locale     Site locale.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_transactions_export( $filters = [], $user_email = '', $deposit_id = null ) {
+	public function get_transactions_export( $filters = [], $user_email = '', $deposit_id = null, $locale = null ) {
 		// Map Order # terms to the actual charge id to be used in the server.
 		if ( ! empty( $filters['search'] ) ) {
 			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
@@ -421,6 +434,9 @@ class WC_Payments_API_Client {
 		}
 		if ( ! empty( $deposit_id ) ) {
 			$filters['deposit_id'] = $deposit_id;
+		}
+		if ( ! empty( $locale ) ) {
+			$filters['locale'] = $locale;
 		}
 
 		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
@@ -481,7 +497,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_disputes_summary( array $filters = [] ):array {
+	public function get_disputes_summary( array $filters = [] ): array {
 		return $this->request( [ $filters ], self::DISPUTES_API . '/summary', self::GET );
 	}
 
@@ -568,14 +584,18 @@ class WC_Payments_API_Client {
 	 *
 	 * @param array  $filters    The filters to be used in the query.
 	 * @param string $user_email The email to search for.
+	 * @param string $locale Site locale.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_disputes_export( $filters = [], $user_email = '' ) {
+	public function get_disputes_export( $filters = [], $user_email = '', $locale = null ) {
 		if ( ! empty( $user_email ) ) {
 			$filters['user_email'] = $user_email;
+		}
+		if ( ! empty( $locale ) ) {
+			$filters['locale'] = $locale;
 		}
 
 		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
@@ -586,14 +606,18 @@ class WC_Payments_API_Client {
 	 *
 	 * @param array  $filters    The filters to be used in the query.
 	 * @param string $user_email The email to send export to.
+	 * @param string $locale Site locale.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_deposits_export( $filters = [], $user_email = '' ) {
+	public function get_deposits_export( $filters = [], $user_email = '', $locale = null ) {
 		if ( ! empty( $user_email ) ) {
 			$filters['user_email'] = $user_email;
+		}
+		if ( ! empty( $locale ) ) {
+			$filters['locale'] = $locale;
 		}
 
 		return $this->request( $filters, self::DEPOSITS_API . '/download', self::POST );
@@ -659,7 +683,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function get_file_contents( string $file_id, bool $as_account = true ) : array {
+	public function get_file_contents( string $file_id, bool $as_account = true ): array {
 		try {
 			return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id . '/contents', self::GET );
 		} catch ( API_Exception $e ) {
@@ -677,7 +701,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function get_file( string $file_id, bool $as_account = true ) : array {
+	public function get_file( string $file_id, bool $as_account = true ): array {
 		return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id, self::GET );
 	}
 
@@ -738,7 +762,7 @@ class WC_Payments_API_Client {
 				// Sort by date desc, then by type desc as specified in events_order.
 				usort(
 					$timeline['data'],
-					function( $a, $b ) {
+					function ( $a, $b ) {
 						$result = $b['datetime'] <=> $a['datetime'];
 						if ( 0 !== $result ) {
 							return $result;
@@ -1055,7 +1079,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception Error updating product.
 	 */
-	public function update_product( string $product_id, array $product_data = [] ) : array {
+	public function update_product( string $product_id, array $product_data = [] ): array {
 		if ( null === $product_id || '' === trim( $product_id ) ) {
 			throw new API_Exception(
 				__( 'Product ID is required', 'woocommerce-payments' ),
@@ -1144,6 +1168,56 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$data,
 			self::INVOICES_API . '/' . $invoice_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Updates a charge.
+	 *
+	 * @param string $charge_id ID of the charge to update.
+	 * @param array  $data arameters to send to the transaction endpoint. Optional. Default is an empty array.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function update_charge( string $charge_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::CHARGES_API . '/' . $charge_id,
+			self::POST
+		);
+	}
+
+	/**
+	 * Fetch a charge by id.
+	 *
+	 * @param string $charge_id Charge id.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_charge( string $charge_id ) {
+		return $this->request(
+			[],
+			self::CHARGES_API . '/' . $charge_id,
+			self::GET
+		);
+	}
+
+	/**
+	 * Updates a transaction.
+	 *
+	 * @param string $transaction_id Transaction id.
+	 * @param array  $data Data to be updated.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function update_transaction( string $transaction_id, array $data = [] ) {
+		return $this->request(
+			$data,
+			self::TRANSACTIONS_API . '/' . $transaction_id,
 			self::POST
 		);
 	}
@@ -1645,6 +1719,42 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Sends the compatibility data to the server to be saved to the account.
+	 *
+	 * @param array $compatibility_data The array containing the data.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function update_compatibility_data( $compatibility_data ) {
+		$response = $this->request(
+			[
+				'compatibility_data' => $compatibility_data,
+			],
+			self::COMPATIBILITY_API,
+			self::POST
+		);
+
+		return $response;
+	}
+
+	/**
+	 * Get tracking info for the site.
+	 *
+	 * @return  array  Tracking info.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function get_tracking_info() {
+		return $this->request(
+			[],
+			self::TRACKING_API . '/info',
+			self::GET,
+		);
+	}
+
+	/**
 	 * Sends a request object.
 	 *
 	 * @param  Request $request The request to send.
@@ -1800,7 +1910,7 @@ class WC_Payments_API_Client {
 
 			// Use exponential backoff to not overload backend.
 			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
-			$retries++;
+			++$retries;
 		}
 
 		// @todo We don't always return an array. `extract_response_body` can also return a string. We should standardize this!
@@ -1918,14 +2028,46 @@ class WC_Payments_API_Client {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
+				$response_body_error_code = $response_body['error']['code'] ?? null;
+				$payment_intent_status    = $response_body['error']['payment_intent']['status'] ?? null;
+
+				// We redact the API error message to prevent prompting the merchant to contact Stripe support
+				// when attempting to manually capture an amount greater than what's authorized. Contacting support is unnecessary in this scenario.
+				if ( 'amount_too_large' === $response_body_error_code && Intent_Status::REQUIRES_CAPTURE === $payment_intent_status ) {
+					throw new Amount_Too_Large_Exception(
+						// translators: This is an error API response.
+						__( 'Error: The payment could not be captured because the requested capture amount is greater than the amount you can capture for this charge.', 'woocommerce-payments' ),
+						$response_code
+					);
+				}
 				$decline_code = $response_body['error']['decline_code'] ?? '';
 				$this->maybe_act_on_fraud_prevention( $decline_code );
 
-				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
+				$error_code    = $response_body_error_code ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
 				$this->maybe_act_on_fraud_prevention( $response_body['code'] );
+
+				if (
+					'invalid_request_error' === $response_body['code']
+					&& 0 === strpos( $response_body['message'], 'You cannot combine currencies on a single customer.' )
+				) {
+					// Get the currency, which is the last part of the error message,
+					// and remove the period from the end of the error message.
+					$message  = $response_body['message'];
+					$currency = substr( $message, -4 );
+					$currency = strtoupper( substr( $currency, 0, 3 ) );
+
+					// Only throw the error if we can find a valid currency.
+					if ( false !== Currency_Code::search( $currency ) ) {
+						throw new Cannot_Combine_Currencies_Exception(
+							$message,
+							$currency,
+							$response_code
+						);
+					}
+				}
 
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
@@ -1982,7 +2124,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 */
-	public function add_additional_info_to_charge( array $charge ) : array {
+	public function add_additional_info_to_charge( array $charge ): array {
 		$charge = $this->add_order_info_to_charge_object( $charge['id'], $charge );
 		$charge = $this->add_formatted_address_to_charge_object( $charge );
 
@@ -1996,7 +2138,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 */
-	public function add_formatted_address_to_charge_object( array $charge ) : array {
+	public function add_formatted_address_to_charge_object( array $charge ): array {
 		$has_billing_details = isset( $charge['billing_details'] );
 
 		if ( $has_billing_details ) {
@@ -2076,6 +2218,8 @@ class WC_Payments_API_Client {
 			'number'              => $order->get_order_number(),
 			'url'                 => $order->get_edit_order_url(),
 			'customer_url'        => $this->get_customer_url( $order ),
+			'customer_name'       => trim( $order->get_formatted_billing_full_name() ),
+			'customer_email'      => $order->get_billing_email(),
 			'fraud_meta_box_type' => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
 		];
 
@@ -2300,7 +2444,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array reader objects.
 	 */
-	public function get_readers_charge_summary( string $charge_date ) : array {
+	public function get_readers_charge_summary( string $charge_date ): array {
 		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 
@@ -2375,13 +2519,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Delete account.
 	 *
+	 * @param bool $test_mode Whether we are in test mode or not.
+	 *
 	 * @return array
 	 * @throws API_Exception
 	 */
-	public function delete_account() {
+	public function delete_account( bool $test_mode = false ) {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
+				'test_mode' => $test_mode,
 			],
 			self::ACCOUNTS_API . '/delete',
 			self::POST,

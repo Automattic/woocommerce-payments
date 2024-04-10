@@ -18,6 +18,7 @@ class Database_Cache {
 	const BUSINESS_TYPES_KEY          = 'wcpay_business_types_data';
 	const CURRENCIES_KEY              = 'wcpay_multi_currency_cached_currencies';
 	const PAYMENT_PROCESS_FACTORS_KEY = 'wcpay_payment_process_factors';
+	const FRAUD_SERVICES_KEY          = 'wcpay_fraud_services_data';
 
 	/**
 	 * Refresh during AJAX calls is avoided, but white-listing
@@ -66,6 +67,13 @@ class Database_Cache {
 	 * Cache key for eligible connect incentive data.
 	 */
 	const CONNECT_INCENTIVE_KEY = 'wcpay_connect_incentive';
+
+	/**
+	 * Tracking info cache key.
+	 *
+	 * @var string
+	 */
+	const TRACKING_INFO_KEY = 'wcpay_tracking_info_cache';
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
@@ -177,6 +185,9 @@ class Database_Cache {
 	 */
 	public function delete( string $key ) {
 		delete_option( $key );
+
+		// Clear WP Cache to ensure the new data is fetched by other processes.
+		wp_cache_delete( $key, 'options' );
 	}
 
 	/**
@@ -289,11 +300,10 @@ class Database_Cache {
 		$cache_contents['errored'] = $errored;
 
 		// Create or update the option cache.
-		if ( false === get_option( $key ) ) {
-			add_option( $key, $cache_contents, '', 'no' );
-		} else {
-			update_option( $key, $cache_contents, 'no' );
-		}
+		update_option( $key, $cache_contents, 'no' );
+
+		// Clear WP Cache to ensure the new data is fetched by other processes.
+		wp_cache_delete( $key, 'options' );
 
 		return $cache_contents;
 	}
@@ -352,6 +362,9 @@ class Database_Cache {
 				break;
 			case self::PAYMENT_PROCESS_FACTORS_KEY:
 				$ttl = 2 * HOUR_IN_SECONDS;
+				break;
+			case self::TRACKING_INFO_KEY:
+				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : MONTH_IN_SECONDS;
 				break;
 			default:
 				// Default to 24h.

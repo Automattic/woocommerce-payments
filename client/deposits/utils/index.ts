@@ -29,7 +29,7 @@ export const getDepositMonthlyAnchorLabel = ( {
 	// If locale is set up as en_US or en_GB the ordinal will not show up
 	// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
 	// Using 'en' as the locale should be enough to workaround it
-	// TODO: Remove workaround when issue is resolved
+	// TODO: This was resolved in WP 6.1. When the required version is 6.1 or higher, we can remove this workaround.
 	const fixedLocale = moment.locale().startsWith( 'en' )
 		? 'en'
 		: moment.locale();
@@ -46,4 +46,17 @@ export const getDepositMonthlyAnchorLabel = ( {
 		label = label.toLowerCase();
 	}
 	return label;
+};
+
+// Determine if the store/merchant has scheduled deposits configured.
+export const hasAutomaticScheduledDeposits = (
+	depositsScheduleInterval: string | undefined
+): boolean => {
+	if ( ! depositsScheduleInterval ) {
+		return false;
+	}
+
+	return [ 'daily', 'weekly', 'monthly' ].includes(
+		depositsScheduleInterval
+	);
 };

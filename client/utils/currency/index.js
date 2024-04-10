@@ -82,6 +82,24 @@ export const isZeroDecimalCurrency = ( currencyCode ) => {
 };
 
 /**
+ * Formats the amount for CSV export, considering zero-decimal currencies
+ *
+ * @param {number} amount       Amount
+ * @param {string} currencyCode Currency code
+ *
+ * @return {number} Export amount
+ */
+export const formatExportAmount = ( amount, currencyCode ) => {
+	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
+
+	if ( ! isZeroDecimal ) {
+		amount /= 100;
+	}
+
+	return amount;
+};
+
+/**
  * Formats amount according to the given currency.
  *
  * @param {number} amount       Amount
@@ -101,19 +119,39 @@ export const formatCurrency = (
 		amount /= 100;
 	}
 
+	const isNegative = amount < 0;
+	const positiveAmount = isNegative ? -1 * amount : amount;
+	const prefix = isNegative ? '-' : '';
 	const currency = getCurrency( currencyCode, baseCurrencyCode );
 
 	if ( currency === null ) {
-		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
+		return (
+			prefix +
+			composeFallbackCurrency(
+				positiveAmount,
+				currencyCode,
+				isZeroDecimal
+			)
+		);
 	}
 
 	try {
-		return typeof currency.formatAmount === 'function'
-			? htmlDecode( currency.formatAmount( amount ) )
-			: htmlDecode( currency.formatCurrency( amount ) );
+		return (
+			prefix +
+			( typeof currency.formatAmount === 'function'
+				? htmlDecode( currency.formatAmount( positiveAmount ) )
+				: htmlDecode( currency.formatCurrency( positiveAmount ) ) )
+		);
 	} catch ( err ) {
-		return htmlDecode(
-			composeFallbackCurrency( amount, currencyCode, isZeroDecimal )
+		return (
+			prefix +
+			htmlDecode(
+				composeFallbackCurrency(
+					positiveAmount,
+					currencyCode,
+					isZeroDecimal
+				)
+			)
 		);
 	}
 };

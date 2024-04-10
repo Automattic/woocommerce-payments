@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix error when disabling WCPay with core disabled.

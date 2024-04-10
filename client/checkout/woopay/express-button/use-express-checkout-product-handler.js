@@ -1,12 +1,10 @@
 /**
  * External dependencies
  */
-import { useEffect, useState } from 'react';
-import validator from 'validator';
+import isEmail from 'validator/lib/isEmail';
+import { __ } from '@wordpress/i18n';
 
-const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
-	const [ isAddToCartDisabled, setIsAddToCartDisabled ] = useState( false );
-
+const useExpressCheckoutProductHandler = ( api ) => {
 	const getAttributes = () => {
 		const select = document
 			.querySelector( '.variations_form' )
@@ -37,7 +35,12 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 				data.hasOwnProperty( requiredField ) &&
 				! data[ requiredField ]
 			) {
-				alert( 'Please fill out all required fields' );
+				alert(
+					__(
+						'Please fill out all required fields',
+						'woocommerce-payments'
+					)
+				);
 				return false;
 			}
 		}
@@ -46,16 +49,26 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 			if (
 				! data.wc_gc_giftcard_to_multiple
 					.split( ',' )
-					.every( ( email ) => validator.isEmail( email.trim() ) )
+					.every( ( email ) => isEmail( email.trim() ) )
 			) {
-				alert( 'Please type only valid emails' );
+				alert(
+					__(
+						'Please type only valid emails',
+						'woocommerce-payments'
+					)
+				);
 				return false;
 			}
 		}
 
 		if ( data.hasOwnProperty( 'wc_gc_giftcard_to' ) ) {
-			if ( ! validator.isEmail( data.wc_gc_giftcard_to ) ) {
-				alert( 'Please type only valid emails' );
+			if ( ! isEmail( data.wc_gc_giftcard_to ) ) {
+				alert(
+					__(
+						'Please type only valid emails',
+						'woocommerce-payments'
+					)
+				);
 				return false;
 			}
 		}
@@ -112,10 +125,7 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 			const formData = new FormData( addOnForm );
 
 			formData.forEach( ( value, name ) => {
-				if (
-					/^addon-/.test( name ) ||
-					/^wc_gc_giftcard_/.test( name )
-				) {
+				if ( /^(addon-|wc_)/.test( name ) ) {
 					if ( /\[\]$/.test( name ) ) {
 						const fieldName = name.substring( 0, name.length - 2 );
 
@@ -142,95 +152,9 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 		return api.expressCheckoutAddToCart( data );
 	};
 
-	useEffect( () => {
-		if ( ! isProductPage ) {
-			return;
-		}
-
-		const getIsAddToCartDisabled = () => {
-			const addToCartButton = document.querySelector(
-				'.single_add_to_cart_button'
-			);
-
-			return (
-				addToCartButton.disabled ||
-				addToCartButton.classList.contains( 'disabled' )
-			);
-		};
-
-		setIsAddToCartDisabled( getIsAddToCartDisabled() );
-
-		const enableAddToCartButton = () => {
-			setIsAddToCartDisabled( false );
-		};
-
-		const disableAddToCartButton = () => {
-			setIsAddToCartDisabled( true );
-		};
-
-		const bundleForm = document.querySelector( '.bundle_form' );
-		const mixAndMatchForm = document.querySelector( '.mnm_form' );
-		const variationForm = document.querySelector( '.variations_form' );
-
-		if ( bundleForm ) {
-			// eslint-disable-next-line no-undef
-			jQuery( bundleForm )
-				.on( 'woocommerce-product-bundle-show', enableAddToCartButton )
-				.on(
-					'woocommerce-product-bundle-hide',
-					disableAddToCartButton
-				);
-		} else if ( mixAndMatchForm ) {
-			// eslint-disable-next-line no-undef
-			jQuery( mixAndMatchForm )
-				.on(
-					'wc-mnm-display-add-to-cart-button',
-					enableAddToCartButton
-				)
-				.on( 'wc-mnm-hide-add-to-cart-button', disableAddToCartButton );
-		} else if ( variationForm ) {
-			// eslint-disable-next-line no-undef
-			jQuery( variationForm )
-				.on( 'show_variation', enableAddToCartButton )
-				.on( 'hide_variation', disableAddToCartButton );
-		}
-
-		return () => {
-			if ( bundleForm ) {
-				// eslint-disable-next-line no-undef
-				jQuery( bundleForm )
-					.off(
-						'woocommerce-product-bundle-show',
-						enableAddToCartButton
-					)
-					.off(
-						'woocommerce-product-bundle-hide',
-						disableAddToCartButton
-					);
-			} else if ( mixAndMatchForm ) {
-				// eslint-disable-next-line no-undef
-				jQuery( mixAndMatchForm )
-					.off(
-						'wc-mnm-display-add-to-cart-button',
-						enableAddToCartButton
-					)
-					.off(
-						'wc-mnm-hide-add-to-cart-button',
-						disableAddToCartButton
-					);
-			} else if ( variationForm ) {
-				// eslint-disable-next-line no-undef
-				jQuery( variationForm )
-					.off( 'show_variation', enableAddToCartButton )
-					.off( 'hide_variation', disableAddToCartButton );
-			}
-		};
-	}, [ isProductPage, setIsAddToCartDisabled ] );
-
 	return {
 		addToCart,
 		getProductData,
-		isAddToCartDisabled,
 	};
 };
 

@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { Experiment } from '@woocommerce/explat';
 import { TabPanel } from '@wordpress/components';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
@@ -14,7 +13,7 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import Page from 'components/page';
 import TransactionsList from './list';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice } from 'components/test-mode-notice';
 import Authorizations from './uncaptured';
 import './style.scss';
 import {
@@ -51,25 +50,21 @@ export const TransactionsPage: React.FC = () => {
 	const tabsComponentMap = {
 		'transactions-page': (
 			<>
-				<TestModeNotice topic={ topics.transactions } />
 				<TransactionsList />
 			</>
 		),
 		'uncaptured-page': (
 			<>
-				<TestModeNotice topic={ topics.authorizations } />
 				<Authorizations />
 			</>
 		),
 		'review-page': (
 			<>
-				<TestModeNotice topic={ topics.riskReviewTransactions } />
 				<RiskReviewList />
 			</>
 		),
 		'blocked-page': (
 			<>
-				<TestModeNotice topic={ topics.blockedTransactions } />
 				<BlockedList />
 			</>
 		),
@@ -139,9 +134,9 @@ export const TransactionsPage: React.FC = () => {
 	} );
 
 	return (
-		<Page>
+		<Page className="wcpay-transactions-page">
+			<TestModeNotice currentPage="transactions" />
 			<TabPanel
-				className="wcpay-transactions-page"
 				activeClass="active-tab"
 				onSelect={ onTabSelected }
 				initialTabName={ initialTab || 'transactions-page' }
@@ -161,10 +156,8 @@ export const TransactionsPage: React.FC = () => {
 
 export default (): JSX.Element => {
 	return (
-		<Page>
-			<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
-				<TransactionsPage />
-			</WCPaySettingsContext.Provider>
-		</Page>
+		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+			<TransactionsPage />
+		</WCPaySettingsContext.Provider>
 	);
 };

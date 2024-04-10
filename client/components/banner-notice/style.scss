@@ -32,6 +32,7 @@
 	&__icon {
 		flex-shrink: 0;
 		margin-right: $gap-small;
+		margin-left: -2px;
 	}
 
 	&__content {
@@ -41,7 +42,7 @@
 	&__actions {
 		display: grid;
 		grid-auto-flow: column;
-		grid-auto-columns: min-content;
+		grid-auto-columns: max-content;
 		column-gap: $gap-small;
 		margin-top: $gap-small;
 	}

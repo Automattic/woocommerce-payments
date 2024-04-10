@@ -43,5 +43,4 @@ export type DepositStatus =
 	| 'pending'
 	| 'in_transit'
 	| 'canceled'
-	| 'failed'
-	| 'estimated';
+	| 'failed';

@@ -116,6 +116,10 @@ export const getDepositScheduleInterval = ( state ) => {
 	return getSettings( state ).deposit_schedule_interval || '';
 };
 
+export const getExportLanguage = ( state ) => {
+	return getSettings( state ).reporting_export_language || '';
+};
+
 export const getDepositScheduleWeeklyAnchor = ( state ) => {
 	return getSettings( state ).deposit_schedule_weekly_anchor || '';
 };
@@ -232,6 +236,13 @@ export const getAdvancedFraudProtectionSettings = ( state ) => {
 
 export const getShowWooPayIncompatibilityNotice = ( state ) => {
 	return getSettings( state ).show_woopay_incompatibility_notice || false;
+};
+
+export const getShowExpressCheckoutIncompatibilityNotice = ( state ) => {
+	return (
+		getSettings( state ).show_express_checkout_incompatibility_notice ||
+		false
+	);
 };
 
 export const getIsStripeBillingEnabled = ( state ) => {

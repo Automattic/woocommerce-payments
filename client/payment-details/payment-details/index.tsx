@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { TestModeNotice, topics } from '../../components/test-mode-notice';
+import { TestModeNotice } from '../../components/test-mode-notice';
 import Page from '../../components/page';
 import { Card, CardBody } from '@wordpress/components';
 import ErrorBoundary from '../../components/error-boundary';
@@ -37,13 +37,11 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 	showTimeline = true,
 	paymentIntent,
 } ) => {
-	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
-
 	// Check instance of error because its default value is empty object
 	if ( ! isLoading && error instanceof Error ) {
 		return (
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
-				{ testModeNotice }
+				<TestModeNotice currentPage="payments" isDetailsView={ true } />
 				<Card>
 					<CardBody>
 						{ __(
@@ -58,8 +56,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
-			{ testModeNotice }
-
+			<TestModeNotice currentPage="payments" isDetailsView={ true } />
 			<ErrorBoundary>
 				<PaymentDetailsSummary
 					charge={ charge }

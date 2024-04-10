@@ -19,4 +19,5 @@ export const upeCapabilityStatuses = {
 	ACTIVE: 'active',
 	INACTIVE: 'inactive',
 	UNREQUESTED: 'unrequested',
+	REJECTED: 'rejected',
 };

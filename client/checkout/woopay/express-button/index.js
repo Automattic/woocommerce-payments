@@ -62,13 +62,13 @@ jQuery( ( $ ) => {
 	listenForCartChanges = {
 		start: () => {
 			$( document.body ).on(
-				'updated_cart_totals',
+				'updated_cart_totals updated_checkout',
 				renderWooPayExpressCheckoutButtonWithCallbacks
 			);
 		},
 		stop: () => {
 			$( document.body ).off(
-				'updated_cart_totals',
+				'updated_cart_totals updated_checkout',
 				renderWooPayExpressCheckoutButtonWithCallbacks
 			);
 		},

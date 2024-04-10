@@ -26,7 +26,7 @@ export const getUpdateBusinessDetailsTask = (
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
 
-	let accountDetailsTaskDescription = '',
+	let accountDetailsTaskDescription: React.ReactElement | string = '',
 		errorMessageDescription,
 		accountDetailsUpdateByDescription;
 
@@ -45,9 +45,11 @@ export const getUpdateBusinessDetailsTask = (
 
 		if ( hasSingleError ) {
 			errorMessageDescription = errorMessages[ 0 ];
-			accountDetailsTaskDescription = errorMessageDescription.concat(
-				' ',
-				accountDetailsUpdateByDescription
+			accountDetailsTaskDescription = (
+				<>
+					{ errorMessageDescription }{ ' ' }
+					{ accountDetailsUpdateByDescription }
+				</>
 			);
 		} else {
 			accountDetailsTaskDescription = accountDetailsUpdateByDescription;
