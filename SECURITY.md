@@ -8,7 +8,7 @@ Generally, only the latest version of the extension has continued support.  In s
 
 ## Reporting a Vulnerability
 
-[WooPayments](https://woo.com/payments/) is an open-source plugin for WooCommerce. Our HackerOne program covers the plugin software.
+[WooPayments](https://woocommerce.com/payments/) is an open-source plugin for WooCommerce. Our HackerOne program covers the plugin software.
 
 **For responsible disclosure of security issues and to be eligible for our bug bounty program, please submit your report via the [HackerOne](https://hackerone.com/automattic) portal.**
 

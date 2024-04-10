@@ -62,7 +62,7 @@ export default {
 				// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
 				// eslint-disable-next-line jsx-a11y/anchor-has-content
 				<a
-					href="https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
+					href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
 					target="_blank"
 					rel="noreferrer"
 				/>
@@ -282,7 +282,7 @@ export default {
 			a: (
 				// eslint-disable-next-line jsx-a11y/anchor-has-content
 				<a
-					href="https://woo.com/document/woopayments/compatibility/countries/"
+					href="https://woocommerce.com/document/woopayments/compatibility/countries/"
 					target="_blank"
 					rel="noopener noreferrer"
 				/>

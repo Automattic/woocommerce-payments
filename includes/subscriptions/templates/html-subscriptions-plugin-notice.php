@@ -22,7 +22,7 @@
 							printf(
 								// Translators: %1-%4 placeholders are opening and closing a or strong HTML tags. %5$s: WooPayments, %6$s: Woo Subscriptions.
 								esc_html__( 'Your store has subscriptions using %5$s Stripe Billing functionality for payment processing. Due to the %1$soff-site billing engine%2$s these subscriptions use,%3$s they will continue to renew even after you deactivate %6$s%4$s.', 'woocommerce-payments' ),
-								'<a href="https://woo.com/document/woopayments/subscriptions/stripe-billing/#faq" target="_blank">',
+								'<a href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/#faq" target="_blank">',
 								'</a>',
 								'<strong>',
 								'</strong>',
@@ -36,7 +36,7 @@
 							printf(
 								// translators: $1 $2 placeholders are opening and closing HTML link tags, linking to documentation. $3 is WooPayments.
 								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel these subscriptions%2$s prior to deactivating %3$s.', 'woocommerce-payments' ),
-								'<a href="https://woo.com/document/subscriptions/store-manager-guide/#cancel-or-suspend-subscription" target="_blank">',
+								'<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#cancel-or-suspend-subscription" target="_blank">',
 								'</a>',
 								'Woo Subscriptions'
 							);
