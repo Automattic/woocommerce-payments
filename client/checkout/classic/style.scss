@@ -41,7 +41,7 @@
 li.wc_payment_method:has( .input-radio:not( :checked )
 		+ label
 		.stripe-pmme-container ) {
-	display: grid !important;
+	display: grid;
 	grid-template-columns: min-content 1fr;
 	grid-template-rows: auto auto;
 	align-items: baseline;
@@ -78,7 +78,7 @@ li.wc_payment_method:has( .input-radio:not( :checked )
 li.wc_payment_method:has( .input-radio:checked
 		+ label
 		.stripe-pmme-container ) {
-	display: block !important;
+	display: block;
 
 	.input-radio:checked {
 		+ label {
