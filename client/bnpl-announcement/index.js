@@ -14,15 +14,15 @@ import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import {
 	AffirmIcon,
-	AfterpayIcon,
+	AfterpayPillIcon,
 	ClearpayIcon,
-	KlarnaIcon,
+	KlarnaPillIcon,
 } from 'wcpay/payment-methods-icons';
 
 const AfterpayClearpayIcon =
 	window.wcpayBnplAnnouncement?.accountStatus?.country === 'GB'
 		? ClearpayIcon
-		: AfterpayIcon;
+		: AfterpayPillIcon;
 
 const Dialog = () => {
 	useEffect( () => {
@@ -65,7 +65,7 @@ const Dialog = () => {
 			}
 		>
 			<div className="wcpay-bnpl-announcement__payment-icons">
-				<KlarnaIcon />
+				<KlarnaPillIcon />
 				<AfterpayClearpayIcon />
 				<AffirmIcon />
 			</div>
