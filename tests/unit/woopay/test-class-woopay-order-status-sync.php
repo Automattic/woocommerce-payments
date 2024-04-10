@@ -97,6 +97,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 
 		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
+		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
 
 		// Create the WebHook with WooPay specific delivery URL.
 		$this->webhook_sync_mock->maybe_create_woopay_order_webhook();
@@ -143,6 +144,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		wp_set_current_user( self::$admin_user->ID );
 		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
+		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
 
 		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
 
@@ -158,6 +160,23 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		wp_set_current_user( self::$admin_user->ID );
 		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( true );
+		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
+
+		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
+
+		$this->webhook_sync_mock->maybe_create_woopay_order_webhook();
+
+		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
+	}
+
+	/**
+	 * Tests that the webhook is not created for rejected WCPay accounts.
+	 */
+	public function test_webhook_is_not_created_for_rejected() {
+		wp_set_current_user( self::$admin_user->ID );
+		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
+		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
+		$this->account_mock->method( 'is_account_rejected' )->willReturn( true );
 
 		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
 
@@ -173,6 +192,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		wp_set_current_user( self::$admin_user->ID );
 		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
+		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
 
 		$this->webhook_sync_mock->maybe_create_woopay_order_webhook();
 		$this->assertNotEmpty( WooPay_Order_Status_Sync::get_webhook() );
