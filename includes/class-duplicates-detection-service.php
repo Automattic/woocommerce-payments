@@ -39,10 +39,10 @@ class Duplicates_Detection_Service {
 	public function find_duplicates( $gateways ) {
 		$gateways_qualified_by_duplicates_detector = [];
 
-		$this->search_for_credit_cards( $gateways, $gateways_qualified_by_duplicates_detector );
+		$this->search_for_cc_payment_methods( $gateways, $gateways_qualified_by_duplicates_detector );
 		$this->search_for_additional_payment_methods( $gateways, $gateways_qualified_by_duplicates_detector );
 		$this->search_for_payment_request_buttons( $gateways, $gateways_qualified_by_duplicates_detector );
-		$this->filter_duplicates( $gateways_qualified_by_duplicates_detector );
+		$this->keep_duplicates_only( $gateways_qualified_by_duplicates_detector );
 
 		return $gateways_qualified_by_duplicates_detector;
 	}
@@ -55,7 +55,7 @@ class Duplicates_Detection_Service {
 	 *
 	 * @return void
 	 */
-	private function search_for_credit_cards( $gateways, &$duplicates ) {
+	private function search_for_cc_payment_methods( $gateways, &$duplicates ) {
 		$keywords         = [ 'credit_card', 'creditcard', 'cc', 'card' ];
 		$special_keywords = [ 'woocommerce_payments', 'stripe' ];
 
@@ -69,23 +69,6 @@ class Duplicates_Detection_Service {
 	}
 
 	/**
-	 * Check if gateway ID contains any of the keywords.
-	 *
-	 * @param string $gateway_id Gateway ID.
-	 * @param array  $keywords Keywords to search for.
-	 *
-	 * @return bool True if gateway ID contains any of the keywords, false otherwise.
-	 */
-	private function gateway_contains_keyword( $gateway_id, $keywords ) {
-		foreach ( $keywords as $keyword ) {
-			if ( strpos( $gateway_id, $keyword ) !== false ) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
 	 * Search for additional payment methods.
 	 *
 	 * @param array $gateways All gateways.
@@ -95,7 +78,6 @@ class Duplicates_Detection_Service {
 	 */
 	private function search_for_additional_payment_methods( $gateways, &$duplicates ) {
 		$keywords = [
-			// APMs including BNPLs.
 			'bancontact' => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'sepa'       => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'giropay'    => Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
@@ -132,7 +114,8 @@ class Duplicates_Detection_Service {
 	 * @return void
 	 */
 	private function search_for_payment_request_buttons( $gateways, &$duplicates ) {
-		$keywords = [
+		$prb_payment_method = 'apple_pay_google_pay';
+		$keywords           = [
 			'apple_pay',
 			'applepay',
 			'google_pay',
@@ -141,17 +124,17 @@ class Duplicates_Detection_Service {
 
 		foreach ( $gateways as $gateway ) {
 			if ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
-				$duplicates['apple_pay_google_pay'][] = $gateway->id;
+				$duplicates[ $prb_payment_method ][] = $gateway->id;
 				continue;
 			}
 
 			if ( 'yes' === $gateway->enabled ) {
 				foreach ( $keywords as $keyword ) {
 					if ( strpos( $gateway->id, $keyword ) !== false ) {
-						$duplicates['apple_pay_google_pay'][] = $gateway->id;
+						$duplicates[ $prb_payment_method ][] = $gateway->id;
 						break;
 					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && 'woocommerce_payments' === $gateway->id ) {
-						$duplicates['apple_pay_google_pay'][] = $gateway->id;
+						$duplicates[ $prb_payment_method ][] = $gateway->id;
 						break;
 					}
 				}
@@ -166,7 +149,7 @@ class Duplicates_Detection_Service {
 	 *
 	 * @return void
 	 */
-	private function filter_duplicates( &$duplicates ) {
+	private function keep_duplicates_only( &$duplicates ) {
 		foreach ( $duplicates as $gateway_id => $gateway_ids ) {
 			if ( count( $gateway_ids ) < 2 ) {
 				unset( $duplicates[ $gateway_id ] );
@@ -188,5 +171,22 @@ class Duplicates_Detection_Service {
 				return 'yes' === $gateway->enabled;
 			}
 		);
+	}
+
+		/**
+		 * Check if gateway ID contains any of the keywords.
+		 *
+		 * @param string $gateway_id Gateway ID.
+		 * @param array  $keywords Keywords to search for.
+		 *
+		 * @return bool True if gateway ID contains any of the keywords, false otherwise.
+		 */
+	private function gateway_contains_keyword( $gateway_id, $keywords ) {
+		foreach ( $keywords as $keyword ) {
+			if ( strpos( $gateway_id, $keyword ) !== false ) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
