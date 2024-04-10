@@ -22,13 +22,6 @@ defined( 'ABSPATH' ) || exit; // block direct access.
 class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
-	 * Legacy prefix used for WooPay user events
-	 *
-	 * @var string
-	 */
-	private static $legacy_user_prefix = 'woocommerceanalytics';
-
-	/**
 	 * WCPay user event prefix
 	 *
 	 * @var string
@@ -61,6 +54,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
+		add_action( 'wp_ajax_get_identity', [ $this, 'ajax_tracks_id' ] );
+		add_action( 'wp_ajax_nopriv_get_identity', [ $this, 'ajax_tracks_id' ] );
 
 		// Actions that should result in recorded Tracks events.
 		add_action( 'woocommerce_after_checkout_form', [ $this, 'classic_checkout_start' ] );
@@ -105,26 +100,33 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 				$tracks_data = $event_prop;
 			}
 		}
-		// Legacy events are shopper events that still use the woocommerceanalytics prefix.
-		// These need to be migrated to the wcpay prefix.
-		$is_legacy_event = isset( $_REQUEST['isLegacy'] ) ? rest_sanitize_boolean( wc_clean( wp_unslash( $_REQUEST['isLegacy'] ) ) ) : false;
-		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data, $is_legacy_event );
+		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data );
 
 		wp_send_json_success();
 	}
+
+	/**
+	 * Get tracks ID of the current user
+	 */
+	public function ajax_tracks_id() {
+		$tracks_id = $this->tracks_get_identity();
+
+		if ( $tracks_id ) {
+			wp_send_json_success( $tracks_id );
+		}
+	}
+
 
 	/**
 	 * Generic method to track user events on WooPay enabled stores.
 	 *
 	 * @param string  $event name of the event.
 	 * @param array   $data array of event properties.
-	 * @param boolean $is_legacy indicate whether this is a legacy event.
 	 */
-	public function maybe_record_event( $event, $data = [], $is_legacy = true ) {
+	public function maybe_record_event( $event, $data = [] ) {
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
-			$prefix = $is_legacy ? self::$legacy_user_prefix : self::$user_prefix;
-			$event  = $prefix . '_' . $event;
+			$event  = self::$user_prefix . '_' . $event;
 		}
 
 		return $this->tracks_record_event( $event, $data );
@@ -285,7 +287,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return \Jetpack_Tracks_Event|\WP_Error
 	 */
 	private function tracks_build_event_obj( $user, $event_name, $properties = [] ) {
-		$identity = $this->tracks_get_identity( $user->ID );
+		$identity = $this->tracks_get_identity();
 		$site_url = get_option( 'siteurl' );
 
 		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ): '';
@@ -330,16 +332,10 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Get the identity to send to tracks.
 	 *
-	 * @param int $user_id The user id of the local user.
-	 *
 	 * @return array $identity
 	 */
-	public function tracks_get_identity( $user_id ) {
-
-		// If the user is not trackable, return an empty array.
-		if ( ! $this->should_enable_tracking() ) {
-			return [];
-		}
+	public function tracks_get_identity() {
+		$user_id  = get_current_user_id();
 
 		// Meta is set, and user is still connected.  Use WPCOM ID.
 		$wpcom_id = get_user_meta( $user_id, 'jetpack_tracks_wpcom_id', true );
@@ -366,10 +362,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		if ( ! $anon_id ) {
 			$anon_id = \Jetpack_Tracks_Client::get_anon_id();
 			add_user_meta( $user_id, 'jetpack_tracks_anon_id', $anon_id, false );
-		}
-
-		if ( ! isset( $_COOKIE['tk_ai'] ) && ! headers_sent() ) {
-			setcookie( 'tk_ai', $anon_id );
 		}
 
 		return [

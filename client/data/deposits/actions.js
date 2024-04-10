@@ -22,20 +22,6 @@ export function updateDeposit( data ) {
 	};
 }
 
-export function updateDepositsOverview( data ) {
-	return {
-		type: TYPES.SET_DEPOSITS_OVERVIEW,
-		data,
-	};
-}
-
-export function updateErrorForDepositsOverview( data, error ) {
-	return {
-		type: TYPES.SET_ERROR_FOR_DEPOSITS_OVERVIEW,
-		error,
-	};
-}
-
 export function updateAllDepositsOverviews( data ) {
 	return {
 		type: TYPES.SET_ALL_DEPOSITS_OVERVIEWS,
@@ -118,9 +104,6 @@ export function* submitInstantDeposit( currency ) {
 		// Invalidate deposits and deposits overview queries to ensure that the UI is updated with fresh data.
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDeposits'
-		);
-		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
-			'getDepositsOverview'
 		);
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getAllDepositsOverviews'

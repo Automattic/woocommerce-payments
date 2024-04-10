@@ -81,11 +81,7 @@ const placeholderValues = {
 };
 
 const isTapToPay = ( model: string ) => {
-	if ( model === 'COTS_DEVICE' ) {
-		return true;
-	}
-
-	return false;
+	return model === 'COTS_DEVICE';
 };
 
 const getTapToPayChannel = ( platform: string ) => {
@@ -214,6 +210,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// present, partial refund is not possible.
 	const isPartiallyRefundable = charge.order && charge.order.number;
 
+	const isPartiallyRefunded = charge.amount_refunded > 0;
+
 	// Control menu only shows refund actions for now. In the future, it may show other actions.
 	const showControlMenu =
 		charge.captured && ! charge.refunded && isDisputeRefundable;
@@ -259,7 +257,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							<p className="payment-details-summary__amount">
 								<Loadable
 									isLoading={ isLoading }
-									placeholder="Amount placeholder"
+									placeholder={ __(
+										'Amount placeholder',
+										'woocommerce-payments'
+									) }
 								>
 									{ formattedAmount }
 									<span className="payment-details-summary__amount-currency">
@@ -286,7 +287,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							</p>
 							<div className="payment-details-summary__breakdown">
 								{ renderStorePrice ? (
-									<p>
+									<p className="payment-details-summary__breakdown__settlement-currency">
 										{ formatExplicitCurrency(
 											balance.amount,
 											balance.currency
@@ -317,7 +318,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<p>
 									<Loadable
 										isLoading={ isLoading }
-										placeholder="Fee amount"
+										placeholder={ __(
+											'Fee amount',
+											'woocommerce-payments'
+										) }
 									>
 										{ `${ __(
 											'Fees',
@@ -346,7 +350,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	'woocommerce-payments'
 																) }
 															</label>
-															<span aria-label="Transaction fee">
+															<span
+																aria-label={ __(
+																	'Transaction fee',
+																	'woocommerce-payments'
+																) }
+															>
 																{ formatCurrency(
 																	transactionFee.fee,
 																	transactionFee.currency
@@ -360,7 +369,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	'woocommerce-payments'
 																) }
 															</label>
-															<span aria-label="Dispute fee">
+															<span
+																aria-label={ __(
+																	'Dispute fee',
+																	'woocommerce-payments'
+																) }
+															>
 																{ disputeFee }
 															</span>
 														</Flex>
@@ -371,7 +385,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	'woocommerce-payments'
 																) }
 															</label>
-															<span aria-label="Total fees">
+															<span
+																aria-label={ __(
+																	'Total fees',
+																	'woocommerce-payments'
+																) }
+															>
 																{ formatCurrency(
 																	balance.fee,
 																	balance.currency
@@ -401,7 +420,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<p>
 									<Loadable
 										isLoading={ isLoading }
-										placeholder="Net amount"
+										placeholder={ __(
+											'Net amount',
+											'woocommerce-payments'
+										) }
 									>
 										{ `${ __(
 											'Net',
@@ -473,7 +495,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											);
 										} }
 									>
-										{ __( 'Approve Transaction' ) }
+										{ __(
+											'Approve Transaction',
+											'woocommerce-payments'
+										) }
 									</CaptureAuthorizationButton>
 								</div>
 							) }
@@ -531,26 +556,28 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								>
 									{ ( { onClose } ) => (
 										<MenuGroup>
-											<MenuItem
-												onClick={ () => {
-													setIsRefundModalOpen(
-														true
-													);
-													recordEvent(
-														'payments_transactions_details_refund_modal_open',
-														{
-															payment_intent_id:
-																charge.payment_intent,
-														}
-													);
-													onClose();
-												} }
-											>
-												{ __(
-													'Refund in full',
-													'woocommerce-payments'
-												) }
-											</MenuItem>
+											{ ! isPartiallyRefunded && (
+												<MenuItem
+													onClick={ () => {
+														setIsRefundModalOpen(
+															true
+														);
+														recordEvent(
+															'payments_transactions_details_refund_modal_open',
+															{
+																payment_intent_id:
+																	charge.payment_intent,
+															}
+														);
+														onClose();
+													} }
+												>
+													{ __(
+														'Refund in full',
+														'woocommerce-payments'
+													) }
+												</MenuItem>
+											) }
 											{ isPartiallyRefundable && (
 												<MenuItem
 													onClick={ () => {
@@ -668,7 +695,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									a: (
 										// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
 										<a
-											href="https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+											href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
 											target="_blank"
 											rel="noreferer"
 										/>

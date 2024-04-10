@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 /**
  * Internal dependencies
  */
-import DisableConfirmationModal from './disable-confirmation-modal';
+import DisableConfirmationModal from '../disable-confirmation-modal';
 import { useSettings } from 'wcpay/data';
 import { recordEvent } from 'tracks';
 

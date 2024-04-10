@@ -18,7 +18,7 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 
 // Need to use WC_Mock_Data_Store.
-require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
+require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -1209,17 +1209,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 
 		$this->mock_action_scheduler_service
-			->expects( $this->once() )
-			->method( 'schedule_job' )
-			->with(
-				$this->anything(),
-				WC_Payment_Gateway_WCPay::UPDATE_SAVED_PAYMENT_METHOD,
-				[
-					'payment_method' => 'pm_mock',
-					'order_id'       => $order_id,
-					'is_test_mode'   => false,
-				]
-			);
+			->expects( $this->never() )
+			->method( 'schedule_job' );
 
 		$this->mock_wcpay_gateway->process_payment( $order_id );
 	}

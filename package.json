@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "7.1.0",
+  "version": "7.4.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -21,9 +21,10 @@
     "build:client": "NODE_ENV=production webpack",
     "build:deps": "rm -rf vendor && composer install --no-dev --optimize-autoloader",
     "build:release": "node tasks/release.js && mv release/$npm_package_name.zip .",
-    "postbuild:client": "npm run i18n:pot && npm run i18n:build",
+    "postbuild:client": "npm run i18n:pot && npm run i18n:build && npm run assets:rtl",
     "i18n:pot": "wpi18n makepot --domain-path languages --pot-file woocommerce-payments.pot --type plugin --main-file woocommerce-payments.php --exclude bin,dist,docker,node_modules,release,tasks,tests,vendor",
     "i18n:build": "php bin/combine-pot-files.php languages/woocommerce-payments-client.pot languages/woocommerce-payments.pot",
+    "assets:rtl": "rtlcss assets/css/admin.css && rtlcss assets/css/success.css",
     "test": "npm run test:js && npm run test:php",
     "test:js": "wp-scripts test-unit-js --config tests/js/jest.config.js",
     "test:watch": "npm run test:js -- --watch",
@@ -71,7 +72,7 @@
   "dependencies": {
     "@automattic/interpolate-components": "1.2.1",
     "@fingerprintjs/fingerprintjs": "3.4.1",
-    "@stripe/react-stripe-js": "1.4.1",
+    "@stripe/react-stripe-js": "2.5.1",
     "@stripe/stripe-js": "1.15.1",
     "@woocommerce/explat": "2.3.0",
     "@woocommerce/number": "2.4.0",
@@ -168,6 +169,7 @@
     "react-refresh": "0.14.0",
     "react-test-renderer": "16.14.0",
     "react-transition-group": "4.4.5",
+    "rtlcss": "4.1.1",
     "sass": "1.43.4",
     "sass-loader": "12.1.0",
     "shelljs": "0.8.4",
@@ -185,7 +187,6 @@
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "4.9.3",
     "webpack-merge": "5.8.0",
-    "webpack-rtl-plugin": "2.0.0",
     "yarnhook": "0.5.1"
   },
   "overrides": {

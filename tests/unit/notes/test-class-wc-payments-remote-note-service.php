@@ -52,7 +52,7 @@ class WC_Payments_Remote_Note_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'create' )
 			->with(
 				$this->callback(
-					function( $note ) use ( $note_data ) {
+					function ( $note ) use ( $note_data ) {
 						return $note->get_name() === 'wc-payments-remote-notes-4cb476ca6ef0efd3ab9cf8d7e76d5083'
 							&& $note->get_title() === $note_data['title']
 							&& $note->get_content() === $note_data['content'];
@@ -90,7 +90,7 @@ class WC_Payments_Remote_Note_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'create' )
 			->with(
 				$this->callback(
-					function( $note ) use ( $note_data ) {
+					function ( $note ) use ( $note_data ) {
 						return $note->get_name() === 'wc-payments-remote-notes-' . $note_data['name']
 							&& $note->get_title() === $note_data['title']
 							&& $note->get_content() === $note_data['content']

@@ -35,9 +35,7 @@ export const normalizeOrderData = ( paymentData ) => {
 	const phone = paymentData?.paymentMethod?.billing_details?.phone ?? '';
 	const billing = paymentData?.paymentMethod?.billing_details?.address ?? {};
 	const shipping = paymentData?.shippingAddress ?? {};
-	const fraudPreventionTokenInput = document.querySelector(
-		'input[name="wcpay-fraud-prevention-token"]'
-	);
+	const fraudPreventionTokenValue = window.wcpayFraudPreventionToken ?? '';
 
 	let paymentRequestType = 'payment_request_api';
 	if ( paymentData?.walletName === 'applePay' ) {
@@ -78,7 +76,7 @@ export const normalizeOrderData = ( paymentData ) => {
 		terms: 1,
 		'wcpay-payment-method': paymentData?.paymentMethod?.id,
 		payment_request_type: paymentRequestType,
-		'wcpay-fraud-prevention-token': fraudPreventionTokenInput?.value ?? '',
+		'wcpay-fraud-prevention-token': fraudPreventionTokenValue,
 	};
 };
 

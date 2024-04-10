@@ -9,7 +9,8 @@ import moment from 'moment';
 
 const DisputeDueByDate: React.FC< {
 	dueBy: number;
-} > = ( { dueBy } ) => {
+	showRemainingDays?: boolean;
+} > = ( { dueBy, showRemainingDays = true } ) => {
 	const daysRemaining = Math.floor(
 		moment.unix( dueBy ).diff( moment(), 'days', true )
 	);
@@ -20,31 +21,33 @@ const DisputeDueByDate: React.FC< {
 	return (
 		<span className="dispute-steps__steps__response-date">
 			{ respondByDate }
-			<span
-				className={ classNames( {
-					'dispute-steps__steps__response-date--urgent':
-						daysRemaining < 3,
-					'dispute-steps__steps__response-date--warning':
-						daysRemaining < 7 && daysRemaining > 2,
-				} ) }
-			>
-				{ daysRemaining > 0 &&
-					sprintf(
-						// Translators: %d is the number of days left to respond to the dispute.
-						_n(
-							'(%d day left to respond)',
-							'(%d days left to respond)',
-							daysRemaining,
-							'woocommerce-payments'
-						),
-						daysRemaining
-					) }
+			{ showRemainingDays && (
+				<span
+					className={ classNames( {
+						'dispute-steps__steps__response-date--urgent':
+							daysRemaining < 3,
+						'dispute-steps__steps__response-date--warning':
+							daysRemaining < 7 && daysRemaining > 2,
+					} ) }
+				>
+					{ daysRemaining > 0 &&
+						sprintf(
+							// Translators: %d is the number of days left to respond to the dispute.
+							_n(
+								'(%d day left to respond)',
+								'(%d days left to respond)',
+								daysRemaining,
+								'woocommerce-payments'
+							),
+							daysRemaining
+						) }
 
-				{ daysRemaining === 0 &&
-					__( '(Last day today)', 'woocommerce-payments' ) }
-				{ daysRemaining < 0 &&
-					__( '(Past due)', 'woocommerce-payments' ) }
-			</span>
+					{ daysRemaining === 0 &&
+						__( '(Last day today)', 'woocommerce-payments' ) }
+					{ daysRemaining < 0 &&
+						__( '(Past due)', 'woocommerce-payments' ) }
+				</span>
+			) }
 		</span>
 	);
 };

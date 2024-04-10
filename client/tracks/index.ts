@@ -2,13 +2,13 @@
  * External dependencies
  */
 import domReady from '@wordpress/dom-ready';
-import { getConfig } from 'wcpay/utils/checkout';
-import { getPaymentRequestData } from 'wcpay/payment-request/utils';
 
 /**
  * Internal dependencies
  */
 import { Event } from './event';
+import { getConfig } from 'wcpay/utils/checkout';
+import { getPaymentRequestData } from 'wcpay/payment-request/utils';
 
 /**
  * Checks if site tracking is enabled.
@@ -39,7 +39,15 @@ export const recordEvent = (
 			jetpack_connected: wcpaySettings.isJetpackConnected,
 			wcpay_version: wcpaySettings.version,
 			woo_country_code: wcpaySettings.connect.country,
+			hosting_provider: wcpaySettings.trackingInfo?.hosting_provider,
 		} );
+
+		// Filter our undefined properties.
+		for ( const key in eventProperties ) {
+			if ( eventProperties[ key ] === undefined ) {
+				delete eventProperties[ key ];
+			}
+		}
 	}
 	// Wc-admin track script is enqueued after ours, wrap in domReady
 	// to make sure we're not too early.
@@ -54,12 +62,10 @@ export const recordEvent = (
  *
  * @param {string}  eventName         Name of the event.
  * @param {Object}  [eventProperties] Event properties (optional).
- * @param {boolean} isLegacy Event properties (optional).
  */
 export const recordUserEvent = (
 	eventName: string,
-	eventProperties: Record< string, unknown > = {},
-	isLegacy = false
+	eventProperties: Record< string, unknown > = {}
 ): void => {
 	const nonce =
 		getConfig( 'platformTrackerNonce' ) ??
@@ -72,9 +78,69 @@ export const recordUserEvent = (
 	body.append( 'action', 'platform_tracks' );
 	body.append( 'tracksEventName', eventName );
 	body.append( 'tracksEventProp', JSON.stringify( eventProperties ) );
-	body.append( 'isLegacy', JSON.stringify( isLegacy ) ); // formData does not allow appending booleans, so we stringify it - it is parsed back to a boolean on the PHP side.
 	fetch( ajaxUrl, {
 		method: 'post',
 		body,
 	} );
+};
+
+/**
+ * Retrieves the value of the 'tk_ai' cookie from the document's cookies.
+ *
+ * @return {string | undefined} The value of the 'tk_ai' cookie if found, otherwise undefined.
+ */
+const getIdentityCookieValue = (): string | undefined => {
+	const nameEQ = 'tk_ai=';
+	const ca = document.cookie.split( ';' ); // Split cookie string and get all individual name=value pairs in an array
+	for ( let i = 0; i < ca.length; i++ ) {
+		let c = ca[ i ];
+		while ( c.charAt( 0 ) === ' ' ) c = c.substring( 1, c.length ); // Trim leading whitespace
+		if ( c.indexOf( nameEQ ) === 0 )
+			return c.substring( nameEQ.length, c.length ); // Check if it's the right cookie and return its value
+	}
+	return undefined; // Return undefined if the cookie is not found
+};
+
+/**
+ * Asynchronously retrieves the user's Tracks identity, either from a cookie or via an Ajax request.
+ *
+ * @return {Promise<string | undefined>} A promise that resolves to a stringified object containing the user's Tracks identity,
+ *                                        or undefined if the identity cannot be obtained.
+ */
+export const getTracksIdentity = async (): Promise< string | undefined > => {
+	// if cookie is set, get identity from the cookie.
+	// eslint-disable-next-line
+	let _ui = getIdentityCookieValue();
+	// Otherwise get it via an Ajax request.
+	if ( ! _ui ) {
+		const nonce =
+			getConfig( 'platformTrackerNonce' ) ??
+			getPaymentRequestData( 'nonce' )?.platform_tracker;
+		const ajaxUrl =
+			getConfig( 'ajaxUrl' ) ?? getPaymentRequestData( 'ajax_url' );
+		const body = new FormData();
+
+		body.append( 'tracksNonce', nonce );
+		body.append( 'action', 'get_identity' );
+		try {
+			const response = await fetch( ajaxUrl, {
+				method: 'post',
+				body,
+			} );
+			if ( ! response.ok ) {
+				return undefined;
+			}
+
+			const data = await response.json();
+			if ( data.success && data.data ) {
+				_ui = data.data._ui;
+			} else {
+				return undefined;
+			}
+		} catch ( error ) {
+			return undefined;
+		}
+	}
+	const data = { _ut: 'anon', _ui: _ui };
+	return JSON.stringify( data );
 };

@@ -21,12 +21,12 @@ export const greetingStrings = {
 
 export const fundLabelStrings = {
 	available: __( 'Available funds', 'woocommerce-payments' ),
-	pending: __( 'Pending funds', 'woocommerce-payments' ),
+	total: __( 'Total balance', 'woocommerce-payments' ),
 };
 
 export const documentationUrls = {
 	depositSchedule:
-		'https://woo.com/document/woopayments/deposits/deposit-schedule/',
+		'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/',
 	negativeBalance:
-		'https://woo.com/document/woopayments/fees-and-debits/account-showing-negative-balance/',
+		'https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/',
 };

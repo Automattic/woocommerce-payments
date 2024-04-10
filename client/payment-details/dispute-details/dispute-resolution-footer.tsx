@@ -51,7 +51,7 @@ const DisputeUnderReviewFooter: React.FC< {
 								<a
 									target="_blank"
 									rel="noopener noreferrer"
-									href="https://woo.com/document/woopayments/fraud-and-disputes/"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
 								/>
 							),
 						}
@@ -122,7 +122,7 @@ const DisputeWonFooter: React.FC< {
 								<a
 									target="_blank"
 									rel="noopener noreferrer"
-									href="https://woo.com/document/woopayments/fraud-and-disputes/"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
 								/>
 							),
 						}
@@ -229,7 +229,7 @@ const DisputeLostFooter: React.FC< {
 								<a
 									target="_blank"
 									rel="noopener noreferrer"
-									href="https://woo.com/document/woopayments/fraud-and-disputes/"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
 								/>
 							),
 						}
@@ -303,7 +303,7 @@ const InquiryUnderReviewFooter: React.FC< {
 								<a
 									target="_blank"
 									rel="noopener noreferrer"
-									href="https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
 								/>
 							),
 						}
@@ -375,7 +375,7 @@ const InquiryClosedFooter: React.FC< {
 								<a
 									target="_blank"
 									rel="noopener noreferrer"
-									href="https://woo.com/document/woopayments/fraud-and-disputes/"
+									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
 								/>
 							),
 						}

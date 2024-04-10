@@ -229,7 +229,7 @@ class WC_Payments_Admin {
 						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
 					</b>
 					<?php
-						echo sprintf(
+						printf(
 							/* translators: %s: WooPayments*/
 							esc_html__( 'The selected currency is not available for the country set in your %s account.', 'woocommerce-payments' ),
 							'WooPayments'
@@ -285,55 +285,6 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Add deposits and transactions menus for wcpay_empty_state_preview_mode_v1 experiment's treatment group.
-	 * This code can be removed once we're done with the experiment.
-	 */
-	public function add_payments_menu_for_treatment() {
-		wc_admin_register_page(
-			[
-				'id'         => 'wc-payments',
-				'title'      => __( 'Payments', 'woocommerce-payments' ),
-				'capability' => 'manage_woocommerce',
-				'path'       => '/payments/deposits',
-				'position'   => '55.7', // After WooCommerce & Product menu items.
-				'nav_args'   => [
-					'title'        => 'WooPayments',
-					'is_category'  => true,
-					'menuId'       => 'plugins',
-					'is_top_level' => true,
-				],
-			]
-		);
-
-		wc_admin_register_page( $this->admin_child_pages['wc-payments-deposits'] );
-		wc_admin_register_page( $this->admin_child_pages['wc-payments-transactions'] );
-		wc_admin_register_page(
-			[
-				'id'       => 'wc-payments-connect',
-				'title'    => __( 'Connect', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/connect',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 10,
-				],
-			]
-		);
-
-		// RTL=false for these files as they aren't currently transpiled by webpack.
-		WC_Payments_Utils::enqueue_style(
-			'wcpay-admin-css',
-			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'assets/css/admin.css' ),
-			'all',
-			false
-		);
-
-		$this->add_menu_notification_badge();
-	}
-
-	/**
 	 * Add payments menu items.
 	 */
 	public function add_payments_menu() {
@@ -377,7 +328,10 @@ class WC_Payments_Admin {
 			]
 		);
 
-		if ( $this->account->is_account_rejected() ) {
+		// Merchants are unable to see their deposits, transactions, disputes and settings if their account is rejected or under review.
+		// That's expected, because account under review is hard-blocked account that spends in a review pretty short time-frame.
+		// Either merchant gets approved and continues to use payments or they remain suspended and can't use payments.
+		if ( $this->account->is_account_rejected() || $this->account->is_account_under_review() ) {
 			// If the account is rejected, only show the overview page.
 			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
 			return;
@@ -538,14 +492,12 @@ class WC_Payments_Admin {
 			);
 		}
 
-		// RTL=false for these files as they aren't currently transpiled by webpack.
 		WC_Payments_Utils::enqueue_style(
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'assets/css/admin.css' ),
 			'all',
-			false
 		);
 
 		$this->add_menu_notification_badge();
@@ -853,7 +805,6 @@ class WC_Payments_Admin {
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'            => WC_Payments_Account::is_on_boarding_disabled(),
 			'onboardingFieldsData'          => $this->onboarding_service->get_fields_data( get_user_locale() ),
-			'onboardingFlowState'           => $this->onboarding_service->get_onboarding_flow_state(),
 			'errorMessage'                  => $error_message,
 			'featureFlags'                  => $this->get_frontend_feature_flags(),
 			'isSubscriptionsActive'         => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
@@ -891,7 +842,6 @@ class WC_Payments_Admin {
 			'accountDefaultCurrency'        => $this->account->get_account_default_currency(),
 			'frtDiscoverBannerSettings'     => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 			'storeCurrency'                 => get_option( 'woocommerce_currency' ),
-			'isBnplAffirmAfterpayEnabled'   => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
 			'isWooPayStoreCountryAvailable' => WooPay_Utilities::is_store_country_available(),
 			'woopayLastDisableDate'         => $this->wcpay_gateway->get_option( 'platform_checkout_last_disable_date' ),
 			'isStripeBillingEnabled'        => WC_Payments_Features::is_stripe_billing_enabled(),
@@ -903,6 +853,8 @@ class WC_Payments_Admin {
 				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
 			],
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
+			'trackingInfo'                  => $this->account->get_tracking_info(),
+			'lifetimeTPV'                   => $this->account->get_lifetime_total_payments_volume(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
@@ -1268,7 +1220,7 @@ class WC_Payments_Admin {
 	 * @return int The number of disputes which need a response.
 	 */
 	private function get_disputes_awaiting_response_count() {
-		$send_callback = function() {
+		$send_callback = function () {
 			$request = Request::get( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
 			$request->assign_hook( 'wcpay_get_dispute_status_counts' );
 			return $request->send();
@@ -1298,7 +1250,7 @@ class WC_Payments_Admin {
 		$test_mode = WC_Payments::mode()->is_test();
 		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
 
-		$send_callback         = function() {
+		$send_callback         = function () {
 			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
 			$request->assign_hook( 'wc_pay_get_authorizations_summary' );
 			return $request->send();

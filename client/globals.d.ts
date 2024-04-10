@@ -1,11 +1,7 @@
 /**
  * Internal dependencies
  */
-import type {
-	MccsDisplayTreeItem,
-	Country,
-	OnboardingFields,
-} from 'onboarding/types';
+import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 
 declare global {
 	const wcpaySettings: {
@@ -17,6 +13,7 @@ declare global {
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
+			isPaymentOverviewWidgetEnabled?: boolean;
 		};
 		fraudServices: unknown[];
 		testMode: boolean;
@@ -100,16 +97,12 @@ declare global {
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
-		};
-		onboardingFlowState?: {
-			current_step: string;
-			data: OnboardingFields;
+			industry_to_mcc: { [ key: string ]: string };
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
 		errorMessage: string;
 		onBoardingDisabled: boolean;
-		isBnplAffirmAfterpayEnabled: boolean;
 		connectIncentive?: {
 			id: string;
 			description: string;
@@ -131,6 +124,10 @@ declare global {
 			english_name: string;
 			native_name: string;
 		};
+		trackingInfo?: {
+			hosting_provider: string;
+		};
+		lifetimeTPV: number;
 	};
 
 	const wc: {
@@ -155,6 +152,7 @@ declare global {
 			onboarding: {
 				profile: {
 					wccom_connected: boolean;
+					industry?: string[];
 				};
 			};
 			currentUserData: {

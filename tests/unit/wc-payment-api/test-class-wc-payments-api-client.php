@@ -1231,6 +1231,27 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'success', $result['result'] );
 	}
 
+	public function test_get_tracking_info() {
+		$expect = [ 'hosting-provider' => 'test' ];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( $expect ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->get_tracking_info();
+
+		$this->assertEquals( $expect, $result );
+	}
+
 	/**
 	 * Set up http mock response.
 	 *
@@ -1287,7 +1308,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 70, $data['timeout'] );
 		$this->assertArrayHasKey( 'connect_timeout', $data );
 		$this->assertSame( 70, $data['connect_timeout'] );
-
 	}
 
 	/**

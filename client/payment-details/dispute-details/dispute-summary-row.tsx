@@ -65,7 +65,7 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 									</Paragraphs>
 									<p>
 										<a
-											href="https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/"
 											target="_blank"
 											rel="noopener noreferrer"
 										>

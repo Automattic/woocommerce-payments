@@ -76,6 +76,9 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
         -   `weekly_anchor` _string_ | _undefined_ - The day of the week that payments are paid out, e.g. `monday`.
         -   `monthly_anchor` _int_ | _undefined_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
     -   `default_currency` _string_ - The default currency for the account.
+    -   `default_external_accounts` _array_ - The default external payout accounts (deposit destinations) for the account.
+        -   `currency` _string_ - The currency of the external account. e.g. `eur`, `chf`.
+        -   `status` _string_ - The status of the external account. e.g. `new`, `errored`.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
@@ -168,106 +171,17 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 			"interval": "weekly",
 			"weekly_anchor": "friday"
 		},
-		"default_currency": "eur"
-	}
-}
-```
-
-## Get deposits overview for single account deposit currency
-
-Fetch an overview of account deposits for a single deposit currency. This includes details for the last paid deposit, next scheduled deposit, and last manual deposits.
-
-### HTTP request
-
-<div class="api-endpoint">
-	<div class="endpoint-data">
-		<i class="label label-get">GET</i>
-		<h6>/wp-json/wc/v3/payments/deposits/overview</h6>
-	</div>
-</div>
-
-### Returns
-
--   `last_deposit` _object_ [**Deposit**](#deposit-object) | _null_- The last deposit that has been paid for the deposit currency.
--   `balance` _object_
-    -   `pending` _object_ - The pending balance for the deposit currency.
-        -   `amount` _int_ - The amount of the balance.
-        -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-        -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-    -   `available` _object_ - The available balance for the deposit currency.
-        -   `amount` _int_ - The amount of the balance.
-        -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-        -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
--   `instant_balance` _object_ | _null_ - The instant balance for the deposit currency.
-    -   `amount` _int_ - The amount of the balance.
-    -   `currency` _string_ - The currency of the balance. E.g. `usd`.
-    -   `fee` _int_ - The fee amount of the balance.
-    -   `fee_percentage` _int_ - The fee percentage of the balance.
-    -   `net` _int_ - The net amount of the balance.
--   `account` _object_
-    -   `deposits_disabled` _bool_ - Whether deposits are enabled for the account.
-    -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
-    -   `deposits_schedule` _object_
-        -   `delay_days` _int_ - The number of days after a charge is created that the payment is paid out.
-        -   `interval` _string_ - The interval at which payments are paid out. `manual` `daily` `weekly` `monthly`
-        -   `weekly_anchor` _string_ | _undefined_ - The day of the week that payments are paid out, e.g. `monday`.
-        -   `monthly_anchor` _int_ | _undefined_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
-    -   `default_currency` _string_ - The default currency for the account.
-
-```shell
-curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview \
-	-u consumer_key:consumer_secret
-```
-
-> JSON response example:
-
-```json
-{
-	"last_deposit": {
-		"id": "po_1OJ466CBu6Jj8nBr38JRxdNE",
-		"date": 1701648000000,
-		"type": "deposit",
-		"amount": 802872,
-		"status": "paid",
-		"bankAccount": "STRIPE TEST BANK •••• 3000 (EUR)",
-		"currency": "eur",
-		"automatic": true,
-		"fee": 0,
-		"fee_percentage": 0,
-		"created": 1701648000
-	},
-	"balance": {
-		"available": {
-			"amount": 573480,
-			"currency": "eur",
-			"source_types": {
-				"card": 573480
+		"default_currency": "eur",
+		"default_external_accounts": [
+			{
+				"currency": "eur",
+				"status": "new"
+			},
+			{
+				"currency": "usd",
+				"status": "new"
 			}
-		},
-		"pending": {
-			"amount": -114696,
-			"currency": "eur",
-			"source_types": {
-				"card": -114696
-			}
-		}
-	},
-	"instant_balance": {
-		"amount": 0,
-		"currency": "usd",
-		"fee": 0,
-		"fee_percentage": 1.5,
-		"net": 0
-	},
-	"account": {
-		"deposits_disabled": false,
-		"deposits_blocked": false,
-		"deposits_schedule": {
-			"delay_days": 7,
-			"interval": "weekly",
-			"weekly_anchor": "friday"
-		},
-		"default_currency": "eur"
+		]
 	}
 }
 ```
@@ -440,7 +354,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
 
 ## Submit an instant deposit
 
-Submit an instant deposit for a list of transactions. Only for eligible accounts. See [Instant Deposits with WooPayments](https://woo.com/document/woopayments/deposits/instant-deposits/) for more information.
+Submit an instant deposit for a list of transactions. Only for eligible accounts. See [Instant Deposits with WooPayments](https://woocommerce.com/document/woopayments/deposits/instant-deposits/) for more information.
 
 ### HTTP request
 
@@ -500,7 +414,7 @@ Request a CSV export of deposits matching the query. A link to the exported CSV 
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits/download?status_is=paid' \
   -u consumer_key:consumer_secret
   --data '{
-      "user_email": "name@example.woo.com"
+      "user_email": "name@example.woocommerce.com"
     }'
 ```
 

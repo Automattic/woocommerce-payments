@@ -41,9 +41,9 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		'woocommerce-payments'
 	);
 	let learnMoreDocsUrl =
-		'https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding';
+		'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding';
 
-	if ( isInquiry( dispute ) ) {
+	if ( isInquiry( dispute.status ) ) {
 		/* translators: <a> link to dispute inquiry documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
 		noticeText = __(
 			'<strong>%s</strong> You can challenge their claim if you believe it’s invalid. ' +
@@ -51,7 +51,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			'woocommerce-payments'
 		);
 		learnMoreDocsUrl =
-			'https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries';
+			'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries';
 	}
 
 	return (

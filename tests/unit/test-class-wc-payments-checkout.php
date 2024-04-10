@@ -139,71 +139,6 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		WC_Payments::set_gateway( $this->default_gateway );
 	}
 
-	public function test_fraud_prevention_token_added_when_prevention_service_enabled() {
-		$token_value                   = 'test-token';
-		$fraud_prevention_service_mock = $this->getMockBuilder( Fraud_Prevention_Service::class )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$fraud_prevention_service_mock
-			->expects( $this->once() )
-			->method( 'is_enabled' )
-			->willReturn( true );
-
-		$fraud_prevention_service_mock
-			->expects( $this->once() )
-			->method( 'get_token' )
-			->willReturn( $token_value );
-
-		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
-
-		$this->mock_wcpay_gateway
-			->expects( $this->any() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
-			->willReturn( [] );
-
-		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
-		$this->setOutputCallback(
-			function ( $output ) use ( $token_value ) {
-				$result = preg_match_all( '/<input[^>]*type="hidden"[^>]*name="wcpay-fraud-prevention-token"[^>]*value="' . preg_quote( $token_value, '/' ) . '"[^>]*>/', $output );
-
-				$this->assertSame( 1, $result );
-			}
-		);
-
-		$this->system_under_test->payment_fields();
-	}
-
-	public function test_fraud_prevention_token_not_added_when_prevention_service_disabled() {
-		$token_value                   = 'test-token';
-		$fraud_prevention_service_mock = $this->getMockBuilder( Fraud_Prevention_Service::class )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$fraud_prevention_service_mock
-			->expects( $this->once() )
-			->method( 'is_enabled' )
-			->willReturn( true );
-
-		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
-
-		$this->mock_wcpay_gateway
-			->expects( $this->any() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
-			->willReturn( [] );
-
-		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
-		$this->setOutputCallback(
-			function ( $output ) use ( $token_value ) {
-				$result = preg_match_all( '/<input[^>]*type="hidden"[^>]*name="wcpay-fraud-prevention-token"[^>]*value="' . preg_quote( $token_value, '/' ) . '"[^>]*>/', $output );
-
-				$this->assertSame( 0, $result );
-			}
-		);
-
-		$this->system_under_test->payment_fields();
-	}
-
 	public function test_save_payment_method_checkbox_not_called_when_saved_cards_disabled() {
 		// given: prepare the dependencies.
 		wp_set_current_user( 1 );
@@ -374,7 +309,8 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	public function test_link_payment_method_provided_when_card_enabled() {
-		$icon_url = 'test-icon-url';
+		$icon_url      = 'test-icon-url';
+		$dark_icon_url = 'test-dark-icon-url';
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
@@ -397,12 +333,12 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 		$card_pm = $this->getMockBuilder( CC_Payment_Method::class )
 			->setConstructorArgs( [ $this->mock_token_service ] )
-			->onlyMethods( [ 'get_icon' ] )
+			->onlyMethods( [ 'get_icon', 'get_dark_icon' ] )
 			->getMock();
 
 		$link_pm = $this->getMockBuilder( Link_Payment_Method::class )
 			->setConstructorArgs( [ $this->mock_token_service ] )
-			->onlyMethods( [ 'get_icon' ] )
+			->onlyMethods( [ 'get_icon', 'get_dark_icon' ] )
 			->getMock();
 
 		$card_pm->expects( $this->any() )
@@ -410,11 +346,21 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->will(
 				$this->returnValue( $icon_url )
 			);
+		$card_pm->expects( $this->any() )
+			->method( 'get_dark_icon' )
+			->will(
+				$this->returnValue( $dark_icon_url )
+			);
 
 		$link_pm->expects( $this->any() )
 			->method( 'get_icon' )
 			->will(
 				$this->returnValue( $icon_url )
+			);
+		$link_pm->expects( $this->any() )
+			->method( 'get_dark_icon' )
+			->will(
+				$this->returnValue( $dark_icon_url )
 			);
 
 		$this->mock_wcpay_gateway
@@ -434,15 +380,17 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'isReusable'             => true,
 					'title'                  => 'Credit card / debit card',
 					'icon'                   => $icon_url,
+					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,
 					'countries'              => [],
-					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
+					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
 					'forceNetworkSavedCards' => false,
 				],
 				'link' => [
 					'isReusable'             => true,
 					'title'                  => 'Link',
 					'icon'                   => $icon_url,
+					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,
 					'countries'              => [],
 					'testingInstructions'    => '',

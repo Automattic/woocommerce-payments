@@ -10,6 +10,7 @@ import {
 	CardHeader,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
@@ -28,7 +29,9 @@ import {
 	NewAccountWaitingPeriodNotice,
 	NoFundsAvailableForDepositNotice,
 	SuspendedDepositNotice,
+	DepositFailureNotice,
 } from './deposit-notices';
+import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import useRecentDeposits from './hooks';
 import './style.scss';
 
@@ -68,6 +71,27 @@ const DepositsOverview: React.FC = () => {
 		! account?.deposits_blocked && hasCompletedWaitingPeriod;
 	// Only show the deposit history section if the page is finished loading and there are deposits. */ }
 	const hasRecentDeposits = ! isLoading && deposits?.length > 0 && !! account;
+	const hasScheduledDeposits = hasAutomaticScheduledDeposits(
+		account?.deposits_schedule?.interval
+	);
+	const hasErroredExternalAccount =
+		account?.default_external_accounts?.some(
+			( externalAccount ) =>
+				externalAccount.currency === selectedCurrency &&
+				externalAccount.status === 'errored'
+		) ?? false;
+
+	const navigateToDepositsHistory = () => {
+		recordEvent( 'wcpay_overview_deposits_view_history_click' );
+
+		const history = getHistory();
+		history.push(
+			getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/deposits',
+			} )
+		);
+	};
 
 	// Show a loading state if the page is still loading.
 	if ( isLoading ) {
@@ -113,11 +137,10 @@ const DepositsOverview: React.FC = () => {
 			</CardHeader>
 
 			{ /* Deposit schedule message */ }
-			{ isDepositsUnrestricted && !! account && (
+			{ isDepositsUnrestricted && !! account && hasScheduledDeposits && (
 				<CardBody className="wcpay-deposits-overview__schedule__container">
 					<DepositSchedule
 						depositsSchedule={ account.deposits_schedule }
-						showNextDepositDate={ availableFunds > 0 }
 					/>
 				</CardBody>
 			) }
@@ -129,7 +152,8 @@ const DepositsOverview: React.FC = () => {
 				) : (
 					<>
 						{ isDepositsUnrestricted &&
-							! isDepositAwaitingPendingFunds && (
+							! isDepositAwaitingPendingFunds &&
+							! hasErroredExternalAccount && (
 								<DepositTransitDaysNotice />
 							) }
 						{ ! hasCompletedWaitingPeriod && (
@@ -141,6 +165,13 @@ const DepositsOverview: React.FC = () => {
 							) }
 						{ isNegativeBalanceDepositsPaused && (
 							<NegativeBalanceDepositsPausedNotice />
+						) }
+						{ hasErroredExternalAccount && (
+							<DepositFailureNotice
+								updateAccountLink={
+									wcpaySettings.accountStatus.accountLink
+								}
+							/>
 						) }
 						{ availableFunds > 0 &&
 							! isAboveMinimumDepositAmount && (
@@ -171,15 +202,7 @@ const DepositsOverview: React.FC = () => {
 					{ hasRecentDeposits && (
 						<Button
 							variant="secondary"
-							href={ getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/deposits',
-							} ) }
-							onClick={ () =>
-								recordEvent(
-									'wcpay_overview_deposits_view_history_click'
-								)
-							}
+							onClick={ navigateToDepositsHistory }
 						>
 							{ __(
 								'View full deposits history',
