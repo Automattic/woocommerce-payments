@@ -56,40 +56,33 @@ class Duplicates_Detection_Service {
 	 * @return void
 	 */
 	private function search_for_credit_cards( $gateways, &$duplicates ) {
-		$keywords = [
-			'credit_card' => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'creditcard'  => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'cc'          => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'card'        => CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-		];
+		$keywords         = [ 'credit_card', 'creditcard', 'cc', 'card' ];
+		$special_keywords = [ 'woocommerce_payments', 'stripe' ];
 
-		$enabled_gateways = array_filter(
-			$gateways,
-			function ( $gateway ) {
-				return $this->is_gateway_enabled( $gateway );
-			}
-		);
+		$enabled_gateways = $this->filter_enabled_gateways_only( $gateways );
 
 		foreach ( $enabled_gateways as $gateway ) {
-			foreach ( $keywords as $keyword => $stripe_id ) {
-				if ( strpos( $gateway->id, $keyword ) !== false ) {
-					$duplicates[ $stripe_id ][] = $gateway->id;
-					break;
-				}
-
-				// WooPayments card gateway.
-				if ( 'woocommerce_payments' === $gateway->id ) {
-					$duplicates[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ][] = $gateway->id;
-					break;
-				}
-
-				// Stripe card gateway.
-				if ( 'stripe' === $gateway->id ) {
-					$duplicates[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ][] = $gateway->id;
-					break;
-				}
+			if ( $this->gateway_contains_keyword( $gateway->id, $keywords ) || in_array( $gateway->id, $special_keywords, true ) ) {
+				$duplicates[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ][] = $gateway->id;
 			}
 		}
+	}
+
+	/**
+	 * Check if gateway ID contains any of the keywords.
+	 *
+	 * @param string $gateway_id Gateway ID.
+	 * @param array  $keywords Keywords to search for.
+	 *
+	 * @return bool True if gateway ID contains any of the keywords, false otherwise.
+	 */
+	private function gateway_contains_keyword( $gateway_id, $keywords ) {
+		foreach ( $keywords as $keyword ) {
+			if ( strpos( $gateway_id, $keyword ) !== false ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -121,9 +114,9 @@ class Duplicates_Detection_Service {
 		$enabled_gateways = $this->filter_enabled_gateways_only( $gateways );
 
 		foreach ( $enabled_gateways as $gateway ) {
-			foreach ( $keywords as $keyword => $stripe_id ) {
+			foreach ( $keywords as $keyword => $payment_method ) {
 				if ( strpos( $gateway->id, $keyword ) !== false ) {
-					$duplicates[ $stripe_id ][] = $gateway->id;
+					$duplicates[ $payment_method ][] = $gateway->id;
 					break;
 				}
 			}
@@ -140,27 +133,28 @@ class Duplicates_Detection_Service {
 	 */
 	private function search_for_payment_request_buttons( $gateways, &$duplicates ) {
 		$keywords = [
-			// Google Pay/Apple Pay.
-			'apple_pay'  => 'apple_pay_google_pay',
-			'applepay'   => 'apple_pay_google_pay',
-			'google_pay' => 'apple_pay_google_pay',
-			'googlepay'  => 'apple_pay_google_pay',
+			'apple_pay',
+			'applepay',
+			'google_pay',
+			'googlepay',
 		];
 
 		foreach ( $gateways as $gateway ) {
+			if ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
+				$duplicates['apple_pay_google_pay'][] = $gateway->id;
+				continue;
+			}
+
 			if ( 'yes' === $gateway->enabled ) {
-				foreach ( $keywords as $keyword => $stripe_id ) {
+				foreach ( $keywords as $keyword ) {
 					if ( strpos( $gateway->id, $keyword ) !== false ) {
-						$duplicates[ $stripe_id ][] = $gateway->id;
+						$duplicates['apple_pay_google_pay'][] = $gateway->id;
 						break;
-					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && ( 'woocommerce_payments' === $gateway->id || 'stripe' === $gateway->id ) ) {
+					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && 'woocommerce_payments' === $gateway->id ) {
 						$duplicates['apple_pay_google_pay'][] = $gateway->id;
 						break;
 					}
 				}
-			} elseif ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
-				$duplicates['apple_pay_google_pay'][] = $gateway->id;
-				break;
 			}
 		}
 	}
