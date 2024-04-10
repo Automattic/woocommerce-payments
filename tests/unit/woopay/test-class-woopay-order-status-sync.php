@@ -34,7 +34,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	private $webhook_sync_mock;
 
 	/**
-	 * @var WCPay\Database_Cache $cache
+	 * @var WCPay\Database_Cache
 	 */
 	private $cache;
 
@@ -170,7 +170,6 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	 * Tests that the webhook is deleted succesfuly.
 	 */
 	public function test_webhook_removal() {
-
 		wp_set_current_user( self::$admin_user->ID );
 		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
