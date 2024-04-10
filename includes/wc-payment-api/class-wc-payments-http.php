@@ -135,7 +135,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @return bool true if Jetpack connection has access token.
 	 */
 	public function is_connected() {
-		return $this->connection_manager->is_plugin_enabled() && $this->connection_manager->is_active();
+		return $this->connection_manager->is_connected() && $this->connection_manager->has_connected_owner();
 	}
 
 
@@ -184,9 +184,6 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @throws API_Exception - Exception thrown on failure.
 	 */
 	public function start_connection( $redirect ) {
-		// Mark the plugin as enabled in case it had been soft-disconnected.
-		$this->connection_manager->enable_plugin();
-
 		// Register the site to wp.com.
 		if ( ! $this->connection_manager->is_connected() ) {
 			$result = $this->connection_manager->try_registration();

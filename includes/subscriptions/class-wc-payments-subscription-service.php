@@ -7,6 +7,7 @@
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Cannot_Combine_Currencies_Exception;
 use WCPay\Logger;
 
 /**
@@ -415,6 +416,15 @@ class WC_Payments_Subscription_Service {
 						wc_price( $subscription->get_total() ),
 						'<strong>',
 						'</strong>'
+					)
+				);
+			} elseif ( $e instanceof Cannot_Combine_Currencies_Exception ) {
+				throw new Exception(
+					sprintf(
+						// Translators: %1$s and %2$s are both currency codes, e.g. `USD` or `EUR`.
+						__( 'The subscription couldn\'t be created because it uses a different currency (%1$s) from your existing subscriptions (%2$s). Please ensure all subscriptions use the same currency.', 'woocommerce-payments' ),
+						$subscription->get_currency(),
+						$e->get_currency()
 					)
 				);
 			}

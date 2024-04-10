@@ -639,7 +639,7 @@ export const handleWooPayEmailInput = async (
 			dispatchUserExistEvent( true );
 		}, 2000 );
 
-		recordUserEvent( 'woopay_skipped', {}, true );
+		recordUserEvent( 'woopay_skipped', {} );
 
 		searchParams.delete( 'skip_woopay' );
 

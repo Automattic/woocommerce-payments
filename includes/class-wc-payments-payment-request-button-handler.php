@@ -862,15 +862,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$shipping_address          = filter_input_array(
 			INPUT_POST,
 			[
-				'country'   => FILTER_SANITIZE_STRING,
-				'state'     => FILTER_SANITIZE_STRING,
-				'postcode'  => FILTER_SANITIZE_STRING,
-				'city'      => FILTER_SANITIZE_STRING,
-				'address_1' => FILTER_SANITIZE_STRING,
-				'address_2' => FILTER_SANITIZE_STRING,
+				'country'   => FILTER_SANITIZE_SPECIAL_CHARS,
+				'state'     => FILTER_SANITIZE_SPECIAL_CHARS,
+				'postcode'  => FILTER_SANITIZE_SPECIAL_CHARS,
+				'city'      => FILTER_SANITIZE_SPECIAL_CHARS,
+				'address_1' => FILTER_SANITIZE_SPECIAL_CHARS,
+				'address_2' => FILTER_SANITIZE_SPECIAL_CHARS,
 			]
 		);
-		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_STRING ] );
+		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data = $this->get_shipping_options( $shipping_address, $should_show_itemized_view );
@@ -968,7 +968,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC()->cart->calculate_totals();
 
-		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_STRING ] );
+		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data           = [];
