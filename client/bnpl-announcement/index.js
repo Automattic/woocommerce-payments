@@ -36,7 +36,6 @@ const Dialog = () => {
 	return (
 		<ConfirmationModal
 			className="wcpay-bnpl-announcement"
-			title={ __( 'Buy now, pay later is here', 'woocommerce-payments' ) }
 			onRequestClose={ () => setIsHidden( true ) }
 			actions={
 				<>
@@ -70,6 +69,14 @@ const Dialog = () => {
 				<AfterpayClearpayIcon />
 				<AffirmIcon />
 			</div>
+			<h1
+				aria-labelledby={ __(
+					'Buy now, pay later is here',
+					'woocommerce-payments'
+				) }
+			>
+				{ __( 'Buy now, pay later is here', 'woocommerce-payments' ) }
+			</h1>
 			<p>
 				{ __(
 					'Boost conversions and give your shoppers additional buying power,',
