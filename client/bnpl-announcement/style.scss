@@ -7,30 +7,48 @@
 			margin-top: auto;
 		}
 
-		.components-modal__content {
-			padding: 0 36px 36px;
+		.components-modal__header {
+			padding: 0;
+
+			.components-button.has-icon {
+				position: absolute;
+				top: 18px;
+				left: auto;
+				right: 18px;
+			}
 		}
 
-		.components-button.has-icon {
-			position: absolute;
-			top: 18px;
-			left: auto;
-			right: 18px;
+		.components-modal__content {
+			padding: 0 36px 24px;
+			margin-top: 60px;
 		}
+
+		.wcpay-confirmation-modal__separator {
+			margin-left: -35px;
+			margin-right: -35px;
+		}
+	}
+
+	h1 {
+		line-height: 25px;
 	}
 
 	&__payment-icons {
 		display: flex;
 		justify-content: center;
-		align-items: center;
+		align-items: flex-start;
 		flex-wrap: nowrap;
 		gap: 17px;
-		padding-bottom: 10px;
+		margin-bottom: 20px;
 
 		.payment-method__icon {
 			margin-right: 0;
-			max-height: 40px;
+			max-height: 35px;
 			outline: none;
+
+			&[alt="Affirm"] {
+				max-height: 30px;
+			}
 		}
 	}
 

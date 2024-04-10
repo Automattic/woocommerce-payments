@@ -65,14 +65,17 @@ class WC_Payments_Bnpl_Announcement {
 		if ( empty( $current_page ) ) {
 			return;
 		}
-		if ( ! in_array( $current_page['id'], [
+		if ( ! in_array(
+			$current_page['id'],
+			[
 				'wc-payments',
 				'wc-payments-deposits',
 				'wc-payments-transactions',
 				'wc-payments-deposit-details',
 				'wc-payments-transaction-details',
-				'wc-payments-multi-currency-setup'
-			] ) && ! WC_Payments_Utils::is_payments_settings_page() ) {
+				'wc-payments-multi-currency-setup',
+			]
+		) && ! WC_Payments_Utils::is_payments_settings_page() ) {
 			return;
 		}
 
