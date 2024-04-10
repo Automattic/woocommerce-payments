@@ -39,18 +39,9 @@ class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
 		$this->bnpl_announcement = new WC_Payments_Bnpl_Announcement( $this->gateway_mock, $this->account_service_mock, strtotime( '2024-06-06' ) );
 	}
 
-	/**
-	 * Reset custom time after test
-	 */
-	protected function tearDown(): void {
-		parent::tearDown();
-
-		self::$now = null;
-	}
-
 	public function test_it_enqueues_scripts_for_eligible_users() {
-		define( 'WP_ADMIN', true );
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
+		$this->set_is_admin( true );
 		WC_Payments::mode()->live();
 		$this->set_current_user_can( true );
 		$this->account_service_mock->method( 'get_account_country' )->willReturn( 'US' );
@@ -72,5 +63,24 @@ class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$current_user_can->method( 'current_user_can' )->willReturn( $can );
+	}
+
+	/**
+	 * @param bool $is_admin
+	 */
+	private function set_is_admin( bool $is_admin ) {
+		global $current_screen;
+
+		if ( ! $is_admin ) {
+			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+			return;
+		}
+
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+		$current_screen = $this->getMockBuilder( \stdClass::class )
+			->setMethods( [ 'in_admin' ] )
+			->getMock();
+
+		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
 	}
 }
