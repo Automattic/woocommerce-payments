@@ -54,7 +54,7 @@ class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->live();
 		$this->set_current_user_can( true );
 		$this->account_service_mock->method( 'get_account_country' )->willReturn( 'US' );
-		$this->account_service_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+		$this->gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
 		delete_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed' );
 		set_transient( 'wcpay_bnpl_april15_successful_purchases_count', 5 );
 
