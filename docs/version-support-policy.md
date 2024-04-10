@@ -1,6 +1,6 @@
 # Version Support Policy
 
-We have officially announced the L-2 version support policy for WooCommerce and WordPress core [since May 2021](https://developer.woo.com/2021/05/12/woocommerce-payments-is-adopting-a-new-version-support-policy/).
+We have officially announced the L-2 version support policy for WooCommerce and WordPress core [since May 2021](https://developer.woocommerce.com/2021/05/12/woocommerce-payments-is-adopting-a-new-version-support-policy/).
 
 However, in the practice, we're really enforcing only WordPress core with the `Requires at least` in [`readme.txt`](https://github.com/Automattic/woocommerce-payments/blob/develop/readme.txt) and [`woocommerce-payments.php`](https://github.com/Automattic/woocommerce-payments/blob/develop/woocommerce-payments.php).
 
