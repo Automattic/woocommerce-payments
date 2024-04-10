@@ -15,28 +15,17 @@ import {
 	PaymentsDataFeesTooltip,
 } from './payments-data-highlights-tooltips';
 import { usePaymentActivityData } from 'wcpay/data';
+import { getAdminUrl } from 'wcpay/utils';
+import { DateRange, PaymentsActivityData } from './interfaces';
 
 import './style.scss';
-import { getAdminUrl } from 'wcpay/utils';
 
-interface DateRange {
-	date_start: string;
-	date_end: string;
-}
-
-interface PaymentsActivityData {
-	paymentActivityData: {
-		total_payments_volume: number;
-		charges: number;
-		fees: number;
-		disputes: number;
-		refunds: number;
-	};
-	isLoading: boolean;
-}
-
+/**
+ * This will be replaces in the future with a dynamic date range picker.
+ */
 const getDateRange = (): DateRange => {
 	return {
+		// Subtract 7 days from the current date.
 		date_start: moment()
 			.subtract( 7, 'd' )
 			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
@@ -53,6 +42,7 @@ const PaymentsActivityData: React.FC = () => {
 			disputes,
 			refunds,
 		},
+		isLoading,
 	} = usePaymentActivityData( getDateRange() ) as PaymentsActivityData;
 
 	return (
@@ -67,6 +57,7 @@ const PaymentsActivityData: React.FC = () => {
 					page: 'wc-admin',
 					path: '/payments/transactions',
 				} ) }
+				isLoading={ isLoading }
 			/>
 			<div className="wcpay-payments-data-highlights">
 				<PaymentsDataTile
@@ -81,6 +72,7 @@ const PaymentsActivityData: React.FC = () => {
 						filter: 'advanced',
 						type_is: 'charge',
 					} ) }
+					isLoading={ isLoading }
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__refunds"
@@ -93,6 +85,7 @@ const PaymentsActivityData: React.FC = () => {
 						filter: 'advanced',
 						type_is: 'refund',
 					} ) }
+					isLoading={ isLoading }
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__disputes"
@@ -104,12 +97,14 @@ const PaymentsActivityData: React.FC = () => {
 						path: '/payments/disputes',
 						filter: 'awaiting_response',
 					} ) }
+					isLoading={ isLoading }
 				/>
 				<PaymentsDataTile
 					id="wcpay-payments-data-highlights__fees"
 					label={ __( 'Fees', 'woocommerce-payments' ) }
 					currencyCode="EUR"
 					amount={ fees }
+					isLoading={ isLoading }
 					tooltip={ <PaymentsDataFeesTooltip /> }
 				/>
 			</div>

@@ -4,33 +4,35 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
-import { dispatch } from '@wordpress/data';
+import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
+import type { Query } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { updatePaymentActivity } from './actions';
+import { updatePaymentsActivity } from './actions';
+import { PaymentActivityData } from './types';
 
 /**
  * Retrieves payment activity data from the reporting API.
  *
  * @param {string} query Data on which to parameterize the selection.
  */
-export function* getPaymentActivityData( query ) {
+export function* getPaymentActivityData( query: Query ): Generator< unknown > {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/reporting/payment_activity`,
 		query
 	);
 
 	try {
-		const results = yield apiFetch( { path } ) || {};
+		const results = yield apiFetch( { path } );
 
-		yield updatePaymentActivity( results );
+		yield updatePaymentsActivity( results as PaymentActivityData );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__(

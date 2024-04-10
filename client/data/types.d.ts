@@ -11,4 +11,5 @@ export interface State {
 	capital?: CapitalState;
 	paymentIntents?: PaymentIntentsState;
 	files?: FilesState;
+	paymentActivity?: any;
 }

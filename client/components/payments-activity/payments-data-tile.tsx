@@ -7,39 +7,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import './style.scss';
+
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
-interface PaymentsDataTileProps {
-	/**
-	 * The id for the tile, can be used for CSS styling.
-	 */
-	id: string;
-	/**
-	 * Label for the amount in the tile.
-	 */
-	label: string;
-	/**
-	 * The currency code for the amount displayed.
-	 */
-	currencyCode: string;
-	/**
-	 * For optionally passing a ClickTooltip component.
-	 */
-	tooltip?: React.ReactElement;
-	/**
-	 * The amount to be displayed in the tile.
-	 */
-	amount?: number;
-	/**
-	 * Loading state of the tile.
-	 */
-	isLoading?: boolean;
-	/**
-	 * Optional hover link to view report.
-	 */
-	reportLink?: string;
-}
+import { PaymentsDataTileProps } from './interfaces';
+import './style.scss';
 
 const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 	id,

@@ -41,7 +41,6 @@ export const initStore = () =>
 			authorizations: authorizations.reducer,
 			files: files.reducer,
 			paymentActivity: paymentActivity.reducer,
-
 		} ),
 		actions: {
 			...deposits.actions,

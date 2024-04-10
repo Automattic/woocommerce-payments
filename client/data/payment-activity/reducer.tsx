@@ -4,8 +4,12 @@
  * Internal dependencies
  */
 import TYPES from './action-types';
+import { PaymentsActivityAction, PaymentActivityState } from './types';
 
-const receivePaymentActivity = ( state = {}, { type, id, data, error } ) => {
+const receivePaymentActivity = (
+	state: PaymentActivityState = {},
+	{ type, data }: PaymentsActivityAction
+): PaymentActivityState => {
 	switch ( type ) {
 		case TYPES.SET_PAYMENT_ACTIVITY_DATA:
 			state = {
