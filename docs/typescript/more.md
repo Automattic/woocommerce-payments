@@ -192,4 +192,14 @@ type ReturnType = {
 
 ## Avoid enums
 
-Avoid enums, they don't add much over simpler alternatives.
+An [enum](https://www.typescriptlang.org/docs/handbook/enums.html) represents a set of named constants. Avoid using enums in TypeScript due to their [problematic tradeoffs](https://blog.logrocket.com/why-typescript-enums-suck/) – enum values are not type-safe, exhibit surprising behavior/have volatile values and can lead to runtime errors.
+
+Consider using string unions or objects with const assertions instead.
+
+-   Instead of a simple enum `enum Status { On, Off }` use a string union:
+
+    `type Status = 'on' | 'off';`
+
+-   If you really need an object, use an object with a const assertion:
+
+    `const Status = { On: 'on', Off: 'off' } as const;`
