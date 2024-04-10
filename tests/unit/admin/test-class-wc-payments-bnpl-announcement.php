@@ -51,6 +51,8 @@ class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
 		set_transient( 'wcpay_bnpl_april15_successful_purchases_count', 5 );
 
 		$this->bnpl_announcement->maybe_enqueue_scripts();
+
+		$this->assertEquals( '1', get_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed', true ) );
 	}
 
 	private function set_current_user_can( bool $can ) {
