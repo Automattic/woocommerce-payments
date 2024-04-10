@@ -11,11 +11,15 @@ import { debounce } from 'lodash';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
 import { waitMilliseconds } from 'wcpay/checkout/woopay/direct-checkout/utils';
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
+import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
 
 let isThirdPartyCookieEnabled = false;
 
 window.addEventListener( 'load', async () => {
-	if ( ! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ) {
+	if (
+		! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ||
+		shouldSkipWooPay()
+	) {
 		return;
 	}
 
@@ -38,7 +42,10 @@ window.addEventListener( 'load', async () => {
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_cart_totals', async () => {
-		if ( ! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ) {
+		if (
+			! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ||
+			shouldSkipWooPay()
+		) {
 			return;
 		}
 
