@@ -53,6 +53,20 @@
 			align-items: flex-start;
 			min-height: 129px;
 
+			&:nth-of-type( 3 ),
+			&:nth-of-type( 4 ) {
+				@include breakpoint( '>660px' ) {
+					border-top: 1px solid $gray-200;
+				}
+			}
+
+			&:nth-last-of-type( 1 ) {
+				@include breakpoint( '<660px' ) {
+					border-bottom: none;
+					padding-bottom: 0;
+				}
+			}
+
 			&:hover {
 				.wcpay-payments-data-highlights__item__wrapper a {
 					opacity: 1;
@@ -111,20 +125,6 @@
 
 		@include breakpoint( '<660px' ) {
 			flex-direction: column;
-		}
-	}
-
-	#wcpay-payments-data-highlights {
-		&__charges,
-		&__refunds {
-			border-bottom: 1px solid $gray-200;
-		}
-
-		&__fees {
-			@include breakpoint( '<660px' ) {
-				border-bottom: none;
-				padding-bottom: 0;
-			}
 		}
 	}
 }
