@@ -145,6 +145,7 @@
 		@include breakpoint( '<660px' ) {
 			border-bottom: 1px solid $gray-200;
 			padding-top: 0;
+			padding-bottom: 24px;
 		}
 	}
 }
