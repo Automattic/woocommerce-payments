@@ -229,7 +229,7 @@ class WC_Payments_Admin {
 						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
 					</b>
 					<?php
-						echo sprintf(
+						printf(
 							/* translators: %s: WooPayments*/
 							esc_html__( 'The selected currency is not available for the country set in your %s account.', 'woocommerce-payments' ),
 							'WooPayments'
@@ -805,7 +805,6 @@ class WC_Payments_Admin {
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'            => WC_Payments_Account::is_on_boarding_disabled(),
 			'onboardingFieldsData'          => $this->onboarding_service->get_fields_data( get_user_locale() ),
-			'onboardingFlowState'           => $this->onboarding_service->get_onboarding_flow_state(),
 			'errorMessage'                  => $error_message,
 			'featureFlags'                  => $this->get_frontend_feature_flags(),
 			'isSubscriptionsActive'         => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
@@ -855,6 +854,7 @@ class WC_Payments_Admin {
 			],
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
 			'trackingInfo'                  => $this->account->get_tracking_info(),
+			'lifetimeTPV'                   => $this->account->get_lifetime_total_payments_volume(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
@@ -1220,7 +1220,7 @@ class WC_Payments_Admin {
 	 * @return int The number of disputes which need a response.
 	 */
 	private function get_disputes_awaiting_response_count() {
-		$send_callback = function() {
+		$send_callback = function () {
 			$request = Request::get( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
 			$request->assign_hook( 'wcpay_get_dispute_status_counts' );
 			return $request->send();
@@ -1250,7 +1250,7 @@ class WC_Payments_Admin {
 		$test_mode = WC_Payments::mode()->is_test();
 		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
 
-		$send_callback         = function() {
+		$send_callback         = function () {
 			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
 			$request->assign_hook( 'wc_pay_get_authorizations_summary' );
 			return $request->send();

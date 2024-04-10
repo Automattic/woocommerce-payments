@@ -11,7 +11,6 @@ import {
 	validateEmail,
 	appendRedirectionParams,
 } from './utils';
-import { select } from '@wordpress/data';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -617,13 +616,14 @@ export const handleWooPayEmailInput = async (
 	} );
 
 	if ( ! customerClickedBackButton ) {
-		const paymentMethods = await select(
-			'wc/store/payment'
-		).getAvailablePaymentMethods();
-
-		const hasWCPayPaymentMethod = paymentMethods.hasOwnProperty(
-			'woocommerce_payments'
+		const hasWcPayElementOnBlocks = document.getElementById(
+			'radio-control-wc-payment-method-options-woocommerce_payments'
 		);
+		const hasWcPayElementOnShortcode = document.getElementById(
+			'payment_method_woocommerce_payments'
+		);
+		const hasWCPayPaymentMethod =
+			hasWcPayElementOnBlocks || hasWcPayElementOnShortcode;
 
 		// Check if user already has a WooPay login session and only open the iframe if there is WCPay.
 		if (
@@ -639,7 +639,7 @@ export const handleWooPayEmailInput = async (
 			dispatchUserExistEvent( true );
 		}, 2000 );
 
-		recordUserEvent( 'woopay_skipped', {}, true );
+		recordUserEvent( 'woopay_skipped', {} );
 
 		searchParams.delete( 'skip_woopay' );
 

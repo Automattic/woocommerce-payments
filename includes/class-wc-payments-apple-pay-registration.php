@@ -418,7 +418,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$learn_more_text = WC_Payments_Utils::esc_interpolated_html(
 			__( '<a>Learn more</a>.', 'woocommerce-payments' ),
 			[
-				'a' => '<a href="https://woo.com/document/woopayments/payment-methods/apple-pay/#domain-registration" target="_blank">',
+				'a' => '<a href="https://woocommerce.com/document/woopayments/payment-methods/apple-pay/#domain-registration" target="_blank">',
 			]
 		);
 

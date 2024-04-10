@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Update MOX cancellation to consistently redirect back to the payment connect page.

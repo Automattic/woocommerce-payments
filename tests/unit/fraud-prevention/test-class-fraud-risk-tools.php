@@ -7,6 +7,7 @@
 
 use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Fraud_Prevention\Models\Rule;
 
 /**
  * Fraud_Prevention_Service_Test unit tests.
@@ -90,7 +91,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'ip_country',
 				'operator' => 'not_in',
-				'value'    => 'US|CA',
+				'value'    => 'us|ca',
 			],
 		],
 		[
@@ -134,7 +135,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'ip_country',
 				'operator' => 'in',
-				'value'    => 'US|CA',
+				'value'    => 'us|ca',
 			],
 		],
 		[
@@ -301,7 +302,8 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 	public function test_it_gets_basic_protection_settings() {
 		update_option( 'woocommerce_allowed_countries', 'all' );
 
-		$settings = $this->fraud_risk_tools->get_basic_protection_settings();
+		$this->basic_protection_level = $this->fix_outcomes( $this->basic_protection_level );
+		$settings                     = $this->fraud_risk_tools->get_basic_protection_settings();
 
 		$this->assertSame( $this->basic_protection_level, $settings );
 	}
@@ -309,7 +311,8 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 	public function test_it_gets_standard_protection_settings() {
 		update_option( 'woocommerce_allowed_countries', 'all' );
 
-		$settings = $this->fraud_risk_tools->get_standard_protection_settings();
+		$this->standard_protection_level = $this->fix_outcomes( $this->standard_protection_level );
+		$settings                        = $this->fraud_risk_tools->get_standard_protection_settings();
 
 		$this->assertSame( $this->standard_protection_level, $settings );
 	}
@@ -317,7 +320,8 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 	public function test_it_gets_high_protection_settings() {
 		update_option( 'woocommerce_allowed_countries', 'all' );
 
-		$settings = $this->fraud_risk_tools->get_high_protection_settings();
+		$this->high_protection_level = $this->fix_outcomes( $this->high_protection_level );
+		$settings                    = $this->fraud_risk_tools->get_high_protection_settings();
 
 		$this->assertSame( $this->high_protection_level, $settings );
 	}
@@ -325,7 +329,8 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 	public function test_it_gets_high_protection_empty_allowed_countries_settings() {
 		update_option( 'woocommerce_allowed_countries', '' );
 
-		$settings = $this->fraud_risk_tools->get_high_protection_settings();
+		$this->high_protection_level = $this->fix_outcomes( $this->high_protection_level );
+		$settings                    = $this->fraud_risk_tools->get_high_protection_settings();
 
 		$this->assertSame( $this->high_protection_level, $settings );
 	}
@@ -334,6 +339,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 		update_option( 'woocommerce_allowed_countries', 'specific' );
 		update_option( 'woocommerce_specific_allowed_countries', [ Country_Code::UNITED_STATES, Country_Code::CANADA ] );
 
+		$this->standard_protection_level_with_specific_selling_locations = $this->fix_outcomes( $this->standard_protection_level_with_specific_selling_locations );
 		$settings = $this->fraud_risk_tools->get_standard_protection_settings();
 
 		$this->assertSame( $this->standard_protection_level_with_specific_selling_locations, $settings );
@@ -343,6 +349,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 		update_option( 'woocommerce_allowed_countries', 'all_except' );
 		update_option( 'woocommerce_all_except_countries', [ Country_Code::UNITED_STATES, Country_Code::CANADA ] );
 
+		$this->standard_protection_level_with_all_except_selling_locations = $this->fix_outcomes( $this->standard_protection_level_with_all_except_selling_locations );
 		$settings = $this->fraud_risk_tools->get_standard_protection_settings();
 
 		$this->assertSame( $this->standard_protection_level_with_all_except_selling_locations, $settings );
@@ -354,6 +361,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 	public function test_it_get_matching_protection_level( $ruleset, $expected ) {
 		update_option( 'woocommerce_allowed_countries', 'all' );
 
+		$ruleset          = $this->fix_outcomes( $ruleset );
 		$protection_level = $this->fraud_risk_tools->get_matching_protection_level( $ruleset );
 
 		$this->assertSame( $expected, $protection_level );
@@ -366,6 +374,16 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'high'     => [ $this->high_protection_level, 'high' ],
 			'advanced' => [ $this->advanced_protection_level, 'advanced' ],
 		];
+	}
+
+	private function fix_outcomes( $ruleset ) {
+		$review_feature_enabled = WC_Payments_Features::is_frt_review_feature_active();
+		foreach ( $ruleset as &$rule ) {
+			if ( Rule::FRAUD_OUTCOME_REVIEW === $rule['outcome'] && ! $review_feature_enabled ) {
+				$rule['outcome'] = Rule::FRAUD_OUTCOME_BLOCK;
+			}
+		}
+		return $ruleset;
 	}
 
 	/**

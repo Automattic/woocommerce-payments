@@ -4,8 +4,44 @@
  */
 import './style.scss';
 import WCPayAPI from 'wcpay/checkout/api';
+import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { getUPEConfig } from 'wcpay/utils/checkout';
+import apiRequest from 'wcpay/checkout/utils/request';
 
-export const initializeBnplSiteMessaging = () => {
+/**
+ * Initializes the appearance of the payment element by retrieving the UPE configuration
+ * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
+ * it is simply returned.
+ *
+ * @param {Object} api The API object used to save the UPE configuration.
+ * @return {Promise<Object>} The appearance object for the UPE.
+ */
+const elementsLocations = {
+	bnplProductPage: {
+		configKey: 'upeBnplProductPageAppearance',
+		appearanceKey: 'bnpl_product_page',
+	},
+	bnplClassicCart: {
+		configKey: 'upeBnplClassicCartAppearance',
+		appearanceKey: 'bnpl_classic_cart',
+	},
+};
+
+async function initializeAppearance( api, location ) {
+	const { configKey, appearanceKey } = elementsLocations[ location ];
+
+	const appearance = getUPEConfig( configKey );
+	if ( appearance ) {
+		return Promise.resolve( appearance );
+	}
+
+	return await api.saveUPEAppearance(
+		getAppearance( appearanceKey ),
+		appearanceKey
+	);
+}
+
+export const initializeBnplSiteMessaging = async () => {
 	const {
 		productVariations,
 		country,
@@ -13,27 +49,52 @@ export const initializeBnplSiteMessaging = () => {
 		accountId,
 		publishableKey,
 		paymentMethods,
+		currencyCode,
+		isCart,
+		isCartBlock,
+		cartTotal,
 	} = window.wcpayStripeSiteMessaging;
 
-	const api = new WCPayAPI(
-		{
-			publishableKey: publishableKey,
-			accountId: accountId,
-			locale: locale,
-		},
-		null
-	);
-	const options = {
-		amount: parseInt( productVariations.base_product.amount, 10 ) || 0,
-		currency: productVariations.base_product.currency || 'USD',
-		paymentMethodTypes: paymentMethods || [],
-		countryCode: country, // Customer's country or base country of the store.
-	};
-	const paymentMessageElement = api
-		.getStripe()
-		.elements()
-		.create( 'paymentMethodMessaging', options );
-	paymentMessageElement.mount( '#payment-method-message' );
+	let amount;
+	let elementLocation = 'bnplProductPage';
+
+	if ( isCart || isCartBlock ) {
+		amount = parseInt( cartTotal, 10 ) || 0;
+		elementLocation = 'bnplClassicCart';
+	} else {
+		amount = parseInt( productVariations.base_product.amount, 10 ) || 0;
+	}
+
+	let paymentMessageElement;
+
+	if ( ! isCartBlock ) {
+		const api = new WCPayAPI(
+			{
+				publishableKey: publishableKey,
+				accountId: accountId,
+				locale: locale,
+			},
+			apiRequest
+		);
+
+		const options = {
+			amount: amount,
+			currency: currencyCode || 'USD',
+			paymentMethodTypes: paymentMethods || [],
+			countryCode: country, // Customer's country or base country of the store.
+		};
+
+		const elementsOptions = {
+			appearance: await initializeAppearance( api, elementLocation ),
+			fonts: getFontRulesFromPage(),
+		};
+
+		paymentMessageElement = api
+			.getStripe()
+			.elements( elementsOptions )
+			.create( 'paymentMethodMessaging', options );
+		paymentMessageElement.mount( '#payment-method-message' );
+	}
 
 	// This function converts relative units (rem/em) to pixels based on the current font size.
 	function convertToPixels( value, baseFontSize ) {
@@ -53,10 +114,14 @@ export const initializeBnplSiteMessaging = () => {
 	const priceElement =
 		document.querySelector( '.price' ) || // For non-block product templates.
 		document.querySelector( '.wp-block-woocommerce-product-price' ); // For block product templates.
+	const cartTotalElement = document.querySelector(
+		'.cart_totals .shop_table'
+	);
 
 	// Only attempt to adjust the margins if the price element is found.
-	if ( priceElement ) {
-		const style = window.getComputedStyle( priceElement );
+	if ( priceElement || cartTotalElement ) {
+		const element = priceElement || cartTotalElement;
+		const style = window.getComputedStyle( element );
 		let bottomMargin = style.marginBottom;
 
 		// Get the computed font size of the price element for 'em' calculations.

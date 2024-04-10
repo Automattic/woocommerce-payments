@@ -1318,7 +1318,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 70, $data['timeout'] );
 		$this->assertArrayHasKey( 'connect_timeout', $data );
 		$this->assertSame( 70, $data['connect_timeout'] );
-
 	}
 
 	/**

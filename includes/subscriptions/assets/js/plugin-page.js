@@ -75,7 +75,7 @@ jQuery( function ( $ ) {
 					wc_payments_plugin.get_woo_subscriptions_plugin_slug()
 			).attr( 'href' );
 		},
-		// Gets the Woo Subscriptions plugin slug. When the site is connected to Woo.com, the slug is different and includes a woocommerce-com- prefix.
+		// Gets the Woo Subscriptions plugin slug. When the site is connected to WooCommerce.com, the slug is different and includes a woocommerce-com- prefix.
 		get_woo_subscriptions_plugin_slug() {
 			const element = document.querySelector(
 				'[data-slug="woocommerce-com-woocommerce-subscriptions"]'
