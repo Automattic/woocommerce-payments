@@ -67,6 +67,10 @@
 	background-image: url( '../images/cards/visa.svg' );
 }
 
+.payment-method__brand--cartes_bancaires {
+	background-image: url( '../images/cards/cartes_bancaires.svg' );
+}
+
 .payment-method__brand--unknown {
 	background-image: url( '../images/cards/unknown.svg' );
 }
