@@ -105,7 +105,10 @@ const AccountStatusDetails = ( props ) => {
 				/>
 			</AccountStatusItem>
 			{ ( ! accountStatus.detailsSubmitted || isInDevMode() ) && (
-				<AccountTools accountLink={ accountStatus.accountLink } />
+				<AccountTools
+					accountLink={ wcpaySettings.connectUrl }
+					detailsSubmitted={ accountStatus.detailsSubmitted }
+				/>
 			) }
 			{ accountFees.length > 0 && (
 				<AccountFees accountFees={ accountFees } />
