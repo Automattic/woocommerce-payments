@@ -199,7 +199,7 @@ export const initializeBnplSiteMessaging = async () => {
 					);
 
 					pmme.style.setProperty( '--wc-bnpl-margin-bottom', '-4px' );
-				}, '1000' );
+				}, 2000 );
 			}
 		} );
 	}
