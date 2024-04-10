@@ -5,33 +5,12 @@
  * @package WooCommerce\Payments\Tests
  */
 
-namespace WCPay\Tests;
-
 use PHPUnit\Framework\MockObject\MockObject;
-use WC_Payment_Gateway_WCPay;
-use WC_Payments_Account;
-use WC_Payments_Bnpl_Announcement;
-use WC_Payments;
-use WCPAY_UnitTestCase;
-
-/**
- * Override time() in current namespace for testing
- *
- * @return int
- */
-function time(): int {
-	return WC_Payments_Bnpl_Announcement_Test::$now ? WC_Payments_Bnpl_Announcement_Test::$now : \time();
-}
 
 /**
  * WC_Payments_Bnpl_Announcement unit tests.
  */
 class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
-	/**
-	 * @var int $now Timestamp that will be returned by time()
-	 */
-	public static $now;
-
 	/**
 	 * @var WC_Payments_Account|MockObject
 	 */
@@ -57,7 +36,7 @@ class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
 
 		$this->account_service_mock = $this->getMockBuilder( WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'get_account_country' ] )->getMock();
 
-		$this->bnpl_announcement = new WC_Payments_Bnpl_Announcement( $this->gateway_mock, $this->account_service_mock );
+		$this->bnpl_announcement = new WC_Payments_Bnpl_Announcement( $this->gateway_mock, $this->account_service_mock, strtotime( '2024-06-06' ) );
 	}
 
 	/**
@@ -74,7 +53,6 @@ class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 		WC_Payments::mode()->live();
 		$this->set_current_user_can( true );
-		self::$now = strtotime( '2024-06-06' );
 		$this->account_service_mock->method( 'get_account_country' )->willReturn( 'US' );
 		$this->account_service_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
 		delete_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed' );

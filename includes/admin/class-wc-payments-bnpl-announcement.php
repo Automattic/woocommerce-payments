@@ -25,14 +25,23 @@ class WC_Payments_Bnpl_Announcement {
 	private $account;
 
 	/**
+	 * The current time. Useful for mocking in tests.
+	 *
+	 * @var int
+	 */
+	private $current_time;
+
+	/**
 	 * Initialize class actions.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway Payment Gateway.
 	 * @param WC_Payments_Account      $account Account information.
+	 * @param int                      $current_time The current time.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
-		$this->gateway = $gateway;
-		$this->account = $account;
+	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account, int $current_time ) {
+		$this->gateway      = $gateway;
+		$this->account      = $account;
+		$this->current_time = $current_time;
 	}
 
 	/**
@@ -60,7 +69,7 @@ class WC_Payments_Bnpl_Announcement {
 		}
 
 		// Time boxed - Campaign expires after 90 days.
-		if ( time() > strtotime( '2024-07-15 00:00:00' ) ) {
+		if ( $this->current_time > strtotime( '2024-07-15 00:00:00' ) ) {
 			return;
 		}
 
