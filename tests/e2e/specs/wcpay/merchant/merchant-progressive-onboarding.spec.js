@@ -20,7 +20,7 @@ describe( 'Admin merchant progressive onboarding', () => {
 	} );
 
 	it( 'should pass merchant flow without any errors', async () => {
-		// Open connect account page and click Finish Setup
+		// Open connect account page and click the primary CTA to start onboarding.
 		await merchantWCP.openConnectPage();
 		await Promise.all( [
 			evalAndClick(
@@ -30,41 +30,9 @@ describe( 'Admin merchant progressive onboarding', () => {
 			uiLoaded(),
 		] );
 
-		// Merchant vs builder flow step
+		// Business details step
 		await expect( page ).toMatchElement( 'h1.stepper__heading', {
 			text: 'Let’s get your store ready to accept payments',
-		} );
-		await expect( page ).toClick(
-			'div.stepper__content button.components-button.is-primary',
-			{
-				text: 'Continue',
-			}
-		);
-
-		// User details step
-		await expect( page ).toMatchElement( 'h1.stepper__heading', {
-			text: 'First, you’ll need to create an account',
-		} );
-		await expect( page ).toFill( '[name="individual.first_name"]', 'Test' );
-		await expect( page ).toFill( '[name="individual.last_name"]', 'Test' );
-		await expect( page ).toFill( '[name="email"]', 'test@gmail.com' );
-		await page.waitForSelector(
-			'div.wcpay-component-phone-number-control input[type="text"]'
-		);
-		await expect( page ).toFill(
-			'div.wcpay-component-phone-number-control input[type="text"]',
-			'0000000000'
-		);
-		await expect( page ).toClick(
-			'div.stepper__content button.components-button.is-primary',
-			{
-				text: 'Continue',
-			}
-		);
-
-		// Tell us about your business step
-		await expect( page ).toMatchElement( 'h1.stepper__heading', {
-			text: 'Tell us about your business',
 		} );
 		// pick Individual business entity
 		await expect( page ).toClick( '[name="business_type"]' );
@@ -74,7 +42,7 @@ describe( 'Admin merchant progressive onboarding', () => {
 		await expect( page ).toClick(
 			'[name="business_type"] ~ ul li.components-custom-select-control__item'
 		);
-		// pick Software type of goods
+		// pick Software type of goods (MCC)
 		await expect( page ).toClick( '[name="mcc"]' );
 		await page.waitForSelector(
 			'[name="mcc"] ~ ul li.wcpay-component-grouped-select-control__item:not(.is-group)'
@@ -82,6 +50,8 @@ describe( 'Admin merchant progressive onboarding', () => {
 		await expect( page ).toClick(
 			'[name="mcc"] ~ ul li.wcpay-component-grouped-select-control__item:not(.is-group)'
 		);
+		// The ToS copy should be shown.
+		await page.waitForSelector( 'span.wcpay-onboarding__tos' );
 		await expect( page ).toClick(
 			'div.stepper__content button.components-button.is-primary',
 			{
@@ -89,7 +59,7 @@ describe( 'Admin merchant progressive onboarding', () => {
 			}
 		);
 
-		// Store details step: pick annual revenue and go live timeframe
+		// Store self-assessment step: pick annual revenue and go live timeframe
 		await expect( page ).toMatchElement( 'h1.stepper__heading', {
 			text: 'Please share a few more details',
 		} );
@@ -114,9 +84,9 @@ describe( 'Admin merchant progressive onboarding', () => {
 			}
 		);
 
-		// Loading screen
+		// Loading screen before redirect to Stripe.
 		await expect( page ).toMatchElement( 'h1.stepper__heading', {
-			text: 'Let’s get you set up for payments',
+			text: 'One last step! Verify your identity with our partner',
 		} );
 
 		// Merchant is redirected away to payments/connect again (because of force fisconnected option)

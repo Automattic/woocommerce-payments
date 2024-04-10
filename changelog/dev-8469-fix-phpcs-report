@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Fixes to comply with updates to PHPCS linter.

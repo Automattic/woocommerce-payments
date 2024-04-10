@@ -159,7 +159,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && current_user_can( 'pay_for_order', $order_id ) ) {
 			add_filter(
 				'wcpay_payment_fields_js_config',
-				function( $js_config ) use ( $order ) {
+				function ( $js_config ) use ( $order ) {
 					$session       = wc()->session;
 					$session_email = '';
 
@@ -172,8 +172,10 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 					// nosemgrep: audit.php.lang.misc.filter-input-no-filter.
 					$user_email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email' ) ) ) : $session_email;
 
-					$js_config['order_id']      = $order->get_id();
+					$js_config['order_id'] = $order->get_id();
+					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 					$js_config['pay_for_order'] = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
+					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 					$js_config['key']           = sanitize_text_field( wp_unslash( $_GET['key'] ) );
 					$js_config['billing_email'] = current_user_can( 'read_private_shop_orders' ) ||
 						( get_current_user_id() !== 0 && $order->get_customer_id() === get_current_user_id() )

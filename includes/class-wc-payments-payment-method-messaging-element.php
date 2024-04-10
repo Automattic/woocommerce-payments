@@ -42,27 +42,38 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	/**
 	 * Initializes the payment method messaging element.
 	 *
-	 * @return string The HTML markup for the payment method message container.
+	 * @return string|void The HTML markup for the payment method message container.
 	 */
-	public function init(): string {
-		global $product;
-		$currency_code   = get_woocommerce_currency();
-		$store_country   = WC()->countries->get_base_country();
-		$billing_country = WC()->customer->get_billing_country();
+	public function init() {
 
-		$product_variations = [
-			'base_product' => [
-				'amount'   => WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code ),
-				'currency' => $currency_code,
-			],
-		];
-		foreach ( $product->get_children() as $variation_id ) {
-			$variation = wc_get_product( $variation_id );
-			if ( $variation ) {
-				$product_variations[ $variation_id ] = [
-					'amount'   => WC_Payments_Utils::prepare_amount( $variation->get_price(), $currency_code ),
+		$is_cart_block = WC_Payments_Utils::is_cart_block();
+
+		if ( ! is_product() && ! is_cart() && ! $is_cart_block ) {
+			return;
+		}
+
+		global $product;
+		$currency_code      = get_woocommerce_currency();
+		$store_country      = WC()->countries->get_base_country();
+		$billing_country    = WC()->customer->get_billing_country();
+		$cart_total         = WC()->cart->total;
+		$product_variations = [];
+
+		if ( $product ) {
+			$product_variations = [
+				'base_product' => [
+					'amount'   => WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code ),
 					'currency' => $currency_code,
-				];
+				],
+			];
+			foreach ( $product->get_children() as $variation_id ) {
+				$variation = wc_get_product( $variation_id );
+				if ( $variation ) {
+					$product_variations[ $variation_id ] = [
+						'amount'   => WC_Payments_Utils::prepare_amount( $variation->get_price(), $currency_code ),
+						'currency' => $currency_code,
+					];
+				}
 			}
 		}
 
@@ -94,9 +105,27 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				'accountId'         => $this->account->get_stripe_account_id(),
 				'publishableKey'    => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 				'paymentMethods'    => array_values( $bnpl_payment_methods ),
+				'currencyCode'      => $currency_code,
+				'isCart'            => is_cart(),
+				'isCartBlock'       => $is_cart_block,
+				'cartTotal'         => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
+				'nonce'             => wp_create_nonce( 'wcpay-get-cart-total' ),
+				'wcAjaxUrl'         => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			]
 		);
 
-		return '<div id="payment-method-message"></div>';
+		// Ensure wcpayConfig is available in the page.
+		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
+		wp_add_inline_script(
+			'WCPAY_PRODUCT_DETAILS',
+			"
+			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
+			",
+			'before'
+		);
+
+		if ( ! $is_cart_block ) {
+			return '<div id="payment-method-message"></div>';
+		}
 	}
 }

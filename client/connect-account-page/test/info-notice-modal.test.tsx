@@ -13,6 +13,7 @@ import InfoNoticeModal from '../info-notice-modal';
 declare const global: {
 	wcpaySettings: {
 		isWooPayStoreCountryAvailable?: boolean;
+		isJetpackConnected: boolean;
 	};
 };
 
@@ -20,12 +21,15 @@ describe( 'Connect Account Page – Info Notice Modal', () => {
 	test( 'renders correctly when opened', () => {
 		global.wcpaySettings = {
 			isWooPayStoreCountryAvailable: true,
+			isJetpackConnected: true,
 		};
 
 		render( <InfoNoticeModal /> );
 
-		const learnMore = screen.getByRole( 'button', { name: /learn more/i } );
-		userEvent.click( learnMore );
+		const enableDeposits = screen.getByRole( 'button', {
+			name: /enable deposits./i,
+		} );
+		userEvent.click( enableDeposits );
 
 		const modalContent = document.querySelector(
 			'.components-modal__content'

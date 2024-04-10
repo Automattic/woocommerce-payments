@@ -124,28 +124,6 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'permission_callback' => [ $this, 'check_permission' ],
 			],
 		);
-
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/flow-state',
-			[
-				'methods'             => WP_REST_Server::EDITABLE,
-				'callback'            => [ $this, 'update_flow_state' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-				'args'                => [
-					'current_step' => [
-						'required'    => true,
-						'description' => 'The current step of the onboarding process.',
-						'type'        => 'string',
-					],
-					'data'         => [
-						'required'    => true,
-						'description' => 'The onboarding context data.',
-						'type'        => 'object',
-					],
-				],
-			],
-		);
 	}
 
 	/**
@@ -209,15 +187,5 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'woo_store_stats' => $request->get_param( 'woo_store_stats' ) ?? [],
 			]
 		);
-	}
-
-	/**
-	 * Update the onboarding flow state.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 * @return void
-	 */
-	public function update_flow_state( WP_REST_Request $request ) {
-		$this->onboarding_service->set_onboarding_flow_state( $request->get_json_params() );
 	}
 }

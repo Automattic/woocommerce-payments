@@ -57,7 +57,7 @@ export const WooPayIncompatibilityNotice = () => (
 			'One or more of your extensions are incompatible with WooPay.',
 			'woocommerce-payments'
 		) }
-		learnMoreLinkHref="https://woo.com/document/woopay-merchant-documentation/#compatibility"
+		learnMoreLinkHref="https://woocommerce.com/document/woopay-merchant-documentation/#compatibility"
 	/>
 );
 
@@ -68,6 +68,6 @@ export const ExpressCheckoutIncompatibilityNotice = () => (
 			'woocommerce-payments'
 		) }
 		// eslint-disable-next-line max-len
-		learnMoreLinkHref="https://woo.com/document/woopayments/payment-methods/apple-pay-and-google-pay-compatibility/#faq-extra-fields-on-checkout"
+		learnMoreLinkHref="https://woocommerce.com/document/woopayments/payment-methods/apple-pay-and-google-pay-compatibility/#faq-extra-fields-on-checkout"
 	/>
 );
