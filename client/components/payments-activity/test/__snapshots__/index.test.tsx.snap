@@ -71,7 +71,7 @@ exports[`PaymentsActivity component should render 1`] = `
                 aria-labelledby="wcpay-payments-activity-data__total-payments-volume"
                 class="wcpay-payments-data-highlights__item__wrapper__amount"
               >
-                €1,563.73
+                €0.00
               </p>
               <a
                 class="wcpay-payments-data-highlights__item__wrapper__report-link"
@@ -130,7 +130,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   aria-labelledby="wcpay-payments-data-highlights__charges"
                   class="wcpay-payments-data-highlights__item__wrapper__amount"
                 >
-                  €3,143.00
+                  €0.00
                 </p>
                 <a
                   class="wcpay-payments-data-highlights__item__wrapper__report-link"
@@ -158,7 +158,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   aria-labelledby="wcpay-payments-data-highlights__refunds"
                   class="wcpay-payments-data-highlights__item__wrapper__amount"
                 >
-                  €1,532.00
+                  €0.00
                 </p>
                 <a
                   class="wcpay-payments-data-highlights__item__wrapper__report-link"
@@ -186,7 +186,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   aria-labelledby="wcpay-payments-data-highlights__disputes"
                   class="wcpay-payments-data-highlights__item__wrapper__amount"
                 >
-                  €47.27
+                  €0.00
                 </p>
                 <a
                   class="wcpay-payments-data-highlights__item__wrapper__report-link"
@@ -242,7 +242,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   aria-labelledby="wcpay-payments-data-highlights__fees"
                   class="wcpay-payments-data-highlights__item__wrapper__amount"
                 >
-                  €94.29
+                  €0.00
                 </p>
               </div>
             </div>
