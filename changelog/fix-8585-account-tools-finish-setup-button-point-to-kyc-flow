@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix account tools finish setup button for PO accounts
+Hide account tools finish setup button for accounts completed the KYC and change it's link to Stripe KYC instead of the Stripe Express.
