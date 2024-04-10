@@ -22,34 +22,41 @@ export default ( {
 		cartData.totals.currency_minor_unit
 	);
 
+	// Customer's country or base country of the store.
+	const currentCountry =
+		cartData.billingAddress.country ||
+		window.wcBlocksCheckoutData.storeCountry;
+
+	// console.log( currentCountry );
+
 	return (
 		<>
 			<span>
 				{ upeConfig.title }
-				{ upeName !== 'card' && (
-					<>
-						<Elements
-							stripe={ api.getStripeForUPE( upeName ) }
-							options={ {
-								appearance: stripeAppearance ?? {},
-							} }
-						>
-							<PaymentMethodMessagingElement
+				{ upeName !== 'card' &&
+					( upeConfig.countries.length === 0 ||
+						upeConfig.countries.includes( currentCountry ) ) && (
+						<>
+							<Elements
+								stripe={ api.getStripeForUPE( upeName ) }
 								options={ {
-									amount: parseInt( amount, 10 ) || 0,
-									currency:
-										cartData.totals.currency_code || 'USD',
-									paymentMethodTypes: [ upeName ],
-									countryCode:
-										cartData.billingAddress.country ||
-										window.wcBlocksCheckoutData
-											.storeCountry, // Customer's country or base country of the store.
-									displayType: 'promotional_text',
+									appearance: stripeAppearance ?? {},
 								} }
-							/>
-						</Elements>
-					</>
-				) }
+							>
+								<PaymentMethodMessagingElement
+									options={ {
+										amount: parseInt( amount, 10 ) || 0,
+										currency:
+											cartData.totals.currency_code ||
+											'USD',
+										paymentMethodTypes: [ upeName ],
+										countryCode: currentCountry,
+										displayType: 'promotional_text',
+									} }
+								/>
+							</Elements>
+						</>
+					) }
 				<img
 					src={
 						upeAppearanceTheme === 'night'
