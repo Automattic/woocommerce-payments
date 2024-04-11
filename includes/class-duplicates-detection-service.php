@@ -70,7 +70,7 @@ class Duplicates_Detection_Service {
 		$keywords         = [ 'credit_card', 'creditcard', 'cc', 'card' ];
 		$special_keywords = [ 'woocommerce_payments', 'stripe' ];
 
-		$enabled_gateways = $this->filter_enabled_gateways_only();
+		$enabled_gateways = $this->get_enabled_gateways();
 
 		foreach ( $enabled_gateways as $gateway ) {
 			if ( $this->gateway_contains_keyword( $gateway->id, $keywords ) || in_array( $gateway->id, $special_keywords, true ) ) {
@@ -103,7 +103,7 @@ class Duplicates_Detection_Service {
 			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
 
-		$enabled_gateways = $this->filter_enabled_gateways_only();
+		$enabled_gateways = $this->get_enabled_gateways();
 
 		foreach ( $enabled_gateways as $gateway ) {
 			foreach ( $keywords as $keyword => $payment_method ) {
@@ -194,7 +194,7 @@ class Duplicates_Detection_Service {
 	 *
 	 * @return array Enabled gateways only.
 	 */
-	private function filter_enabled_gateways_only() {
+	private function get_enabled_gateways() {
 		return array_filter(
 			$this->get_registered_gateways(),
 			function ( $gateway ) {
