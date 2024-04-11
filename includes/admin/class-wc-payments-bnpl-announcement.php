@@ -119,6 +119,7 @@ class WC_Payments_Bnpl_Announcement {
 		if ( empty( $current_page ) ) {
 			return;
 		}
+
 		if ( ! in_array(
 			$current_page['id'],
 			[

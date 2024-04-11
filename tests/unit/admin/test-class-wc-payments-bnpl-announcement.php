@@ -33,6 +33,8 @@ class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->setMethods( [ 'get_upe_enabled_payment_method_ids' ] )
 			->getMock();
+		$page_controller = $this->getMockBuilder( \Automattic\WooCommerce\Admin\PageController::class )->disableOriginalConstructor()->setMethods( 'get_current_page' )->getMock();
+		$page_controller->method( 'get_current_page' )->willreturn( [ 'id' => 'wc-payments-deposits' ] );
 
 		$this->account_service_mock = $this->getMockBuilder( WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'get_account_country' ] )->getMock();
 
