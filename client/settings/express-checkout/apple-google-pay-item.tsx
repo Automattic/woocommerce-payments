@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { Button, CheckboxControl, ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import React from 'react';
+import React, { useState } from 'react';
 
 /**
  * Internal dependencies
@@ -19,6 +19,7 @@ import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
 import InlineNotice from 'wcpay/components/inline-notice';
+import { useDispatch } from '@wordpress/data';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const [
@@ -28,9 +29,43 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 
 	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
 	const duplicatedPaymentMethods = useGetDuplicatedPaymentMethodIds() as string[];
-	const isDuplicate = duplicatedPaymentMethods.includes(
-		'apple_pay_google_pay'
-	);
+	const id = 'apple_pay_google_pay';
+	const isDuplicate = duplicatedPaymentMethods.includes( id );
+
+	const useDuplicatesDetectionDismissedNoticeState = () => {
+		const { updateOptions } = useDispatch( 'wc/admin/options' );
+		const [
+			dismissedPaymentMethodNotices,
+			setDismissedPaymentMethodNotices,
+		] = useState( wcpaySettings.dismissedPaymentMethodNotices || [] );
+
+		const setNextDismissedPaymentMethodDuplicateNotice = () => {
+			setDismissedPaymentMethodNotices( [
+				...dismissedPaymentMethodNotices,
+				id,
+			] );
+			wcpaySettings.dismissedPaymentMethodNotices = [
+				...dismissedPaymentMethodNotices,
+				id,
+			];
+			updateOptions( {
+				wcpay_duplicate_payment_methods_notice_dismissed: [
+					...dismissedPaymentMethodNotices,
+					id,
+				],
+			} );
+		};
+
+		return {
+			dismissedPaymentMethodNotices,
+			handleDismissPaymentMethodDuplicateNotice: setNextDismissedPaymentMethodDuplicateNotice,
+		};
+	};
+
+	const {
+		dismissedPaymentMethodNotices,
+		handleDismissPaymentMethodDuplicateNotice,
+	} = useDuplicatesDetectionDismissedNoticeState();
 
 	return (
 		<li
@@ -175,11 +210,12 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 			{ showIncompatibilityNotice && (
 				<ExpressCheckoutIncompatibilityNotice />
 			) }
-			{ isDuplicate && (
+			{ isDuplicate && ! dismissedPaymentMethodNotices.includes( id ) && (
 				<InlineNotice
 					status="warning"
 					icon={ true }
 					isDismissible={ true }
+					onRemove={ handleDismissPaymentMethodDuplicateNotice }
 				>
 					{ interpolateComponents( {
 						mixedString: __(

@@ -3,7 +3,7 @@
  * External dependencies
  */
 import classNames from 'classnames';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 
 /**
  * Internal dependencies
@@ -27,6 +27,7 @@ import InlineNotice from '../inline-notice';
 import './payment-method.scss';
 import { ExternalLink } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
+import { useDispatch } from '@wordpress/data';
 
 interface PaymentMethodProps {
 	id: string;
@@ -167,6 +168,36 @@ const PaymentMethod = ( {
 		return onUncheckClick( id );
 	};
 
+	const useDuplicatesDetectionDismissedNoticeState = () => {
+		const { updateOptions } = useDispatch( 'wc/admin/options' );
+		const [
+			dismissedPaymentMethodNotices,
+			setDismissedPaymentMethodNotices,
+		] = useState( wcpaySettings.dismissedPaymentMethodNotices || [] );
+
+		const setNextDismissedPaymentMethodDuplicateNotice = () => {
+			setDismissedPaymentMethodNotices( [
+				...dismissedPaymentMethodNotices,
+				id,
+			] );
+			wcpaySettings.dismissedPaymentMethodNotices = [
+				...dismissedPaymentMethodNotices,
+				id,
+			];
+			updateOptions( {
+				wcpay_duplicate_payment_methods_notice_dismissed: [
+					...dismissedPaymentMethodNotices,
+					id,
+				],
+			} );
+		};
+
+		return {
+			dismissedPaymentMethodNotices,
+			handleDismissPaymentMethodDuplicateNotice: setNextDismissedPaymentMethodDuplicateNotice,
+		};
+	};
+
 	const getTooltipContent = ( paymentMethodId: string ) => {
 		if ( upeCapabilityStatuses.PENDING_APPROVAL === status ) {
 			return __(
@@ -258,6 +289,11 @@ const PaymentMethod = ( {
 			label
 		);
 	};
+
+	const {
+		dismissedPaymentMethodNotices,
+		handleDismissPaymentMethodDuplicateNotice,
+	} = useDuplicatesDetectionDismissedNoticeState();
 
 	return (
 		<li
@@ -362,11 +398,12 @@ const PaymentMethod = ( {
 					</span>
 				</InlineNotice>
 			) }
-			{ isDuplicate && (
+			{ isDuplicate && ! dismissedPaymentMethodNotices.includes( id ) && (
 				<InlineNotice
 					status="warning"
 					icon={ true }
 					isDismissible={ true }
+					onRemove={ handleDismissPaymentMethodDuplicateNotice }
 				>
 					{ interpolateComponents( {
 						mixedString: __(
