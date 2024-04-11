@@ -29,41 +29,52 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
  * Class handling detection of payment methods enabled by multiple plugins simultaneously.
  */
 class Duplicates_Detection_Service {
+
+	/**
+	 * Registered gateways.
+	 *
+	 * @var array
+	 */
+	private $registered_gateways = null;
+
+	/**
+	 * Gateways qualified by duplicates detector.
+	 *
+	 * @var array
+	 */
+	private $gateways_qualified_by_duplicates_detector = [];
+
 	/**
 	 * Find duplicates.
 	 *
 	 * @return array Duplicated gateways.
 	 */
 	public function find_duplicates() {
-		$registered_gateways                       = WC()->payment_gateways->payment_gateways;
-		$gateways_qualified_by_duplicates_detector = [];
+		$this->gateways_qualified_by_duplicates_detector = [];
 
-		$this->search_for_cc_payment_methods( $registered_gateways, $gateways_qualified_by_duplicates_detector )
-			->search_for_additional_payment_methods( $registered_gateways, $gateways_qualified_by_duplicates_detector )
-			->search_for_payment_request_buttons( $registered_gateways, $gateways_qualified_by_duplicates_detector )
-			->keep_woopayments_enabled_gateways_only( $gateways_qualified_by_duplicates_detector )
-			->keep_duplicates_only( $gateways_qualified_by_duplicates_detector );
+		$this->search_for_cc_payment_methods()
+			->search_for_additional_payment_methods()
+			->search_for_payment_request_buttons()
+			->keep_woopayments_enabled_gateways_only()
+			->keep_duplicates_only();
 
-		return $gateways_qualified_by_duplicates_detector;
+		return $this->gateways_qualified_by_duplicates_detector;
 	}
 
 	/**
 	 * Search for credit card gateways.
 	 *
-	 * @param array $registered_gateways All gateways.
-	 * @param array $duplicates Credit card found.
-	 *
 	 * @return Duplicates_Detection_Service
 	 */
-	private function search_for_cc_payment_methods( $registered_gateways, &$duplicates ) {
+	private function search_for_cc_payment_methods() {
 		$keywords         = [ 'credit_card', 'creditcard', 'cc', 'card' ];
 		$special_keywords = [ 'woocommerce_payments', 'stripe' ];
 
-		$enabled_gateways = $this->filter_enabled_gateways_only( $registered_gateways );
+		$enabled_gateways = $this->filter_enabled_gateways_only();
 
 		foreach ( $enabled_gateways as $gateway ) {
 			if ( $this->gateway_contains_keyword( $gateway->id, $keywords ) || in_array( $gateway->id, $special_keywords, true ) ) {
-				$duplicates[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ][] = $gateway->id;
+				$this->gateways_qualified_by_duplicates_detector[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ][] = $gateway->id;
 			}
 		}
 
@@ -73,12 +84,9 @@ class Duplicates_Detection_Service {
 	/**
 	 * Search for additional payment methods.
 	 *
-	 * @param array $registered_gateways All gateways.
-	 * @param array $duplicates Additional payment methods found.
-	 *
 	 * @return Duplicates_Detection_Service
 	 */
-	private function search_for_additional_payment_methods( $registered_gateways, &$duplicates ) {
+	private function search_for_additional_payment_methods() {
 		$keywords = [
 			'bancontact' => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'sepa'       => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
@@ -95,12 +103,12 @@ class Duplicates_Detection_Service {
 			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
 
-		$enabled_gateways = $this->filter_enabled_gateways_only( $registered_gateways );
+		$enabled_gateways = $this->filter_enabled_gateways_only();
 
 		foreach ( $enabled_gateways as $gateway ) {
 			foreach ( $keywords as $keyword => $payment_method ) {
 				if ( strpos( $gateway->id, $keyword ) !== false ) {
-					$duplicates[ $payment_method ][] = $gateway->id;
+					$this->gateways_qualified_by_duplicates_detector[ $payment_method ][] = $gateway->id;
 					break;
 				}
 			}
@@ -112,12 +120,9 @@ class Duplicates_Detection_Service {
 	/**
 	 * Search for payment request buttons.
 	 *
-	 * @param array $registered_gateways All gateways.
-	 * @param array $duplicates Payment request buttons found.
-	 *
 	 * @return Duplicates_Detection_Service
 	 */
-	private function search_for_payment_request_buttons( $registered_gateways, &$duplicates ) {
+	private function search_for_payment_request_buttons() {
 		$prb_payment_method = 'apple_pay_google_pay';
 		$keywords           = [
 			'apple_pay',
@@ -126,19 +131,19 @@ class Duplicates_Detection_Service {
 			'googlepay',
 		];
 
-		foreach ( $registered_gateways as $gateway ) {
+		foreach ( $this->get_registered_gateways() as $gateway ) {
 			if ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
-				$duplicates[ $prb_payment_method ][] = $gateway->id;
+				$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 				continue;
 			}
 
 			if ( 'yes' === $gateway->enabled ) {
 				foreach ( $keywords as $keyword ) {
 					if ( strpos( $gateway->id, $keyword ) !== false ) {
-						$duplicates[ $prb_payment_method ][] = $gateway->id;
+						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
 					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && 'woocommerce_payments' === $gateway->id ) {
-						$duplicates[ $prb_payment_method ][] = $gateway->id;
+						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
 					}
 				}
@@ -151,20 +156,18 @@ class Duplicates_Detection_Service {
 		/**
 		 * Keep only WooCommerce Payments enabled gateways.
 		 *
-		 * @param array $duplicates Gateways found.
-		 *
 		 * @return Duplicates_Detection_Service
 		 */
-	private function keep_woopayments_enabled_gateways_only( &$duplicates ) {
+	private function keep_woopayments_enabled_gateways_only() {
 		$woopayments_gateway_ids = array_map(
 			function ( $gateway ) {
 				return $gateway->id; },
 			array_values( WC_Payments::get_payment_gateway_map() )
 		);
 
-		foreach ( $duplicates as $gateway_id => $gateway_ids ) {
+		foreach ( $this->gateways_qualified_by_duplicates_detector as $gateway_id => $gateway_ids ) {
 			if ( empty( array_intersect( $gateway_ids, $woopayments_gateway_ids ) ) ) {
-				unset( $duplicates[ $gateway_id ] );
+				unset( $this->gateways_qualified_by_duplicates_detector[ $gateway_id ] );
 			}
 		}
 
@@ -174,14 +177,12 @@ class Duplicates_Detection_Service {
 	/**
 	 * Filter payment methods found to keep duplicates only.
 	 *
-	 * @param array $duplicates Payment methods found.
-	 *
 	 * @return Duplicates_Detection_Service
 	 */
-	private function keep_duplicates_only( &$duplicates ) {
-		foreach ( $duplicates as $gateway_id => $gateway_ids ) {
+	private function keep_duplicates_only() {
+		foreach ( $this->gateways_qualified_by_duplicates_detector as $gateway_id => $gateway_ids ) {
 			if ( count( $gateway_ids ) < 2 ) {
-				unset( $duplicates[ $gateway_id ] );
+				unset( $this->gateways_qualified_by_duplicates_detector[ $gateway_id ] );
 			}
 		}
 
@@ -191,13 +192,11 @@ class Duplicates_Detection_Service {
 	/**
 	 * Filter enabled gateways only.
 	 *
-	 * @param array $gateways All gateways including disabled ones.
-	 *
 	 * @return array Enabled gateways only.
 	 */
-	private function filter_enabled_gateways_only( $gateways ) {
+	private function filter_enabled_gateways_only() {
 		return array_filter(
-			$gateways,
+			$this->get_registered_gateways(),
 			function ( $gateway ) {
 				return 'yes' === $gateway->enabled;
 			}
@@ -219,5 +218,17 @@ class Duplicates_Detection_Service {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Lazy load registered gateways.
+	 *
+	 * @return array Registered gateways.
+	 */
+	private function get_registered_gateways() {
+		if ( null === $this->registered_gateways ) {
+			$this->registered_gateways = WC()->payment_gateways->payment_gateways();
+		}
+		return $this->registered_gateways;
 	}
 }
