@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Hide account tools finish setup button for accounts completed the KYC and change it's link to Stripe KYC instead of the Stripe Express.
