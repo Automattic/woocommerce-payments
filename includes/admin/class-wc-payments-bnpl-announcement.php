@@ -169,13 +169,12 @@ class WC_Payments_Bnpl_Announcement {
 			WC_Payments::get_file_version( 'dist/bnpl-announcement.css' ),
 			'all'
 		);
-		$account_status_data = $this->account->get_account_status_data();
 		// conditionally show afterpay/clearpay based on account country.
 		wp_localize_script(
 			'WCPAY_BNPL_ANNOUNCEMENT',
 			'wcpayBnplAnnouncement',
 			[
-				'accountStatus' => $account_status_data,
+				'accountCountry' => $this->account->get_account_country(),
 			]
 		);
 
