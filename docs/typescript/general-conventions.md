@@ -163,6 +163,49 @@ are also `ReadonlySet<T>` and `ReadonlyMap<Key, Value>` types!
 
 ## Use const assertions
 
+`const` assertions are an excellent tool to prevent TS from _widening_ inferred types. This can sound a bit abstract so consider the following code:
+
+```ts
+function getShapes() {
+	return [
+		{ kind: 'circle', radius: 100 },
+		{ kind: 'square', sideLength: 50 },
+	];
+}
+
+function useRadius( radius: number ) {
+	return radius;
+}
+
+for ( const shape of getShapes() ) {
+	if ( shape.kind === 'circle' ) {
+		// TS still thinks shape can be any of the items returned from 'getShapes()' and thus (correctly) infers that 'shape.radius' may be 'undefined'.
+		useRadius( shape.radius ); // ⛔️ Can't pass 'number | undefined' when the function expects a 'number'.
+	}
+}
+```
+
+`const` assertions allow us to get a concrete type without resorting to type guards or type assertion:
+
+```ts
+function getShapes() {
+	return [
+		{ kind: 'circle', radius: 100 },
+		{ kind: 'square', sideLength: 50 },
+	] as const; // ‼️ Add the const assertion here.
+}
+
+function useRadius( radius: number ) {
+	return radius;
+}
+
+for ( const shape of getShapes() ) {
+	if ( shape.kind === 'circle' ) {
+		useRadius( shape.radius ); // ✅ Ok, TS knows that if kind === 'circle' then 'shape' must have a 'radius' prop!
+	}
+}
+```
+
 Not everything needs a _const assertion,_ but when we want to infer a readonly interface it's a
 great option. Here's what that might look like:
 
