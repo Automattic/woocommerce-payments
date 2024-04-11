@@ -51,6 +51,13 @@ class WC_Payments_Bnpl_Announcement {
 	 */
 	public function init_hooks() {
 		add_action( 'current_screen', [ $this, 'maybe_enqueue_scripts' ] );
+		add_action( 'get_user_metadata', function ( $_value, $_object_id, $meta_key ) {
+			if ( $meta_key !== '_wcpay_bnpl_april15_viewed' ) {
+				return $_value;
+			}
+
+			return '0';
+		}, 11, 3 );
 	}
 
 	/**
