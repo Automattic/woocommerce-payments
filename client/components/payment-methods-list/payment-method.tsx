@@ -205,7 +205,7 @@ const PaymentMethod = ( {
 								'woocommerce-payments'
 							) }
 							href={
-								'https://woo.com/my-account/contact-support/'
+								'https://woocommerce.com/my-account/contact-support/'
 							}
 						/>
 					),
@@ -238,7 +238,7 @@ const PaymentMethod = ( {
 							/* eslint-disable-next-line max-len */
 							href={
 								isPoInProgress
-									? 'https://woo.com/document/woopayments/startup-guide/gradual-signup/#additional-payment-methods'
+									? 'https://woocommerce.com/document/woopayments/startup-guide/gradual-signup/#additional-payment-methods'
 									: getDocumentationUrlForDisabledPaymentMethod(
 											paymentMethodId
 									  )
@@ -353,7 +353,7 @@ const PaymentMethod = ( {
 						) }
 						<a
 							// eslint-disable-next-line max-len
-							href="https://woo.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-migration"
+							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-migration"
 							target="_blank"
 							rel="external noreferrer noopener"
 						>

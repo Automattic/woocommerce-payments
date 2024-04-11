@@ -107,7 +107,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 						),
 						{
 							a: (
-								<ExternalLink href="https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
+								<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
 							),
 						}
 					) }
@@ -259,7 +259,7 @@ export const InquirySteps: React.FC< Props > = ( {
 										),
 										{
 											learnMoreLink: (
-												<ExternalLink href="https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
+												<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
 											),
 										}
 									) }

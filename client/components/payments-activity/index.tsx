@@ -27,11 +27,7 @@ const PaymentsActivity: React.FC = () => {
 			</CardHeader>
 			<CardBody className="wcpay-payments-activity__card__body">
 				{ hasAtLeastOnePayment ? (
-					<>
-						{ /* Total TPV tile goes here */ }
-						{ /* Charges, refunds, disputes, fees tiles go here */ }
-						<PaymentsActivityData />
-					</>
+					<PaymentsActivityData />
 				) : (
 					<div className="wcpay-payments-activity__card__body__empty-state-wrapper">
 						<img src={ EmptyStateAsset } alt="" />
