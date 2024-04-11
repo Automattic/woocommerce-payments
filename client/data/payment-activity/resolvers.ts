@@ -6,7 +6,6 @@
 import { apiFetch } from '@wordpress/data-controls';
 import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
-import type { Query } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 
 /**
