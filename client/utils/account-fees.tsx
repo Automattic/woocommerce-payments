@@ -76,7 +76,7 @@ const getStripeFeeSectionUrl = ( country: string ): string => {
 
 const getFeeDescriptionString = (
 	fee: BaseFee,
-	discountBasedMultiplier: number
+	discountBasedMultiplier = 1
 ): string => {
 	if ( fee.fixed_rate && fee.percentage_rate ) {
 		return sprintf(
@@ -122,6 +122,7 @@ export const formatMethodFeesTooltip = (
 			? 1 - accountFees.discount[ 0 ].discount
 			: 1;
 
+	// Per https://woo.com/es/terms-conditions/woopayments-promotion-2023/ we exclude FX fees from discounts.
 	const total = {
 		percentage_rate:
 			accountFees.base.percentage_rate * discountAdjustedFeeRate +
@@ -165,7 +166,7 @@ export const formatMethodFeesTooltip = (
 			{ hasFees( accountFees.fx ) ? (
 				<div>
 					<div>Foreign exchange fee</div>
-					<div>{ getFeeDescriptionString( accountFees.fx, 1 ) }</div>
+					<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
 				</div>
 			) : (
 				''
@@ -173,7 +174,7 @@ export const formatMethodFeesTooltip = (
 			<div>
 				<div>Total per transaction</div>
 				<div className={ 'wcpay-fees-tooltip__bold' }>
-					{ getFeeDescriptionString( total, 1 ) }
+					{ getFeeDescriptionString( total ) }
 				</div>
 			</div>
 			{ wcpaySettings &&
