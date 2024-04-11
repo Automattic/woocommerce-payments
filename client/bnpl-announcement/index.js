@@ -20,7 +20,7 @@ import {
 } from 'wcpay/payment-methods-icons';
 
 const AfterpayClearpayIcon =
-	window.wcpayBnplAnnouncement?.accountStatus?.country === 'GB'
+	window.wcpayBnplAnnouncement?.country === 'US'
 		? ClearpayIcon
 		: AfterpayPillIcon;
 

@@ -75,7 +75,7 @@ class WC_Payments_Bnpl_Announcement {
 
 		// Only displayed to BNPL eligible countries - AU, NZ, US, AT, BE, CA, CZ, DK, FI, FR, DE, GR, IE, IT, NO, PL, PT, ES, SE, CH, NL, UK, US.
 		if ( ! in_array(
-			$this->account->get_account_country(),
+			$this->get_store_country(),
 			[
 				\WCPay\Constants\Country_Code::AUSTRALIA,
 				\WCPay\Constants\Country_Code::AUSTRIA,
@@ -136,7 +136,7 @@ class WC_Payments_Bnpl_Announcement {
 
 		// at least 3 purchases (on any payment method).
 		$woopayments_successful_orders_count = $this->get_woopayments_successful_orders_count();
-		if ( $woopayments_successful_orders_count >= 3 ) {
+		if ( $woopayments_successful_orders_count < 3 ) {
 			return;
 		}
 
@@ -175,7 +175,7 @@ class WC_Payments_Bnpl_Announcement {
 			'WCPAY_BNPL_ANNOUNCEMENT',
 			'wcpayBnplAnnouncement',
 			[
-				'accountStatus' => $account_status_data,
+				'country' => $this->get_store_country(),
 			]
 		);
 
@@ -237,5 +237,14 @@ class WC_Payments_Bnpl_Announcement {
 		set_transient( 'wcpay_bnpl_april15_successful_purchases_count', $orders_count, 2 * DAY_IN_SECONDS );
 
 		return $orders_count;
+	}
+
+	/**
+	 * Fetches store country from WC settings.
+	 *
+	 * @return string
+	 */
+	private function get_store_country() {
+		return function_exists( 'wc_get_base_location' ) ? wc_get_base_location()[ 'country' ] : substr( get_option( 'woocommerce_default_country' ), 0, 2 );;
 	}
 }
