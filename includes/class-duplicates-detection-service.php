@@ -152,14 +152,14 @@ class Duplicates_Detection_Service {
 		 * @return void
 		 */
 	private function keep_woopayments_enabled_gateways_only( &$duplicates ) {
-		$woopayments_gateways = array_map(
+		$woopayments_gateway_ids = array_map(
 			function ( $gateway ) {
 				return $gateway->id; },
 			array_values( WC_Payments::get_payment_gateway_map() )
 		);
 
 		foreach ( $duplicates as $gateway_id => $gateway_ids ) {
-			if ( empty( array_intersect( $gateway_ids, $woopayments_gateways ) ) ) {
+			if ( empty( array_intersect( $gateway_ids, $woopayments_gateway_ids ) ) ) {
 				unset( $duplicates[ $gateway_id ] );
 			}
 		}
