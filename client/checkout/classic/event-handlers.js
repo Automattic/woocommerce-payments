@@ -16,6 +16,7 @@ import {
 import {
 	processPayment,
 	mountStripePaymentElement,
+	mountStripePaymentMethodMessagingElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
 	maybeEnableStripeLink,
@@ -69,6 +70,7 @@ jQuery( function ( $ ) {
 
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement();
+		injectStripePMMEContainers();
 	} );
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
@@ -148,6 +150,61 @@ jQuery( function ( $ ) {
 		! isPreviewing()
 	) {
 		handleWooPayEmailInput( '#billing_email', api );
+	}
+
+	async function injectStripePMMEContainers() {
+		const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
+		const labelBase = 'payment_method_woocommerce_payments_';
+		const paymentMethods = getUPEConfig( 'paymentMethodsConfig' );
+		const paymentMethodsKeys = Object.keys( paymentMethods );
+		const cartData = await api.pmmeGetCartData();
+
+		for ( const method of paymentMethodsKeys ) {
+			if ( bnplMethods.includes( method ) ) {
+				const targetLabel = document.querySelector(
+					`label[for="${ labelBase }${ method }"]`
+				);
+				const containerID = `stripe-pmme-container-${ method }`;
+
+				if ( document.getElementById( containerID ) ) {
+					document.getElementById( containerID ).innerHTML = '';
+				}
+
+				if ( targetLabel ) {
+					let container = document.getElementById( containerID );
+					if ( ! container ) {
+						container = document.createElement( 'span' );
+						container.id = containerID;
+						container.dataset.paymentMethodType = method;
+						container.classList.add( 'stripe-pmme-container' );
+						targetLabel.appendChild( container );
+					}
+
+					const currentCountry =
+						cartData?.billing_address?.country ||
+						getUPEConfig( 'storeCountry' );
+
+					if (
+						paymentMethods[ method ]?.countries.length === 0 ||
+						paymentMethods[ method ]?.countries?.includes(
+							currentCountry
+						)
+					) {
+						await mountStripePaymentMethodMessagingElement(
+							api,
+							container,
+							{
+								amount: cartData?.totals?.total_price,
+								currency: cartData?.totals?.currency_code,
+								decimalPlaces:
+									cartData?.totals?.currency_minor_unit,
+								country: currentCountry,
+							}
+						);
+					}
+				}
+			}
+		}
 	}
 
 	function processPaymentIfNotUsingSavedMethod( $form ) {
