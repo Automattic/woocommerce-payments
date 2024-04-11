@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Revert "Ensure Currency Configurations Are Set Correctly When Multi-Currency Is Enabled (#8617)"
