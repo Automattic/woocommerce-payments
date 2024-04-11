@@ -1,10 +1,18 @@
 .wcpay-bnpl-announcement {
 	&.wcpay-confirmation-modal.wcpay-confirmation-modal {
-		margin-top: 25%;
+		margin-top: 75%;
 
 		@media screen and ( min-width: 600px ) {
 			max-width: 500px;
 			margin-top: auto;
+		}
+
+		@media screen and ( max-height: 800px ) {
+			margin-top: 50%;
+		}
+
+		@media screen and ( max-height: 600px ) {
+			margin-top: 30%;
 		}
 
 		.components-modal__header {
@@ -19,6 +27,10 @@
 		}
 
 		.components-modal__content {
+			@media screen and ( max-width: 600px ) {
+				padding: 0 20px 24px;
+			}
+
 			padding: 0 36px 24px;
 			margin-top: 60px;
 		}
@@ -27,10 +39,6 @@
 			margin-left: -35px;
 			margin-right: -35px;
 		}
-	}
-
-	h1 {
-		line-height: 25px;
 	}
 
 	&__payment-icons {
@@ -62,11 +70,19 @@
 	}
 
 	h1 {
+		@media screen and ( max-width: 320px ) {
+			font-size: 1.5em;
+		}
+
+		line-height: 25px;
 		text-align: center;
 		width: 100%;
 	}
 
 	p {
+		@media screen and ( max-width: 320px ) {
+			font-size: 10px;
+		}
 		text-align: center;
 	}
 
