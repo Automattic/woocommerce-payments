@@ -87,15 +87,4 @@
 		align-items: center;
 		display: flex;
 	}
-
-	.components-button.is-primary {
-		background: $studio-woocommerce-purple-60;
-
-		&:hover {
-			background: $studio-woocommerce-purple-70;
-		}
-		&:active {
-			background: $studio-woocommerce-purple-80;
-		}
-	}
 }
