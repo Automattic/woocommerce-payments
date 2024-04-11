@@ -44,7 +44,7 @@
 	&__payment-icons {
 		display: flex;
 		justify-content: center;
-		align-items: center;
+		align-items: flex-start;
 		flex-wrap: nowrap;
 		gap: 17px;
 		margin-bottom: 20px;
@@ -56,10 +56,6 @@
 
 			&[alt='Affirm'] {
 				max-height: 30px;
-			}
-
-			&[alt='Clearpay'] {
-				max-height: 25px;
 			}
 		}
 	}
