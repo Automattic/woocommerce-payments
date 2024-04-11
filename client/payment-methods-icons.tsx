@@ -21,6 +21,7 @@ import AffirmLogoAsset from 'assets/images/payment-methods/affirm-logo.svg?asset
 import AfterpayAsset from 'assets/images/payment-methods/afterpay-logo.svg?asset';
 import AfterpayPillAsset from 'assets/images/payment-methods/afterpay-badge.svg?asset';
 import ClearpayAsset from 'assets/images/payment-methods/clearpay.svg?asset';
+import ClearpayPillAsset from 'assets/images/payment-methods/clearpay-badge.svg?asset';
 import JCBAsset from 'assets/images/payment-methods/jcb.svg?asset';
 import KlarnaAsset from 'assets/images/payment-methods/klarna.svg?asset';
 import KlarnaPillAsset from 'assets/images/payment-methods/klarna-pill.svg?asset';
@@ -73,6 +74,10 @@ export const AfterpayPillIcon = iconComponent(
 );
 export const ClearpayIcon = iconComponent(
 	ClearpayAsset,
+	__( 'Clearpay', 'woocommerce-payments' )
+);
+export const ClearpayPillIcon = iconComponent(
+	ClearpayPillAsset,
 	__( 'Clearpay', 'woocommerce-payments' )
 );
 export const AmericanExpressIcon = iconComponent(
