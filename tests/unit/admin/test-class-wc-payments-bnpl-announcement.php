@@ -29,31 +29,78 @@ class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
+		delete_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed' );
+		set_transient( 'wcpay_bnpl_april15_successful_purchases_count', 5 );
+
 		$this->gateway_mock = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'get_upe_enabled_payment_method_ids' ] )
 			->getMock();
-		$page_controller    = $this->getMockBuilder( \Automattic\WooCommerce\Admin\PageController::class )->disableOriginalConstructor()->setMethods( [ 'get_current_page' ] )->getMock();
-		$page_controller->method( 'get_current_page' )->willreturn( [ 'id' => 'wc-payments-deposits' ] );
+		// $page_controller    = $this->getMockBuilder( \Automattic\WooCommerce\Admin\PageController::class )->disableOriginalConstructor()->setMethods( [ 'get_current_page' ] )->getMock();
+		// $page_controller->method( 'get_current_page' )->willReturn( [ 'id' => 'wc-payments-deposits' ] );
 
 		$this->account_service_mock = $this->getMockBuilder( WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'get_account_country' ] )->getMock();
 
 		$this->bnpl_announcement = new WC_Payments_Bnpl_Announcement( $this->gateway_mock, $this->account_service_mock, strtotime( '2024-06-06' ) );
 	}
 
+	protected function tearDown(): void {
+		parent::tearDown();
+
+		wp_deregister_script( 'WCPAY_BNPL_ANNOUNCEMENT' );
+	}
+
 	public function test_it_enqueues_scripts_for_eligible_users() {
-		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
+		global $current_section, $current_tab, $wp_actions;
+
+		// mocking the settings page URL.
+		$current_section = 'woocommerce_payments';
+		$current_tab     = 'checkout';
 		$this->set_is_admin( true );
+
+		// mocking the "did action" for 'current_screen'.
+		$wp_actions['current_screen'] = true; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 		WC_Payments::mode()->live();
 		$this->set_current_user_can( true );
 		$this->account_service_mock->method( 'get_account_country' )->willReturn( 'US' );
 		$this->gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
-		delete_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed' );
-		set_transient( 'wcpay_bnpl_april15_successful_purchases_count', 5 );
 
 		$this->bnpl_announcement->maybe_enqueue_scripts();
 
+		do_action( 'admin_enqueue_scripts' );
+
+		// ensuring the dialog has been marked as "viewed".
 		$this->assertEquals( '1', get_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed', true ) );
+		$this->assertTrue( wp_script_is( 'WCPAY_BNPL_ANNOUNCEMENT', 'registered' ) );
+	}
+
+	public function test_it_does_not_enqueues_scripts_for_users_that_have_already_seen_the_message() {
+		global $current_section, $current_tab, $wp_actions;
+
+		// mocking the settings page URL.
+		$current_section = 'woocommerce_payments';
+		$current_tab     = 'checkout';
+		$this->set_is_admin( true );
+
+		// mocking the "did action" for 'current_screen'.
+		$wp_actions['current_screen'] = true; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
+		WC_Payments::mode()->live();
+		$this->set_current_user_can( true );
+		$this->account_service_mock->method( 'get_account_country' )->willReturn( 'US' );
+		$this->gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+
+		// marking it as "already viewed" for the current user.
+		add_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed', '1' );
+
+		$this->bnpl_announcement->maybe_enqueue_scripts();
+
+		do_action( 'admin_enqueue_scripts' );
+
+		$this->assertFalse( wp_script_is( 'WCPAY_BNPL_ANNOUNCEMENT', 'registered' ) );
 	}
 
 	private function set_current_user_can( bool $can ) {
@@ -75,6 +122,7 @@ class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
 
 		if ( ! $is_admin ) {
 			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+
 			return;
 		}
 
@@ -84,5 +132,7 @@ class WC_Payments_Bnpl_Announcement_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
+		$current_screen->id     = 'wc-payments-deposits';
+		$current_screen->action = null;
 	}
 }

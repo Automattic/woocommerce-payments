@@ -116,11 +116,7 @@ class WC_Payments_Bnpl_Announcement {
 
 		// Target page to be displayed on - Any WooPayments page except disputes.
 		$current_page = \Automattic\WooCommerce\Admin\PageController::get_instance()->get_current_page();
-		if ( empty( $current_page ) ) {
-			return;
-		}
-
-		if ( ! in_array(
+		if ( ! WC_Payments_Utils::is_payments_settings_page() && ( empty( $current_page ) || ! in_array(
 			$current_page['id'],
 			[
 				'wc-payments',
@@ -131,7 +127,7 @@ class WC_Payments_Bnpl_Announcement {
 				'wc-payments-multi-currency-setup',
 			],
 			true
-		) && ! WC_Payments_Utils::is_payments_settings_page() ) {
+		) ) ) {
 			return;
 		}
 
@@ -189,6 +185,7 @@ class WC_Payments_Bnpl_Announcement {
 	 * @return int
 	 */
 	private function get_woopayments_successful_orders_count() {
+		// using a transient to store the value of a previous calculation, since it can be expensive on each page load.
 		$wcpay_successful_orders_count = get_transient( 'wcpay_bnpl_april15_successful_purchases_count' );
 		if ( false !== $wcpay_successful_orders_count ) {
 			return intval( $wcpay_successful_orders_count );
