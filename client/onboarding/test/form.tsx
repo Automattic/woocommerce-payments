@@ -12,7 +12,6 @@ import {
 	OnboardingForm,
 	OnboardingTextField,
 	OnboardingSelectField,
-	OnboardingPhoneNumberField,
 } from '../form';
 
 declare const global: {
@@ -114,55 +113,65 @@ describe( 'Onboarding Form', () => {
 
 	describe( 'OnboardingTextField', () => {
 		it( 'renders component with provided props ', () => {
-			data = { 'individual.first_name': 'John' };
+			data = { annual_revenue: 'Less than $250k' };
 			error.mockReturnValue( 'error message' );
 
-			render( <OnboardingTextField name="individual.first_name" /> );
+			render( <OnboardingTextField name="annual_revenue" /> );
 
-			const textField = screen.getByLabelText( 'First name' );
+			const textField = screen.getByLabelText(
+				'What is your estimated annual Ecommerce revenue (USD)?'
+			);
 			const errorMessage = screen.getByText( 'error message' );
 
-			expect( textField ).toHaveValue( 'John' );
+			expect( textField ).toHaveValue( 'Less than $250k' );
 			expect( errorMessage ).toBeInTheDocument();
 		} );
 
 		it( 'calls setData on change', () => {
-			render( <OnboardingTextField name="individual.first_name" /> );
+			render( <OnboardingTextField name="annual_revenue" /> );
 
-			const textField = screen.getByLabelText( 'First name' );
+			const textField = screen.getByLabelText(
+				'What is your estimated annual Ecommerce revenue (USD)?'
+			);
 			textField.focus(); // Workaround for `type` not triggering focus.
-			userEvent.type( textField, 'John' );
+			userEvent.type( textField, 'Less than $250k' );
 
 			expect( setData ).toHaveBeenCalledWith( {
-				'individual.first_name': 'John',
+				annual_revenue: 'Less than $250k',
 			} );
 
 			expect( validate ).not.toHaveBeenCalled();
 		} );
 
 		it( 'calls validate on change if touched', () => {
-			touched = { 'individual.first_name': true };
-			render( <OnboardingTextField name="individual.first_name" /> );
+			touched = { annual_revenue: true };
+			render( <OnboardingTextField name="annual_revenue" /> );
 
-			const textField = screen.getByLabelText( 'First name' );
+			const textField = screen.getByLabelText(
+				'What is your estimated annual Ecommerce revenue (USD)?'
+			);
 			userEvent.type( textField, 'John' );
 
 			expect( validate ).toHaveBeenCalledWith( 'John' );
 		} );
 
 		it( 'calls validate on change if not focused', () => {
-			render( <OnboardingTextField name="individual.first_name" /> );
+			render( <OnboardingTextField name="annual_revenue" /> );
 
-			const textField = screen.getByLabelText( 'First name' );
+			const textField = screen.getByLabelText(
+				'What is your estimated annual Ecommerce revenue (USD)?'
+			);
 			userEvent.type( textField, 'John' );
 
 			expect( validate ).toHaveBeenCalledWith( 'John' );
 		} );
 
 		it( 'calls validate on blur', () => {
-			render( <OnboardingTextField name="individual.first_name" /> );
+			render( <OnboardingTextField name="annual_revenue" /> );
 
-			const textField = screen.getByLabelText( 'First name' );
+			const textField = screen.getByLabelText(
+				'What is your estimated annual Ecommerce revenue (USD)?'
+			);
 			userEvent.type( textField, 'John' );
 			userEvent.tab();
 			fireEvent.focusOut( textField ); // Workaround for onFocus event not firing with jsdom <16.3.0
@@ -206,66 +215,6 @@ describe( 'Onboarding Form', () => {
 				business_type: 'individual',
 			} );
 			expect( validate ).toHaveBeenCalledWith( 'individual' );
-		} );
-	} );
-
-	describe( 'OnboardingPhoneNumberField', () => {
-		it( 'renders component with provided props ', () => {
-			data = { phone: '+123' };
-			error.mockReturnValue( 'error message' );
-
-			render( <OnboardingPhoneNumberField name="phone" /> );
-
-			const textField = screen.getByLabelText(
-				'What’s your mobile phone number?'
-			);
-			const errorMessage = screen.getByText( 'error message' );
-
-			expect( textField ).toHaveValue( '23' );
-			expect( errorMessage ).toBeInTheDocument();
-		} );
-
-		it( 'calls setTemp and setData on change', () => {
-			render( <OnboardingPhoneNumberField name="phone" /> );
-
-			const textField = screen.getByLabelText(
-				'What’s your mobile phone number?'
-			);
-			userEvent.type( textField, '23' );
-
-			expect( setTemp ).toHaveBeenCalledWith( {
-				phoneCountryCode: 'US',
-			} );
-
-			expect( setData ).toHaveBeenCalledWith( {
-				phone: '+123',
-			} );
-			expect( validate ).not.toHaveBeenCalledWith();
-		} );
-
-		it( 'only calls validate on change if touched', () => {
-			touched = { phone: true };
-			render( <OnboardingPhoneNumberField name="phone" /> );
-
-			const textField = screen.getByLabelText(
-				'What’s your mobile phone number?'
-			);
-			userEvent.type( textField, '23' );
-
-			expect( validate ).toHaveBeenCalledWith( '+123' );
-		} );
-
-		it( 'calls validate on blur', () => {
-			render( <OnboardingPhoneNumberField name="phone" /> );
-
-			const textField = screen.getByLabelText(
-				'What’s your mobile phone number?'
-			);
-			userEvent.type( textField, '23' );
-			userEvent.tab();
-			fireEvent.focusOut( textField ); // Workaround for onFocus event not firing with jsdom <16.3.0
-
-			expect( validate ).toHaveBeenCalledWith();
 		} );
 	} );
 } );

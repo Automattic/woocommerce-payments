@@ -210,6 +210,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// present, partial refund is not possible.
 	const isPartiallyRefundable = charge.order && charge.order.number;
 
+	const isPartiallyRefunded = charge.amount_refunded > 0;
+
 	// Control menu only shows refund actions for now. In the future, it may show other actions.
 	const showControlMenu =
 		charge.captured && ! charge.refunded && isDisputeRefundable;
@@ -285,7 +287,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							</p>
 							<div className="payment-details-summary__breakdown">
 								{ renderStorePrice ? (
-									<p>
+									<p className="payment-details-summary__breakdown__settlement-currency">
 										{ formatExplicitCurrency(
 											balance.amount,
 											balance.currency
@@ -554,26 +556,28 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								>
 									{ ( { onClose } ) => (
 										<MenuGroup>
-											<MenuItem
-												onClick={ () => {
-													setIsRefundModalOpen(
-														true
-													);
-													recordEvent(
-														'payments_transactions_details_refund_modal_open',
-														{
-															payment_intent_id:
-																charge.payment_intent,
-														}
-													);
-													onClose();
-												} }
-											>
-												{ __(
-													'Refund in full',
-													'woocommerce-payments'
-												) }
-											</MenuItem>
+											{ ! isPartiallyRefunded && (
+												<MenuItem
+													onClick={ () => {
+														setIsRefundModalOpen(
+															true
+														);
+														recordEvent(
+															'payments_transactions_details_refund_modal_open',
+															{
+																payment_intent_id:
+																	charge.payment_intent,
+															}
+														);
+														onClose();
+													} }
+												>
+													{ __(
+														'Refund in full',
+														'woocommerce-payments'
+													) }
+												</MenuItem>
+											) }
 											{ isPartiallyRefundable && (
 												<MenuItem
 													onClick={ () => {
@@ -691,7 +695,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									a: (
 										// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
 										<a
-											href="https://woo.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+											href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
 											target="_blank"
 											rel="noreferer"
 										/>

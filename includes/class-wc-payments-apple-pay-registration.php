@@ -71,7 +71,14 @@ class WC_Payments_Apple_Pay_Registration {
 		$this->payments_api_client     = $payments_api_client;
 		$this->account                 = $account;
 		$this->gateway                 = $gateway;
+	}
 
+	/**
+	 * Initializes this class's hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ], 5 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_on_update' ] );
 		add_action( 'init', [ $this, 'init' ] );
@@ -411,7 +418,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$learn_more_text = WC_Payments_Utils::esc_interpolated_html(
 			__( '<a>Learn more</a>.', 'woocommerce-payments' ),
 			[
-				'a' => '<a href="https://woo.com/document/woopayments/payment-methods/apple-pay/#domain-registration" target="_blank">',
+				'a' => '<a href="https://woocommerce.com/document/woopayments/payment-methods/apple-pay/#domain-registration" target="_blank">',
 			]
 		);
 
@@ -433,6 +440,6 @@ class WC_Payments_Apple_Pay_Registration {
 <?php endif; ?>
 			<p><?php echo $check_log_text; /* @codingStandardsIgnoreLine */ ?></p>
 		</div>
-<?php
+		<?php
 	}
 }

@@ -653,7 +653,13 @@ jQuery( ( $ ) => {
 		},
 	};
 
-	wcpayPaymentRequest.init();
+	// We don't need to initialize payment request on the checkout page now because it will be initialized by updated_checkout event.
+	if (
+		! wcpayPaymentRequestParams.is_checkout_page ||
+		wcpayPaymentRequestParams.is_pay_for_order
+	) {
+		wcpayPaymentRequest.init();
+	}
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {

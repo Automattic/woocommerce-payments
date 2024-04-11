@@ -76,6 +76,9 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
         -   `weekly_anchor` _string_ | _undefined_ - The day of the week that payments are paid out, e.g. `monday`.
         -   `monthly_anchor` _int_ | _undefined_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
     -   `default_currency` _string_ - The default currency for the account.
+    -   `default_external_accounts` _array_ - The default external payout accounts (deposit destinations) for the account.
+        -   `currency` _string_ - The currency of the external account. e.g. `eur`, `chf`.
+        -   `status` _string_ - The status of the external account. e.g. `new`, `errored`.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
@@ -168,7 +171,17 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 			"interval": "weekly",
 			"weekly_anchor": "friday"
 		},
-		"default_currency": "eur"
+		"default_currency": "eur",
+		"default_external_accounts": [
+			{
+				"currency": "eur",
+				"status": "new"
+			},
+			{
+				"currency": "usd",
+				"status": "new"
+			}
+		]
 	}
 }
 ```
@@ -341,7 +354,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
 
 ## Submit an instant deposit
 
-Submit an instant deposit for a list of transactions. Only for eligible accounts. See [Instant Deposits with WooPayments](https://woo.com/document/woopayments/deposits/instant-deposits/) for more information.
+Submit an instant deposit for a list of transactions. Only for eligible accounts. See [Instant Deposits with WooPayments](https://woocommerce.com/document/woopayments/deposits/instant-deposits/) for more information.
 
 ### HTTP request
 
@@ -401,7 +414,7 @@ Request a CSV export of deposits matching the query. A link to the exported CSV 
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits/download?status_is=paid' \
   -u consumer_key:consumer_secret
   --data '{
-      "user_email": "name@example.woo.com"
+      "user_email": "name@example.woocommerce.com"
     }'
 ```
 

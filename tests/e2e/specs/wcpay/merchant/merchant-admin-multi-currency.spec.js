@@ -6,7 +6,7 @@ const { merchant, WP_ADMIN_DASHBOARD } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP, takeScreenshot, uiLoaded } from '../../../utils';
+import { merchantWCP, takeScreenshot } from '../../../utils';
 
 describe( 'Admin Multi-Currency', () => {
 	let wasMulticurrencyEnabled;
@@ -36,8 +36,9 @@ describe( 'Admin Multi-Currency', () => {
 	} );
 
 	it( 'should be possible to add the currency switcher to a post/page', async () => {
-		await page.goto( `${ WP_ADMIN_DASHBOARD }post-new.php` );
-		await uiLoaded();
+		await page.goto( `${ WP_ADMIN_DASHBOARD }post-new.php`, {
+			waitUntil: 'load',
+		} );
 
 		const closeWelcomeModal = await page.$( 'button[aria-label="Close"]' );
 		if ( closeWelcomeModal ) {
@@ -47,7 +48,7 @@ describe( 'Admin Multi-Currency', () => {
 		await page.click( 'button[aria-label="Add block"]' );
 
 		const searchInput = await page.waitForSelector(
-			'input.components-search-control__input'
+			'input[placeholder="Search"]'
 		);
 		searchInput.type( 'switcher', { delay: 20 } );
 

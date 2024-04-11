@@ -185,6 +185,9 @@ class Database_Cache {
 	 */
 	public function delete( string $key ) {
 		delete_option( $key );
+
+		// Clear WP Cache to ensure the new data is fetched by other processes.
+		wp_cache_delete( $key, 'options' );
 	}
 
 	/**
@@ -297,11 +300,10 @@ class Database_Cache {
 		$cache_contents['errored'] = $errored;
 
 		// Create or update the option cache.
-		if ( false === get_option( $key ) ) {
-			add_option( $key, $cache_contents, '', 'no' );
-		} else {
-			update_option( $key, $cache_contents, 'no' );
-		}
+		update_option( $key, $cache_contents, 'no' );
+
+		// Clear WP Cache to ensure the new data is fetched by other processes.
+		wp_cache_delete( $key, 'options' );
 
 		return $cache_contents;
 	}

@@ -22,13 +22,6 @@ defined( 'ABSPATH' ) || exit; // block direct access.
 class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
-	 * Legacy prefix used for WooPay user events
-	 *
-	 * @var string
-	 */
-	private static $legacy_user_prefix = 'woocommerceanalytics';
-
-	/**
 	 * WCPay user event prefix
 	 *
 	 * @var string
@@ -70,8 +63,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_after_single_product', [ $this, 'classic_product_page_view' ] );
 		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'blocks_checkout_start' ] );
 		add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ $this, 'blocks_cart_page_view' ] );
-		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
-		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
+		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
+		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
 		add_action( 'woocommerce_thankyou', [ $this, 'thank_you_page_view' ] );
@@ -107,10 +100,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 				$tracks_data = $event_prop;
 			}
 		}
-		// Legacy events are shopper events that still use the woocommerceanalytics prefix.
-		// These need to be migrated to the wcpay prefix.
-		$is_legacy_event = isset( $_REQUEST['isLegacy'] ) ? rest_sanitize_boolean( wc_clean( wp_unslash( $_REQUEST['isLegacy'] ) ) ) : false;
-		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data, $is_legacy_event );
+		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data );
 
 		wp_send_json_success();
 	}
@@ -132,13 +122,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @param string  $event name of the event.
 	 * @param array   $data array of event properties.
-	 * @param boolean $is_legacy indicate whether this is a legacy event.
 	 */
-	public function maybe_record_event( $event, $data = [], $is_legacy = true ) {
+	public function maybe_record_event( $event, $data = [] ) {
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
-			$prefix = $is_legacy ? self::$legacy_user_prefix : self::$user_prefix;
-			$event  = $prefix . '_' . $event;
+			$event  = self::$user_prefix . '_' . $event;
 		}
 
 		return $this->tracks_record_event( $event, $data );
@@ -348,10 +336,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	public function tracks_get_identity() {
 		$user_id  = get_current_user_id();
-		// If the user is not trackable, return an empty array.
-		if ( ! $this->should_enable_tracking() ) {
-			return [];
-		}
 
 		// Meta is set, and user is still connected.  Use WPCOM ID.
 		$wpcom_id = get_user_meta( $user_id, 'jetpack_tracks_wpcom_id', true );
@@ -463,21 +447,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Record a Tracks event that the order has been processed.
 	 */
-	public function checkout_order_processed( $order_id ) {
+	public function checkout_order_processed() {
 		$is_woopay_order = ( isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'] );
-
-		$payment_gateway = wc_get_payment_gateway_by_order( $order_id );
-		$properties = [ 'payment_title' => 'other' ];
-
-		if (strpos( $payment_gateway->id, 'woocommerce_payments') === 0 ) {
-			$order = wc_get_order( $order_id );
-			$payment_title = $order->get_payment_method_title();
-			$properties = [ 'payment_title' => $payment_title ];
-		}
-
 		// Don't track WooPay orders. They will be tracked on WooPay side with more flow specific details.
 		if ( ! $is_woopay_order ) {
-			$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties );
+			$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed' );
 		}
 	}
 

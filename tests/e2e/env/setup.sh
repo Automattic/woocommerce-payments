@@ -324,12 +324,6 @@ else
 	echo "Skipping install of Action Scheduler"
 fi
 
-if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
-	echo "Install and activate the latest release of WooCommerce Blocks"
-	cli wp plugin install woo-gutenberg-products-block --activate
-else
-	echo "Skipping install of WooCommerce Blocks"
-fi
 
 echo "Creating screenshots directory"
 mkdir -p $WCP_ROOT/screenshots

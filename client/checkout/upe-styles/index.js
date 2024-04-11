@@ -2,7 +2,14 @@
  * Internal dependencies
  */
 import { upeRestrictedProperties } from './upe-styles';
-import { generateHoverRules, generateOutlineStyle } from './utils.js';
+import {
+	generateHoverRules,
+	generateOutlineStyle,
+	maybeConvertRGBAtoRGB,
+	dashedToCamelCase,
+	isColorLight,
+	getBackgroundColor,
+} from './utils.js';
 
 const appearanceSelectors = {
 	default: {
@@ -21,18 +28,85 @@ const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		backgroundSelectors: [
+			'li.wc_payment_method .wc-payment-form',
+			'li.wc_payment_method .payment_box',
+			'#payment',
+			'#order_review',
+			'form.checkout',
+			'body',
+		],
 	},
 	blocksCheckout: {
 		appendTarget: '#billing.wc-block-components-address-form',
 		upeThemeInputSelector: '#billing-first_name',
-		upeThemeLabelSelector: '.wc-block-components-text-input label',
+		upeThemeLabelSelector:
+			'.wc-block-components-checkout-step__description',
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
 		alternateSelectors: {
 			appendTarget: '#shipping.wc-block-components-address-form',
 			upeThemeInputSelector: '#shipping-first_name',
+			upeThemeLabelSelector:
+				'.wc-block-components-checkout-step__description',
 		},
+		backgroundSelectors: [
+			'#payment-method .wc-block-components-radio-control-accordion-option',
+			'#payment-method',
+			'form.wc-block-checkout__form',
+			'.wc-block-checkout',
+			'body',
+		],
+	},
+	bnplProductPage: {
+		appendTarget: '.product .cart .quantity',
+		upeThemeInputSelector: '.product .cart .quantity .qty',
+		upeThemeLabelSelector: '.product .cart .quantity label',
+		rowElement: 'div',
+		validClasses: [ 'input-text' ],
+		invalidClasses: [ 'input-text', 'has-error' ],
+		backgroundSelectors: [
+			'#payment-method-message',
+			'#main > .product > div.summary.entry-summary',
+			'#main > .product',
+			'#main',
+			'body',
+		],
+	},
+	bnplClassicCart: {
+		appendTarget: '.cart .quantity',
+		upeThemeInputSelector: '.cart .quantity .qty',
+		upeThemeLabelSelector: '.cart .quantity label',
+		rowElement: 'div',
+		validClasses: [ 'input-text' ],
+		invalidClasses: [ 'input-text', 'has-error' ],
+		backgroundSelectors: [
+			'#payment-method-message',
+			'#main .entry-content .cart_totals',
+			'#main .entry-content',
+			'#main',
+			'body',
+		],
+	},
+	bnplCartBlock: {
+		appendTarget: '.wc-block-cart .wc-block-components-quantity-selector',
+		upeThemeInputSelector:
+			'.wc-block-cart .wc-block-components-quantity-selector .wc-block-components-quantity-selector__input',
+		upeThemeLabelSelector: '.wc-block-components-text-input',
+		rowElement: 'div',
+		validClasses: [ 'wc-block-components-text-input' ],
+		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
+		backgroundSelectors: [
+			'.wc-block-components-bnpl-wrapper',
+			'.wc-block-components-order-meta',
+			'.wc-block-components-totals-wrapper',
+			'.wp-block-woocommerce-cart-order-summary-block',
+			'.wp-block-woocommerce-cart-totals-block',
+			'.wp-block-woocommerce-cart .wc-block-cart',
+			'.wp-block-woocommerce-cart',
+			'body',
+		],
 	},
 
 	/**
@@ -63,29 +137,36 @@ const appearanceSelectors = {
 	/**
 	 * Returns selectors based on checkout type.
 	 *
-	 * @param {boolean} isBlocksCheckout True ff block checkout. Default false.
+	 * @param {boolean} elementsLocation The location of the elements.
 	 *
 	 * @return {Object} Selectors for checkout type specified.
 	 */
-	getSelectors: function ( isBlocksCheckout = false ) {
-		if ( isBlocksCheckout ) {
-			return {
-				...this.default,
-				...this.updateSelectors( this.blocksCheckout ),
-			};
+	getSelectors: function ( elementsLocation ) {
+		let appearanceSelector = this.blocksCheckout;
+
+		switch ( elementsLocation ) {
+			case 'blocks_checkout':
+				appearanceSelector = this.blocksCheckout;
+				break;
+			case 'classic_checkout':
+				appearanceSelector = this.classicCheckout;
+				break;
+			case 'bnpl_product_page':
+				appearanceSelector = this.bnplProductPage;
+				break;
+			case 'bnpl_classic_cart':
+				appearanceSelector = this.bnplClassicCart;
+				break;
+			case 'bnpl_cart_block':
+				appearanceSelector = this.bnplCartBlock;
+				break;
 		}
 
 		return {
 			...this.default,
-			...this.updateSelectors( this.classicCheckout ),
+			...this.updateSelectors( appearanceSelector ),
 		};
 	},
-};
-
-const dashedToCamelCase = ( string ) => {
-	return string.replace( /-([a-z])/g, function ( g ) {
-		return g[ 1 ].toUpperCase();
-	} );
 };
 
 const hiddenElementsForUPE = {
@@ -161,10 +242,10 @@ const hiddenElementsForUPE = {
 	/**
 	 * Initialize hidden fields to generate UPE styles.
 	 *
-	 * @param {boolean} isBlocksCheckout True if Blocks Checkout. Default false.
+	 * @param {boolean} elementsLocation The location of the elements.
 	 */
-	init: function ( isBlocksCheckout = false ) {
-		const selectors = appearanceSelectors.getSelectors( isBlocksCheckout ),
+	init: function ( elementsLocation ) {
+		const selectors = appearanceSelectors.getSelectors( elementsLocation ),
 			appendTarget = document.querySelector( selectors.appendTarget ),
 			elementToClone = document.querySelector(
 				selectors.upeThemeInputSelector
@@ -200,17 +281,24 @@ const hiddenElementsForUPE = {
 		);
 		hiddenContainer.appendChild( hiddenInvalidRow );
 
-		// Clone & append target element to hidden valid row.
+		// Clone & append target input  to hidden valid row.
 		this.appendClone(
 			hiddenValidRow,
 			selectors.upeThemeInputSelector,
 			selectors.hiddenInput
 		);
 
-		// Clone & append target element to hidden invalid row.
+		// Clone & append target input  to hidden invalid row.
 		this.appendClone(
 			hiddenInvalidRow,
 			selectors.upeThemeInputSelector,
+			selectors.hiddenInvalidInput
+		);
+
+		// Clone & append target label to hidden invalid row.
+		this.appendClone(
+			hiddenInvalidRow,
+			selectors.upeThemeLabelSelector,
 			selectors.hiddenInvalidInput
 		);
 
@@ -234,7 +322,11 @@ const hiddenElementsForUPE = {
 	},
 };
 
-export const getFieldStyles = ( selector, upeElement, focus = false ) => {
+export const getFieldStyles = (
+	selector,
+	upeElement,
+	backgroundColor = null
+) => {
 	if ( ! document.querySelector( selector ) ) {
 		return {};
 	}
@@ -242,19 +334,15 @@ export const getFieldStyles = ( selector, upeElement, focus = false ) => {
 	const validProperties = upeRestrictedProperties[ upeElement ];
 
 	const elem = document.querySelector( selector );
-	if ( focus ) {
-		elem.focus();
-	}
 
 	const styles = window.getComputedStyle( elem );
 
 	const filteredStyles = {};
-
 	for ( let i = 0; i < styles.length; i++ ) {
 		const camelCase = dashedToCamelCase( styles[ i ] );
 		if ( validProperties.includes( camelCase ) ) {
-			filteredStyles[ camelCase ] = styles.getPropertyValue(
-				styles[ i ]
+			filteredStyles[ camelCase ] = maybeConvertRGBAtoRGB(
+				styles.getPropertyValue( styles[ i ] )
 			);
 		}
 	}
@@ -285,6 +373,10 @@ export const getFieldStyles = ( selector, upeElement, focus = false ) => {
 		filteredStyles.paddingRight = textIndent;
 	}
 
+	if ( upeElement === '.Block' ) {
+		filteredStyles.backgroundColor = backgroundColor;
+	}
+
 	return filteredStyles;
 };
 
@@ -312,18 +404,13 @@ export const getFontRulesFromPage = () => {
 	return fontRules;
 };
 
-export const getAppearance = ( isBlocksCheckout = false ) => {
-	const selectors = appearanceSelectors.getSelectors( isBlocksCheckout );
+export const getAppearance = ( elementsLocation ) => {
+	const selectors = appearanceSelectors.getSelectors( elementsLocation );
 
 	// Add hidden fields to DOM for generating styles.
-	hiddenElementsForUPE.init( isBlocksCheckout );
+	hiddenElementsForUPE.init( elementsLocation );
 
 	const inputRules = getFieldStyles( selectors.hiddenInput, '.Input' );
-	const inputFocusRules = getFieldStyles(
-		selectors.hiddenInput,
-		'.Input',
-		true
-	);
 	const inputInvalidRules = getFieldStyles(
 		selectors.hiddenInvalidInput,
 		'.Input'
@@ -348,12 +435,28 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 		color: selectedTabRules.color,
 	};
 
+	const backgroundColor = getBackgroundColor( selectors.backgroundSelectors );
+	const blockRules = getFieldStyles(
+		selectors.upeThemeLabelSelector,
+		'.Block',
+		backgroundColor
+	);
+
+	const globalRules = {
+		colorBackground: backgroundColor,
+		colorText: labelRules.color,
+		fontFamily: labelRules.fontFamily,
+		fontSizeBase: labelRules.fontSize,
+	};
+
 	const appearance = {
+		variables: globalRules,
+		theme: isColorLight( backgroundColor ) ? 'stripe' : 'night',
 		rules: {
 			'.Input': inputRules,
-			'.Input:focus': inputFocusRules,
 			'.Input--invalid': inputInvalidRules,
 			'.Label': labelRules,
+			'.Block': blockRules,
 			'.Tab': tabRules,
 			'.Tab:hover': tabHoverRules,
 			'.Tab--selected': selectedTabRules,
@@ -363,7 +466,6 @@ export const getAppearance = ( isBlocksCheckout = false ) => {
 			'.Text--redirect': labelRules,
 		},
 	};
-
 	// Remove hidden fields from DOM.
 	hiddenElementsForUPE.cleanup();
 	return appearance;

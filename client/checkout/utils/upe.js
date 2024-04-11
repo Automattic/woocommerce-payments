@@ -2,8 +2,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { WC_STORE_CART, getPaymentMethodsConstants } from '../constants';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { getPaymentMethodsConstants } from '../constants';
 
 /**
  * Generates terms parameter for UPE, with value set for reusable payment methods
@@ -21,27 +20,6 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 		obj[ method ] = value;
 		return obj;
 	}, {} );
-};
-
-/**
- * Returns the value of the given cookie.
- *
- * @param {string} name Name of the cookie.
- *
- * @return {string} Value of the given cookie. Empty string if cookie doesn't exist.
- */
-export const getCookieValue = ( name ) =>
-	document.cookie.match( '(^|;)\\s*' + name + '\\s*=\\s*([^;]+)' )?.pop() ||
-	'';
-
-/**
- * Check if Card payment is being used.
- *
- * @return {boolean} Boolean indicating whether or not Card payment is being used.
- */
-export const isWCPayChosen = function () {
-	return document.getElementById( 'payment_method_woocommerce_payments' )
-		.checked;
 };
 
 /**
@@ -205,32 +183,6 @@ export function dispatchChangeEventFor( element ) {
 }
 
 /**
- *
- * Custom React hook that provides customer data and related functions for managing customer information.
- * The hook retrieves customer data from the WC_STORE_CART selector and dispatches actions to modify billing and shipping addresses.
- *
- * @return {Object} An object containing customer data and functions for managing customer information.
- */
-export const useCustomerData = () => {
-	const customerData = useSelect( ( select ) =>
-		select( WC_STORE_CART ).getCustomerData()
-	);
-	const {
-		setShippingAddress,
-		setBillingData,
-		setBillingAddress,
-	} = useDispatch( WC_STORE_CART );
-
-	return {
-		// Backward compatibility billingData/billingAddress
-		billingAddress: customerData.billingAddress || customerData.billingData,
-		// Backward compatibility setBillingData/setBillingAddress
-		setBillingAddress: setBillingAddress || setBillingData,
-		setShippingAddress,
-	};
-};
-
-/**
  * Returns the prepared set of options needed to initialize the Stripe elements for UPE in Block Checkout.
  * The initial options have all the fields set to 'never' to hide them from the UPE, because all the
  * information is already collected in the checkout form. Additionally, the options are updated with
@@ -335,67 +287,6 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 	} );
 
 	emailInput.parentNode.appendChild( stripeLinkButton );
-};
-
-/**
- * Converts form fields object into Stripe `billing_details` object.
- *
- * @param {Object} fields Object mapping checkout billing fields to values.
- * @return {Object} Stripe formatted `billing_details` object.
- */
-export const getBillingDetails = ( fields ) => {
-	return {
-		name:
-			`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
-			'-',
-		email:
-			typeof fields.billing_email === 'string'
-				? fields.billing_email.trim()
-				: '-',
-		phone: fields.billing_phone || '-',
-		address: {
-			country: fields.billing_country || '-',
-			line1: fields.billing_address_1 || '-',
-			line2: fields.billing_address_2 || '-',
-			city: fields.billing_city || '-',
-			state: fields.billing_state || '-',
-			postal_code: fields.billing_postcode || '-',
-		},
-	};
-};
-
-/**
- * Converts form fields object into Stripe `shipping` object.
- *
- * @param {Object} fields Object mapping checkout shipping fields to values.
- * @return {Object} Stripe formatted `shipping` object.
- */
-export const getShippingDetails = ( fields ) => {
-	// Shipping address is needed by Afterpay. If available, use shipping address, else fallback to billing address.
-	if (
-		fields.ship_to_different_address &&
-		fields.ship_to_different_address === '1'
-	) {
-		return {
-			name:
-				`${ fields.shipping_first_name } ${ fields.shipping_last_name }`.trim() ||
-				'-',
-			address: {
-				country: fields.shipping_country || '-',
-				line1: fields.shipping_address_1 || '-',
-				line2: fields.shipping_address_2 || '-',
-				city: fields.shipping_city || '-',
-				state: fields.shipping_state || '-',
-				postal_code: fields.shipping_postcode || '-',
-			},
-		};
-	}
-
-	const billingAsShippingAddress = getBillingDetails( fields );
-	delete billingAsShippingAddress.email;
-	delete billingAsShippingAddress.phone;
-
-	return billingAsShippingAddress;
 };
 
 /**
