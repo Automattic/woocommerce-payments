@@ -128,6 +128,7 @@ class Duplicates_Detection_Service {
 		];
 
 		foreach ( $this->get_registered_gateways() as $gateway ) {
+			// Stripe gateway can enable PRBs while being disabled as well, hence no need to check for enabled status.
 			if ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
 				$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 				continue;
