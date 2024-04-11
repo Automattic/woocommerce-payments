@@ -1,4 +1,4 @@
-# More
+# General Conventions
 
 ## Prefer named exports
 
