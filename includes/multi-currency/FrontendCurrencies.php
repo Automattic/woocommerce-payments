@@ -409,7 +409,7 @@ class FrontendCurrencies {
 	 */
 	private function should_use_order_currency(): bool {
 		$pages = [ 'my-account', 'checkout' ];
-		$vars  = [ 'order-received', 'order-pay', 'order-received', 'orders', 'view-order' ];
+		$vars  = [ 'order-received', 'order-pay', 'orders', 'view-order' ];
 
 		if ( $this->utils->is_page_with_vars( $pages, $vars ) ) {
 			return $this->utils->is_call_in_backtrace(
