@@ -37,14 +37,6 @@ interface Props {
 	/** Helpful detail for a confusing prop */
 	whatIsThisFor?: number | Symbol;
 }
-
-/** This is used for things to indicate what */
-enum Flag {
-	On,
-	Off,
-	/** This represent a state up extreme confusion and apathy */
-	Uhhhhh,
-}
 ```
 
 ### ✅ _Do_ use JSDoc to add descriptions and relevant information
