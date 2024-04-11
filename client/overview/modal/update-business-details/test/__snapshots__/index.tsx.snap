@@ -83,14 +83,14 @@ exports[`Overview: update business details modal renders correctly when opened f
       class="wcpay-update-business-details-modal__footer"
     >
       <button
-        class="components-button"
-        type="secondary"
+        class="components-button is-secondary"
+        type="button"
       >
         Cancel
       </button>
       <button
-        class="components-button"
-        type="primary"
+        class="components-button is-primary"
+        type="button"
       >
         Update business details
       </button>
@@ -182,14 +182,14 @@ exports[`Overview: update business details modal renders correctly when opened f
       class="wcpay-update-business-details-modal__footer"
     >
       <button
-        class="components-button"
-        type="secondary"
+        class="components-button is-secondary"
+        type="button"
       >
         Cancel
       </button>
       <button
-        class="components-button"
-        type="primary"
+        class="components-button is-primary"
+        type="button"
       >
         Update business details
       </button>
@@ -281,14 +281,14 @@ exports[`Overview: update business details modal renders correctly when opened f
       class="wcpay-update-business-details-modal__footer"
     >
       <button
-        class="components-button"
-        type="secondary"
+        class="components-button is-secondary"
+        type="button"
       >
         Cancel
       </button>
       <button
-        class="components-button"
-        type="primary"
+        class="components-button is-primary"
+        type="button"
       >
         Update business details
       </button>
