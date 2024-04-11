@@ -13,7 +13,7 @@ import PaymentsDataTile from './payments-data-tile';
 import { ClickTooltip } from '../tooltip';
 import { usePaymentActivityData } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
-import { DateRange, PaymentsActivityData } from './interfaces';
+import { DateRange, PaymentsActivityData } from './types';
 
 import './style.scss';
 
