@@ -29,20 +29,18 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
  * Class handling detection of payment methods enabled by multiple plugins simultaneously.
  */
 class Duplicates_Detection_Service {
-
-		/**
-		 * Find duplicates.
-		 *
-		 * @param array $gateways Gateways registered in WooCommerce store, both enabled and not.
-		 *
-		 * @return array Duplicated gateways.
-		 */
-	public function find_duplicates( $gateways ) {
+	/**
+	 * Find duplicates.
+	 *
+	 * @return array Duplicated gateways.
+	 */
+	public function find_duplicates() {
+		$registered_gateways                       = WC()->payment_gateways->payment_gateways;
 		$gateways_qualified_by_duplicates_detector = [];
 
-		$this->search_for_cc_payment_methods( $gateways, $gateways_qualified_by_duplicates_detector );
-		$this->search_for_additional_payment_methods( $gateways, $gateways_qualified_by_duplicates_detector );
-		$this->search_for_payment_request_buttons( $gateways, $gateways_qualified_by_duplicates_detector );
+		$this->search_for_cc_payment_methods( $registered_gateways, $gateways_qualified_by_duplicates_detector );
+		$this->search_for_additional_payment_methods( $registered_gateways, $gateways_qualified_by_duplicates_detector );
+		$this->search_for_payment_request_buttons( $registered_gateways, $gateways_qualified_by_duplicates_detector );
 		$this->keep_woopayments_enabled_gateways_only( $gateways_qualified_by_duplicates_detector );
 		$this->keep_duplicates_only( $gateways_qualified_by_duplicates_detector );
 
@@ -52,16 +50,16 @@ class Duplicates_Detection_Service {
 	/**
 	 * Search for credit card gateways.
 	 *
-	 * @param array $gateways All gateways.
+	 * @param array $registered_gateways All gateways.
 	 * @param array $duplicates Credit card found.
 	 *
 	 * @return void
 	 */
-	private function search_for_cc_payment_methods( $gateways, &$duplicates ) {
+	private function search_for_cc_payment_methods( $registered_gateways, &$duplicates ) {
 		$keywords         = [ 'credit_card', 'creditcard', 'cc', 'card' ];
 		$special_keywords = [ 'woocommerce_payments', 'stripe' ];
 
-		$enabled_gateways = $this->filter_enabled_gateways_only( $gateways );
+		$enabled_gateways = $this->filter_enabled_gateways_only( $registered_gateways );
 
 		foreach ( $enabled_gateways as $gateway ) {
 			if ( $this->gateway_contains_keyword( $gateway->id, $keywords ) || in_array( $gateway->id, $special_keywords, true ) ) {
@@ -73,12 +71,12 @@ class Duplicates_Detection_Service {
 	/**
 	 * Search for additional payment methods.
 	 *
-	 * @param array $gateways All gateways.
+	 * @param array $registered_gateways All gateways.
 	 * @param array $duplicates Additional payment methods found.
 	 *
 	 * @return void
 	 */
-	private function search_for_additional_payment_methods( $gateways, &$duplicates ) {
+	private function search_for_additional_payment_methods( $registered_gateways, &$duplicates ) {
 		$keywords = [
 			'bancontact' => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'sepa'       => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
@@ -95,7 +93,7 @@ class Duplicates_Detection_Service {
 			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
 
-		$enabled_gateways = $this->filter_enabled_gateways_only( $gateways );
+		$enabled_gateways = $this->filter_enabled_gateways_only( $registered_gateways );
 
 		foreach ( $enabled_gateways as $gateway ) {
 			foreach ( $keywords as $keyword => $payment_method ) {
@@ -110,12 +108,12 @@ class Duplicates_Detection_Service {
 	/**
 	 * Search for payment request buttons.
 	 *
-	 * @param array $gateways All gateways.
+	 * @param array $registered_gateways All gateways.
 	 * @param array $duplicates Payment request buttons found.
 	 *
 	 * @return void
 	 */
-	private function search_for_payment_request_buttons( $gateways, &$duplicates ) {
+	private function search_for_payment_request_buttons( $registered_gateways, &$duplicates ) {
 		$prb_payment_method = 'apple_pay_google_pay';
 		$keywords           = [
 			'apple_pay',
@@ -124,7 +122,7 @@ class Duplicates_Detection_Service {
 			'googlepay',
 		];
 
-		foreach ( $gateways as $gateway ) {
+		foreach ( $registered_gateways as $gateway ) {
 			if ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
 				$duplicates[ $prb_payment_method ][] = $gateway->id;
 				continue;
