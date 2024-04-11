@@ -14,14 +14,16 @@ import { __ } from '@wordpress/i18n';
  */
 import { NAMESPACE } from '../constants';
 import { updatePaymentsActivity } from './actions';
-import { PaymentActivityData } from './types';
+import { PaymentActivityData, QueryDate } from './types';
 
 /**
  * Retrieves payment activity data from the reporting API.
  *
  * @param {string} query Data on which to parameterize the selection.
  */
-export function* getPaymentActivityData( query: Query ): Generator< unknown > {
+export function* getPaymentActivityData(
+	query: QueryDate
+): Generator< unknown > {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/reporting/payment_activity`,
 		query

@@ -17,3 +17,8 @@ export interface PaymentsActivityAction {
 	type: string;
 	data: PaymentActivityData;
 }
+
+export interface QueryDate {
+	date_start: string;
+	date_end: string;
+}
