@@ -38,11 +38,11 @@ class Duplicates_Detection_Service {
 		$registered_gateways                       = WC()->payment_gateways->payment_gateways;
 		$gateways_qualified_by_duplicates_detector = [];
 
-		$this->search_for_cc_payment_methods( $registered_gateways, $gateways_qualified_by_duplicates_detector );
-		$this->search_for_additional_payment_methods( $registered_gateways, $gateways_qualified_by_duplicates_detector );
-		$this->search_for_payment_request_buttons( $registered_gateways, $gateways_qualified_by_duplicates_detector );
-		$this->keep_woopayments_enabled_gateways_only( $gateways_qualified_by_duplicates_detector );
-		$this->keep_duplicates_only( $gateways_qualified_by_duplicates_detector );
+		$this->search_for_cc_payment_methods( $registered_gateways, $gateways_qualified_by_duplicates_detector )
+			->search_for_additional_payment_methods( $registered_gateways, $gateways_qualified_by_duplicates_detector )
+			->search_for_payment_request_buttons( $registered_gateways, $gateways_qualified_by_duplicates_detector )
+			->keep_woopayments_enabled_gateways_only( $gateways_qualified_by_duplicates_detector )
+			->keep_duplicates_only( $gateways_qualified_by_duplicates_detector );
 
 		return $gateways_qualified_by_duplicates_detector;
 	}
@@ -53,7 +53,7 @@ class Duplicates_Detection_Service {
 	 * @param array $registered_gateways All gateways.
 	 * @param array $duplicates Credit card found.
 	 *
-	 * @return void
+	 * @return Duplicates_Detection_Service
 	 */
 	private function search_for_cc_payment_methods( $registered_gateways, &$duplicates ) {
 		$keywords         = [ 'credit_card', 'creditcard', 'cc', 'card' ];
@@ -66,6 +66,8 @@ class Duplicates_Detection_Service {
 				$duplicates[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ][] = $gateway->id;
 			}
 		}
+
+		return $this;
 	}
 
 	/**
@@ -74,7 +76,7 @@ class Duplicates_Detection_Service {
 	 * @param array $registered_gateways All gateways.
 	 * @param array $duplicates Additional payment methods found.
 	 *
-	 * @return void
+	 * @return Duplicates_Detection_Service
 	 */
 	private function search_for_additional_payment_methods( $registered_gateways, &$duplicates ) {
 		$keywords = [
@@ -103,6 +105,8 @@ class Duplicates_Detection_Service {
 				}
 			}
 		}
+
+		return $this;
 	}
 
 	/**
@@ -111,7 +115,7 @@ class Duplicates_Detection_Service {
 	 * @param array $registered_gateways All gateways.
 	 * @param array $duplicates Payment request buttons found.
 	 *
-	 * @return void
+	 * @return Duplicates_Detection_Service
 	 */
 	private function search_for_payment_request_buttons( $registered_gateways, &$duplicates ) {
 		$prb_payment_method = 'apple_pay_google_pay';
@@ -140,6 +144,8 @@ class Duplicates_Detection_Service {
 				}
 			}
 		}
+
+		return $this;
 	}
 
 		/**
@@ -147,7 +153,7 @@ class Duplicates_Detection_Service {
 		 *
 		 * @param array $duplicates Gateways found.
 		 *
-		 * @return void
+		 * @return Duplicates_Detection_Service
 		 */
 	private function keep_woopayments_enabled_gateways_only( &$duplicates ) {
 		$woopayments_gateway_ids = array_map(
@@ -161,6 +167,8 @@ class Duplicates_Detection_Service {
 				unset( $duplicates[ $gateway_id ] );
 			}
 		}
+
+		return $this;
 	}
 
 	/**
@@ -168,7 +176,7 @@ class Duplicates_Detection_Service {
 	 *
 	 * @param array $duplicates Payment methods found.
 	 *
-	 * @return void
+	 * @return Duplicates_Detection_Service
 	 */
 	private function keep_duplicates_only( &$duplicates ) {
 		foreach ( $duplicates as $gateway_id => $gateway_ids ) {
@@ -176,6 +184,8 @@ class Duplicates_Detection_Service {
 				unset( $duplicates[ $gateway_id ] );
 			}
 		}
+
+		return $this;
 	}
 
 	/**
