@@ -192,7 +192,7 @@ function getShapes() {
 	return [
 		{ kind: 'circle', radius: 100 },
 		{ kind: 'square', sideLength: 50 },
-	] as const; // ‼️ Add the const assertion here.
+	] as const; // 💡 Add the const assertion here.
 }
 
 function useRadius( radius: number ) {
