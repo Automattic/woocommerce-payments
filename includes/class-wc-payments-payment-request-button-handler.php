@@ -893,7 +893,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$data = [];
 
 			// Remember current shipping method before resetting.
-			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
 			$this->calculate_shipping( apply_filters( 'wcpay_payment_request_shipping_posted_values', $shipping_address ) );
 
 			$packages = WC()->shipping->get_packages();
@@ -1523,16 +1523,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * This function needs to be called after `WC()->cart->calculate_totals()` is run, otherwise `WC()->cart->recurring_carts` won't exist yet.
 	 *
-	 * @since 8.3.0
-	 *
 	 * @param array $previous_chosen_methods The previously chosen shipping methods.
 	 */
-	private function maybe_restore_recurring_chosen_shipping_methods( $previous_chosen_methods ) {
+	private function maybe_restore_recurring_chosen_shipping_methods( $previous_chosen_methods = [] ) {
 		if ( empty( WC()->cart->recurring_carts ) || ! method_exists( 'WC_Subscriptions_Cart', 'get_recurring_shipping_package_key' ) ) {
 			return;
 		}
 
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_index => $recurring_cart_package ) {
