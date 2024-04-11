@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WC_Payments;
 use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
@@ -42,6 +43,7 @@ class Duplicates_Detection_Service {
 		$this->search_for_cc_payment_methods( $gateways, $gateways_qualified_by_duplicates_detector );
 		$this->search_for_additional_payment_methods( $gateways, $gateways_qualified_by_duplicates_detector );
 		$this->search_for_payment_request_buttons( $gateways, $gateways_qualified_by_duplicates_detector );
+		$this->keep_woopayments_enabled_gateways_only( $gateways_qualified_by_duplicates_detector );
 		$this->keep_duplicates_only( $gateways_qualified_by_duplicates_detector );
 
 		return $gateways_qualified_by_duplicates_detector;
@@ -142,6 +144,27 @@ class Duplicates_Detection_Service {
 		}
 	}
 
+		/**
+		 * Keep only WooCommerce Payments enabled gateways.
+		 *
+		 * @param array $duplicates Gateways found.
+		 *
+		 * @return void
+		 */
+	private function keep_woopayments_enabled_gateways_only( &$duplicates ) {
+		$woopayments_gateways = array_map(
+			function ( $gateway ) {
+				return $gateway->id; },
+			array_values( WC_Payments::get_payment_gateway_map() )
+		);
+
+		foreach ( $duplicates as $gateway_id => $gateway_ids ) {
+			if ( empty( array_intersect( $gateway_ids, $woopayments_gateways ) ) ) {
+				unset( $duplicates[ $gateway_id ] );
+			}
+		}
+	}
+
 	/**
 	 * Filter payment methods found to keep duplicates only.
 	 *
@@ -173,14 +196,14 @@ class Duplicates_Detection_Service {
 		);
 	}
 
-		/**
-		 * Check if gateway ID contains any of the keywords.
-		 *
-		 * @param string $gateway_id Gateway ID.
-		 * @param array  $keywords Keywords to search for.
-		 *
-		 * @return bool True if gateway ID contains any of the keywords, false otherwise.
-		 */
+	/**
+	 * Check if gateway ID contains any of the keywords.
+	 *
+	 * @param string $gateway_id Gateway ID.
+	 * @param array  $keywords Keywords to search for.
+	 *
+	 * @return bool True if gateway ID contains any of the keywords, false otherwise.
+	 */
 	private function gateway_contains_keyword( $gateway_id, $keywords ) {
 		foreach ( $keywords as $keyword ) {
 			if ( strpos( $gateway_id, $keyword ) !== false ) {
