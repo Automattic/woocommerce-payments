@@ -249,6 +249,80 @@ exports[`PaymentsActivity component should render 1`] = `
           </div>
         </div>
       </div>
+      <div
+        class="components-flex components-card__footer components-card-footer css-oc4v7j-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-small em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardFooter"
+      >
+        <div
+          class="wcpay-payments-activity__survey"
+        >
+          <div
+            class="survey_container"
+          >
+            Are those metrics helpful?
+            <div
+              class="survey_container__emoticons"
+            >
+              <button
+                class="components-button has-icon"
+                type="button"
+              >
+                <span
+                  aria-label="very-unhappy"
+                  role="img"
+                >
+                  😞
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
+              >
+                <span
+                  aria-label="unhappy"
+                  role="img"
+                >
+                  🫤
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
+              >
+                <span
+                  aria-label="neutral"
+                  role="img"
+                >
+                  😑
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
+              >
+                <span
+                  aria-label="happy"
+                  role="img"
+                >
+                  🙂
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
+              >
+                <span
+                  aria-label="very-happy"
+                  role="img"
+                >
+                  😍
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div
       aria-hidden="true"

@@ -10,7 +10,19 @@ import { render } from '@testing-library/react';
 import PaymentsActivity from '..';
 
 jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( {
+		createNotice: jest.fn(),
+		createErrorNotice: jest.fn(),
+	} ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
 declare const global: {
