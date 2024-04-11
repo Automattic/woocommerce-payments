@@ -1140,6 +1140,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			)
 		);
 
-		return $is_modifying_checkout_fields;
+		return false;
 	}
 }

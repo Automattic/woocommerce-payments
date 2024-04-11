@@ -366,29 +366,26 @@ const PaymentMethod = ( {
 				<InlineNotice
 					status="warning"
 					icon={ true }
-					isDismissible={ false }
-					className="duplicate__notice"
+					isDismissible={ true }
 				>
-					<span>
-						{ interpolateComponents( {
-							mixedString: __(
-								'This payment method is enabled by other plugins as well, consider reviewing to improve shopper experience. {{reviewExtension}}Review duplicate extension{{/reviewExtension}}.',
-								'woocommerce-payments'
+					{ interpolateComponents( {
+						mixedString: __(
+							'This payment method is enabled by other plugins as well, consider reviewing to improve shopper experience. {{newline}}{{/newline}}{{reviewExtensions}}Review extensions{{/reviewExtensions}}.',
+							'woocommerce-payments'
+						),
+						components: {
+							newline: <br />,
+							reviewExtensions: (
+								// eslint-disable-next-line max-len
+								<ExternalLink
+									href={ getAdminUrl( {
+										page: 'wc-settings',
+										tab: 'checkout',
+									} ) }
+								/>
 							),
-							components: {
-								reviewExtension: (
-									// eslint-disable-next-line max-len
-									<ExternalLink
-										href={ getAdminUrl( {
-											page: 'wc-settings',
-											tab: 'checkout',
-											section: duplicatesData[ id ][ 0 ],
-										} ) }
-									/>
-								),
-							},
-						} ) }
-					</span>
+						},
+					} ) }
 				</InlineNotice>
 			) }
 		</li>

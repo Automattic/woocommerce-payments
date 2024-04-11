@@ -181,32 +181,26 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 				<InlineNotice
 					status="warning"
 					icon={ true }
-					isDismissible={ false }
-					className="duplicate__notice"
+					isDismissible={ true }
 				>
-					<span>
-						{ interpolateComponents( {
-							mixedString: __(
-								'This payment method is enabled by other plugins as well, consider reviewing to improve shopper experience. {{reviewExtension}}Review duplicate extension{{/reviewExtension}}.',
-								'woocommerce-payments'
+					{ interpolateComponents( {
+						mixedString: __(
+							'This payment method is enabled by other plugins as well, consider reviewing to improve shopper experience. {{newline}}{{/newline}}{{reviewExtensions}}Review extensions{{/reviewExtensions}}.',
+							'woocommerce-payments'
+						),
+						components: {
+							newline: <br />,
+							reviewExtensions: (
+								// eslint-disable-next-line max-len
+								<ExternalLink
+									href={ getAdminUrl( {
+										page: 'wc-settings',
+										tab: 'checkout',
+									} ) }
+								/>
 							),
-							components: {
-								reviewExtension: (
-									// eslint-disable-next-line max-len
-									<ExternalLink
-										href={ getAdminUrl( {
-											page: 'wc-settings',
-											tab: 'checkout',
-											// TODO fix the proper link
-											section:
-												duplicatedPaymentMethods
-													?.apple_pay_google_pay[ 0 ],
-										} ) }
-									/>
-								),
-							},
-						} ) }
-					</span>
+						},
+					} ) }
 				</InlineNotice>
 			) }
 		</li>
