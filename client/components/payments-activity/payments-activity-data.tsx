@@ -10,9 +10,8 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
  */
 import PaymentsDataTile from './payments-data-tile';
 import { ClickTooltip } from '../tooltip';
-
-import './style.scss';
 import { getAdminUrl } from 'wcpay/utils';
+import './style.scss';
 
 const PaymentsActivityData: React.FC = () => {
 	return (

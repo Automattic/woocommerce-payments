@@ -11,6 +11,7 @@ import { Link } from '@woocommerce/components';
 import './style.scss';
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
+
 interface PaymentsDataTileProps {
 	/**
 	 * The id for the tile, can be used for CSS styling.
