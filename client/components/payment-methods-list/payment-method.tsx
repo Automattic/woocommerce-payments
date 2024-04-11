@@ -46,7 +46,7 @@ interface PaymentMethodProps {
 	locked: boolean;
 	isPoEnabled: boolean;
 	isPoComplete: boolean;
-	duplicatesData: Record< string, string[] >;
+	duplicatesData: string[];
 }
 
 const PaymentMethodLabel = ( {
@@ -148,7 +148,7 @@ const PaymentMethod = ( {
 		isPoInProgress ||
 		upeCapabilityStatuses.REJECTED === status;
 	const shouldDisplayNotice = id === 'sofort';
-	const isDuplicate = duplicatesData[ id ]?.length > 0;
+	const isDuplicate = duplicatesData.includes( id );
 
 	const needsOverlay =
 		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||

@@ -43,7 +43,7 @@ describe( 'PaymentMethod', () => {
 				locked={ false }
 				isPoEnabled={ false }
 				isPoComplete={ false }
-				duplicatesData={ {} as Record< string, string[] > }
+				duplicatesData={ {} as string[] }
 			/>
 		);
 	};
@@ -102,7 +102,7 @@ describe( 'PaymentMethod', () => {
 				required={ false }
 				isPoEnabled={ false }
 				isPoComplete={ false }
-				duplicatesData={ {} as Record< string, string[] > }
+				duplicatesData={ {} as string[] }
 			/>
 		);
 	};

@@ -27,12 +27,10 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
 
 	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
-	const duplicatedPaymentMethods = useGetDuplicatedPaymentMethodIds() as Record<
-		string,
-		string[]
-	>;
-	const isDuplicate =
-		duplicatedPaymentMethods?.apple_pay_google_pay?.length > 0;
+	const duplicatedPaymentMethods = useGetDuplicatedPaymentMethodIds() as string[];
+	const isDuplicate = duplicatedPaymentMethods.includes(
+		'apple_pay_google_pay'
+	);
 
 	return (
 		<li
