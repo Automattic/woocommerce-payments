@@ -11,6 +11,8 @@ export type Event =
 	| 'page_view'
 	| 'wcpay_connect_account_clicked'
 	| 'wcpay_account_details_link_clicked'
+	| 'wcpay_account_details_finish_setup_clicked'
+	| 'wcpay_account_details_task_receiving_deposits_clicked'
 	| 'wcpay_welcome_learn_more'
 	| 'wcpay_stripe_connected'
 	| 'wcpay_connect_account_kyc_modal_opened'

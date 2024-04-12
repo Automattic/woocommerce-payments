@@ -12,6 +12,7 @@ import strings from './strings';
 import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { trackAccountReset } from 'wcpay/onboarding/tracking';
+import { recordEvent } from 'wcpay/tracks';
 
 interface Props {
 	accountLink: string;
@@ -43,6 +44,14 @@ export const AccountTools: React.FC< Props > = ( props: Props ) => {
 					{ ! detailsSubmitted && (
 						<Button
 							variant={ 'secondary' }
+							onClick={ () =>
+								recordEvent(
+									'wcpay_account_details_finish_setup_clicked',
+									{
+										source: 'account-details',
+									}
+								)
+							}
 							href={ accountLink }
 							target={ '_blank' }
 						>
