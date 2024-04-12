@@ -29,6 +29,7 @@ interface TaskListProps {
 	wpcomReconnectUrl: string;
 	activeDisputes?: CachedDispute[];
 	enabledPaymentMethods?: string[];
+	showGoLiveTask: boolean;
 }
 
 export const getTasks = ( {
@@ -36,6 +37,7 @@ export const getTasks = ( {
 	wpcomReconnectUrl,
 	activeDisputes = [],
 	enabledPaymentMethods = [],
+	showGoLiveTask = false,
 }: TaskListProps ): TaskItemProps[] => {
 	const {
 		status,
@@ -86,7 +88,7 @@ export const getTasks = ( {
 		detailsSubmitted &&
 		! isPoInProgress;
 
-	const isGoLiveTaskVisible = isInDevMode( false );
+	const isGoLiveTaskVisible = isInDevMode( false ) && showGoLiveTask;
 
 	return [
 		isUpdateDetailsTaskVisible &&
