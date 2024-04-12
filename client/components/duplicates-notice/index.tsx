@@ -5,7 +5,6 @@ import React from 'react';
 import InlineNotice from '../inline-notice';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
-import { ExternalLink, Notice } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { useDispatch } from '@wordpress/data';
 
@@ -48,18 +47,20 @@ function DuplicatesNotice( props: DuplicatesNoticeProps ): JSX.Element {
 		>
 			{ interpolateComponents( {
 				mixedString: __(
-					'This payment method is enabled by other extensions. Consider reviewing payments settings to improve the shopper experience.{{newline}}{{/newline}}{{reviewExtensions}}Review extensions{{/reviewExtensions}}.',
+					'This payment method is enabled by other extensions. {{reviewExtensions}}Review extensions{{/reviewExtensions}} to improve the shopper experience.',
 					'woocommerce-payments'
 				),
 				components: {
 					newline: <br />,
 					reviewExtensions: (
-						<ExternalLink
+						<a
 							href={ getAdminUrl( {
 								page: 'wc-settings',
 								tab: 'checkout',
 							} ) }
-						/>
+						>
+							Review extensions
+						</a>
 					),
 				},
 			} ) }
