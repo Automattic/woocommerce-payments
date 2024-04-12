@@ -58,6 +58,75 @@ const OverviewPageError = () => {
 	);
 };
 
+const OverviewSandboxModeNotice = ( { ctaAction = () => {} } ) => {
+	return (
+		<BannerNotice status="warning" isDismissible={ false }>
+			{ interpolateComponents( {
+				mixedString: sprintf(
+					/* translators: %1$s: WooPayments */
+					__(
+						// eslint-disable-next-line max-len
+						'{{strong}}%1$s is in sandbox mode.{{/strong}} To accept real transactions, {{switchToLiveLink}}set up a live %1$s account{{/switchToLiveLink}}.{{learnMoreIcon/}}',
+						'woocommerce-payments'
+					),
+					'WooPayments'
+				),
+				components: {
+					strong: <strong />,
+					learnMoreIcon: (
+						<ClickTooltip
+							buttonIcon={ <HelpOutlineIcon /> }
+							buttonLabel={ __(
+								'Learn more about sandbox mode',
+								'woocommerce-payments'
+							) }
+							maxWidth={ '315px' }
+							content={
+								<>
+									{ interpolateComponents( {
+										mixedString: sprintf(
+											/* translators: %1$s: WooPayments */
+											__(
+												// eslint-disable-next-line max-len
+												'In sandbox mode, personal/business verifications and checkout payments are simulated. Find out what works best for you by {{strong}}testing all the %1$s options and flows.{{/strong}} {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+												'woocommerce-payments'
+											),
+											'WooPayments'
+										),
+										components: {
+											strong: <strong />,
+											learnMoreLink: (
+												// eslint-disable-next-line jsx-a11y/anchor-has-content
+												<Link
+													href={
+														// eslint-disable-next-line max-len
+														'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
+													}
+													target="_blank"
+													rel="noreferrer"
+													type="external"
+													onClick={ () =>
+														recordEvent(
+															'wcpay_overview_sandbox_mode_learn_more_clicked'
+														)
+													}
+												/>
+											),
+										},
+									} ) }
+								</>
+							}
+						/>
+					),
+					switchToLiveLink: (
+						<Button variant="link" onClick={ ctaAction } />
+					),
+				},
+			} ) }
+		</BannerNotice>
+	);
+};
+
 const OverviewPage = () => {
 	const {
 		accountStatus,
@@ -150,75 +219,9 @@ const OverviewPage = () => {
 				</Notice>
 			) }
 			{ isDevMode ? (
-				<BannerNotice status="warning" isDismissible={ false }>
-					{ interpolateComponents( {
-						mixedString: sprintf(
-							/* translators: %1$s: WooPayments */
-							__(
-								// eslint-disable-next-line max-len
-								'{{strong}}%1$s is in sandbox mode.{{/strong}} To accept real transactions, {{switchToLiveLink}}set up a live %1$s account{{/switchToLiveLink}}.{{learnMoreIcon/}}',
-								'woocommerce-payments'
-							),
-							'WooPayments'
-						),
-						components: {
-							strong: <strong />,
-							learnMoreIcon: (
-								<ClickTooltip
-									buttonIcon={ <HelpOutlineIcon /> }
-									buttonLabel={ __(
-										'Learn more about sandbox mode',
-										'woocommerce-payments'
-									) }
-									maxWidth={ '315px' }
-									content={
-										<>
-											{ interpolateComponents( {
-												mixedString: sprintf(
-													/* translators: %1$s: WooPayments */
-													__(
-														// eslint-disable-next-line max-len
-														'In sandbox mode, personal/business verifications and checkout payments are simulated. Find out what works best for you by {{strong}}testing all the %1$s options and flows.{{/strong}} {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-														'woocommerce-payments'
-													),
-													'WooPayments'
-												),
-												components: {
-													strong: <strong />,
-													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<Link
-															href={
-																// eslint-disable-next-line max-len
-																'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
-															}
-															target="_blank"
-															rel="noreferrer"
-															type="external"
-															onClick={ () =>
-																recordEvent(
-																	'wcpay_overview_sandbox_mode_learn_more_clicked'
-																)
-															}
-														/>
-													),
-												},
-											} ) }
-										</>
-									}
-								/>
-							),
-							switchToLiveLink: (
-								<Button
-									variant="link"
-									onClick={ () =>
-										setLivePaymentsModalVisible( true )
-									}
-								/>
-							),
-						},
-					} ) }
-				</BannerNotice>
+				<OverviewSandboxModeNotice
+					ctaAction={ () => setLivePaymentsModalVisible( true ) }
+				/>
 			) : (
 				<TestModeNotice
 					currentPage="overview"
