@@ -6,8 +6,6 @@
  */
 
 use WCPay\WooPay_Tracker;
-use WC_Payments_Account;
-use WC_Payments_Http;
 
 /**
  * WooPay_Tracker unit tests.

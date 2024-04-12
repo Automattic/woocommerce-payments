@@ -12,6 +12,7 @@ import moment from 'moment';
  */
 import strings from './strings';
 import './index.scss';
+import { recordEvent } from 'wcpay/tracks';
 
 interface Props {
 	errorMessages: Array< string >;
@@ -33,6 +34,9 @@ const UpdateBusinessDetailsModal = ( {
 	};
 
 	const openAccountLink = () => {
+		recordEvent( 'wcpay_account_details_link_clicked', {
+			source: 'update-business-details',
+		} );
 		window.open( accountLink, '_blank' );
 	};
 
@@ -76,11 +80,14 @@ const UpdateBusinessDetailsModal = ( {
 					</div>
 					<hr />
 					<div className="wcpay-update-business-details-modal__footer">
-						<Button isSecondary onClick={ closeModal }>
+						<Button variant={ 'secondary' } onClick={ closeModal }>
 							{ strings.cancel }
 						</Button>
 
-						<Button isPrimary onClick={ openAccountLink }>
+						<Button
+							variant={ 'primary' }
+							onClick={ openAccountLink }
+						>
 							{ strings.updateBusinessDetails }
 						</Button>
 					</div>
