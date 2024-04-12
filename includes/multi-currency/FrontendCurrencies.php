@@ -270,7 +270,12 @@ class FrontendCurrencies {
 			return $arg;
 		}
 
+		// We remove the filter 'wc_get_price_decimal_separator' here because 'wc_get_order'
+		// can also trigger it, leading to an infinite recursive call.
+		remove_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
 		$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
+		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+
 		if ( $order ) {
 			$this->order_currency = $order->get_currency();
 			return $order->get_id();
