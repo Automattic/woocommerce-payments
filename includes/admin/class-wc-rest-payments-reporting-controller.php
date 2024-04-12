@@ -22,17 +22,6 @@ class WC_REST_Payments_Reporting_Controller extends WC_Payments_REST_Controller 
 	protected $rest_base = 'payments/reporting';
 
 	/**
-	 * Constructor.
-	 *
-	 * @param WC_Payments_API_Client $api_client    WooCommerce Payments API client.
-	 */
-	public function __construct(
-		WC_Payments_API_Client $api_client
-	) {
-		parent::__construct( $api_client );
-	}
-
-	/**
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
