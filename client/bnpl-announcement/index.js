@@ -76,7 +76,7 @@ const Dialog = () => {
 			<p>
 				{ __(
 					// eslint-disable-next-line max-len
-					'Boost conversions and give your shoppers additional buying power, with buy now, pay later — now available in your WooPayments dashboard*.',
+					'Boost conversions and give your shoppers additional buying power, with buy now, pay later — now available in your WooPayments dashboard.*',
 					'woocommerce-payments'
 				) }
 			</p>
