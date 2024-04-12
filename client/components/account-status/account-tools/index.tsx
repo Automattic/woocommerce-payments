@@ -60,7 +60,7 @@ export const AccountTools: React.FC< Props > = ( props: Props ) => {
 						</Button>
 					) }
 					<Button
-						variant={ 'tertiary' }
+						variant={ detailsSubmitted ? 'secondary' : 'tertiary' }
 						onClick={ () => setModalVisible( true ) }
 					>
 						{ strings.reset }
