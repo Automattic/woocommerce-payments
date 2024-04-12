@@ -422,5 +422,12 @@ export default {
 				'woocommerce-payments'
 			),
 		},
+		go_live: {
+			title: __(
+				'Set up real payments in your store',
+				'woocommerce-payments'
+			),
+			time: __( '10 minutes', 'woocommerce-payments' ),
+		},
 	},
 };
