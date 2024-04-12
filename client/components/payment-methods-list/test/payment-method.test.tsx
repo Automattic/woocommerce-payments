@@ -21,6 +21,7 @@ describe( 'PaymentMethod', () => {
 	const handleOnUnCheckClickMock = jest.fn( () => {
 		checked = false;
 	} );
+	const setDismissedNoticesMock = jest.fn();
 
 	// Clear the mocks (including the mock call count) after each test.
 	afterEach( () => {
@@ -43,7 +44,7 @@ describe( 'PaymentMethod', () => {
 				locked={ false }
 				isPoEnabled={ false }
 				isPoComplete={ false }
-				duplicatesData={ {} as string[] }
+				duplicatesData={ [] }
 				dismissedNotices={ [] }
 				setDismissedNotices={ jest.fn() }
 			/>
@@ -104,7 +105,7 @@ describe( 'PaymentMethod', () => {
 				required={ false }
 				isPoEnabled={ false }
 				isPoComplete={ false }
-				duplicatesData={ {} as string[] }
+				duplicatesData={ [] }
 				dismissedNotices={ [] }
 				setDismissedNotices={ jest.fn() }
 			/>
@@ -132,5 +133,46 @@ describe( 'PaymentMethod', () => {
 
 		expect( handleOnUnCheckClickMock ).not.toHaveBeenCalled();
 		jest.useRealTimers();
+	} );
+
+	const getComponentWithDuplicates = ( id: string, duplicates: string[] ) => (
+		<PaymentMethod
+			label="Test Method"
+			id={ id }
+			checked={ false }
+			onCheckClick={ handleOnCheckClickMock }
+			onUncheckClick={ handleOnUnCheckClickMock }
+			description="Test Description"
+			Icon={ () => null }
+			status=""
+			isAllowingManualCapture={ false }
+			required={ false }
+			locked={ false }
+			isPoEnabled={ false }
+			isPoComplete={ false }
+			duplicatesData={ duplicates }
+			dismissedNotices={ [] }
+			setDismissedNotices={ setDismissedNoticesMock }
+		/>
+	);
+
+	test( 'does not render DuplicatesNotice if payment method is not in duplicatesData', () => {
+		render( getComponentWithDuplicates( 'card', [ 'ideal' ] ) );
+
+		expect(
+			screen.queryByText(
+				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'render DuplicatesNotice if payment method is in duplicatesData', () => {
+		render( getComponentWithDuplicates( 'card', [ 'card' ] ) );
+
+		expect(
+			screen.queryByText(
+				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
+			)
+		).toBeInTheDocument();
 	} );
 } );
