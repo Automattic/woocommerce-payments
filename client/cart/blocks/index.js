@@ -14,9 +14,9 @@ const BNPL_PAYMENT_METHODS = {
 	KLARNA: 'klarna',
 };
 
-const bnplPaymentMethods = Object.values(
-	BNPL_PAYMENT_METHODS
-).filter( ( method ) => Object.keys( paymentMethods ).includes( method ) );
+const bnplPaymentMethods = Object.values( BNPL_PAYMENT_METHODS ).filter(
+	( method ) => method in paymentMethods
+);
 
 if ( bnplPaymentMethods.length ) {
 	// Register BNPL site messaging on the cart block.
