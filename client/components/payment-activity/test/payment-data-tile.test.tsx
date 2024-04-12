@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import PaymentsDataTile from '../payments-data-tile';
+import PaymentDataTile from '../payment-data-tile';
 
 declare const global: {
 	wcpaySettings: {
@@ -20,7 +20,7 @@ declare const global: {
 	};
 };
 
-describe( 'PaymentsDataTile', () => {
+describe( 'PaymentDataTile', () => {
 	global.wcpaySettings = {
 		accountDefaultCurrency: 'USD',
 		zeroDecimalCurrencies: [],
@@ -41,20 +41,20 @@ describe( 'PaymentsDataTile', () => {
 
 	test( 'renders correctly', () => {
 		const { container } = render(
-			<PaymentsDataTile
-				id="total-payments"
+			<PaymentDataTile
+				id="total-payment"
 				currencyCode="USD"
-				label="Total Payments"
+				label="Total payment volume"
 			/>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders label correctly', () => {
-		const label = 'Total Payments';
+		const label = 'Total payment volume';
 		render(
-			<PaymentsDataTile
-				id="total-payments"
+			<PaymentDataTile
+				id="total-payment"
 				currencyCode="USD"
 				label={ label }
 			/>
@@ -67,7 +67,7 @@ describe( 'PaymentsDataTile', () => {
 		const amount = 10000;
 		const currencyCode = 'USD';
 		render(
-			<PaymentsDataTile
+			<PaymentDataTile
 				id="charges-test-tile"
 				label="Charges"
 				amount={ amount }
@@ -81,7 +81,7 @@ describe( 'PaymentsDataTile', () => {
 	test( 'renders report link correctly', () => {
 		const reportLink = 'https://example.com/report';
 		render(
-			<PaymentsDataTile
+			<PaymentDataTile
 				id="charges-test-tile"
 				label="Charges"
 				amount={ 10000 }

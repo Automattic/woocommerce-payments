@@ -12,7 +12,7 @@ import './style.scss';
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
 
-interface PaymentsDataTileProps {
+interface PaymentDataTileProps {
 	/**
 	 * The id for the tile, can be used for CSS styling.
 	 */
@@ -43,7 +43,7 @@ interface PaymentsDataTileProps {
 	reportLink?: string;
 }
 
-const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
+const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 	id,
 	label,
 	currencyCode,
@@ -53,14 +53,14 @@ const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 	reportLink,
 } ) => {
 	return (
-		<div id={ id } className="wcpay-payments-data-highlights__item">
-			<p className="wcpay-payments-data-highlights__item__label">
+		<div id={ id } className="wcpay-payment-data-highlights__item">
+			<p className="wcpay-payment-data-highlights__item__label">
 				<span>{ label }</span>
 				{ ! isLoading && tooltip }
 			</p>
-			<div className="wcpay-payments-data-highlights__item__wrapper">
+			<div className="wcpay-payment-data-highlights__item__wrapper">
 				<p
-					className="wcpay-payments-data-highlights__item__wrapper__amount"
+					className="wcpay-payment-data-highlights__item__wrapper__amount"
 					aria-labelledby={ id }
 				>
 					<Loadable
@@ -80,4 +80,4 @@ const PaymentsDataTile: React.FC< PaymentsDataTileProps > = ( {
 	);
 };
 
-export default PaymentsDataTile;
+export default PaymentDataTile;
