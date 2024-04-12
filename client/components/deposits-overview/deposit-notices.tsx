@@ -12,6 +12,7 @@ import { ExternalLink } from '@wordpress/components';
  * Internal dependencies
  */
 import InlineNotice from 'components/inline-notice';
+import { recordEvent } from 'wcpay/tracks';
 
 /**
  * Renders a notice informing the user that their deposits are suspended.
@@ -234,7 +235,16 @@ export const DepositFailureNotice: React.FC< {
 				'woocommerce-payments'
 			),
 			components: {
-				updateLink: <ExternalLink href={ updateAccountLink } />,
+				updateLink: (
+					<ExternalLink
+						onClick={ () =>
+							recordEvent( 'wcpay_account_details_link_clicked', {
+								source: 'deposit-notices',
+							} )
+						}
+						href={ updateAccountLink }
+					/>
+				),
 			},
 		} ) }
 	</InlineNotice>

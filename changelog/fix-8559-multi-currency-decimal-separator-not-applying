@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure that the currency configurations are set correctly when multi-currency is enabled.
