@@ -31,16 +31,15 @@ const getDateRange = (): DateRange => {
 };
 
 const PaymentsActivityData: React.FC = () => {
-	const {
-		paymentActivityData: {
-			total_payments_volume: totalPaymentsVolume,
-			charges,
-			fees,
-			disputes,
-			refunds,
-		},
-		isLoading,
-	} = usePaymentActivityData( getDateRange() ) as PaymentsActivityData;
+	const { paymentActivityData, isLoading } = usePaymentActivityData(
+		getDateRange()
+	);
+
+	const totalPaymentsVolume = paymentActivityData?.total_payments_volume ?? 0;
+	const charges = paymentActivityData?.charges ?? 0;
+	const fees = paymentActivityData?.fees ?? 0;
+	const disputes = paymentActivityData?.disputes ?? 0;
+	const refunds = paymentActivityData?.refunds ?? 0;
 
 	return (
 		<div className="wcpay-payments-activity-data">
