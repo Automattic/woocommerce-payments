@@ -73,6 +73,10 @@ class WC_Payments_Bnpl_Announcement {
 			return;
 		}
 
+		if ( get_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed', true ) === '1' ) {
+			return;
+		}
+
 		// Only displayed to BNPL eligible countries - AU, NZ, US, AT, BE, CA, CZ, DK, FI, FR, DE, GR, IE, IT, NO, PL, PT, ES, SE, CH, NL, UK, US.
 		if ( ! in_array(
 			$this->account->get_account_country(),
@@ -102,10 +106,6 @@ class WC_Payments_Bnpl_Announcement {
 			],
 			true
 		) ) {
-			return;
-		}
-
-		if ( get_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed', true ) === '1' ) {
 			return;
 		}
 
@@ -191,41 +191,11 @@ class WC_Payments_Bnpl_Announcement {
 			return intval( $wcpay_successful_orders_count );
 		}
 
-		$is_sandbox_mode = false;
-		try {
-			$is_sandbox_mode = WC_Payments::mode()->is_dev();
-		} catch ( \Exception $e ) {
-			// nothing to do here, we'll just assume it's live mode.
-			$is_sandbox_mode = false;
-		}
-
 		$orders = wc_get_orders(
 			[
 				// we don't need them all, just more than 3.
 				'limit'          => 5,
 				'status'         => [ 'completed', 'processing' ],
-				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				'meta_query'     => [
-					[
-						'key'     => '_wcpay_mode',
-						'value'   => $is_sandbox_mode ? 'test' : 'prod',
-						'compare' => '=',
-					],
-				],
-				'payment_method' => [
-					'woocommerce_payments',
-					'woocommerce_payments_p24',
-					'woocommerce_payments_klarna',
-					'woocommerce_payments_affirm',
-					'woocommerce_payments_afterpay_clearpay',
-					'woocommerce_payments_au_becs_debit',
-					'woocommerce_payments_eps',
-					'woocommerce_payments_ideal',
-					'woocommerce_payments_giropay',
-					'woocommerce_payments_sepa_debit',
-					'woocommerce_payments_sofort',
-					'woocommerce_payments_bancontact',
-				],
 			]
 		);
 		$orders_count = count( $orders );
