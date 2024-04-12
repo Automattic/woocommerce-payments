@@ -31,6 +31,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$this->is_reusable                  = false;
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/afterpay-logo.svg', WCPAY_PLUGIN_FILE );
 		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR, Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::NEW_ZEALAND_DOLLAR, Currency_Code::POUND_STERLING ];
+		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::CANADA, Country_Code::AUSTRALIA, Country_Code::NEW_ZEALAND, Country_Code::UNITED_KINGDOM ];
 		$this->accept_only_domestic_payment = true;
 		$this->limits_per_currency          = [
 			Currency_Code::AUSTRALIAN_DOLLAR    => [
