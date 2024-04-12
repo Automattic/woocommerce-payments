@@ -26,7 +26,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
         Foreign exchange fee
       </div>
       <div>
-        0.8%
+        1%
       </div>
     </div>
     <div>
@@ -36,7 +36,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
       <div
         class="wcpay-fees-tooltip__bold"
       >
-        11.44% + $3.65
+        11.64% + $3.65
       </div>
     </div>
     <div

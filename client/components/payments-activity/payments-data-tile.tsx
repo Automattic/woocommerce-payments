@@ -3,6 +3,7 @@
  */
 import * as React from 'react';
 import { __ } from '@wordpress/i18n';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -10,7 +11,7 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
-import { Link } from '@woocommerce/components';
+
 interface PaymentsDataTileProps {
 	/**
 	 * The id for the tile, can be used for CSS styling.

@@ -74,6 +74,21 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 		WC_Payments::register_script_with_dependencies( 'WCPAY_BLOCKS_CHECKOUT', 'dist/blocks-checkout', [ 'stripe' ] );
 		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
 
+		if ( WC()->cart ) {
+			wp_add_inline_script(
+				'WCPAY_BLOCKS_CHECKOUT',
+				'var wcBlocksCheckoutData = ' . wp_json_encode(
+					[
+						'amount'         => WC()->cart->get_total( '' ),
+						'currency'       => get_woocommerce_currency(),
+						'storeCountry'   => WC()->countries->get_base_country(),
+						'billingCountry' => WC()->customer->get_billing_country(),
+					]
+				) . ';',
+				'before'
+			);
+		}
+
 		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
 		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
