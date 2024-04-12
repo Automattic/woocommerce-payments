@@ -424,7 +424,7 @@ export default {
 		},
 		go_live: {
 			title: __(
-				'Set up real payments in your store',
+				'Set up real payments on your store',
 				'woocommerce-payments'
 			),
 			time: __( '10 minutes', 'woocommerce-payments' ),
