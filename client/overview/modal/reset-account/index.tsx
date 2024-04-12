@@ -46,7 +46,7 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 				<p>{ strings.confirmation }</p>
 			</div>
 			<div className="wcpay-reset-account-modal__footer">
-				<Button variant={ 'secondary' } onClick={ onDismiss }>
+				<Button variant={ 'tertiary' } onClick={ onDismiss }>
 					{ strings.cancel }
 				</Button>
 				<Button
