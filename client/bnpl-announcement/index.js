@@ -12,17 +12,13 @@ import { recordEvent } from 'tracks';
  */
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
-import {
-	AffirmLogoIcon,
-	AfterpayPillIcon,
-	ClearpayPillIcon,
-	KlarnaPillIcon,
-} from 'wcpay/payment-methods-icons';
+import AfterpayBanner from 'assets/images/bnpl_announcement_afterpay.png?asset';
+import ClearpayBanner from 'assets/images/bnpl_announcement_clearpay.png?asset';
 
-const AfterpayClearpayIcon =
+const BannerIcon =
 	window.wcpayBnplAnnouncement?.accountCountry === 'GB'
-		? ClearpayPillIcon
-		: AfterpayPillIcon;
+		? ClearpayBanner
+		: AfterpayBanner;
 
 const Dialog = () => {
 	useEffect( () => {
@@ -66,32 +62,27 @@ const Dialog = () => {
 			}
 		>
 			<div className="wcpay-bnpl-announcement__payment-icons">
-				<KlarnaPillIcon />
-				<AfterpayClearpayIcon />
-				<AffirmLogoIcon />
+				<img
+					src={ BannerIcon }
+					alt={ __(
+						'Buy now, pay later is here',
+						'woocommerce-payments'
+					) }
+				></img>
 			</div>
 			<h1 id="wcpay-bnpl-announcement">
 				{ __( 'Buy now, pay later is here', 'woocommerce-payments' ) }
 			</h1>
 			<p>
 				{ __(
-					'Boost conversions and give your shoppers additional',
-					'woocommerce-payments'
-				) }
-				<br></br>
-				{ __(
-					'buying power, with buy now, pay later — ',
-					'woocommerce-payments'
-				) }
-				<br></br>
-				{ __(
-					'now available in your WooPayments dashboard *.',
+					// eslint-disable-next-line max-len
+					'Boost conversions and give your shoppers additional buying power, with buy now, pay later — now available in your WooPayments dashboard*.',
 					'woocommerce-payments'
 				) }
 			</p>
 			<p className="wcpay-bnpl-announcement__fine-print">
 				{ __(
-					'* Subject to country availability',
+					'*Subject to country availability',
 					'woocommerce-payments'
 				) }
 			</p>

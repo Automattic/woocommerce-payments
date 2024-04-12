@@ -4,7 +4,7 @@
 		height: auto;
 
 		@media screen and ( min-width: 600px ) {
-			max-width: 500px;
+			max-width: 400px;
 		}
 
 		.components-modal__header {
@@ -28,13 +28,7 @@
 		}
 
 		.wcpay-confirmation-modal__separator {
-			margin-left: -20px;
-			margin-right: -20px;
-
-			@media screen and ( min-width: 600px ) {
-				margin-left: -35px;
-				margin-right: -35px;
-			}
+			opacity: 0;
 		}
 	}
 
@@ -57,24 +51,13 @@
 		}
 	}
 
-	&__fine-print {
-		font-size: 10px;
-		text-align: right !important;
-	}
-
 	h1 {
-		font-size: 1.5em;
-		line-height: 25px;
-		text-align: center;
+		text-align: left;
 		width: 100%;
-
-		@media screen and ( min-width: 320px ) {
-			font-size: 2em;
-		}
 	}
 
 	p {
-		text-align: center;
+		text-align: left;
 	}
 
 	.components-external-link {
