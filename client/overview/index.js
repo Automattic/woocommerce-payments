@@ -231,9 +231,7 @@ const OverviewPage = () => {
 			{ livePaymentsModalVisible && (
 				<ErrorBoundary>
 					<SetupLivePaymentsModal
-						closeModal={ () =>
-							setLivePaymentsModalVisible( false )
-						}
+						onClose={ () => setLivePaymentsModalVisible( false ) }
 					/>
 				</ErrorBoundary>
 			) }
