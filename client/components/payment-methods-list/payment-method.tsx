@@ -407,7 +407,7 @@ const PaymentMethod = ( {
 				>
 					{ interpolateComponents( {
 						mixedString: __(
-							'This payment method is enabled by other plugins as well, consider reviewing to improve shopper experience. {{newline}}{{/newline}}{{reviewExtensions}}Review extensions{{/reviewExtensions}}.',
+							'This payment method is enabled by other extensions. Consider reviewing payments settings to improve the shopper experience.{{newline}}{{/newline}}{{reviewExtensions}}Review extensions{{/reviewExtensions}}.',
 							'woocommerce-payments'
 						),
 						components: {
