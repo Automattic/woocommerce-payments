@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure "Proceed to checkout" button's loading spinner doesn't affect button spacing when Direct Checkout is enabled.

@@ -52,7 +52,7 @@ const TestModeConfirmationModal: React.FC< TestModeConfirmationModalProps > = ( 
 			</p>
 			<ExternalLink
 				// eslint-disable-next-line max-len
-				href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/"
+				href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/"
 			>
 				{ __( 'Learn more about test mode', 'woocommerce-payments' ) }
 			</ExternalLink>

@@ -276,6 +276,12 @@ class WC_Payments_Checkout {
 			}
 		}
 
+		// Get the store base country.
+		$payment_fields['storeCountry'] = WC()->countries->get_base_country();
+
+		// Get the WooCommerce Store API endpoint.
+		$payment_fields['storeApiURL'] = get_rest_url( null, 'wc/store' );
+
 		/**
 		 * Allows filtering for the payment fields.
 		 *
@@ -318,7 +324,7 @@ class WC_Payments_Checkout {
 				$payment_method->get_testing_instructions(),
 				[
 					'strong' => '<strong>',
-					'a'      => '<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+					'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 				]
 			);
 			$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
@@ -393,7 +399,7 @@ class WC_Payments_Checkout {
 							$testing_instructions,
 							[
 								'strong' => '<strong>',
-								'a'      => '<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+								'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 							]
 						);
 					}

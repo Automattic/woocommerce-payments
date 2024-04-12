@@ -388,7 +388,7 @@
 		 */
 		function appendHtml( el, contents ) {
 			const $el = $( el );
-			const wooColor = '#7F54B3'; // https://woo.com/brand-and-logo-guidelines/
+			const wooColor = '#7F54B3'; // https://woocommerce.com/brand-and-logo-guidelines/
 			const styles = $( '<style>' ).text( `
 				#wcpay-live-branches {
 					border: 3px dotted ${ wooColor };
