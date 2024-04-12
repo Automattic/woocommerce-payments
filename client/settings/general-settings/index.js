@@ -124,7 +124,7 @@ const GeneralSettings = () => {
 			</Card>
 			{ modalVisible && (
 				<SetupLivePaymentsModal
-					closeModal={ () => setModalVisible( false ) }
+					onClose={ () => setModalVisible( false ) }
 				/>
 			) }
 			{ testModeModalVisible && (

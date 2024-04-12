@@ -15,7 +15,7 @@ const SetupLivePaymentsModalWrapper: React.FC = () => {
 	const [ modalVisible, setModalVisible ] = useState( true );
 
 	return modalVisible ? (
-		<SetupLivePaymentsModal closeModal={ () => setModalVisible( false ) } />
+		<SetupLivePaymentsModal onClose={ () => setModalVisible( false ) } />
 	) : (
 		<></>
 	);
