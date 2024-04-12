@@ -28,8 +28,8 @@ export const getVerifyBankAccountTask = (): any => {
 	} = wcpaySettings.accountStatus;
 
 	const handleClick = () => {
-		recordEvent( 'wcpay_account_details_task_receiving_deposits_clicked', {
-			source: 'po-task',
+		recordEvent( 'wcpay_account_details_link_clicked', {
+			source: 'overview-page__receive-deposits-task',
 		} );
 
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {

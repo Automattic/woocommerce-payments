@@ -46,9 +46,10 @@ export const AccountTools: React.FC< Props > = ( props: Props ) => {
 							variant={ 'secondary' }
 							onClick={ () =>
 								recordEvent(
-									'wcpay_account_details_finish_setup_clicked',
+									'wcpay_account_details_link_clicked',
 									{
-										source: 'account-details',
+										source:
+											'account-tools__finish-setup-button',
 									}
 								)
 							}
