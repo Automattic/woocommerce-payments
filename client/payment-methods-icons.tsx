@@ -17,14 +17,10 @@ import P24Asset from 'assets/images/payment-methods/p24.svg?asset';
 import IdealAsset from 'assets/images/payment-methods/ideal.svg?asset';
 import BankDebitAsset from 'assets/images/payment-methods/bank-debit.svg?asset';
 import AffirmAsset from 'assets/images/payment-methods/affirm-badge.svg?asset';
-import AffirmLogoAsset from 'assets/images/payment-methods/affirm-logo.svg?asset';
 import AfterpayAsset from 'assets/images/payment-methods/afterpay-logo.svg?asset';
-import AfterpayPillAsset from 'assets/images/payment-methods/afterpay-badge.svg?asset';
 import ClearpayAsset from 'assets/images/payment-methods/clearpay.svg?asset';
-import ClearpayPillAsset from 'assets/images/payment-methods/clearpay-badge.svg?asset';
 import JCBAsset from 'assets/images/payment-methods/jcb.svg?asset';
 import KlarnaAsset from 'assets/images/payment-methods/klarna.svg?asset';
-import KlarnaPillAsset from 'assets/images/payment-methods/klarna-pill.svg?asset';
 import VisaAsset from 'assets/images/cards/visa.svg?asset';
 import MasterCardAsset from 'assets/images/cards/mastercard.svg?asset';
 import AmexAsset from 'assets/images/cards/amex.svg?asset';
@@ -60,24 +56,12 @@ export const AffirmIcon = iconComponent(
 	AffirmAsset,
 	__( 'Affirm', 'woocommerce-payments' )
 );
-export const AffirmLogoIcon = iconComponent(
-	AffirmLogoAsset,
-	__( 'Affirm', 'woocommerce-payments' )
-);
 export const AfterpayIcon = iconComponent(
 	AfterpayAsset,
 	__( 'Afterpay', 'woocommerce-payments' )
 );
-export const AfterpayPillIcon = iconComponent(
-	AfterpayPillAsset,
-	__( 'Afterpay', 'woocommerce-payments' )
-);
 export const ClearpayIcon = iconComponent(
 	ClearpayAsset,
-	__( 'Clearpay', 'woocommerce-payments' )
-);
-export const ClearpayPillIcon = iconComponent(
-	ClearpayPillAsset,
 	__( 'Clearpay', 'woocommerce-payments' )
 );
 export const AmericanExpressIcon = iconComponent(
@@ -135,10 +119,6 @@ export const JCBIcon = iconComponent(
 );
 export const KlarnaIcon = iconComponent(
 	KlarnaAsset,
-	__( 'Klarna', 'woocommerce-payments' )
-);
-export const KlarnaPillIcon = iconComponent(
-	KlarnaPillAsset,
 	__( 'Klarna', 'woocommerce-payments' )
 );
 export const LinkIcon = iconComponent(
