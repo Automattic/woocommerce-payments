@@ -167,12 +167,13 @@ class WC_Payments_Bnpl_Announcement {
 			'all'
 		);
 		// conditionally show afterpay/clearpay based on account country.
-		wp_localize_script(
+		$wcpayBnplAnnouncement = rawurlencode( wp_json_encode( [ 'accountCountry' => $this->account->get_account_country() ] ) );
+		wp_add_inline_script(
 			'WCPAY_BNPL_ANNOUNCEMENT',
-			'wcpayBnplAnnouncement',
-			[
-				'accountCountry' => $this->account->get_account_country(),
-			]
+			"
+			var wcpayBnplAnnouncement = wcpayBnplAnnouncement || JSON.parse( decodeURIComponent( '" . esc_js( $wcpayBnplAnnouncement ) . "' ) );
+			",
+			'before'
 		);
 
 		wp_enqueue_script( 'WCPAY_BNPL_ANNOUNCEMENT' );
