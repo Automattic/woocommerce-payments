@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useCallback } from 'react';
 import InlineNotice from '../inline-notice';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
@@ -9,41 +9,41 @@ import { getAdminUrl } from 'wcpay/utils';
 import { useDispatch } from '@wordpress/data';
 
 interface DuplicatesNoticeProps {
-	id: string;
+	paymentMethod: string;
 	dismissedNotices: string[];
 	setDismissedNotices: ( notices: string[] ) => void;
 }
 
-function DuplicatesNotice( props: DuplicatesNoticeProps ): JSX.Element {
-	const { id, dismissedNotices, setDismissedNotices } = props;
+function DuplicatesNotice( {
+	paymentMethod,
+	dismissedNotices,
+	setDismissedNotices,
+}: DuplicatesNoticeProps ): JSX.Element | null {
+	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
-	const useDuplicatesDetectionDismissedNoticeState = () => {
-		const { updateOptions } = useDispatch( 'wc/admin/options' );
+	const handleDismissNotice = useCallback( () => {
+		const updatedNotices = [ ...dismissedNotices, paymentMethod ];
+		setDismissedNotices( updatedNotices );
+		updateOptions( {
+			wcpay_duplicate_payment_method_notices_dismissed: updatedNotices,
+		} );
+	}, [
+		paymentMethod,
+		dismissedNotices,
+		setDismissedNotices,
+		updateOptions,
+	] );
 
-		const setNextDismissedPaymentMethodDuplicateNotice = () => {
-			const updatedDismissedNotices = [ ...dismissedNotices, id ];
-			setDismissedNotices( updatedDismissedNotices );
-			wcpaySettings.dismissedPaymentMethodNotices = updatedDismissedNotices;
-			updateOptions( {
-				wcpay_duplicate_payment_methods_notice_dismissed: updatedDismissedNotices,
-			} );
-		};
+	if ( dismissedNotices.includes( paymentMethod ) ) {
+		return null;
+	}
 
-		return {
-			handleDismissPaymentMethodDuplicateNotice: setNextDismissedPaymentMethodDuplicateNotice,
-		};
-	};
-
-	const {
-		handleDismissPaymentMethodDuplicateNotice,
-	} = useDuplicatesDetectionDismissedNoticeState();
-
-	return ! dismissedNotices.includes( id ) ? (
+	return (
 		<InlineNotice
 			status="warning"
 			icon={ true }
 			isDismissible={ true }
-			onRemove={ handleDismissPaymentMethodDuplicateNotice }
+			onRemove={ handleDismissNotice }
 		>
 			{ interpolateComponents( {
 				mixedString: __(
@@ -51,7 +51,6 @@ function DuplicatesNotice( props: DuplicatesNoticeProps ): JSX.Element {
 					'woocommerce-payments'
 				),
 				components: {
-					newline: <br />,
 					reviewExtensions: (
 						<a
 							href={ getAdminUrl( {
@@ -65,8 +64,6 @@ function DuplicatesNotice( props: DuplicatesNoticeProps ): JSX.Element {
 				},
 			} ) }
 		</InlineNotice>
-	) : (
-		<></>
 	);
 }
 

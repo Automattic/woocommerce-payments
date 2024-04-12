@@ -2,14 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, CheckboxControl, ExternalLink } from '@wordpress/components';
+import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import React, { useState } from 'react';
 
 /**
  * Internal dependencies
  */
-import { getAdminUrl, getPaymentMethodSettingsUrl } from '../../utils';
+import { getPaymentMethodSettingsUrl } from '../../utils';
 import {
 	usePaymentRequestEnabledSettings,
 	useExpressCheckoutShowIncompatibilityNotice,
@@ -185,7 +185,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 			) }
 			{ isDuplicate && (
 				<DuplicatesNotice
-					id={ id }
+					paymentMethod={ id }
 					dismissedNotices={ skippedDuplicatedMethodNotices }
 					setDismissedNotices={
 						handleAddSkipppedDuplicatedMethodNotice

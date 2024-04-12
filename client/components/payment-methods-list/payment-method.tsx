@@ -367,7 +367,7 @@ const PaymentMethod = ( {
 			) }
 			{ isDuplicate && (
 				<DuplicatesNotice
-					id={ id }
+					paymentMethod={ id }
 					dismissedNotices={ dismissedNotices }
 					setDismissedNotices={ setDismissedNotices }
 				/>
