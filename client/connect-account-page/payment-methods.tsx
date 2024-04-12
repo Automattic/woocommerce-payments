@@ -15,7 +15,7 @@ import {
 	AmericanExpressIcon,
 	ApplePayIcon,
 	CBIcon,
-	DinersClubIcon,
+	IdealIcon,
 	DiscoverIcon,
 	GooglePayIcon,
 	MastercardIcon,
@@ -33,10 +33,9 @@ const PaymentMethods: React.FC = () => {
 				<AmericanExpressIcon />
 				<CBIcon />
 				<DiscoverIcon />
-				<DinersClubIcon />
+				<IdealIcon />
 				<ApplePayIcon />
 				<GooglePayIcon />
-				{ wcpaySettings.isWooPayStoreCountryAvailable && <WooIcon /> }
 				<WooIcon />
 				<KlarnaIcon />
 				<AffirmIcon />

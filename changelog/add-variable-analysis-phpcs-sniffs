@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add VariableAnalysis sniffs for better ergonomics around unused and undefined variables

@@ -31,6 +31,12 @@ import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 
+const SandboxModeNotice = () => (
+	<BannerNotice icon status="warning" isDismissible={ false }>
+		{ strings.sandboxModeNotice }
+	</BannerNotice>
+);
+
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
 	const incentive = wcpaySettings.connectIncentive;
@@ -49,12 +55,6 @@ const ConnectAccountPage: React.FC = () => {
 	} = wcpaySettings;
 
 	const isCountrySupported = !! availableCountries[ country ];
-
-	const SandboxModeNotice = () => (
-		<BannerNotice icon status="warning" isDismissible={ false }>
-			{ strings.sandboxModeNotice }
-		</BannerNotice>
-	);
 
 	useEffect( () => {
 		recordEvent( 'page_view', {

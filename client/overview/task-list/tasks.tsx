@@ -18,6 +18,8 @@ import { getUpdateBusinessDetailsTask } from './tasks/update-business-details-ta
 import { CachedDispute } from 'wcpay/types/disputes';
 import { TaskItemProps } from './types';
 import { getAddApmsTask } from './tasks/add-apms-task';
+import { getGoLiveTask } from './tasks/go-live-task';
+import { isInDevMode } from 'wcpay/utils';
 
 // Requirements we don't want to show to the user because they are too generic/not useful. These refer to Stripe error codes.
 const requirementBlacklist = [ 'invalid_value_other' ];
@@ -27,6 +29,7 @@ interface TaskListProps {
 	wpcomReconnectUrl: string;
 	activeDisputes?: CachedDispute[];
 	enabledPaymentMethods?: string[];
+	showGoLiveTask: boolean;
 }
 
 export const getTasks = ( {
@@ -34,6 +37,7 @@ export const getTasks = ( {
 	wpcomReconnectUrl,
 	activeDisputes = [],
 	enabledPaymentMethods = [],
+	showGoLiveTask = false,
 }: TaskListProps ): TaskItemProps[] => {
 	const {
 		status,
@@ -84,6 +88,8 @@ export const getTasks = ( {
 		detailsSubmitted &&
 		! isPoInProgress;
 
+	const isGoLiveTaskVisible = isInDevMode( false ) && showGoLiveTask;
+
 	return [
 		isUpdateDetailsTaskVisible &&
 			getUpdateBusinessDetailsTask(
@@ -98,6 +104,7 @@ export const getTasks = ( {
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
 		isPoEnabled && detailsSubmitted && getVerifyBankAccountTask(),
 		isAddApmsTaskVisible && getAddApmsTask(),
+		isGoLiveTaskVisible && getGoLiveTask(),
 	].filter( Boolean );
 };
 
