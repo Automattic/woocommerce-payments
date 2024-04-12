@@ -167,11 +167,11 @@ class WC_Payments_Bnpl_Announcement {
 			'all'
 		);
 		// conditionally show afterpay/clearpay based on account country.
-		$wcpayBnplAnnouncement = rawurlencode( wp_json_encode( [ 'accountCountry' => $this->account->get_account_country() ] ) );
+		$wcpay_bnpl_announcement = rawurlencode( wp_json_encode( [ 'accountCountry' => $this->account->get_account_country() ] ) );
 		wp_add_inline_script(
 			'WCPAY_BNPL_ANNOUNCEMENT',
 			"
-			var wcpayBnplAnnouncement = wcpayBnplAnnouncement || JSON.parse( decodeURIComponent( '" . esc_js( $wcpayBnplAnnouncement ) . "' ) );
+			var wcpayBnplAnnouncement = wcpayBnplAnnouncement || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_bnpl_announcement ) . "' ) );
 			",
 			'before'
 		);
@@ -192,11 +192,11 @@ class WC_Payments_Bnpl_Announcement {
 			return intval( $wcpay_successful_orders_count );
 		}
 
-		$orders = wc_get_orders(
+		$orders       = wc_get_orders(
 			[
 				// we don't need them all, just more than 3.
-				'limit'          => 5,
-				'status'         => [ 'completed', 'processing' ],
+				'limit'  => 5,
+				'status' => [ 'completed', 'processing' ],
 			]
 		);
 		$orders_count = count( $orders );
