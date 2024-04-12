@@ -44,6 +44,8 @@ describe( 'PaymentMethod', () => {
 				isPoEnabled={ false }
 				isPoComplete={ false }
 				duplicatesData={ {} as string[] }
+				dismissedNotices={ [] }
+				setDismissedNotices={ jest.fn() }
 			/>
 		);
 	};
@@ -103,6 +105,8 @@ describe( 'PaymentMethod', () => {
 				isPoEnabled={ false }
 				isPoComplete={ false }
 				duplicatesData={ {} as string[] }
+				dismissedNotices={ [] }
+				setDismissedNotices={ jest.fn() }
 			/>
 		);
 	};

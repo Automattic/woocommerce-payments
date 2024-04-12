@@ -20,6 +20,7 @@ import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { useDispatch } from '@wordpress/data';
+import DuplicatesNotice from 'wcpay/components/duplicates-notice';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const [
@@ -31,41 +32,10 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const duplicatedPaymentMethods = useGetDuplicatedPaymentMethodIds() as string[];
 	const id = 'apple_pay_google_pay';
 	const isDuplicate = duplicatedPaymentMethods.includes( id );
-
-	const useDuplicatesDetectionDismissedNoticeState = () => {
-		const { updateOptions } = useDispatch( 'wc/admin/options' );
-		const [
-			dismissedPaymentMethodNotices,
-			setDismissedPaymentMethodNotices,
-		] = useState( wcpaySettings.dismissedPaymentMethodNotices || [] );
-
-		const setNextDismissedPaymentMethodDuplicateNotice = () => {
-			setDismissedPaymentMethodNotices( [
-				...dismissedPaymentMethodNotices,
-				id,
-			] );
-			wcpaySettings.dismissedPaymentMethodNotices = [
-				...dismissedPaymentMethodNotices,
-				id,
-			];
-			updateOptions( {
-				wcpay_duplicate_payment_methods_notice_dismissed: [
-					...dismissedPaymentMethodNotices,
-					id,
-				],
-			} );
-		};
-
-		return {
-			dismissedPaymentMethodNotices,
-			handleDismissPaymentMethodDuplicateNotice: setNextDismissedPaymentMethodDuplicateNotice,
-		};
+	const addSkipped = ( skippedItem: string[] ) => {
+		// Add the skipped item to the list of skipped items
+		// You can implement the logic here to add the skipped item to the state or perform any other necessary operations
 	};
-
-	const {
-		dismissedPaymentMethodNotices,
-		handleDismissPaymentMethodDuplicateNotice,
-	} = useDuplicatesDetectionDismissedNoticeState();
 
 	return (
 		<li
@@ -210,32 +180,12 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 			{ showIncompatibilityNotice && (
 				<ExpressCheckoutIncompatibilityNotice />
 			) }
-			{ isDuplicate && ! dismissedPaymentMethodNotices.includes( id ) && (
-				<InlineNotice
-					status="warning"
-					icon={ true }
-					isDismissible={ true }
-					onRemove={ handleDismissPaymentMethodDuplicateNotice }
-				>
-					{ interpolateComponents( {
-						mixedString: __(
-							'This payment method is enabled by other extensions. Consider reviewing payments settings to improve the shopper experience.{{newline}}{{/newline}}{{reviewExtensions}}Review extensions{{/reviewExtensions}}.',
-							'woocommerce-payments'
-						),
-						components: {
-							newline: <br />,
-							reviewExtensions: (
-								// eslint-disable-next-line max-len
-								<ExternalLink
-									href={ getAdminUrl( {
-										page: 'wc-settings',
-										tab: 'checkout',
-									} ) }
-								/>
-							),
-						},
-					} ) }
-				</InlineNotice>
+			{ isDuplicate && (
+				<DuplicatesNotice
+					id={ id }
+					dismissedNotices={ [] }
+					setDismissedNotices={ addSkipped }
+				/>
 			) }
 		</li>
 	);

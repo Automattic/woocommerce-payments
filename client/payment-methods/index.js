@@ -85,6 +85,14 @@ const PaymentMethods = () => {
 
 	const [ , updateUnselectedPaymentMethod ] = useUnselectedPaymentMethod();
 
+	const [
+		skippedDuplicatedMethodNotices,
+		setSkippedDuplicatedMethodNotices,
+	] = useState( wcpaySettings.dismissedPaymentMethodNotices || [] );
+	const handleAddSkipppedDuplicatedMethodNotice = ( skippedNotices ) => {
+		setSkippedDuplicatedMethodNotices( skippedNotices );
+	};
+
 	const completeDeleteAction = ( itemId ) => {
 		updateUnselectedPaymentMethod( itemId );
 		handleDeleteModalOpen( null );
@@ -222,6 +230,12 @@ const PaymentMethods = () => {
 										}
 										duplicatesData={
 											duplicatedPaymentMethodIds
+										}
+										dismissedNotices={
+											skippedDuplicatedMethodNotices
+										}
+										setDismissedNotices={
+											handleAddSkipppedDuplicatedMethodNotice
 										}
 									/>
 								);

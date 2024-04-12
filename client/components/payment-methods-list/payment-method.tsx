@@ -3,7 +3,7 @@
  * External dependencies
  */
 import classNames from 'classnames';
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 
 /**
  * Internal dependencies
@@ -25,9 +25,7 @@ import { getDocumentationUrlForDisabledPaymentMethod } from '../payment-method-d
 import Pill from '../pill';
 import InlineNotice from '../inline-notice';
 import './payment-method.scss';
-import { ExternalLink } from '@wordpress/components';
-import { getAdminUrl } from 'wcpay/utils';
-import { useDispatch } from '@wordpress/data';
+import DuplicatesNotice from '../duplicates-notice';
 
 interface PaymentMethodProps {
 	id: string;
@@ -48,6 +46,8 @@ interface PaymentMethodProps {
 	isPoEnabled: boolean;
 	isPoComplete: boolean;
 	duplicatesData: string[];
+	dismissedNotices: string[];
+	setDismissedNotices: ( notices: string[] ) => void;
 }
 
 const PaymentMethodLabel = ( {
@@ -121,6 +121,8 @@ const PaymentMethod = ( {
 	isPoEnabled,
 	isPoComplete,
 	duplicatesData,
+	dismissedNotices,
+	setDismissedNotices,
 }: PaymentMethodProps ): React.ReactElement => {
 	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
 	const isPoInProgress =
@@ -166,36 +168,6 @@ const PaymentMethod = ( {
 			return onCheckClick( id );
 		}
 		return onUncheckClick( id );
-	};
-
-	const useDuplicatesDetectionDismissedNoticeState = () => {
-		const { updateOptions } = useDispatch( 'wc/admin/options' );
-		const [
-			dismissedPaymentMethodNotices,
-			setDismissedPaymentMethodNotices,
-		] = useState( wcpaySettings.dismissedPaymentMethodNotices || [] );
-
-		const setNextDismissedPaymentMethodDuplicateNotice = () => {
-			setDismissedPaymentMethodNotices( [
-				...dismissedPaymentMethodNotices,
-				id,
-			] );
-			wcpaySettings.dismissedPaymentMethodNotices = [
-				...dismissedPaymentMethodNotices,
-				id,
-			];
-			updateOptions( {
-				wcpay_duplicate_payment_methods_notice_dismissed: [
-					...dismissedPaymentMethodNotices,
-					id,
-				],
-			} );
-		};
-
-		return {
-			dismissedPaymentMethodNotices,
-			handleDismissPaymentMethodDuplicateNotice: setNextDismissedPaymentMethodDuplicateNotice,
-		};
 	};
 
 	const getTooltipContent = ( paymentMethodId: string ) => {
@@ -289,11 +261,6 @@ const PaymentMethod = ( {
 			label
 		);
 	};
-
-	const {
-		dismissedPaymentMethodNotices,
-		handleDismissPaymentMethodDuplicateNotice,
-	} = useDuplicatesDetectionDismissedNoticeState();
 
 	return (
 		<li
@@ -398,32 +365,12 @@ const PaymentMethod = ( {
 					</span>
 				</InlineNotice>
 			) }
-			{ isDuplicate && ! dismissedPaymentMethodNotices.includes( id ) && (
-				<InlineNotice
-					status="warning"
-					icon={ true }
-					isDismissible={ true }
-					onRemove={ handleDismissPaymentMethodDuplicateNotice }
-				>
-					{ interpolateComponents( {
-						mixedString: __(
-							'This payment method is enabled by other extensions. Consider reviewing payments settings to improve the shopper experience.{{newline}}{{/newline}}{{reviewExtensions}}Review extensions{{/reviewExtensions}}.',
-							'woocommerce-payments'
-						),
-						components: {
-							newline: <br />,
-							reviewExtensions: (
-								// eslint-disable-next-line max-len
-								<ExternalLink
-									href={ getAdminUrl( {
-										page: 'wc-settings',
-										tab: 'checkout',
-									} ) }
-								/>
-							),
-						},
-					} ) }
-				</InlineNotice>
+			{ isDuplicate && (
+				<DuplicatesNotice
+					id={ id }
+					dismissedNotices={ dismissedNotices }
+					setDismissedNotices={ setDismissedNotices }
+				/>
 			) }
 		</li>
 	);
