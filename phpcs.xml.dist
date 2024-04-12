@@ -39,11 +39,6 @@
 		<exclude name="WordPress.Security.EscapeOutput.OutputNotEscaped" />
 		<exclude name="WordPress.Security.ValidatedSanitizedInput.InputNotValidated" />
 
-		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8435 is closed. -->
-		<exclude name="WordPress.WP.AlternativeFunctions.unlink_unlink" />
-		<exclude name="WordPress.WP.AlternativeFunctions.file_system_operations_touch" />
-		<exclude name="WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents" />
-
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8436 is closed. -->
 		<exclude name="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable" />
 
@@ -87,6 +82,11 @@
 
 	<rule ref="WordPress.Security">
 		<exclude-pattern>./tests/*</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.WP.AlternativeFunctions">
+		<exclude-pattern>tests/</exclude-pattern>
+		<exclude-pattern>.github/</exclude-pattern>
 	</rule>
 
 	<rule ref="WordPress.Security.EscapeOutput">

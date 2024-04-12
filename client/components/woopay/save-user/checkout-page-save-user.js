@@ -270,7 +270,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 									learnMore: (
 										<a
 											target="_blank"
-											href="https://woo.com/document/woopay-customer-documentation/"
+											href="https://woocommerce.com/document/woopay-customer-documentation/"
 											rel="noopener noreferrer"
 											onClick={ () => {
 												recordUserEvent(

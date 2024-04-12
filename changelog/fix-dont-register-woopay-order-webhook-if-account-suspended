@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Don't register WooPay Order Webhook if account is under review.

@@ -10,8 +10,9 @@ import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
+	shouldSkipWooPay,
+	deleteSkipWooPayCookie,
 } from './utils';
-import { select } from '@wordpress/data';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -75,11 +76,19 @@ export const handleWooPayEmailInput = async (
 
 	//Checks if customer has clicked the back button to prevent auto redirect
 	const searchParams = new URLSearchParams( window.location.search );
+	const isSkipWoopayCookieSet = shouldSkipWooPay();
 	const customerClickedBackButton =
 		( typeof performance !== 'undefined' &&
 			performance.getEntriesByType( 'navigation' )[ 0 ].type ===
 				'back_forward' ) ||
-		searchParams.get( 'skip_woopay' ) === 'true';
+		searchParams.get( 'skip_woopay' ) === 'true' ||
+		isSkipWoopayCookieSet; // We enforce and extend the skipping to the entire user session.
+
+	if ( customerClickedBackButton && ! isSkipWoopayCookieSet ) {
+		const now = new Date();
+		const followingDay = new Date( now.getTime() + 24 * 60 * 60 * 1000 ); // 24 hours later
+		document.cookie = `skip_woopay=1; path=/; expires=${ followingDay.toUTCString() }`;
+	}
 
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
@@ -539,6 +548,7 @@ export const handleWooPayEmailInput = async (
 				break;
 			case 'redirect_to_woopay_skip_session_init':
 				if ( e.data.redirectUrl ) {
+					deleteSkipWooPayCookie();
 					window.location = appendRedirectionParams(
 						e.data.redirectUrl
 					);
@@ -558,6 +568,7 @@ export const handleWooPayEmailInput = async (
 							return;
 						}
 						if ( response.result === 'success' ) {
+							deleteSkipWooPayCookie();
 							window.location = response.url;
 						} else {
 							showErrorMessage();
@@ -617,13 +628,14 @@ export const handleWooPayEmailInput = async (
 	} );
 
 	if ( ! customerClickedBackButton ) {
-		const paymentMethods = await select(
-			'wc/store/payment'
-		).getAvailablePaymentMethods();
-
-		const hasWCPayPaymentMethod = paymentMethods.hasOwnProperty(
-			'woocommerce_payments'
+		const hasWcPayElementOnBlocks = document.getElementById(
+			'radio-control-wc-payment-method-options-woocommerce_payments'
 		);
+		const hasWcPayElementOnShortcode = document.getElementById(
+			'payment_method_woocommerce_payments'
+		);
+		const hasWCPayPaymentMethod =
+			hasWcPayElementOnBlocks || hasWcPayElementOnShortcode;
 
 		// Check if user already has a WooPay login session and only open the iframe if there is WCPay.
 		if (
@@ -639,7 +651,7 @@ export const handleWooPayEmailInput = async (
 			dispatchUserExistEvent( true );
 		}, 2000 );
 
-		recordUserEvent( 'woopay_skipped', {}, true );
+		recordUserEvent( 'woopay_skipped', {} );
 
 		searchParams.delete( 'skip_woopay' );
 

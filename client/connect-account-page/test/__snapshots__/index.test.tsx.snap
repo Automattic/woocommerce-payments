@@ -107,9 +107,9 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               src="assets/images/payment-methods/woo.svg"
             />
             <img
-              alt="Sofort"
+              alt="Klarna"
               class="payment-method__icon"
-              src="assets/images/payment-methods/sofort.svg"
+              src="assets/images/payment-methods/klarna.svg"
             />
             <img
               alt="Affirm"
@@ -122,7 +122,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               src="assets/images/payment-methods/afterpay-logo.svg"
             />
             <span>
-              & more.
+              & more
             </span>
           </div>
           <div
@@ -374,9 +374,9 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
               src="assets/images/payment-methods/woo.svg"
             />
             <img
-              alt="Sofort"
+              alt="Klarna"
               class="payment-method__icon"
-              src="assets/images/payment-methods/sofort.svg"
+              src="assets/images/payment-methods/klarna.svg"
             />
             <img
               alt="Affirm"
@@ -389,7 +389,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
               src="assets/images/payment-methods/afterpay-logo.svg"
             />
             <span>
-              & more.
+              & more
             </span>
           </div>
           <div
@@ -598,9 +598,9 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
               src="assets/images/payment-methods/woo.svg"
             />
             <img
-              alt="Sofort"
+              alt="Klarna"
               class="payment-method__icon"
-              src="assets/images/payment-methods/sofort.svg"
+              src="assets/images/payment-methods/klarna.svg"
             />
             <img
               alt="Affirm"
@@ -613,7 +613,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
               src="assets/images/payment-methods/afterpay-logo.svg"
             />
             <span>
-              & more.
+              & more
             </span>
           </div>
           <div

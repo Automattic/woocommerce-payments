@@ -136,7 +136,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 									rel="external noopener noreferrer"
 									target="_blank"
 									href={
-										'https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-period-chart'
+										'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#pending-period-chart'
 									}
 								/>
 							),
@@ -156,7 +156,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 									rel="external noopener noreferrer"
 									target="_blank"
 									href={
-										'https://woo.com/document/woopayments/deposits/deposit-schedule/#available-funds'
+										'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#available-funds'
 									}
 								/>
 							),
@@ -176,7 +176,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 									rel="external noopener noreferrer"
 									target="_blank"
 									href={
-										'https://woo.com/document/woopayments/deposits/change-deposit-schedule/'
+										'https://woocommerce.com/document/woopayments/deposits/change-deposit-schedule/'
 									}
 								/>
 							),

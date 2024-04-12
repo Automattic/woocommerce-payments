@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Adding a tracking event for external redirects to update account details, more consistent behaviour for redirects.
