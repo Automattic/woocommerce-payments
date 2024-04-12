@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Changes are not user facing, behind a feature flag. Refactor - tooltip component flattened in place, instead of calling it from a separate file.

@@ -276,6 +276,12 @@ class WC_Payments_Checkout {
 			}
 		}
 
+		// Get the store base country.
+		$payment_fields['storeCountry'] = WC()->countries->get_base_country();
+
+		// Get the WooCommerce Store API endpoint.
+		$payment_fields['storeApiURL'] = get_rest_url( null, 'wc/store' );
+
 		/**
 		 * Allows filtering for the payment fields.
 		 *

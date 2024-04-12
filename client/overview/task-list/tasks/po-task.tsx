@@ -10,6 +10,7 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies.
  */
 import strings from '../strings';
+import { recordEvent } from 'wcpay/tracks';
 
 const tpvLimit = 5000;
 
@@ -27,6 +28,10 @@ export const getVerifyBankAccountTask = (): any => {
 	} = wcpaySettings.accountStatus;
 
 	const handleClick = () => {
+		recordEvent( 'wcpay_account_details_link_clicked', {
+			source: 'overview-page__receive-deposits-task',
+		} );
+
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			collect_payout_requirements: true,
 		} );
