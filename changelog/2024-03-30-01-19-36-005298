@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add an instructive error message when customer tries to use 2 different currencies for Stripe Billing subscriptions.
