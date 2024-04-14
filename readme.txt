@@ -133,6 +133,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Remove incorrect "UTC" label from the time column of Transactions page
 * Fix - Remove redundant message after the account is onboarded
 * Fix - Sync discount brakedown with how server processes it
+* Fix - Resolves "Invalid recurring shipping method" errors when purchasing multiple subscriptions with Apple Pay and Google Pay.
 * Update - Adding a tracking event for external redirects to update account details, more consistent behaviour for redirects.
 * Update - Cleanup unused payment confirmation code.
 * Update - Reduce the visual footprint of the sandbox mode notice.
