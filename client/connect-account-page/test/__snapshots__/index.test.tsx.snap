@@ -369,11 +369,6 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
               src="assets/images/payment-methods/woo.svg"
             />
             <img
-              alt="WooPay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/woo.svg"
-            />
-            <img
               alt="Klarna"
               class="payment-method__icon"
               src="assets/images/payment-methods/klarna.svg"

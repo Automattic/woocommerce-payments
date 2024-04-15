@@ -25,6 +25,10 @@
 	<rule ref="WooCommerce-Core" >
 		<exclude name="Generic.Commenting.Todo"/>
 
+		<!-- These sniffs are superceded by the VariableAnalysis sniffs. -->
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.Found" />
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed" />
+
 		<!-- This rule is currently generating some false positives, it would be worth retrying after PHPCS upgrades -->
 		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
 		<exclude name="Squiz.Commenting.FunctionComment.EmptyThrows"/>
@@ -36,8 +40,7 @@
 		<exclude name="WordPress.Security.ValidatedSanitizedInput.InputNotValidated" />
 
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8436 is closed. -->
-		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.Found" />
-		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed" />
+		<exclude name="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable" />
 
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8437 is clsoed. -->
 		<exclude name="WooCommerce.Commenting.CommentHooks.MissingHookComment" />
@@ -55,6 +58,17 @@
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound" />
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound" />
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.functionFound" />
+	</rule>
+
+	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">
+		<properties>
+			<property name="ignoreUnusedRegexp" value="/^_unused_/"/>
+		</properties>
+	</rule>
+
+	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable">
+		<exclude-pattern>templates/emails/</exclude-pattern>
+		<exclude-pattern>includes/in-person-payments/templates/</exclude-pattern>
 	</rule>
 
 	<!-- Disallow long array syntax -->

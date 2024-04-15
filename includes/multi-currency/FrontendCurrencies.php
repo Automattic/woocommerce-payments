@@ -270,11 +270,17 @@ class FrontendCurrencies {
 			return $arg;
 		}
 
-		// We remove the filter 'wc_get_price_decimal_separator' here because 'wc_get_order'
-		// can also trigger it, leading to an infinite recursive call.
+		// We remove these filters here because 'wc_get_order'
+		// can trigger them, leading to an infinitely recursive call.
+		remove_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
+		remove_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
 		remove_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+		remove_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );
 		$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
+		add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );
 		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+		add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
+		add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
 
 		if ( $order ) {
 			$this->order_currency = $order->get_currency();

@@ -11,6 +11,7 @@ import { getPaymentSettingsUrl, isInTestMode } from 'utils';
 import BannerNotice from '../banner-notice';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
+import { recordEvent } from 'wcpay/tracks';
 
 type CurrentPage =
 	| 'overview'
@@ -91,6 +92,12 @@ const getNoticeContent = (
 									}
 									target="_blank"
 									rel="noreferrer"
+									type="external"
+									onClick={ () =>
+										recordEvent(
+											'wcpay_overview_test_mode_learn_more_clicked'
+										)
+									}
 								/>
 							),
 						},
