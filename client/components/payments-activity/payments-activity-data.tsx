@@ -66,6 +66,13 @@ const PaymentsActivityData: React.FC = () => {
 				reportLink={ getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
+					'date_between[0]': moment(
+						getDateRange().date_start
+					).format( 'YYYY-MM-DD' ),
+					'date_between[1]': moment( getDateRange().date_end ).format(
+						'YYYY-MM-DD'
+					),
+					filter: 'advanced',
 				} ) }
 				isLoading={ isLoading }
 			/>
@@ -104,6 +111,12 @@ const PaymentsActivityData: React.FC = () => {
 						path: '/payments/transactions',
 						filter: 'advanced',
 						type_is: 'refund',
+						'date_between[0]': moment(
+							getDateRange().date_start
+						).format( 'YYYY-MM-DD' ),
+						'date_between[1]': moment(
+							getDateRange().date_end
+						).format( 'YYYY-MM-DD' ),
 					} ) }
 					isLoading={ isLoading }
 				/>
