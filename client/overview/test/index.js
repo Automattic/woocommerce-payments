@@ -269,8 +269,8 @@ describe( 'Overview page', () => {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				dontShowAgain: false,
-				lifetimeTPV: 100,
 			} ),
+			lifetimeTPV: 100,
 		};
 		render( <OverviewPage /> );
 
@@ -284,8 +284,8 @@ describe( 'Overview page', () => {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				dontShowAgain: false,
-				lifetimeTPV: 0,
 			} ),
+			lifetimeTPV: 0,
 		};
 		render( <OverviewPage /> );
 
@@ -298,9 +298,9 @@ describe( 'Overview page', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
-				lifetimeTPV: 100,
 				dontShowAgain: false,
 			} ),
+			lifetimeTPV: 100,
 		};
 
 		render( <OverviewPage /> );
