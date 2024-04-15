@@ -42,7 +42,6 @@ class WC_REST_Payments_Reporting_Controller extends WC_Payments_REST_Controller 
 	 * Retrieve the Payment Activity data.
 	 *
 	 * @param WP_REST_Request $request The request.
-	 * @return array
 	 */
 	public function get_payment_activity( $request ): array {
 		$wcpay_request = Get_Reporting_Payment_Activity::create();
