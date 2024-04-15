@@ -635,6 +635,10 @@ class WC_Payments {
 			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway() );
 			$admin_settings->init_hooks();
 
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-bnpl-announcement.php';
+			$bnpl_announcement = new WC_Payments_Bnpl_Announcement( self::get_gateway(), self::get_account_service(), time() );
+			$bnpl_announcement->init_hooks();
+
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 

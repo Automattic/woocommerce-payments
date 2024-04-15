@@ -8,6 +8,7 @@ This set of guidelines aims to make it easier for developers working on WooPayme
 -   [How do I write React components in TypeScript?](./react-components.md)
 -   [Where should I declare my types?](./declaring-types.md)
 -   [Utility types and manipulation](./utility-and-manipulation.md)
+-   [General Conventions](./general-conventions.md)
 
 ## External resources
 
