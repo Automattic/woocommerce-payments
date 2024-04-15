@@ -1860,7 +1860,7 @@ class WC_Payments_API_Client {
 			$response_code  = null;
 			$last_exception = null;
 
-			// Those headers are used for understand requests latency (store to server).
+			// Those headers are used for understanding requests latency (store to server).
 			$headers['X-Request-Initiated'] = microtime( true );
 			$headers['X-Request-Timezone']  = ( new DateTime() )->format( 'P' );
 
