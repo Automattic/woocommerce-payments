@@ -45,32 +45,32 @@ button.wcpay-stripelink-modal-trigger:hover {
 }
 
 .wc-block-checkout__payment-method {
-	.wc-block-components-radio-control__label {
-		span {
-			width: 95%;
+	.wc-block-components-radio-control__label span {
+		width: 95%;
 
-	&:has( .StripeElement ) {
-		display: grid;
-		grid-template-columns: 1fr auto;
-	}
+		&:has( .StripeElement ) {
+			display: grid;
+			grid-template-columns: 1fr auto;
+		}
 
-	img {
-		float: right;
-		border: 0;
-		padding: 0;
-		height: 24px;
-		max-height: 24px;
-	}
+		img {
+			float: right;
+			border: 0;
+			padding: 0;
+			height: 24px;
+			max-height: 24px;
+		}
 
-	.StripeElement {
-		width: 100%;
-		grid-column: 1 / span 2;
-		grid-row-start: 2;
-		pointer-events: none;
+		.StripeElement {
+			width: 100%;
+			grid-column: 1 / span 2;
+			grid-row-start: 2;
+			pointer-events: none;
 
-		+ img {
-			grid-row: 1 / span 2;
-			grid-column: 2;
+			+ img {
+				grid-row: 1 / span 2;
+				grid-column: 2;
+			}
 		}
 	}
 }
