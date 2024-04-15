@@ -25,7 +25,7 @@ import { getDocumentationUrlForDisabledPaymentMethod } from '../payment-method-d
 import Pill from '../pill';
 import InlineNotice from '../inline-notice';
 import './payment-method.scss';
-import DuplicatesNotice from '../duplicates-notice';
+import DuplicateNotice from '../duplicates-notice';
 
 interface PaymentMethodProps {
 	id: string;
@@ -366,7 +366,7 @@ const PaymentMethod = ( {
 				</InlineNotice>
 			) }
 			{ isDuplicate && (
-				<DuplicatesNotice
+				<DuplicateNotice
 					paymentMethod={ id }
 					dismissedDuplicateNotices={ dismissedDuplicateNotices }
 					setDismissedDuplicateNotices={

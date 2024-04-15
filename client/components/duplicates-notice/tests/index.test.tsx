@@ -8,7 +8,7 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import DuplicatesNotice from '..';
+import DuplicateNotice from '..';
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn(),
@@ -16,7 +16,7 @@ jest.mock( '@wordpress/data', () => ( {
 
 const mockUseDispatch = useDispatch as jest.MockedFunction< any >;
 
-describe( 'DuplicatesNotice', () => {
+describe( 'DuplicateNotice', () => {
 	const mockDispatch = jest.fn();
 	mockUseDispatch.mockReturnValue( {
 		updateOptions: mockDispatch,
@@ -28,7 +28,7 @@ describe( 'DuplicatesNotice', () => {
 
 	test( 'does not render when the payment method is dismissed', () => {
 		render(
-			<DuplicatesNotice
+			<DuplicateNotice
 				paymentMethod="bancontact"
 				dismissedDuplicateNotices={ [ 'bancontact' ] }
 				setDismissedDuplicateNotices={ jest.fn() }
@@ -43,7 +43,7 @@ describe( 'DuplicatesNotice', () => {
 
 	test( 'renders correctly when the payment method is not dismissed', () => {
 		render(
-			<DuplicatesNotice
+			<DuplicateNotice
 				paymentMethod="card"
 				dismissedDuplicateNotices={ [] }
 				setDismissedDuplicateNotices={ jest.fn() }
@@ -64,7 +64,7 @@ describe( 'DuplicatesNotice', () => {
 			dismissedDuplicateNotices: [],
 			setDismissedDuplicateNotices: jest.fn(),
 		};
-		const { container } = render( <DuplicatesNotice { ...props } /> );
+		const { container } = render( <DuplicateNotice { ...props } /> );
 		const dismissButton = container.querySelector(
 			'.components-button.components-notice__dismiss.has-icon'
 		);
@@ -85,7 +85,7 @@ describe( 'DuplicatesNotice', () => {
 
 	test( 'clicking on the Review extensions link navigates correctly', () => {
 		const { getByText } = render(
-			<DuplicatesNotice
+			<DuplicateNotice
 				{ ...{
 					paymentMethod: 'ideal',
 					dismissedDuplicateNotices: [],

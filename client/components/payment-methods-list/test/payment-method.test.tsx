@@ -156,7 +156,7 @@ describe( 'PaymentMethod', () => {
 		/>
 	);
 
-	test( 'does not render DuplicatesNotice if payment method is not in duplicates', () => {
+	test( 'does not render DuplicateNotice if payment method is not in duplicates', () => {
 		render( getComponentWithDuplicates( 'card', [ 'ideal' ] ) );
 
 		expect(
@@ -166,7 +166,7 @@ describe( 'PaymentMethod', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	test( 'render DuplicatesNotice if payment method is in duplicates', () => {
+	test( 'render DuplicateNotice if payment method is in duplicates', () => {
 		render( getComponentWithDuplicates( 'card', [ 'card' ] ) );
 
 		expect(

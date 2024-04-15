@@ -8,17 +8,17 @@ import { __ } from '@wordpress/i18n';
 import { getAdminUrl } from 'wcpay/utils';
 import { useDispatch } from '@wordpress/data';
 
-interface DuplicatesNoticeProps {
+interface DuplicateNoticeProps {
 	paymentMethod: string;
 	dismissedDuplicateNotices: string[];
 	setDismissedDuplicateNotices: ( notices: string[] ) => void;
 }
 
-function DuplicatesNotice( {
+function DuplicateNotice( {
 	paymentMethod,
 	dismissedDuplicateNotices,
 	setDismissedDuplicateNotices,
-}: DuplicatesNoticeProps ): JSX.Element | null {
+}: DuplicateNoticeProps ): JSX.Element | null {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	const handleDismiss = useCallback( () => {
@@ -68,4 +68,4 @@ function DuplicatesNotice( {
 	);
 }
 
-export default DuplicatesNotice;
+export default DuplicateNotice;
