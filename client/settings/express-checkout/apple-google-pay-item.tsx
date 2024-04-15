@@ -21,6 +21,8 @@ import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-wa
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
+	const id = 'apple_pay_google_pay';
+
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
@@ -28,16 +30,14 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 
 	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
 	const duplicatedPaymentMethods = useGetDuplicatedPaymentMethodIds() as string[];
-	const id = 'apple_pay_google_pay';
 	const isDuplicate = duplicatedPaymentMethods.includes( id );
 	const [
-		skippedDuplicatedMethodNotices,
-		setSkippedDuplicatedMethodNotices,
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
 	] = useState( wcpaySettings.dismissedDuplicateNotices || [] );
-	const handleAddSkipppedDuplicatedMethodNotice = (
-		skippedNotices: string[]
-	) => {
-		setSkippedDuplicatedMethodNotices( skippedNotices );
+
+	const handleSetDismissedDuplicateNotices = ( skippedNotices: string[] ) => {
+		setDismissedDuplicateNotices( skippedNotices );
 	};
 
 	return (
@@ -186,9 +186,9 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }
-					dismissedDuplicateNotices={ skippedDuplicatedMethodNotices }
+					dismissedDuplicateNotices={ dismissedDuplicateNotices }
 					setDismissedDuplicateNotices={
-						handleAddSkipppedDuplicatedMethodNotice
+						handleSetDismissedDuplicateNotices
 					}
 				/>
 			) }
