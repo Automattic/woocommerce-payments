@@ -71,7 +71,7 @@ exports[`PaymentsActivity component should render 1`] = `
                 aria-labelledby="wcpay-payments-activity-data__total-payments-volume"
                 class="wcpay-payments-data-highlights__item__wrapper__amount"
               >
-                €0.00
+                $0.00
               </p>
               <a
                 data-link-type="wc-admin"
@@ -130,7 +130,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   aria-labelledby="wcpay-payments-data-highlights__charges"
                   class="wcpay-payments-data-highlights__item__wrapper__amount"
                 >
-                  €0.00
+                  $0.00
                 </p>
                 <a
                   data-link-type="wc-admin"
@@ -158,7 +158,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   aria-labelledby="wcpay-payments-data-highlights__refunds"
                   class="wcpay-payments-data-highlights__item__wrapper__amount"
                 >
-                  €0.00
+                  $0.00
                 </p>
                 <a
                   data-link-type="wc-admin"
@@ -186,7 +186,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   aria-labelledby="wcpay-payments-data-highlights__disputes"
                   class="wcpay-payments-data-highlights__item__wrapper__amount"
                 >
-                  €0.00
+                  $0.00
                 </p>
                 <a
                   data-link-type="wc-admin"
@@ -242,7 +242,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   aria-labelledby="wcpay-payments-data-highlights__fees"
                   class="wcpay-payments-data-highlights__item__wrapper__amount"
                 >
-                  €0.00
+                  $0.00
                 </p>
               </div>
             </div>
