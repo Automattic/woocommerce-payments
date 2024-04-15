@@ -56,11 +56,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 		/**
 		 * @psalm-suppress UndefinedClass
 		 */
-		$response = WooPay_Session::get_init_session_request();
-		// This was needed as the preloaded requests were not honoring the cart token and so were empty carts.
-		// It would be ideal to get this to successfully preload the cart data so WooPay doesn't need to make
-		// a separate request to get the cart data.
-		unset( $response['preloaded_requests'] );
+		$response = WooPay_Session::get_init_session_request( null, null, null, $request );
 
 		return rest_ensure_response( $response );
 	}
