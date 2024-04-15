@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 7.5.0 - 2024-04-17 =
+= 7.5.0-test-3 - unreleased =
 * Add - Add a parent wrapper component for Payment Activity widget. This will be visible on the Payments Overview page
 * Add - Add a task on WooCommerce Home page to remind accounts operating in sandbox mode to set up live payments.
 * Add - Add BNPL messaging to cart page.
