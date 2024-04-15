@@ -371,6 +371,7 @@ class WooPay_Session {
 	 * @return array The checkout data.
 	 */
 	private static function get_checkout_data( $woopay_request ) {
+		$checkout_data = '';
 		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 
 		if ( ! $woopay_request ) {
