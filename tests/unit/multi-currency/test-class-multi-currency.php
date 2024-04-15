@@ -244,6 +244,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			'BIF' => 1974,
 		];
 
+		$expected = [];
 		foreach ( $mock_currencies as $code => $rate ) {
 			$currency = new WCPay\MultiCurrency\Currency( $code, $rate );
 			$currency->set_charm( 0.00 );

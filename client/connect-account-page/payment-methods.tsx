@@ -36,7 +36,6 @@ const PaymentMethods: React.FC = () => {
 				<IdealIcon />
 				<ApplePayIcon />
 				<GooglePayIcon />
-				{ wcpaySettings.isWooPayStoreCountryAvailable && <WooIcon /> }
 				<WooIcon />
 				<KlarnaIcon />
 				<AffirmIcon />
