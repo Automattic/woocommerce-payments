@@ -43,7 +43,7 @@ class WC_REST_Payments_Reporting_Controller extends WC_Payments_REST_Controller 
 	 *
 	 * @param WP_REST_Request $request The request.
 	 */
-	public function get_payment_activity( $request ): array {
+	public function get_payment_activity( $request ) {
 		$wcpay_request = Get_Reporting_Payment_Activity::create();
 		$wcpay_request->set_date_start( $request->get_param( 'date_start' ) );
 		$wcpay_request->set_date_end( $request->get_param( 'date_end' ) );
