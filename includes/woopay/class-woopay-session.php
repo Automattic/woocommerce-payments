@@ -368,10 +368,9 @@ class WooPay_Session {
 	 * `hydrate_from_api` on the Checkout Block to retrieve checkout data.
 	 *
 	 * @param WP_REST_Request $woopay_request The WooPay request object.
-	 * @return array The checkout data.
+	 * @return mixed The checkout data.
 	 */
 	private static function get_checkout_data( $woopay_request ) {
-		$checkout_data = '';
 		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 
 		if ( ! $woopay_request ) {
