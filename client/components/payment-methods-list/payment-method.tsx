@@ -25,7 +25,7 @@ import { getDocumentationUrlForDisabledPaymentMethod } from '../payment-method-d
 import Pill from '../pill';
 import InlineNotice from '../inline-notice';
 import './payment-method.scss';
-import DuplicateNotice from '../duplicates-notice';
+import DuplicateNotice from '../duplicate-notice';
 
 interface PaymentMethodProps {
 	id: string;

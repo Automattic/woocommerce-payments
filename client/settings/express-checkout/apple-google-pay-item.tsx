@@ -18,7 +18,7 @@ import {
 import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
-import DuplicateNotice from 'wcpay/components/duplicates-notice';
+import DuplicateNotice from 'wcpay/components/duplicate-notice';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const [
