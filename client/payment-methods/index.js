@@ -228,13 +228,13 @@ const PaymentMethods = () => {
 											wcpaySettings?.progressiveOnboarding
 												?.isComplete
 										}
-										duplicatesData={
+										duplicates={
 											duplicatedPaymentMethodIds
 										}
-										dismissedNotices={
+										dismissedDuplicateNotices={
 											skippedDuplicatedMethodNotices
 										}
-										setDismissedNotices={
+										setDismissedDuplicateNotices={
 											handleAddSkipppedDuplicatedMethodNotice
 										}
 									/>

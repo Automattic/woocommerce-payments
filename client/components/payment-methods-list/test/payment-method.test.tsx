@@ -21,7 +21,7 @@ describe( 'PaymentMethod', () => {
 	const handleOnUnCheckClickMock = jest.fn( () => {
 		checked = false;
 	} );
-	const setDismissedNoticesMock = jest.fn();
+	const setDismissedDuplicateNoticesMock = jest.fn();
 
 	// Clear the mocks (including the mock call count) after each test.
 	afterEach( () => {
@@ -44,9 +44,9 @@ describe( 'PaymentMethod', () => {
 				locked={ false }
 				isPoEnabled={ false }
 				isPoComplete={ false }
-				duplicatesData={ [] }
-				dismissedNotices={ [] }
-				setDismissedNotices={ jest.fn() }
+				duplicates={ [] }
+				dismissedDuplicateNotices={ [] }
+				setDismissedDuplicateNotices={ jest.fn() }
 			/>
 		);
 	};
@@ -105,9 +105,9 @@ describe( 'PaymentMethod', () => {
 				required={ false }
 				isPoEnabled={ false }
 				isPoComplete={ false }
-				duplicatesData={ [] }
-				dismissedNotices={ [] }
-				setDismissedNotices={ jest.fn() }
+				duplicates={ [] }
+				dismissedDuplicateNotices={ [] }
+				setDismissedDuplicateNotices={ jest.fn() }
 			/>
 		);
 	};
@@ -150,13 +150,13 @@ describe( 'PaymentMethod', () => {
 			locked={ false }
 			isPoEnabled={ false }
 			isPoComplete={ false }
-			duplicatesData={ duplicates }
-			dismissedNotices={ [] }
-			setDismissedNotices={ setDismissedNoticesMock }
+			duplicates={ duplicates }
+			dismissedDuplicateNotices={ [] }
+			setDismissedDuplicateNotices={ setDismissedDuplicateNoticesMock }
 		/>
 	);
 
-	test( 'does not render DuplicatesNotice if payment method is not in duplicatesData', () => {
+	test( 'does not render DuplicatesNotice if payment method is not in duplicates', () => {
 		render( getComponentWithDuplicates( 'card', [ 'ideal' ] ) );
 
 		expect(
@@ -166,7 +166,7 @@ describe( 'PaymentMethod', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	test( 'render DuplicatesNotice if payment method is in duplicatesData', () => {
+	test( 'render DuplicatesNotice if payment method is in duplicates', () => {
 		render( getComponentWithDuplicates( 'card', [ 'card' ] ) );
 
 		expect(

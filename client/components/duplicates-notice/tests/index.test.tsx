@@ -30,8 +30,8 @@ describe( 'DuplicatesNotice', () => {
 		render(
 			<DuplicatesNotice
 				paymentMethod="bancontact"
-				dismissedNotices={ [ 'bancontact' ] }
-				setDismissedNotices={ jest.fn() }
+				dismissedDuplicateNotices={ [ 'bancontact' ] }
+				setDismissedDuplicateNotices={ jest.fn() }
 			/>
 		);
 		expect(
@@ -45,8 +45,8 @@ describe( 'DuplicatesNotice', () => {
 		render(
 			<DuplicatesNotice
 				paymentMethod="card"
-				dismissedNotices={ [] }
-				setDismissedNotices={ jest.fn() }
+				dismissedDuplicateNotices={ [] }
+				setDismissedDuplicateNotices={ jest.fn() }
 			/>
 		);
 		expect(
@@ -61,8 +61,8 @@ describe( 'DuplicatesNotice', () => {
 		const paymentMethod = 'ideal';
 		const props = {
 			paymentMethod: paymentMethod,
-			dismissedNotices: [],
-			setDismissedNotices: jest.fn(),
+			dismissedDuplicateNotices: [],
+			setDismissedDuplicateNotices: jest.fn(),
 		};
 		const { container } = render( <DuplicatesNotice { ...props } /> );
 		const dismissButton = container.querySelector(
@@ -75,7 +75,7 @@ describe( 'DuplicatesNotice', () => {
 		}
 
 		// Check if local state update function and Redux action dispatcher are called correctly
-		expect( props.setDismissedNotices ).toHaveBeenCalledWith( [
+		expect( props.setDismissedDuplicateNotices ).toHaveBeenCalledWith( [
 			paymentMethod,
 		] );
 		expect( mockDispatch ).toHaveBeenCalledWith( {
@@ -88,8 +88,8 @@ describe( 'DuplicatesNotice', () => {
 			<DuplicatesNotice
 				{ ...{
 					paymentMethod: 'ideal',
-					dismissedNotices: [],
-					setDismissedNotices: jest.fn(),
+					dismissedDuplicateNotices: [],
+					setDismissedDuplicateNotices: jest.fn(),
 				} }
 			/>
 		);

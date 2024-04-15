@@ -10,31 +10,32 @@ import { useDispatch } from '@wordpress/data';
 
 interface DuplicatesNoticeProps {
 	paymentMethod: string;
-	dismissedNotices: string[];
-	setDismissedNotices: ( notices: string[] ) => void;
+	dismissedDuplicateNotices: string[];
+	setDismissedDuplicateNotices: ( notices: string[] ) => void;
 }
 
 function DuplicatesNotice( {
 	paymentMethod,
-	dismissedNotices,
-	setDismissedNotices,
+	dismissedDuplicateNotices,
+	setDismissedDuplicateNotices,
 }: DuplicatesNoticeProps ): JSX.Element | null {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
-	const handleDismissNotice = useCallback( () => {
-		const updatedNotices = [ ...dismissedNotices, paymentMethod ];
-		setDismissedNotices( updatedNotices );
+	const handleDismiss = useCallback( () => {
+		const updatedNotices = [ ...dismissedDuplicateNotices, paymentMethod ];
+		setDismissedDuplicateNotices( updatedNotices );
 		updateOptions( {
 			wcpay_duplicate_payment_method_notices_dismissed: updatedNotices,
 		} );
+		wcpaySettings.dismissedPaymentMethodNotices = updatedNotices;
 	}, [
 		paymentMethod,
-		dismissedNotices,
-		setDismissedNotices,
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
 		updateOptions,
 	] );
 
-	if ( dismissedNotices.includes( paymentMethod ) ) {
+	if ( dismissedDuplicateNotices.includes( paymentMethod ) ) {
 		return null;
 	}
 
@@ -43,7 +44,7 @@ function DuplicatesNotice( {
 			status="warning"
 			icon={ true }
 			isDismissible={ true }
-			onRemove={ handleDismissNotice }
+			onRemove={ handleDismiss }
 		>
 			{ interpolateComponents( {
 				mixedString: __(

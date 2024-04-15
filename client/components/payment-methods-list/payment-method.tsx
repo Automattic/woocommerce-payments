@@ -45,9 +45,9 @@ interface PaymentMethodProps {
 	locked: boolean;
 	isPoEnabled: boolean;
 	isPoComplete: boolean;
-	duplicatesData: string[];
-	dismissedNotices: string[];
-	setDismissedNotices: ( notices: string[] ) => void;
+	duplicates: string[];
+	dismissedDuplicateNotices: string[];
+	setDismissedDuplicateNotices: ( notices: string[] ) => void;
 }
 
 const PaymentMethodLabel = ( {
@@ -120,9 +120,9 @@ const PaymentMethod = ( {
 	locked,
 	isPoEnabled,
 	isPoComplete,
-	duplicatesData,
-	dismissedNotices,
-	setDismissedNotices,
+	duplicates,
+	dismissedDuplicateNotices,
+	setDismissedDuplicateNotices,
 }: PaymentMethodProps ): React.ReactElement => {
 	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
 	const isPoInProgress =
@@ -151,7 +151,7 @@ const PaymentMethod = ( {
 		isPoInProgress ||
 		upeCapabilityStatuses.REJECTED === status;
 	const shouldDisplayNotice = id === 'sofort';
-	const isDuplicate = duplicatesData.includes( id );
+	const isDuplicate = duplicates.includes( id );
 
 	const needsOverlay =
 		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
@@ -368,8 +368,10 @@ const PaymentMethod = ( {
 			{ isDuplicate && (
 				<DuplicatesNotice
 					paymentMethod={ id }
-					dismissedNotices={ dismissedNotices }
-					setDismissedNotices={ setDismissedNotices }
+					dismissedDuplicateNotices={ dismissedDuplicateNotices }
+					setDismissedDuplicateNotices={
+						setDismissedDuplicateNotices
+					}
 				/>
 			) }
 		</li>

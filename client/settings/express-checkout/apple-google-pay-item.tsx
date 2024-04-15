@@ -186,8 +186,8 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 			{ isDuplicate && (
 				<DuplicatesNotice
 					paymentMethod={ id }
-					dismissedNotices={ skippedDuplicatedMethodNotices }
-					setDismissedNotices={
+					dismissedDuplicateNotices={ skippedDuplicatedMethodNotices }
+					setDismissedDuplicateNotices={
 						handleAddSkipppedDuplicatedMethodNotice
 					}
 				/>
