@@ -1861,8 +1861,8 @@ class WC_Payments_API_Client {
 			$last_exception = null;
 
 			// Those headers are used for understand requests latency (store to server).
-			$headers['Telemetry-Request-Initiated'] = microtime( true );
-			$headers['Telemetry-Request-Timezone']  = ( new DateTime() )->format( 'P' );
+			$headers['Request-Initiated'] = microtime( true );
+			$headers['Request-Timezone']  = ( new DateTime() )->format( 'P' );
 
 			try {
 				$response = $this->http_client->remote_request(
