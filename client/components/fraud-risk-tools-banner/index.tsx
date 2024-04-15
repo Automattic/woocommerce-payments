@@ -18,7 +18,7 @@ interface BannerSettings {
 }
 
 const FRTDiscoverabilityBanner: React.FC = () => {
-	const { frtDiscoverBannerSettings } = wcpaySettings;
+	const { frtDiscoverBannerSettings, lifetimeTPV } = wcpaySettings;
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ settings, setSettings ] = useState< BannerSettings >( () => {
 		try {
@@ -28,7 +28,7 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 		}
 	} );
 
-	const showBanner = ! settings.dontShowAgain;
+	const showBanner = lifetimeTPV > 0 && ! settings.dontShowAgain;
 
 	const setDontShowAgain = () => {
 		setSettings( { dontShowAgain: true } );
@@ -50,11 +50,7 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 		setDontShowAgain();
 	};
 
-	if ( ! showBanner ) {
-		return null;
-	}
-
-	return (
+	return showBanner ? (
 		<Card>
 			<div className="discoverability-card">
 				<NewPill />
@@ -70,7 +66,7 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 				/>
 			</div>
 		</Card>
-	);
+	) : null;
 };
 
 export default FRTDiscoverabilityBanner;
