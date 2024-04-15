@@ -75,7 +75,7 @@ exports[`PaymentsActivity component should render 1`] = `
               </p>
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&date_between%5B0%5D=2024-04-08&date_between%5B1%5D=2024-04-15&filter=advanced"
               >
                 View report
               </a>
@@ -162,7 +162,7 @@ exports[`PaymentsActivity component should render 1`] = `
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&type_is=refund"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&type_is=refund&date_between%5B0%5D=2024-04-08&date_between%5B1%5D=2024-04-15"
                 >
                   View report
                 </a>
