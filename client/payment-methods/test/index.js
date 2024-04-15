@@ -20,6 +20,7 @@ import {
 	useManualCapture,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
+	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
@@ -41,6 +42,7 @@ jest.mock( '../../data', () => ( {
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
 	useAccountDomesticCurrency: jest.fn(),
+	useGetDuplicatedPaymentMethodIds: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -90,6 +92,7 @@ describe( 'PaymentMethods', () => {
 				account_country: 'US',
 			} ),
 		} ) );
+		useGetDuplicatedPaymentMethodIds.mockReturnValue( [] );
 	} );
 
 	test( 'payment methods are rendered correctly', () => {
@@ -412,5 +415,31 @@ describe( 'PaymentMethods', () => {
 			screen.queryByText( /Bancontact requires the EUR currency\./ )
 		).toBeInTheDocument();
 		jest.useRealTimers();
+	} );
+
+	it( 'duplicate notices should not appear when dismissed', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
+		global.wcpaySettings.dismissedPaymentMethodNotices = 'card';
+		render( <PaymentMethods /> );
+
+		expect(
+			screen.queryByText(
+				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'duplicate notice should appear when not dismissed', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
+		// global.wcpaySettings.dismissedPaymentMethodNotices = 'card';
+		render( <PaymentMethods /> );
+
+		expect(
+			screen.queryByText(
+				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
+			)
+		).toBeInTheDocument();
 	} );
 } );
