@@ -90,7 +90,7 @@ declare global {
 			isEligibilityModalDismissed: boolean;
 		};
 		enabledPaymentMethods: string[];
-		dismissedPaymentMethodNotices: string[];
+		dismissedDuplicateNotices: string[];
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;

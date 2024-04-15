@@ -33,7 +33,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const [
 		skippedDuplicatedMethodNotices,
 		setSkippedDuplicatedMethodNotices,
-	] = useState( wcpaySettings.dismissedPaymentMethodNotices || [] );
+	] = useState( wcpaySettings.dismissedDuplicateNotices || [] );
 	const handleAddSkipppedDuplicatedMethodNotice = (
 		skippedNotices: string[]
 	) => {

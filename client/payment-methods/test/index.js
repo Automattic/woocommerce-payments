@@ -420,7 +420,7 @@ describe( 'PaymentMethods', () => {
 	it( 'duplicate notices should not appear when dismissed', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
-		global.wcpaySettings.dismissedPaymentMethodNotices = 'card';
+		global.wcpaySettings.dismissedDuplicateNotices = 'card';
 		render( <PaymentMethods /> );
 
 		expect(
@@ -433,7 +433,7 @@ describe( 'PaymentMethods', () => {
 	it( 'duplicate notice should appear when not dismissed', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
-		// global.wcpaySettings.dismissedPaymentMethodNotices = 'card';
+		// global.wcpaySettings.dismissedDuplicateNotices = 'card';
 		render( <PaymentMethods /> );
 
 		expect(

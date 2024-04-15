@@ -88,7 +88,7 @@ const PaymentMethods = () => {
 	const [
 		skippedDuplicatedMethodNotices,
 		setSkippedDuplicatedMethodNotices,
-	] = useState( wcpaySettings.dismissedPaymentMethodNotices || [] );
+	] = useState( wcpaySettings.dismissedDuplicateNotices || [] );
 	const handleAddSkipppedDuplicatedMethodNotice = ( skippedNotices ) => {
 		setSkippedDuplicatedMethodNotices( skippedNotices );
 	};
