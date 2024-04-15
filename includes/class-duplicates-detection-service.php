@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Exception;
 use WC_Payments;
 use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
@@ -50,16 +51,23 @@ class Duplicates_Detection_Service {
 	 * @return array Duplicated gateways.
 	 */
 	public function find_duplicates() {
-		$this->gateways_qualified_by_duplicates_detector = [];
+		try {
+			$this->gateways_qualified_by_duplicates_detector = [];
 
-		$this->search_for_cc_payment_methods()
-			->search_for_additional_payment_methods()
-			->search_for_payment_request_buttons()
-			->keep_woopayments_enabled_gateways_only()
-			->keep_duplicates_only();
+			$this->search_for_cc()
+				->search_for_additional_payment_methods()
+				->search_for_payment_request_buttons()
+				->keep_gateways_enabled_in_woopayments()
+				->keep_duplicates_only();
 
-		// Return payment method IDs list so that front-end can successfully compare with its own list.
-		return array_keys( $this->gateways_qualified_by_duplicates_detector );
+			// Return payment method IDs list so that front-end can successfully compare with its own list.
+			return array_keys( $this->gateways_qualified_by_duplicates_detector );
+		} catch ( \Exception $e ) {
+			Logger::warning( 'Duplicates detection service failed silently with the following error: ' . $e->getMessage() );
+
+			// Fail silently and return an empty array in case of any exception.
+			return [];
+		}
 	}
 
 	/**
@@ -67,7 +75,7 @@ class Duplicates_Detection_Service {
 	 *
 	 * @return Duplicates_Detection_Service
 	 */
-	private function search_for_cc_payment_methods() {
+	private function search_for_cc() {
 		$keywords         = [ 'credit_card', 'creditcard', 'cc', 'card' ];
 		$special_keywords = [ 'woocommerce_payments', 'stripe' ];
 
@@ -156,7 +164,7 @@ class Duplicates_Detection_Service {
 		 *
 		 * @return Duplicates_Detection_Service
 		 */
-	private function keep_woopayments_enabled_gateways_only() {
+	private function keep_gateways_enabled_in_woopayments() {
 		$woopayments_gateway_ids = array_map(
 			function ( $gateway ) {
 				return $gateway->id; },
