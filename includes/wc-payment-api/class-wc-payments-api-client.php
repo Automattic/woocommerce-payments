@@ -79,7 +79,7 @@ class WC_Payments_API_Client {
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 	const COMPATIBILITY_API            = 'compatibility';
-	const REPORTING_API                = 'reporting';
+	const REPORTING_API                = 'reporting/payment_activity';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
