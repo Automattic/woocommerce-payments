@@ -35,7 +35,7 @@ const PaymentsActivityData: React.FC = () => {
 		getDateRange()
 	);
 
-	const totalPaymentsVolume = paymentActivityData?.total_payments_volume ?? 0;
+	const totalPaymentsVolume = paymentActivityData?.total_payment_volume ?? 0;
 	const charges = paymentActivityData?.charges ?? 0;
 	const fees = paymentActivityData?.fees ?? 0;
 	const disputes = paymentActivityData?.disputes ?? 0;

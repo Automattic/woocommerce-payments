@@ -6,7 +6,7 @@ export interface DateRange {
 export interface PaymentsActivityData {
 	paymentActivityData: {
 		// Data for the payments activity
-		total_payments_volume: number; // Total payments volume
+		total_payment_volume: number; // Total payment volume
 		charges: number; // Charges
 		fees: number; // Fees
 		disputes: number; // Disputes

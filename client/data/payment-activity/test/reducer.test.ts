@@ -7,7 +7,7 @@ import { PaymentActivityData } from '../types';
 
 describe( 'receivePaymentActivity', () => {
 	const mockPaymentActivityData: PaymentActivityData = {
-		total_payments_volume: 2500,
+		total_payment_volume: 2500,
 		charges: 3000,
 		fees: 300,
 		disputes: 315,
