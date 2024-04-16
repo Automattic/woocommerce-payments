@@ -4253,10 +4253,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_theme_icon() {
-		$upe_appearance_theme = get_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
-		if ( $upe_appearance_theme ) {
-			return 'night' === $upe_appearance_theme ? $this->payment_method->get_dark_icon() : $this->payment_method->get_icon();
+		$upe_appearance_theme        = get_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
+		$upe_blocks_appearance_theme = get_transient( self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
+
+		if ( 'night' === $upe_appearance_theme || 'night' === $upe_blocks_appearance_theme ) {
+			return $this->payment_method->get_dark_icon();
 		}
+
 		return $this->payment_method->get_icon();
 	}
 

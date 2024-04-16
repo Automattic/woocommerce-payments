@@ -29,6 +29,7 @@ class WC_Payments_Order_Success_Page {
 	public function register_payment_method_override() {
 		// Override the payment method title on the order received page.
 		add_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woopay_payment_method_name' ], 10, 2 );
+		add_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_bnpl_payment_method_name' ], 10, 2 );
 	}
 
 	/**
@@ -36,6 +37,7 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function unregister_payment_method_override() {
 		remove_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woopay_payment_method_name' ], 10 );
+		remove_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_bnpl_payment_method_name' ], 10 );
 	}
 
 	/**
@@ -60,7 +62,7 @@ class WC_Payments_Order_Success_Page {
 
 		ob_start();
 		?>
-		<div class="wc-payment-gateway-method-name-woopay-wrapper">
+		<div class="wc-payment-gateway-method-logo-wrapper">
 			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
@@ -68,6 +70,50 @@ class WC_Payments_Order_Success_Page {
 				echo esc_html( $order->get_meta( 'last4' ) );
 			}
 			?>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Add the BNPL logo to the payment method name on the order received page.
+	 *
+	 * @param string            $payment_method_title the default payment method title.
+	 * @param WC_Abstract_Order $abstract_order the order being shown.
+	 */
+	public function show_bnpl_payment_method_name( $payment_method_title, $abstract_order ) {
+
+		// Only change the payment method title on the order received page.
+		if ( ! is_order_received_page() ) {
+			return $payment_method_title;
+		}
+
+		$order_id = $abstract_order->get_id();
+		$order    = wc_get_order( $order_id );
+		$bnpl_methods = [
+			'Affirm',
+			'Afterpay',
+			'Clearpay',
+			'Klarna',
+		];
+
+		if ( ! $order || ! in_array( $payment_method_title, $bnpl_methods, true ) ) {
+			return $payment_method_title;
+		}
+
+		$payment_method_id = $order->get_payment_method();
+		$payment_method = WC()->payment_gateways()->payment_gateways()[ $payment_method_id ];
+
+		if ( ! $payment_method ) {
+			return $payment_method_id . ' - not found';
+		}
+
+		$method_logo_url = $payment_method->get_theme_icon();
+
+		ob_start();
+		?>
+		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-bnpl-logo">
+			<img alt="<?php echo $payment_method_title; ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
 		</div>
 		<?php
 		return ob_get_clean();
