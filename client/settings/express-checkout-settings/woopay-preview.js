@@ -10,7 +10,6 @@ import { chevronDown, Icon } from '@wordpress/icons';
  * Internal dependencies.
  */
 import { NAMESPACE } from 'wcpay/data/constants';
-import LockKeyhole from 'wcpay/settings/express-checkout-settings/assets/icons/lock-keyhole';
 
 const VerticalSpacer = ( { height } ) => {
 	return <div className="preview-layout__v-spacer" style={ { height } } />;
@@ -39,14 +38,6 @@ const StoreHeader = ( { height, variant = 'test', children } ) => {
 const PreviewBody = ( { height, children } ) => {
 	return (
 		<div className="preview-layout__body" style={ { height } }>
-			{ children }
-		</div>
-	);
-};
-
-const CheckoutRow = ( { height, children } ) => {
-	return (
-		<div className="preview-layout__checkout-row" style={ { height } }>
 			{ children }
 		</div>
 	);
@@ -193,19 +184,6 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 				</StoreHeader>
 				<VerticalSpacer height={ storeLogo ? '0.5rem' : '1rem' } />
 				<PreviewBody>
-					<CheckoutRow height="1.25rem">
-						<div className="checkout-text">Checkout</div>
-						<div className="secure-block">
-							<LockKeyhole
-								width="8"
-								height="8"
-								viewBox="0 0 16 16"
-							/>
-							<span className="secure-block__text">
-								Secure and encrypted with AES-256
-							</span>
-						</div>
-					</CheckoutRow>
 					<VerticalSpacer height="0.747rem" />
 					<hr className="preview-layout__hr" />
 					<VerticalSpacer height="0.747rem" />
