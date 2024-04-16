@@ -15,6 +15,10 @@ const VerticalSpacer = ( { height } ) => {
 	return <div className="preview-layout__v-spacer" style={ { height } } />;
 };
 
+const PreviewButton = () => {
+	return <div className="preview-layout__preview-button">Preview</div>;
+};
+
 const PreviewContainer = ( { height, children } ) => {
 	return (
 		<div className="preview-layout__container" style={ { height } }>
@@ -174,6 +178,7 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 	return (
 		<div className="preview-layout" style={ style } { ...restProps }>
 			<VerticalSpacer height="1.5rem" />
+			<PreviewButton />
 			<PreviewContainer>
 				<StoreHeader
 					className="preview-layout__store-header"

@@ -143,16 +143,32 @@
 			border-radius: $grid-unit-05;
 			box-shadow: 0 2px 6px 0 rgba( 0, 0, 0, 0.05 );
 			padding: 0 3.797%;
+			position: relative;
 
 			&__v-spacer {
 				background-color: #0000;
 				width: 100%;
 			}
 
+			&__preview-button {
+				position: absolute;
+				top: 0.3125rem;
+				right: 0.3125rem;
+				padding: 0.125rem 0.5rem;
+				border-radius: 0.125rem;
+				background-color: #3858e9;
+				color: $studio-white;
+				line-height: 1rem;
+				font-size: 0.75rem;
+				font-weight: 400;
+				z-index: 1;
+			}
+
 			&__store-header {
 				width: 100%;
 				display: flex;
 				justify-content: center;
+				position: relative;
 
 				.header-text {
 					color: $studio-gray-60;
