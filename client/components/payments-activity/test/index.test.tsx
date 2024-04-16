@@ -68,6 +68,13 @@ describe( 'PaymentsActivity component', () => {
 				},
 			},
 		};
+		Date.now = jest.fn( () =>
+			new Date( '2024-04-08T12:33:37.000Z' ).getTime()
+		);
+	} );
+
+	afterEach( () => {
+		Date.now = () => new Date().getTime();
 	} );
 
 	it( 'should render', () => {
