@@ -45,7 +45,7 @@
 		width: 64px;
 		height: 40px;
 		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
-		background: #fff;
+		background: $studio-white;
 
 		svg {
 			display: inline-block;
@@ -134,7 +134,7 @@
 			background: linear-gradient(
 				180deg,
 				rgba( 255, 255, 255, 0 ) 0%,
-				#fff 100%
+				$studio-white 100%
 			);
 		}
 
