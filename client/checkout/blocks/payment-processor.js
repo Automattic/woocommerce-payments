@@ -19,11 +19,11 @@ import { useEffect, useRef } from 'react';
 import { usePaymentCompleteHandler } from './hooks';
 import {
 	getStripeElementOptions,
-	useCustomerData,
 	blocksShowLinkButtonHandler,
 	getBlocksEmailValue,
 	isLinkEnabled,
 } from 'wcpay/checkout/utils/upe';
+import { useCustomerData } from './utils';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/classic/payment-processing';

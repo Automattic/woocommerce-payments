@@ -26,24 +26,44 @@ describe( 'AccountTools', () => {
 		};
 
 		const { container } = render(
-			<AccountTools accountLink={ accountLink } openModal={ openModal } />
+			<AccountTools
+				accountLink={ accountLink }
+				detailsSubmitted={ false }
+				openModal={ openModal }
+			/>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 
-	it( 'should not render in sandbox mode', () => {
+	it( 'should render in sandbox mode', () => {
+		global.wcpaySettings = {
+			devMode: true,
+		};
+
+		const { container } = render(
+			<AccountTools
+				accountLink={ accountLink }
+				detailsSubmitted={ false }
+				openModal={ openModal }
+			/>
+		);
+
+		expect( container ).toMatchSnapshot();
+	} );
+
+	it( 'should render in sandbox mode for details submitted account without finish setup button', () => {
 		global.wcpaySettings = {
 			devMode: true,
 		};
 
 		render(
-			<AccountTools accountLink={ accountLink } openModal={ openModal } />
+			<AccountTools
+				accountLink={ accountLink }
+				detailsSubmitted={ true }
+				openModal={ openModal }
+			/>
 		);
 
-		expect(
-			screen.queryByText(
-				'If you are experiencing problems completing account setup, or need to change the email/country associated with your account, you can reset your account and start from the beginning.'
-			)
-		).not.toBeInTheDocument();
+		expect( screen.queryByText( 'Finish setup' ) ).not.toBeInTheDocument();
 	} );
 } );

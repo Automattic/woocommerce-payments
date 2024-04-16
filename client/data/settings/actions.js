@@ -217,10 +217,14 @@ export function* saveSettings() {
 
 		yield updateIsSavingSettings( true, null );
 
-		yield apiFetch( {
+		const response = yield apiFetch( {
 			path: `${ NAMESPACE }/settings`,
 			method: 'post',
 			data: settings,
+		} );
+
+		yield updateSettingsValues( {
+			payment_method_statuses: response.data.payment_method_statuses,
 		} );
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(

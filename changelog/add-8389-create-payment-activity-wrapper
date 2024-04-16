@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add a parent wrapper component for Payment Activity widget. This will be visible on the Payments Overview page

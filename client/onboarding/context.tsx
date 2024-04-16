@@ -7,13 +7,12 @@ import { isNil, omitBy } from 'lodash';
 /**
  * Internal dependencies
  */
-import { OnboardingFields, TempData } from './types';
+import { OnboardingFields } from './types';
 
 const useContextValue = ( initialState = {} as OnboardingFields ) => {
 	const [ data, setData ] = useState( initialState );
 	const [ errors, setErrors ] = useState( {} as OnboardingFields );
 	const [ touched, setTouched ] = useState( {} as OnboardingFields );
-	const [ temp, setTemp ] = useState( {} as TempData );
 
 	return {
 		data,
@@ -25,9 +24,6 @@ const useContextValue = ( initialState = {} as OnboardingFields ) => {
 		touched,
 		setTouched: ( value: Record< string, boolean > ) =>
 			setTouched( ( prev ) => ( { ...prev, ...value } ) ),
-		temp,
-		setTemp: ( value: Partial< TempData > ) =>
-			setTemp( ( prev ) => ( { ...prev, ...value } ) ),
 	};
 };
 

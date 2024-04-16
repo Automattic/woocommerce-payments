@@ -22,13 +22,6 @@ defined( 'ABSPATH' ) || exit; // block direct access.
 class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
-	 * Legacy prefix used for WooPay user events
-	 *
-	 * @var string
-	 */
-	private static $legacy_user_prefix = 'woocommerceanalytics';
-
-	/**
 	 * WCPay user event prefix
 	 *
 	 * @var string
@@ -107,10 +100,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 				$tracks_data = $event_prop;
 			}
 		}
-		// Legacy events are shopper events that still use the woocommerceanalytics prefix.
-		// These need to be migrated to the wcpay prefix.
-		$is_legacy_event = isset( $_REQUEST['isLegacy'] ) ? rest_sanitize_boolean( wc_clean( wp_unslash( $_REQUEST['isLegacy'] ) ) ) : false;
-		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data, $is_legacy_event );
+		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data );
 
 		wp_send_json_success();
 	}
@@ -132,13 +122,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @param string  $event name of the event.
 	 * @param array   $data array of event properties.
-	 * @param boolean $is_legacy indicate whether this is a legacy event.
 	 */
-	public function maybe_record_event( $event, $data = [], $is_legacy = true ) {
+	public function maybe_record_event( $event, $data = [] ) {
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
-			$prefix = $is_legacy ? self::$legacy_user_prefix : self::$user_prefix;
-			$event  = $prefix . '_' . $event;
+			$event  = self::$user_prefix . '_' . $event;
 		}
 
 		return $this->tracks_record_event( $event, $data );

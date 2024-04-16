@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Not user facing - Changes are behind a feature flag. Adds the basic UI scaffold for the Payments Activity widget.

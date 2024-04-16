@@ -51,7 +51,7 @@ class Trait_Order_Info_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->set_parent( $mock_order );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function( $parent_order ) use ( $mock_subscription ) {
+			function ( $parent_order ) use ( $mock_subscription ) {
 				return [ $mock_subscription ];
 			}
 		);

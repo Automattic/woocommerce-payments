@@ -62,7 +62,6 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [],
 			]
 		);
-
 	}
 
 	/**
@@ -118,7 +117,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 		 */
 		add_filter(
 			'rest_pre_serve_request',
-			function ( bool $served, WP_HTTP_Response $response ) : bool {
+			function ( bool $served, WP_HTTP_Response $response ): bool {
 				echo $response->get_data(); // @codingStandardsIgnoreLine
 				return true;
 			},
@@ -134,7 +133,6 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 				'Content-Disposition' => 'inline',
 			]
 		);
-
 	}
 
 	/**
@@ -191,7 +189,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WP_Error
 	 */
-	private function file_error_response( WP_Error $error ) : WP_Error {
+	private function file_error_response( WP_Error $error ): WP_Error {
 		$error_status_code = 'resource_missing' === $error->get_error_code() ? WP_Http::NOT_FOUND : WP_Http::INTERNAL_SERVER_ERROR;
 		return new WP_Error(
 			$error->get_error_code(),

@@ -15,6 +15,7 @@ import { getUPEConfig } from 'utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
 import WCPayAPI from '../api';
 import { SavedTokenHandler } from './saved-token-handler';
+import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
@@ -68,6 +69,9 @@ const api = new WCPayAPI(
 	},
 	request
 );
+
+const stripeAppearance = getUPEConfig( 'wcBlocksUPEAppearance' );
+
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
@@ -99,19 +103,13 @@ Object.entries( enabledPaymentMethodsConfig )
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
 			label: (
-				<>
-					<span>
-						{ upeConfig.title }
-						<img
-							src={
-								upeAppearanceTheme === 'night'
-									? upeConfig.darkIcon
-									: upeConfig.icon
-							}
-							alt={ upeConfig.title }
-						/>
-					</span>
-				</>
+				<PaymentMethodLabel
+					api={ api }
+					upeConfig={ upeConfig }
+					upeName={ upeName }
+					stripeAppearance={ stripeAppearance }
+					upeAppearanceTheme={ upeAppearanceTheme }
+				/>
 			),
 			ariaLabel: 'WooPayments',
 			supports: {
@@ -150,7 +148,7 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 		handleWooPayEmailInput( '#email', api, true );
 	}
 
-	if ( getUPEConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
+	if ( getUPEConfig( 'shouldShowWooPayButton' ) ) {
 		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
 	}
 }

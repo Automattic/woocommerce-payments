@@ -409,6 +409,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-large-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
+		include_once __DIR__ . '/exceptions/class-cannot-combine-currencies-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
@@ -556,9 +557,14 @@ class WC_Payments {
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 		self::$apple_pay_registration->init_hooks();
 
+		$express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
+		self::set_express_checkout_helper( $express_checkout_helper );
+
 		self::maybe_display_express_checkout_buttons();
 
-		self::maybe_enable_woopay_direct_checkout();
+		self::maybe_init_woopay_direct_checkout();
+
+		self::maybe_enqueue_woopay_common_config_script( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 
 		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
 		$enabled_bnpl_payment_methods = array_intersect(
@@ -567,6 +573,9 @@ class WC_Payments {
 		);
 		if ( [] !== $enabled_bnpl_payment_methods ) {
 			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
+			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
+			add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ] );
+			add_action( 'wc_ajax_wcpay_get_cart_total', [ __CLASS__, 'ajax_get_cart_total' ] );
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -625,6 +634,10 @@ class WC_Payments {
 
 			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway() );
 			$admin_settings->init_hooks();
+
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-bnpl-announcement.php';
+			$bnpl_announcement = new WC_Payments_Bnpl_Announcement( self::get_gateway(), self::get_account_service(), time() );
+			$bnpl_announcement->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
@@ -1054,6 +1067,9 @@ class WC_Payments {
 		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
 		$reports_authorizations_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
+		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
+		$woopay_session_controller->register_routes();
 	}
 
 	/**
@@ -1165,6 +1181,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Express_Checkout_Button_Helper instance.
+	 *
+	 * @return WC_Payments_Express_Checkout_Button_Helper instance.
+	 */
+	public static function get_express_checkout_helper() {
+		return self::$express_checkout_helper;
+	}
+
+	/**
 	 * Returns the Database_Cache instance.
 	 *
 	 * @return Database_Cache Database_Cache instance.
@@ -1189,6 +1214,15 @@ class WC_Payments {
 	 */
 	public static function set_gateway( $gateway ) {
 		self::$card_gateway = $gateway;
+	}
+
+	/**
+	 * Sets the express checkout helper instance.
+	 *
+	 * @param WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper The express checkout helper instance.
+	 */
+	public static function set_express_checkout_helper( $express_checkout_helper ) {
+		self::$express_checkout_helper = $express_checkout_helper;
 	}
 
 	/**
@@ -1358,7 +1392,7 @@ class WC_Payments {
 				<div class="notice wcpay-notice notice-error">
 					<p>
 					<?php
-					echo WC_Payments_Utils::esc_interpolated_html(
+					echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						sprintf(
 							/* translators: %1$s: WooCommerce, %2$s: WooPayments, a1: documentation URL */
 							__( 'The %1$s version you have installed is not compatible with %2$s for a Norwegian business. Please update %1$s to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
@@ -1426,6 +1460,7 @@ class WC_Payments {
 			add_action( 'wc_ajax_wcpay_init_woopay', [ WooPay_Session::class, 'ajax_init_woopay' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_session', [ WooPay_Session::class, 'ajax_get_woopay_session' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
+			add_action( 'wc_ajax_wcpay_get_woopay_minimum_session_data', [ WooPay_Session::class, 'ajax_get_woopay_minimum_session_data' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
 			// We should remove this once both features are available by default in the WC minimum supported version.
@@ -1471,13 +1506,67 @@ class WC_Payments {
 	 *
 	 * @return void
 	 */
-	public static function maybe_enable_woopay_direct_checkout() {
-		if ( ! WC_Payments_Features::is_woopay_enabled() || ! WC_Payments_Features::is_woopay_direct_checkout_enabled() ) {
+	public static function maybe_init_woopay_direct_checkout() {
+		if ( ! WC_Payments_Features::is_woopay_direct_checkout_enabled() ) {
 			return;
 		}
 
 		$woopay_direct_checkout = new WC_Payments_WooPay_Direct_Checkout();
 		$woopay_direct_checkout->init();
+	}
+
+	/**
+	 * Enqueues the common config script if the express checkout button is disabled on the cart page.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_woopay_common_config_script() {
+		$is_express_button_disabled_on_cart = self::get_express_checkout_helper()->is_cart()
+			&& ! self::get_express_checkout_helper()->is_available_at( 'cart', WC_Payments_WooPay_Button_Handler::BUTTON_LOCATIONS );
+		// If the express checkout button is disabled on the cart page, the common config
+		// script needs to be enqueued to ensure wcpayConfig is available on the cart page.
+		if ( $is_express_button_disabled_on_cart ) {
+			try {
+				// is_test() throws if the class 'Mode' has not been initialized.
+				$is_test_mode = self::mode()->is_test();
+			} catch ( Exception $e ) {
+				// Default to false if the class 'Mode' has not been initialized.
+				$is_test_mode = false;
+			}
+
+			wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
+			wp_localize_script(
+				'WCPAY_WOOPAY_COMMON_CONFIG',
+				'wcpayConfig',
+				[
+					'woopayHost'                    => WooPay_Utilities::get_woopay_url(),
+					'testMode'                      => $is_test_mode,
+					'wcAjaxUrl'                     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+					'woopaySessionNonce'            => wp_create_nonce( 'woopay_session_nonce' ),
+					'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
+					'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),
+					'ajaxUrl'                       => admin_url( 'admin-ajax.php' ),
+					'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
+				]
+			);
+			wp_enqueue_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
+		}
+	}
+
+	/**
+	 * Enqueues the common config script if the WooPay Direct Checkout flow is
+	 * enabled and the express checkout button is disabled on the cart page.
+	 *
+	 * @param bool $should_enqueue Whether the script should be enqueued.
+	 *
+	 * @return void
+	 */
+	public static function maybe_enqueue_woopay_common_config_script( $should_enqueue ) {
+		if ( ! $should_enqueue ) {
+			return;
+		}
+
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_woopay_common_config_script' ] );
 	}
 
 	/**
@@ -1487,10 +1576,9 @@ class WC_Payments {
 	 */
 	public static function maybe_display_express_checkout_buttons() {
 		if ( WC_Payments_Features::are_payments_enabled() ) {
-			$express_checkout_helper                 = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
-			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), $express_checkout_helper );
-			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, $express_checkout_helper );
-			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, $express_checkout_helper );
+			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), self::get_express_checkout_helper() );
+			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, self::get_express_checkout_helper() );
+			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, self::get_express_checkout_helper() );
 			$express_checkout_button_display_handler->init();
 		}
 	}
@@ -1520,6 +1608,28 @@ class WC_Payments {
 			],
 			200
 		);
+	}
+
+	/**
+	 * Get cart total.
+	 */
+	public static function ajax_get_cart_total() {
+		check_ajax_referer( 'wcpay-get-cart-total', 'security' );
+
+		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
+			define( 'WOOCOMMERCE_CART', true );
+		}
+
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+			define( 'WOOCOMMERCE_CHECKOUT', true );
+		}
+
+		WC()->cart->calculate_totals();
+
+		$cart_total    = WC()->cart->total;
+		$currency_code = get_woocommerce_currency();
+
+		wp_send_json( [ 'total' => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ) ] );
 	}
 
 	/**
@@ -1583,6 +1693,11 @@ class WC_Payments {
 
 		self::register_script_with_dependencies( 'WCPAY_CART', 'dist/cart' );
 		wp_enqueue_script( 'WCPAY_CART' );
+
+		if ( WC_Payments_Utils::is_cart_block() ) {
+			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-cart-block-frontend' ] );
+			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
+		}
 	}
 
 	/**
@@ -1755,7 +1870,7 @@ class WC_Payments {
 		<div class="notice wcpay-notice notice-error">
 			<p>
 			<?php
-			echo WC_Payments_Utils::esc_interpolated_html(
+			echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				sprintf(
 					$notice,
 					'WooCommerce',

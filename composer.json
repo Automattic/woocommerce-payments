@@ -32,7 +32,7 @@
     "require-dev": {
         "composer/installers": "1.10.0",
         "phpunit/phpunit": "9.5.14",
-        "woocommerce/woocommerce-sniffs": "0.1.0",
+        "woocommerce/woocommerce-sniffs": "1.0.0",
         "woocommerce/action-scheduler": "3.1.6",
         "kalessil/production-dependencies-guard": "dev-master",
         "vimeo/psalm": "4.13.1",
@@ -44,8 +44,9 @@
         "automattic/jetpack-changelogger": "3.3.2",
         "spatie/phpunit-watcher": "1.23",
         "woocommerce/qit-cli": "0.4.0",
-        "slevomat/coding-standard": "8.0.0",
-        "dg/bypass-finals": "1.5.1"
+        "slevomat/coding-standard": "8.15.0",
+        "dg/bypass-finals": "1.5.1",
+        "sirbrillig/phpcs-variable-analysis": "^2.11"
     },
     "scripts": {
         "test": [

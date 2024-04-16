@@ -12,9 +12,6 @@ import CustomSelectControl, {
 	ControlProps as SelectControlProps,
 	Item as SelectItem,
 } from '../custom-select-control';
-import PhoneNumberControl, {
-	PhoneNumberControlProps,
-} from '../phone-number-control';
 import GroupedSelectControl, {
 	GroupedSelectControlProps,
 	ListItem as GroupedSelectItem,
@@ -28,7 +25,6 @@ interface CommonProps {
 export type TextFieldProps = TextControl.Props & CommonProps;
 export type SelectFieldProps< ItemType > = SelectControlProps< ItemType > &
 	CommonProps;
-export type PhoneNumberFieldProps = PhoneNumberControlProps & CommonProps;
 export type GroupedSelectFieldProps< ItemType > = GroupedSelectControlProps<
 	ItemType
 > &
@@ -70,9 +66,6 @@ export const TextField = forwardRef< HTMLInputElement, TextFieldProps >(
 export const SelectField = < ItemType extends SelectItem >(
 	props: SelectFieldProps< ItemType >
 ): JSX.Element => makeField( CustomSelectControl, props );
-
-export const PhoneNumberField: React.FC< PhoneNumberFieldProps > = ( props ) =>
-	makeField( PhoneNumberControl, props );
 
 export const GroupedSelectField = < ItemType extends GroupedSelectItem >(
 	props: GroupedSelectControlProps< ItemType >

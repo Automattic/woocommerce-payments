@@ -148,9 +148,10 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return array The modified config array.
 	 */
 	public function add_woopay_config( $config ) {
-		$config['woopayButton']      = $this->get_button_settings();
-		$config['woopayButtonNonce'] = wp_create_nonce( 'woopay_button_nonce' );
-		$config['addToCartNonce']    = wp_create_nonce( 'wcpay-add-to-cart' );
+		$config['woopayButton']           = $this->get_button_settings();
+		$config['woopayButtonNonce']      = wp_create_nonce( 'woopay_button_nonce' );
+		$config['addToCartNonce']         = wp_create_nonce( 'wcpay-add-to-cart' );
+		$config['shouldShowWooPayButton'] = $this->should_show_woopay_button();
 
 		return $config;
 	}
