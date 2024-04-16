@@ -26,6 +26,7 @@ import Pill from '../pill';
 import InlineNotice from '../inline-notice';
 import './payment-method.scss';
 import DuplicateNotice from '../duplicate-notice';
+import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
 
 interface PaymentMethodProps {
 	id: string;
@@ -45,9 +46,6 @@ interface PaymentMethodProps {
 	locked: boolean;
 	isPoEnabled: boolean;
 	isPoComplete: boolean;
-	duplicates: string[];
-	dismissedDuplicateNotices: string[];
-	setDismissedDuplicateNotices: ( notices: string[] ) => void;
 }
 
 const PaymentMethodLabel = ( {
@@ -120,9 +118,6 @@ const PaymentMethod = ( {
 	locked,
 	isPoEnabled,
 	isPoComplete,
-	duplicates,
-	dismissedDuplicateNotices,
-	setDismissedDuplicateNotices,
 }: PaymentMethodProps ): React.ReactElement => {
 	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
 	const isPoInProgress =
@@ -151,6 +146,11 @@ const PaymentMethod = ( {
 		isPoInProgress ||
 		upeCapabilityStatuses.REJECTED === status;
 	const shouldDisplayNotice = id === 'sofort';
+	const {
+		duplicates,
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
+	} = useContext( DuplicatedPaymentMethodsContext );
 	const isDuplicate = duplicates.includes( id );
 
 	const needsOverlay =

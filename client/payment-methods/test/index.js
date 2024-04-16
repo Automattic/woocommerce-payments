@@ -23,6 +23,7 @@ import {
 	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
 
 jest.mock( '@woocommerce/components', () => {
 	return {
@@ -420,8 +421,18 @@ describe( 'PaymentMethods', () => {
 	it( 'duplicate notices should not appear when dismissed', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
-		global.wcpaySettings.dismissedDuplicateNotices = 'card';
-		render( <PaymentMethods /> );
+
+		render(
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: [ 'card' ],
+					dismissedDuplicateNotices: [ 'card' ],
+					setDismissedDuplicateNotices: jest.fn(),
+				} }
+			>
+				<PaymentMethods />
+			</DuplicatedPaymentMethodsContext.Provider>
+		);
 
 		expect(
 			screen.queryByText(
@@ -433,8 +444,18 @@ describe( 'PaymentMethods', () => {
 	it( 'duplicate notice should appear when not dismissed', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
-		// global.wcpaySettings.dismissedDuplicateNotices = 'card';
-		render( <PaymentMethods /> );
+
+		render(
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: [ 'card' ],
+					dismissedDuplicateNotices: [],
+					setDismissedDuplicateNotices: jest.fn(),
+				} }
+			>
+				<PaymentMethods />
+			</DuplicatedPaymentMethodsContext.Provider>
+		);
 
 		expect(
 			screen.queryByText(

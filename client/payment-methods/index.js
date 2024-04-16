@@ -18,7 +18,6 @@ import {
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
 	useAccountDomesticCurrency,
-	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
 import PAYMENT_METHOD_IDS from './constants';
 
@@ -39,8 +38,6 @@ const PaymentMethods = () => {
 	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
-
-	const duplicatedPaymentMethodIds = useGetDuplicatedPaymentMethodIds();
 
 	// We filter link payment method since this will be displayed in other section (express checkout).
 	// We further split the available methods into pay later and non-pay later methods to sort them in the required order later.
@@ -84,14 +81,6 @@ const PaymentMethods = () => {
 	};
 
 	const [ , updateUnselectedPaymentMethod ] = useUnselectedPaymentMethod();
-
-	const [
-		dismissedDuplicateNotices,
-		setDismissedDuplicateNotices,
-	] = useState( wcpaySettings.dismissedDuplicateNotices || [] );
-	const handleSetDismissedDuplicateNotices = ( skippedNotices ) => {
-		setDismissedDuplicateNotices( skippedNotices );
-	};
 
 	const completeDeleteAction = ( itemId ) => {
 		updateUnselectedPaymentMethod( itemId );
@@ -227,15 +216,6 @@ const PaymentMethods = () => {
 										isPoComplete={
 											wcpaySettings?.progressiveOnboarding
 												?.isComplete
-										}
-										duplicates={
-											duplicatedPaymentMethodIds
-										}
-										dismissedDuplicateNotices={
-											dismissedDuplicateNotices
-										}
-										setDismissedDuplicateNotices={
-											handleSetDismissedDuplicateNotices
 										}
 									/>
 								);

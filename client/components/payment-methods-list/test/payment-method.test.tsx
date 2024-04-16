@@ -12,6 +12,7 @@ import { act } from 'react-dom/test-utils';
  * Internal dependencies
  */
 import PaymentMethod from '../payment-method';
+import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
 
 describe( 'PaymentMethod', () => {
 	let checked = false;
@@ -44,9 +45,6 @@ describe( 'PaymentMethod', () => {
 				locked={ false }
 				isPoEnabled={ false }
 				isPoComplete={ false }
-				duplicates={ [] }
-				dismissedDuplicateNotices={ [] }
-				setDismissedDuplicateNotices={ jest.fn() }
 			/>
 		);
 	};
@@ -105,9 +103,6 @@ describe( 'PaymentMethod', () => {
 				required={ false }
 				isPoEnabled={ false }
 				isPoComplete={ false }
-				duplicates={ [] }
-				dismissedDuplicateNotices={ [] }
-				setDismissedDuplicateNotices={ jest.fn() }
 			/>
 		);
 	};
@@ -135,7 +130,7 @@ describe( 'PaymentMethod', () => {
 		jest.useRealTimers();
 	} );
 
-	const getComponentWithDuplicates = ( id: string, duplicates: string[] ) => (
+	const getDuplicateComponent = ( id: string ) => (
 		<PaymentMethod
 			label="Test Method"
 			id={ id }
@@ -150,14 +145,21 @@ describe( 'PaymentMethod', () => {
 			locked={ false }
 			isPoEnabled={ false }
 			isPoComplete={ false }
-			duplicates={ duplicates }
-			dismissedDuplicateNotices={ [] }
-			setDismissedDuplicateNotices={ setDismissedDuplicateNoticesMock }
 		/>
 	);
 
 	test( 'does not render DuplicateNotice if payment method is not in duplicates', () => {
-		render( getComponentWithDuplicates( 'card', [ 'ideal' ] ) );
+		render(
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: [ 'ideal' ],
+					dismissedDuplicateNotices: [],
+					setDismissedDuplicateNotices: setDismissedDuplicateNoticesMock,
+				} }
+			>
+				{ getDuplicateComponent( 'card' ) }
+			</DuplicatedPaymentMethodsContext.Provider>
+		);
 
 		expect(
 			screen.queryByText(
@@ -167,7 +169,17 @@ describe( 'PaymentMethod', () => {
 	} );
 
 	test( 'render DuplicateNotice if payment method is in duplicates', () => {
-		render( getComponentWithDuplicates( 'card', [ 'card' ] ) );
+		render(
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: [ 'card' ],
+					dismissedDuplicateNotices: [],
+					setDismissedDuplicateNotices: setDismissedDuplicateNoticesMock,
+				} }
+			>
+				{ getDuplicateComponent( 'card' ) }
+			</DuplicatedPaymentMethodsContext.Provider>
+		);
 
 		expect(
 			screen.queryByText(

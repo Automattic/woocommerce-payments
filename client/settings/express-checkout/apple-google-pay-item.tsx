@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 
 /**
  * Internal dependencies
@@ -13,12 +13,12 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
 import {
 	usePaymentRequestEnabledSettings,
 	useExpressCheckoutShowIncompatibilityNotice,
-	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
 import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
+import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const id = 'apple_pay_google_pay';
@@ -29,16 +29,12 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
 
 	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
-	const duplicatedPaymentMethods = useGetDuplicatedPaymentMethodIds() as string[];
-	const isDuplicate = duplicatedPaymentMethods.includes( id );
-	const [
+	const {
+		duplicates,
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
-	] = useState( wcpaySettings.dismissedDuplicateNotices || [] );
-
-	const handleSetDismissedDuplicateNotices = ( skippedNotices: string[] ) => {
-		setDismissedDuplicateNotices( skippedNotices );
-	};
+	} = useContext( DuplicatedPaymentMethodsContext );
+	const isDuplicate = duplicates.includes( id );
 
 	return (
 		<li
@@ -188,7 +184,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					paymentMethod={ id }
 					dismissedDuplicateNotices={ dismissedDuplicateNotices }
 					setDismissedDuplicateNotices={
-						handleSetDismissedDuplicateNotices
+						setDismissedDuplicateNotices
 					}
 				/>
 			) }
