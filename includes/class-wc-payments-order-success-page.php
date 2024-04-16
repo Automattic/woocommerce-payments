@@ -102,13 +102,17 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		$payment_method_id = $order->get_payment_method();
-		$payment_method = WC()->payment_gateways()->payment_gateways()[ $payment_method_id ];
+		$payment_method    = WC()->payment_gateways()->payment_gateways()[ $payment_method_id ];
 
 		if ( ! $payment_method ) {
-			return $payment_method_id . ' - not found';
+			return $payment_method_title;
 		}
 
 		$method_logo_url = $payment_method->get_theme_icon();
+
+		if ( ! $method_logo_url ) {
+			return $payment_method_title;
+		}
 
 		ob_start();
 		?>
