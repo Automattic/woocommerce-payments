@@ -177,7 +177,20 @@
 					overflow: hidden;
 					text-overflow: ellipsis;
 					white-space: nowrap;
+
+					@media screen and ( max-width: $break-mobile ) {
+						// The chevronLeft icon is 5.66% from the left and
+						// has a width of 1.5rem. This padding is to ensure
+						// the text doesn't overlap with the icon.
+						padding-left: calc( 5.66% + 1.5rem );
+					}
 				}
+			}
+
+			&__chevron-left {
+				position: absolute;
+				left: 5.66%;
+				top: 0;
 			}
 
 			&__container {

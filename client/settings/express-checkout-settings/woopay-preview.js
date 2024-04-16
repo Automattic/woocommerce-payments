@@ -4,7 +4,7 @@
  */
 import React, { useMemo } from 'react';
 import { decodeEntities } from '@wordpress/html-entities';
-import { chevronDown, Icon } from '@wordpress/icons';
+import { chevronDown, chevronLeft, Icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies.
@@ -24,6 +24,16 @@ const PreviewContainer = ( { height, children } ) => {
 		<div className="preview-layout__container" style={ { height } }>
 			{ children }
 		</div>
+	);
+};
+
+const ChevronLeft = () => {
+	return (
+		<Icon
+			className="preview-layout__chevron-left"
+			icon={ chevronLeft }
+			size={ 24 }
+		/>
 	);
 };
 
@@ -185,6 +195,7 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 					variant={ storeLogo ? 'logo' : 'text' }
 					height={ storeLogo ? '2rem' : '1.5rem' }
 				>
+					<ChevronLeft />
 					{ storeHeader }
 				</StoreHeader>
 				<VerticalSpacer height={ storeLogo ? '0.5rem' : '1rem' } />
