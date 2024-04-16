@@ -50,7 +50,11 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 		setDontShowAgain();
 	};
 
-	return showBanner ? (
+	if ( ! showBanner ) {
+		return null;
+	}
+
+	return (
 		<Card>
 			<div className="discoverability-card">
 				<NewPill />
@@ -66,7 +70,7 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 				/>
 			</div>
 		</Card>
-	) : null;
+	);
 };
 
 export default FRTDiscoverabilityBanner;
