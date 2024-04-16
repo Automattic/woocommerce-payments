@@ -4,7 +4,7 @@
  */
 import React, { useMemo } from 'react';
 import { decodeEntities } from '@wordpress/html-entities';
-import { chevronDown, chevronLeft, Icon } from '@wordpress/icons';
+import { chevronLeft, Icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies.
@@ -49,12 +49,8 @@ const StoreHeader = ( { height, variant = 'test', children } ) => {
 	);
 };
 
-const PreviewBody = ( { height, children } ) => {
-	return (
-		<div className="preview-layout__body" style={ { height } }>
-			{ children }
-		</div>
-	);
+const PreviewBody = ( { children } ) => {
+	return <div className="preview-layout__body">{ children }</div>;
 };
 
 const ColumnsContainer = ( { height, children } ) => {
@@ -73,6 +69,14 @@ const LeftColumn = ( { height, children } ) => {
 	);
 };
 
+const ContactSection = ( { children } ) => {
+	return <div className="preview-layout__contact-section">{ children }</div>;
+};
+
+const ContactField = ( { children } ) => {
+	return <div className="preview-layout__contact-field">{ children }</div>;
+};
+
 const RightColumn = ( { height, children } ) => {
 	return (
 		<div className="preview-layout__right-column" style={ { height } }>
@@ -81,11 +85,10 @@ const RightColumn = ( { height, children } ) => {
 	);
 };
 
-const SectionHeader = ( { children, height, isDropdownIncluded = false } ) => {
+const SectionHeader = ( { children, height } ) => {
 	return (
 		<div className="preview-layout__section-header" style={ { height } }>
 			{ children }
-			{ isDropdownIncluded && <Icon icon={ chevronDown } size={ 12 } /> }
 		</div>
 	);
 };
@@ -187,9 +190,9 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 
 	return (
 		<div className="preview-layout" style={ style } { ...restProps }>
-			<VerticalSpacer height="1.5rem" />
 			<PreviewButton />
 			<PreviewContainer>
+				<VerticalSpacer height="0.75rem" />
 				<StoreHeader
 					className="preview-layout__store-header"
 					variant={ storeLogo ? 'logo' : 'text' }
@@ -198,60 +201,74 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 					<ChevronLeft />
 					{ storeHeader }
 				</StoreHeader>
-				<VerticalSpacer height={ storeLogo ? '0.5rem' : '1rem' } />
+				<VerticalSpacer height={ storeLogo ? '0.4rem' : '0.75rem' } />
+				<hr className="preview-layout__hr" />
 				<PreviewBody>
-					<VerticalSpacer height="0.747rem" />
-					<hr className="preview-layout__hr" />
-					<VerticalSpacer height="0.747rem" />
+					<VerticalSpacer height="1.5rem" />
 					<ColumnsContainer>
 						<LeftColumn>
-							<SectionHeader height="0.75rem">
-								Contact
-							</SectionHeader>
-							<VerticalSpacer height="0.498rem" />
-							<LoadingBox height="1.5rem" />
-							<VerticalSpacer height="1.12rem" />
+							<ContactSection>
+								<ContactField>
+									<SectionHeader height="0.75rem">
+										CONTACT
+									</SectionHeader>
+									<VerticalSpacer height="0.5rem" />
+									<LoadingBox height="1.875rem" />
+								</ContactField>
+								<ContactField>
+									<SectionHeader
+										isDropdownIncluded
+										height="0.75rem"
+									>
+										SHIP TO
+									</SectionHeader>
+									<VerticalSpacer height="0.5rem" />
+									<LoadingBox height="3.813rem" />
+								</ContactField>
+								<ContactField>
+									<SectionHeader
+										isDropdownIncluded
+										height="0.75rem"
+									>
+										SHIPPING METHOD
+									</SectionHeader>
+									<VerticalSpacer height="0.5rem" />
+									<LoadingBox height="2.313rem" />
+								</ContactField>
+								<ContactField>
+									<SectionHeader
+										isDropdownIncluded
+										height="0.75rem"
+									>
+										PAY WITH
+									</SectionHeader>
+									<VerticalSpacer height="0.5rem" />
+									<LoadingBox height="1.5rem" />
+								</ContactField>
+							</ContactSection>
 
-							<SectionHeader isDropdownIncluded height="0.75rem">
-								Ship to
-							</SectionHeader>
-							<VerticalSpacer height="0.498rem" />
-							<LoadingBox height="3.813rem" />
 							<VerticalSpacer height="1.244rem" />
-
-							<SectionHeader isDropdownIncluded height="0.75rem">
-								Shipping method
-							</SectionHeader>
-							<VerticalSpacer height="0.498rem" />
-							<LoadingBox height="2.313rem" />
-							<VerticalSpacer height="1.244rem" />
-
-							<SectionHeader isDropdownIncluded height="0.75rem">
-								Pay with
-							</SectionHeader>
-							<VerticalSpacer height="0.498rem" />
-							<LoadingBox height="1.5rem" />
-						</LeftColumn>
-						<RightColumn>
-							<SectionHeader height="0.75rem">
-								Summary
-							</SectionHeader>
-							<VerticalSpacer height="0.498rem" />
-							<LoadingBox height="1.5rem" />
-							<VerticalSpacer height="0.373rem" />
-							<LoadingBox height="9.438rem" />
-							<VerticalSpacer height="0.498rem" />
-							<LoadingBox height="2rem" />
-							<VerticalSpacer height="0.747rem" />
 							{ preparedCustomMessage && (
 								<>
 									<TextBox maxHeight="2.5rem">
 										{ preparedCustomMessage }
 									</TextBox>
-									<VerticalSpacer height="0.747rem" />
+									<VerticalSpacer height="0.75rem" />
 								</>
 							) }
-							<CheckoutButton height="1.493rem" />
+							<CheckoutButton height="1.875rem" />
+
+							<VerticalSpacer height="0.498rem" />
+						</LeftColumn>
+						<RightColumn>
+							<SectionHeader height="0.75rem">
+								ORDER SUMMARY
+							</SectionHeader>
+							<VerticalSpacer height="0.498rem" />
+							<LoadingBox height="1.563rem" />
+							<VerticalSpacer height="0.5rem" />
+							<LoadingBox height="9.438rem" />
+							<VerticalSpacer height="0.498rem" />
 						</RightColumn>
 					</ColumnsContainer>
 				</PreviewBody>
