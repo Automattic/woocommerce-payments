@@ -50,6 +50,7 @@ mockUsePaymentActivityData.mockReturnValue( {
 declare const global: {
 	wcpaySettings: {
 		lifetimeTPV: number;
+		isOverviewSurveySubmitted?: boolean;
 		accountStatus: {
 			deposits: {
 				restrictions: string;
@@ -116,7 +117,10 @@ describe( 'PaymentActivity component', () => {
 	} );
 
 	it( 'should render', () => {
-		const { container } = render( <PaymentActivity /> );
+		const { container, getByText } = render( <PaymentActivity /> );
+
+		// Check survey is rendered.
+		getByText( 'Are those metrics helpful?' );
 
 		expect( container ).toMatchSnapshot();
 	} );
@@ -128,5 +132,15 @@ describe( 'PaymentActivity component', () => {
 
 		expect( getByText( 'No payments…yet!' ) ).toBeInTheDocument();
 		expect( container ).toMatchSnapshot();
+	} );
+
+	it( 'should not render survey if survey is already submitted', () => {
+		global.wcpaySettings.isOverviewSurveySubmitted = true;
+
+		const { queryByText } = render( <PaymentActivity /> );
+
+		expect(
+			queryByText( 'Are those metrics helpful?' )
+		).not.toBeInTheDocument();
 	} );
 } );
