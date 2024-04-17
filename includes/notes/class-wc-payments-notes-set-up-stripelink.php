@@ -27,7 +27,7 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 	/**
 	 * CTA button link
 	 */
-	const NOTE_DOCUMENTATION_URL = 'https://woo.com/document/woopayments/payment-methods/link-by-stripe/';
+	const NOTE_DOCUMENTATION_URL = 'https://woocommerce.com/document/woopayments/payment-methods/link-by-stripe/';
 
 	/**
 	 * The account service instance.
@@ -41,7 +41,7 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 	 *
 	 * @return bool
 	 */
-	public static function should_display_note():bool {
+	public static function should_display_note(): bool {
 		// Check if Link payment is available.
 		$available_upe_payment_methods = self::$gateway->get_upe_available_payment_methods();
 		if ( ! in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $available_upe_payment_methods, true ) ) {

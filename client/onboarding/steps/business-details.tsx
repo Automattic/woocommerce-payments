@@ -25,9 +25,15 @@ const BusinessDetails: React.FC = () => {
 	const businessTypes = getBusinessTypes();
 	const mccsFlatList = getMccsFlatList();
 
-	const selectedCountry = businessTypes.find(
-		( country ) => country.key === data.country
-	);
+	const selectedCountry = businessTypes.find( ( country ) => {
+		// Special case for Puerto Rico as it's considered a separate country in Core, but the business country should be US
+		if ( data.country === 'PR' ) {
+			return country.key === 'US';
+		}
+
+		return country.key === data.country;
+	} );
+
 	const selectedBusinessType = selectedCountry?.types.find(
 		( type ) => type.key === data.business_type
 	);

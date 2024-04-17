@@ -107,7 +107,7 @@ class Container implements ContainerInterface {
 		try {
 			return $this->container->get( $id );
 		} catch ( \Throwable $e ) {
-			throw new ContainerException( $e->getMessage(), $e->getCode(), $e );
+			throw new ContainerException( $e->getMessage(), $e->getCode(), $e ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 	}
 

@@ -1,0 +1,323 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PaymentActivity component should render 1`] = `
+<div>
+  <div
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
+  >
+    <div
+      class="css-mgwsf4-View-Content em57xhy0"
+    >
+      <div
+        class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardHeader"
+      >
+        Your payment activity
+      </div>
+      <div
+        class="components-card__body components-card-body wcpay-payment-activity__card__body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="wcpay-payment-activity-data"
+        >
+          <div
+            class="wcpay-payment-data-highlights__item"
+            id="wcpay-payment-activity-data__total-payment-volume"
+          >
+            <p
+              class="wcpay-payment-data-highlights__item__label"
+            >
+              <span>
+                Total payment volume
+              </span>
+              <button
+                class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+                type="button"
+              >
+                <div
+                  class="wcpay-tooltip__content-wrapper"
+                >
+                  <div
+                    aria-label="Total payment volume tooltip"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <svg
+                      class="gridicon gridicons-help-outline"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                </div>
+              </button>
+            </p>
+            <div
+              class="wcpay-payment-data-highlights__item__wrapper"
+            >
+              <p
+                aria-labelledby="wcpay-payment-activity-data__total-payment-volume"
+                class="wcpay-payment-data-highlights__item__wrapper__amount"
+              >
+                $0.00
+              </p>
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&date_between%5B0%5D=2024-04-01&date_between%5B1%5D=2024-04-08&filter=advanced"
+              >
+                View report
+              </a>
+            </div>
+          </div>
+          <div
+            class="wcpay-payment-data-highlights"
+          >
+            <div
+              class="wcpay-payment-data-highlights__item"
+              id="wcpay-payment-data-highlights__charges"
+            >
+              <p
+                class="wcpay-payment-data-highlights__item__label"
+              >
+                <span>
+                  Charges
+                </span>
+                <button
+                  class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+                  type="button"
+                >
+                  <div
+                    class="wcpay-tooltip__content-wrapper"
+                  >
+                    <div
+                      aria-label="Charges tooltip"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <svg
+                        class="gridicon gridicons-help-outline"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              </p>
+              <div
+                class="wcpay-payment-data-highlights__item__wrapper"
+              >
+                <p
+                  aria-labelledby="wcpay-payment-data-highlights__charges"
+                  class="wcpay-payment-data-highlights__item__wrapper__amount"
+                >
+                  $0.00
+                </p>
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&type_is=charge"
+                >
+                  View report
+                </a>
+              </div>
+            </div>
+            <div
+              class="wcpay-payment-data-highlights__item"
+              id="wcpay-payment-data-highlights__refunds"
+            >
+              <p
+                class="wcpay-payment-data-highlights__item__label"
+              >
+                <span>
+                  Refunds
+                </span>
+              </p>
+              <div
+                class="wcpay-payment-data-highlights__item__wrapper"
+              >
+                <p
+                  aria-labelledby="wcpay-payment-data-highlights__refunds"
+                  class="wcpay-payment-data-highlights__item__wrapper__amount"
+                >
+                  $0.00
+                </p>
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&type_is=refund&date_between%5B0%5D=2024-04-01&date_between%5B1%5D=2024-04-08"
+                >
+                  View report
+                </a>
+              </div>
+            </div>
+            <div
+              class="wcpay-payment-data-highlights__item"
+              id="wcpay-payment-data-highlights__disputes"
+            >
+              <p
+                class="wcpay-payment-data-highlights__item__label"
+              >
+                <span>
+                  Disputes
+                </span>
+              </p>
+              <div
+                class="wcpay-payment-data-highlights__item__wrapper"
+              >
+                <p
+                  aria-labelledby="wcpay-payment-data-highlights__disputes"
+                  class="wcpay-payment-data-highlights__item__wrapper__amount"
+                >
+                  $0.00
+                </p>
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes&filter=awaiting_response"
+                >
+                  View report
+                </a>
+              </div>
+            </div>
+            <div
+              class="wcpay-payment-data-highlights__item"
+              id="wcpay-payment-data-highlights__fees"
+            >
+              <p
+                class="wcpay-payment-data-highlights__item__label"
+              >
+                <span>
+                  Fees
+                </span>
+                <button
+                  class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+                  type="button"
+                >
+                  <div
+                    class="wcpay-tooltip__content-wrapper"
+                  >
+                    <div
+                      aria-label="Fees tooltip"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <svg
+                        class="gridicon gridicons-help-outline"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              </p>
+              <div
+                class="wcpay-payment-data-highlights__item__wrapper"
+              >
+                <p
+                  aria-labelledby="wcpay-payment-data-highlights__fees"
+                  class="wcpay-payment-data-highlights__item__wrapper__amount"
+                >
+                  $0.00
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+  </div>
+</div>
+`;
+
+exports[`PaymentActivity component should render an empty state 1`] = `
+<div>
+  <div
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
+  >
+    <div
+      class="css-mgwsf4-View-Content em57xhy0"
+    >
+      <div
+        class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardHeader"
+      >
+        Your payment activity
+      </div>
+      <div
+        class="components-card__body components-card-body wcpay-payment-activity__card__body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="wcpay-payment-activity__card__body__empty-state-wrapper"
+        >
+          <img
+            alt=""
+            src="assets/images/payment-activity-empty-state.svg"
+          />
+          <p>
+            <strong>
+              No payments…yet!
+            </strong>
+          </p>
+          <p>
+            Once your first order comes in, you'll start seeing your payment activity right here.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+  </div>
+</div>
+`;
