@@ -15,6 +15,7 @@ export default ( {
 	upeAppearanceTheme,
 } ) => {
 	const cartData = wp.data.select( 'wc/store/cart' ).getCartData();
+	const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 
 	// Stripe expects the amount to be sent as the minor unit of 2 digits.
 	const amount = normalizeCurrencyToMinorUnit(
@@ -27,13 +28,11 @@ export default ( {
 		cartData.billingAddress.country ||
 		window.wcBlocksCheckoutData.storeCountry;
 
-	// console.log( currentCountry );
-
 	return (
 		<>
 			<span>
 				{ upeConfig.title }
-				{ upeName !== 'card' &&
+				{ bnplMethods.includes( upeName ) &&
 					( upeConfig.countries.length === 0 ||
 						upeConfig.countries.includes( currentCountry ) ) && (
 						<>
