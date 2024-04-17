@@ -7,6 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
+import { usePaymentActivityData } from 'wcpay/data';
 import PaymentActivity from '..';
 
 jest.mock( '@wordpress/data', () => ( {
@@ -16,7 +17,9 @@ jest.mock( '@wordpress/data', () => ( {
 		onLoad: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
+	combineReducers: jest.fn(),
 	select: jest.fn(),
+	useSelect: jest.fn(),
 	useDispatch: jest.fn( () => ( {
 		createNotice: jest.fn(),
 		createErrorNotice: jest.fn(),
@@ -24,6 +27,25 @@ jest.mock( '@wordpress/data', () => ( {
 	withDispatch: jest.fn( () => jest.fn() ),
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
+
+jest.mock( 'wcpay/data', () => ( {
+	usePaymentActivityData: jest.fn(),
+} ) );
+
+const mockUsePaymentActivityData = usePaymentActivityData as jest.MockedFunction<
+	typeof usePaymentActivityData
+>;
+
+mockUsePaymentActivityData.mockReturnValue( {
+	paymentActivityData: {
+		total_payment_volume: 123456,
+		charges: 9876,
+		fees: 1234,
+		disputes: 5555,
+		refunds: 4444,
+	},
+	isLoading: false,
+} );
 
 declare const global: {
 	wcpaySettings: {
