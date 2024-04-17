@@ -855,7 +855,7 @@ class WC_Payments_Admin {
 			'dismissedDuplicateNotices'     => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
 			'trackingInfo'                  => $this->account->get_tracking_info(),
-			'lifetimeTPV'                   => $this->account->get_lifetime_total_payments_volume(),
+			'lifetimeTPV'                   => $this->account->get_lifetime_total_payment_volume(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
