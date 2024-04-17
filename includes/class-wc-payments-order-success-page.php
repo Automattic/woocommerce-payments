@@ -108,7 +108,11 @@ class WC_Payments_Order_Success_Page {
 			return $payment_method_title;
 		}
 
-		$method_logo_url = $payment_method->get_theme_icon();
+		$method_logo_url = apply_filters(
+			'wc_payments_thank_you_page_bnpl_payment_method_logo_url',
+			$payment_method->get_theme_icon(),
+			$payment_method_id
+		);
 
 		if ( ! $method_logo_url ) {
 			return $payment_method_title;
