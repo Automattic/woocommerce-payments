@@ -39,16 +39,6 @@ const PaymentActivityData: React.FC = () => {
 										'woocommerce-payments'
 									),
 									components: {
-										learnMoreLink: (
-											// eslint-disable-next-line jsx-a11y/anchor-has-content
-											<a
-												rel="external noopener noreferrer"
-												target="_blank"
-												href={
-													'https://woocommerce.com'
-												}
-											/>
-										),
 										strong: <strong />,
 									},
 								} ) }
