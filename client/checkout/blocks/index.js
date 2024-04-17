@@ -11,7 +11,7 @@ import {
 /**
  * Internal dependencies
  */
-import { getUPEConfig } from 'utils/checkout';
+import { getUPEConfig, getConfig } from 'utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
 import WCPayAPI from '../api';
 import { SavedTokenHandler } from './saved-token-handler';
@@ -158,3 +158,22 @@ window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();
 } );
+
+// If multi-currency is enabled, add currency code to total amount in cart and checkout blocks.
+if ( getConfig( 'isMultiCurrencyEnabled' ) ) {
+	const { registerCheckoutFilters } = window.wc.blocksCheckout;
+
+	const modifyTotalsPrice = ( defaultValue, extensions, args ) => {
+		const { cart } = args;
+
+		if ( cart?.cartTotals?.currency_code ) {
+			return `<price/> ${ cart.cartTotals.currency_code }`;
+		}
+
+		return defaultValue;
+	};
+
+	registerCheckoutFilters( 'woocommerce-payments', {
+		totalValue: modifyTotalsPrice,
+	} );
+}
