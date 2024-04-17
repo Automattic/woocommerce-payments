@@ -49,7 +49,7 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$result = $this->payments_order_success_page->show_woopay_payment_method_name( 'Credit card', $order );
 		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
 
-		$this->assertStringContainsString( 'wc-payment-gateway-method-name-woopay-wrapper', $result );
+		$this->assertStringContainsString( 'wc-payment-gateway-method-logo-wrapper woopay', $result );
 		$this->assertStringContainsString( 'img alt="WooPay"', $result );
 		$this->assertStringContainsString( sprintf( 'Card ending in %s', $order->get_meta( 'last4' ) ), $result );
 	}

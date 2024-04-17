@@ -62,7 +62,7 @@ class WC_Payments_Order_Success_Page {
 
 		ob_start();
 		?>
-		<div class="wc-payment-gateway-method-logo-wrapper">
+		<div class="wc-payment-gateway-method-logo-wrapper woopay">
 			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
