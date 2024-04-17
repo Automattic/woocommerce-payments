@@ -1,11 +1,11 @@
 /** @format */
 
 export interface PaymentActivityData {
-	total_payment_volume: number; // Total payment volume
-	charges: number; // Charges
-	fees: number; // Fees
-	disputes: number; // Disputes
-	refunds: number; // Refunds
+	total_payment_volume?: number; // Total payment volume
+	charges?: number; // Charges
+	fees?: number; // Fees
+	disputes?: number; // Disputes
+	refunds?: number; // Refunds
 }
 
 export interface PaymentActivityState {
@@ -21,4 +21,10 @@ export interface PaymentActivityAction {
 export interface QueryDate {
 	date_start: string;
 	date_end: string;
+}
+
+export interface PaymentActivityQuery {
+	date_start: string;
+	date_end: string;
+	timezone?: string;
 }

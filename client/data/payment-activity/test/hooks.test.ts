@@ -32,7 +32,11 @@ describe( 'usePaymentActivityData', () => {
 			callback( select )
 		);
 
-		const result = usePaymentActivityData( {} );
+		const result = usePaymentActivityData( {
+			date_start: '2021-01-01',
+			date_end: '2021-01-31',
+		} );
+
 		expect( result ).toEqual( {
 			paymentActivityData: mockPaymentActivityData,
 			isLoading: false,
