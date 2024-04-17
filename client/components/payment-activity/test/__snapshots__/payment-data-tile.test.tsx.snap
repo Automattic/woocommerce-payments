@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PaymentDataTile renders correctly 1`] = `
+<div>
+  <div
+    class="wcpay-payment-data-highlights__item"
+    id="total-payment"
+  >
+    <p
+      class="wcpay-payment-data-highlights__item__label"
+    >
+      <span>
+        Total payment volume
+      </span>
+    </p>
+    <div
+      class="wcpay-payment-data-highlights__item__wrapper"
+    >
+      <p
+        aria-labelledby="total-payment"
+        class="wcpay-payment-data-highlights__item__wrapper__amount"
+      >
+        $0.00
+      </p>
+    </div>
+  </div>
+</div>
+`;

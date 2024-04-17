@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Adds a check to see if the session exists before calling get()

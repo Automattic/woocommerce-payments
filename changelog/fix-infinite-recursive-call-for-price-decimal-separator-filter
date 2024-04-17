@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Ensure we avoid an infinite recursive call stack through 'wc_get_price_decimal_separator' filter.
