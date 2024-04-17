@@ -19,7 +19,7 @@
 			padding: 0 !important;
 			&__empty-state-wrapper {
 				text-align: center;
-				color: #949494;
+				color: $gray-600;
 				padding: 16px 0 19px;
 			}
 		}
@@ -145,7 +145,7 @@
 				margin-top: 8px;
 				margin-right: 0;
 				padding: 8px;
-				color: #044b7a;
+				color: $studio-blue-70;
 
 				.components-notice__content {
 					font-size: 11px;
