@@ -127,9 +127,7 @@
 			flex-direction: column;
 		}
 	}
-}
 
-#wcpay-payment-activity-data {
 	&__total-payment-volume {
 		border-left: none;
 		align-self: stretch;
@@ -142,10 +140,43 @@
 			@include amount-styles;
 		}
 
-		@include breakpoint( '<660px' ) {
-			border-bottom: 1px solid $gray-200;
-			padding-top: 0;
-			padding-bottom: 24px;
+		&__tooltip {
+			font-size: 13px;
+			line-height: 20px;
+			width: 292px;
+			top: 178px;
+			left: -10px;
+
+			@include breakpoint( '<660px' ) {
+				top: 50px;
+				left: 80px;
+			}
+
+			.wcpay-inline-notice.components-notice {
+				margin-top: 8px;
+				margin-right: 0;
+				padding: 8px;
+				color: #044b7a;
+			}
+
+			&__notice {
+				.components-notice__content {
+					margin: 0;
+					font-size: 11px;
+					line-height: 16px;
+					white-space: pre-wrap;
+				}
+			}
+		}
+	}
+
+	#wcpay-payment-activity-data {
+		&__total-payment-volume {
+			@include breakpoint( '<660px' ) {
+				border-bottom: 1px solid $gray-200;
+				padding-top: 0;
+				padding-bottom: 24px;
+			}
 		}
 	}
 }
