@@ -84,7 +84,15 @@ const PaymentActivityData: React.FC = () => {
 								'Charges tooltip',
 								'woocommerce-payments'
 							) }
-							content={ __( 'test charge content' ) }
+							content={ interpolateComponents( {
+								mixedString: __(
+									'A {{strong}}charge{{/strong}} is the amount billed to your customer’s payment method.',
+									'woocommerce-payments'
+								),
+								components: {
+									strong: <strong />,
+								},
+							} ) }
 						/>
 					}
 					reportLink={ getAdminUrl( {
@@ -130,10 +138,15 @@ const PaymentActivityData: React.FC = () => {
 								'Fees tooltip',
 								'woocommerce-payments'
 							) }
-							content={ __(
-								'test fees content',
-								'woocommerce-payments'
-							) }
+							content={ interpolateComponents( {
+								mixedString: __(
+									'{{strong}}Fees{{/strong}} includes fees on payments as well as disputes.',
+									'woocommerce-payments'
+								),
+								components: {
+									strong: <strong />,
+								},
+							} ) }
 						/>
 					}
 				/>
