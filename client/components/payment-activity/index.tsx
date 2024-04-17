@@ -11,10 +11,10 @@ import { __ } from '@wordpress/i18n';
 
 import EmptyStateAsset from 'assets/images/payment-activity-empty-state.svg?asset';
 import interpolateComponents from '@automattic/interpolate-components';
-import PaymentsActivityData from './payments-activity-data';
+import PaymentActivityData from './payment-activity-data';
 import './style.scss';
 
-const PaymentsActivity: React.FC = () => {
+const PaymentActivity: React.FC = () => {
 	const { lifetimeTPV } = wcpaySettings;
 	const hasAtLeastOnePayment = lifetimeTPV > 0;
 
@@ -25,11 +25,11 @@ const PaymentsActivity: React.FC = () => {
 
 				{ hasAtLeastOnePayment && <>{ /* Filters go here */ }</> }
 			</CardHeader>
-			<CardBody className="wcpay-payments-activity__card__body">
+			<CardBody className="wcpay-payment-activity__card__body">
 				{ hasAtLeastOnePayment ? (
-					<PaymentsActivityData />
+					<PaymentActivityData />
 				) : (
-					<div className="wcpay-payments-activity__card__body__empty-state-wrapper">
+					<div className="wcpay-payment-activity__card__body__empty-state-wrapper">
 						<img src={ EmptyStateAsset } alt="" />
 						<p>
 							{ interpolateComponents( {
@@ -54,4 +54,4 @@ const PaymentsActivity: React.FC = () => {
 	);
 };
 
-export default PaymentsActivity;
+export default PaymentActivity;

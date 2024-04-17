@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PaymentsActivity component should render 1`] = `
+exports[`PaymentActivity component should render 1`] = `
 <div>
   <div
     class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
@@ -18,22 +18,22 @@ exports[`PaymentsActivity component should render 1`] = `
         Your payment activity
       </div>
       <div
-        class="components-card__body components-card-body wcpay-payments-activity__card__body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-payment-activity__card__body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="wcpay-payments-activity-data"
+          class="wcpay-payment-activity-data"
         >
           <div
-            class="wcpay-payments-data-highlights__item"
-            id="wcpay-payments-activity-data__total-payments-volume"
+            class="wcpay-payment-data-highlights__item"
+            id="wcpay-payment-activity-data__total-payment-volume"
           >
             <p
-              class="wcpay-payments-data-highlights__item__label"
+              class="wcpay-payment-data-highlights__item__label"
             >
               <span>
-                Total payments volume
+                Total payment volume
               </span>
               <button
                 class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
@@ -43,7 +43,7 @@ exports[`PaymentsActivity component should render 1`] = `
                   class="wcpay-tooltip__content-wrapper"
                 >
                   <div
-                    aria-label="Total payments volume tooltip"
+                    aria-label="Total payment volume tooltip"
                     role="button"
                     tabindex="0"
                   >
@@ -65,11 +65,11 @@ exports[`PaymentsActivity component should render 1`] = `
               </button>
             </p>
             <div
-              class="wcpay-payments-data-highlights__item__wrapper"
+              class="wcpay-payment-data-highlights__item__wrapper"
             >
               <p
-                aria-labelledby="wcpay-payments-activity-data__total-payments-volume"
-                class="wcpay-payments-data-highlights__item__wrapper__amount"
+                aria-labelledby="wcpay-payment-activity-data__total-payment-volume"
+                class="wcpay-payment-data-highlights__item__wrapper__amount"
               >
                 $0.00
               </p>
@@ -82,14 +82,14 @@ exports[`PaymentsActivity component should render 1`] = `
             </div>
           </div>
           <div
-            class="wcpay-payments-data-highlights"
+            class="wcpay-payment-data-highlights"
           >
             <div
-              class="wcpay-payments-data-highlights__item"
-              id="wcpay-payments-data-highlights__charges"
+              class="wcpay-payment-data-highlights__item"
+              id="wcpay-payment-data-highlights__charges"
             >
               <p
-                class="wcpay-payments-data-highlights__item__label"
+                class="wcpay-payment-data-highlights__item__label"
               >
                 <span>
                   Charges
@@ -124,11 +124,11 @@ exports[`PaymentsActivity component should render 1`] = `
                 </button>
               </p>
               <div
-                class="wcpay-payments-data-highlights__item__wrapper"
+                class="wcpay-payment-data-highlights__item__wrapper"
               >
                 <p
-                  aria-labelledby="wcpay-payments-data-highlights__charges"
-                  class="wcpay-payments-data-highlights__item__wrapper__amount"
+                  aria-labelledby="wcpay-payment-data-highlights__charges"
+                  class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
                   $0.00
                 </p>
@@ -141,22 +141,22 @@ exports[`PaymentsActivity component should render 1`] = `
               </div>
             </div>
             <div
-              class="wcpay-payments-data-highlights__item"
-              id="wcpay-payments-data-highlights__refunds"
+              class="wcpay-payment-data-highlights__item"
+              id="wcpay-payment-data-highlights__refunds"
             >
               <p
-                class="wcpay-payments-data-highlights__item__label"
+                class="wcpay-payment-data-highlights__item__label"
               >
                 <span>
                   Refunds
                 </span>
               </p>
               <div
-                class="wcpay-payments-data-highlights__item__wrapper"
+                class="wcpay-payment-data-highlights__item__wrapper"
               >
                 <p
-                  aria-labelledby="wcpay-payments-data-highlights__refunds"
-                  class="wcpay-payments-data-highlights__item__wrapper__amount"
+                  aria-labelledby="wcpay-payment-data-highlights__refunds"
+                  class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
                   $0.00
                 </p>
@@ -169,22 +169,22 @@ exports[`PaymentsActivity component should render 1`] = `
               </div>
             </div>
             <div
-              class="wcpay-payments-data-highlights__item"
-              id="wcpay-payments-data-highlights__disputes"
+              class="wcpay-payment-data-highlights__item"
+              id="wcpay-payment-data-highlights__disputes"
             >
               <p
-                class="wcpay-payments-data-highlights__item__label"
+                class="wcpay-payment-data-highlights__item__label"
               >
                 <span>
                   Disputes
                 </span>
               </p>
               <div
-                class="wcpay-payments-data-highlights__item__wrapper"
+                class="wcpay-payment-data-highlights__item__wrapper"
               >
                 <p
-                  aria-labelledby="wcpay-payments-data-highlights__disputes"
-                  class="wcpay-payments-data-highlights__item__wrapper__amount"
+                  aria-labelledby="wcpay-payment-data-highlights__disputes"
+                  class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
                   $0.00
                 </p>
@@ -197,11 +197,11 @@ exports[`PaymentsActivity component should render 1`] = `
               </div>
             </div>
             <div
-              class="wcpay-payments-data-highlights__item"
-              id="wcpay-payments-data-highlights__fees"
+              class="wcpay-payment-data-highlights__item"
+              id="wcpay-payment-data-highlights__fees"
             >
               <p
-                class="wcpay-payments-data-highlights__item__label"
+                class="wcpay-payment-data-highlights__item__label"
               >
                 <span>
                   Fees
@@ -236,11 +236,11 @@ exports[`PaymentsActivity component should render 1`] = `
                 </button>
               </p>
               <div
-                class="wcpay-payments-data-highlights__item__wrapper"
+                class="wcpay-payment-data-highlights__item__wrapper"
               >
                 <p
-                  aria-labelledby="wcpay-payments-data-highlights__fees"
-                  class="wcpay-payments-data-highlights__item__wrapper__amount"
+                  aria-labelledby="wcpay-payment-data-highlights__fees"
+                  class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
                   $0.00
                 </p>
@@ -266,7 +266,7 @@ exports[`PaymentsActivity component should render 1`] = `
 </div>
 `;
 
-exports[`PaymentsActivity component should render an empty state 1`] = `
+exports[`PaymentActivity component should render an empty state 1`] = `
 <div>
   <div
     class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
@@ -284,12 +284,12 @@ exports[`PaymentsActivity component should render an empty state 1`] = `
         Your payment activity
       </div>
       <div
-        class="components-card__body components-card-body wcpay-payments-activity__card__body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-payment-activity__card__body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="wcpay-payments-activity__card__body__empty-state-wrapper"
+          class="wcpay-payment-activity__card__body__empty-state-wrapper"
         >
           <img
             alt=""

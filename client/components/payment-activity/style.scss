@@ -13,7 +13,7 @@
 	line-height: 28px;
 }
 
-.wcpay-payments-activity {
+.wcpay-payment-activity {
 	&__card {
 		&__body {
 			padding: 0 !important;
@@ -26,7 +26,7 @@
 	}
 }
 
-.wcpay-payments-activity-data {
+.wcpay-payment-activity-data {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	width: 100%;
@@ -36,7 +36,7 @@
 		padding: 24px;
 	}
 
-	.wcpay-payments-data-highlights {
+	.wcpay-payment-data-highlights {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 
@@ -68,7 +68,7 @@
 			}
 
 			&:hover {
-				.wcpay-payments-data-highlights__item__wrapper a {
+				.wcpay-payment-data-highlights__item__wrapper a {
 					opacity: 1;
 				}
 			}
@@ -129,8 +129,8 @@
 	}
 }
 
-#wcpay-payments-activity-data {
-	&__total-payments-volume {
+#wcpay-payment-activity-data {
+	&__total-payment-volume {
 		border-left: none;
 		align-self: stretch;
 

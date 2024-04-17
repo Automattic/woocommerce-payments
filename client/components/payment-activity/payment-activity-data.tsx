@@ -9,7 +9,7 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
 /**
  * Internal dependencies.
  */
-import PaymentsDataTile from './payments-data-tile';
+import PaymentDataTile from './payment-data-tile';
 import { ClickTooltip } from '../tooltip';
 import { usePaymentActivityData } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
@@ -30,12 +30,12 @@ const getDateRange = (): DateRange => {
 	};
 };
 
-const PaymentsActivityData: React.FC = () => {
+const PaymentActivityData: React.FC = () => {
 	const { paymentActivityData, isLoading } = usePaymentActivityData(
 		getDateRange()
 	);
 
-	const totalPaymentsVolume = paymentActivityData?.total_payment_volume ?? 0;
+	const totalPaymentVolume = paymentActivityData?.total_payment_volume ?? 0;
 	const charges = paymentActivityData?.charges ?? 0;
 	const fees = paymentActivityData?.fees ?? 0;
 	const disputes = paymentActivityData?.disputes ?? 0;
@@ -43,26 +43,26 @@ const PaymentsActivityData: React.FC = () => {
 	const { storeCurrency } = wcpaySettings;
 
 	return (
-		<div className="wcpay-payments-activity-data">
-			<PaymentsDataTile
-				id="wcpay-payments-activity-data__total-payments-volume"
-				label={ __( 'Total payments volume', 'woocommerce-payments' ) }
+		<div className="wcpay-payment-activity-data">
+			<PaymentDataTile
+				id="wcpay-payment-activity-data__total-payment-volume"
+				label={ __( 'Total payment volume', 'woocommerce-payments' ) }
 				currencyCode={ storeCurrency }
 				tooltip={
 					<ClickTooltip
-						className="total-payments-volume__tooltip"
+						className="total-payment-volume__tooltip"
 						buttonIcon={ <HelpOutlineIcon /> }
 						buttonLabel={ __(
-							'Total payments volume tooltip',
+							'Total payment volume tooltip',
 							'woocommerce-payments'
 						) }
 						content={ __(
-							'test total payments volume content',
+							'test total payment volume content',
 							'woocommerce-payments'
 						) }
 					/>
 				}
-				amount={ totalPaymentsVolume }
+				amount={ totalPaymentVolume }
 				reportLink={ getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
@@ -76,14 +76,14 @@ const PaymentsActivityData: React.FC = () => {
 				} ) }
 				isLoading={ isLoading }
 			/>
-			<div className="wcpay-payments-data-highlights">
-				<PaymentsDataTile
-					id="wcpay-payments-data-highlights__charges"
+			<div className="wcpay-payment-data-highlights">
+				<PaymentDataTile
+					id="wcpay-payment-data-highlights__charges"
 					label={ __( 'Charges', 'woocommerce-payments' ) }
 					currencyCode={ storeCurrency }
 					tooltip={
 						<ClickTooltip
-							className="payments-data-highlights__charges__tooltip"
+							className="payment-data-highlights__charges__tooltip"
 							buttonIcon={ <HelpOutlineIcon /> }
 							buttonLabel={ __(
 								'Charges tooltip',
@@ -101,8 +101,8 @@ const PaymentsActivityData: React.FC = () => {
 					} ) }
 					isLoading={ isLoading }
 				/>
-				<PaymentsDataTile
-					id="wcpay-payments-data-highlights__refunds"
+				<PaymentDataTile
+					id="wcpay-payment-data-highlights__refunds"
 					label={ __( 'Refunds', 'woocommerce-payments' ) }
 					currencyCode={ storeCurrency }
 					amount={ refunds }
@@ -120,8 +120,8 @@ const PaymentsActivityData: React.FC = () => {
 					} ) }
 					isLoading={ isLoading }
 				/>
-				<PaymentsDataTile
-					id="wcpay-payments-data-highlights__disputes"
+				<PaymentDataTile
+					id="wcpay-payment-data-highlights__disputes"
 					label={ __( 'Disputes', 'woocommerce-payments' ) }
 					currencyCode={ storeCurrency }
 					amount={ disputes }
@@ -132,13 +132,13 @@ const PaymentsActivityData: React.FC = () => {
 					} ) }
 					isLoading={ isLoading }
 				/>
-				<PaymentsDataTile
-					id="wcpay-payments-data-highlights__fees"
+				<PaymentDataTile
+					id="wcpay-payment-data-highlights__fees"
 					label={ __( 'Fees', 'woocommerce-payments' ) }
 					currencyCode={ storeCurrency }
 					tooltip={
 						<ClickTooltip
-							className="payments-data-highlights__fees__tooltip"
+							className="payment-data-highlights__fees__tooltip"
 							buttonIcon={ <HelpOutlineIcon /> }
 							buttonLabel={ __(
 								'Fees tooltip',
@@ -158,4 +158,4 @@ const PaymentsActivityData: React.FC = () => {
 	);
 };
 
-export default PaymentsActivityData;
+export default PaymentActivityData;
