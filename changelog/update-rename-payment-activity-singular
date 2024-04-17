@@ -1,4 +1,5 @@
 Significance: patch
-Type: update
+Type: dev
+Comment: This is a correction of spelling of "payment" on top of existing changes recently done for the Payment activity widget.
 
-Update: Fixed spelling of `Payments` to `Payment`. Changes are behind a feature flag.
+
