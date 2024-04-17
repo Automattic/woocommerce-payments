@@ -194,20 +194,22 @@ jQuery( ( $ ) => {
 			// Add extension data to the POST body
 			const formData = $( 'form.cart' ).serializeArray();
 			$.each( formData, ( i, field ) => {
-				if ( /^(addon-|wc_)/.test( field.name ) ) {
-					if ( /\[\]$/.test( field.name ) ) {
-						const fieldName = field.name.substring(
-							0,
-							field.name.length - 2
-						);
-						if ( data[ fieldName ] ) {
-							data[ fieldName ].push( field.value );
-						} else {
-							data[ fieldName ] = [ field.value ];
-						}
+				if ( ! /^(addon-|wc_)/.test( field.name ) ) {
+					return;
+				}
+
+				if ( /\[\]$/.test( field.name ) ) {
+					const fieldName = field.name.substring(
+						0,
+						field.name.length - 2
+					);
+					if ( data[ fieldName ] ) {
+						data[ fieldName ].push( field.value );
 					} else {
-						data[ field.name ] = field.value;
+						data[ fieldName ] = [ field.value ];
 					}
+				} else {
+					data[ field.name ] = field.value;
 				}
 			} );
 
@@ -404,7 +406,6 @@ jQuery( ( $ ) => {
 		},
 
 		attachProductPageEventListeners: ( prButton, paymentRequest ) => {
-			let paymentRequestError = [];
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
@@ -439,12 +440,6 @@ jQuery( ( $ ) => {
 							)
 						);
 					}
-					return;
-				}
-
-				if ( paymentRequestError.length > 0 ) {
-					evt.preventDefault();
-					window.alert( paymentRequestError );
 					return;
 				}
 
@@ -508,7 +503,6 @@ jQuery( ( $ ) => {
 					'.qty',
 					wcpayPaymentRequest.debounce( 250, () => {
 						wcpayPaymentRequest.blockPaymentRequestButton();
-						paymentRequestError = [];
 
 						$.when(
 							wcpayPaymentRequest.getSelectedProductData()
