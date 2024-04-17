@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Updates to remove deprecated function usage in the Jetpack Connection manager. Doesn't affect functionality.
