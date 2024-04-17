@@ -409,6 +409,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-large-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
+		include_once __DIR__ . '/exceptions/class-cannot-combine-currencies-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
@@ -572,6 +573,9 @@ class WC_Payments {
 		);
 		if ( [] !== $enabled_bnpl_payment_methods ) {
 			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
+			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
+			add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ] );
+			add_action( 'wc_ajax_wcpay_get_cart_total', [ __CLASS__, 'ajax_get_cart_total' ] );
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -630,6 +634,10 @@ class WC_Payments {
 
 			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway() );
 			$admin_settings->init_hooks();
+
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-bnpl-announcement.php';
+			$bnpl_announcement = new WC_Payments_Bnpl_Announcement( self::get_gateway(), self::get_account_service(), time() );
+			$bnpl_announcement->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
@@ -1062,7 +1070,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
 		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
 		$woopay_session_controller->register_routes();
-
 	}
 
 	/**
@@ -1385,7 +1392,7 @@ class WC_Payments {
 				<div class="notice wcpay-notice notice-error">
 					<p>
 					<?php
-					echo WC_Payments_Utils::esc_interpolated_html(
+					echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						sprintf(
 							/* translators: %1$s: WooCommerce, %2$s: WooPayments, a1: documentation URL */
 							__( 'The %1$s version you have installed is not compatible with %2$s for a Norwegian business. Please update %1$s to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
@@ -1604,6 +1611,28 @@ class WC_Payments {
 	}
 
 	/**
+	 * Get cart total.
+	 */
+	public static function ajax_get_cart_total() {
+		check_ajax_referer( 'wcpay-get-cart-total', 'security' );
+
+		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
+			define( 'WOOCOMMERCE_CART', true );
+		}
+
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+			define( 'WOOCOMMERCE_CHECKOUT', true );
+		}
+
+		WC()->cart->calculate_totals();
+
+		$cart_total    = WC()->cart->total;
+		$currency_code = get_woocommerce_currency();
+
+		wp_send_json( [ 'total' => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ) ] );
+	}
+
+	/**
 	 * Adds custom email field.
 	 */
 	public static function woopay_fields_before_billing_details() {
@@ -1664,6 +1693,11 @@ class WC_Payments {
 
 		self::register_script_with_dependencies( 'WCPAY_CART', 'dist/cart' );
 		wp_enqueue_script( 'WCPAY_CART' );
+
+		if ( WC_Payments_Utils::is_cart_block() ) {
+			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-cart-block-frontend' ] );
+			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
+		}
 	}
 
 	/**
@@ -1836,7 +1870,7 @@ class WC_Payments {
 		<div class="notice wcpay-notice notice-error">
 			<p>
 			<?php
-			echo WC_Payments_Utils::esc_interpolated_html(
+			echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				sprintf(
 					$notice,
 					'WooCommerce',

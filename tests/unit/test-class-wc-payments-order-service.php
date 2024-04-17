@@ -1021,7 +1021,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Filter the order status to processing.
 		add_filter(
 			'wcpay_terminal_payment_completed_order_status',
-			function() {
+			function () {
 				return Order_Status::PROCESSING;
 			}
 		);
@@ -1034,7 +1034,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		remove_filter(
 			'wcpay_terminal_payment_completed_order_status',
-			function() {
+			function () {
 				return Order_Status::PROCESSING;
 			}
 		);

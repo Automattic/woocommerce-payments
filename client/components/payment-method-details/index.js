@@ -59,10 +59,14 @@ const PaymentMethodDetails = ( props ) => {
 		return <span>&ndash;</span>;
 	}
 
-	const brand =
-		paymentMethod && paymentMethod.brand
-			? paymentMethod.brand
-			: payment.type;
+	let brand = payment.type;
+	if ( paymentMethod && paymentMethod.brand ) {
+		brand = paymentMethod.brand;
+	}
+	if ( paymentMethod && paymentMethod.network ) {
+		brand = paymentMethod.network;
+	}
+
 	const details = formatDetails( payment );
 	return (
 		<span className="payment-method-details">

@@ -22,7 +22,7 @@ const TestModeNotice = (): JSX.Element => {
 					learnMoreLink: (
 						<a
 							target="_blank"
-							href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/"
+							href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/"
 							rel="noopener noreferrer"
 						>
 							{ __(

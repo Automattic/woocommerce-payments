@@ -314,6 +314,8 @@ class MultiCurrency {
 		// Update the customer currencies option after an order status change.
 		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_update_customer_currencies_option' ] );
 
+		$this->maybe_add_cache_cookie();
+
 		static::$is_initialized = true;
 	}
 
@@ -412,7 +414,7 @@ class MultiCurrency {
 
 		return $this->database_cache->get_or_add(
 			Database_Cache::CURRENCIES_KEY,
-			function() {
+			function () {
 				try {
 					$currency_data = $this->payments_api_client->get_currency_rates( strtolower( get_woocommerce_currency() ) );
 					return [
@@ -561,7 +563,7 @@ class MultiCurrency {
 			if ( ! is_numeric( $manual_rate ) || 0 >= $manual_rate ) {
 				$message = 'Invalid manual currency rate passed to update_single_currency_settings: ' . $manual_rate;
 				Logger::error( $message );
-				throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 );
+				throw new InvalidCurrencyRateException( esc_html( $message ), 'wcpay_multi_currency_invalid_currency_rate', 500 );
 			}
 			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
 		}
@@ -646,7 +648,7 @@ class MultiCurrency {
 		// This allows to keep the alphabetical sorting by name.
 		$enabled_currencies = array_filter(
 			$available_currencies,
-			function( $currency ) use ( $enabled_currency_codes ) {
+			function ( $currency ) use ( $enabled_currency_codes ) {
 				return in_array( $currency->get_code(), $enabled_currency_codes, true );
 			}
 		);
@@ -813,6 +815,8 @@ class MultiCurrency {
 		} else {
 			add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
 		}
+
+		$this->maybe_add_cache_cookie();
 	}
 
 	/**
@@ -935,7 +939,7 @@ class MultiCurrency {
 		if ( 0 >= $from_currency_rate ) {
 			$message = 'Invalid rate for from_currency in get_raw_conversion: ' . $from_currency_rate;
 			Logger::error( $message );
-			throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 );
+			throw new InvalidCurrencyRateException( esc_html( $message ), 'wcpay_multi_currency_invalid_currency_rate', 500 );
 		}
 
 		$amount = $amount * ( $to_currency_rate / $from_currency_rate );
@@ -1019,6 +1023,8 @@ class MultiCurrency {
 		$notice_id = md5( $message );
 
 		echo '<p class="woocommerce-store-notice demo_store" data-notice-id="' . esc_attr( $notice_id . 2 ) . '" style="display:none;">';
+		// No need to escape here as the function called handles it.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo \WC_Payments_Utils::esc_interpolated_html(
 			$message,
 			[
@@ -1405,7 +1411,7 @@ class MultiCurrency {
 		// Simulate client currency from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_currency_name',
-			function( $selected_currency_name ) use ( $simulation_currency_name ) {
+			function ( $selected_currency_name ) use ( $simulation_currency_name ) {
 				return $simulation_currency_name;
 			}
 		);
@@ -1413,7 +1419,7 @@ class MultiCurrency {
 		// Simulate client country from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_country',
-			function( $selected_country ) use ( $simulation_country ) {
+			function ( $selected_country ) use ( $simulation_country ) {
 				return $simulation_country;
 			}
 		);
@@ -1425,7 +1431,6 @@ class MultiCurrency {
 
 		// Skip recalculating the cart to prevent infinite loop in simulation.
 		remove_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
-
 	}
 
 	/**
@@ -1498,7 +1503,7 @@ class MultiCurrency {
 		$params = $this->simulation_params;
 		add_filter(
 			'wp_footer',
-			function() use ( $params ) {
+			function () use ( $params ) {
 				?>
 			<script type="text/javascript" id="wcpay_multi_currency-simulation-script">
 				// Add simulation overrides to all links.
@@ -1624,7 +1629,7 @@ class MultiCurrency {
 	private function log_and_throw_invalid_currency_exception( $method, $currency_code, $code = 500 ) {
 		$message = 'Invalid currency passed to ' . $method . ': ' . $currency_code;
 		Logger::error( $message );
-		throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', $code );
+		throw new InvalidCurrencyException( esc_html( $message ), 'wcpay_multi_currency_invalid_currency', esc_html( $code ) );
 	}
 
 	/**
@@ -1636,5 +1641,18 @@ class MultiCurrency {
 	 */
 	private function is_customer_currencies_data_valid( $currencies ) {
 		return ! empty( $currencies ) && is_array( $currencies );
+	}
+
+	/**
+	 * Sets the cache cookie for currency code and exchange rate.
+	 *
+	 * This private method sets the 'wcpay_currency' cookie if HTTP headers
+	 * have not been sent. This cookie stores the selected currency's code and its exchange rate,
+	 * and is intended exclusively for caching purposes, not for application logic.
+	 */
+	private function maybe_add_cache_cookie() {
+		if ( ! headers_sent() && ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
+			wc_setcookie( 'wcpay_currency', sprintf( '%s_%s', $this->get_selected_currency()->get_code(), $this->get_selected_currency()->get_rate() ), time() + HOUR_IN_SECONDS );
+		}
 	}
 }

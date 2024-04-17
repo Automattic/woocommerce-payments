@@ -368,45 +368,6 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Confirm Stripe payment with fallback for rate limit error.
-	 *
-	 * @param {Object|StripeElements} elements Stripe elements.
-	 * @param {Object} confirmParams Confirm payment request parameters.
-	 * @param {string|null} paymentIntentSecret Payment intent secret used to validate payment on rate limit error
-	 *
-	 * @return {Promise} The payment confirmation promise.
-	 */
-	async handlePaymentConfirmation(
-		elements,
-		confirmParams,
-		paymentIntentSecret
-	) {
-		const stripe = this.getStripe();
-		const confirmPaymentResult = await stripe.confirmPayment( {
-			elements,
-			confirmParams,
-		} );
-		if (
-			paymentIntentSecret &&
-			confirmPaymentResult.error &&
-			confirmPaymentResult.error.code === 'lock_timeout'
-		) {
-			const paymentIntentResult = await stripe.retrievePaymentIntent(
-				decryptClientSecret( paymentIntentSecret )
-			);
-			if (
-				! paymentIntentResult.error &&
-				paymentIntentResult.paymentIntent.status === 'succeeded'
-			) {
-				window.location.href = confirmParams.redirect_url;
-				return paymentIntentResult; //To prevent returning an error during the redirection.
-			}
-		}
-
-		return confirmPaymentResult;
-	}
-
-	/**
 	 * Saves the calculated UPE appearance values in a transient.
 	 *
 	 * @param {Object} appearance The UPE appearance object with style values
@@ -570,6 +531,27 @@ export default class WCPayAPI {
 			_wpnonce: getPaymentRequestData( 'nonce' )?.pay_for_order,
 			order,
 			...paymentData,
+		} );
+	}
+
+	/**
+	 * Fetches the cart data from the woocommerce store api.
+	 *
+	 * @return {Object} JSON data.
+	 * @throws Error if the response is not ok.
+	 */
+	pmmeGetCartData() {
+		return fetch( `${ getUPEConfig( 'storeApiURL' ) }/cart`, {
+			method: 'GET',
+			credentials: 'same-origin',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		} ).then( ( response ) => {
+			if ( ! response.ok ) {
+				throw new Error( response.statusText );
+			}
+			return response.json();
 		} );
 	}
 }

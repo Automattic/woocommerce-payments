@@ -172,6 +172,7 @@ class Country_Code extends Base_Constant {
 	const PHILIPPINES                      = 'PH';
 	const POLAND                           = 'PL';
 	const PORTUGAL                         = 'PT';
+	const PUERTO_RICO                      = 'PR';
 	const QATAR                            = 'QA';
 	const ROMANIA                          = 'RO';
 	const RUSSIA                           = 'RU';

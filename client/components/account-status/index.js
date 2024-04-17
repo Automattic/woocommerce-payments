@@ -25,6 +25,7 @@ import './style.scss';
 import './shared.scss';
 import { AccountTools } from './account-tools';
 import { isInDevMode } from 'wcpay/utils';
+import { recordEvent } from 'wcpay/tracks';
 
 const AccountStatusCard = ( props ) => {
 	const { title, children, value } = props;
@@ -59,6 +60,7 @@ const AccountStatusError = () => {
 
 const AccountStatusDetails = ( props ) => {
 	const { accountStatus, accountFees } = props;
+
 	const cardTitle = (
 		<>
 			<FlexItem className={ 'account-details' }>
@@ -74,7 +76,16 @@ const AccountStatusDetails = ( props ) => {
 				/>
 			</FlexBlock>
 			<FlexItem className={ 'edit-details' }>
-				<Button isLink href={ accountStatus.accountLink }>
+				<Button
+					variant={ 'link' }
+					onClick={ () =>
+						recordEvent( 'wcpay_account_details_link_clicked', {
+							source: 'account-details',
+						} )
+					}
+					href={ accountStatus.accountLink }
+					target={ '_blank' }
+				>
 					{ __( 'Edit details', 'woocommerce-payments' ) }
 				</Button>
 			</FlexItem>
@@ -105,7 +116,10 @@ const AccountStatusDetails = ( props ) => {
 				/>
 			</AccountStatusItem>
 			{ ( ! accountStatus.detailsSubmitted || isInDevMode() ) && (
-				<AccountTools accountLink={ accountStatus.accountLink } />
+				<AccountTools
+					accountLink={ wcpaySettings.connectUrl }
+					detailsSubmitted={ accountStatus.detailsSubmitted }
+				/>
 			) }
 			{ accountFees.length > 0 && (
 				<AccountFees accountFees={ accountFees } />

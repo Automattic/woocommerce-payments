@@ -118,9 +118,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPE_APPEARANCE_TRANSIENT                         = 'wcpay_upe_appearance';
 	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT               = 'wcpay_wc_blocks_upe_appearance';
 	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_product_page_appearance';
+	const UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_classic_cart_appearance';
+	const UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT         = 'wcpay_upe_bnpl_cart_block_appearance';
 	const UPE_APPEARANCE_THEME_TRANSIENT                   = 'wcpay_upe_appearance_theme';
 	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT         = 'wcpay_wc_blocks_upe_appearance_theme';
 	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_product_page_appearance_theme';
+	const UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_classic_cart_appearance_theme';
+	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT   = 'wcpay_upe_bnpl_cart_block_appearance_theme';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -308,7 +312,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 				'description' => WC_Payments_Utils::esc_interpolated_html(
 					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
-					[ 'a' => '<a href="https://woo.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+					[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 				),
 			],
 			'manual_capture'                     => [
@@ -527,6 +531,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 
 			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
+
+			add_action( 'woocommerce_settings_save_general', [ $this, 'update_fraud_rules_based_on_general_options' ], 20 );
 		}
 
 		$this->maybe_init_subscriptions_hooks();
@@ -1999,7 +2005,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param Payment_Information $payment_information Payment information object for transaction.
 	 * @return array List of payment methods.
 	 */
-	public function get_payment_method_types( $payment_information ) : array {
+	public function get_payment_method_types( $payment_information ): array {
 		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
 
@@ -2973,6 +2979,48 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Updates the fraud rules depending on some settings when those settings have changed.
+	 *
+	 * @return  void           This is a readonly action.
+	 */
+	public function update_fraud_rules_based_on_general_options() {
+		// If the protection level is not "advanced", no need to run this, because it won't contain the IP country filter.
+		if ( 'advanced' !== $this->get_current_protection_level() ) {
+			return;
+		}
+
+		// If the ruleset can't be parsed, skip updating.
+		$ruleset = $this->get_advanced_fraud_protection_settings();
+		if (
+			'error' === $ruleset
+			|| ! is_array( $ruleset )
+			|| ! Fraud_Risk_Tools::is_valid_ruleset_array( $ruleset )
+		) {
+			return;
+		}
+
+		$needs_update = false;
+		foreach ( $ruleset as &$rule_array ) {
+			if ( isset( $rule_array['key'] ) && Fraud_Risk_Tools::RULE_INTERNATIONAL_IP_ADDRESS === $rule_array['key'] ) {
+				$new_rule_array = Fraud_Risk_Tools::get_international_ip_address_rule()->to_array();
+				if ( isset( $rule_array['check'] )
+					&& isset( $new_rule_array['check'] )
+					&& wp_json_encode( $rule_array['check'] ) !== wp_json_encode( $new_rule_array['check'] )
+				) {
+					$rule_array   = $new_rule_array;
+					$needs_update = true;
+				}
+			}
+		}
+
+		// Update the possibly changed values on the server, and the transient.
+		if ( $needs_update ) {
+			$this->payments_api_client->save_fraud_ruleset( $ruleset );
+			set_transient( 'wcpay_fraud_protection_settings', $ruleset, DAY_IN_SECONDS );
+		}
+	}
+
+	/**
 	 * The get_icon() method from the WC_Payment_Gateway class wraps the icon URL into a prepared HTML element, but there are situations when this
 	 * element needs to be rendered differently on the UI (e.g. additional styles or `display` property).
 	 *
@@ -3813,7 +3861,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) ) {
 			$enabled_payment_methods = array_filter(
 				$enabled_payment_methods,
-				static function( $method ) {
+				static function ( $method ) {
 					return Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $method;
 				}
 			);
@@ -3887,7 +3935,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$elements_location = isset( $_POST['elements_location'] ) ? wc_clean( wp_unslash( $_POST['elements_location'] ) ) : null;
 			$appearance        = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
 
-			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page' ];
+			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block' ];
 			if ( ! $elements_location || ! in_array( $elements_location, $valid_locations, true ) ) {
 				throw new Exception(
 					__( 'Unable to update UPE appearance values at this time.', 'woocommerce-payments' )
@@ -3909,7 +3957,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			/**
 			 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
 			 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
-			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', or 'bnpl_product_page'.
+			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block'.
 			 *
 			 * @since 7.4.0
 			 */
@@ -3919,11 +3967,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
 				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
 				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
+				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT,
+				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT,
 			][ $elements_location ];
 			$appearance_theme_transient = [
 				'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
 				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
 				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
+				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
 			][ $elements_location ];
 
 			if ( null !== $appearance ) {
@@ -3952,9 +4004,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		delete_transient( self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT );
 		delete_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
 		delete_transient( self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT );
 	}
 
 	/**
@@ -4210,38 +4266,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_method_description() {
-		$description_links = [
-			'br'                   => '<br/>',
-			'tosLink'              => '<a href="https://wordpress.com/tos/" target="_blank" rel="noopener noreferrer">',
-			'privacyLink'          => '<a href="https://automattic.com/privacy/" target="_blank" rel="noopener noreferrer">',
-			'woopayMechantTosLink' => '<a href="https://wordpress.com/tos/#more-woopay-specifically" target="_blank" rel="noopener noreferrer">',
-		];
-
-		$description = WC_Payments_Utils::esc_interpolated_html(
-			sprintf(
-				/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
-				__(
-					'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
-			By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-					'woocommerce-payments'
-				),
-				'WooPayments'
+		$description = sprintf(
+			/* translators: %1$s: WooPayments */
+			__(
+				'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.',
+				'woocommerce-payments'
 			),
-			$description_links
+			'WooPayments'
 		);
 
 		if ( WooPay_Utilities::is_store_country_available() ) {
-			$description = WC_Payments_Utils::esc_interpolated_html(
-				sprintf(
-					/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, woopayMechantTosLink: Link to WooPay merchant terms, privacyLink: Link to privacy policy page */
-					__(
-						'Payments made simple — including WooPay, a new express checkout feature.<br/><br/>
-				By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink> (including WooPay <woopayMechantTosLink>merchant terms</woopayMechantTosLink>) and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-						'woocommerce-payments'
-					),
-					'WooPayments'
+			$description = sprintf(
+				/* translators: %s: WooPay,  */
+				__(
+					'Payments made simple — including %s, a new express checkout feature.',
+					'woocommerce-payments'
 				),
-				$description_links
+				'WooPay'
 			);
 		}
 
@@ -4300,7 +4341,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
-		$check_if_usable = function( array $address ): bool {
+		$check_if_usable = function ( array $address ): bool {
 			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
 		};
 
