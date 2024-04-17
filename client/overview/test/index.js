@@ -264,12 +264,43 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
+	it( 'renders FRTDiscoverabilityBanner if store has transacted', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			frtDiscoverBannerSettings: JSON.stringify( {
+				dontShowAgain: false,
+			} ),
+			lifetimeTPV: 100,
+		};
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( 'Enhanced fraud protection for your store' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not render FRTDiscoverabilityBanner if store has not transacted', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			frtDiscoverBannerSettings: JSON.stringify( {
+				dontShowAgain: false,
+			} ),
+			lifetimeTPV: 0,
+		};
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( 'Enhanced fraud protection for your store' )
+		).not.toBeInTheDocument();
+	} );
+
 	it( 'dismisses the FRTDiscoverabilityBanner when dismiss button is clicked', async () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				dontShowAgain: false,
 			} ),
+			lifetimeTPV: 100,
 		};
 
 		render( <OverviewPage /> );
@@ -285,14 +316,6 @@ describe( 'Overview page', () => {
 		await waitFor( () => {
 			expect( bannerHeader ).not.toBeInTheDocument();
 		} );
-	} );
-
-	it( 'renders FRTDiscoverabilityBanner', () => {
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( 'Enhanced fraud protection for your store' )
-		).toBeInTheDocument();
 	} );
 
 	it( 'displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is true', () => {
