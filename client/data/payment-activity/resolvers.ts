@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { updatePaymentsActivity } from './actions';
+import { updatePaymentActivity } from './actions';
 import { PaymentActivityData, QueryDate } from './types';
 
 /**
@@ -31,7 +31,7 @@ export function* getPaymentActivityData(
 	try {
 		const results = yield apiFetch( { path } );
 
-		yield updatePaymentsActivity( results as PaymentActivityData );
+		yield updatePaymentActivity( results as PaymentActivityData );
 	} catch ( e ) {
 		yield controls.dispatch(
 			'core/notices',

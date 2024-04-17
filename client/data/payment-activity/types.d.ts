@@ -13,7 +13,7 @@ export interface PaymentActivityState {
 	isLoading?: boolean;
 }
 
-export interface PaymentsActivityAction {
+export interface PaymentActivityAction {
 	type: string;
 	data: PaymentActivityData;
 }

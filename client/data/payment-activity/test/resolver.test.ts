@@ -9,7 +9,7 @@ import { controls } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { updatePaymentsActivity } from '../actions';
+import { updatePaymentActivity } from '../actions';
 import { getPaymentActivityData } from '../resolvers';
 
 const query = {
@@ -43,7 +43,7 @@ describe( 'getPaymentActivityData resolver', () => {
 	describe( 'on success', () => {
 		test( 'should update state with payment activity data', () => {
 			expect( generator.next( successfulResponse ).value ).toEqual(
-				updatePaymentsActivity( successfulResponse )
+				updatePaymentActivity( successfulResponse )
 			);
 		} );
 	} );

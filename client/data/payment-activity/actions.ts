@@ -4,11 +4,11 @@
  * Internal Dependencies
  */
 import TYPES from './action-types';
-import { PaymentActivityData, PaymentsActivityAction } from './types';
+import { PaymentActivityData, PaymentActivityAction } from './types';
 
-export function updatePaymentsActivity(
+export function updatePaymentActivity(
 	data: PaymentActivityData
-): PaymentsActivityAction {
+): PaymentActivityAction {
 	return {
 		type: TYPES.SET_PAYMENT_ACTIVITY_DATA,
 		data,
