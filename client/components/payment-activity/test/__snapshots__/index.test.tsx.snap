@@ -71,11 +71,11 @@ exports[`PaymentActivity component should render 1`] = `
                 aria-labelledby="wcpay-payment-activity-data__total-payment-volume"
                 class="wcpay-payment-data-highlights__item__wrapper__amount"
               >
-                €1,563.73
+                $0.00
               </p>
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&date_between%5B0%5D=2024-04-01&date_between%5B1%5D=2024-04-08&filter=advanced"
               >
                 View report
               </a>
@@ -130,7 +130,7 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__charges"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  €3,143.00
+                  $0.00
                 </p>
                 <a
                   data-link-type="wc-admin"
@@ -158,11 +158,11 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__refunds"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  €1,532.00
+                  $0.00
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&type_is=refund"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&type_is=refund&date_between%5B0%5D=2024-04-01&date_between%5B1%5D=2024-04-08"
                 >
                   View report
                 </a>
@@ -186,7 +186,7 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__disputes"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  €47.27
+                  $0.00
                 </p>
                 <a
                   data-link-type="wc-admin"
@@ -242,7 +242,7 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__fees"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  €94.29
+                  $0.00
                 </p>
               </div>
             </div>
