@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Remove @wordpress/data dependency in the email input iframe file

@@ -8,10 +8,10 @@ import { Link } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import './style.scss';
+
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
-
+import './style.scss';
 interface PaymentDataTileProps {
 	/**
 	 * The id for the tile, can be used for CSS styling.
