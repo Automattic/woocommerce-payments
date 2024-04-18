@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-refactor: reduce wp-data dependency on shortcode checkout
