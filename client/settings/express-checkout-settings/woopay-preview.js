@@ -182,6 +182,10 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 			'/file/' +
 			storeLogo;
 		storeHeader = <img src={ storeLogoUrl } alt="Store logo" />;
+	} else if ( wcpaySettings?.siteLogoUrl ) {
+		storeHeader = (
+			<img src={ wcpaySettings?.siteLogoUrl } alt="Store logo" />
+		);
 	} else {
 		storeHeader = (
 			<span className="header-text">{ decodeEntities( storeName ) }</span>
