@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 
 /**
  * Internal dependencies
