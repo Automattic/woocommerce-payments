@@ -22,9 +22,14 @@ import Transactions from '../transactions';
 import Deposits from '../deposits';
 import LoadableSettingsSection from '../loadable-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import { useDepositDelayDays, useSettings } from '../../data';
+import {
+	useDepositDelayDays,
+	useGetDuplicatedPaymentMethodIds,
+	useSettings,
+} from '../../data';
 import FraudProtection from '../fraud-protection';
 import { isDefaultSiteLanguage } from 'wcpay/utils';
+import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -200,6 +205,11 @@ const SettingsManager = () => {
 		}
 	}, [ isLoading ] );
 
+	const [
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
+	] = useState( wcpaySettings.dismissedDuplicateNotices || [] );
+
 	return (
 		<SettingsLayout>
 			<SettingsSection
@@ -212,26 +222,34 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection
-				description={ PaymentMethodsDescription }
-				id="payment-methods"
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: useGetDuplicatedPaymentMethodIds(),
+					dismissedDuplicateNotices: dismissedDuplicateNotices,
+					setDismissedDuplicateNotices: setDismissedDuplicateNotices,
+				} }
 			>
-				<LoadableSettingsSection numLines={ 60 }>
-					<ErrorBoundary>
-						<PaymentMethods />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<SettingsSection
-				id="express-checkouts"
-				description={ ExpressCheckoutDescription }
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<ExpressCheckout />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
+				<SettingsSection
+					description={ PaymentMethodsDescription }
+					id="payment-methods"
+				>
+					<LoadableSettingsSection numLines={ 60 }>
+						<ErrorBoundary>
+							<PaymentMethods />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+				<SettingsSection
+					id="express-checkouts"
+					description={ ExpressCheckoutDescription }
+				>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<ExpressCheckout />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+			</DuplicatedPaymentMethodsContext.Provider>
 			<SettingsSection
 				description={ TransactionsDescription }
 				id="transactions"
