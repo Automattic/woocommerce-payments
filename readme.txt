@@ -95,6 +95,8 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 7.5.1 - 2024-04-18 =
+* Fix - Avoid updating billing details for legacy card objects.
+* Fix - fix: BNPL announcement link.
 
 
 = 7.5.0 - 2024-04-17 =
