@@ -23,6 +23,7 @@ interface Props {
 	disabled: boolean;
 	isSelected: boolean;
 }
+
 const Emoticon: React.FC< Props > = ( {
 	rating,
 	onClick,
