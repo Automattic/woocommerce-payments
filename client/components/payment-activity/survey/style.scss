@@ -1,6 +1,4 @@
 .wcpay-payments-activity__survey {
-	$inner-container-max-width: 513px;
-
 	position: relative;
 	width: 100%;
 
@@ -11,7 +9,6 @@
 
 	.survey_container {
 		margin: 0 auto;
-		max-width: $inner-container-max-width;
 		display: flex;
 		gap: 10px;
 		justify-content: center;
@@ -47,7 +44,7 @@
 	}
 
 	.comment_container {
-		max-width: $inner-container-max-width;
+		max-width: 500px;
 		margin: 0 auto;
 
 		&__disclaimer {
