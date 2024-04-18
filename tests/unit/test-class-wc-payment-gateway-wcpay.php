@@ -2429,6 +2429,97 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
+	public function test_billing_details_update_if_not_empty() {
+		$fields                           = [
+			'billing' => [
+				'billing_company'   => '',
+				'billing_country'   => '',
+				'billing_address_1' => '',
+				'billing_address_2' => '',
+				'billing_city'      => '',
+				'billing_state'     => '',
+				'billing_phone'     => '',
+			],
+		];
+		wc()->checkout()->checkout_fields = $fields;
+
+		// There is no payment method data within the request. This is the case e.g. for the automatic subscription renewals.
+		$_POST['payment_method'] = '';
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+
+		$expected_upe_payment_method = 'card';
+		$order                       = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->add_payment_token( $token );
+		$order->save();
+
+		$pi = new Payment_Information( 'pm_mock', $order, null, $token, null, null, null, '', 'card' );
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status' => 'success',
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will( $this->returnValue( $payment_intent ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_update_data' );
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function test_no_billing_details_update_for_legacy_card_object() {
+		$legacy_card                      = 'card_mock';
+		$fields                           = [
+			'billing' => [
+				'billing_company'   => '',
+				'billing_country'   => '',
+				'billing_address_1' => '',
+				'billing_address_2' => '',
+				'billing_city'      => '',
+				'billing_state'     => '',
+				'billing_phone'     => '',
+			],
+		];
+		wc()->checkout()->checkout_fields = $fields;
+
+		// There is no payment method data within the request. This is the case e.g. for the automatic subscription renewals.
+		$_POST['payment_method'] = '';
+
+		$token = WC_Helper_Token::create_token( $legacy_card );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->add_payment_token( $token );
+		$order->save();
+
+		$pi             = new Payment_Information( $legacy_card, $order, null, $token, null, null, null, '', 'card' );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status' => 'success',
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will( $this->returnValue( $payment_intent ) );
+
+		$request->expects( $this->never() )
+			->method( 'set_payment_method_update_data' );
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
 	public function test_process_payment_for_order_rejects_with_cached_minimum_amount() {
 		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
 
