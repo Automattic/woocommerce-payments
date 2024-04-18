@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 7.5.1 - 2024-04-18 =
+
 = 7.5.0 - 2024-04-17 =
 * Add - Add a parent wrapper component for Payment Activity widget. This will be visible on the Payments Overview page
 * Add - Add a task on WooCommerce Home page to remind accounts operating in sandbox mode to set up live payments.
