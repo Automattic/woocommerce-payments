@@ -59,8 +59,7 @@ await expect(
 
 **How can I act as shopper or merchant in a test?**
 
-1. A test suite (`describe`) can act as `shopper` or `merchant` by using the helper function `useShopper` or `useMerchant` from `tests/e2e-pw/utils/helpers.ts`.
-2. To switch between `shopper` and `merchant` role, use the `getShopper` and `getMerchant` function:
+1. To switch between `shopper` and `merchant` role in a test, use the `getShopper` and `getMerchant` function:
 
 ```ts
 import { getShopper, getMerchant } from './utils/helpers';
@@ -74,6 +73,20 @@ test( 'should do things as shopper and merchant', async ( { browser } ) => {
 
 	// do things as merchant
 	await merchantPage.goto( '/wp-admin/admin.php?page=wc-settings' );
+} );
+```
+
+2. To act as `shopper` or `merchant` for an entire test suite (`describe`), use the helper function `useShopper` or `useMerchant` from `tests/e2e-pw/utils/helpers.ts`:
+
+```ts
+import { useShopper } from '../utils/helpers';
+
+test.describe( 'Sign in as customer', () => {
+	useShopper();
+	test( 'Load customer my account page', async ( { page } ) => {
+		// do things as shopper
+		await page.goto( '/my-account' );
+	} );
 } );
 ```
 
