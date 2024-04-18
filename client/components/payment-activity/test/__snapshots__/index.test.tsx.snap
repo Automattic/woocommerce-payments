@@ -190,7 +190,7 @@ exports[`PaymentActivity component should render 1`] = `
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes&filter=awaiting_response"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes"
                 >
                   View report
                 </a>
