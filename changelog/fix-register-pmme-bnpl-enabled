@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Defensive check for cart block PMME which hasn't yet been deployed.

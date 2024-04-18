@@ -20,6 +20,7 @@ import {
 	getWooPayCustomMessage,
 	getWooPayStoreLogo,
 	getIsClientSecretEncryptionEnabled,
+	getDuplicatedPaymentMethodIds,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -341,5 +342,35 @@ describe( 'Settings selectors tests', () => {
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
 			expect( setting.getFunc( state ) ).toEqual( '' );
 		} );
+	} );
+
+	describe( 'getDuplicatedPaymentMethodIds()', () => {
+		test( 'returns the value of state.settings.data.duplicated_payment_method_ids', () => {
+			const state = {
+				settings: {
+					data: {
+						duplicated_payment_method_ids: [ 'card', 'bancontact' ],
+					},
+				},
+			};
+
+			expect( getDuplicatedPaymentMethodIds( state ) ).toEqual( [
+				'card',
+				'bancontact',
+			] );
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+			[ { settings: { data: { duplicated_payment_method_ids: null } } } ],
+		] )(
+			'returns {} if missing or undefined (tested state: %j)',
+			( state ) => {
+				expect( getDuplicatedPaymentMethodIds( state ) ).toEqual( {} );
+			}
+		);
 	} );
 } );
