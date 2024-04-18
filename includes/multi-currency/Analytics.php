@@ -138,7 +138,7 @@ class Analytics {
 		}
 
 		$data_registry = Package::container()->get( AssetDataRegistry::class );
-		$data_registry->add( 'customerCurrencies', $currency_options, true );
+		$data_registry->add( 'customerCurrencies', $currency_options );
 	}
 
 	/**
