@@ -15,9 +15,11 @@ const VerticalSpacer = ( { height } ) => {
 	return <div className="preview-layout__v-spacer" style={ { height } } />;
 };
 
-const PreviewButton = () => {
-	return <div className="preview-layout__preview-button">Preview</div>;
-};
+// TODO: Commented out for now. Will be used in a future iteration.
+// See https://github.com/Automattic/woopay/issues/2559#issuecomment-2064013672
+// const PreviewButton = () => {
+// 	return <div className="preview-layout__preview-button">Preview</div>;
+// };
 
 const PreviewContainer = ( { height, children } ) => {
 	return (
@@ -194,7 +196,11 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 
 	return (
 		<div className="preview-layout" style={ style } { ...restProps }>
-			<PreviewButton />
+			{
+				// TODO: Commented out for now. Will be used in a future iteration.
+				// See https://github.com/Automattic/woopay/issues/2559#issuecomment-2064013672
+				// <PreviewButton />
+			 }
 			<PreviewContainer>
 				<VerticalSpacer height="0.75rem" />
 				<StoreHeader
