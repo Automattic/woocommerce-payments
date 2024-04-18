@@ -31,7 +31,7 @@
 			}
 		}
 
-		@media ( max-width: 600px ) {
+		@include breakpoint( '<660px' ) {
 			flex-direction: column;
 		}
 	}
