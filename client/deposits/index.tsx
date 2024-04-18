@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from '@wordpress/data';
 import { ExternalLink } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies.
@@ -100,7 +101,9 @@ const NextDepositNotice: React.FC = () => {
 
 const DepositFailureNotice: React.FC = () => {
 	const { hasErroredExternalAccount } = useAccountStatus();
-	const accountLink = wcpaySettings.accountStatus.accountLink;
+	const accountLink = addQueryArgs( wcpaySettings.accountStatus.accountLink, {
+		source: 'deposits',
+	} );
 
 	return hasErroredExternalAccount ? (
 		<BannerNotice

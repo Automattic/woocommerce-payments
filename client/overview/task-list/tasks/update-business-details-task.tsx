@@ -4,6 +4,7 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { render } from '@wordpress/element';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -26,6 +27,9 @@ export const getUpdateBusinessDetailsTask = (
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
+	const accountLinkWithSource = addQueryArgs( accountLink, {
+		source: 'update-business-details',
+	} );
 
 	let accountDetailsTaskDescription: React.ReactElement | string = '',
 		errorMessageDescription,
@@ -109,7 +113,7 @@ export const getUpdateBusinessDetailsTask = (
 			recordEvent( 'wcpay_account_details_link_clicked', {
 				source: 'update-business-details',
 			} );
-			window.open( accountLink, '_blank' );
+			window.open( accountLinkWithSource, '_blank' );
 		}
 	};
 

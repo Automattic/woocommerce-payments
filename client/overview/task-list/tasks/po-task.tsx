@@ -34,6 +34,7 @@ export const getVerifyBankAccountTask = (): any => {
 
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			collect_payout_requirements: true,
+			source: 'overview-page__receive-deposits-task',
 		} );
 	};
 
