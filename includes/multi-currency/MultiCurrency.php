@@ -252,6 +252,8 @@ class MultiCurrency {
 			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
 
+		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_props_to_wcpay_js_config' ] );
+
 		$this->currency_switcher_block->init_hooks();
 	}
 
@@ -386,6 +388,19 @@ class MultiCurrency {
 
 		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 		WC_Payments_Utils::enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+	}
+
+	/**
+	 * Add multi-currency specific props to the WCPay JS config.
+	 *
+	 * @param  array $config The JS config that will be loaded on the frontend.
+	 *
+	 * @return array  The updated JS config.
+	 */
+	public function add_props_to_wcpay_js_config( $config ) {
+		$config['isMultiCurrencyEnabled'] = true;
+
+		return $config;
 	}
 
 	/**
