@@ -1073,11 +1073,11 @@ class WC_Payments_Account {
 				);
 			}
 
-			$source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
+			$connect_page_source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
 			// Redirect to the onboarding flow page if the account is not onboarded otherwise to the overview page.
 			// Builder accounts are handled below and redirected to Stripe KYC directly.
 			if ( ! $create_builder_account && in_array(
-				$source,
+				$connect_page_source,
 				[
 					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
 					WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
@@ -1096,7 +1096,7 @@ class WC_Payments_Account {
 						WC_Payments_Onboarding_Service::set_test_mode( false );
 					}
 
-					$this->redirect_to_onboarding_flow_page( $source );
+					$this->redirect_to_onboarding_flow_page( $connect_page_source );
 				} else {
 					// Accounts with Stripe account connected will be redirected to the overview page.
 					$this->redirect_to( static::get_overview_page_url() );
@@ -1104,7 +1104,7 @@ class WC_Payments_Account {
 			}
 
 			// Handle the flow for a builder moving from test to live.
-			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS === $source ) {
+			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS === $connect_page_source ) {
 				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 
 				// Delete the account if the test mode is enabled otherwise it'll cause issues to onboard again.
@@ -1114,16 +1114,16 @@ class WC_Payments_Account {
 
 				// Set the test mode to false now that we are handling a real onboarding.
 				WC_Payments_Onboarding_Service::set_test_mode( false );
-				$this->redirect_to_onboarding_flow_page( $source );
+				$this->redirect_to_onboarding_flow_page( $connect_page_source );
 				return;
 			}
 
-			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT === $source ) {
+			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT === $connect_page_source ) {
 				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled() || WC_Payments::mode()->is_dev();
 
 				// Delete the account.
 				$this->payments_api_client->delete_account( $test_mode );
-				$this->redirect_to_onboarding_flow_page( $source );
+				$this->redirect_to_onboarding_flow_page( $connect_page_source );
 				return;
 			}
 
@@ -1499,9 +1499,12 @@ class WC_Payments_Account {
 			$account_data = [];
 		}
 
+		$source = sanitize_text_field( wp_unslash( $_GET['source'] ) );
+
 		$site_data = [
 			'site_username' => wp_get_current_user()->user_login,
 			'site_locale'   => get_locale(),
+			'source'        => $source,
 		];
 
 		$user_data = $this->get_onboarding_user_data();
