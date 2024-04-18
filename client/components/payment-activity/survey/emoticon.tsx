@@ -9,12 +9,12 @@ import classNames from 'classnames';
  */
 import type { Rating } from './types';
 
-const strings: Record< Rating, string > = {
-	'very-unhappy': '&#128542;',
-	unhappy: '&#129764;',
-	neutral: '&#128529;',
-	happy: '&#128578;',
-	'very-happy': '&#128525;',
+const emoticons: Record< Rating, React.ReactElement > = {
+	'very-unhappy': <>&#128542;</>,
+	unhappy: <>&#129764;</>,
+	neutral: <>&#128529;</>,
+	happy: <>&#128578;</>,
+	'very-happy': <>&#128525;</>,
 };
 
 interface Props {
@@ -39,12 +39,9 @@ const Emoticon: React.FC< Props > = ( {
 				selected: isSelected,
 			} ) }
 		>
-			<span
-				role="img"
-				aria-label={ rating }
-				// eslint-disable-next-line react/no-danger
-				dangerouslySetInnerHTML={ { __html: strings[ rating ] } }
-			/>
+			<span role="img" aria-label={ rating }>
+				{ emoticons[ rating ] }
+			</span>
 		</button>
 	);
 };
