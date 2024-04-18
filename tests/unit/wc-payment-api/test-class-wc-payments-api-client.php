@@ -255,6 +255,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$site_data = [
 			'site_username' => 'admin',
 			'site_locale'   => 'en_US',
+			'source'        => 'test_source',
 		];
 
 		$user_data = [
