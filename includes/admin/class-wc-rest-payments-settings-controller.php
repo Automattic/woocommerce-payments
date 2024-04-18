@@ -8,6 +8,7 @@
 use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
+use WCPay\Duplicates_Detection_Service;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -38,21 +39,32 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 
 	/**
+	 * Duplicates detection service.
+	 *
+	 * @var Duplicates_Detection_Service
+	 */
+	private $duplicates_detection_service;
+
+
+	/**
 	 * WC_REST_Payments_Settings_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
-	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
-	 * @param WC_Payments_Account      $account  Account class instance.
+	 * @param WC_Payments_API_Client       $api_client WC_Payments_API_Client instance.
+	 * @param WC_Payment_Gateway_WCPay     $wcpay_gateway WC_Payment_Gateway_WCPay instance.
+	 * @param WC_Payments_Account          $account  Account class instance.
+	 * @param Duplicates_Detection_Service $duplicates_detection_service Duplicates detection service.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
 		WC_Payment_Gateway_WCPay $wcpay_gateway,
-		WC_Payments_Account $account
+		WC_Payments_Account $account,
+		Duplicates_Detection_Service $duplicates_detection_service
 	) {
 		parent::__construct( $api_client );
 
-		$this->wcpay_gateway = $wcpay_gateway;
-		$this->account       = $account;
+		$this->wcpay_gateway                = $wcpay_gateway;
+		$this->account                      = $account;
+		$this->duplicates_detection_service = $duplicates_detection_service;
 	}
 
 	/**
@@ -474,6 +486,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'enabled_payment_method_ids'          => $enabled_payment_methods,
 				'available_payment_method_ids'        => $available_upe_payment_methods,
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
+				'duplicated_payment_method_ids'       => $this->duplicates_detection_service->find_duplicates(),
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
 				'is_test_mode_enabled'                => WC_Payments::mode()->is_test(),
