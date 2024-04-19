@@ -189,19 +189,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Update the order: set the payment method and attach intent attributes.
 			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
-			$intent_id     = $intent->get_id();
-			$intent_status = $intent->get_status();
-			$charge        = $intent->get_charge();
-			$charge_id     = $charge ? $charge->get_id() : null;
-			$this->order_service->attach_intent_info_to_order(
-				$order,
-				$intent_id,
-				$intent_status,
-				$intent->get_payment_method_id(),
-				$intent->get_customer_id(),
-				$charge_id,
-				$intent->get_currency()
-			);
+			$this->order_service->attach_intent_info_to_order( $order, $intent );
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
@@ -289,7 +277,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			$this->add_fraud_outcome_manual_entry( $order, 'approve' );
 
-			$result = $this->gateway->capture_charge( $order, false, $intent_metadata );
+			$result = $this->gateway->capture_charge( $order, true, $intent_metadata );
 
 			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
 				return new WP_Error(
@@ -430,7 +418,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return array|null
 	 * @throws \Exception
 	 */
-	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ) :array {
+	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ): array {
 		$payment_methods = $request->get_param( 'payment_methods' );
 		if ( null === $payment_methods ) {
 			return $default_value;
@@ -458,7 +446,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return string|null
 	 * @throws \Exception
 	 */
-	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ) : string {
+	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ): string {
 		$capture_method = $request->get_param( 'capture_method' );
 		if ( null === $capture_method ) {
 			return $default_value;

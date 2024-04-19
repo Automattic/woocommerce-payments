@@ -16,8 +16,9 @@ import SepaAsset from 'assets/images/payment-methods/sepa-debit.svg?asset';
 import P24Asset from 'assets/images/payment-methods/p24.svg?asset';
 import IdealAsset from 'assets/images/payment-methods/ideal.svg?asset';
 import BankDebitAsset from 'assets/images/payment-methods/bank-debit.svg?asset';
-import AffirmAsset from 'assets/images/payment-methods/affirm.svg?asset';
-import AfterpayAsset from 'assets/images/payment-methods/afterpay.svg?asset';
+import AffirmAsset from 'assets/images/payment-methods/affirm-badge.svg?asset';
+import AfterpayAsset from 'assets/images/payment-methods/afterpay-logo.svg?asset';
+import ClearpayAsset from 'assets/images/payment-methods/clearpay.svg?asset';
 import JCBAsset from 'assets/images/payment-methods/jcb.svg?asset';
 import KlarnaAsset from 'assets/images/payment-methods/klarna.svg?asset';
 import VisaAsset from 'assets/images/cards/visa.svg?asset';
@@ -27,6 +28,8 @@ import WooAsset from 'assets/images/payment-methods/woo.svg?asset';
 import ApplePayAsset from 'assets/images/cards/apple-pay.svg?asset';
 import GooglePayAsset from 'assets/images/cards/google-pay.svg?asset';
 import DinersClubAsset from 'assets/images/cards/diners.svg?asset';
+import DiscoverAsset from 'assets/images/cards/discover.svg?asset';
+import CBAsset from 'assets/images/cards/cb.svg?asset';
 import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
 import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
 import CreditCardAsset from 'assets/images/payment-methods/cc.svg?asset';
@@ -57,6 +60,10 @@ export const AfterpayIcon = iconComponent(
 	AfterpayAsset,
 	__( 'Afterpay', 'woocommerce-payments' )
 );
+export const ClearpayIcon = iconComponent(
+	ClearpayAsset,
+	__( 'Clearpay', 'woocommerce-payments' )
+);
 export const AmericanExpressIcon = iconComponent(
 	AmexAsset,
 	__( 'American Express', 'woocommerce-payments' )
@@ -78,9 +85,17 @@ export const CreditCardIcon = iconComponent(
 	__( 'Credit card / Debit card', 'woocommerce-payments' ),
 	false
 );
+export const CBIcon = iconComponent(
+	CBAsset,
+	__( 'Cartes Bancaires', 'woocommerce-payments' )
+);
 export const DinersClubIcon = iconComponent(
 	DinersClubAsset,
 	__( 'Diners Club', 'woocommerce-payments' )
+);
+export const DiscoverIcon = iconComponent(
+	DiscoverAsset,
+	__( 'Discover', 'woocommerce-payments' )
 );
 export const EpsIcon = iconComponent(
 	EpsAsset,

@@ -1,0 +1,25 @@
+.wcpay-reset-account-modal {
+	// fix for the modal being too short on smaller screens
+	@media ( max-height: 880px ) {
+		max-height: 100% !important;
+	}
+
+	.components-modal__content {
+		box-sizing: border-box;
+		max-width: 700px;
+	}
+
+	&__footer {
+		text-align: right;
+		margin-top: $gap-large;
+
+		& :first-child {
+			margin-right: $gap-smaller;
+		}
+
+		button {
+			margin-top: $gap;
+			padding: $gap-smaller $gap;
+		}
+	}
+}

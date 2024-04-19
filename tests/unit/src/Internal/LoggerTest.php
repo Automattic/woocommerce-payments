@@ -43,13 +43,6 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	private $mode;
 
 	/**
-	 * WC_Payment_Gateway_WCPay
-	 *
-	 * @var WC_Payment_Gateway_WCPay|MockObject
-	 */
-	private $mock_gateway;
-
-	/**
 	 * Sets up the logger.
 	 */
 	protected function setUp(): void {
@@ -57,13 +50,11 @@ class LoggerTest extends WCPAY_UnitTestCase {
 
 		$this->mock_wc_logger = $this->createMock( WC_Logger::class );
 		$this->mode           = $this->createMock( Mode::class );
-		$this->mock_gateway   = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$this->sut            = $this->getMockBuilder( Logger::class )
 			->setConstructorArgs(
 				[
 					$this->mock_wc_logger,
 					$this->mode,
-					$this->mock_gateway,
 				]
 			)
 			->onlyMethods( [ 'can_log' ] )
@@ -134,8 +125,7 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	public function test_can_log_dev_mode() {
 		$this->sut = new Logger(
 			$this->mock_wc_logger,
-			$this->mode,
-			$this->mock_gateway
+			$this->mode
 		);
 		$this->mode->expects( $this->once() )
 			->method( 'is_dev' )
@@ -149,8 +139,7 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	public function test_can_log_exception() {
 		$this->sut = new Logger(
 			$this->mock_wc_logger,
-			$this->mode,
-			$this->mock_gateway
+			$this->mode
 		);
 		$this->mode->expects( $this->once() )
 			->method( 'is_dev' )
@@ -164,16 +153,12 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	public function test_can_log_no_option() {
 		$this->sut = new Logger(
 			$this->mock_wc_logger,
-			$this->mode,
-			$this->mock_gateway
+			$this->mode
 		);
 		$this->mode->expects( $this->once() )
 			->method( 'is_dev' )
 			->willReturn( false );
-		$this->mock_gateway->expects( $this->once() )
-			->method( 'get_option' )
-			->with( 'enable_logging' )
-			->willReturn( null );
+		update_option( 'woocommerce_woocommerce_payments_settings', [] );
 		$this->assertFalse( $this->sut->can_log() );
 	}
 
@@ -183,16 +168,12 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	public function test_can_log_disabled() {
 		$this->sut = new Logger(
 			$this->mock_wc_logger,
-			$this->mode,
-			$this->mock_gateway
+			$this->mode
 		);
 		$this->mode->expects( $this->once() )
 			->method( 'is_dev' )
 			->willReturn( false );
-		$this->mock_gateway->expects( $this->once() )
-			->method( 'get_option' )
-			->with( 'enable_logging' )
-			->willReturn( 'no' );
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'enable_logging' => 'no' ] );
 		$this->assertFalse( $this->sut->can_log() );
 	}
 
@@ -202,16 +183,12 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	public function test_can_log_enabled() {
 		$this->sut = new Logger(
 			$this->mock_wc_logger,
-			$this->mode,
-			$this->mock_gateway
+			$this->mode
 		);
 		$this->mode->expects( $this->once() )
 			->method( 'is_dev' )
 			->willReturn( false );
-		$this->mock_gateway->expects( $this->once() )
-			->method( 'get_option' )
-			->with( 'enable_logging' )
-			->willReturn( 'yes' );
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'enable_logging' => 'yes' ] );
 		$this->assertTrue( $this->sut->can_log() );
 	}
 }

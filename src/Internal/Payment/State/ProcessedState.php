@@ -13,8 +13,7 @@ use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\Proxy\LegacyProxy;
-use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
+use WC_Payment_Gateway_WCPay;
 
 /**
  * This state is used when payment is completed on the server, and we need to update date on the plugin side.
@@ -81,7 +80,6 @@ class ProcessedState extends AbstractPaymentState {
 		// cleaning up.
 		$this->legacy_proxy->call_function( 'wc_reduce_stock_levels', $order_id );
 		$this->clear_cart();
-		$this->clear_upe_payment_intent_from_session();
 
 		// If everything went well, transition to the completed state.
 		return $this->create_state( CompletedState::class );
@@ -98,14 +96,4 @@ class ProcessedState extends AbstractPaymentState {
 			$cart->empty_cart();
 		}
 	}
-
-	/**
-	 * Remove UPE payment intents from session.
-	 * Using Legacy_Proxy temporarily to provide functionality until replaced by deferred intents.
-	 */
-	private function clear_upe_payment_intent_from_session() : void {
-		$this->legacy_proxy->call_static( UPE_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' );
-		$this->legacy_proxy->call_static( UPE_Split_Payment_Gateway::class, 'remove_upe_payment_intent_from_session' );
-	}
-
 }

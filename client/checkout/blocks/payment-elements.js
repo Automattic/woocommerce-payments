@@ -26,8 +26,11 @@ const PaymentElements = ( { api, ...props } ) => {
 	useEffect( () => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
-			const upeAppearance = getAppearance( true );
-			await api.saveUPEAppearance( upeAppearance, 'true' );
+			let upeAppearance = getAppearance( 'blocks_checkout' );
+			upeAppearance = await api.saveUPEAppearance(
+				upeAppearance,
+				'blocks_checkout'
+			);
 			setAppearance( upeAppearance );
 		}
 

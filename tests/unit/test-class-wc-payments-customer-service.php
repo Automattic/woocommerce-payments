@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 
@@ -288,7 +289,6 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			WC()->session->get( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY ),
 			$customer_id
 		);
-
 	}
 
 	/**
@@ -485,14 +485,46 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 					'billing_details' => [
 						'address' => [
 							'city'        => 'WooCity',
-							'country'     => 'US',
+							'country'     => Country_Code::UNITED_STATES,
 							'line1'       => 'WooAddress',
+							'line2'       => '',
 							'postal_code' => '12345',
 							'state'       => 'NY',
 						],
 						'email'   => 'admin@example.org',
 						'name'    => 'Jeroen Sormani',
 						'phone'   => '555-32123',
+					],
+				]
+			);
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->customer_service->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
+	}
+
+	public function test_update_payment_method_with_billing_details_from_checkout_fields() {
+		$fields = wc()->checkout()->checkout_fields;
+		unset( $fields['billing']['billing_company'] );
+		unset( $fields['billing']['billing_country'] );
+		unset( $fields['billing']['billing_address_1'] );
+		unset( $fields['billing']['billing_address_2'] );
+		unset( $fields['billing']['billing_city'] );
+		unset( $fields['billing']['billing_state'] );
+		unset( $fields['billing']['billing_phone'] );
+		wc()->checkout()->checkout_fields = $fields;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_payment_method' )
+			->with(
+				'pm_mock',
+				[
+					'billing_details' => [
+						'address' => [
+							'postal_code' => '12345',
+						],
+						'email'   => 'admin@example.org',
+						'name'    => 'Jeroen Sormani',
 					],
 				]
 			);
@@ -589,7 +621,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 				'get_billing_postcode'    => '09876',
 				'get_billing_city'        => 'City',
 				'get_billing_state'       => 'State',
-				'get_billing_country'     => 'US',
+				'get_billing_country'     => Country_Code::UNITED_STATES,
 				'get_shipping_first_name' => 'Shipping',
 				'get_shipping_last_name'  => 'Ship',
 				'get_shipping_address_1'  => '2 Street St',
@@ -597,7 +629,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 				'get_shipping_postcode'   => '76543',
 				'get_shipping_city'       => 'City2',
 				'get_shipping_state'      => 'State2',
-				'get_shipping_country'    => 'US',
+				'get_shipping_country'    => Country_Code::UNITED_STATES,
 			],
 			$mock_return_overrides
 		);
@@ -622,7 +654,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 					'postal_code' => '09876',
 					'city'        => 'City',
 					'state'       => 'State',
-					'country'     => 'US',
+					'country'     => Country_Code::UNITED_STATES,
 				],
 				'shipping'    => [
 					'name'    => 'Shipping Ship',
@@ -632,7 +664,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 						'postal_code' => '76543',
 						'city'        => 'City2',
 						'state'       => 'State2',
-						'country'     => 'US',
+						'country'     => Country_Code::UNITED_STATES,
 					],
 				],
 			],
@@ -670,7 +702,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 				'postal_code' => '12345',
 				'city'        => 'WooCity',
 				'state'       => 'NY',
-				'country'     => 'US',
+				'country'     => Country_Code::UNITED_STATES,
 			],
 		];
 

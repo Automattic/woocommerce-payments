@@ -49,29 +49,27 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base,
+			'/' . $this->rest_base . '/payments-overview',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'submit_survey' ],
+				'callback'            => [ $this, 'submit_payments_overview_survey' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'why-disable' => [
+					'rating'   => [
 						'type'              => 'string',
 						'items'             => [
 							'type' => 'string',
 							'enum' => [
-								'slow',
-								'buggy',
-								'theme-compatibility',
-								'missing-features',
-								'store-sales',
-								'poor-customer-experience',
-								'other',
+								'very-unhappy',
+								'unhappy',
+								'neutral',
+								'happy',
+								'very-happy',
 							],
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'comments'    => [
+					'comments' => [
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
 						'sanitize_callback' => 'wp_filter_nohtml_kses',
@@ -82,18 +80,17 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Submits the survey trhough the WPcom API.
+	 * Submits the overview survey trhough the WPcom API.
 	 *
 	 * @param WP_REST_Request $request the request being made.
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function submit_survey( WP_REST_Request $request ): WP_REST_Response {
-		$cancellation_comments = $request->get_param( 'comments' ) ?? '';
-		$cancellation_reason   = $request->get_param( 'why-disable' ) ?? '';
-		$cancellation_ssr      = $request->get_param( 'ssr' ) ?? '';
+	public function submit_payments_overview_survey( WP_REST_Request $request ): WP_REST_Response {
+		$comments = $request->get_param( 'comments' ) ?? '';
+		$rating   = $request->get_param( 'rating' ) ?? '';
 
-		if ( empty( $cancellation_comments ) && empty( $cancellation_reason ) ) {
+		if ( empty( $comments ) && empty( $rating ) ) {
 			return new WP_REST_Response(
 				[
 					'success' => false,
@@ -117,21 +114,25 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 				'method'  => 'POST',
 				'headers' => [
 					'Content-Type'    => 'application/json',
-					'X-Forwarded-For' => $this->get_current_user_ip(),
+					'X-Forwarded-For' => \WC_Geolocation::get_ip_address(),
 				],
 			],
 			[
 				'site_id'          => $this->http_client->get_blog_id(),
-				'survey_id'        => 'wcpay-upe-disable-early-access-2022-may',
+				'survey_id'        => 'wcpay-payments-overview',
 				'survey_responses' => [
-					'why-disable' => $cancellation_reason,
-					'comments'    => [ 'text' => $cancellation_comments ],
-					'ssr'         => [ 'text' => $cancellation_ssr ],
+					'rating'        => $rating,
+					'comments'      => [ 'text' => $comments ],
+					'wcpay-version' => [ 'text' => WCPAY_VERSION_NUMBER ],
 				],
 			]
 		);
 
 		$wpcom_request_body = json_decode( wp_remote_retrieve_body( $wpcom_request ) );
+
+		if ( ! is_wp_error( $wpcom_request ) ) {
+			update_option( 'wcpay_survey_payment_overview_submitted', true );
+		}
 
 		return new WP_REST_Response( $wpcom_request_body, wp_remote_retrieve_response_code( $wpcom_request ) );
 	}
@@ -145,33 +146,5 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	 */
 	public function check_permission() {
 		return current_user_can( 'manage_woocommerce' );
-	}
-
-	/**
-	 * Gets current user IP address.
-	 *
-	 * @return string Current user IP address.
-	 */
-	public function get_current_user_ip() {
-		foreach (
-			[
-				'HTTP_CF_CONNECTING_IP',
-				'HTTP_CLIENT_IP',
-				'HTTP_X_FORWARDED_FOR',
-				'HTTP_X_FORWARDED',
-				'HTTP_X_CLUSTER_CLIENT_IP',
-				'HTTP_FORWARDED_FOR',
-				'HTTP_FORWARDED',
-				'HTTP_VIA',
-				'REMOTE_ADDR',
-			] as $key
-		) {
-			if ( ! empty( $_SERVER[ $key ] ) ) {
-				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-				return $_SERVER[ $key ];
-			}
-		}
-
-		return '';
 	}
 }

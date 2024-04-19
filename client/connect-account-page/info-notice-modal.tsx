@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import TipBox from 'components/tip-box';
 import strings from './strings';
 import './style.scss';
@@ -27,19 +27,23 @@ const InfoNoticeModal: React.FC = () => {
 
 	return (
 		<>
-			<TipBox color="gray">
-				{ strings.infoNotice.description }{ ' ' }
-				<Button
-					variant="link"
-					onClick={ () => {
-						wcpayTracks.recordEvent(
-							wcpayTracks.events.CONNECT_ACCOUNT_KYC_MODAL_OPENED
-						);
-						setModalOpen( true );
-					} }
-				>
-					{ strings.infoNotice.button }
-				</Button>
+			<TipBox color="yellow">
+				{ wcpaySettings.isJetpackConnected
+					? strings.infoNotice.description.jetpack_connected
+					: strings.infoNotice.description.jetpack_not_connected }
+				{ wcpaySettings.isJetpackConnected && (
+					<Button
+						variant="link"
+						onClick={ () => {
+							recordEvent(
+								'wcpay_connect_account_kyc_modal_opened'
+							);
+							setModalOpen( true );
+						} }
+					>
+						{ strings.infoNotice.button }
+					</Button>
+				) }
 			</TipBox>
 			{ isModalOpen && (
 				<Modal

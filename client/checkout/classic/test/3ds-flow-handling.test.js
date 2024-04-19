@@ -3,12 +3,6 @@
  */
 import { showAuthenticationModalIfRequired } from '../3ds-flow-handling';
 
-jest.mock( 'wcpay/checkout/utils/upe', () => {
-	return {
-		isWCPayChosen: jest.fn( () => true ),
-	};
-} );
-
 describe( 'showAuthenticationModalIfRequired', () => {
 	it( 'Should stop processing when no confirmation is needed', () => {
 		const replaceStateSpy = jest.spyOn( history, 'replaceState' );
@@ -27,11 +21,7 @@ describe( 'showAuthenticationModalIfRequired', () => {
 		const mockedRequest = Promise.resolve( 'https://example.com/checkout' );
 
 		const apiMock = {
-			confirmIntent: jest.fn( () => {
-				return {
-					request: mockedRequest,
-				};
-			} ),
+			confirmIntent: jest.fn( () => mockedRequest ),
 		};
 
 		showAuthenticationModalIfRequired( apiMock );

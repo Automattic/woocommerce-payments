@@ -18,7 +18,7 @@ use WCPay\Core\Mode;
  */
 class Logger {
 
-	const LOG_FILENAME = 'woocommerce-payments';
+	const LOG_FILENAME = 'woopayments';
 
 	/**
 	 * The holding property for our WC_Logger_Interface instance.
@@ -35,31 +35,18 @@ class Logger {
 	private $mode;
 
 	/**
-	 * WC_Payment_Gateway_WCPay
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $gateway;
-
-	/**
 	 * Logger constructor.
 	 *
-	 * @param WC_Logger_Interface      $wc_logger    WC_Logger_Interface.
-	 * @param Mode                     $mode         Mode.
-	 * @param WC_Payment_Gateway_WCPay $gateway      WC_Payment_Gateway_WCPay.
+	 * @param WC_Logger_Interface $wc_logger    WC_Logger_Interface.
+	 * @param Mode                $mode         Mode.
 	 */
-	public function __construct( WC_Logger_Interface $wc_logger, Mode $mode, WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct( WC_Logger_Interface $wc_logger, Mode $mode ) {
 		$this->wc_logger = $wc_logger;
 		$this->mode      = $mode;
-		$this->gateway   = $gateway;
 	}
 
 	/**
 	 * Add a log entry.
-	 *
-	 * Note that this depends on WC_Payments gateway property to be initialized as
-	 * we need this to access the plugins debug setting to figure out if the setting
-	 * is turned on.
 	 *
 	 * @param string $message Log message.
 	 * @param string $level One of the following:
@@ -72,7 +59,7 @@ class Logger {
 	 *     'info': Informational messages.
 	 *     'debug': Debug-level messages.
 	 */
-	public function log( $message, $level = 'info' ) : void {
+	public function log( $message, $level = 'info' ): void {
 		if ( ! $this->can_log() ) {
 			return;
 		}
@@ -80,7 +67,7 @@ class Logger {
 	}
 
 	/**
-	 * Checks if the gateway setting logging toggle is enabled.
+	 * Checks if the setting logging toggle is enabled.
 	 *
 	 * @return bool Depending on the enable_logging setting.
 	 */
@@ -92,7 +79,12 @@ class Logger {
 		} catch ( Exception $e ) {
 			return false;
 		}
-		return 'yes' === $this->gateway->get_option( 'enable_logging' );
+
+		// Getting the gateway settings directly from the database so the gateway doesn't need to be initialized.
+		$settings_option_name = 'woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings';
+		$wcpay_settings       = get_option( $settings_option_name );
+
+		return 'yes' === ( $wcpay_settings['enable_logging'] ?? false );
 	}
 
 	/**
@@ -100,7 +92,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function emergency( $message ) : void {
+	public function emergency( $message ): void {
 		$this->log( $message, WC_Log_Levels::EMERGENCY );
 	}
 
@@ -109,7 +101,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function alert( $message ) : void {
+	public function alert( $message ): void {
 		$this->log( $message, WC_Log_Levels::ALERT );
 	}
 
@@ -118,7 +110,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function critical( $message ) : void {
+	public function critical( $message ): void {
 		$this->log( $message, WC_Log_Levels::CRITICAL );
 	}
 
@@ -127,7 +119,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function error( $message ) : void {
+	public function error( $message ): void {
 		$this->log( $message, WC_Log_Levels::ERROR );
 	}
 
@@ -136,7 +128,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function warning( $message ) : void {
+	public function warning( $message ): void {
 		$this->log( $message, WC_Log_Levels::WARNING );
 	}
 
@@ -145,7 +137,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function notice( $message ) : void {
+	public function notice( $message ): void {
 		$this->log( $message, WC_Log_Levels::NOTICE );
 	}
 
@@ -154,7 +146,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function info( $message ) : void {
+	public function info( $message ): void {
 		$this->log( $message, WC_Log_Levels::INFO );
 	}
 
@@ -163,7 +155,7 @@ class Logger {
 	 *
 	 * @param string $message To send to the log file.
 	 */
-	public function debug( $message ) : void {
+	public function debug( $message ): void {
 		$this->log( $message, WC_Log_Levels::DEBUG );
 	}
 }

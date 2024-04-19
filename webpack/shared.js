@@ -4,17 +4,21 @@ const { mapValues } = require( 'lodash' );
 const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
-const WebpackRTLPlugin = require( 'webpack-rtl-plugin' );
+const WebpackRTLPlugin = require( './webpack-rtl-plugin' );
 
 module.exports = {
 	entry: mapValues(
 		{
 			index: './client/index.js',
+			'bnpl-announcement': './client/bnpl-announcement/index.js',
 			settings: './client/settings/index.js',
 			'blocks-checkout': './client/checkout/blocks/index.js',
 			woopay: './client/checkout/woopay/index.js',
 			'woopay-express-button':
 				'./client/checkout/woopay/express-button/index.js',
+			'woopay-direct-checkout':
+				'./client/checkout/woopay/direct-checkout/index.js',
+			cart: './client/cart/index.js',
 			checkout: './client/checkout/classic/event-handlers.js',
 			'payment-request': './client/payment-request/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
@@ -33,6 +37,7 @@ module.exports = {
 			'subscription-product-onboarding-toast':
 				'./client/subscription-product-onboarding/toast.js',
 			'product-details': './client/product-details/index.js',
+			'cart-block': './client/cart/blocks/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -125,7 +130,7 @@ module.exports = {
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WebpackRTLPlugin( {
-			filename: '[name]-rtl.[ext]',
+			filenameSuffix: '-rtl.css',
 		} ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,

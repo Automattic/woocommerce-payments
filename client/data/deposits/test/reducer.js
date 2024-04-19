@@ -24,12 +24,6 @@ describe( 'Deposits reducer tests', () => {
 		object: 'payout',
 		amount: 2000,
 	};
-	const mockOverview = {
-		last_deposit: mockDeposits[ 0 ],
-		next_deposit: mockDeposits[ 1 ],
-		balance: { object: 'balance' },
-		deposits_schedule: { interval: 'daily' },
-	};
 	const mockEmptyState = {
 		byId: {},
 		queries: {},
@@ -129,40 +123,6 @@ describe( 'Deposits reducer tests', () => {
 		};
 
 		expect( reduced ).toStrictEqual( after );
-	} );
-
-	test( 'Deposits overview is reduced correctly', () => {
-		const reduced = reducer(
-			undefined, // Default state.
-			{
-				type: types.SET_DEPOSITS_OVERVIEW,
-				data: mockOverview,
-			}
-		);
-
-		expect( reduced ).toStrictEqual( {
-			...mockEmptyState,
-			overview: {
-				data: mockOverview,
-			},
-		} );
-	} );
-
-	test( 'Deposits overview error is reduced correctly', () => {
-		const reduced = reducer(
-			undefined, // Default state.
-			{
-				type: types.SET_ERROR_FOR_DEPOSITS_OVERVIEW,
-				error: { code: 'error' },
-			}
-		);
-
-		expect( reduced ).toStrictEqual( {
-			...mockEmptyState,
-			overview: {
-				error: { code: 'error' },
-			},
-		} );
 	} );
 
 	test( 'Deposits count is reduced correctly', () => {

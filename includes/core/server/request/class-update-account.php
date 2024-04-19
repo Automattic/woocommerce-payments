@@ -58,7 +58,7 @@ class Update_Account extends Request {
 	public static function from_account_settings( array $account_settings ) {
 		if ( 0 === count( $account_settings ) ) {
 			throw new Invalid_Request_Parameter_Exception(
-				__( 'No account settings provided', 'woocommerce-payments' ),
+				esc_html__( 'No account settings provided', 'woocommerce-payments' ),
 				'wcpay_core_invalid_request_parameter_account_settings_empty'
 			);
 		}

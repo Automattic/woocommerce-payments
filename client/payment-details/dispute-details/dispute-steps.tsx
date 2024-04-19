@@ -107,7 +107,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 						),
 						{
 							a: (
-								<ExternalLink href="https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
+								<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
 							),
 						}
 					) }
@@ -115,7 +115,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 				<li>
 					{ createInterpolateElement(
 						__(
-							'Challenge <challengeIcon/> or accept <acceptIcon/> the dispute by <dueByDate/>.',
+							'Challenge <challengeIcon/> or accept <acceptIcon/> the dispute by <dueByDate/>',
 							'woocommerce-payments'
 						),
 						{
@@ -155,6 +155,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 							dueByDate: (
 								<DisputeDueByDate
 									dueBy={ dispute.evidence_details.due_by }
+									showRemainingDays={ false }
 								/>
 							),
 						}
@@ -258,7 +259,7 @@ export const InquirySteps: React.FC< Props > = ( {
 										),
 										{
 											learnMoreLink: (
-												<ExternalLink href="https://woo.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
+												<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
 											),
 										}
 									) }

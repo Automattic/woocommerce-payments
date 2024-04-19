@@ -12,6 +12,7 @@ import FRTDiscoverabilityBanner from '..';
 declare const global: {
 	wcpaySettings: {
 		frtDiscoverBannerSettings: string;
+		lifetimeTPV: number;
 	};
 };
 
@@ -32,6 +33,7 @@ describe( 'FRTDiscoverabilityBanner', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			frtDiscoverBannerSettings: '',
+			lifetimeTPV: 100,
 		};
 	} );
 
@@ -46,6 +48,20 @@ describe( 'FRTDiscoverabilityBanner', () => {
 			frtDiscoverBannerSettings: JSON.stringify( {
 				dontShowAgain: true,
 			} ),
+			lifetimeTPV: 100,
+		};
+
+		const { container: frtBanner } = render( <FRTDiscoverabilityBanner /> );
+
+		expect( frtBanner ).toMatchSnapshot();
+	} );
+
+	it( 'does not render when no transactions are processed', () => {
+		global.wcpaySettings = {
+			frtDiscoverBannerSettings: JSON.stringify( {
+				dontShowAgain: false,
+			} ),
+			lifetimeTPV: 0,
 		};
 
 		const { container: frtBanner } = render( <FRTDiscoverabilityBanner /> );

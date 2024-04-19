@@ -11,10 +11,11 @@ import {
 /**
  * Internal dependencies
  */
-import { getUPEConfig } from 'utils/checkout';
+import { getUPEConfig, getConfig } from 'utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
 import WCPayAPI from '../api';
 import { SavedTokenHandler } from './saved-token-handler';
+import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
@@ -34,6 +35,7 @@ import {
 } from '../constants.js';
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
+import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
 
@@ -53,6 +55,7 @@ const upeMethods = {
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
 const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
 
 // Create an API object, which will be used throughout the checkout.
@@ -66,6 +69,9 @@ const api = new WCPayAPI(
 	},
 	request
 );
+
+const stripeAppearance = getUPEConfig( 'wcBlocksUPEAppearance' );
+
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
@@ -97,12 +103,13 @@ Object.entries( enabledPaymentMethodsConfig )
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
 			label: (
-				<>
-					<span>
-						{ upeConfig.title }
-						<img src={ upeConfig.icon } alt={ upeConfig.title } />
-					</span>
-				</>
+				<PaymentMethodLabel
+					api={ api }
+					upeConfig={ upeConfig }
+					upeName={ upeName }
+					stripeAppearance={ stripeAppearance }
+					upeAppearanceTheme={ upeAppearanceTheme }
+				/>
 			),
 			ariaLabel: 'WooPayments',
 			supports: {
@@ -112,6 +119,24 @@ Object.entries( enabledPaymentMethodsConfig )
 			},
 		} );
 	} );
+
+const addCheckoutTracking = () => {
+	const placeOrderButton = document.getElementsByClassName(
+		'wc-block-components-checkout-place-order-button'
+	);
+	if ( placeOrderButton.length ) {
+		placeOrderButton[ 0 ].addEventListener( 'click', () => {
+			const blocksCheckbox = document.getElementById(
+				'radio-control-wc-payment-method-options-woocommerce_payments'
+			);
+			if ( ! blocksCheckbox?.checked ) {
+				return;
+			}
+
+			recordUserEvent( 'checkout_place_order_button_click' );
+		} );
+	}
+};
 
 // Call handleWooPayEmailInput if woopay is enabled and this is the checkout page.
 if ( getUPEConfig( 'isWooPayEnabled' ) ) {
@@ -123,7 +148,7 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 		handleWooPayEmailInput( '#email', api, true );
 	}
 
-	if ( getUPEConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
+	if ( getUPEConfig( 'shouldShowWooPayButton' ) ) {
 		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
 	}
 }
@@ -131,4 +156,24 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
+	addCheckoutTracking();
 } );
+
+// If multi-currency is enabled, add currency code to total amount in cart and checkout blocks.
+if ( getConfig( 'isMultiCurrencyEnabled' ) ) {
+	const { registerCheckoutFilters } = window.wc.blocksCheckout;
+
+	const modifyTotalsPrice = ( defaultValue, extensions, args ) => {
+		const { cart } = args;
+
+		if ( cart?.cartTotals?.currency_code ) {
+			return `<price/> ${ cart.cartTotals.currency_code }`;
+		}
+
+		return defaultValue;
+	};
+
+	registerCheckoutFilters( 'woocommerce-payments', {
+		totalValue: modifyTotalsPrice,
+	} );
+}

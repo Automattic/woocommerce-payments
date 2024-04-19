@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Revemoved pre-fretch session for button to prevent draft order creation

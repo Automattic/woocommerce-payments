@@ -310,35 +310,6 @@ describe( 'Account fees utility functions', () => {
 			expect( container ).toMatchSnapshot();
 		} );
 
-		it( 'displays custom fee details, when applicable', () => {
-			const methodFees = mockAccountFees(
-				{
-					percentage_rate: 0.123,
-					fixed_rate: 456.78,
-					currency: 'USD',
-				},
-				[ { percentage_rate: 0.101, fixed_rate: 400.78 } ]
-			);
-
-			methodFees.additional = {
-				percentage_rate: 0.01,
-				fixed_rate: 0,
-				currency: 'USD',
-			};
-
-			methodFees.fx = {
-				percentage_rate: 0.01,
-				fixed_rate: 0,
-				currency: 'USD',
-			};
-
-			const { container } = render(
-				formatMethodFeesTooltip( methodFees )
-			);
-
-			expect( container ).toMatchSnapshot();
-		} );
-
 		it( 'displays base fee, when only promo discount without percentage or fixed', () => {
 			const methodFees = mockAccountFees(
 				{

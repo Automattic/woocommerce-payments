@@ -259,9 +259,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		method_exists( AW_Referrals(), 'options' ) &&
 		AW_Referrals()->options()->type === 'link' &&
 		class_exists( '\AutomateWoo\Referrals\Referral_Manager' ) &&
-		method_exists( \AutomateWoo\Referrals\Referral_Manager::class, 'get_advocate_key_from_cookie' ) && class_exists( 'AFWC_API' ) &&
-		method_exists( 'AFWC_API', 'get_instance' ) &&
-		method_exists( 'AFWC_API', 'track_conversion' );
+		method_exists( \AutomateWoo\Referrals\Referral_Manager::class, 'get_advocate_key_from_cookie' );
 	}
 
 	/**

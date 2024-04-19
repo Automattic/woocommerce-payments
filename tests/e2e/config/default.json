@@ -3,20 +3,20 @@
     "admin": {
       "username": "admin",
       "password": "password",
-      "email": "e2e-wcpay-admin@woo.com"
+      "email": "e2e-wcpay-admin@woocommerce.com"
     },
     "customer": {
       "username": "customer",
       "password": "password",
-      "email": "e2e-wcpay-customer@woo.com"
+      "email": "e2e-wcpay-customer@woocommerce.com"
     },
     "subscriptions-customer": {
       "username": "subscriptions-customer",
       "password": "password",
-      "email": "e2e-wcpay-customer@woo.com"
+      "email": "e2e-wcpay-customer@woocommerce.com"
     },
     "guest": {
-      "email": "e2e-wcpay-guest@woo.com"
+      "email": "e2e-wcpay-guest@woocommerce.com"
     }
   },
   "products": {
@@ -43,7 +43,7 @@
         "city": "San Francisco",
         "state": "CA",
         "postcode": "94110",
-        "email": "e2e-wcpay-subscriptions-customer@woo.com"
+        "email": "e2e-wcpay-subscriptions-customer@woocommerce.com"
       }
     },
     "customer": {
@@ -58,7 +58,7 @@
         "state": "CA",
         "postcode": "94110",
         "phone": "123456789",
-        "email": "e2e-wcpay-customer@woo.com"
+        "email": "e2e-wcpay-customer@woocommerce.com"
       },
       "shipping": {
         "firstname": "I am",
@@ -71,7 +71,36 @@
         "state": "CA",
         "postcode": "94110",
         "phone": "123456789",
-        "email": "e2e-wcpay-customer@woo.com"
+        "email": "e2e-wcpay-customer@woocommerce.com"
+      }
+    },
+    "upe-customer": {
+      "billing": {
+        "be": {
+          "firstname": "I am",
+          "lastname": "Customer",
+          "company": "Automattic",
+          "country": "Belgium",
+          "addressfirstline": "Rue de l’Étuve, 1000",
+          "addresssecondline": "billing-be",
+          "city": "Bruxelles",
+          "postcode": "1000",
+          "phone": "123456789",
+          "email": "e2e-wcpay-customer@woocommerce.com"
+        },
+        "de": {
+          "firstname": "I am",
+          "lastname": "Customer",
+          "company": "Automattic",
+          "country": "Germany",
+          "addressfirstline": "Petuelring 130",
+          "addresssecondline": "billing-de",
+          "city": "München",
+          "postcode": "80809",
+          "state": "DE-BY",
+          "phone": "123456789",
+          "email": "e2e-wcpay-customer@woocommerce.com"
+        }
       }
     },
     "subscriptions-customer": {
@@ -86,7 +115,7 @@
         "state": "CA",
         "postcode": "94110",
         "phone": "123456789",
-        "email": "e2e-wcpay-subscriptions-customer@woo.com"
+        "email": "e2e-wcpay-subscriptions-customer@woocommerce.com"
       },
       "shipping": {
         "firstname": "I am",
@@ -99,7 +128,7 @@
         "state": "CA",
         "postcode": "94110",
         "phone": "123456789",
-        "email": "e2e-wcpay-subscriptions-customer@woo.com"
+        "email": "e2e-wcpay-subscriptions-customer@woocommerce.com"
       }
     }
   },
@@ -108,7 +137,7 @@
       "number": "4242424242424242",
       "expires": {
         "month": "02",
-        "year": "24"
+        "year": "45"
       },
       "cvc": "424",
       "label": "Visa ending in 4242"
@@ -117,7 +146,7 @@
       "number": "4111111111111111",
       "expires": {
         "month": "11",
-        "year": "25"
+        "year": "45"
       },
       "cvc": "123",
       "label": "Visa ending in 1111"
@@ -126,7 +155,7 @@
       "number": "378282246310005",
       "expires": {
         "month": "11",
-        "year": "30"
+        "year": "45"
       },
       "cvc": "1234",
       "label": "Amex ending in 0005"
@@ -135,7 +164,7 @@
       "number": "4000002760003184",
       "expires": {
         "month": "03",
-        "year": "25"
+        "year": "45"
       },
       "cvc": "525",
       "label": "Visa ending in 3184"
@@ -144,7 +173,7 @@
       "number": "4000002500003155",
       "expires": {
         "month": "04",
-        "year": "36"
+        "year": "45"
       },
       "cvc": "626",
       "label": "Visa ending in 3155"
@@ -153,7 +182,7 @@
       "number": "4000000000003220",
       "expires": {
         "month": "04",
-        "year": "36"
+        "year": "45"
       },
       "cvc": "626",
       "label": "Visa ending in 3220"
@@ -162,7 +191,7 @@
       "number": "4000000000000259",
       "expires": {
         "month": "05",
-        "year": "25"
+        "year": "45"
       },
       "cvc": "525",
       "label": "Visa ending in 0259"
@@ -171,7 +200,7 @@
       "number": "4000000000002685",
       "expires": {
         "month": "06",
-        "year": "25"
+        "year": "45"
       },
       "cvc": "626",
       "label": "Visa ending in 2685"
@@ -180,7 +209,7 @@
       "number": "4000000000000002",
       "expires": {
         "month": "06",
-        "year": "25"
+        "year": "45"
       },
       "cvc": "626",
       "label": "Visa ending in 0002"
@@ -189,7 +218,7 @@
       "number": "4000000000009995",
       "expires": {
         "month": "06",
-        "year": "25"
+        "year": "45"
       },
       "cvc": "626",
       "label": "Visa ending in 9995"
@@ -198,7 +227,7 @@
       "number": "4242424242424241",
       "expires": {
         "month": "06",
-        "year": "25"
+        "year": "45"
       },
       "cvc": "626",
       "label": "Visa ending in 4241"
@@ -216,7 +245,7 @@
       "number": "4000000000000127",
       "expires": {
         "month": "06",
-        "year": "25"
+        "year": "45"
       },
       "cvc": "626",
       "label": "Visa ending in 0127"
@@ -225,7 +254,7 @@
       "number": "4000000000000119",
       "expires": {
         "month": "06",
-        "year": "25"
+        "year": "45"
       },
       "cvc": "626",
       "label": "Visa ending in 0119"
@@ -234,7 +263,7 @@
       "number": "4000008400001629",
       "expires": {
         "month": "06",
-        "year": "25"
+        "year": "45"
       },
       "cvc": "626",
       "label": "Visa ending in 1629"
@@ -252,7 +281,7 @@
       "number": "4242424242424242",
       "expires": {
         "month": "06",
-        "year": "24"
+        "year": "45"
       },
       "cvc": "11",
       "label": "Visa ending in 4242"

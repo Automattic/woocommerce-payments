@@ -111,6 +111,8 @@ class WooPay_Session {
 			wp_die( esc_html__( 'WooPay request is not signed correctly.', 'woocommerce-payments' ), 401 );
 		}
 
+		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+
 		$cart_token_user_id = self::get_user_id_from_cart_token();
 		if ( null === $cart_token_user_id ) {
 			return $user;
@@ -262,7 +264,15 @@ class WooPay_Session {
 	 * Fix for AutomateWoo - Refer A Friend Add-on
 	 * plugin when using link referrals.
 	 */
-	public static function automatewoo_refer_a_friend_referral_from_parameter() {
+	public static function automatewoo_refer_a_friend_referral_from_parameter( $advocate_id ) {
+		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+			return $advocate_id;
+		}
+
+		if ( ! self::is_woopay_enabled() ) {
+			return $advocate_id;
+		}
+
 		if ( empty( $_GET['automatewoo_referral_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return false;
 		}
@@ -324,31 +334,7 @@ class WooPay_Session {
 
 		$session = self::get_init_session_request( $order_id, $key, $billing_email );
 
-		$store_blog_token = ( WooPay_Utilities::get_woopay_url() === WooPay_Utilities::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
-
-		$message = wp_json_encode( $session );
-
-		// Generate an initialization vector (IV) for encryption.
-		$iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
-
-		// Encrypt the JSON session.
-		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $iv );
-
-		// Create an HMAC hash for data integrity.
-		$hash = hash_hmac( 'sha256', $session_encrypted, $store_blog_token );
-
-		$data = [
-			'session' => $session_encrypted,
-			'iv'      => $iv,
-			'hash'    => $hash,
-		];
-
-		$response = [
-			'blog_id' => Jetpack_Options::get_option( 'id' ),
-			'data'    => array_map( 'base64_encode', $data ),
-		];
-
-		return $response;
+		return WooPay_Utilities::encrypt_and_sign_data( $session );
 	}
 
 	/**
@@ -359,7 +345,7 @@ class WooPay_Session {
 	 * @param string|null $billing_email Pay-for-order billing email.
 	 * @return array The initial session request data without email and user_session.
 	 */
-	private static function get_init_session_request( $order_id = null, $key = null, $billing_email = null ) {
+	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null ) {
 		$user             = wp_get_current_user();
 		$is_pay_for_order = null !== $order_id;
 		$order            = wc_get_order( $order_id );
@@ -398,7 +384,7 @@ class WooPay_Session {
 		// This uses the same logic as the Checkout block in hydrate_from_api to get the cart and checkout data.
 		$cart_data = ! $is_pay_for_order
 			? rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body']
-			: rest_preload_api_request( [], "/wc/store/v1/order/{$order_id}?key={$key}&billing_email={$billing_email}" )[ "/wc/store/v1/order/{$order_id}?key={$key}&billing_email={$billing_email}" ]['body'];
+			: rest_preload_api_request( [], "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) )[ "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) ]['body'];
 		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 		$preloaded_checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' );
 		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
@@ -442,7 +428,7 @@ class WooPay_Session {
 					'order_id' => $order_id, // This is a workaround for the checkout order error. https://github.com/woocommerce/woocommerce-blocks/blob/04f36065b34977f02079e6c2c8cb955200a783ff/assets/js/blocks/checkout/block.tsx#L81-L83.
 				],
 			],
-			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity( $user->ID ),
+			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity(),
 		];
 
 		$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
@@ -454,6 +440,7 @@ class WooPay_Session {
 			WC()->customer->set_billing_email( $email );
 			WC()->customer->save();
 
+			$woopay_adapted_extensions->init();
 			$request['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
 
 			if ( ! is_user_logged_in() && count( $request['adapted_extensions'] ) > 0 ) {
@@ -534,7 +521,67 @@ class WooPay_Session {
 			);
 		}
 
+		$blog_id = Jetpack_Options::get_option('id');
+		if ( empty( $blog_id ) ) {
+			wp_send_json_error(
+				__( 'Could not determine the blog ID.', 'woocommerce-payments' ),
+				503
+			);
+		}
+
 		wp_send_json( self::get_frontend_init_session_request() );
+	}
+
+	/**
+	 * Used to initialize woopay session on frontend
+	 *
+	 * @return void
+	 */
+	public static function ajax_get_woopay_minimum_session_data() {
+		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		$blog_id = Jetpack_Options::get_option('id');
+		if ( empty( $blog_id ) ) {
+			wp_send_json_error(
+				__( 'Could not determine the blog ID.', 'woocommerce-payments' ),
+				503
+			);
+		}
+
+		wp_send_json( self::get_woopay_minimum_session_data() );
+	}
+
+	/**
+	 * Return WooPay minimum session data.
+	 * 
+	 * @return array Array of minimum session data used by WooPay or false on failures.
+	 */
+	public static function get_woopay_minimum_session_data() {
+		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
+			return [];
+		}
+		
+		$blog_id = Jetpack_Options::get_option('id');
+		if ( empty( $blog_id ) ) {
+			return [];
+		}
+
+		$data = [
+			'blog_id'           => $blog_id,
+			'blog_rest_url'     => get_rest_url(),
+			'blog_checkout_url' => wc_get_checkout_url(),
+			'session_nonce'     => self::create_woopay_nonce( get_current_user_id() ),
+			'store_api_token'   => self::init_store_api_token(),
+		];
+
+		return WooPay_Utilities::encrypt_and_sign_data( $data );
 	}
 
 	/**

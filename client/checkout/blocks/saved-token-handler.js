@@ -4,6 +4,7 @@
 import { useEffect } from 'react';
 import { usePaymentCompleteHandler } from './hooks';
 import { useSelect } from '@wordpress/data';
+import { removeLinkButton } from '../stripe-link';
 
 export const SavedTokenHandler = ( {
 	api,
@@ -19,9 +20,7 @@ export const SavedTokenHandler = ( {
 
 	useEffect( () => {
 		return onPaymentSetup( () => {
-			const fraudPreventionToken = document
-				.querySelector( '#wcpay-fraud-prevention-token' )
-				?.getAttribute( 'value' );
+			const fraudPreventionToken = window.wcpayFraudPreventionToken;
 
 			return {
 				type: 'success',
@@ -45,6 +44,10 @@ export const SavedTokenHandler = ( {
 		emitResponse,
 		false // No need to save a payment that has already been saved.
 	);
+
+	// Once saved token component is loaded, Stripe Link button should be removed,
+	// because payment elements are not used then and there's no element to attach the button to.
+	removeLinkButton();
 
 	return <></>;
 };

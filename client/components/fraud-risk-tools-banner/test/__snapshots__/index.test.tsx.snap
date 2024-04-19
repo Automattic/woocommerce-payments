@@ -2,6 +2,8 @@
 
 exports[`FRTDiscoverabilityBanner does not render when dontShowAgain is true 1`] = `<div />`;
 
+exports[`FRTDiscoverabilityBanner does not render when no transactions are processed 1`] = `<div />`;
+
 exports[`FRTDiscoverabilityBanner renders 1`] = `
 <div>
   <div

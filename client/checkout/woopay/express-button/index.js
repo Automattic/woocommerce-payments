@@ -1,3 +1,4 @@
+/* global jQuery */
 /**
  * External dependencies
  */
@@ -57,17 +58,17 @@ const renderWooPayExpressCheckoutButtonWithCallbacks = () => {
 	renderWooPayExpressCheckoutButton( listenForCartChanges );
 };
 
-document.addEventListener( 'DOMContentLoaded', () => {
+jQuery( ( $ ) => {
 	listenForCartChanges = {
 		start: () => {
-			document.body.addEventListener(
-				'updated_cart_totals',
+			$( document.body ).on(
+				'updated_cart_totals updated_checkout',
 				renderWooPayExpressCheckoutButtonWithCallbacks
 			);
 		},
 		stop: () => {
-			document.body.removeEventListener(
-				'updated_cart_totals',
+			$( document.body ).off(
+				'updated_cart_totals updated_checkout',
 				renderWooPayExpressCheckoutButtonWithCallbacks
 			);
 		},

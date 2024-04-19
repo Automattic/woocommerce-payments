@@ -4,7 +4,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import wcpayTracks from 'tracks';
+import { recordUserEvent } from 'tracks';
 
 const Agreement = () => {
 	return (
@@ -21,9 +21,8 @@ const Agreement = () => {
 							href="https://wordpress.com/tos/"
 							rel="noopener noreferrer"
 							onClick={ () => {
-								wcpayTracks.recordUserEvent(
-									wcpayTracks.events
-										.WOOPAY_SAVE_MY_INFO_TOS_CLICK
+								recordUserEvent(
+									'checkout_save_my_info_tos_click'
 								);
 							} }
 						>
@@ -36,9 +35,8 @@ const Agreement = () => {
 							href="https://automattic.com/privacy/"
 							rel="noopener noreferrer"
 							onClick={ () => {
-								wcpayTracks.recordUserEvent(
-									wcpayTracks.events
-										.WOOPAY_SAVE_MY_INFO_PRIVACY_CLICK
+								recordUserEvent(
+									'checkout_save_my_info_privacy_policy_click'
 								);
 							} }
 						>

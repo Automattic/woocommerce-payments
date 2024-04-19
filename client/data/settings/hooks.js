@@ -272,6 +272,16 @@ export const useDepositScheduleMonthlyAnchor = () => {
 	return [ depositScheduleMonthlyAnchor, updateDepositScheduleMonthlyAnchor ];
 };
 
+export const useReportingExportLanguage = () => {
+	const { updateExportLanguage } = useDispatch( STORE_NAME );
+
+	const exportLanguage = useSelect( ( select ) =>
+		select( STORE_NAME ).getExportLanguage()
+	);
+
+	return [ exportLanguage, updateExportLanguage ];
+};
+
 export const useDepositDelayDays = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getDepositDelayDays(), [] );
 
@@ -311,6 +321,11 @@ export const useGetAvailablePaymentMethodIds = () =>
 
 export const useGetPaymentMethodStatuses = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getPaymentMethodStatuses() );
+
+export const useGetDuplicatedPaymentMethodIds = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getDuplicatedPaymentMethodIds()
+	);
 
 export const useGetSettings = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getSettings() );
@@ -457,6 +472,11 @@ export const useAdvancedFraudProtectionSettings = () => {
 export const useWooPayShowIncompatibilityNotice = () =>
 	useSelect( ( select ) =>
 		select( STORE_NAME ).getShowWooPayIncompatibilityNotice()
+	);
+
+export const useExpressCheckoutShowIncompatibilityNotice = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getShowExpressCheckoutIncompatibilityNotice()
 	);
 
 export const useStripeBilling = () => {

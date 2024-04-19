@@ -62,9 +62,10 @@ class PaymentMethodsCompatibility {
 	 */
 	public function get_enabled_payment_method_currencies() {
 		$enabled_payment_method_ids       = $this->gateway->get_upe_enabled_payment_method_ids();
+		$account_currency                 = $this->gateway->get_account_domestic_currency();
 		$payment_methods_needing_currency = array_reduce(
 			$enabled_payment_method_ids,
-			function ( $result, $method ) {
+			function ( $result, $method ) use ( $account_currency ) {
 				if ( in_array( $method, [ 'card', 'card_present' ], true ) ) {
 					return $result;
 				}
@@ -81,8 +82,8 @@ class PaymentMethodsCompatibility {
 				$payment_method_instance = new $class_name( null );
 
 				$result[ $method ] = [
-					'currencies' => $payment_method_instance->get_currencies(),
-					'title'      => $payment_method_instance->get_title(),
+					'currencies' => $payment_method_instance->has_domestic_transactions_restrictions() ? [ $account_currency ] : $payment_method_instance->get_currencies(),
+					'title'      => $payment_method_instance->get_title( $this->gateway->get_account_country() ),
 				];
 
 				return $result;

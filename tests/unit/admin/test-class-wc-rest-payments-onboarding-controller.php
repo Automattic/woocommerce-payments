@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 
 /**
  * WC_REST_Payments_Onboarding_Controller unit tests.
@@ -105,7 +106,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$request = new WP_REST_Request( 'GET' );
 		$request->set_url_params(
 			[
-				'country'   => 'US',
+				'country'   => Country_Code::UNITED_STATES,
 				'type'      => 'company',
 				'structure' => 'sole_proprietor',
 			]
@@ -131,7 +132,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_body_params(
 			[
 				'business'        => [
-					'country' => 'US',
+					'country' => Country_Code::UNITED_STATES,
 					'type'    => 'company',
 					'mcc'     => 'most_popular__software_services',
 				],
@@ -170,7 +171,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 			[
 
 				'business'        => [
-					'country' => 'US',
+					'country' => Country_Code::UNITED_STATES,
 					'type'    => 'company',
 					'mcc'     => 'most_popular__software_services',
 				],
@@ -191,24 +192,5 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 			],
 			$response->get_data()
 		);
-	}
-
-	public function test_update_flow_state() {
-		$state = [
-			'current_step' => 'personal',
-			'data'         => [],
-		];
-
-		$request = new WP_REST_Request( 'POST' );
-		$request->set_header( 'Content-Type', 'application/json' );
-		$request->set_body( wp_json_encode( $state ) );
-
-		$this->mock_onboarding_service
-			->expects( $this->once() )
-			->method( 'set_onboarding_flow_state' )
-			->with( $state )
-			->willReturn( true );
-
-		$this->controller->update_flow_state( $request );
 	}
 }

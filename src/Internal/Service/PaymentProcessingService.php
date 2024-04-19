@@ -10,6 +10,7 @@ namespace WCPay\Internal\Service;
 use Exception;
 use WC_Payments_API_Abstract_Intention;
 use WC_Payments_API_Setup_Intention;
+use WCPay\Constants\Order_Mode;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
@@ -147,7 +148,7 @@ class PaymentProcessingService {
 	protected function create_payment_context( int $order_id, bool $automatic_capture = false ): PaymentContext {
 		$context = new PaymentContext( $order_id );
 		try {
-			$context->set_mode( $this->mode->is_test() ? 'test' : 'prod' );
+			$context->set_mode( $this->mode->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 		} catch ( Exception $e ) {
 			$context->set_mode( 'unknown' );
 		}

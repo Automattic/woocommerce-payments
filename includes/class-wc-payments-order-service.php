@@ -11,6 +11,9 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
+use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Cancel_Intention;
+use WCPay\Core\Server\Request\Capture_Intention;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -84,6 +87,13 @@ class WC_Payments_Order_Service {
 	const WCPAY_REFUND_ID_META_KEY = '_wcpay_refund_id';
 
 	/**
+	 * Meta key used to store WCPay refund transaction id.
+	 *
+	 * @const string
+	 */
+	const WCPAY_REFUND_TRANSACTION_ID_META_KEY = '_wcpay_refund_transaction_id';
+
+	/**
 	 * Meta key used to store WCPay refund status.
 	 *
 	 * @const string
@@ -96,6 +106,22 @@ class WC_Payments_Order_Service {
 	 * @const string
 	 */
 	const WCPAY_TRANSACTION_FEE_META_KEY = '_wcpay_transaction_fee';
+
+	/**
+	 * Meta key used to store the mode, either 'test', or 'prod' of order.
+	 *
+	 * @see Order_Mode
+	 *
+	 * @const string
+	 */
+	const WCPAY_MODE_META_KEY = '_wcpay_mode';
+
+	/**
+	 * Meta key used to store payment transaction Id.
+	 *
+	 * @const string
+	 */
+	const WCPAY_PAYMENT_TRANSACTION_ID_META_KEY = '_wcpay_payment_transaction_id';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -132,7 +158,7 @@ class WC_Payments_Order_Service {
 				break;
 			case Intent_Status::SUCCEEDED:
 				if ( Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
-					$this->mark_payment_capture_completed( $order, $intent_data );
+					$this->mark_payment_capture_completed( $order, $intent );
 				} else {
 					$this->mark_payment_completed( $order, $intent_data );
 				}
@@ -319,6 +345,10 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		// Order `completed` and `refunded` emails should both be blocked when disputes are closed.
+		add_filter( 'woocommerce_email_enabled_customer_completed_order', '__return_false' );
+		add_filter( 'woocommerce_email_enabled_customer_refunded_order', '__return_false' );
+
 		if ( 'lost' === $status ) {
 			wc_create_refund(
 				[
@@ -333,6 +363,10 @@ class WC_Payments_Order_Service {
 			$this->update_order_status( $order, Order_Status::COMPLETED );
 			$order->save();
 		}
+
+		// Restore completed and refunded order emails.
+		remove_filter( 'woocommerce_email_enabled_customer_completed_order', '__return_false' );
+		remove_filter( 'woocommerce_email_enabled_customer_refunded_order', '__return_false' );
 
 		$order->add_order_note( $note );
 	}
@@ -442,7 +476,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_intent_id_for_order( $order ) : string {
+	public function get_intent_id_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::INTENT_ID_META_KEY, true );
 	}
@@ -476,7 +510,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_payment_method_id_for_order( $order ) : string {
+	public function get_payment_method_id_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::PAYMENT_METHOD_ID_META_KEY, true );
 	}
@@ -516,6 +550,23 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Set the payment metadata for payment transaction id.
+	 *
+	 * @param  mixed  $order The order.
+	 * @param  string $payment_transaction_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_payment_transaction_id_for_order( $order, $payment_transaction_id ) {
+		if ( ! isset( $payment_transaction_id ) || null === $payment_transaction_id ) {
+			return;
+		}
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY, $payment_transaction_id );
+		$order->save_meta_data();
+	}
+
+	/**
 	 * Get the payment metadata for charge id.
 	 *
 	 * @param  mixed $order The order Id or order object.
@@ -524,7 +575,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_charge_id_for_order( $order ) : string {
+	public function get_charge_id_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::CHARGE_ID_META_KEY, true );
 	}
@@ -552,10 +603,25 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_intention_status_for_order( $order ) : string {
+	public function get_intention_status_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::INTENTION_STATUS_META_KEY, true );
 	}
+
+	/**
+	 * Checks if order has an open (uncaptured) authorization.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 *
+	 * @return bool
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function has_open_authorization( $order ): bool {
+		$order = $this->get_order( $order );
+		return Intent_Status::REQUIRES_CAPTURE === $order->get_meta( self::INTENTION_STATUS_META_KEY, true );
+	}
+
 
 	/**
 	 * Set the payment metadata for customer id.
@@ -580,7 +646,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_customer_id_for_order( $order ) : string {
+	public function get_customer_id_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::CUSTOMER_ID_META_KEY, true );
 	}
@@ -608,22 +674,36 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_wcpay_intent_currency_for_order( $order ) : string {
+	public function get_wcpay_intent_currency_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_INTENT_CURRENCY_META_KEY, true );
 	}
 
 	/**
-	 * Set the payment metadata for refund id.
+	 * Set WCPay refund ID as metadata for refund object.
 	 *
-	 * @param  mixed  $order The order.
-	 * @param  string $wcpay_refund_id The value to be set.
+	 * @param  WC_Order_Refund $wc_refund The refund instance.
+	 * @param  string          $wcpay_refund_id The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function set_wcpay_refund_id_for_order( $order, $wcpay_refund_id ) {
+	public function set_wcpay_refund_id_for_refund( $wc_refund, $wcpay_refund_id ) {
+		$wc_refund = $this->get_order( $wc_refund );
+		$wc_refund->update_meta_data( self::WCPAY_REFUND_ID_META_KEY, $wcpay_refund_id );
+		$wc_refund->save_meta_data();
+	}
+
+	/**
+	 * Set the payment metadata for refund transaction id.
+	 *
+	 * @param  WC_Order_Refund $order The order.
+	 * @param  string          $wcpay_transaction_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_wcpay_refund_transaction_id_for_order( WC_Order_Refund $order, string $wcpay_transaction_id ) {
 		$order = $this->get_order( $order );
-		$order->update_meta_data( self::WCPAY_REFUND_ID_META_KEY, $wcpay_refund_id );
+		$order->update_meta_data( self::WCPAY_REFUND_TRANSACTION_ID_META_KEY, $wcpay_transaction_id );
 		$order->save_meta_data();
 	}
 
@@ -636,7 +716,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_wcpay_refund_id_for_order( $order ) : string {
+	public function get_wcpay_refund_id_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_REFUND_ID_META_KEY, true );
 	}
@@ -664,7 +744,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_wcpay_refund_status_for_order( $order ) : string {
+	public function get_wcpay_refund_status_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_REFUND_STATUS_META_KEY, true );
 	}
@@ -692,7 +772,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_fraud_outcome_status_for_order( $order ) : string {
+	public function get_fraud_outcome_status_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_FRAUD_OUTCOME_STATUS_META_KEY, true );
 	}
@@ -720,13 +800,42 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_fraud_meta_box_type_for_order( $order ) : string {
+	public function get_fraud_meta_box_type_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_FRAUD_META_BOX_TYPE_META_KEY, true );
 	}
 
 	/**
 	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added
+	 *
+	 * @param WC_Order                                                          $order The order.
+	 * @param WC_Payments_API_Payment_Intention|WC_Payments_API_Setup_Intention $intent The payment or setup intention object.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function attach_intent_info_to_order( WC_Order $order, $intent ) {
+		// We don't want to allow metadata for a successful payment to be disrupted.
+		if ( Intent_Status::SUCCEEDED === $this->get_intention_status_for_order( $order ) ) {
+			return;
+		}
+		// first, let's prepare all the metadata needed for refunds, required for status change etc.
+		$intent_id              = $intent->get_id();
+		$intent_status          = $intent->get_status();
+		$payment_method         = $intent->get_payment_method_id();
+		$customer_id            = $intent->get_customer_id();
+		$currency               = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_currency() : $order->get_currency();
+		$charge                 = $intent instanceof WC_Payments_API_Payment_Intention ? $intent->get_charge() : null;
+		$charge_id              = $charge ? $charge->get_id() : null;
+		$payment_transaction    = $charge ? $charge->get_balance_transaction() : null;
+		$payment_transaction_id = $payment_transaction['id'] ?? '';
+		// next, save it in order meta.
+		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id );
+	}
+
+	/**
+	 * Legacy version of the attach_intent_info_to_order method.
+	 *
+	 * TODO: This method should ultimately be merged with `attach_intent_info_to_order` and then removed.
 	 *
 	 * @param WC_Order $order The order.
 	 * @param string   $intent_id The intent ID.
@@ -735,10 +844,11 @@ class WC_Payments_Order_Service {
 	 * @param string   $customer_id Customer ID.
 	 * @param string   $charge_id Charge ID.
 	 * @param string   $currency Currency code.
+	 * @param string   $payment_transaction_id The transaction ID of the linked charge.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
+	public function attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id = null ) {
 		// first, let's save all the metadata that needed for refunds, required for status change etc.
 		$order->set_transaction_id( $intent_id );
 		$this->set_intent_id_for_order( $order, $intent_id );
@@ -747,6 +857,7 @@ class WC_Payments_Order_Service {
 		$this->set_intention_status_for_order( $order, $intent_status );
 		$this->set_customer_id_for_order( $order, $customer_id );
 		$this->set_wcpay_intent_currency_for_order( $order, $currency );
+		$this->set_payment_transaction_id_for_order( $order, $payment_transaction_id );
 		$order->save();
 	}
 
@@ -807,6 +918,38 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Creates an "authorization cancelled" order note if not already present.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return boolean        True if the note was added, false otherwise.
+	 */
+	public function post_unique_capture_cancelled_note( $order ) {
+		$note = $this->generate_capture_cancelled_note();
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Creates an "authorization captured" order note if not already present.
+	 *
+	 * @param WC_Order $order The order.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @return boolean        True if the note was added, false otherwise.
+	 */
+	public function post_unique_capture_complete_note( $order, $intent_id, $charge_id ) {
+		$note = $this->generate_capture_success_note( $order, $intent_id, $charge_id );
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -815,8 +958,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_payment_capture_cancelled( $order, $intent_data ) {
-		$note = $this->generate_capture_cancelled_note();
-		if ( $this->order_note_exists( $order, $note ) ) {
+		if ( false === $this->post_unique_capture_cancelled_note( $order ) ) {
 			$this->complete_order_processing( $order );
 			return;
 		}
@@ -832,7 +974,6 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->update_order_status( $order, Order_Status::CANCELLED );
-		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_data['intent_status'] );
 	}
 
@@ -902,34 +1043,37 @@ class WC_Payments_Order_Service {
 	/**
 	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
 	 *
-	 * @param WC_Order $order         Order object.
-	 * @param array    $intent_data   The intent data associated with this order.
+	 * @param WC_Order                          $order         Order object.
+	 * @param WC_Payments_API_Payment_Intention $intent        The intent instance.
 	 *
 	 * @return void
 	 */
-	private function mark_payment_capture_completed( $order, $intent_data ) {
-		$note = $this->generate_capture_success_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
+	private function mark_payment_capture_completed( $order, $intent ) {
+		$intent_id = $intent->get_id();
+		$note      = $this->generate_capture_success_note( $order, $intent_id, $intent->get_charge()->get_id() );
+
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
 
 		// Update the note with the fee breakdown details async.
-		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_data['intent_id'] );
+		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
 
 		/**
 		 * If we have a status for the fraud outcome, we want to add the proper meta data.
 		 * If auth/capture is enabled and the transaction is allowed, it will be 'allow'.
 		 * If it was held for review for any reason, it will be 'review'.
 		 */
-		if ( '' !== $intent_data['fraud_outcome'] && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
+		$fraud_outcome = $intent->get_metadata()['fraud_outcome'] ?? '';
+		if ( '' !== $fraud_outcome && Rule::is_valid_fraud_outcome_status( $fraud_outcome ) ) {
 			$fraud_meta_box_type = Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
-			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
+			$this->set_fraud_outcome_status_for_order( $order, $fraud_outcome );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 		}
-
-		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
+		$this->attach_transaction_fee_to_order( $order, $intent->get_charge() );
+		$this->update_order_status( $order, 'payment_complete', $intent_id );
 		$order->add_order_note( $note );
-		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+		$this->set_intention_status_for_order( $order, $intent->get_status() );
 	}
 
 	/**
@@ -994,7 +1138,164 @@ class WC_Payments_Order_Service {
 			// Log the error and don't block checkout.
 			Logger::log( 'Error saving transaction fee into metadata for the order ' . $order->get_id() . ': ' . $e->getMessage() );
 		}
+	}
 
+	/**
+	 * Cancels uncaptured authorizations on order cancel.
+	 *
+	 * @param int $order_id - Order ID.
+	 */
+	public function cancel_authorizations_on_order_status_change( $order_id ) {
+		$order = new WC_Order( $order_id );
+		if ( null !== $order ) {
+			$intent_id = $this->get_intent_id_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id ) {
+				try {
+					$request = Get_Intention::create( $intent_id );
+					$request->set_hook_args( $order );
+					$intent = $request->send();
+					$charge = $intent->get_charge();
+
+					/**
+					 * Successful but not captured Charge is an authorization
+					 * that needs to be cancelled.
+					 */
+					if ( null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+					) {
+							$request = Cancel_Intention::create( $intent_id );
+							$request->set_hook_args( $order );
+							$intent = $request->send();
+
+							$this->post_unique_capture_cancelled_note( $order );
+					}
+
+					$this->set_intention_status_for_order( $order, $intent->get_status() );
+					$order->save();
+				} catch ( \Exception $e ) {
+					$order->add_order_note(
+						WC_Payments_Utils::esc_interpolated_html(
+							__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+							[ 'strong' => '<strong>' ]
+						)
+					);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Handles the change of an order status.
+	 *
+	 * This function is triggered when the status of an order is changed.
+	 * It performs necessary actions based on the new status of the order.
+	 *
+	 * @param int $order_id The ID of the order.
+	 * @return void
+	 */
+	public function capture_authorization_on_order_status_change( int $order_id ) {
+		$order = new WC_Order( $order_id );
+
+		if ( null !== $order ) {
+			$intent_id = $this->get_intent_id_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id ) {
+				try {
+					$request = Get_Intention::create( $intent_id );
+					$request->set_hook_args( $order );
+					$intent = $request->send();
+					$charge = $intent->get_charge();
+
+					/**
+					 * Successful but not captured Charge is an authorization
+					 * that needs to be captured.
+					 */
+					if ( null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
+					) {
+							$request = Capture_Intention::create( $intent_id );
+							$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+							$request->set_hook_args( $order );
+							$intent = $request->send();
+
+							$this->post_unique_capture_complete_note( $order, $intent_id, $charge->get_id() );
+							$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
+					}
+
+					$this->set_intention_status_for_order( $order, $intent->get_status() );
+					$order->save();
+				} catch ( \Exception $e ) {
+					$order->add_order_note(
+						WC_Payments_Utils::esc_interpolated_html(
+							__( 'Capture authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+							[ 'strong' => '<strong>' ]
+						)
+					);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Creates a refund for the given order.
+	 *
+	 * @param WC_Order $order The order to refund.
+	 * @param float    $amount The amount to refund.
+	 * @param string   $reason The reason for the refund.
+	 * @param array    $line_items The line items to refund.
+	 *
+	 * @throws Exception If the refund creation fails.
+	 */
+	public function create_refund_for_order( WC_Order $order, float $amount, string $reason = '', array $line_items = [] ) {
+		$refund_params = [
+			'amount'   => wc_format_decimal( $amount, wc_get_price_decimals() ),
+			'reason'   => $reason,
+			'order_id' => $order->get_id(),
+		];
+
+		if ( $line_items ) {
+			$refund_params['line_items'] = $line_items;
+		}
+
+		$refund = wc_create_refund(
+			$refund_params
+		);
+
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( esc_html( $refund->get_error_message() ) );
+		}
+
+		return $refund;
+	}
+
+	/**
+	 * Adds a note and metadata for a refund.
+	 *
+	 * @param WC_Order        $order The order to refund.
+	 * @param WC_Order_Refund $wc_refund The WC refund object.
+	 * @param string          $refund_id The refund ID.
+	 * @param string|null     $refund_balance_transaction_id The balance transaction ID of the refund.
+	 * @throws Order_Not_Found_Exception
+	 * @throws Exception
+	 */
+	public function add_note_and_metadata_for_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id ): void {
+		$note = $this->generate_payment_refunded_note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order );
+
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+		}
+
+		// Set refund metadata.
+		$this->set_wcpay_refund_status_for_order( $order, 'successful' );
+		$this->set_wcpay_refund_id_for_refund( $wc_refund, $refund_id );
+		if ( isset( $refund_balance_transaction_id ) ) {
+			$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );
+		}
+
+		$order->save();
 	}
 
 	/**
@@ -1193,7 +1494,6 @@ class WC_Payments_Order_Service {
 			),
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
-
 	}
 
 	/**
@@ -1330,6 +1630,54 @@ class WC_Payments_Order_Service {
 			),
 			$status
 		);
+	}
+
+	/**
+	 * Generates the HTML note for a refunded payment.
+	 *
+	 * @param float    $refunded_amount Amount refunded.
+	 * @param string   $refunded_currency Refund currency.
+	 * @param string   $wcpay_refund_id WCPay Refund ID.
+	 * @param string   $refund_reason Refund reason.
+	 * @param WC_Order $order Order object.
+	 * @return string HTML note.
+	 */
+	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order ): string {
+		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+			wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ),
+			$order
+		);
+
+		if ( empty( $refund_reason ) ) {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
+					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				$formatted_price,
+				'WooPayments',
+				$wcpay_refund_id
+			);
+		} else {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
+					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				$formatted_price,
+				'WooPayments',
+				$refund_reason,
+				$wcpay_refund_id
+			);
+		}
+
+		return $note;
 	}
 
 	/**
@@ -1567,7 +1915,7 @@ class WC_Payments_Order_Service {
 		$order = $this->is_order_type_object( $order ) ? $order : wc_get_order( $order );
 		if ( ! $this->is_order_type_object( $order ) ) {
 			throw new Order_Not_Found_Exception(
-				__( 'The requested order was not found.', 'woocommerce-payments' ),
+				esc_html__( 'The requested order was not found.', 'woocommerce-payments' ),
 				'order_not_found'
 			);
 		}

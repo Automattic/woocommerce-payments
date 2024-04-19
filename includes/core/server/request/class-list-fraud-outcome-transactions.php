@@ -232,7 +232,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 		// Search by order id.
 		if ( preg_match( '/#(\d+)/', $term, $matches ) ) {
 			return $matches[1] === (string) $outcome['order_id'];
-		};
+		}
 
 		// Search by customer name.
 		return (bool) preg_match( "/{$term}/i", $outcome['customer_name'] );
@@ -260,11 +260,11 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 
 		if ( $a === $b ) {
 			return 0;
-		};
+		}
 
 		if ( 'desc' === $direction ) {
 			return $a < $b ? 1 : -1;
-		};
+		}
 
 		return $a < $b ? -1 : 1;
 	}

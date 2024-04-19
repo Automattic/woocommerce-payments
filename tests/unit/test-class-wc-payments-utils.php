@@ -334,7 +334,6 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10000, WC_Payments_Utils::prepare_amount( 100, 'USD' ) );
 		$this->assertEquals( 100, WC_Payments_Utils::prepare_amount( 100, 'JPY' ) );
 		$this->assertEquals( 500, WC_Payments_Utils::prepare_amount( 500, 'jpy' ) );
-
 	}
 
 	public function test_interpret_stripe_amount() {
@@ -518,7 +517,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	public function provider_format_currency(): array {
 		return [
 			'US dollar'                      => [ 123.456, 'USD', '$123.46' ],
-			'US dollar with negative amount' => [ -123.456, 'USD', '$-123.46' ],
+			'US dollar with negative amount' => [ -123.456, 'USD', '-$123.46' ],
 			'Euro'                           => [ 12000, 'EUR', '12.000,00 €' ],
 			'CHF - no currency symbol'       => [ 123, 'CHF', 'CHF 123.00' ],
 			'VND - decimal currency'         => [ 123456, 'VND', '123.456 ₫' ],
@@ -543,5 +542,17 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 			'VND (decimal currency) - skip symbol'     => [ 123456, 'VND', true, [], '123.456 VND' ],
 			'VND (decimal currency) - not skip symbol' => [ 123456, 'VND', false, [], '123.456 ₫ VND' ],
 		];
+	}
+
+	public function test_get_filtered_error_status_code_with_exception() {
+		$this->assertSame( 400, WC_Payments_Utils::get_filtered_error_status_code( new Exception( 'Just an exception' ) ) );
+	}
+
+	public function test_get_filtered_error_status_code_with_api_exception() {
+		$this->assertSame( 401, WC_Payments_Utils::get_filtered_error_status_code( new \WCPay\Exceptions\API_Exception( 'Error: Your card has insufficient funds.', 'card_declined', 401 ) ) );
+	}
+
+	public function test_get_filtered_error_status_code_with_api_exception_and_402_status() {
+		$this->assertSame( 400, WC_Payments_Utils::get_filtered_error_status_code( new \WCPay\Exceptions\API_Exception( 'Error: Your card was declined.', 'card_declined', 402 ) ) );
 	}
 }

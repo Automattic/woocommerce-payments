@@ -11,6 +11,7 @@ import { getPaymentSettingsUrl, isInTestMode } from 'utils';
 import BannerNotice from '../banner-notice';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
+import { recordEvent } from 'wcpay/tracks';
 
 type CurrentPage =
 	| 'overview'
@@ -59,7 +60,7 @@ const getNoticeContent = (
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								'{{strong}}%1$s is in dev mode.{{/strong}} You need to set up a live %1$s account before you can accept real transactions.',
+								'{{strong}}%1$s is in sandbox mode.{{/strong}} You need to set up a live %1$s account before you can accept real transactions.',
 								'woocommerce-payments'
 							),
 							'WooPayments'
@@ -87,10 +88,16 @@ const getNoticeContent = (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content
 								<Link
 									href={
-										'https://woo.com/document/woopayments/testing-and-troubleshooting/dev-mode/'
+										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
 									}
 									target="_blank"
 									rel="noreferrer"
+									type="external"
+									onClick={ () =>
+										recordEvent(
+											'wcpay_overview_test_mode_learn_more_clicked'
+										)
+									}
 								/>
 							),
 						},

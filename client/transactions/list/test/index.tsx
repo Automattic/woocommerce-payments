@@ -18,7 +18,11 @@ import os from 'os';
  * Internal dependencies
  */
 import { TransactionsList } from '../';
-import { useTransactions, useTransactionsSummary } from 'data/index';
+import {
+	useTransactions,
+	useTransactionsSummary,
+	useReportingExportLanguage,
+} from 'data/index';
 import type { Transaction } from 'data/transactions/hooks';
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -50,6 +54,7 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
+	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
@@ -64,6 +69,10 @@ const mockUseTransactions = useTransactions as jest.MockedFunction<
 
 const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
 	typeof useTransactionsSummary
+>;
+
+const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
+	typeof useReportingExportLanguage
 >;
 
 declare const global: {
@@ -86,6 +95,9 @@ declare const global: {
 				decimalSeparator: string;
 				precision: number;
 			};
+		};
+		reporting?: {
+			exportModalDismissed: boolean;
 		};
 	};
 };
@@ -205,6 +217,8 @@ describe( 'Transactions list', () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
+		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
+
 		global.wcpaySettings = {
 			featureFlags: {
 				customSearch: true,
@@ -224,6 +238,9 @@ describe( 'Transactions list', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
+			},
+			reporting: {
+				exportModalDismissed: true,
 			},
 		};
 	} );
@@ -310,10 +327,10 @@ describe( 'Transactions list', () => {
 		} );
 
 		test( 'sorts by amount', () => {
-			sortBy( 'Amount' );
+			sortBy( 'Amount in Deposit Curency' );
 			expectSortingToBe( 'amount', 'desc' );
 
-			sortBy( 'Amount' );
+			sortBy( 'Amount in Deposit Curency' );
 			expectSortingToBe( 'amount', 'asc' );
 		} );
 
@@ -537,12 +554,6 @@ describe( 'Transactions list', () => {
 
 			await waitFor( () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
-				expect( mockApiFetch ).toHaveBeenCalledWith( {
-					method: 'POST',
-					path: `/wc/v3/payments/transactions/download?user_email=mock%40example.com&user_timezone=${ encodeURIComponent(
-						getUserTimeZone()
-					) }`,
-				} );
 			} );
 		} );
 
@@ -597,7 +608,7 @@ describe( 'Transactions list', () => {
 					method: 'POST',
 					path: `/wc/v3/payments/transactions/download?user_email=mock%40example.com&deposit_id=po_mock&user_timezone=${ encodeURIComponent(
 						getUserTimeZone()
-					) }`,
+					) }&locale=en`,
 				} );
 			} );
 		} );
@@ -612,15 +623,19 @@ describe( 'Transactions list', () => {
 				'"Date / Time"',
 				'Type',
 				'Channel',
+				'"Paid Currency"',
+				'"Amount Paid"',
+				'"Deposit Currency"',
 				'Amount',
 				'Fees',
 				'Net',
 				'"Order #"',
-				'Source',
+				'"Payment Method"',
 				'Customer',
 				'Email',
 				'Country',
 				'"Risk level"',
+				'"Deposit ID"',
 				'"Deposit date"',
 				'"Deposit status"',
 			];
@@ -675,26 +690,26 @@ describe( 'Transactions list', () => {
 			); // channel
 			expect(
 				getUnformattedAmount( displayFirstTransaction[ 3 ] ).indexOf(
-					csvFirstTransaction[ 4 ]
+					csvFirstTransaction[ 7 ]
 				)
 			).not.toBe( -1 ); // amount
 			expect(
 				-Number( getUnformattedAmount( displayFirstTransaction[ 4 ] ) )
 			).toEqual(
 				Number(
-					csvFirstTransaction[ 5 ].replace( /['"]+/g, '' ) // strip extra quotes
+					csvFirstTransaction[ 8 ].replace( /['"]+/g, '' ) // strip extra quotes
 				)
 			); // fees
 			expect(
 				getUnformattedAmount( displayFirstTransaction[ 5 ] ).indexOf(
-					csvFirstTransaction[ 6 ]
+					csvFirstTransaction[ 9 ]
 				)
 			).not.toBe( -1 ); // net
 			expect( displayFirstTransaction[ 6 ] ).toBe(
-				csvFirstTransaction[ 7 ]
+				csvFirstTransaction[ 10 ]
 			); // order number
 			expect( displayFirstTransaction[ 8 ] ).toBe(
-				csvFirstTransaction[ 9 ].replace( /['"]+/g, '' ) // strip extra quotes
+				csvFirstTransaction[ 12 ].replace( /['"]+/g, '' ) // strip extra quotes
 			); // customer
 		} );
 	} );

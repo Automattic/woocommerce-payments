@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix country names with accents not showing correctly on international country fraud filter

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Country_Code;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -17,10 +19,12 @@ class WC_Payments_Features {
 	const STRIPE_BILLING_FLAG_NAME          = '_wcpay_feature_stripe_billing';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME = '_wcpay_feature_woopay_first_party_auth';
+	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME  = '_wcpay_feature_woopay_direct_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PAY_FOR_ORDER_FLOW                = '_wcpay_feature_pay_for_order_flow';
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
 	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
+	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME = '_wcpay_feature_payment_overview_widget';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -254,6 +258,28 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Payment Overview Widget is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_payment_overview_widget_ui_enabled(): bool {
+		return '1' === get_option( self::PAYMENT_OVERVIEW_WIDGET_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks whether WooPay Direct Checkout is enabled.
+	 *
+	 * @return bool True if Direct Checkout is enabled, false otherwise.
+	 */
+	public static function is_woopay_direct_checkout_enabled() {
+		$account_cache                   = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		$is_direct_checkout_eligible     = is_array( $account_cache ) && ( $account_cache['platform_direct_checkout_eligible'] ?? false );
+		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
+
+		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopay_first_party_auth_enabled();
+	}
+
+	/**
 	 * Checks whether Auth & Capture (uncaptured transactions tab, capture from payment details page) is enabled.
 	 *
 	 * @return bool
@@ -281,14 +307,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the BNPL Affirm Afterpay is enabled.
-	 */
-	public static function is_bnpl_affirm_afterpay_enabled(): bool {
-		$account = WC_Payments::get_account_service()->get_cached_account_data();
-		return ! isset( $account['is_bnpl_affirm_afterpay_enabled'] ) || true === $account['is_bnpl_affirm_afterpay_enabled'];
-	}
-
-	/**
 	 * Checks whether the Stripe Billing feature is enabled.
 	 *
 	 * @return bool
@@ -310,7 +328,7 @@ class WC_Payments_Features {
 		}
 
 		$store_base_location = wc_get_base_location();
-		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+		return ! empty( $store_base_location['country'] ) && Country_Code::UNITED_STATES === $store_base_location['country'];
 	}
 
 	/**
@@ -352,6 +370,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
+	 *
+	 * @return bool
+	 */
+	public static function is_next_deposit_notice_dismissed(): bool {
+		return '1' === get_option( 'wcpay_next_deposit_notice_dismissed', '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -368,6 +395,7 @@ class WC_Payments_Features {
 				'isPayForOrderFlowEnabled'       => self::is_pay_for_order_flow_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 				'isRefundControlsEnabled'        => self::is_streamline_refunds_enabled(),
+				'isPaymentOverviewWidgetEnabled' => self::is_payment_overview_widget_ui_enabled(),
 			]
 		);
 	}

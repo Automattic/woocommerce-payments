@@ -12,6 +12,7 @@ import type { TaskItemProps } from '../types';
 import UpdateBusinessDetailsModal from 'wcpay/overview/modal/update-business-details';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
+import { recordEvent } from 'wcpay/tracks';
 
 export const getUpdateBusinessDetailsTask = (
 	errorMessages: string[],
@@ -26,7 +27,7 @@ export const getUpdateBusinessDetailsTask = (
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
 
-	let accountDetailsTaskDescription = '',
+	let accountDetailsTaskDescription: React.ReactElement | string = '',
 		errorMessageDescription,
 		accountDetailsUpdateByDescription;
 
@@ -45,9 +46,11 @@ export const getUpdateBusinessDetailsTask = (
 
 		if ( hasSingleError ) {
 			errorMessageDescription = errorMessages[ 0 ];
-			accountDetailsTaskDescription = errorMessageDescription.concat(
-				' ',
-				accountDetailsUpdateByDescription
+			accountDetailsTaskDescription = (
+				<>
+					{ errorMessageDescription }{ ' ' }
+					{ accountDetailsUpdateByDescription }
+				</>
 			);
 		} else {
 			accountDetailsTaskDescription = accountDetailsUpdateByDescription;
@@ -103,6 +106,9 @@ export const getUpdateBusinessDetailsTask = (
 		if ( hasMultipleErrors ) {
 			renderModal();
 		} else {
+			recordEvent( 'wcpay_account_details_link_clicked', {
+				source: 'update-business-details',
+			} );
 			window.open( accountLink, '_blank' );
 		}
 	};

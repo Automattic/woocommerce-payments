@@ -58,3 +58,39 @@ export const appendRedirectionParams = ( woopayUrl ) => {
 
 	return url.href;
 };
+
+/**
+ * Checks if a session cookie is set in order to determine if the user has opted to skip WooPay.
+ *
+ * @return {boolean} True if the user has opted to skip WooPay.
+ */
+export const shouldSkipWooPay = () => {
+	const cookies = document.cookie.split( ';' );
+	const skipWooPayCookie = cookies.find( ( cookie ) =>
+		cookie.includes( 'skip_woopay' )
+	);
+
+	if ( ! skipWooPayCookie ) {
+		return false;
+	}
+
+	const skipWooPayCookieSplit = skipWooPayCookie?.split( '=' );
+
+	return (
+		skipWooPayCookieSplit[ 0 ].trim() === 'skip_woopay' &&
+		skipWooPayCookieSplit[ 1 ].trim() === '1'
+	);
+};
+
+/**
+ * Deletes the skip_woopay cookie.
+ * This should be called when the user explicitly opts to pay with WooPay.
+ */
+export const deleteSkipWooPayCookie = () => {
+	if ( ! shouldSkipWooPay() ) {
+		return;
+	}
+
+	document.cookie =
+		'skip_woopay=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+};

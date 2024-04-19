@@ -2,9 +2,20 @@
 
 exports[`AccountFees renders discounted base fee 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :
@@ -47,9 +58,20 @@ exports[`AccountFees renders discounted base fee 1`] = `
 
 exports[`AccountFees renders discounted fee with USD volume currency and non-USD base fee 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :
@@ -92,9 +114,20 @@ exports[`AccountFees renders discounted fee with USD volume currency and non-USD
 
 exports[`AccountFees renders discounted fee with end date 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :
@@ -115,9 +148,20 @@ exports[`AccountFees renders discounted fee with end date 1`] = `
 
 exports[`AccountFees renders discounted fee with volume limit 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :
@@ -160,9 +204,20 @@ exports[`AccountFees renders discounted fee with volume limit 1`] = `
 
 exports[`AccountFees renders discounted fee with volume limit and end date 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :
@@ -205,9 +260,20 @@ exports[`AccountFees renders discounted fee with volume limit and end date 1`] =
 
 exports[`AccountFees renders discounted fee without volume limit 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :
@@ -223,9 +289,20 @@ exports[`AccountFees renders discounted fee without volume limit 1`] = `
 
 exports[`AccountFees renders discounted non-USD base fee 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :
@@ -268,9 +345,20 @@ exports[`AccountFees renders discounted non-USD base fee 1`] = `
 
 exports[`AccountFees renders discounts multiple payment methods 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :
@@ -306,9 +394,20 @@ exports[`AccountFees renders discounts multiple payment methods 1`] = `
 
 exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :
@@ -324,9 +423,20 @@ exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
 
 exports[`AccountFees renders non-USD base fee 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :
@@ -342,9 +452,20 @@ exports[`AccountFees renders non-USD base fee 1`] = `
 
 exports[`AccountFees renders normal base fee 1`] = `
 <div>
-  <h4>
-    Active discounts
-  </h4>
+  <div
+    class="account-fees"
+  >
+    <hr
+      aria-orientation="horizontal"
+      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      data-wp-c16t="true"
+      data-wp-component="CardDivider"
+      role="separator"
+    />
+    <h4>
+      Active discounts
+    </h4>
+  </div>
   <p>
     Card transactions
     :

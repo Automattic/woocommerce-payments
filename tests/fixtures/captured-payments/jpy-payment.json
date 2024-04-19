@@ -3,6 +3,7 @@
 	"capturedEvent": {
 		"type": "captured",
 		"amount": 3000,
+    "amount_captured": 3000,
 		"fee": 168,
 		"fee_rates": {
 			"percentage": 0.076,
@@ -42,15 +43,17 @@
 		"transaction_details": {
 			"customer_currency": "EUR",
 			"customer_amount": 3000,
+      "customer_amount_captured": 3000,
 			"customer_fee": 168,
 			"store_currency": "JPY",
 			"store_amount": 4774,
+      "store_amount_captured": 4774,
 			"store_fee": 267
 		}
 	},
 	"expectation": {
 		"fxString": "1.00 EUR → 159.13333 JPY: ¥4,774 JPY",
-		"feeString": "Fee (7.6% + ¥0): ¥-267",
+		"feeString": "Fee (7.6% + ¥0): -¥267",
 		"feeBreakdown": {
 			"base": "Base fee: 3.6%",
 			"additional-international": "International card fee: 2%",

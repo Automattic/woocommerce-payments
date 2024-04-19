@@ -3,16 +3,15 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import { getConfig } from 'utils/order';
 import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
-import RefundConfirmationModal from './refund-confirm-modal';
-import CancelConfirmationModal from './cancel-confirm-modal';
+import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
+import getStatusChangeStrategy from './order-status-change-strategies';
 
 function disableWooOrderRefundButton( disputeStatus ) {
 	const refundButton = document.querySelector( 'button.refund-items' );
@@ -58,8 +57,12 @@ jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
 	const chargeId = getConfig( 'chargeId' );
+	const testMode = getConfig( 'testMode' );
+	// Order and site are both in test mode, or both in live mode.
+	// '1' = true, '' = false, null = the order was created before the test mode meta was added, so we assume it matches.
+	const orderTestModeMatch = getConfig( 'orderTestModeMatch' ) !== '';
 
-	maybeShowDisputeNotice();
+	maybeShowOrderNotices();
 
 	$( '#woocommerce-order-items' ).on(
 		'click',
@@ -93,81 +96,31 @@ jQuery( function ( $ ) {
 			originalStatus = 'wc-' + originalStatus;
 		}
 
-		const canRefund = getConfig( 'canRefund' );
-		const refundAmount = getConfig( 'refundAmount' );
-		if (
-			this.value === 'wc-refunded' &&
-			originalStatus !== 'wc-refunded'
-		) {
-			renderRefundConfirmationModal(
-				originalStatus,
-				canRefund,
-				refundAmount
-			);
-		} else if (
-			this.value === 'wc-cancelled' &&
-			originalStatus !== 'wc-cancelled'
-		) {
-			if ( ! canRefund || refundAmount <= 0 ) {
-				return;
-			}
-			renderModal(
-				<CancelConfirmationModal
-					originalOrderStatus={ originalStatus }
-				/>
-			);
-		}
+		const handleOrderStatusChange = getStatusChangeStrategy( this.value );
+		handleOrderStatusChange( originalStatus, this.value );
 	} );
 
-	function renderRefundConfirmationModal(
-		originalStatus,
-		canRefund,
-		refundAmount
-	) {
-		if ( ! canRefund ) {
-			dispatch( 'core/notices' ).createErrorNotice(
-				__( 'Order cannot be refunded', 'woocommerce-payments' )
-			);
-			return;
-		}
-		if ( refundAmount <= 0 ) {
-			dispatch( 'core/notices' ).createErrorNotice(
-				__( 'Invalid Refund Amount', 'woocommerce-payments' )
-			);
-			return;
-		}
-		renderModal(
-			<RefundConfirmationModal
-				orderStatus={ originalStatus }
-				refundAmount={ refundAmount }
-				formattedRefundAmount={ getConfig( 'formattedRefundAmount' ) }
-				refundedAmount={ getConfig( 'refundedAmount' ) }
-			/>
-		);
-	}
-
-	function renderModal( modalToRender ) {
-		const container = document.createElement( 'div' );
-		container.id = 'wcpay-orderstatus-confirm-container';
-		document.body.appendChild( container );
-		ReactDOM.render( modalToRender, container );
-	}
-
-	function maybeShowDisputeNotice() {
+	function maybeShowOrderNotices() {
 		const container = document.querySelector(
 			'#wcpay-order-payment-details-container'
 		);
 
-		// If the container doesn't exist (WC < 7.9), or the charge ID isn't present, don't render the notice.
-		if ( ! container || ! chargeId ) {
+		// If the container doesn't exist (WC < 7.9) don't render notices.
+		if ( ! container ) {
 			return;
 		}
 
 		ReactDOM.render(
-			<DisputedOrderNoticeHandler
-				chargeId={ chargeId }
-				onDisableOrderRefund={ disableWooOrderRefundButton }
-			/>,
+			<>
+				{ testMode && <TestModeNotice /> }
+
+				{ chargeId && orderTestModeMatch && (
+					<DisputedOrderNoticeHandler
+						chargeId={ chargeId }
+						onDisableOrderRefund={ disableWooOrderRefundButton }
+					/>
+				) }
+			</>,
 			container
 		);
 	}

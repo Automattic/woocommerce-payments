@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Order_Mode;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -36,7 +38,8 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @param WC_Payments_Order_Service $order_service - Order Service.
 	 */
 	public function __construct(
-		WC_Payments_API_Client $payments_api_client, WC_Payments_Order_Service $order_service
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->order_service       = $order_service;
@@ -99,10 +102,10 @@ class WC_Payments_Action_Scheduler_Service {
 		if ( empty( $payment_method ) ) {
 			return false;
 		}
-		$order_mode = $order->get_meta( '_wcpay_mode' );
+		$order_mode = $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY );
 
 		if ( $order_mode ) {
-			$current_mode = WC_Payments::mode()->is_test() ? 'test' : 'prod';
+			$current_mode = WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION;
 			if ( $current_mode !== $order_mode ) {
 				// If mode doesn't match make sure to stop order tracking to prevent order tracking issues.
 				// False will be returned so maybe future crons will have correct mode.

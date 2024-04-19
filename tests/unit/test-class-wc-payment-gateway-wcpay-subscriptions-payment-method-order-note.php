@@ -6,7 +6,7 @@
  */
 
 use WCPay\Duplicate_Payment_Prevention_Service;
-use WCPay\Exceptions\API_Exception;
+use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -96,6 +96,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->getMock();
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_wcpay_account
+			->method( 'get_account_default_currency' )
+			->willReturn( 'USD' );
 
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
 			->disableOriginalConstructor()
@@ -119,12 +122,19 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 		$mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
+		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service ] )
+			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
+			->getMock();
+
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
+			$mock_payment_method,
+			[ 'card' => $mock_payment_method ],
 			$this->mock_session_rate_limiter,
 			$this->mock_order_service,
 			$mock_dpps,

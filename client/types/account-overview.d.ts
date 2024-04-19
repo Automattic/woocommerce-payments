@@ -25,12 +25,15 @@ export interface Account {
 		 */
 		monthly_anchor: number;
 	};
+	default_external_accounts: {
+		currency: string;
+		status: string;
+	}[];
 }
 
 export interface Balance {
 	amount: number;
 	currency: string;
-	deposits_count?: number;
 	source_types: Record< string, never >[];
 }
 
@@ -54,13 +57,11 @@ export interface InstantBalance {
 	fee: number;
 	net: number;
 	fee_percentage: number;
-	transaction_ids: Array< string >;
 }
 
 export interface Overview {
 	currency: string;
 	lastPaid: Deposit | undefined;
-	nextScheduled: Deposit | undefined;
 	pending: Balance | undefined;
 	available: Balance | undefined;
 	instant: InstantBalance | undefined;
@@ -68,8 +69,8 @@ export interface Overview {
 
 export interface OverviewsResponse {
 	overviews: {
-		account: Account;
-		currencies: Array< Overview >;
+		account: Account | null;
+		currencies: Overview[];
 	};
 	isLoading: boolean;
 }

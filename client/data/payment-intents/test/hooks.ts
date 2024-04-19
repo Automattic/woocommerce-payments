@@ -110,6 +110,16 @@ describe( 'Payment Intent hooks', () => {
 		( useSelect as jest.Mock ).mockImplementation(
 			( cb: ( callback: any ) => jest.Mock ) => cb( selectMock )
 		);
+
+		jest.spyOn(
+			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			require( '@wordpress/data' ),
+			'useDispatch'
+		).mockReturnValue( () => {
+			return {
+				refundCharge: jest.fn(), // Mock the refundCharge function
+			};
+		} );
 	} );
 
 	describe( 'usePaymentIntentWithChargeFallback', () => {
@@ -133,6 +143,7 @@ describe( 'Payment Intent hooks', () => {
 
 			expect( result ).toEqual( {
 				data: paymentIntentMock.charge,
+				doRefund: expect.any( Function ),
 				error: {},
 				isLoading: false,
 			} );
@@ -158,6 +169,7 @@ describe( 'Payment Intent hooks', () => {
 
 			expect( result ).toEqual( {
 				data: paymentIntentMock,
+				doRefund: expect.any( Function ),
 				error: {},
 				isLoading: false,
 			} );
@@ -181,6 +193,7 @@ describe( 'Payment Intent hooks', () => {
 
 			expect( result ).toEqual( {
 				data: {},
+				doRefund: expect.any( Function ),
 				error: {},
 				isLoading: true,
 			} );

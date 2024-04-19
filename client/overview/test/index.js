@@ -264,12 +264,43 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
+	it( 'renders FRTDiscoverabilityBanner if store has transacted', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			frtDiscoverBannerSettings: JSON.stringify( {
+				dontShowAgain: false,
+			} ),
+			lifetimeTPV: 100,
+		};
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( 'Enhanced fraud protection for your store' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not render FRTDiscoverabilityBanner if store has not transacted', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			frtDiscoverBannerSettings: JSON.stringify( {
+				dontShowAgain: false,
+			} ),
+			lifetimeTPV: 0,
+		};
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( 'Enhanced fraud protection for your store' )
+		).not.toBeInTheDocument();
+	} );
+
 	it( 'dismisses the FRTDiscoverabilityBanner when dismiss button is clicked', async () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				dontShowAgain: false,
 			} ),
+			lifetimeTPV: 100,
 		};
 
 		render( <OverviewPage /> );
@@ -287,14 +318,6 @@ describe( 'Overview page', () => {
 		} );
 	} );
 
-	it( 'renders FRTDiscoverabilityBanner', () => {
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( 'Enhanced fraud protection for your store' )
-		).toBeInTheDocument();
-	} );
-
 	it( 'displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is true', () => {
 		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
 
@@ -303,17 +326,12 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.getByText(
-				'You’re eligible to start selling now and fast-track the setup process.'
-			)
+			screen.getByText( 'You’re ready to sell.' )
 		).toBeInTheDocument();
 	} );
 
 	it( 'does not displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is false', () => {
-		const query = () =>
-			screen.queryByText(
-				'You’re eligible to start selling now and fast-track the setup process.'
-			);
+		const query = () => screen.queryByText( 'You’re ready to sell.' );
 
 		render( <OverviewPage /> );
 

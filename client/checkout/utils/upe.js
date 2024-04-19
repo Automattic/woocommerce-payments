@@ -2,8 +2,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { WC_STORE_CART, getPaymentMethodsConstants } from '../constants';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { getPaymentMethodsConstants } from '../constants';
 
 /**
  * Generates terms parameter for UPE, with value set for reusable payment methods
@@ -21,55 +20,6 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 		obj[ method ] = value;
 		return obj;
 	}, {} );
-};
-
-/**
- * Returns the value of the given cookie.
- *
- * @param {string} name Name of the cookie.
- *
- * @return {string} Value of the given cookie. Empty string if cookie doesn't exist.
- */
-export const getCookieValue = ( name ) =>
-	document.cookie.match( '(^|;)\\s*' + name + '\\s*=\\s*([^;]+)' )?.pop() ||
-	'';
-
-/**
- * Check if Card payment is being used.
- *
- * @return {boolean} Boolean indicating whether or not Card payment is being used.
- */
-export const isWCPayChosen = function () {
-	return document.getElementById( 'payment_method_woocommerce_payments' )
-		.checked;
-};
-
-/**
- * Returns the cached payment intent for the current cart state.
- *
- * @param {Object} paymentMethodsConfig Array of configs for payment methods.
- * @param {string} paymentMethodType Type of the payment method.
- * @return {Object} The intent id and client secret required for mounting the UPE element.
- */
-export const getPaymentIntentFromSession = (
-	paymentMethodsConfig,
-	paymentMethodType
-) => {
-	const cartHash = getCookieValue( 'woocommerce_cart_hash' );
-	const upePaymentIntentData =
-		paymentMethodsConfig[ paymentMethodType ].upePaymentIntentData;
-
-	if (
-		cartHash &&
-		upePaymentIntentData &&
-		upePaymentIntentData.startsWith( cartHash )
-	) {
-		const intentId = upePaymentIntentData.split( '-' )[ 1 ];
-		const clientSecret = upePaymentIntentData.split( '-' )[ 2 ];
-		return { intentId, clientSecret };
-	}
-
-	return {};
 };
 
 /**
@@ -194,9 +144,16 @@ export const generateCheckoutEventNames = () => {
 		.join( ' ' );
 };
 
-export const appendPaymentMethodIdToForm = ( form, paymentMethodId ) => {
-	form.append(
+export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
+	$form.append(
 		`<input type="hidden" id="wcpay-payment-method" name="wcpay-payment-method" value="${ paymentMethodId }" />`
+	);
+};
+
+export const appendFraudPreventionTokenInputToForm = ( $form ) => {
+	const fraudPreventionToken = window.wcpayFraudPreventionToken ?? '';
+	$form.append(
+		`<input type="hidden" id="wcpay-fraud-prevention-token" name="wcpay-fraud-prevention-token" value="${ fraudPreventionToken }" />`
 	);
 };
 
@@ -220,39 +177,10 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 	);
 }
 
-/**
- *
- * Custom React hook that provides customer data and related functions for managing customer information.
- * The hook retrieves customer data from the WC_STORE_CART selector and dispatches actions to modify billing and shipping addresses.
- *
- * @return {Object} An object containing customer data and functions for managing customer information.
- */
-export const useCustomerData = () => {
-	const { customerData, isInitialized } = useSelect( ( select ) => {
-		const store = select( WC_STORE_CART );
-		return {
-			customerData: store.getCustomerData(),
-			isInitialized: store.hasFinishedResolution( 'getCartData' ),
-		};
-	} );
-	const {
-		setShippingAddress,
-		setBillingData,
-		setBillingAddress,
-	} = useDispatch( WC_STORE_CART );
-
-	return {
-		isInitialized,
-		billingData: customerData.billingData,
-		// Backward compatibility billingData/billingAddress
-		billingAddress: customerData.billingAddress,
-		shippingAddress: customerData.shippingAddress,
-		setBillingData,
-		// Backward compatibility setBillingData/setBillingAddress
-		setBillingAddress,
-		setShippingAddress,
-	};
-};
+export function dispatchChangeEventFor( element ) {
+	const event = new Event( 'change', { bubbles: true } );
+	element.dispatchEvent( event );
+}
 
 /**
  * Returns the prepared set of options needed to initialize the Stripe elements for UPE in Block Checkout.
@@ -362,67 +290,6 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 };
 
 /**
- * Converts form fields object into Stripe `billing_details` object.
- *
- * @param {Object} fields Object mapping checkout billing fields to values.
- * @return {Object} Stripe formatted `billing_details` object.
- */
-export const getBillingDetails = ( fields ) => {
-	return {
-		name:
-			`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
-			'-',
-		email:
-			typeof fields.billing_email === 'string'
-				? fields.billing_email.trim()
-				: '-',
-		phone: fields.billing_phone || '-',
-		address: {
-			country: fields.billing_country || '-',
-			line1: fields.billing_address_1 || '-',
-			line2: fields.billing_address_2 || '-',
-			city: fields.billing_city || '-',
-			state: fields.billing_state || '-',
-			postal_code: fields.billing_postcode || '-',
-		},
-	};
-};
-
-/**
- * Converts form fields object into Stripe `shipping` object.
- *
- * @param {Object} fields Object mapping checkout shipping fields to values.
- * @return {Object} Stripe formatted `shipping` object.
- */
-export const getShippingDetails = ( fields ) => {
-	// Shipping address is needed by Afterpay. If available, use shipping address, else fallback to billing address.
-	if (
-		fields.ship_to_different_address &&
-		fields.ship_to_different_address === '1'
-	) {
-		return {
-			name:
-				`${ fields.shipping_first_name } ${ fields.shipping_last_name }`.trim() ||
-				'-',
-			address: {
-				country: fields.shipping_country || '-',
-				line1: fields.shipping_address_1 || '-',
-				line2: fields.shipping_address_2 || '-',
-				city: fields.shipping_city || '-',
-				state: fields.shipping_state || '-',
-				postal_code: fields.shipping_postcode || '-',
-			},
-		};
-	}
-
-	const billingAsShippingAddress = getBillingDetails( fields );
-	delete billingAsShippingAddress.email;
-	delete billingAsShippingAddress.phone;
-
-	return billingAsShippingAddress;
-};
-
-/**
  * Hides payment method if it has set specific countries in the PHP class.
  *
  * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
@@ -443,7 +310,13 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const supportedCountries =
 		paymentMethodsConfig[ paymentMethodType ].countries;
 
-	const billingCountry = document.getElementById( 'billing_country' ).value;
+	/* global wcpayCustomerData */
+	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
+	const billingCountry =
+		document.getElementById( 'billing_country' )?.value ||
+		wcpayCustomerData?.billing_country ||
+		'';
+
 	const upeContainer = document.querySelector(
 		'.payment_method_woocommerce_payments_' + paymentMethodType
 	);

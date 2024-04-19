@@ -24,6 +24,10 @@ const getSupportAddressState = ( state ) => {
 	return getSettings( state ).account_business_support_address || EMPTY_OBJ;
 };
 
+export const getDuplicatedPaymentMethodIds = ( state ) => {
+	return getSettings( state ).duplicated_payment_method_ids || EMPTY_OBJ;
+};
+
 export const getIsWCPayEnabled = ( state ) => {
 	return getSettings( state ).is_wcpay_enabled || false;
 };
@@ -114,6 +118,10 @@ export const getAccountDomesticCurrency = ( state ) => {
 
 export const getDepositScheduleInterval = ( state ) => {
 	return getSettings( state ).deposit_schedule_interval || '';
+};
+
+export const getExportLanguage = ( state ) => {
+	return getSettings( state ).reporting_export_language || '';
 };
 
 export const getDepositScheduleWeeklyAnchor = ( state ) => {
@@ -232,6 +240,13 @@ export const getAdvancedFraudProtectionSettings = ( state ) => {
 
 export const getShowWooPayIncompatibilityNotice = ( state ) => {
 	return getSettings( state ).show_woopay_incompatibility_notice || false;
+};
+
+export const getShowExpressCheckoutIncompatibilityNotice = ( state ) => {
+	return (
+		getSettings( state ).show_express_checkout_incompatibility_notice ||
+		false
+	);
 };
 
 export const getIsStripeBillingEnabled = ( state ) => {

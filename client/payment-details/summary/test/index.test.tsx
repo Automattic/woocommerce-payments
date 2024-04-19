@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
@@ -73,6 +73,7 @@ const mockUseAuthorization = useAuthorization as jest.MockedFunction<
 const getBaseCharge = (): Charge =>
 	( {
 		id: 'ch_38jdHA39KKA',
+		payment_intent: 'pi_abc',
 		/* Stripe data comes in seconds, instead of the default Date milliseconds */
 		created: Date.parse( 'Sep 19, 2019, 5:24 pm' ) / 1000,
 		amount: 2000,
@@ -225,6 +226,12 @@ describe( 'PaymentDetailsSummary', () => {
 		);
 	} );
 
+	test( 'correctly renders when payment intent is missing', () => {
+		const baseCharge = getBaseCharge();
+		baseCharge.payment_intent = null;
+		expect( renderCharge( baseCharge ) ).toMatchSnapshot();
+	} );
+
 	test( 'renders partially refunded information for a charge', () => {
 		const charge = getBaseCharge();
 		charge.refunded = false;
@@ -251,7 +258,7 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 
 		const container = renderCharge( charge );
-		screen.getByText( /Refunded: \$-20.00/i );
+		screen.getByText( /Refunded: -\$20.00/i );
 		expect( container ).toMatchSnapshot();
 	} );
 
@@ -427,6 +434,13 @@ describe( 'PaymentDetailsSummary', () => {
 		screen.getByRole( 'button', {
 			name: /Accept dispute/,
 		} );
+
+		// Refund menu is not rendered
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Transaction actions/i,
+			} )
+		).toBeNull();
 	} );
 
 	test( 'renders the information of a disputed charge when the store/charge currency differ', () => {
@@ -684,6 +698,11 @@ describe( 'PaymentDetailsSummary', () => {
 				name: /Accept/i,
 			} )
 		).toBeNull();
+
+		// Refund menu is rendered
+		screen.getByRole( 'button', {
+			name: /Transaction actions/i,
+		} );
 	} );
 
 	test( 'correctly renders dispute details for "under_review" disputes', () => {
@@ -710,6 +729,13 @@ describe( 'PaymentDetailsSummary', () => {
 		expect(
 			screen.queryByRole( 'button', {
 				name: /Accept/i,
+			} )
+		).toBeNull();
+
+		// Refund menu is not rendered
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Transaction actions/i,
 			} )
 		).toBeNull();
 	} );
@@ -742,6 +768,13 @@ describe( 'PaymentDetailsSummary', () => {
 		expect(
 			screen.queryByRole( 'button', {
 				name: /Accept/i,
+			} )
+		).toBeNull();
+
+		// Refund menu is not rendered
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Transaction actions/i,
 			} )
 		).toBeNull();
 	} );
@@ -777,6 +810,13 @@ describe( 'PaymentDetailsSummary', () => {
 				name: /Accept/i,
 			} )
 		).toBeNull();
+
+		// Refund menu is not rendered
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Transaction actions/i,
+			} )
+		).toBeNull();
 	} );
 
 	test( 'correctly renders dispute details for "warning_needs_response" inquiry disputes', () => {
@@ -807,6 +847,11 @@ describe( 'PaymentDetailsSummary', () => {
 		screen.getByRole( 'button', {
 			name: /Issue refund/i,
 		} );
+
+		// Refund menu is rendered
+		screen.getByRole( 'button', {
+			name: /Transaction actions/i,
+		} );
 	} );
 
 	test( 'correctly renders dispute details for "warning_under_review" inquiry disputes', () => {
@@ -834,6 +879,11 @@ describe( 'PaymentDetailsSummary', () => {
 				name: /Accept/i,
 			} )
 		).toBeNull();
+
+		// Refund menu is rendered
+		screen.getByRole( 'button', {
+			name: /Transaction actions/i,
+		} );
 	} );
 
 	test( 'correctly renders dispute details for "warning_closed" inquiry disputes', () => {
@@ -862,6 +912,11 @@ describe( 'PaymentDetailsSummary', () => {
 				name: /Accept/i,
 			} )
 		).toBeNull();
+
+		// Refund menu is rendered
+		screen.getByRole( 'button', {
+			name: /Transaction actions/i,
+		} );
 	} );
 
 	describe( 'order missing notice', () => {
@@ -904,6 +959,42 @@ describe( 'PaymentDetailsSummary', () => {
 			).not.toBeInTheDocument();
 
 			expect( container ).toMatchSnapshot();
+		} );
+	} );
+
+	describe( 'Refund actions menu', () => {
+		test( 'Refund control menu is visible when conditions are met', () => {
+			renderCharge( getBaseCharge() );
+			expect(
+				screen.getByLabelText( 'Transaction actions' )
+			).toBeInTheDocument();
+		} );
+
+		test( 'Refund in full option is available when no amount has been refunded', () => {
+			renderCharge( getBaseCharge() );
+			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+			expect( screen.getByText( 'Refund in full' ) ).toBeInTheDocument();
+		} );
+
+		test( 'Refund in full option is not available when an amount has been refunded', () => {
+			renderCharge( { ...getBaseCharge(), amount_refunded: 42 } );
+			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+			expect(
+				screen.queryByText( 'Refund in full' )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'Partial refund option is available when charge is associated with an order', () => {
+			renderCharge( getBaseCharge() );
+			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+			expect( screen.getByText( 'Partial refund' ) ).toBeInTheDocument();
+		} );
+
+		test( 'Refund control menu is not visible when charge is not captured', () => {
+			renderCharge( { ...getBaseCharge(), captured: false } );
+			expect(
+				screen.queryByLabelText( 'Transaction actions' )
+			).not.toBeInTheDocument();
 		} );
 	} );
 } );

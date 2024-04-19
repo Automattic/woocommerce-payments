@@ -12,6 +12,7 @@ use WC_Payments_Subscriptions_Utilities;
 use WooPay_Extension;
 use WC_Geolocation;
 use WC_Payments;
+use Jetpack_Options;
 
 /**
  * WooPay
@@ -118,7 +119,11 @@ class WooPay_Utilities {
 	 * @return boolean
 	 */
 	public function should_save_platform_customer() {
-		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
+		$session_data = [];
+
+		if ( isset( WC()->session ) && WC()->session->has_session() ) {
+			$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
+		}
 
 		return ( isset( $_POST['save_user_in_woopay'] ) && filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['save_user_in_woopay'] ) && filter_var( $session_data['save_user_in_woopay'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
@@ -260,6 +265,38 @@ class WooPay_Utilities {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Return an array with encrypted and signed data.
+	 * 
+	 * @param array $data The data to be encrypted and signed.
+	 * @return array The encrypted and signed data.
+	 */
+	public static function encrypt_and_sign_data( $data ) {
+		$store_blog_token = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
+
+		$message = wp_json_encode( $data );
+
+		// Generate an initialization vector (IV) for encryption.
+		$iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+
+		// Encrypt the JSON session.
+		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $iv );
+
+		// Create an HMAC hash for data integrity.
+		$hash = hash_hmac( 'sha256', $session_encrypted, $store_blog_token );
+
+		$data = [
+			'session' => $session_encrypted,
+			'iv'      => $iv,
+			'hash'    => $hash,
+		];
+
+		return [
+			'blog_id' => Jetpack_Options::get_option( 'id' ),
+			'data'    => array_map( 'base64_encode', $data ),
+		];
 	}
 
 	/**

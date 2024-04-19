@@ -11,7 +11,6 @@ import { mocked } from 'ts-jest/utils';
  */
 import BusinessDetails from '../business-details';
 import { OnboardingContextProvider } from '../../context';
-import strings from '../../strings';
 import {
 	getAvailableCountries,
 	getBusinessTypes,
@@ -172,58 +171,61 @@ const mccsFlatList = [
 mocked( getMccsFlatList ).mockReturnValue( mccsFlatList );
 
 describe( 'BusinessDetails', () => {
-	it( 'renders and updates fields data when they are changed', () => {
+	it( 'renders and updates fields data when they are changed', async () => {
 		render(
 			<OnboardingContextProvider>
 				<BusinessDetails />
 			</OnboardingContextProvider>
 		);
-		const businessNameField = screen.getByLabelText(
-			strings.fields.business_name
-		);
-		const urlField = screen.getByLabelText( strings.fields.url );
-		const countryField = screen.getByText( strings.placeholders.country );
+		const countryField = screen
+			.getByTestId( 'country-select' )
+			.querySelector( 'button' );
 
-		user.type( businessNameField, 'John Doe LLC' );
-		user.type( urlField, 'https://johndoe.com' );
+		if ( ! countryField ) {
+			throw new Error( 'Country select not found' );
+		}
 
-		expect(
-			screen.queryByText( strings.placeholders.business_type )
-		).not.toBeInTheDocument();
-		expect(
-			screen.queryByText( strings.placeholders[ 'company.structure' ] )
-		).not.toBeInTheDocument();
+		expect( countryField ).toBeInTheDocument();
 
 		user.click( countryField );
-		user.click( screen.getByText( 'Spain' ) );
-
-		expect(
-			screen.queryByText( strings.placeholders.business_type )
-		).not.toBeInTheDocument();
-
-		user.click( countryField );
+		await screen.findByText( 'United States' );
 		user.click( screen.getByText( 'United States' ) );
 
-		const businessTypeField = screen.getByText(
-			strings.placeholders.business_type
-		);
+		const businessTypeField = screen
+			.getByTestId( 'business-type-select' )
+			.querySelector( 'button' );
+
+		if ( ! businessTypeField ) {
+			throw new Error( 'Business type select not found' );
+		}
+
 		user.click( businessTypeField );
+		await screen.findByText( 'Company' );
 		user.click( screen.getByText( 'Company' ) );
 
-		const companyStructureField = screen.getByText(
-			strings.placeholders[ 'company.structure' ]
-		);
+		const companyStructureField = screen
+			.getByTestId( 'business-structure-select' )
+			.querySelector( 'button' );
+
+		if ( ! companyStructureField ) {
+			throw new Error( 'Company structure select not found' );
+		}
 
 		user.click( companyStructureField );
+		await screen.findByText( 'Single member LLC' );
 		user.click( screen.getByText( 'Single member LLC' ) );
 
-		const mccField = screen.getByText( strings.placeholders.mcc );
+		const mccField = screen
+			.getByTestId( 'mcc-select' )
+			.querySelector( 'button' );
+		if ( ! mccField ) {
+			throw new Error( 'MCC select not found' );
+		}
+
 		user.click( mccField );
+		await screen.findByText( 'Popular Software' );
 		user.click( screen.getByText( 'Popular Software' ) );
 
-		expect( businessNameField ).toHaveValue( 'John Doe LLC' );
-		expect( urlField ).toHaveValue( 'https://johndoe.com' );
-		expect( countryField ).toHaveTextContent( 'United States' );
 		expect( businessTypeField ).toHaveTextContent( 'Company' );
 		expect( companyStructureField ).toHaveTextContent(
 			'Single member LLC'

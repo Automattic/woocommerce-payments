@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 import { useStepperContext } from 'components/stepper';
 import { useOnboardingContext } from './context';
 import { OnboardingFields } from './types';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 
 const trackedSteps: Set< string > = new Set();
 let startTime: number;
@@ -23,16 +23,11 @@ const stepElapsed = () => {
 	return result;
 };
 
-export const trackStarted = (): void => {
+export const trackStarted = ( source: string ): void => {
 	startTime = stepStartTime = Date.now();
 
-	wcpayTracks.recordEvent( wcpayTracks.events.ONBOARDING_FLOW_STARTED, {} );
-};
-
-export const trackModeSelected = ( mode: string ): void => {
-	wcpayTracks.recordEvent( wcpayTracks.events.ONBOARDING_FLOW_MODE_SELECTED, {
-		mode,
-		elapsed: stepElapsed(),
+	recordEvent( 'wcpay_onboarding_flow_started', {
+		source,
 	} );
 };
 
@@ -40,30 +35,29 @@ export const trackStepCompleted = ( step: string ): void => {
 	// We only track a completed step once.
 	if ( trackedSteps.has( step ) ) return;
 
-	wcpayTracks.recordEvent(
-		wcpayTracks.events.ONBOARDING_FLOW_STEP_COMPLETED,
-		{
-			step,
-			elapsed: stepElapsed(),
-		}
-	);
+	recordEvent( 'wcpay_onboarding_flow_step_completed', {
+		step,
+		elapsed: stepElapsed(),
+	} );
 	trackedSteps.add( step );
 };
 
 export const trackRedirected = ( isEligible: boolean ): void => {
-	wcpayTracks.recordEvent( wcpayTracks.events.ONBOARDING_FLOW_REDIRECTED, {
+	recordEvent( 'wcpay_onboarding_flow_redirected', {
 		is_po_eligible: isEligible,
 		elapsed: elapsed( startTime ),
 	} );
 };
 
+export const trackAccountReset = (): void =>
+	recordEvent( 'wcpay_onboarding_flow_reset' );
+
 export const trackEligibilityModalClosed = (
 	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only'
 ): void =>
-	wcpayTracks.recordEvent(
-		wcpayTracks.events.ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED,
-		{ action }
-	);
+	recordEvent( 'wcpay_onboarding_flow_eligibility_modal_closed', {
+		action,
+	} );
 
 export const useTrackAbandoned = (): {
 	trackAbandoned: ( method: 'hide' | 'exit' ) => void;
@@ -75,13 +69,13 @@ export const useTrackAbandoned = (): {
 	const trackEvent = ( method = 'hide' ) => {
 		const event =
 			method === 'hide'
-				? wcpayTracks.events.ONBOARDING_FLOW_HIDDEN
-				: wcpayTracks.events.ONBOARDING_FLOW_EXITED;
+				? 'wcpay_onboarding_flow_hidden'
+				: 'wcpay_onboarding_flow_exited';
 		const errored = Object.keys( errors ).filter(
 			( field ) => touched[ field as keyof OnboardingFields ]
 		);
 
-		wcpayTracks.recordEvent( event, {
+		recordEvent( event, {
 			step,
 			errored,
 			elapsed: elapsed( startTime ),

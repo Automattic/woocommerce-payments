@@ -7,39 +7,44 @@ import React from 'react';
  * Internal dependencies
  */
 
-import strings from './strings';
 import './style.scss';
 import {
 	AffirmIcon,
 	AfterpayIcon,
+	ClearpayIcon,
 	AmericanExpressIcon,
 	ApplePayIcon,
-	DinersClubIcon,
+	CBIcon,
+	IdealIcon,
+	DiscoverIcon,
 	GooglePayIcon,
-	JCBIcon,
 	MastercardIcon,
-	UnionPayIcon,
 	VisaIcon,
 	WooIcon,
+	KlarnaIcon,
 } from 'wcpay/payment-methods-icons';
 
 const PaymentMethods: React.FC = () => {
 	return (
 		<>
-			<p>{ strings.paymentMethods }</p>
 			<div className="connect-account-page__payment-methods__icons">
 				<VisaIcon />
 				<MastercardIcon />
 				<AmericanExpressIcon />
-				{ wcpaySettings.isWooPayStoreCountryAvailable && <WooIcon /> }
+				<CBIcon />
+				<DiscoverIcon />
+				<IdealIcon />
 				<ApplePayIcon />
 				<GooglePayIcon />
-				<DinersClubIcon />
-				<UnionPayIcon />
-				<JCBIcon />
+				<WooIcon />
+				<KlarnaIcon />
 				<AffirmIcon />
-				<AfterpayIcon />
-				<span>& more.</span>
+				{ 'GB' === wcpaySettings?.connect?.country ? (
+					<ClearpayIcon />
+				) : (
+					<AfterpayIcon />
+				) }
+				<span>& more</span>
 			</div>
 		</>
 	);

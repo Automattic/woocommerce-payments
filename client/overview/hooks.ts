@@ -46,7 +46,7 @@ export const useSelectedCurrency = (): UseSelectedCurrencyResult => {
 };
 
 type SelectedCurrencyOverview = {
-	account?: AccountOverview.Account;
+	account?: AccountOverview.Account | null;
 	overview?: AccountOverview.Overview;
 	isLoading: boolean;
 };

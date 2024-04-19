@@ -26,16 +26,6 @@ export const getDeposit = ( state, id ) => {
 	return depositById[ id ];
 };
 
-export const getDepositsOverview = ( state ) => {
-	const DepositsOverview = getDepositsState( state ).overview || {};
-	return DepositsOverview.data;
-};
-
-export const getDepositsOverviewError = ( state ) => {
-	const DepositsOverview = getDepositsState( state ).overview || {};
-	return DepositsOverview.error;
-};
-
 /**
  * Prepares and returns all deposits' overviews from the state.
  *
@@ -67,7 +57,6 @@ export const getAllDepositsOverviews = ( state ) => {
 
 	const groups = {
 		lastPaid: deposit.last_paid,
-		nextScheduled: deposit.next_scheduled,
 		pending: balance.pending,
 		available: balance.available,
 		instant: balance.instant,
@@ -86,7 +75,6 @@ export const getAllDepositsOverviews = ( state ) => {
 				currencies[ currency ] = {
 					currency,
 					lastPaid: undefined,
-					nextScheduled: undefined,
 					pending: undefined,
 					available: undefined,
 					instant: undefined,

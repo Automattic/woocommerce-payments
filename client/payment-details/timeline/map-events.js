@@ -70,7 +70,7 @@ const getDepositTimelineItem = (
 	body = []
 ) => {
 	let headline = '';
-	if ( event.deposit && ! event.deposit.id.includes( 'wcpay_estimated_' ) ) {
+	if ( event.deposit ) {
 		headline = sprintf(
 			isPositive
 				? // translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
@@ -135,7 +135,7 @@ const getDepositTimelineItem = (
  */
 const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 	let headline = '';
-	if ( event.deposit && ! event.deposit.id.includes( 'wcpay_estimated_' ) ) {
+	if ( event.deposit ) {
 		headline = sprintf(
 			// translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
 			__(
@@ -220,17 +220,25 @@ const isBaseFeeOnly = ( event ) => {
 };
 
 const formatNetString = ( event ) => {
+	const {
+		amount_captured: amountCaptured,
+		fee,
+		currency,
+		transaction_details: {
+			store_amount_captured: storeAmountCaptured,
+			store_fee: storeFee,
+			store_currency: storeCurrency,
+		},
+	} = event;
+
 	if ( ! isFXEvent( event ) ) {
-		return formatExplicitCurrency(
-			event.amount - event.fee,
-			event.currency
-		);
+		return formatExplicitCurrency( amountCaptured - fee, currency );
 	}
 
+	// We need to use the store amount and currency for the net amount calculation in the case of a FX event.
 	return formatExplicitCurrency(
-		event.transaction_details.store_amount -
-			event.transaction_details.store_fee,
-		event.transaction_details.store_currency
+		storeAmountCaptured - storeFee,
+		storeCurrency
 	);
 };
 
@@ -295,15 +303,20 @@ export const composeFXString = ( event ) => {
 		transaction_details: {
 			customer_currency: customerCurrency,
 			customer_amount: customerAmount,
+			customer_amount_captured: customerAmountCaptured,
 			store_currency: storeCurrency,
 			store_amount: storeAmount,
+			store_amount_captured: storeAmountCaptured,
 		},
 	} = event;
 	return formatFX(
-		{ currency: customerCurrency, amount: customerAmount },
+		{
+			currency: customerCurrency,
+			amount: customerAmountCaptured ?? customerAmount,
+		},
 		{
 			currency: storeCurrency,
-			amount: storeAmount,
+			amount: storeAmountCaptured ?? storeAmount,
 		}
 	);
 };
@@ -605,6 +618,13 @@ const mapEventToTimelineItems = ( event ) => {
 		);
 
 	switch ( type ) {
+		case 'started':
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Started', 'woocommerce-payments' )
+				),
+			];
 		case 'authorized':
 			return [
 				getStatusChangeTimelineItem(
@@ -681,7 +701,7 @@ const mapEventToTimelineItems = ( event ) => {
 							'A payment of %s was successfully charged.',
 							'woocommerce-payments'
 						),
-						event.amount,
+						event.amount_captured,
 						true
 					),
 					<CheckmarkIcon className="is-success" />,
