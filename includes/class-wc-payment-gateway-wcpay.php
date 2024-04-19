@@ -2949,14 +2949,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Checks if the transaction was blocked by the AVS verification fraud rule.
+	 * Checks if the transaction was blocked due to AVS verification fraud rule.
 	 *
 	 * @param string|null $error_code The error code to check.
 	 * @param string|null $error_type The error type to check.
 	 *
 	 * @return bool True if the transaction was blocked by the AVS verification fraud rule, false otherwise.
 	 */
-	private function is_blocked_by_avs_verification_fraud_rule( ?string $error_code, ?string $error_type ): bool {
+	private function is_blocked_due_to_avs_verification_fraud_rule( ?string $error_code, ?string $error_type ): bool {
 		$is_avs_verification_rule_enabled = $this->is_fraud_rule_enabled( 'avs_verification' );
 		$is_incorrect_zip_error           = 'card_error' === $error_type && 'incorrect_zip' === $error_code;
 
@@ -2981,7 +2981,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$blocked_by_fraud_rule = 'wcpay_blocked_by_fraud_rule' === $error_code;
 
 		// Since the AVS mismatch is part of the advanced fraud prevention, we need to consider that as a blocked order.
-		$blocked_by_avs_mismatch = $this->is_blocked_by_avs_verification_fraud_rule( $error_code, $error_type );
+		$blocked_by_avs_mismatch = $this->is_blocked_due_to_avs_verification_fraud_rule( $error_code, $error_type );
 
 		return $blocked_by_fraud_rule || $blocked_by_avs_mismatch;
 	}
