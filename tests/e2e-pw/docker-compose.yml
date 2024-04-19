@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   playwright:
     # When updating the Playwright version in the image tag below, make sure to update the npm `@playwright/test` package.json version as well.
