@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Non user-facing changes. Behind feature flag. Add tooltip messages to tiles within Payment activity widget

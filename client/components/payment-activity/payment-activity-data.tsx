@@ -5,16 +5,17 @@ import * as React from 'react';
 import moment from 'moment';
 import { __ } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies.
  */
+import InlineNotice from '../inline-notice';
 import PaymentDataTile from './payment-data-tile';
 import { ClickTooltip } from '../tooltip';
 import { usePaymentActivityData } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import type { DateRange } from './types';
-
 import './style.scss';
 
 /**
@@ -50,16 +51,35 @@ const PaymentActivityData: React.FC = () => {
 				currencyCode={ storeCurrency }
 				tooltip={
 					<ClickTooltip
-						className="total-payment-volume__tooltip"
+						className="wcpay-payment-activity-data__total-payment-volume__tooltip"
+						maxWidth={ '294px' }
 						buttonIcon={ <HelpOutlineIcon /> }
 						buttonLabel={ __(
 							'Total payment volume tooltip',
 							'woocommerce-payments'
 						) }
-						content={ __(
-							'test total payment volume content',
-							'woocommerce-payments'
-						) }
+						content={
+							<>
+								{ interpolateComponents( {
+									mixedString: __(
+										'{{strong}}Total payment volume{{/strong}} is gross value of payments successfully processed over a given timeframe.',
+										'woocommerce-payments'
+									),
+									components: {
+										strong: <strong />,
+									},
+								} ) }
+								<InlineNotice
+									className="wcpay-payment-activity-data__total-payment-volume__tooltip__notice"
+									isDismissible={ false }
+								>
+									{ __(
+										'Total payment volume = Charges - Refunds - Disputes',
+										'woocommerce-payments'
+									) }
+								</InlineNotice>
+							</>
+						}
 					/>
 				}
 				amount={ totalPaymentVolume }
@@ -89,7 +109,15 @@ const PaymentActivityData: React.FC = () => {
 								'Charges tooltip',
 								'woocommerce-payments'
 							) }
-							content={ __( 'test charge content' ) }
+							content={ interpolateComponents( {
+								mixedString: __(
+									'A {{strong}}charge{{/strong}} is the amount billed to your customer’s payment method.',
+									'woocommerce-payments'
+								),
+								components: {
+									strong: <strong />,
+								},
+							} ) }
 						/>
 					}
 					amount={ charges }
@@ -143,10 +171,15 @@ const PaymentActivityData: React.FC = () => {
 								'Fees tooltip',
 								'woocommerce-payments'
 							) }
-							content={ __(
-								'test fees content',
-								'woocommerce-payments'
-							) }
+							content={ interpolateComponents( {
+								mixedString: __(
+									'{{strong}}Fees{{/strong}} includes fees on payments as well as disputes.',
+									'woocommerce-payments'
+								),
+								components: {
+									strong: <strong />,
+								},
+							} ) }
 						/>
 					}
 					amount={ fees }

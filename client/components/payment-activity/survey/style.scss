@@ -1,0 +1,56 @@
+.wcpay-payments-activity__survey {
+	position: relative;
+	width: 100%;
+
+	.components-button.has-icon {
+		min-width: 32px;
+		height: 32px;
+	}
+
+	.survey_container {
+		margin: 0 auto;
+		display: flex;
+		gap: 10px;
+		justify-content: center;
+		align-items: center;
+
+		span[role='img'] {
+			line-height: 32px;
+			font-size: 20px;
+		}
+
+		&__emoticons {
+			display: flex;
+			justify-content: flex-end;
+
+			.selected {
+				background-color: $wp-blue-0;
+			}
+		}
+
+		@include breakpoint( '<660px' ) {
+			flex-direction: column;
+		}
+	}
+
+	.close_container {
+		position: absolute;
+		top: 0;
+		right: 0;
+	}
+
+	hr {
+		margin: 16px auto;
+	}
+
+	.comment_container {
+		max-width: 500px;
+		margin: 0 auto;
+
+		&__disclaimer {
+			font-size: 11px;
+			color: $wp-gray-40;
+			font-style: italic;
+		}
+	}
+}

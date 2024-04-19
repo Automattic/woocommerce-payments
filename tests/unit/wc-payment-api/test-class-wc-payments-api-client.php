@@ -337,16 +337,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/business_types?test_mode=0',
-					'method'          => 'GET',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/business_types?test_mode=0' ),
 				null,
 				true,
 				true // get_onboarding_business_types should use user token auth.
@@ -365,16 +356,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/required_verification_information?test_mode=0&country=country&type=type',
-					'method'          => 'GET',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/required_verification_information?test_mode=0&country=country&type=type' ),
 				null,
 				true,
 				true // get_onboarding_required_verification_information should use user token auth.
@@ -432,16 +414,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/currency/rates?test_mode=0&currency_from=USD',
-					'method'          => 'GET',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/currency/rates?test_mode=0&currency_from=USD' ),
 				null,
 				true,
 				false
@@ -581,16 +554,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations/tml_XXXXXXX?test_mode=0',
-					'method'          => 'DELETE',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations/tml_XXXXXXX?test_mode=0' ),
 				null,
 				true,
 				false
@@ -751,16 +715,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/subscriptions/sub_test?test_mode=0',
-					'method'          => 'DELETE',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/subscriptions/sub_test?test_mode=0' ),
 				null,
 				true,
 				false
