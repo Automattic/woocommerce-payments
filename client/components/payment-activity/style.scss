@@ -168,20 +168,6 @@
 	}
 
 	.wcpay-tooltip__tooltip {
-		font-size: 13px;
 		line-height: 20px;
-		width: 294px;
-		top: 102px;
-		left: -16px;
-	}
-
-	.wcpay-tooltip__tooltip.wcpay-payment-activity-data__total-payment-volume__tooltip {
-		top: 178px;
-		left: -10px;
-
-		@include breakpoint( '<660px' ) {
-			top: 50px;
-			left: 80px;
-		}
 	}
 }
