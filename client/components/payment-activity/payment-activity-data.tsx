@@ -155,7 +155,6 @@ const PaymentActivityData: React.FC = () => {
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/disputes',
-						filter: 'awaiting_response',
 					} ) }
 					isLoading={ isLoading }
 				/>

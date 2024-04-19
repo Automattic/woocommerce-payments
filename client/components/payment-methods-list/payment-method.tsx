@@ -25,6 +25,8 @@ import { getDocumentationUrlForDisabledPaymentMethod } from '../payment-method-d
 import Pill from '../pill';
 import InlineNotice from '../inline-notice';
 import './payment-method.scss';
+import DuplicateNotice from '../duplicate-notice';
+import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
 
 interface PaymentMethodProps {
 	id: string;
@@ -144,6 +146,12 @@ const PaymentMethod = ( {
 		isPoInProgress ||
 		upeCapabilityStatuses.REJECTED === status;
 	const shouldDisplayNotice = id === 'sofort';
+	const {
+		duplicates,
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
+	} = useContext( DuplicatedPaymentMethodsContext );
+	const isDuplicate = duplicates.includes( id );
 
 	const needsOverlay =
 		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
@@ -356,6 +364,15 @@ const PaymentMethod = ( {
 						</a>
 					</span>
 				</InlineNotice>
+			) }
+			{ isDuplicate && (
+				<DuplicateNotice
+					paymentMethod={ id }
+					dismissedDuplicateNotices={ dismissedDuplicateNotices }
+					setDismissedDuplicateNotices={
+						setDismissedDuplicateNotices
+					}
+				/>
 			) }
 		</li>
 	);
