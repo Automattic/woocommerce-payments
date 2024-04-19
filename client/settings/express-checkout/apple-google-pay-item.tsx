@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import React from 'react';
+import React, { useContext } from 'react';
 
 /**
  * Internal dependencies
@@ -17,14 +17,24 @@ import {
 import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
+import DuplicateNotice from 'wcpay/components/duplicate-notice';
+import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
+	const id = 'apple_pay_google_pay';
+
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
 	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
 
 	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
+	const {
+		duplicates,
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
+	} = useContext( DuplicatedPaymentMethodsContext );
+	const isDuplicate = duplicates.includes( id );
 
 	return (
 		<li
@@ -168,6 +178,15 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 			</div>
 			{ showIncompatibilityNotice && (
 				<ExpressCheckoutIncompatibilityNotice />
+			) }
+			{ isDuplicate && (
+				<DuplicateNotice
+					paymentMethod={ id }
+					dismissedDuplicateNotices={ dismissedDuplicateNotices }
+					setDismissedDuplicateNotices={
+						setDismissedDuplicateNotices
+					}
+				/>
 			) }
 		</li>
 	);

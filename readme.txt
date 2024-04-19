@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 7.5.0
+Stable tag: 7.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,11 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 7.5.1 - 2024-04-18 =
+* Fix - Avoid updating billing details for legacy card objects.
+* Fix - fix: BNPL announcement link.
+
 
 = 7.5.0 - 2024-04-17 =
 * Add - Add a parent wrapper component for Payment Activity widget. This will be visible on the Payments Overview page
