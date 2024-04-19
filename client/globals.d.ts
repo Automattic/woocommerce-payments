@@ -79,6 +79,7 @@ declare global {
 		currentUserEmail: string;
 		zeroDecimalCurrencies: string[];
 		restUrl: string;
+		siteLogoUrl: string;
 		shouldUseExplicitPrice: boolean;
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
