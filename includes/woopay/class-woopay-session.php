@@ -435,6 +435,10 @@ class WooPay_Session {
 		$cart_data = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
 		$checkout_data = self::get_checkout_data( $woopay_request );
 
+		if ( $woopay_request ) {
+			$order_id = $checkout_data['order_id'] ?? null;
+		}
+
 		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 
 		$request = [
