@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Detect payment methods enabled by multiple payment gateways.
