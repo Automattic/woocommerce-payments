@@ -71,7 +71,7 @@ exports[`PaymentActivity component should render 1`] = `
                 aria-labelledby="wcpay-payment-activity-data__total-payment-volume"
                 class="wcpay-payment-data-highlights__item__wrapper__amount"
               >
-                $0.00
+                $1,234.56
               </p>
               <a
                 data-link-type="wc-admin"
@@ -130,7 +130,7 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__charges"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $0.00
+                  $98.76
                 </p>
                 <a
                   data-link-type="wc-admin"
@@ -158,7 +158,7 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__refunds"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $0.00
+                  $44.44
                 </p>
                 <a
                   data-link-type="wc-admin"
@@ -186,11 +186,11 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__disputes"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $0.00
+                  $55.55
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes&filter=awaiting_response"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes"
                 >
                   View report
                 </a>
@@ -242,9 +242,83 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__fees"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $0.00
+                  $12.34
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-flex components-card__footer components-card-footer css-oc4v7j-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-small em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardFooter"
+      >
+        <div
+          class="wcpay-payments-activity__survey"
+        >
+          <div
+            class="survey_container"
+          >
+            Are those metrics helpful?
+            <div
+              class="survey_container__emoticons"
+            >
+              <button
+                class="components-button has-icon"
+                type="button"
+              >
+                <span
+                  aria-label="very-unhappy"
+                  role="img"
+                >
+                  😞
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
+              >
+                <span
+                  aria-label="unhappy"
+                  role="img"
+                >
+                  🫤
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
+              >
+                <span
+                  aria-label="neutral"
+                  role="img"
+                >
+                  😑
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
+              >
+                <span
+                  aria-label="happy"
+                  role="img"
+                >
+                  🙂
+                </span>
+              </button>
+              <button
+                class="components-button has-icon"
+                type="button"
+              >
+                <span
+                  aria-label="very-happy"
+                  role="img"
+                >
+                  😍
+                </span>
+              </button>
             </div>
           </div>
         </div>

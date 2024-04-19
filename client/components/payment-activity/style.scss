@@ -19,7 +19,7 @@
 			padding: 0 !important;
 			&__empty-state-wrapper {
 				text-align: center;
-				color: #949494;
+				color: $gray-600;
 				padding: 16px 0 19px;
 			}
 		}
@@ -34,6 +34,17 @@
 	@include breakpoint( '<660px' ) {
 		grid-template-columns: 1fr;
 		padding: 24px;
+
+		> .wcpay-payment-data-highlights__item:nth-of-type( 1 ) {
+			// Mobile view of the Total payment volume tile.
+			border-bottom: 1px solid $gray-200;
+			padding-top: 0;
+			padding-bottom: 24px;
+
+			.wcpay-tooltip__tooltip-wrapper {
+				left: 45px !important;
+			}
+		}
 	}
 
 	.wcpay-payment-data-highlights {
@@ -127,9 +138,7 @@
 			flex-direction: column;
 		}
 	}
-}
 
-#wcpay-payment-activity-data {
 	&__total-payment-volume {
 		border-left: none;
 		align-self: stretch;
@@ -142,10 +151,23 @@
 			@include amount-styles;
 		}
 
-		@include breakpoint( '<660px' ) {
-			border-bottom: 1px solid $gray-200;
-			padding-top: 0;
-			padding-bottom: 24px;
+		&__tooltip {
+			.wcpay-inline-notice.components-notice {
+				margin-top: 8px;
+				margin-right: 0;
+				padding: 8px;
+				color: $studio-blue-70;
+
+				.components-notice__content {
+					font-size: 11px;
+					line-height: 16px;
+					margin: 0;
+				}
+			}
 		}
+	}
+
+	.wcpay-tooltip__tooltip {
+		line-height: 20px;
 	}
 }

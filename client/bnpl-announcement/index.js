@@ -14,6 +14,7 @@ import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import AfterpayBanner from 'assets/images/bnpl_announcement_afterpay.png?asset';
 import ClearpayBanner from 'assets/images/bnpl_announcement_clearpay.png?asset';
+import { getAdminUrl } from 'wcpay/utils';
 
 const BannerIcon =
 	window.wcpayBnplAnnouncement?.accountCountry === 'GB'
@@ -49,6 +50,11 @@ const Dialog = () => {
 					</ExternalLink>
 					<Button
 						variant="primary"
+						href={ `${ getAdminUrl( {
+							page: 'wc-settings',
+							tab: 'checkout',
+							section: 'woocommerce_payments',
+						} ) }#payment-methods` }
 						onClick={ () => {
 							recordEvent(
 								'wcpay_bnpl_april15_feature_announcement_enable_click'

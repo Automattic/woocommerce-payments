@@ -41,6 +41,7 @@ use WCPay\Internal\Service\OrderService;
 use WCPay\WooPay\WooPay_Scheduler;
 use WCPay\WooPay\WooPay_Session;
 use WCPay\Compatibility_Service;
+use WCPay\Duplicates_Detection_Service;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -285,6 +286,13 @@ class WC_Payments {
 	private static $compatibility_service;
 
 	/**
+	 * Instance of Duplicates_Detection_Service, created in init function
+	 *
+	 * @var Duplicates_Detection_Service
+	 */
+	private static $duplicates_detection_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -460,6 +468,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
 		include_once __DIR__ . '/class-compatibility-service.php';
 		include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
+		include_once __DIR__ . '/class-duplicates-detection-service.php';
 
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();
@@ -494,6 +503,7 @@ class WC_Payments {
 		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
 		self::$compatibility_service                = new Compatibility_Service( self::$api_client );
+		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
@@ -1010,7 +1020,7 @@ class WC_Payments {
 		$reporting_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account );
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account, self::$duplicates_detection_service );
 		$settings_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
@@ -1036,6 +1046,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
 		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
 		$refunds_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+		$survey_controller->register_routes();
 
 		if ( WC_Payments_Features::is_documents_section_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
@@ -1776,6 +1790,7 @@ class WC_Payments {
 				'wcpay_capability_request_dismissed_notices',
 				'wcpay_onboarding_eligibility_modal_dismissed',
 				'wcpay_next_deposit_notice_dismissed',
+				'wcpay_duplicate_payment_method_notices_dismissed',
 			],
 			true
 		);
