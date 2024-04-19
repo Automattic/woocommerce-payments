@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Not user-facing: hidden behind feature flag. Use Reporting API to fetch and populate data in the Payment Activity widget.
