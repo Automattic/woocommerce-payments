@@ -1,0 +1,234 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WcPayOverviewSurveyContextProvider test survey initial display 1`] = `
+<div>
+  <div
+    class="components-flex components-card__footer components-card-footer css-oc4v7j-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-small em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="CardFooter"
+  >
+    <div
+      class="wcpay-payments-activity__survey"
+    >
+      <div
+        class="survey_container"
+      >
+        Are those metrics helpful?
+        <div
+          class="survey_container__emoticons"
+        >
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="very-unhappy"
+              role="img"
+            >
+              😞
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="unhappy"
+              role="img"
+            >
+              🫤
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="neutral"
+              role="img"
+            >
+              😑
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="happy"
+              role="img"
+            >
+              🙂
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="very-happy"
+              role="img"
+            >
+              😍
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`] = `
+<div>
+  <div
+    class="components-flex components-card__footer components-card-footer css-oc4v7j-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-small em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="CardFooter"
+  >
+    <div
+      class="wcpay-payments-activity__survey"
+    >
+      <div
+        class="survey_container"
+      >
+        Are those metrics helpful?
+        <div
+          class="survey_container__emoticons"
+        >
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="very-unhappy"
+              role="img"
+            >
+              😞
+            </span>
+          </button>
+          <button
+            class="components-button has-icon selected"
+            type="button"
+          >
+            <span
+              aria-label="unhappy"
+              role="img"
+            >
+              🫤
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="neutral"
+              role="img"
+            >
+              😑
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="happy"
+              role="img"
+            >
+              🙂
+            </span>
+          </button>
+          <button
+            class="components-button has-icon"
+            type="button"
+          >
+            <span
+              aria-label="very-happy"
+              role="img"
+            >
+              😍
+            </span>
+          </button>
+        </div>
+      </div>
+      <div
+        class="close_container"
+      >
+        <button
+          aria-label="Close dialog"
+          class="components-button has-icon"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="28"
+            viewBox="0 0 24 24"
+            width="28"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+            />
+          </svg>
+        </button>
+      </div>
+      <hr />
+      <div
+        class="comment_container"
+      >
+        <div
+          class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+        >
+          <div
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+          >
+            <label
+              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+              for="inspector-textarea-control-1"
+            >
+              Why do you feel that way? (optional)
+            </label>
+            <textarea
+              class="components-textarea-control__input css-zika3g-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+              id="inspector-textarea-control-1"
+              rows="4"
+            />
+          </div>
+        </div>
+        <p
+          class="comment_container__disclaimer"
+        >
+          Your feedback will be only be shared with WooCommerce and treated pursuant to our 
+          <a
+            href="https://automattic.com/privacy/"
+            rel="noreferrer"
+            target="_blank"
+          >
+            privacy policy
+          </a>
+          .
+        </p>
+      </div>
+      <div
+        class="wcpay-confirmation-modal__footer"
+      >
+        <button
+          class="components-button is-tertiary"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;

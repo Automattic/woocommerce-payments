@@ -128,6 +128,7 @@ declare global {
 		trackingInfo?: {
 			hosting_provider: string;
 		};
+		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
 	};
 
