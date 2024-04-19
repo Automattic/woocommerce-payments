@@ -52,6 +52,7 @@ const PaymentActivityData: React.FC = () => {
 				tooltip={
 					<ClickTooltip
 						className="wcpay-payment-activity-data__total-payment-volume__tooltip"
+						maxWidth="294px"
 						buttonIcon={ <HelpOutlineIcon /> }
 						buttonLabel={ __(
 							'Total payment volume tooltip',
