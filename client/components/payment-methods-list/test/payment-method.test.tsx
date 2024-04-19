@@ -12,6 +12,7 @@ import { act } from 'react-dom/test-utils';
  * Internal dependencies
  */
 import PaymentMethod from '../payment-method';
+import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
 
 describe( 'PaymentMethod', () => {
 	let checked = false;
@@ -21,6 +22,7 @@ describe( 'PaymentMethod', () => {
 	const handleOnUnCheckClickMock = jest.fn( () => {
 		checked = false;
 	} );
+	const setDismissedDuplicateNoticesMock = jest.fn();
 
 	// Clear the mocks (including the mock call count) after each test.
 	afterEach( () => {
@@ -126,5 +128,63 @@ describe( 'PaymentMethod', () => {
 
 		expect( handleOnUnCheckClickMock ).not.toHaveBeenCalled();
 		jest.useRealTimers();
+	} );
+
+	const getDuplicateComponent = ( id: string ) => (
+		<PaymentMethod
+			label="Test Method"
+			id={ id }
+			checked={ false }
+			onCheckClick={ handleOnCheckClickMock }
+			onUncheckClick={ handleOnUnCheckClickMock }
+			description="Test Description"
+			Icon={ () => null }
+			status=""
+			isAllowingManualCapture={ false }
+			required={ false }
+			locked={ false }
+			isPoEnabled={ false }
+			isPoComplete={ false }
+		/>
+	);
+
+	test( 'does not render DuplicateNotice if payment method is not in duplicates', () => {
+		render(
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: [ 'ideal' ],
+					dismissedDuplicateNotices: [],
+					setDismissedDuplicateNotices: setDismissedDuplicateNoticesMock,
+				} }
+			>
+				{ getDuplicateComponent( 'card' ) }
+			</DuplicatedPaymentMethodsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'render DuplicateNotice if payment method is in duplicates', () => {
+		render(
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: [ 'card' ],
+					dismissedDuplicateNotices: [],
+					setDismissedDuplicateNotices: setDismissedDuplicateNoticesMock,
+				} }
+			>
+				{ getDuplicateComponent( 'card' ) }
+			</DuplicatedPaymentMethodsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
+			)
+		).toBeInTheDocument();
 	} );
 } );

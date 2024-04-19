@@ -12,6 +12,7 @@ import { ExternalLink } from '@wordpress/components';
  * Internal dependencies
  */
 import InlineNotice from 'components/inline-notice';
+import { recordEvent } from 'wcpay/tracks';
 
 /**
  * Renders a notice informing the user that their deposits are suspended.
@@ -35,7 +36,7 @@ export const SuspendedDepositNotice: React.FC = () => {
 					suspendLink: (
 						<Link
 							href={
-								'https://woo.com/document/woopayments/deposits/why-deposits-suspended/'
+								'https://woocommerce.com/document/woopayments/deposits/why-deposits-suspended/'
 							}
 						/>
 					),
@@ -61,7 +62,7 @@ export const DepositIncludesLoanPayoutNotice: React.FC = () => (
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
 						href={
-							'https://woo.com/document/woopayments/stripe-capital/overview/'
+							'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
 						}
 						target="_blank"
 						rel="noreferrer"
@@ -94,7 +95,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woo.com/document/woopayments/deposits/deposit-schedule/#new-accounts"
+						href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#new-accounts"
 					/>
 				),
 			},
@@ -144,7 +145,7 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woo.com/document/woopayments/fees-and-debits/account-showing-negative-balance/"
+						href="https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/"
 					/>
 				),
 			},
@@ -179,7 +180,7 @@ export const DepositMinimumBalanceNotice: React.FC< {
 						<a
 							target="_blank"
 							rel="noopener noreferrer"
-							href="https://woo.com/document/woopayments/deposits/deposit-schedule/#minimum-deposit-amounts"
+							href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#minimum-deposit-amounts"
 						/>
 					),
 				},
@@ -205,7 +206,7 @@ export const NoFundsAvailableForDepositNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-funds"
+						href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#pending-funds"
 					/>
 				),
 			},
@@ -234,7 +235,16 @@ export const DepositFailureNotice: React.FC< {
 				'woocommerce-payments'
 			),
 			components: {
-				updateLink: <ExternalLink href={ updateAccountLink } />,
+				updateLink: (
+					<ExternalLink
+						onClick={ () =>
+							recordEvent( 'wcpay_account_details_link_clicked', {
+								source: 'deposit-notices',
+							} )
+						}
+						href={ updateAccountLink }
+					/>
+				),
 			},
 		} ) }
 	</InlineNotice>

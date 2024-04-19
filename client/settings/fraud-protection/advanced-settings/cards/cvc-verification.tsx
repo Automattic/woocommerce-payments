@@ -47,7 +47,7 @@ const CVCVerificationRuleCard: React.FC = () => {
 										target="_blank"
 										type="external"
 										// eslint-disable-next-line max-len
-										href="https://woo.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+										href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
 									/>
 								),
 							},

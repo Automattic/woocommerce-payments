@@ -128,6 +128,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 		$product_id = 30,
 		$variable = false
 	) {
+		$mock_items   = [];
 		$mock_items[] = $this->create_mock_item( 'Beanie with Logo', $quantity, 18, 2.7, $product_id, $variable );
 
 		if ( $with_fee ) {

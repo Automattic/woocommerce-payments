@@ -68,7 +68,7 @@ class Mode {
 		/**
 		 * Allows WooPayments to enter dev (aka sandbox) mode.
 		 *
-		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/
+		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/
 		 * @param bool $dev_mode The pre-determined dev mode.
 		 */
 		$this->dev_mode = (bool) apply_filters( 'wcpay_dev_mode', $dev_mode );
@@ -82,7 +82,7 @@ class Mode {
 		/**
 		 * Allows WooPayments to enter test mode.
 		 *
-		 * @see https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
+		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
 		 * @param bool $test_mode The pre-determined test mode.
 		 */
 		$this->test_mode = (bool) apply_filters( 'wcpay_test_mode', $test_mode );

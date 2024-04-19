@@ -1,17 +1,17 @@
 <?php
 /**
  * Plugin Name: WooPayments
- * Plugin URI: https://woo.com/payments/
+ * Plugin URI: https://woocommerce.com/payments/
  * Description: Accept payments via credit card. Manage transactions within WordPress.
  * Author: Automattic
- * Author URI: https://woo.com/
+ * Author URI: https://woocommerce.com/
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
  * WC tested up to: 8.7.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 7.4.0
+ * Version: 7.5.1
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
@@ -55,6 +55,8 @@ function wcpay_activated() {
 function wcpay_deactivated() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::remove_woo_admin_notes();
+	delete_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed' );
+	delete_transient( 'wcpay_bnpl_april15_successful_purchases_count' );
 }
 
 register_activation_hook( __FILE__, 'wcpay_activated' );
@@ -333,7 +335,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			__( 'We’ve detected that you have duplicate sites connected to %s. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
 			'WooPayments'
 		),
-		'supportURL'                => 'https://woo.com/document/woopayments/testing-and-troubleshooting/safe-mode/',
+		'supportURL'                => 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/safe-mode/',
 		'adminBarSafeModeLabel'     => sprintf(
 			/* translators: %s: WooPayments. */
 			__( '%s Safe Mode', 'woocommerce-payments' ),
@@ -344,7 +346,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			__( "<strong>Notice:</strong> It appears that your 'wp-config.php' file might be using dynamic site URL values. Dynamic site URLs could cause %s to enter Safe Mode. <dynamicSiteUrlSupportLink>Learn how to set a static site URL.</dynamicSiteUrlSupportLink>", 'woocommerce-payments' ),
 			'WooPayments'
 		),
-		'dynamicSiteUrlSupportLink' => 'https://woo.com/document/woopayments/testing-and-troubleshooting/safe-mode/#dynamic-site-urls',
+		'dynamicSiteUrlSupportLink' => 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/safe-mode/#dynamic-site-urls',
 	];
 
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();

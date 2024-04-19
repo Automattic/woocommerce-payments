@@ -62,12 +62,10 @@ export const recordEvent = (
  *
  * @param {string}  eventName         Name of the event.
  * @param {Object}  [eventProperties] Event properties (optional).
- * @param {boolean} isLegacy Event properties (optional).
  */
 export const recordUserEvent = (
 	eventName: string,
-	eventProperties: Record< string, unknown > = {},
-	isLegacy = false
+	eventProperties: Record< string, unknown > = {}
 ): void => {
 	const nonce =
 		getConfig( 'platformTrackerNonce' ) ??
@@ -80,7 +78,6 @@ export const recordUserEvent = (
 	body.append( 'action', 'platform_tracks' );
 	body.append( 'tracksEventName', eventName );
 	body.append( 'tracksEventProp', JSON.stringify( eventProperties ) );
-	body.append( 'isLegacy', JSON.stringify( isLegacy ) ); // formData does not allow appending booleans, so we stringify it - it is parsed back to a boolean on the PHP side.
 	fetch( ajaxUrl, {
 		method: 'post',
 		body,

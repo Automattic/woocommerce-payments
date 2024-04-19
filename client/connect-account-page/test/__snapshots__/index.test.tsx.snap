@@ -87,9 +87,9 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               src="assets/images/cards/discover.svg"
             />
             <img
-              alt="Diners Club"
+              alt="iDEAL"
               class="payment-method__icon"
-              src="assets/images/cards/diners.svg"
+              src="assets/images/payment-methods/ideal.svg"
             />
             <img
               alt="Apple Pay"
@@ -107,9 +107,9 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               src="assets/images/payment-methods/woo.svg"
             />
             <img
-              alt="Sofort"
+              alt="Klarna"
               class="payment-method__icon"
-              src="assets/images/payment-methods/sofort.svg"
+              src="assets/images/payment-methods/klarna.svg"
             />
             <img
               alt="Affirm"
@@ -122,7 +122,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               src="assets/images/payment-methods/afterpay-logo.svg"
             />
             <span>
-              & more.
+              & more
             </span>
           </div>
           <div
@@ -349,9 +349,9 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
               src="assets/images/cards/discover.svg"
             />
             <img
-              alt="Diners Club"
+              alt="iDEAL"
               class="payment-method__icon"
-              src="assets/images/cards/diners.svg"
+              src="assets/images/payment-methods/ideal.svg"
             />
             <img
               alt="Apple Pay"
@@ -369,14 +369,9 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
               src="assets/images/payment-methods/woo.svg"
             />
             <img
-              alt="WooPay"
+              alt="Klarna"
               class="payment-method__icon"
-              src="assets/images/payment-methods/woo.svg"
-            />
-            <img
-              alt="Sofort"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/sofort.svg"
+              src="assets/images/payment-methods/klarna.svg"
             />
             <img
               alt="Affirm"
@@ -389,7 +384,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
               src="assets/images/payment-methods/afterpay-logo.svg"
             />
             <span>
-              & more.
+              & more
             </span>
           </div>
           <div
@@ -578,9 +573,9 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
               src="assets/images/cards/discover.svg"
             />
             <img
-              alt="Diners Club"
+              alt="iDEAL"
               class="payment-method__icon"
-              src="assets/images/cards/diners.svg"
+              src="assets/images/payment-methods/ideal.svg"
             />
             <img
               alt="Apple Pay"
@@ -598,9 +593,9 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
               src="assets/images/payment-methods/woo.svg"
             />
             <img
-              alt="Sofort"
+              alt="Klarna"
               class="payment-method__icon"
-              src="assets/images/payment-methods/sofort.svg"
+              src="assets/images/payment-methods/klarna.svg"
             />
             <img
               alt="Affirm"
@@ -613,7 +608,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
               src="assets/images/payment-methods/afterpay-logo.svg"
             />
             <span>
-              & more.
+              & more
             </span>
           </div>
           <div
