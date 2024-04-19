@@ -156,6 +156,14 @@ const PaymentActivityData: React.FC = () => {
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/disputes',
+						filter: 'advanced',
+						'date_between[0]': moment(
+							getDateRange().date_start
+						).format( 'YYYY-MM-DD' ),
+						'date_between[1]': moment(
+							getDateRange().date_end
+						).format( 'YYYY-MM-DD' ),
+						status_is: 'needs_response',
 					} ) }
 					isLoading={ isLoading }
 				/>
