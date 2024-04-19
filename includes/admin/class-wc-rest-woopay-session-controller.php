@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\WooPay\WooPay_Session;
 use Automattic\Jetpack\Connection\Rest_Authentication;
+use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
 
 /**
  * REST controller to check get WooPay extension data for user.
@@ -52,6 +53,14 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 * @return WP_Error|WP_REST_Response
 	 */
 	public function get_session_data( WP_REST_Request $request ): WP_REST_Response {
+		$cart_token = $this->validate_cart_token( $request->get_header( 'cart_token' ) );
+		$payload    = JsonWebToken::get_parts( $cart_token )->payload;
+		$user_id    = (int) $payload->user_id ?? null;
+
+		if ( is_int( $user_id ) && $user_id > 0 ) {
+			wp_set_current_user( $user_id );
+		}
+
 		// phpcs:ignore
 		/**
 		 * @psalm-suppress UndefinedClass
@@ -71,11 +80,30 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	}
 
 	/**
+	 * Validates the cart token value.
+	 *
+	 * @param string|null $cart_token The cart token to validate.
+	 * @return string The validated cart token.
+	 * @throws InvalidArgumentException If the cart token is missing or invalid.
+	 */
+	public function validate_cart_token( $cart_token ): string {
+		if ( ! $cart_token ) {
+			throw new InvalidArgumentException( 'Missing cart token.' );
+		}
+
+		if ( ! JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
+			throw new InvalidArgumentException( 'Invalid cart token.' );
+		}
+
+		return $cart_token;
+	}
+
+	/**
 	 * Returns true if the request that's currently being processed is signed with the blog token.
 	 *
 	 * @return bool True if the request signature is valid.
 	 */
-	private function has_valid_request_signature() {
+	private function has_valid_request_signature(): bool {
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
 	}
 
