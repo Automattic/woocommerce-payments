@@ -1,0 +1,17 @@
+name: 'Run Tests'
+description: 'Runs Playwright E2E tests'
+
+runs:
+    using: 'composite'
+    steps:
+        - name: First Run Playwright E2E Tests
+          id: first_run_e2e_pw_tests
+          # Use +e to trap errors when running E2E tests.
+          shell: /bin/bash +e {0}
+          run: npm run test:e2e-pw-ci
+        - uses: actions/upload-artifact@v3
+          if: always()
+          with:
+              name: playwright-report
+              path: playwright-report/
+              retention-days: 7
