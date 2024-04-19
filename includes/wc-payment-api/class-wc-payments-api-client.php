@@ -1860,7 +1860,7 @@ class WC_Payments_API_Client {
 			$response_code  = null;
 			$last_exception = null;
 
-			// The header intention aims to gove insights into request latency between store and backend.
+			// The header intention aims to give us insights into request latency between store and backend.
 			$headers['X-Request-Initiated'] = microtime( true );
 
 			try {
