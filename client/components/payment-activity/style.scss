@@ -34,6 +34,13 @@
 	@include breakpoint( '<660px' ) {
 		grid-template-columns: 1fr;
 		padding: 24px;
+
+		> .wcpay-payment-data-highlights__item:nth-of-type( 1 ) {
+			// Mobile view of the Total payment volume tile.
+			border-bottom: 1px solid $gray-200;
+			padding-top: 0;
+			padding-bottom: 24px;
+		}
 	}
 
 	.wcpay-payment-data-highlights {
@@ -150,19 +157,8 @@
 				.components-notice__content {
 					font-size: 11px;
 					line-height: 16px;
-					white-space: pre-wrap;
 					margin: 0;
 				}
-			}
-		}
-	}
-
-	#wcpay-payment-activity-data {
-		&__total-payment-volume {
-			@include breakpoint( '<660px' ) {
-				border-bottom: 1px solid $gray-200;
-				padding-top: 0;
-				padding-bottom: 24px;
 			}
 		}
 	}
