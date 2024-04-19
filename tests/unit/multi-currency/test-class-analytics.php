@@ -109,27 +109,17 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * Test for the register_customer_currencies method. Note that this function is called in the constructor,
+	 * and the customerCurrencies data key cannot be re-registered, so this test is only to ensure that it exists.
+	 */
 	public function test_register_customer_currencies() {
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_all_customer_currencies' )
-			->willReturn( $this->mock_customer_currencies );
-
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_available_currencies' )
-			->willReturn( $this->get_mock_available_currencies() );
-
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
-
-		$this->analytics->register_customer_currencies();
-
 		$data_registry = Package::container()->get(
 			AssetDataRegistry::class
 		);
-
 		$this->assertTrue( $data_registry->exists( 'customerCurrencies' ) );
 	}
+
 
 	public function test_has_multi_currency_orders() {
 
@@ -141,30 +131,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$result = $method->invoke( $this->analytics );
 
 		$this->assertTrue( $result );
-	}
-
-	public function test_register_customer_currencies_for_empty_customer_currencies() {
-		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
-
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_all_customer_currencies' )
-			->willReturn( [] );
-
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_available_currencies' )
-			->willReturn( $this->get_mock_available_currencies() );
-
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
-
-		$this->analytics->register_customer_currencies();
-
-		$data_registry = Package::container()->get(
-			AssetDataRegistry::class
-		);
-
-		$this->assertTrue( $data_registry->exists( 'customerCurrencies' ) );
 	}
 
 	public function test_update_order_stats_data_with_non_multi_currency_order() {

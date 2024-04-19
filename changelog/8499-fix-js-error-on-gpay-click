@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix JS error when clicking GPay button on blocks checkout with subscription (w/sign up fee) in cart.
