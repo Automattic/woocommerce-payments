@@ -18,6 +18,7 @@ import {
 import paymentRequestButtonUi from './button-ui';
 import './wc-product-variations-compatibility';
 import './wc-bookings-compatibility';
+import './wc-product-addons-compatibility';
 import '../checkout/express-checkout-buttons.scss';
 
 import {

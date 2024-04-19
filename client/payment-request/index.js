@@ -198,17 +198,22 @@ jQuery( ( $ ) => {
 					return;
 				}
 
+				// tests for a field name that has `[]` at the end (meaning: an array).
 				if ( /\[\]$/.test( field.name ) ) {
+					// getting the field's name by removing the square brackets at the end.
 					const fieldName = field.name.substring(
 						0,
 						field.name.length - 2
 					);
+					// if the value to send exists already, just add this value to it.
 					if ( data[ fieldName ] ) {
 						data[ fieldName ].push( field.value );
 					} else {
+						// otherwise, create an array out of it and add the current value.
 						data[ fieldName ] = [ field.value ];
 					}
 				} else {
+					// if it's not an array, just add the value.
 					data[ field.name ] = field.value;
 				}
 			} );

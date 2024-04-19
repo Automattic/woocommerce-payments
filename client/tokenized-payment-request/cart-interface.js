@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { apiFetch } from '@wordpress/data-controls';
+import apiFetch from '@wordpress/api-fetch';
 import { applyFilters } from '@wordpress/hooks';
 
 const paymentRequestCartInterface = {
@@ -16,7 +16,7 @@ const paymentRequestCartInterface = {
 	init: ( {} ) => {},
 
 	createAnonymousCart: async () => {
-		const response = await window.wp.apiFetch( {
+		const response = await apiFetch( {
 			method: 'GET',
 			path: '/wc/store/v1/cart',
 			// omitting credentials, to create a new cart object separate from the user's cart.
@@ -40,7 +40,7 @@ const paymentRequestCartInterface = {
 			variation: [],
 		};
 
-		return window.wp.apiFetch( {
+		return apiFetch( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/add-item',
 			credentials: 'omit',
