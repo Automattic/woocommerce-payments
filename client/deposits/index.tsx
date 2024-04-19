@@ -102,7 +102,7 @@ const NextDepositNotice: React.FC = () => {
 const DepositFailureNotice: React.FC = () => {
 	const { hasErroredExternalAccount } = useAccountStatus();
 	const accountLink = addQueryArgs( wcpaySettings.accountStatus.accountLink, {
-		source: 'deposits',
+		source: 'deposit__failure-notice',
 	} );
 
 	return hasErroredExternalAccount ? (
@@ -123,7 +123,7 @@ const DepositFailureNotice: React.FC = () => {
 							onClick={ () =>
 								recordEvent(
 									'wcpay_account_details_link_clicked',
-									{ source: 'deposits' }
+									{ source: 'deposit__failure-notice' }
 								)
 							}
 							href={ accountLink }

@@ -28,7 +28,7 @@ export const getUpdateBusinessDetailsTask = (
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
 	const accountLinkWithSource = addQueryArgs( accountLink, {
-		source: 'update-business-details',
+		source: 'overview-page__update-business-details-task',
 	} );
 
 	let accountDetailsTaskDescription: React.ReactElement | string = '',
@@ -111,7 +111,7 @@ export const getUpdateBusinessDetailsTask = (
 			renderModal();
 		} else {
 			recordEvent( 'wcpay_account_details_link_clicked', {
-				source: 'update-business-details',
+				source: 'overview-page__update-business-details-task',
 			} );
 			window.open( accountLinkWithSource, '_blank' );
 		}

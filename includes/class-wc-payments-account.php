@@ -1499,12 +1499,9 @@ class WC_Payments_Account {
 			$account_data = [];
 		}
 
-		$source = sanitize_text_field( wp_unslash( $_GET['source'] ) );
-
 		$site_data = [
 			'site_username' => wp_get_current_user()->user_login,
 			'site_locale'   => get_locale(),
-			'source'        => $source,
 		];
 
 		$user_data = $this->get_onboarding_user_data();
@@ -2119,15 +2116,16 @@ class WC_Payments_Account {
 	 */
 	private function get_onboarding_user_data(): array {
 		return [
-			'user_id'         => get_current_user_id(),
-			'sift_session_id' => $this->session_service->get_sift_session_id(),
-			'ip_address'      => \WC_Geolocation::get_ip_address(),
-			'browser'         => [
+			'user_id'           => get_current_user_id(),
+			'sift_session_id'   => $this->session_service->get_sift_session_id(),
+			'ip_address'        => \WC_Geolocation::get_ip_address(),
+			'browser'           => [
 				'user_agent'       => isset( $_SERVER['HTTP_USER_AGENT'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
 				'accept_language'  => isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '',
 				'content_language' => empty( get_user_locale() ) ? 'en-US' : str_replace( '_', '-', get_user_locale() ),
 			],
-			'referer'         => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
+			'referer'           => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
+			'onboarding_source' => sanitize_text_field( wp_unslash( $_GET['source'] ) ),
 		];
 	}
 }

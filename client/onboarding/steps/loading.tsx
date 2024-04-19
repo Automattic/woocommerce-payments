@@ -67,7 +67,7 @@ const LoadingStep: React.FC< Props > = () => {
 		const resultUrl = addQueryArgs( connectUrl, {
 			self_assessment: fromDotNotation( data ),
 			progressive: isEligible,
-			source: 'onboarding',
+			source: 'onboarding-wizard',
 		} );
 
 		trackRedirected( isEligible );
