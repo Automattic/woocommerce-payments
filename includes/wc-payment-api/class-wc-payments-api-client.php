@@ -1860,9 +1860,8 @@ class WC_Payments_API_Client {
 			$response_code  = null;
 			$last_exception = null;
 
-			// Those headers are used for understanding requests latency (store to server).
+			// The header intention aims to gove insights into request latency between store and backend.
 			$headers['X-Request-Initiated'] = microtime( true );
-			$headers['X-Request-Timezone']  = ( new DateTime() )->format( 'P' );
 
 			try {
 				$response = $this->http_client->remote_request(
