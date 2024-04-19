@@ -4116,7 +4116,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			true
 		);
 
-		if ( $is_link_enabled ) {
+		if ( $is_link_enabled && isset( $fields['billing_email'] ) ) {
 			// Update the field priority.
 			$fields['billing_email']['priority'] = 1;
 
