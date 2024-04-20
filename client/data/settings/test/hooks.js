@@ -19,6 +19,7 @@ import {
 	useWooPayCustomMessage,
 	useWooPayStoreLogo,
 	useClientSecretEncryption,
+	useGetDuplicatedPaymentMethodIds,
 } from '../hooks';
 import { STORE_NAME } from '../../constants';
 
@@ -369,6 +370,34 @@ describe( 'Settings hooks tests', () => {
 			expect( actions.updateWooPayStoreLogo ).toHaveBeenCalledWith(
 				messageAfterUpdate
 			);
+		} );
+	} );
+
+	describe( 'useGetDuplicatedPaymentMethodIds', () => {
+		beforeEach( () => {
+			useSelect.mockImplementation( ( selector ) =>
+				selector( ( name ) => {
+					if ( name === STORE_NAME ) {
+						return {
+							getDuplicatedPaymentMethodIds: jest.fn( () => [
+								'card',
+								'bancontact',
+							] ),
+						};
+					}
+					return {};
+				} )
+			);
+		} );
+
+		test( 'returns duplicated payment method IDs from selector', () => {
+			const duplicatedPaymentMethodIds = useGetDuplicatedPaymentMethodIds();
+			expect( duplicatedPaymentMethodIds ).toEqual( [
+				'card',
+				'bancontact',
+			] );
+
+			expect( useSelect ).toHaveBeenCalled();
 		} );
 	} );
 } );
