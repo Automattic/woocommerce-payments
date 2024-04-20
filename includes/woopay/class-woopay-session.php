@@ -560,20 +560,21 @@ class WooPay_Session {
 
 	/**
 	 * Return WooPay minimum session data.
-	 * 
+	 *
 	 * @return array Array of minimum session data used by WooPay or false on failures.
 	 */
 	public static function get_woopay_minimum_session_data() {
 		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
 			return [];
 		}
-		
-		$blog_id = Jetpack_Options::get_option('id');
+
+		$blog_id = Jetpack_Options::get_option( 'id' );
 		if ( empty( $blog_id ) ) {
 			return [];
 		}
 
 		$data = [
+			'wcpay_version'     => WCPAY_VERSION_NUMBER,
 			'blog_id'           => $blog_id,
 			'blog_rest_url'     => get_rest_url(),
 			'blog_checkout_url' => wc_get_checkout_url(),
