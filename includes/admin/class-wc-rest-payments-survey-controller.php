@@ -57,15 +57,13 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 				'args'                => [
 					'rating'   => [
 						'type'              => 'string',
-						'items'             => [
-							'type' => 'string',
-							'enum' => [
-								'very-unhappy',
-								'unhappy',
-								'neutral',
-								'happy',
-								'very-happy',
-							],
+						'required'          => true,
+						'enum'              => [
+							'very-unhappy',
+							'unhappy',
+							'neutral',
+							'happy',
+							'very-happy',
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
