@@ -24,7 +24,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	 *
 	 * @var string
 	 */
-	protected $rest_base = 'payments/upe_survey';
+	protected $rest_base = 'payments/survey';
 
 	/**
 	 * The HTTP client, used to forward the request to WPCom.

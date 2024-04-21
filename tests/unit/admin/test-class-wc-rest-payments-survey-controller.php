@@ -13,7 +13,7 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * Tested REST route.
 	 */
-	const ROUTE = '/wc/v3/payments/upe_survey';
+	const ROUTE = '/wc/v3/payments/survey';
 
 	/**
 	 * The system under test.
