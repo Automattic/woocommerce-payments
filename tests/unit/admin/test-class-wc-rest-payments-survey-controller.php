@@ -50,6 +50,19 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_empty_rating_returns_400_status_code() {
+		$request = new WP_REST_Request( 'POST', self::ROUTE . '/payments-overview' );
+		$request->set_body_params(
+			[
+				'comments' => 'test comment',
+			]
+		);
+
+		$response = $this->controller->submit_payments_overview_survey( $request );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_valid_request_forwards_data_to_jetpack() {
 		$this->http_client_stub
 			->expects( $this->any() )
