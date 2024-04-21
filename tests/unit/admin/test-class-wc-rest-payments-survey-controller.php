@@ -81,7 +81,7 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 					),
 					$this->callback(
 						function ( $argument ) {
-							return '4' === $argument['survey_responses']['rating'];
+							return 'happy' === $argument['survey_responses']['rating'];
 						}
 					),
 					$this->callback(
@@ -101,7 +101,7 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 		$request = new WP_REST_Request( 'POST', self::ROUTE . '/payments-overview' );
 		$request->set_body_params(
 			[
-				'rating'   => '4',
+				'rating'   => 'happy',
 				'comments' => 'test comment',
 			]
 		);
