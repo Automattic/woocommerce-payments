@@ -90,7 +90,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 		$comments = $request->get_param( 'comments' ) ?? '';
 		$rating   = $request->get_param( 'rating' ) ?? '';
 
-		if ( empty( $comments ) && empty( $rating ) ) {
+		if ( empty( $rating ) ) {
 			return new WP_REST_Response(
 				[
 					'success' => false,
