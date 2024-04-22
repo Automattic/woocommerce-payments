@@ -3,7 +3,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { doAction } from '@wordpress/hooks';
+import { doAction, addAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -17,15 +17,14 @@ import {
 } from './tracking';
 import paymentRequestButtonUi from './button-ui';
 import './wc-product-variations-compatibility';
-import './wc-bookings-compatibility';
-import './wc-product-addons-compatibility';
 import '../checkout/express-checkout-buttons.scss';
 
 import {
 	getPaymentRequest,
 	displayLoginConfirmationDialog,
 } from './frontend-utils';
-import paymentRequestCartInterface from 'wcpay/tokenized-payment-request/cart-interface';
+import PaymentRequestCartInterface from './cart-interface';
+import debounce from './debounce';
 
 const doActionPaymentRequestAvailability = ( args ) => {
 	doAction( 'wcpay.payment-request.availability', args );
@@ -60,6 +59,7 @@ jQuery( ( $ ) => {
 			} );
 		}
 	);
+	const paymentRequestCartInterface = new PaymentRequestCartInterface();
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -153,6 +153,30 @@ jQuery( ( $ ) => {
 				},
 			} );
 
+			addAction(
+				'wcpay.payment-request.new-availability',
+				'automattic/wcpay/payment-request',
+				( response ) => {
+					/**
+					 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
+					 * options are refetched. If the customer didn't abort the payment request, and the product's shipping status is
+					 * consistent, we can simply update the payment request button with the new total and display items.
+					 */
+					if (
+						! wcpayPaymentRequest.paymentAborted &&
+						wcpayPaymentRequestParams.product.needs_shipping ===
+							response.needs_shipping
+					) {
+						paymentRequest.update( {
+							total: response.total,
+							displayItems: response.displayItems,
+						} );
+					} else {
+						wcpayPaymentRequest.reInitPaymentRequest( response );
+					}
+				}
+			);
+
 			// Check the availability of the Payment Request API first.
 			paymentRequest.canMakePayment().then( ( result ) => {
 				if ( ! result ) {
@@ -213,38 +237,6 @@ jQuery( ( $ ) => {
 			return Promise.reject();
 		},
 
-		/**
-		 * Creates a wrapper around a function that ensures a function can not
-		 * called in rappid succesion. The function can only be executed once and then agin after
-		 * the wait time has expired.  Even if the wrapper is called multiple times, the wrapped
-		 * function only excecutes once and then blocks until the wait time expires.
-		 *
-		 * @param {int} wait       Milliseconds wait for the next time a function can be executed.
-		 * @param {Function} func       The function to be wrapped.
-		 * @param {bool} immediate Overriding the wait time, will force the function to fire everytime.
-		 *
-		 * @return {Function} A wrapped function with execution limited by the wait time.
-		 */
-		debounce: ( wait, func, immediate ) => {
-			let timeout;
-			return function () {
-				const context = this,
-					args = arguments;
-				const later = () => {
-					timeout = null;
-					if ( ! immediate ) {
-						func.apply( context, args );
-					}
-				};
-				const callNow = immediate && ! timeout;
-				clearTimeout( timeout );
-				timeout = setTimeout( later, wait );
-				if ( callNow ) {
-					func.apply( context, args );
-				}
-			};
-		},
-
 		attachPaymentRequestButtonEventListeners: (
 			prButton,
 			paymentRequest
@@ -303,9 +295,7 @@ jQuery( ( $ ) => {
 			$quantityInput.off( 'input', '.qty' ).on(
 				'input',
 				'.qty',
-				wcpayPaymentRequest.debounce( 250, () => {
-					paymentRequestButtonUi.blockButton();
-
+				debounce( 250, () => {
 					$.when( wcpayPaymentRequest.getSelectedProductData() ).then(
 						( response ) => {
 							if (
@@ -378,39 +368,6 @@ jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_checkout', () => {
 		// TODO ~FR
 		wcpayPaymentRequest.init();
-	} );
-
-	$( document.body ).on( 'woocommerce_variation_has_changed', () => {
-		// TODO ~FR
-		return;
-		paymentRequestButtonUi.blockButton();
-
-		wcpayPaymentRequest
-			.getSelectedProductData()
-			.then( ( response ) => {
-				/**
-				 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
-				 * options are refetched. If the customer didn't abort the payment request, and the product's shipping status is
-				 * consistent, we can simply update the payment request button with the new total and display items.
-				 */
-				if (
-					! wcpayPaymentRequest.paymentAborted &&
-					wcpayPaymentRequestParams.product.needs_shipping ===
-						response.needs_shipping
-				) {
-					paymentRequest.update( {
-						total: response.total,
-						displayItems: response.displayItems,
-					} );
-				} else {
-					wcpayPaymentRequest.reInitPaymentRequest( response );
-				}
-
-				paymentRequestButtonUi.unblockButton();
-			} )
-			.catch( () => {
-				paymentRequestButtonUi.hide();
-			} );
 	} );
 
 	// WooCommerce Deposits support.
