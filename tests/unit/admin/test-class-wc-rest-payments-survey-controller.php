@@ -13,7 +13,7 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * Tested REST route.
 	 */
-	const ROUTE = '/wc/v3/payments/upe_survey';
+	const ROUTE = '/wc/v3/payments/survey';
 
 	/**
 	 * The system under test.
@@ -50,6 +50,19 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_empty_rating_returns_400_status_code() {
+		$request = new WP_REST_Request( 'POST', self::ROUTE . '/payments-overview' );
+		$request->set_body_params(
+			[
+				'comments' => 'test comment',
+			]
+		);
+
+		$response = $this->controller->submit_payments_overview_survey( $request );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_valid_request_forwards_data_to_jetpack() {
 		$this->http_client_stub
 			->expects( $this->any() )
@@ -68,7 +81,7 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 					),
 					$this->callback(
 						function ( $argument ) {
-							return '4' === $argument['survey_responses']['rating'];
+							return 'happy' === $argument['survey_responses']['rating'];
 						}
 					),
 					$this->callback(
@@ -88,7 +101,7 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 		$request = new WP_REST_Request( 'POST', self::ROUTE . '/payments-overview' );
 		$request->set_body_params(
 			[
-				'rating'   => '4',
+				'rating'   => 'happy',
 				'comments' => 'test comment',
 			]
 		);
