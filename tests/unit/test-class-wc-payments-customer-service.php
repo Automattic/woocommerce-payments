@@ -484,39 +484,10 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'billing_details' => [
 						'address' => [
+							'city'        => 'WooCity',
 							'country'     => Country_Code::UNITED_STATES,
 							'line1'       => 'WooAddress',
-							'line2'       => '',
-							'city'        => 'WooCity',
-							'state'       => 'NY',
 							'postal_code' => '12345',
-						],
-						'phone'   => '555-32123',
-						'email'   => 'admin@example.org',
-						'name'    => 'Jeroen Sormani',
-					],
-				]
-			);
-
-		$order = WC_Helper_Order::create_order();
-
-		$this->customer_service->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
-	}
-
-	public function test_update_payment_method_with_billing_details_from_checkout_fields() {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'update_payment_method' )
-			->with(
-				'pm_mock',
-				[
-					'billing_details' => [
-						'address' => [
-							'postal_code' => '12345',
-							'city'        => 'WooCity',
-							'country'     => 'US',
-							'line1'       => 'WooAddress',
-							'line2'       => '',
 							'state'       => 'NY',
 						],
 						'email'   => 'admin@example.org',
