@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Bugfix for failing subscription renewal payments.
