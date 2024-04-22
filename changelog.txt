@@ -1,5 +1,21 @@
 *** WooPayments Changelog ***
 
+= 7.6.0-test-1 - 2024-xx-xx =
+* Add - Add User Satisfaction Survey for Payments Overview Widget
+* Add - Detect payment methods enabled by multiple payment gateways.
+* Add - Non user-facing changes. Behind feature flag. Add tooltip messages to tiles within Payment activity widget
+* Add - Not user-facing: hidden behind feature flag. Use Reporting API to fetch and populate data in the Payment Activity widget.
+* Fix - Adjust positioning of BNPL messaging on the classic cart page.
+* Fix - Avoid updating billing details for legacy card objects.
+* Fix - Ensure the WooPay preview in the admin dashboard matches the actual implementation.
+* Fix - fix: BNPL announcement link.
+* Fix - Hide Fraud info banner until first transaction happens
+* Fix - Make sure an explicit currency code is present in the cart and checkout blocks when multi-currency is enabled
+* Fix - Prevent Stripe Link from triggering the checkout fields warning
+* Fix - Resolves "Invalid recurring shipping method" errors when purchasing multiple subscriptions with Apple Pay and Google Pay.
+* Dev - Add Playwright e2e test suite ready for incremental migration and visual regression testing
+* Dev - Remove obsolete docker-compose key `version`
+
 = 7.5.3 - 2024-04-22 =
 * Fix - Fix subscription renewals exceptions
 * Dev - Remove deprecated param from asset data registry interface.
