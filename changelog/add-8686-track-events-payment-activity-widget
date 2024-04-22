@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Comment: Behind a feature flag. The PR adds track events for clicks on `View report` links on Payment activity widget
