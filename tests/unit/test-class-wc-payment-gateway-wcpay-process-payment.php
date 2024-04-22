@@ -1209,8 +1209,17 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 
 		$this->mock_action_scheduler_service
-			->expects( $this->never() )
-			->method( 'schedule_job' );
+			->expects( $this->once() )
+			->method( 'schedule_job' )
+			->with(
+				$this->anything(),
+				WC_Payment_Gateway_WCPay::UPDATE_SAVED_PAYMENT_METHOD,
+				[
+					'payment_method' => 'pm_mock',
+					'order_id'       => $order_id,
+					'is_test_mode'   => false,
+				]
+			);
 
 		$this->mock_wcpay_gateway->process_payment( $order_id );
 	}
