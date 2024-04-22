@@ -95,6 +95,8 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 7.5.3 - 2024-04-22 =
+* Fix - Fix subscription renewals exceptions
+* Dev - Remove deprecated param from asset data registry interface.
 
 
 = 7.5.2 - 2024-04-22 =
