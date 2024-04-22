@@ -12,6 +12,7 @@ import { Link } from '@woocommerce/components';
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
 import './style.scss';
+
 interface PaymentDataTileProps {
 	/**
 	 * The id for the tile, can be used for CSS styling.
@@ -41,6 +42,10 @@ interface PaymentDataTileProps {
 	 * Optional hover link to view report.
 	 */
 	reportLink?: string;
+	/**
+	 * Optional click handler for the tile.
+	 */
+	handleReportLinkClick?: () => void;
 }
 
 const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
@@ -51,6 +56,7 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 	amount = 0,
 	isLoading = false,
 	reportLink,
+	handleReportLinkClick,
 } ) => {
 	return (
 		<div id={ id } className="wcpay-payment-data-highlights__item">
@@ -71,7 +77,7 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 					/>
 				</p>
 				{ reportLink && (
-					<Link href={ reportLink }>
+					<Link href={ reportLink } onClick={ handleReportLinkClick }>
 						{ __( 'View report', 'woocommerce_payments' ) }
 					</Link>
 				) }
