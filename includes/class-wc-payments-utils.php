@@ -342,10 +342,31 @@ class WC_Payments_Utils {
 	 * It only returns the fields that are present in the billing section of the checkout.
 	 *
 	 * @param WC_Order $order Order to extract the billing details from.
+	 * @param bool     $legacy Whether to use the legacy way of loading straight from the order.
+	 * @todo The $legacy flag is just a patch for the current approach, fixing the linked issue.
+	 * @see https://github.com/Automattic/woocommerce-payments/issues/8678
 	 *
 	 * @return array
 	 */
-	public static function get_billing_details_from_order( $order ) {
+	public static function get_billing_details_from_order( $order, $legacy = true ) {
+		if ( $legacy ) {
+			$billing_details = [
+				'address' => [
+					'city'        => $order->get_billing_city(),
+					'country'     => $order->get_billing_country(),
+					'line1'       => $order->get_billing_address_1(),
+					'line2'       => $order->get_billing_address_2(),
+					'postal_code' => $order->get_billing_postcode(),
+					'state'       => $order->get_billing_state(),
+				],
+				'email'   => $order->get_billing_email(),
+				'name'    => trim( $order->get_formatted_billing_full_name() ),
+				'phone'   => $order->get_billing_phone(),
+			];
+
+			return array_filter( $billing_details );
+		}
+
 		$billing_fields       = array_keys( WC()->checkout()->get_checkout_fields( 'billing' ) );
 		$address_field_to_key = [
 			'billing_city'      => 'city',
