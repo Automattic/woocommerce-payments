@@ -16,6 +16,7 @@ import { ClickTooltip } from '../tooltip';
 import { usePaymentActivityData } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import type { DateRange } from './types';
+import { recordEvent } from 'wcpay/tracks';
 import './style.scss';
 
 /**
@@ -83,6 +84,14 @@ const PaymentActivityData: React.FC = () => {
 					/>
 				}
 				amount={ totalPaymentVolume }
+				handleReportLinkClick={ () => {
+					recordEvent(
+						'wcpay_overview_total_payment_volume_view_report_clicks',
+						{
+							source: 'total_payment_volume_tile_view_report',
+						}
+					);
+				} }
 				reportLink={ getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
@@ -121,6 +130,14 @@ const PaymentActivityData: React.FC = () => {
 						/>
 					}
 					amount={ charges }
+					handleReportLinkClick={ () => {
+						recordEvent(
+							'wcpay_overview_charges_view_report_clicks',
+							{
+								source: 'charges_tile_view_report',
+							}
+						);
+					} }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
@@ -153,6 +170,14 @@ const PaymentActivityData: React.FC = () => {
 					label={ __( 'Disputes', 'woocommerce-payments' ) }
 					currencyCode={ storeCurrency }
 					amount={ disputes }
+					handleReportLinkClick={ () => {
+						recordEvent(
+							'wcpay_overview_disputes_view_report_clicks',
+							{
+								source: 'disputes_tile_view_report',
+							}
+						);
+					} }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/disputes',
