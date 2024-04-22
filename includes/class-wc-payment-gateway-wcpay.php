@@ -1512,7 +1512,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 				$request->set_hook_args( $payment_information );
 				if ( $payment_information->is_using_saved_payment_method() ) {
-					$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order, $payment_information->is_merchant_initiated() );
+					$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
 
 					$is_legacy_card_object = strpos( $payment_information->get_payment_method() ?? '', 'card_' ) === 0;
 
