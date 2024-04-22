@@ -151,6 +151,14 @@ const PaymentActivityData: React.FC = () => {
 					label={ __( 'Refunds', 'woocommerce-payments' ) }
 					currencyCode={ storeCurrency }
 					amount={ refunds }
+					handleReportLinkClick={ () => {
+						recordEvent(
+							'wcpay_overview_refunds_view_report_clicks',
+							{
+								source: 'refunds_tile_view_report',
+							}
+						);
+					} }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
