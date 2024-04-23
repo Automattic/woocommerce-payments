@@ -20,10 +20,8 @@ import {
 	useManualCapture,
 	useSettings,
 	useAuthorizationsSummary,
-	useFraudOutcomeTransactionsSummary,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
-import RiskReviewList from './risk-review';
 import BlockedList from './blocked';
 
 declare const window: any;
@@ -31,7 +29,6 @@ declare const window: any;
 export const TransactionsPage: React.FC = () => {
 	const currentQuery = getQuery();
 	const initialTab = currentQuery.tab ?? null;
-	const { isFRTReviewFeatureActive } = wcpaySettings;
 
 	const onTabSelected = ( tab: string ) => {
 		// When switching tabs, make sure to revert the query strings to default values
@@ -58,11 +55,6 @@ export const TransactionsPage: React.FC = () => {
 				<Authorizations />
 			</>
 		),
-		'review-page': (
-			<>
-				<RiskReviewList />
-			</>
-		),
 		'blocked-page': (
 			<>
 				<BlockedList />
@@ -76,10 +68,6 @@ export const TransactionsPage: React.FC = () => {
 	const [ getIsManualCaptureEnabled ] = useManualCapture();
 	const { isLoading: isLoadingSettings } = useSettings();
 	const { authorizationsSummary } = useAuthorizationsSummary( {} );
-
-	const {
-		transactionsSummary: riskReviewSummary,
-	} = useFraudOutcomeTransactionsSummary( 'review', {} );
 
 	// The Uncaptured authorizations screen will be shown only if:
 	// 1. The feature is turned on for all accounts
@@ -106,28 +94,11 @@ export const TransactionsPage: React.FC = () => {
 			className: 'authorizations-list',
 		},
 		{
-			name: 'review-page',
-			title: sprintf(
-				/* translators: %1: number of transactions hold for review */
-				__( 'Risk Review (%1$s)', 'woocommerce-payments' ),
-				riskReviewSummary.count ?? '...'
-			),
-			className: 'review-list',
-		},
-		{
 			name: 'blocked-page',
 			title: __( 'Blocked', 'woocommerce-payments' ),
 			className: 'blocked-list',
 		},
 	].filter( ( item ) => {
-		// @todo Remove feature flag
-		if (
-			! isFRTReviewFeatureActive &&
-			[ 'review-page' ].includes( item.name )
-		) {
-			return false;
-		}
-
 		if ( 'uncaptured-page' !== item.name ) return true;
 
 		return isAuthAndCaptureEnabled && shouldShowUncapturedTab;
