@@ -322,6 +322,11 @@ export const useGetAvailablePaymentMethodIds = () =>
 export const useGetPaymentMethodStatuses = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getPaymentMethodStatuses() );
 
+export const useGetDuplicatedPaymentMethodIds = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getDuplicatedPaymentMethodIds()
+	);
+
 export const useGetSettings = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getSettings() );
 
@@ -467,6 +472,11 @@ export const useAdvancedFraudProtectionSettings = () => {
 export const useWooPayShowIncompatibilityNotice = () =>
 	useSelect( ( select ) =>
 		select( STORE_NAME ).getShowWooPayIncompatibilityNotice()
+	);
+
+export const useExpressCheckoutShowIncompatibilityNotice = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getShowExpressCheckoutIncompatibilityNotice()
 	);
 
 export const useStripeBilling = () => {

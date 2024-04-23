@@ -45,7 +45,7 @@
 		width: 64px;
 		height: 40px;
 		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
-		background: #fff;
+		background: $studio-white;
 
 		svg {
 			display: inline-block;
@@ -134,7 +134,7 @@
 			background: linear-gradient(
 				180deg,
 				rgba( 255, 255, 255, 0 ) 0%,
-				#fff 100%
+				$studio-white 100%
 			);
 		}
 
@@ -142,17 +142,33 @@
 			border: 1px solid #ddd;
 			border-radius: $grid-unit-05;
 			box-shadow: 0 2px 6px 0 rgba( 0, 0, 0, 0.05 );
-			padding: 0 3.797%;
+			padding: 0;
+			position: relative;
 
 			&__v-spacer {
 				background-color: #0000;
 				width: 100%;
 			}
 
+			&__preview-button {
+				position: absolute;
+				top: 0.3125rem;
+				right: 0.3125rem;
+				padding: 0.125rem 0.5rem;
+				border-radius: 0.125rem;
+				background-color: #3858e9;
+				color: $studio-white;
+				line-height: 1rem;
+				font-size: 0.75rem;
+				font-weight: 400;
+				z-index: 1;
+			}
+
 			&__store-header {
 				width: 100%;
 				display: flex;
 				justify-content: center;
+				position: relative;
 
 				.header-text {
 					color: $studio-gray-60;
@@ -161,45 +177,20 @@
 					overflow: hidden;
 					text-overflow: ellipsis;
 					white-space: nowrap;
+
+					@media screen and ( max-width: $break-mobile ) {
+						// The chevronLeft icon is 5.66% from the left and
+						// has a width of 1.5rem. This padding is to ensure
+						// the text doesn't overlap with the icon.
+						padding-left: calc( 5.66% + 1.5rem );
+					}
 				}
 			}
 
-			&__checkout-row {
-				width: 100%;
-				display: flex;
-				justify-content: space-between;
-
-				.checkout-text {
-					width: 68.268%;
-					display: flex;
-					align-items: center;
-
-					color: $studio-black;
-					font-size: 0.99563rem;
-					font-style: normal;
-					font-weight: 400;
-					line-height: 1.2445rem;
-				}
-
-				.secure-block {
-					width: 30.805%;
-					display: flex;
-					align-items: center;
-					justify-content: flex-end;
-
-					&__text {
-						text-align: right;
-						color: $studio-gray-50;
-						font-size: 0.43556rem;
-						font-style: normal;
-						font-weight: 400;
-						line-height: 0.62225rem;
-						margin-left: 0.125rem;
-						overflow: hidden;
-						text-overflow: ellipsis;
-						white-space: nowrap;
-					}
-				}
+			&__chevron-left {
+				position: absolute;
+				left: 5.66%;
+				top: 0;
 			}
 
 			&__container {
@@ -217,24 +208,38 @@
 			}
 
 			&__left-column {
-				width: 54.201%;
+				width: 59.08%;
+			}
+
+			&__contact-section {
+				border: 0.03125rem solid #11111121;
+				border-radius: 0.25rem;
+			}
+
+			&__contact-field {
+				padding: 0.5rem;
+
+				&:not( :last-child ) {
+					border-bottom: 0.03125rem solid #11111121;
+				}
 			}
 
 			&__right-column {
-				width: 40.155%;
+				width: 35.59%;
 			}
 
 			&__columns-container {
-				width: 100%;
+				padding: 0 3.797% 0 3.797%;
 				display: flex;
 				justify-content: space-between;
 			}
 
 			&__section-header {
 				font-weight: 500;
-				font-size: 0.62225rem;
-				color: $studio-black;
+				font-size: 0.5rem;
+				color: $studio-gray-80;
 				line-height: 0.74669rem;
+				letter-spacing: 0.01rem;
 				display: flex;
 				justify-content: space-between;
 			}
@@ -247,11 +252,11 @@
 
 			&__text-box {
 				width: 100%;
-				font-size: 0.43556rem;
+				font-size: 0.625rem;
 				color: $studio-gray-50;
 				text-align: center;
 				font-weight: 400;
-				line-height: 0.62225rem;
+				line-height: 120%;
 				overflow: hidden;
 			}
 
@@ -261,16 +266,16 @@
 
 			&__checkout-button {
 				background-color: $studio-woocommerce-purple-60;
-				border-radius: 0.12444rem;
+				border-radius: 0.25rem;
 				align-items: center;
 				display: flex;
 				justify-content: center;
 
 				color: $studio-white;
-				font-size: 0.56rem;
+				font-size: 0.625em;
 				font-weight: 600;
 				line-height: 0.56rem;
-				letter-spacing: 0.01119rem;
+				letter-spacing: 0.0125rem;
 			}
 		}
 	}

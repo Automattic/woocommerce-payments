@@ -251,12 +251,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		if ( ! is_numeric( $base_price ) || ! is_numeric( $sign_up_fee ) ) {
+			$error_message = sprintf(
+				// Translators: %d is the numeric ID of the product without a price.
+				__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ),
+				(int) $product->get_id()
+			);
 			throw new Invalid_Price_Exception(
-				sprintf(
-					// Translators: %d is the numeric ID of the product without a price.
-					__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ),
-					$product->get_id()
-				)
+				esc_html( $error_message )
 			);
 		}
 
@@ -861,15 +862,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$shipping_address          = filter_input_array(
 			INPUT_POST,
 			[
-				'country'   => FILTER_SANITIZE_STRING,
-				'state'     => FILTER_SANITIZE_STRING,
-				'postcode'  => FILTER_SANITIZE_STRING,
-				'city'      => FILTER_SANITIZE_STRING,
-				'address_1' => FILTER_SANITIZE_STRING,
-				'address_2' => FILTER_SANITIZE_STRING,
+				'country'   => FILTER_SANITIZE_SPECIAL_CHARS,
+				'state'     => FILTER_SANITIZE_SPECIAL_CHARS,
+				'postcode'  => FILTER_SANITIZE_SPECIAL_CHARS,
+				'city'      => FILTER_SANITIZE_SPECIAL_CHARS,
+				'address_1' => FILTER_SANITIZE_SPECIAL_CHARS,
+				'address_2' => FILTER_SANITIZE_SPECIAL_CHARS,
 			]
 		);
-		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_STRING ] );
+		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data = $this->get_shipping_options( $shipping_address, $should_show_itemized_view );
@@ -892,7 +893,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$data = [];
 
 			// Remember current shipping method before resetting.
-			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
 			$this->calculate_shipping( apply_filters( 'wcpay_payment_request_shipping_posted_values', $shipping_address ) );
 
 			$packages = WC()->shipping->get_packages();
@@ -942,6 +943,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			WC()->cart->calculate_totals();
 
+			$this->maybe_restore_recurring_chosen_shipping_methods( $chosen_shipping_methods );
+
 			$data          += $this->express_checkout_helper->build_display_items( $itemized_display_items );
 			$data['result'] = 'success';
 		} catch ( Exception $e ) {
@@ -967,7 +970,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC()->cart->calculate_totals();
 
-		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_STRING ] );
+		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data           = [];
@@ -1505,5 +1508,41 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
 		return WC_Tax::calc_tax( $price, $rates, false );
+	}
+
+	/**
+	 * Restores the shipping methods previously chosen for each recurring cart after shipping was reset and recalculated
+	 * during the Payment Request get_shipping_options flow.
+	 *
+	 * When the cart contains multiple subscriptions with different billing periods, customers are able to select different shipping
+	 * methods for each subscription, however, this is not supported when purchasing with Apple Pay and Google Pay as it's
+	 * only concerned about handling the initial purchase.
+	 *
+	 * In order to avoid Woo Subscriptions's `WC_Subscriptions_Cart::validate_recurring_shipping_methods` throwing an error, we need to restore
+	 * the previously chosen shipping methods for each recurring cart.
+	 *
+	 * This function needs to be called after `WC()->cart->calculate_totals()` is run, otherwise `WC()->cart->recurring_carts` won't exist yet.
+	 *
+	 * @param array $previous_chosen_methods The previously chosen shipping methods.
+	 */
+	private function maybe_restore_recurring_chosen_shipping_methods( $previous_chosen_methods = [] ) {
+		if ( empty( WC()->cart->recurring_carts ) || ! method_exists( 'WC_Subscriptions_Cart', 'get_recurring_shipping_package_key' ) ) {
+			return;
+		}
+
+		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_index => $recurring_cart_package ) {
+				$package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $recurring_cart_package_index );
+
+				// If the recurring cart package key is found in the previous chosen methods, but not in the current chosen methods, restore it.
+				if ( isset( $previous_chosen_methods[ $package_key ] ) && ! isset( $chosen_shipping_methods[ $package_key ] ) ) {
+					$chosen_shipping_methods[ $package_key ] = $previous_chosen_methods[ $package_key ];
+				}
+			}
+		}
+
+		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
 	}
 }

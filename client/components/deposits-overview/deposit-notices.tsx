@@ -7,11 +7,13 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 import { tip } from '@wordpress/icons';
 import { ExternalLink } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
 import InlineNotice from 'components/inline-notice';
+import { recordEvent } from 'wcpay/tracks';
 
 /**
  * Renders a notice informing the user that their deposits are suspended.
@@ -35,7 +37,7 @@ export const SuspendedDepositNotice: React.FC = () => {
 					suspendLink: (
 						<Link
 							href={
-								'https://woo.com/document/woopayments/deposits/why-deposits-suspended/'
+								'https://woocommerce.com/document/woopayments/deposits/why-deposits-suspended/'
 							}
 						/>
 					),
@@ -61,7 +63,7 @@ export const DepositIncludesLoanPayoutNotice: React.FC = () => (
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
 						href={
-							'https://woo.com/document/woopayments/stripe-capital/overview/'
+							'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
 						}
 						target="_blank"
 						rel="noreferrer"
@@ -94,7 +96,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woo.com/document/woopayments/deposits/deposit-schedule/#new-accounts"
+						href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#new-accounts"
 					/>
 				),
 			},
@@ -144,7 +146,7 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woo.com/document/woopayments/fees-and-debits/account-showing-negative-balance/"
+						href="https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/"
 					/>
 				),
 			},
@@ -179,7 +181,7 @@ export const DepositMinimumBalanceNotice: React.FC< {
 						<a
 							target="_blank"
 							rel="noopener noreferrer"
-							href="https://woo.com/document/woopayments/deposits/deposit-schedule/#minimum-deposit-amounts"
+							href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#minimum-deposit-amounts"
 						/>
 					),
 				},
@@ -205,7 +207,7 @@ export const NoFundsAvailableForDepositNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woo.com/document/woopayments/deposits/deposit-schedule/#pending-funds"
+						href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#pending-funds"
 					/>
 				),
 			},
@@ -221,21 +223,39 @@ export const DepositFailureNotice: React.FC< {
 	 * The link to update the account details.
 	 */
 	updateAccountLink: string;
-} > = ( { updateAccountLink } ) => (
-	<InlineNotice
-		status="warning"
-		icon
-		className="deposit-failure-notice"
-		isDismissible={ false }
-	>
-		{ interpolateComponents( {
-			mixedString: __(
-				'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
-				'woocommerce-payments'
-			),
-			components: {
-				updateLink: <ExternalLink href={ updateAccountLink } />,
-			},
-		} ) }
-	</InlineNotice>
-);
+} > = ( { updateAccountLink } ) => {
+	const accountLinkWithSource = addQueryArgs( updateAccountLink, {
+		source: 'deposits-overview__deposit-failure-notice',
+	} );
+	return (
+		<InlineNotice
+			status="warning"
+			icon
+			className="deposit-failure-notice"
+			isDismissible={ false }
+		>
+			{ interpolateComponents( {
+				mixedString: __(
+					'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+					'woocommerce-payments'
+				),
+				components: {
+					updateLink: (
+						<ExternalLink
+							onClick={ () =>
+								recordEvent(
+									'wcpay_account_details_link_clicked',
+									{
+										source:
+											'deposits-overview__deposit-failure-notice',
+									}
+								)
+							}
+							href={ accountLinkWithSource }
+						/>
+					),
+				},
+			} ) }
+		</InlineNotice>
+	);
+};

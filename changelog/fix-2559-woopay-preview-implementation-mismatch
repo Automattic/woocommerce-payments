@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure the WooPay preview in the admin dashboard matches the actual implementation.

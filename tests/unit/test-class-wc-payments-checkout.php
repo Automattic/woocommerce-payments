@@ -383,7 +383,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,
 					'countries'              => [],
-					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
+					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
 					'forceNetworkSavedCards' => false,
 				],
 				'link' => [

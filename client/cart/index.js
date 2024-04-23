@@ -4,12 +4,13 @@
 import { recordUserEvent } from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
+import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
 
 const recordProceedToCheckoutButtonClick = () => {
 	recordUserEvent( 'wcpay_proceed_to_checkout_button_click', {
-		woopay_direct_checkout: Boolean(
-			getConfig( 'isWooPayDirectCheckoutEnabled' )
-		),
+		woopay_direct_checkout:
+			Boolean( getConfig( 'isWooPayDirectCheckoutEnabled' ) ) &&
+			! shouldSkipWooPay(),
 	} );
 };
 

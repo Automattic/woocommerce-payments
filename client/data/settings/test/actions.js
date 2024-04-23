@@ -3,7 +3,6 @@
  */
 import { dispatch, select } from '@wordpress/data';
 import { apiFetch } from '@wordpress/data-controls';
-import { findIndex } from 'lodash';
 
 /**
  * Internal dependencies
@@ -57,30 +56,64 @@ describe( 'Settings actions tests', () => {
 		} );
 
 		test( 'before saving sets isSaving to true, and after - to false', () => {
-			apiFetch.mockReturnValue( 'api request' );
+			const apiResponse = {
+				data: {
+					payment_method_statuses: {
+						bancontact: 'active',
+					},
+				},
+			};
+			apiFetch.mockReturnValue( { ...apiResponse } );
 
-			const yielded = [ ...saveSettings() ];
+			const saveGenerator = saveSettings();
 
-			const apiRequestIndex = yielded.indexOf( 'api request' );
-
-			const isSavingStartIndex = findIndex(
-				yielded,
+			// Assert the first yield is updating isSaving to true
+			let next = saveGenerator.next();
+			expect( next.value ).toEqual(
 				updateIsSavingSettings( true, null )
 			);
 
-			const isSavingEndIndex = findIndex(
-				yielded,
+			// Execute the next step, which should be the apiFetch call
+			next = saveGenerator.next();
+			expect( next.value ).toEqual( apiResponse );
+
+			// Simulate the response from the apiFetch call and proceed to the next yield
+			// Since the actual fetching process is mocked, pass the apiResponse to the next saveGenerator step directly
+			next = saveGenerator.next( apiResponse );
+			expect( next.value ).toEqual( {
+				type: 'SET_SETTINGS_VALUES',
+				payload: {
+					payment_method_statuses:
+						apiResponse.data.payment_method_statuses,
+				},
+			} );
+
+			next = saveGenerator.next(); // Skip the success notice
+			next = saveGenerator.next(); // Move to updateIsSavingSettings(false)
+			expect( next.value ).toEqual(
 				updateIsSavingSettings( false, null )
 			);
 
-			expect( apiRequestIndex ).not.toEqual( -1 );
-			expect( isSavingStartIndex ).toBeLessThan( apiRequestIndex );
-			expect( isSavingEndIndex ).toBeGreaterThan( apiRequestIndex );
+			// Check if the saveGenerator is complete
+			expect( saveGenerator.next().done ).toBeTruthy();
 		} );
 
 		test( 'displays success notice after saving', () => {
-			// eslint-disable-next-line no-unused-expressions
-			[ ...saveSettings() ];
+			const apiResponse = {
+				data: {
+					payment_method_statuses: {
+						bancontact: 'active',
+					},
+				},
+			};
+			apiFetch.mockReturnValue( { ...apiResponse } );
+
+			// Execute the generator until the end
+			const saveGenerator = saveSettings();
+			while ( ! saveGenerator.next( apiResponse ).done ) {
+				// Intentionally empty
+			}
+			expect( saveGenerator.next().done ).toBeTruthy();
 
 			expect(
 				dispatch( 'core/notices' ).createSuccessNotice

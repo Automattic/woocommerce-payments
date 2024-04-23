@@ -133,9 +133,13 @@ export const getBackgroundColor = ( selectors ) => {
 	let color = null;
 	let i = 0;
 	while ( ! color && i < selectors.length ) {
-		const bgColor = window.getComputedStyle(
-			document.querySelector( selectors[ i ] )
-		).backgroundColor;
+		const element = document.querySelector( selectors[ i ] );
+		if ( ! element ) {
+			i++;
+			continue;
+		}
+
+		const bgColor = window.getComputedStyle( element ).backgroundColor;
 		// If backgroundColor property present and alpha > 0.
 		if ( bgColor && tinycolor( bgColor ).getAlpha() > 0 ) {
 			color = bgColor;

@@ -22,7 +22,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WC_Payment_Gateway_WCPay;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-
+use WCPay\WooPay\WooPay_Session;
 
 /**
  * WC_Payments_Checkout
@@ -202,6 +202,7 @@ class WC_Payments_Checkout {
 			'woopaySessionNonce'             => wp_create_nonce( 'woopay_session_nonce' ),
 			'woopayMerchantId'               => Jetpack_Options::get_option( 'id' ),
 			'icon'                           => $this->gateway->get_icon_url(),
+			'woopayMinimumSessionData'       => WooPay_Session::get_woopay_minimum_session_data(),
 		];
 
 		/**
@@ -211,19 +212,25 @@ class WC_Payments_Checkout {
 		 */
 		$payment_fields = apply_filters( 'wcpay_payment_fields_js_config', $js_config );
 
-		$payment_fields['accountDescriptor']          = $this->gateway->get_account_statement_descriptor();
-		$payment_fields['addPaymentReturnURL']        = wc_get_account_endpoint_url( 'payment-methods' );
-		$payment_fields['gatewayId']                  = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$payment_fields['isCheckout']                 = is_checkout();
-		$payment_fields['paymentMethodsConfig']       = $this->get_enabled_payment_method_config();
-		$payment_fields['testMode']                   = WC_Payments::mode()->is_test();
-		$payment_fields['upeAppearance']              = get_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['wcBlocksUPEAppearance']      = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['wcBlocksUPEAppearanceTheme'] = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
-		$payment_fields['cartContainsSubscription']   = $this->gateway->is_subscription_item_in_cart();
-		$payment_fields['currency']                   = get_woocommerce_currency();
-		$cart_total                                   = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
-		$payment_fields['cartTotal']                  = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
+		$payment_fields['accountDescriptor']                 = $this->gateway->get_account_statement_descriptor();
+		$payment_fields['addPaymentReturnURL']               = wc_get_account_endpoint_url( 'payment-methods' );
+		$payment_fields['gatewayId']                         = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$payment_fields['isCheckout']                        = is_checkout();
+		$payment_fields['paymentMethodsConfig']              = $this->get_enabled_payment_method_config();
+		$payment_fields['testMode']                          = WC_Payments::mode()->is_test();
+		$payment_fields['upeAppearance']                     = get_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['upeBnplProductPageAppearance']      = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
+		$payment_fields['upeBnplProductPageAppearanceTheme'] = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT );
+		$payment_fields['upeBnplClassicCartAppearance']      = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
+		$payment_fields['upeBnplClassicCartAppearanceTheme'] = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT );
+		$payment_fields['upeBnplCartBlockAppearance']        = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT );
+		$payment_fields['upeBnplCartBlockAppearanceTheme']   = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT );
+		$payment_fields['wcBlocksUPEAppearance']             = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['wcBlocksUPEAppearanceTheme']        = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
+		$payment_fields['cartContainsSubscription']          = $this->gateway->is_subscription_item_in_cart();
+		$payment_fields['currency']                          = get_woocommerce_currency();
+		$cart_total                  = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+		$payment_fields['cartTotal'] = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -269,6 +276,12 @@ class WC_Payments_Checkout {
 			}
 		}
 
+		// Get the store base country.
+		$payment_fields['storeCountry'] = WC()->countries->get_base_country();
+
+		// Get the WooCommerce Store API endpoint.
+		$payment_fields['storeApiURL'] = get_rest_url( null, 'wc/store' );
+
 		/**
 		 * Allows filtering for the payment fields.
 		 *
@@ -311,7 +324,7 @@ class WC_Payments_Checkout {
 				$payment_method->get_testing_instructions(),
 				[
 					'strong' => '<strong>',
-					'a'      => '<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+					'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 				]
 			);
 			$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
@@ -351,7 +364,7 @@ class WC_Payments_Checkout {
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
-				function() use ( $payment_fields ) {
+				function () use ( $payment_fields ) {
 					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
 				}
 			);
@@ -380,12 +393,13 @@ class WC_Payments_Checkout {
 					<?php
 						$testing_instructions = $this->gateway->get_payment_method()->get_testing_instructions();
 					if ( false !== $testing_instructions ) {
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
 							$testing_instructions,
 							[
 								'strong' => '<strong>',
-								'a'      => '<a href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+								'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 							]
 						);
 					}
@@ -445,5 +459,4 @@ class WC_Payments_Checkout {
 			$this->gateway = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 		}
 	}
-
 }

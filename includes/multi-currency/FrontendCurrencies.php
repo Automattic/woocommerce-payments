@@ -270,7 +270,17 @@ class FrontendCurrencies {
 			return $arg;
 		}
 
+		// We remove these filters here because 'wc_get_order'
+		// can trigger them, leading to an infinitely recursive call.
+		remove_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
+		remove_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
+		remove_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+		remove_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );
 		$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
+		add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );
+		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+		add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
+		add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
 
 		if ( $order ) {
 			$this->order_currency = $order->get_currency();
@@ -290,6 +300,10 @@ class FrontendCurrencies {
 		global $wp;
 		if ( ! empty( $wp->query_vars['order-pay'] ) ) {
 			$this->init_order_currency( $wp->query_vars['order-pay'] );
+		} elseif ( ! empty( $wp->query_vars['order-received'] ) ) {
+			$this->init_order_currency( $wp->query_vars['order-received'] );
+		} elseif ( ! empty( $wp->query_vars['view-order'] ) ) {
+			$this->init_order_currency( $wp->query_vars['view-order'] );
 		}
 	}
 
@@ -363,6 +377,8 @@ class FrontendCurrencies {
 	 */
 	private function get_currency_code() {
 		if ( $this->should_use_order_currency() ) {
+			$this->init_order_currency_from_query_vars();
+
 			return $this->order_currency;
 		}
 
@@ -390,7 +406,7 @@ class FrontendCurrencies {
 	 */
 	private function should_use_order_currency(): bool {
 		$pages = [ 'my-account', 'checkout' ];
-		$vars  = [ 'order-received', 'order-pay', 'order-received', 'orders', 'view-order' ];
+		$vars  = [ 'order-received', 'order-pay', 'orders', 'view-order' ];
 
 		if ( $this->utils->is_page_with_vars( $pages, $vars ) ) {
 			return $this->utils->is_call_in_backtrace(

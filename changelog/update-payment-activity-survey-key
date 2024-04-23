@@ -1,0 +1,3 @@
+Significance: patch
+Type: update
+Comment: Not user-facing. Update the payment activity survey key from `wcpay-payments-overview` → `wcpay-payment-activity`

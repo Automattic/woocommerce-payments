@@ -50,25 +50,21 @@ export const TransactionsPage: React.FC = () => {
 	const tabsComponentMap = {
 		'transactions-page': (
 			<>
-				<TestModeNotice currentPage="transactions" />
 				<TransactionsList />
 			</>
 		),
 		'uncaptured-page': (
 			<>
-				<TestModeNotice currentPage="transactions" />
 				<Authorizations />
 			</>
 		),
 		'review-page': (
 			<>
-				<TestModeNotice currentPage="transactions" />
 				<RiskReviewList />
 			</>
 		),
 		'blocked-page': (
 			<>
-				<TestModeNotice currentPage="transactions" />
 				<BlockedList />
 			</>
 		),
@@ -138,9 +134,9 @@ export const TransactionsPage: React.FC = () => {
 	} );
 
 	return (
-		<Page>
+		<Page className="wcpay-transactions-page">
+			<TestModeNotice currentPage="transactions" />
 			<TabPanel
-				className="wcpay-transactions-page"
 				activeClass="active-tab"
 				onSelect={ onTabSelected }
 				initialTabName={ initialTab || 'transactions-page' }
@@ -160,10 +156,8 @@ export const TransactionsPage: React.FC = () => {
 
 export default (): JSX.Element => {
 	return (
-		<Page>
-			<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
-				<TransactionsPage />
-			</WCPaySettingsContext.Provider>
-		</Page>
+		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+			<TransactionsPage />
+		</WCPaySettingsContext.Provider>
 	);
 };

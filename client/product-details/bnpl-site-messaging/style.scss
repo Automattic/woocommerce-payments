@@ -15,3 +15,44 @@
 		margin-bottom: var( --wc-bnpl-margin-bottom );
 	}
 }
+
+.cart_totals {
+	#payment-method-message {
+		margin: -8px 0 4px;
+		height: var( --wc-bnpl-height );
+		padding: 2px 1em 0;
+		margin-bottom: var( --wc-bnpl-margin-bottom );
+
+		&.pmme-updated {
+			margin: -12px 0 0;
+			padding: 0 1em;
+		}
+
+		&.skeleton {
+			margin-bottom: 4px;
+			background: #afafaf;
+		}
+	}
+
+	.pmme-loading {
+		animation: pmme-loading 1s linear infinite alternate;
+		background: #afafaf;
+		height: var( --wc-bnpl-container-height );
+		margin: -4px 1em var( --wc-bnpl-loader-margin ) 1em;
+	}
+}
+
+@keyframes pmme-loading {
+	0% {
+		background-color: hsl( 204, 10%, 90% );
+	}
+	100% {
+		background-color: hsl( 200, 20%, 95% );
+	}
+}
+
+.wc-block-components-totals-wrapper.slot-wrapper
+	.wc-block-components-bnpl-wrapper {
+	padding-left: 17px;
+	padding-right: 17px;
+}

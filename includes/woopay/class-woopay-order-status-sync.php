@@ -73,7 +73,7 @@ class WooPay_Order_Status_Sync {
 			return;
 		}
 
-		if ( $this->account->is_account_rejected() ) {
+		if ( ! $this->account->is_stripe_connected() || $this->account->is_account_under_review() || $this->account->is_account_rejected() ) {
 			return;
 		}
 

@@ -289,7 +289,6 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			WC()->session->get( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY ),
 			$customer_id
 		);
-
 	}
 
 	/**
@@ -488,7 +487,6 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 							'city'        => 'WooCity',
 							'country'     => Country_Code::UNITED_STATES,
 							'line1'       => 'WooAddress',
-							'line2'       => '',
 							'postal_code' => '12345',
 							'state'       => 'NY',
 						],

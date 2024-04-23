@@ -11,11 +11,15 @@ import { debounce } from 'lodash';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
 import { waitMilliseconds } from 'wcpay/checkout/woopay/direct-checkout/utils';
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
+import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
 
 let isThirdPartyCookieEnabled = false;
 
 window.addEventListener( 'load', async () => {
-	if ( ! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ) {
+	if (
+		! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ||
+		shouldSkipWooPay()
+	) {
 		return;
 	}
 
@@ -26,19 +30,22 @@ window.addEventListener( 'load', async () => {
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-			WooPayDirectCheckout.redirectToWooPay( checkoutElements );
+			WooPayDirectCheckout.redirectToWooPay( checkoutElements, true );
 		}
 
 		return;
 	}
 
-	// Pass true to append '&checkout_redirect=1' and let WooPay decide the checkout flow.
-	WooPayDirectCheckout.redirectToWooPay( checkoutElements, true );
+	// Pass false to indicate we are not sure if the user is logged in or not.
+	WooPayDirectCheckout.redirectToWooPay( checkoutElements, false );
 } );
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_cart_totals', async () => {
-		if ( ! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ) {
+		if (
+			! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ||
+			shouldSkipWooPay()
+		) {
 			return;
 		}
 

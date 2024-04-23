@@ -300,6 +300,7 @@ addFilter(
 		const wcPayTasks = getTasks( {
 			showUpdateDetailsTask: showUpdateDetailsTask,
 			wpcomReconnectUrl: wpcomReconnectUrl,
+			showGoLiveTask: true,
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];
