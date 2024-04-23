@@ -156,29 +156,4 @@ describe( 'Fraud protection rule toggle tests', () => {
 			mockContext.protectionSettingsUI.test_rule.enabled
 		).toBeFalsy();
 	} );
-	test.skip( 'sets the value correctly when block is selected', () => {
-		mockContext.protectionSettingsUI.test_rule.enabled = true;
-		const container = render(
-			<FraudPreventionSettingsContext.Provider value={ mockContext }>
-				<FraudProtectionRuleToggle
-					setting={ 'test_rule' }
-					label={ 'Test rule toggle' }
-				>
-					test content
-				</FraudProtectionRuleToggle>
-			</FraudPreventionSettingsContext.Provider>
-		);
-		const blockRadio = container.getByLabelText( 'Block Payment' );
-		const reviewRadio = container.getByLabelText(
-			'Authorize and hold for review'
-		);
-
-		expect( mockContext.protectionSettingsUI.test_rule.block ).toBeFalsy();
-
-		userEvent.click( blockRadio );
-		expect( mockContext.protectionSettingsUI.test_rule.block ).toBeTruthy();
-
-		userEvent.click( reviewRadio );
-		expect( mockContext.protectionSettingsUI.test_rule.block ).toBeFalsy();
-	} );
 } );
