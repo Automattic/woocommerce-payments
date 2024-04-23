@@ -117,7 +117,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 			],
 			[
 				'site_id'          => $this->http_client->get_blog_id(),
-				'survey_id'        => 'wcpay-payments-overview',
+				'survey_id'        => 'wcpay-payment-activity',
 				'survey_responses' => [
 					'rating'        => $rating,
 					'comments'      => [ 'text' => $comments ],

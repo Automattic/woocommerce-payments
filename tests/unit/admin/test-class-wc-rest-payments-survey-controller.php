@@ -76,7 +76,7 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 					$this->arrayHasKey( 'survey_responses' ),
 					$this->callback(
 						function ( $argument ) {
-							return 'wcpay-payments-overview' === $argument['survey_id'];
+							return 'wcpay-payment-activity' === $argument['survey_id'];
 						}
 					),
 					$this->callback(
