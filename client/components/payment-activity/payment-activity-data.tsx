@@ -86,9 +86,10 @@ const PaymentActivityData: React.FC = () => {
 				amount={ totalPaymentVolume }
 				handleReportLinkClick={ () => {
 					recordEvent(
-						'wcpay_overview_total_payment_volume_view_report_clicks',
+						'wcpay_overview_payment_activity_total_payment_volume_click',
 						{
-							source: 'total_payment_volume_tile_view_report',
+							source:
+								'total_payment_volume_tile_view_report_link',
 						}
 					);
 				} }
@@ -132,9 +133,9 @@ const PaymentActivityData: React.FC = () => {
 					amount={ charges }
 					handleReportLinkClick={ () => {
 						recordEvent(
-							'wcpay_overview_charges_view_report_clicks',
+							'wcpay_overview_payment_activity_charges_click',
 							{
-								source: 'charges_tile_view_report',
+								source: 'charges_tile_view_report_link',
 							}
 						);
 					} }
@@ -153,9 +154,9 @@ const PaymentActivityData: React.FC = () => {
 					amount={ refunds }
 					handleReportLinkClick={ () => {
 						recordEvent(
-							'wcpay_overview_refunds_view_report_clicks',
+							'wcpay_overview_payment_activity_refunds_click',
 							{
-								source: 'refunds_tile_view_report',
+								source: 'refunds_tile_view_report_link',
 							}
 						);
 					} }
@@ -180,9 +181,9 @@ const PaymentActivityData: React.FC = () => {
 					amount={ disputes }
 					handleReportLinkClick={ () => {
 						recordEvent(
-							'wcpay_overview_disputes_view_report_clicks',
+							'wcpay_overview_payment_activity_disputes_click',
 							{
-								source: 'disputes_tile_view_report',
+								source: 'disputes_tile_view_report_link',
 							}
 						);
 					} }
