@@ -29,7 +29,9 @@ const handleReset = () => {
 };
 
 export const AccountTools: React.FC< Props > = ( props: Props ) => {
-	const accountLink = props.accountLink;
+	const accountLink = addQueryArgs( props.accountLink, {
+		source: 'account-tools__finish-setup-button',
+	} );
 	const detailsSubmitted = props.detailsSubmitted;
 	const [ modalVisible, setModalVisible ] = useState( false );
 

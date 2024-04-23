@@ -1073,11 +1073,11 @@ class WC_Payments_Account {
 				);
 			}
 
-			$source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
+			$connect_page_source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
 			// Redirect to the onboarding flow page if the account is not onboarded otherwise to the overview page.
 			// Builder accounts are handled below and redirected to Stripe KYC directly.
 			if ( ! $create_builder_account && in_array(
-				$source,
+				$connect_page_source,
 				[
 					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
 					WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
@@ -1096,7 +1096,7 @@ class WC_Payments_Account {
 						WC_Payments_Onboarding_Service::set_test_mode( false );
 					}
 
-					$this->redirect_to_onboarding_flow_page( $source );
+					$this->redirect_to_onboarding_flow_page( $connect_page_source );
 				} else {
 					// Accounts with Stripe account connected will be redirected to the overview page.
 					$this->redirect_to( static::get_overview_page_url() );
@@ -1104,7 +1104,7 @@ class WC_Payments_Account {
 			}
 
 			// Handle the flow for a builder moving from test to live.
-			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS === $source ) {
+			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS === $connect_page_source ) {
 				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 
 				// Delete the account if the test mode is enabled otherwise it'll cause issues to onboard again.
@@ -1114,16 +1114,16 @@ class WC_Payments_Account {
 
 				// Set the test mode to false now that we are handling a real onboarding.
 				WC_Payments_Onboarding_Service::set_test_mode( false );
-				$this->redirect_to_onboarding_flow_page( $source );
+				$this->redirect_to_onboarding_flow_page( $connect_page_source );
 				return;
 			}
 
-			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT === $source ) {
+			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT === $connect_page_source ) {
 				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled() || WC_Payments::mode()->is_dev();
 
 				// Delete the account.
 				$this->payments_api_client->delete_account( $test_mode );
-				$this->redirect_to_onboarding_flow_page( $source );
+				$this->redirect_to_onboarding_flow_page( $connect_page_source );
 				return;
 			}
 
@@ -2104,9 +2104,9 @@ class WC_Payments_Account {
 	 *
 	 * @return int The all-time total payment volume, or null if not available.
 	 */
-	public function get_lifetime_total_payments_volume(): int {
+	public function get_lifetime_total_payment_volume(): int {
 		$account = $this->get_cached_account_data();
-		return (int) ! empty( $account ) && isset( $account['lifetime_total_payments_volume'] ) ? $account['lifetime_total_payments_volume'] : 0;
+		return (int) ! empty( $account ) && isset( $account['lifetime_total_payment_volume'] ) ? $account['lifetime_total_payment_volume'] : 0;
 	}
 
 	/**
@@ -2116,15 +2116,16 @@ class WC_Payments_Account {
 	 */
 	private function get_onboarding_user_data(): array {
 		return [
-			'user_id'         => get_current_user_id(),
-			'sift_session_id' => $this->session_service->get_sift_session_id(),
-			'ip_address'      => \WC_Geolocation::get_ip_address(),
-			'browser'         => [
+			'user_id'           => get_current_user_id(),
+			'sift_session_id'   => $this->session_service->get_sift_session_id(),
+			'ip_address'        => \WC_Geolocation::get_ip_address(),
+			'browser'           => [
 				'user_agent'       => isset( $_SERVER['HTTP_USER_AGENT'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
 				'accept_language'  => isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '',
 				'content_language' => empty( get_user_locale() ) ? 'en-US' : str_replace( '_', '-', get_user_locale() ),
 			],
-			'referer'         => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
+			'referer'           => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
+			'onboarding_source' => sanitize_text_field( wp_unslash( $_GET['source'] ) ),
 		];
 	}
 }

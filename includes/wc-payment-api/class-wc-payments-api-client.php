@@ -79,6 +79,7 @@ class WC_Payments_API_Client {
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 	const COMPATIBILITY_API            = 'compatibility';
+	const REPORTING_API                = 'reporting/payment_activity';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1859,6 +1860,9 @@ class WC_Payments_API_Client {
 		while ( true ) {
 			$response_code  = null;
 			$last_exception = null;
+
+			// The header intention is to give us insights into request latency between store and backend.
+			$headers['X-Request-Initiated'] = microtime( true );
 
 			try {
 				$response = $this->http_client->remote_request(
