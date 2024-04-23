@@ -1,4 +1,8 @@
 /* global wcpayPaymentRequestParams */
+/**
+ * Internal dependencies
+ */
+import { transformCartDataForDisplayItems } from './transformers';
 
 /**
  * Retrieves payment request data from global variable.
@@ -22,12 +26,10 @@ export const getPaymentRequestData = ( key ) => {
  * @param {Object} config A configuration object for getting the payment request.
  * @return {Object} Payment Request options object
  */
-export const getPaymentRequest = ( {
-	stripe,
-	total,
-	requestShipping,
-	displayItems,
-} ) => {
+export const getPaymentRequest = ( { stripe, cartData } ) => {
+	// the country code defined here comes from the WC settings.
+	// It might be interesting to ensure the country code coincides with the Stripe account's country,
+	// as defined here: https://docs.stripe.com/js/payment_request/create
 	let country = getPaymentRequestData( 'checkout' )?.country_code;
 
 	// Puerto Rico (PR) is the only US territory/possession that's supported by Stripe.
@@ -36,22 +38,20 @@ export const getPaymentRequest = ( {
 		country = 'US';
 	}
 
-	const options = {
-		total: {
-			label: getPaymentRequestData( 'total_label' ),
-			amount: total,
-		},
-		currency: getPaymentRequestData( 'checkout' )?.currency_code,
+	return stripe.paymentRequest( {
 		country,
 		requestPayerName: true,
 		requestPayerEmail: true,
 		requestPayerPhone: getPaymentRequestData( 'checkout' )
 			?.needs_payer_phone,
-		requestShipping,
-		displayItems,
-	};
-
-	return stripe.paymentRequest( options );
+		currency: cartData.totals.currency_code,
+		total: {
+			label: getPaymentRequestData( 'total_label' ),
+			amount: cartData.totals.total_price,
+		},
+		requestShipping: cartData.needs_shipping,
+		displayItems: transformCartDataForDisplayItems( cartData ),
+	} );
 };
 
 /**

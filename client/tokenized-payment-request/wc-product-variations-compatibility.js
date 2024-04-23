@@ -5,27 +5,13 @@
  */
 import { addFilter, doAction } from '@wordpress/hooks';
 import paymentRequestButtonUi from 'wcpay/tokenized-payment-request/button-ui';
-import PaymentRequestCartInterface from './cart-interface';
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'woocommerce_variation_has_changed', async () => {
 		try {
 			paymentRequestButtonUi.blockButton();
 
-			const paymentRequestCartInterface = new PaymentRequestCartInterface();
-			await paymentRequestCartInterface.createAnonymousCart();
-
-			const cartData = await paymentRequestCartInterface.addProductToCart();
-
-			// no need to wait for the request to end, it can be done asynchronously.
-			paymentRequestCartInterface.emptyCart();
-
-			doAction( 'wcpay.payment-request.new-availability', {
-				total: cartData.totals.total_items,
-				needs_shipping: cartData.needs_shipping,
-				needs_payment: cartData.needs_payment,
-				items: cartData.items,
-			} );
+			doAction( 'wcpay.payment-request.update-button-data' );
 
 			paymentRequestButtonUi.unblockButton();
 		} catch ( e ) {

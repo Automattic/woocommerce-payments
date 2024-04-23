@@ -5,7 +5,7 @@ import { debounce } from 'lodash';
 import '../checkout/express-checkout-buttons.scss';
 import { recordUserEvent } from 'tracks';
 
-let paymentRequestType;
+let paymentRequestBranding;
 
 // Track the payment request button click event.
 export const trackPaymentRequestButtonClick = ( source ) => {
@@ -14,7 +14,7 @@ export const trackPaymentRequestButtonClick = ( source ) => {
 		apple_pay: 'applepay_button_click',
 	};
 
-	const event = paymentRequestTypeEvents[ paymentRequestType ];
+	const event = paymentRequestTypeEvents[ paymentRequestBranding ];
 	if ( ! event ) return;
 
 	recordUserEvent( event, { source } );
@@ -27,10 +27,11 @@ export const trackPaymentRequestButtonLoad = debounce( ( source ) => {
 		apple_pay: 'applepay_button_load',
 	};
 
-	const event = paymentRequestTypeEvents[ paymentRequestType ];
+	const event = paymentRequestTypeEvents[ paymentRequestBranding ];
 	if ( ! event ) return;
 
 	recordUserEvent( event, { source } );
 }, 1000 );
 
-export const setPaymentRequestType = ( type ) => ( paymentRequestType = type );
+export const setPaymentRequestBranding = ( branding ) =>
+	( paymentRequestBranding = branding );

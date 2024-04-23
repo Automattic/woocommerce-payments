@@ -11,19 +11,22 @@ import { doAction, addAction } from '@wordpress/hooks';
 import WCPayAPI from '../checkout/api';
 
 import {
-	setPaymentRequestType,
+	setPaymentRequestBranding,
 	trackPaymentRequestButtonClick,
 	trackPaymentRequestButtonLoad,
 } from './tracking';
+import { transformCartDataForDisplayItems } from './transformers';
 import paymentRequestButtonUi from './button-ui';
 import './wc-product-variations-compatibility';
+import './wc-deposits-compatibility';
 import '../checkout/express-checkout-buttons.scss';
 
 import {
 	getPaymentRequest,
 	displayLoginConfirmationDialog,
+	getPaymentRequestData,
 } from './frontend-utils';
-import PaymentRequestCartInterface from './cart-interface';
+import PaymentRequestCartApi from './cart-api';
 import debounce from './debounce';
 
 const doActionPaymentRequestAvailability = ( args ) => {
@@ -59,7 +62,7 @@ jQuery( ( $ ) => {
 			} );
 		}
 	);
-	const paymentRequestCartInterface = new PaymentRequestCartInterface();
+	const paymentRequestCartApi = new PaymentRequestCartApi();
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -69,6 +72,12 @@ jQuery( ( $ ) => {
 		 * Whether the payment was aborted by the customer.
 		 */
 		paymentAborted: false,
+
+		/**
+		 * The cart data represented if the product were to be added to the cart (or, on cart/checkout pages, the cart data itself).
+		 * This is useful on product pages to understand if shipping is needed.
+		 */
+		cachedCartData: undefined,
 
 		/**
 		 * Abort payment and display error messages.
@@ -117,130 +126,100 @@ jQuery( ( $ ) => {
 		},
 
 		/**
-		 * Adds the item to the cart and return cart details.
-		 *
-		 * @return {Promise} Promise for the request to the server.
-		 */
-		addToCart: () => {},
-
-		/**
 		 * Starts the payment request
 		 *
 		 * @param {Object} options Payment request options.
 		 */
-		startPaymentRequest: ( {
-			stripe,
-			total,
-			requestShipping,
-			displayItems,
-			handler = paymentMethodHandler,
-		} ) => {
+		startPaymentRequest: async ( { handler = paymentMethodHandler } ) => {
 			const paymentRequest = getPaymentRequest( {
-				stripe,
-				total,
-				requestShipping,
-				displayItems,
-			} );
-			const elements = api.getStripe().elements();
-			const prButton = elements.create( 'paymentRequestButton', {
-				paymentRequest: paymentRequest,
-				style: {
-					paymentRequestButton: {
-						type: wcpayPaymentRequestParams.button.type,
-						theme: wcpayPaymentRequestParams.button.theme,
-						height: wcpayPaymentRequestParams.button.height + 'px',
-					},
-				},
+				stripe: api.getStripe(),
+				cartData: wcpayPaymentRequest.cachedCartData,
 			} );
 
+			// Check the availability of the Payment Request API first.
+			const paymentPermissionResult = await paymentRequest.canMakePayment();
+			if ( ! paymentPermissionResult ) {
+				doAction( 'wcpay.payment-request.availability', {
+					paymentRequestType: null,
+				} );
+				return;
+			}
+
+			// TODO: Don't display custom button when paymentRequestType is `apple_pay` or `google_pay`.
+			let buttonBranding = null;
+			if ( paymentPermissionResult.applePay ) {
+				buttonBranding = 'apple_pay';
+			} else if ( paymentPermissionResult.googlePay ) {
+				buttonBranding = 'google_pay';
+			} else {
+				buttonBranding = 'payment_request_api';
+			}
+
+			doAction( 'wcpay.payment-request.availability', {
+				paymentRequestType: buttonBranding,
+			} );
+
+			setPaymentRequestBranding( buttonBranding );
+			trackPaymentRequestButtonLoad(
+				wcpayPaymentRequestParams.button_context
+			);
+
+			paymentRequestCartApi.createAnonymousCart();
+
+			const prButton = api
+				.getStripe()
+				.elements()
+				.create( 'paymentRequestButton', {
+					paymentRequest: paymentRequest,
+					style: {
+						paymentRequestButton: {
+							type: wcpayPaymentRequestParams.button.type,
+							theme: wcpayPaymentRequestParams.button.theme,
+							height:
+								wcpayPaymentRequestParams.button.height + 'px',
+						},
+					},
+				} );
+			paymentRequestButtonUi.showButton( prButton );
+
+			wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
+				paymentRequest
+			);
 			addAction(
-				'wcpay.payment-request.new-availability',
+				'wcpay.payment-request.update-button-data',
 				'automattic/wcpay/payment-request',
-				( response ) => {
+				async () => {
+					const newCartData = await wcpayPaymentRequest.getCartData();
+
 					/**
 					 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
-					 * options are refetched. If the customer didn't abort the payment request, and the product's shipping status is
+					 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
 					 * consistent, we can simply update the payment request button with the new total and display items.
 					 */
 					if (
 						! wcpayPaymentRequest.paymentAborted &&
-						wcpayPaymentRequestParams.product.needs_shipping ===
-							response.needs_shipping
+						wcpayPaymentRequest.cachedCartData.needs_shipping ===
+							newCartData.needs_shipping
 					) {
+						wcpayPaymentRequest.cachedCartData = newCartData;
 						paymentRequest.update( {
-							total: response.total,
-							displayItems: response.displayItems,
+							total: {
+								label: getPaymentRequestData( 'total_label' ),
+								amount: newCartData.totals.total_price,
+							},
+							requestShipping: newCartData.needs_shipping,
+							// TODO ~FR: get transform utility
+							displayItems: transformCartDataForDisplayItems(
+								newCartData
+							),
 						} );
 					} else {
-						wcpayPaymentRequest.reInitPaymentRequest( response );
+						wcpayPaymentRequest.cachedCartData = newCartData;
+						wcpayPaymentRequest.init();
 					}
 				}
 			);
 
-			// Check the availability of the Payment Request API first.
-			paymentRequest.canMakePayment().then( ( result ) => {
-				if ( ! result ) {
-					doActionPaymentRequestAvailability( {
-						paymentRequestType: null,
-					} );
-					return;
-				}
-
-				// TODO: Don't display custom button when paymentRequestType
-				// is `apple_pay` or `google_pay`.
-				let type = null;
-				if ( result.applePay ) {
-					type = 'apple_pay';
-				} else if ( result.googlePay ) {
-					type = 'google_pay';
-				} else {
-					type = 'payment_request_api';
-				}
-
-				setPaymentRequestType( type );
-				doActionPaymentRequestAvailability( {
-					paymentRequestType: type,
-				} );
-
-				trackPaymentRequestButtonLoad(
-					wcpayPaymentRequestParams.button_context
-				);
-
-				wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
-					prButton,
-					paymentRequest
-				);
-
-				paymentRequestButtonUi.showButton( prButton );
-				paymentRequestCartInterface.createAnonymousCart();
-			} );
-
-			paymentRequest.on( 'cancel', () => {
-				wcpayPaymentRequest.paymentAborted = true;
-			} );
-
-			paymentRequest.on( 'shippingaddresschange', ( event ) =>
-				console.log( '### shippingaddresschange', event )
-			);
-
-			paymentRequest.on( 'shippingoptionchange', ( event ) =>
-				console.log( '### shippingoptionchange', event )
-			);
-
-			paymentRequest.on( 'paymentmethod', ( event ) => {
-				console.log( '### paymentmethod', event );
-			} );
-		},
-
-		getSelectedProductData: () => {
-			// TODO ~FR
-			return Promise.reject();
-		},
-
-		attachPaymentRequestButtonEventListeners: (
-			prButton,
-			paymentRequest
-		) => {
 			const $addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
@@ -280,76 +259,67 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				paymentRequestCartInterface.addProductToCart();
+				paymentRequestCartApi.addProductToCart();
 				// TODO ~FR
 				evt.preventDefault();
 			} );
 
+			paymentRequest.on( 'cancel', () => {
+				wcpayPaymentRequest.paymentAborted = true;
+			} );
+
+			paymentRequest.on( 'shippingaddresschange', ( event ) =>
+				console.log( '### shippingaddresschange', event )
+			);
+
+			paymentRequest.on( 'shippingoptionchange', ( event ) =>
+				console.log( '### shippingoptionchange', event )
+			);
+
+			paymentRequest.on( 'paymentmethod', ( event ) => {
+				console.log( '### paymentmethod', event );
+			} );
+		},
+
+		attachPaymentRequestButtonEventListeners: () => {
 			// Block the payment request button as soon as an "input" event is fired, to avoid sync issues
 			// when the customer clicks on the button before the debounced event is processed.
 			const $quantityInput = $( '.quantity' );
-			$quantityInput.on( 'input', '.qty', () => {
+			const handleQuantityChange = () => {
 				paymentRequestButtonUi.blockButton();
-			} );
-
-			$quantityInput.off( 'input', '.qty' ).on(
+			};
+			$quantityInput.on( 'input', '.qty', handleQuantityChange );
+			$quantityInput.on(
 				'input',
 				'.qty',
 				debounce( 250, () => {
-					$.when( wcpayPaymentRequest.getSelectedProductData() ).then(
-						( response ) => {
-							if (
-								! wcpayPaymentRequest.paymentAborted &&
-								wcpayPaymentRequestParams.product
-									.needs_shipping === response.needs_shipping
-							) {
-								paymentRequest.update( {
-									total: response.total,
-									displayItems: response.displayItems,
-								} );
-							} else {
-								wcpayPaymentRequest.reInitPaymentRequest(
-									response
-								);
-							}
-							paymentRequestButtonUi.unblockButton();
-						}
-					);
+					doAction( 'wcpay.payment-request.update-button-data' );
+					paymentRequestButtonUi.unblockButton();
 				} )
 			);
 		},
 
-		/**
-		 * Re init the payment request button.
-		 *
-		 * This ensures that when the customer clicks on the payment button, the available shipping options are
-		 * refetched based on the selected variable product's data and the chosen address.
-		 *
-		 *  This is also useful when the customer changes the quantity of a product, as the total and display items
-		 *  need to be updated.
-		 *
-		 * @param {Object} response Response from the server containing the updated product data.
-		 */
-		reInitPaymentRequest: ( response ) => {
-			wcpayPaymentRequestParams.product.needs_shipping =
-				response.needs_shipping;
-			wcpayPaymentRequestParams.product.total = response.total;
-			wcpayPaymentRequestParams.product.displayItems =
-				response.displayItems;
-			wcpayPaymentRequest.init();
+		getCartData: async () => {
+			const temporaryCart = new PaymentRequestCartApi();
+			await temporaryCart.createAnonymousCart();
+
+			const cartData = await temporaryCart.addProductToCart();
+
+			// no need to wait for the request to end, it can be done asynchronously.
+			temporaryCart.emptyCart();
+
+			return cartData;
 		},
 
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: () => {
-			wcpayPaymentRequest.startPaymentRequest( {
-				stripe: api.getStripe(),
-				total: wcpayPaymentRequestParams.product.total.amount,
-				requestShipping:
-					wcpayPaymentRequestParams.product.needs_shipping,
-				displayItems: wcpayPaymentRequestParams.product.displayItems,
-			} );
+		init: async () => {
+			if ( ! wcpayPaymentRequest.cachedCartData ) {
+				wcpayPaymentRequest.cachedCartData = await wcpayPaymentRequest.getCartData();
+			}
+
+			wcpayPaymentRequest.startPaymentRequest();
 
 			// After initializing a new payment request, we need to reset the paymentAborted flag.
 			wcpayPaymentRequest.paymentAborted = false;
@@ -369,17 +339,4 @@ jQuery( ( $ ) => {
 		// TODO ~FR
 		wcpayPaymentRequest.init();
 	} );
-
-	// WooCommerce Deposits support.
-	// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
-	$( 'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]' ).on(
-		'change',
-		() => {
-			$( 'form' )
-				.has(
-					'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-				)
-				.trigger( 'woocommerce_variation_has_changed' );
-		}
-	);
 } );

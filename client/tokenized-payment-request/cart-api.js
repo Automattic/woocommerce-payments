@@ -6,7 +6,7 @@
 import apiFetch from '@wordpress/api-fetch';
 import { applyFilters } from '@wordpress/hooks';
 
-export default class PaymentRequestCartInterface {
+export default class PaymentRequestCartApi {
 	// Used on product pages to interact with an anonymous cart.
 	// This anonymous cart is separate from the customer's cart, which might contain additional products.
 	// This functionality is also useful to calculate product/shipping pricing (and shipping needs)
