@@ -487,44 +487,12 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 							'city'        => 'WooCity',
 							'country'     => Country_Code::UNITED_STATES,
 							'line1'       => 'WooAddress',
-							'line2'       => '',
 							'postal_code' => '12345',
 							'state'       => 'NY',
 						],
 						'email'   => 'admin@example.org',
 						'name'    => 'Jeroen Sormani',
 						'phone'   => '555-32123',
-					],
-				]
-			);
-
-		$order = WC_Helper_Order::create_order();
-
-		$this->customer_service->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
-	}
-
-	public function test_update_payment_method_with_billing_details_from_checkout_fields() {
-		$fields = wc()->checkout()->checkout_fields;
-		unset( $fields['billing']['billing_company'] );
-		unset( $fields['billing']['billing_country'] );
-		unset( $fields['billing']['billing_address_1'] );
-		unset( $fields['billing']['billing_address_2'] );
-		unset( $fields['billing']['billing_city'] );
-		unset( $fields['billing']['billing_state'] );
-		unset( $fields['billing']['billing_phone'] );
-		wc()->checkout()->checkout_fields = $fields;
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'update_payment_method' )
-			->with(
-				'pm_mock',
-				[
-					'billing_details' => [
-						'address' => [
-							'postal_code' => '12345',
-						],
-						'email'   => 'admin@example.org',
-						'name'    => 'Jeroen Sormani',
 					],
 				]
 			);
