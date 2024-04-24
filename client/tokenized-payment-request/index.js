@@ -228,9 +228,7 @@ jQuery( ( $ ) => {
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( wcpayPaymentRequestParams.login_confirmation ) {
 					evt.preventDefault();
-					// TODO ~FR
-					const paymentRequestType = '';
-					displayLoginConfirmationDialog( paymentRequestType );
+					displayLoginConfirmationDialog( buttonBranding );
 					return;
 				}
 
