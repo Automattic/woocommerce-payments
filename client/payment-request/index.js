@@ -220,64 +220,61 @@ jQuery( ( $ ) => {
 		 * @param {Object} options Payment request options.
 		 */
 		startPaymentRequest: ( options ) => {
-			const paymentRequest = getPaymentRequest( options );
-			const elements = api.getStripe().elements();
-			const prButton = wcpayPaymentRequest.createPaymentRequestButton(
-				elements,
-				paymentRequest
-			);
-
-			const doActionPaymentRequestAvailability = ( args ) => {
-				doAction( 'wcpay.payment-request.availability', args );
-			};
-
-			// Check the availability of the Payment Request API first.
-			paymentRequest.canMakePayment().then( ( result ) => {
-				if ( ! result ) {
-					doActionPaymentRequestAvailability( {
-						paymentRequestType: null,
-					} );
-					return;
-				}
-
-				// TODO: Don't display custom button when paymentRequestType
-				// is `apple_pay` or `google_pay`.
-				if ( result.applePay ) {
-					paymentRequestType = 'apple_pay';
-				} else if ( result.googlePay ) {
-					paymentRequestType = 'google_pay';
-				} else {
-					paymentRequestType = 'payment_request_api';
-				}
-
-				doActionPaymentRequestAvailability( {
-					paymentRequestType: paymentRequestType,
-				} );
-
-				trackPaymentRequestButtonLoad(
-					wcpayPaymentRequestParams.button_context
-				);
-
-				wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
-					prButton,
-					paymentRequest
-				);
-				wcpayPaymentRequest.showPaymentRequestButton( prButton );
+			const elements = api.getStripe().elements( {
+				mode: options?.mode ?? 'payment',
+				amount: options?.total,
+				currency: options?.currency,
 			} );
 
-			paymentRequest.on( 'cancel', () => {
+			const eceButton = wcpayPaymentRequest.createPaymentRequestButton(
+				elements
+			);
+
+			wcpayPaymentRequest.showPaymentRequestButton( eceButton );
+
+			wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
+				eceButton
+			);
+
+			eceButton.on( 'click', function ( event ) {
+				const clickOptions = {
+					business: {
+						name: 'Mikes Bikes',
+					},
+					lineItems: [
+						{ name: 'Bike', amount: 200 },
+						{ name: 'Helmet', amount: 300 },
+					],
+					shippingAddressRequired: true,
+					shippingRates: [
+						{
+							id: '1',
+							amount: 500,
+							displayName: 'Standard Shipping',
+						},
+						{
+							id: '2',
+							amount: 1000,
+							displayName: 'Expedited Shipping',
+						},
+					],
+				};
+				event.resolve( clickOptions );
+			} );
+
+			eceButton.on( 'cancel', () => {
 				wcpayPaymentRequest.paymentAborted = true;
 			} );
 
-			paymentRequest.on( 'shippingaddresschange', ( event ) =>
-				shippingAddressChangeHandler( api, event )
-			);
+			eceButton.on( 'shippingaddresschange', ( event ) => {
+				shippingAddressChangeHandler( api, event );
+			} );
 
-			paymentRequest.on( 'shippingoptionchange', ( event ) =>
-				shippingOptionChangeHandler( api, event )
-			);
+			eceButton.on( 'shippingratechange', function ( event ) {
+				shippingOptionChangeHandler( api, event );
+			} );
 
-			paymentRequest.on( 'paymentmethod', ( event ) => {
+			eceButton.on( 'paymentmethod', ( event ) => {
 				const handler = options.handler ?? paymentMethodHandler;
 
 				handler(
@@ -376,17 +373,8 @@ jQuery( ( $ ) => {
 		 *
 		 * @return {Object} Stripe paymentRequest element or custom button jQuery element.
 		 */
-		createPaymentRequestButton: ( elements, paymentRequest ) => {
-			return elements.create( 'paymentRequestButton', {
-				paymentRequest: paymentRequest,
-				style: {
-					paymentRequestButton: {
-						type: wcpayPaymentRequestParams.button.type,
-						theme: wcpayPaymentRequestParams.button.theme,
-						height: wcpayPaymentRequestParams.button.height + 'px',
-					},
-				},
-			} );
+		createPaymentRequestButton: ( elements ) => {
+			return elements.create( 'expressCheckout' );
 		},
 
 		attachPaymentRequestButtonEventListeners: (
@@ -407,7 +395,7 @@ jQuery( ( $ ) => {
 			let paymentRequestError = [];
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
-			prButton.on( 'click', ( evt ) => {
+			/* prButton.on( 'click', ( evt ) => {
 				trackPaymentRequestButtonClick( 'product' );
 
 				// If login is required for checkout, display redirect confirmation dialog.
@@ -449,7 +437,7 @@ jQuery( ( $ ) => {
 				}
 
 				wcpayPaymentRequest.addToCart();
-			} );
+			} ); */
 
 			// WooCommerce Deposits support.
 			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
@@ -561,9 +549,9 @@ jQuery( ( $ ) => {
 		},
 
 		showPaymentRequestButton: ( prButton ) => {
-			if ( $( '#wcpay-payment-request-button' ).length ) {
+			if ( $( '#wcpay-express-checkout-element' ).length ) {
 				wcpayPaymentRequest.show();
-				prButton.mount( '#wcpay-payment-request-button' );
+				prButton.mount( '#wcpay-express-checkout-element' );
 			}
 		},
 
@@ -613,23 +601,12 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				const {
-					total: { amount: total },
-					displayItems,
-					order,
-				} = wcpayPaymentRequestPayForOrderParams;
-
-				wcpayPaymentRequest.startPaymentRequest( {
-					stripe: api.getStripe(),
-					requestShipping: false,
-					total,
-					displayItems,
-					handler: payForOrderHandler( order ),
-				} );
+				wcpayPaymentRequest.startPaymentRequest();
 			} else if ( wcpayPaymentRequestParams.is_product_page ) {
 				wcpayPaymentRequest.startPaymentRequest( {
-					stripe: api.getStripe(),
+					mode: 'payment',
 					total: wcpayPaymentRequestParams.product.total.amount,
+					currency: 'usd',
 					requestShipping:
 						wcpayPaymentRequestParams.product.needs_shipping,
 					displayItems:
@@ -639,12 +616,7 @@ jQuery( ( $ ) => {
 				// If this is the cart or checkout page, we need to request the
 				// cart details for the payment request.
 				api.paymentRequestGetCartDetails().then( ( cart ) => {
-					wcpayPaymentRequest.startPaymentRequest( {
-						stripe: api.getStripe(),
-						total: cart.total.amount,
-						requestShipping: cart.needs_shipping,
-						displayItems: cart.displayItems,
-					} );
+					wcpayPaymentRequest.startPaymentRequest();
 				} );
 			}
 

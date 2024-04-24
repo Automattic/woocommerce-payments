@@ -1,8 +1,8 @@
 <?php
 /**
- * Class WC_Payments_Payment_Request_Button_Handler
+ * Class WC_Payments_Express_Checkout_Button_Handler
  * Adds support for Apple Pay, Google Pay and Payment Request API buttons.
- * Utilizes the Stripe Payment Request Button to support checkout from the product detail and cart pages.
+ * Utilizes the Stripe Express Checkout Element to support checkout from the product detail and cart pages.
  *
  * Adapted from WooCommerce Stripe Gateway extension.
  *
@@ -22,7 +22,7 @@ use WCPay\Payment_Information;
 /**
  * WC_Payments_Payment_Request_Button_Handler class.
  */
-class WC_Payments_Payment_Request_Button_Handler {
+class WC_Payments_Express_Checkout_Button_Handler {
 	const BUTTON_LOCATIONS = 'payment_request_button_locations';
 
 	/**

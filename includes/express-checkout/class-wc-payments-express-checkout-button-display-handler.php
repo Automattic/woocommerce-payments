@@ -22,11 +22,11 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	private $gateway;
 
 	/**
-	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
+	 * Instance of WC_Payments_Express_Checkout_Button_Handler, created in init function
 	 *
-	 * @var WC_Payments_Payment_Request_Button_Handler
+	 * @var WC_Payments_Express_Checkout_Button_Handler
 	 */
-	private $payment_request_button_handler;
+	private $express_checkout_button_handler;
 
 	/**
 	 * Instance of WC_Payments_WooPay_Button_Handler, created in init function
@@ -45,14 +45,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payment_Gateway_WCPay                   $gateway WCPay gateway.
-	 * @param WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler Payment request button handler.
-	 * @param WC_Payments_WooPay_Button_Handler          $platform_checkout_button_handler Platform checkout button handler.
-	 * @param WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper Express checkout helper.
+	 * @param WC_Payment_Gateway_WCPay                    $gateway WCPay gateway.
+	 * @param WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler Express Checkout button handler.
+	 * @param WC_Payments_WooPay_Button_Handler           $platform_checkout_button_handler Platform checkout button handler.
+	 * @param WC_Payments_Express_Checkout_Button_Helper  $express_checkout_helper Express checkout helper.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler, WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler, WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper ) {
+	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler, WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler, WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper ) {
 		$this->gateway                          = $gateway;
-		$this->payment_request_button_handler   = $payment_request_button_handler;
+		$this->express_checkout_button_handler  = $express_checkout_button_handler;
 		$this->platform_checkout_button_handler = $platform_checkout_button_handler;
 		$this->express_checkout_helper          = $express_checkout_helper;
 	}
@@ -64,12 +64,12 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 */
 	public function init() {
 		$this->platform_checkout_button_handler->init();
-		$this->payment_request_button_handler->init();
+		$this->express_checkout_button_handler->init();
 
-		$is_woopay_enabled          = WC_Payments_Features::is_woopay_enabled();
-		$is_payment_request_enabled = 'yes' === $this->gateway->get_option( 'payment_request' );
+		$is_woopay_enabled           = WC_Payments_Features::is_woopay_enabled();
+		$is_express_checkout_enabled = 'yes' === $this->gateway->get_option( 'payment_request' );
 
-		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
+		if ( $is_woopay_enabled || $is_express_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_helper, 'ajax_add_to_cart' ] );
 			add_action( 'wc_ajax_wcpay_empty_cart', [ $this->express_checkout_helper, 'ajax_empty_cart' ] );
 
@@ -104,19 +104,19 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_buttons() {
-		$should_show_woopay          = $this->platform_checkout_button_handler->should_show_woopay_button();
-		$should_show_payment_request = $this->payment_request_button_handler->should_show_payment_request_button();
+		$should_show_woopay           = $this->platform_checkout_button_handler->should_show_woopay_button();
+		$should_show_express_checkout = $this->express_checkout_button_handler->should_show_express_checkout_button();
 		// When Payment Request button is enabled, we need the separator markup on the page, but hidden in case the browser doesn't have any payment request methods to display.
 		// More details: https://github.com/Automattic/woocommerce-payments/pull/5399#discussion_r1073633776.
-		$separator_starts_hidden = $should_show_payment_request && ! $should_show_woopay;
-		if ( $should_show_woopay || $should_show_payment_request ) {
+		$separator_starts_hidden = $should_show_express_checkout && ! $should_show_woopay;
+		if ( $should_show_woopay || $should_show_express_checkout ) {
 			?>
 			<div class='wcpay-payment-request-wrapper' >
 			<?php
 			if ( ! $this->express_checkout_helper->is_pay_for_order_page() || $this->is_pay_for_order_flow_supported() ) {
 				$this->platform_checkout_button_handler->display_woopay_button_html();
 			}
-				$this->payment_request_button_handler->display_payment_request_button_html();
+				$this->express_checkout_button_handler->display_express_checkout_button_html();
 			?>
 			</div >
 			<?php
