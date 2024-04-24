@@ -91,6 +91,13 @@ abstract class UPE_Payment_Method {
 	protected $dark_icon_url;
 
 	/**
+	 * Is the payment method a BNPL (Buy Now Pay Later) method?
+	 *
+	 * @var boolean
+	 */
+	protected $is_bnpl = false;
+
+	/**
 	 * Supported customer locations for which charges for a payment method can be processed
 	 * Empty if all customer locations are supported
 	 *
@@ -196,6 +203,16 @@ abstract class UPE_Payment_Method {
 	 */
 	public function is_reusable() {
 		return $this->is_reusable;
+	}
+
+	/**
+	 * Returns boolean dependent on whether payment method
+	 * will support BNPL (Buy Now Pay Later) payments
+	 *
+	 * @return bool
+	 */
+	public function is_bnpl() {
+		return $this->is_bnpl;
 	}
 
 	/**
