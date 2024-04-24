@@ -15,6 +15,18 @@ export default class PaymentRequestCartApi {
 
 	init( {} ) {}
 
+	async placeOrder( paymentData ) {
+		return await apiFetch( {
+			method: 'POST',
+			path: '/wc/store/v1/checkout',
+			credentials: 'omit',
+			headers: {
+				...this.cartRequestHeaders,
+			},
+			data: paymentData,
+		} );
+	}
+
 	async createAnonymousCart() {
 		const response = await apiFetch( {
 			method: 'GET',
@@ -29,6 +41,29 @@ export default class PaymentRequestCartApi {
 			Nonce: response.headers.get( 'Nonce' ),
 			'Cart-Token': response.headers.get( 'Cart-Token' ),
 		};
+	}
+
+	async updateCustomer( customerData ) {
+		return apiFetch( {
+			method: 'POST',
+			path: '/wc/store/v1/cart/update-customer',
+			credentials: 'omit',
+			headers: {
+				...this.cartRequestHeaders,
+			},
+			data: customerData,
+		} );
+	}
+	async selectShippingRate( shippingRate ) {
+		return apiFetch( {
+			method: 'POST',
+			path: '/wc/store/v1/cart/select-shipping-rate',
+			credentials: 'omit',
+			headers: {
+				...this.cartRequestHeaders,
+			},
+			data: shippingRate,
+		} );
 	}
 
 	async addProductToCart() {

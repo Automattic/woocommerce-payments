@@ -44,10 +44,10 @@ export const getPaymentRequest = ( { stripe, cartData } ) => {
 		requestPayerEmail: true,
 		requestPayerPhone: getPaymentRequestData( 'checkout' )
 			?.needs_payer_phone,
-		currency: cartData.totals.currency_code,
+		currency: cartData.totals.currency_code.toLowerCase(),
 		total: {
 			label: getPaymentRequestData( 'total_label' ),
-			amount: cartData.totals.total_price,
+			amount: parseInt( cartData.totals.total_price, 10 ),
 		},
 		requestShipping: cartData.needs_shipping,
 		displayItems: transformCartDataForDisplayItems( cartData ),

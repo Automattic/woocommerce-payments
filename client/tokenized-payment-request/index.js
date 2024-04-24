@@ -15,7 +15,12 @@ import {
 	trackPaymentRequestButtonClick,
 	trackPaymentRequestButtonLoad,
 } from './tracking';
-import { transformCartDataForDisplayItems } from './transformers';
+import {
+	transformCartDataForDisplayItems,
+	transformCartDataForShippingOptions,
+	transformStripePaymentMethodForStoreApi,
+	transformStripeShippingAddressForStoreApi,
+} from './transformers';
 import paymentRequestButtonUi from './button-ui';
 import './wc-product-variations-compatibility';
 import './wc-deposits-compatibility';
@@ -28,13 +33,6 @@ import {
 } from './frontend-utils';
 import PaymentRequestCartApi from './cart-api';
 import debounce from './debounce';
-
-const doActionPaymentRequestAvailability = ( args ) => {
-	doAction( 'wcpay.payment-request.availability', args );
-};
-
-// TODO ~FR
-const paymentMethodHandler = () => null;
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -88,57 +86,9 @@ jQuery( ( $ ) => {
 		cachedCartData: undefined,
 
 		/**
-		 * Abort payment and display error messages.
-		 *
-		 * @param {PaymentResponse} payment Payment response instance.
-		 * @param {string}          message Error message to display.
-		 */
-		abortPayment: ( payment, message ) => {
-			payment.complete( 'fail' );
-
-			$( '.woocommerce-error' ).remove();
-
-			const $container = $( '.woocommerce-notices-wrapper' ).first();
-
-			if ( $container.length ) {
-				$container.append(
-					$( '<div class="woocommerce-error" />' ).text( message )
-				);
-
-				$( 'html, body' ).animate(
-					{
-						scrollTop: $container
-							.find( '.woocommerce-error' )
-							.offset().top,
-					},
-					600
-				);
-			}
-		},
-
-		/**
-		 * Complete payment.
-		 *
-		 * @param {string} url Order thank you page URL.
-		 */
-		completePayment: ( url ) => {
-			$.blockUI( {
-				message: null,
-				overlayCSS: {
-					background: '#fff',
-					opacity: 0.6,
-				},
-			} );
-
-			window.location = url;
-		},
-
-		/**
 		 * Starts the payment request
-		 *
-		 * @param {Object} options Payment request options.
 		 */
-		startPaymentRequest: async ( { handler = paymentMethodHandler } ) => {
+		startPaymentRequest: async () => {
 			// TODO ~FR: is this creating multiple handlers to events on different `paymentRequest` objects?
 			const paymentRequest = getPaymentRequest( {
 				stripe: api.getStripe(),
@@ -173,7 +123,11 @@ jQuery( ( $ ) => {
 				wcpayPaymentRequestParams.button_context
 			);
 
-			paymentRequestCartApi.createAnonymousCart();
+			// On PDP pages, we need to use an anonymous cart to checkout.
+			// On cart, checkout, place order pages we instead use the cart itself.
+			if ( wcpayPaymentRequestParams.button_context === 'product' ) {
+				paymentRequestCartApi.createAnonymousCart();
+			}
 
 			const prButton = api
 				.getStripe()
@@ -214,7 +168,10 @@ jQuery( ( $ ) => {
 						paymentRequest.update( {
 							total: {
 								label: getPaymentRequestData( 'total_label' ),
-								amount: newCartData.totals.total_price,
+								amount: parseInt(
+									newCartData.totals.total_price,
+									10
+								),
 							},
 							requestShipping: newCartData.needs_shipping,
 							// TODO ~FR: get transform utility
@@ -231,19 +188,19 @@ jQuery( ( $ ) => {
 
 			const $addToCartButton = $( '.single_add_to_cart_button' );
 
-			prButton.on( 'click', ( evt ) => {
+			prButton.on( 'click', ( event ) => {
 				trackPaymentRequestButtonClick( 'product' );
 
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( wcpayPaymentRequestParams.login_confirmation ) {
-					evt.preventDefault();
+					event.preventDefault();
 					displayLoginConfirmationDialog( buttonBranding );
 					return;
 				}
 
 				// First check if product can be added to cart.
 				if ( $addToCartButton.is( '.disabled' ) ) {
-					evt.preventDefault(); // Prevent showing payment request modal.
+					event.preventDefault(); // Prevent showing payment request modal.
 					if (
 						$addToCartButton.is( '.wc-variation-is-unavailable' )
 					) {
@@ -267,24 +224,123 @@ jQuery( ( $ ) => {
 				}
 
 				paymentRequestCartApi.addProductToCart();
-				// TODO ~FR
-				evt.preventDefault();
 			} );
 
 			paymentRequest.on( 'cancel', () => {
 				wcpayPaymentRequest.paymentAborted = true;
 			} );
 
-			paymentRequest.on( 'shippingaddresschange', ( event ) =>
-				console.log( '### shippingaddresschange', event )
-			);
+			paymentRequest.on( 'shippingaddresschange', async ( event ) => {
+				try {
+					const cartData = await paymentRequestCartApi.updateCustomer(
+						transformStripeShippingAddressForStoreApi(
+							event.shippingAddress
+						)
+					);
 
-			paymentRequest.on( 'shippingoptionchange', ( event ) =>
-				console.log( '### shippingoptionchange', event )
-			);
+					event.updateWith( {
+						// Possible statuses: https://docs.stripe.com/js/appendix/payment_response#payment_response_object-complete
+						status: 'success',
+						shippingOptions: transformCartDataForShippingOptions(
+							cartData
+						),
+						total: {
+							label: getPaymentRequestData( 'total_label' ),
+							amount: parseInt( cartData.totals.total_price, 10 ),
+						},
+						displayItems: transformCartDataForDisplayItems(
+							cartData
+						),
+					} );
 
-			paymentRequest.on( 'paymentmethod', ( event ) => {
-				console.log( '### paymentmethod', event );
+					wcpayPaymentRequest.cachedCartData = cartData;
+				} catch ( error ) {
+					// Possible statuses: https://docs.stripe.com/js/appendix/payment_response#payment_response_object-complete
+					event.updateWith( {
+						status: 'fail',
+					} );
+				}
+			} );
+
+			paymentRequest.on( 'shippingoptionchange', async ( event ) => {
+				try {
+					const cartData = await paymentRequestCartApi.selectShippingRate(
+						{ package_id: 0, rate_id: event.shippingOption.id }
+					);
+
+					event.updateWith( {
+						status: 'success',
+						total: {
+							label: getPaymentRequestData( 'total_label' ),
+							amount: parseInt( cartData.totals.total_price, 10 ),
+						},
+						displayItems: transformCartDataForDisplayItems(
+							cartData
+						),
+					} );
+					wcpayPaymentRequest.cachedCartData = cartData;
+				} catch ( error ) {
+					event.updateWith( { status: 'fail' } );
+				}
+			} );
+
+			paymentRequest.on( 'paymentmethod', async ( event ) => {
+				// TODO ~FR: this works for PDPs - need to handle checkout scenarios for pay-for-order, cart, checkout.
+				try {
+					const response = await paymentRequestCartApi.placeOrder(
+						transformStripePaymentMethodForStoreApi( event )
+					);
+
+					const confirmationRequest = api.confirmIntent(
+						response.redirect
+					);
+					// We need to call `complete` before redirecting to close the dialog for 3DS.
+					event.complete( 'success' );
+
+					let redirectUrl = '';
+
+					// `true` means there is no intent to confirm.
+					if ( confirmationRequest === true ) {
+						redirectUrl = response.redirect;
+					} else {
+						redirectUrl = await confirmationRequest;
+					}
+
+					$.blockUI( {
+						message: null,
+						overlayCSS: {
+							background: '#fff',
+							opacity: 0.6,
+						},
+					} );
+
+					window.location = redirectUrl;
+				} catch ( error ) {
+					event.complete( 'fail' );
+
+					$( '.woocommerce-error' ).remove();
+
+					const $container = $(
+						'.woocommerce-notices-wrapper'
+					).first();
+
+					if ( $container.length ) {
+						$container.append(
+							$( '<div class="woocommerce-error" />' ).text(
+								error.message
+							)
+						);
+
+						$( 'html, body' ).animate(
+							{
+								scrollTop: $container
+									.find( '.woocommerce-error' )
+									.offset().top,
+							},
+							600
+						);
+					}
+				}
 			} );
 		},
 
@@ -321,7 +377,7 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: async ( { refresh = false } ) => {
+		init: async ( { refresh = false } = {} ) => {
 			if ( ! wcpayPaymentRequest.cachedCartData || refresh ) {
 				wcpayPaymentRequest.cachedCartData = await wcpayPaymentRequest.getCartData();
 			}
