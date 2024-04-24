@@ -28,7 +28,7 @@ const useContextValue = ( initialState: OverviewSurveyFields = {} ) => {
 			setResponseStatus( 'pending' );
 			try {
 				await apiFetch( {
-					path: `${ NAMESPACE }/upe_survey/payments-overview`,
+					path: `${ NAMESPACE }/survey/payments-overview`,
 					method: 'POST',
 					data: answers,
 				} );

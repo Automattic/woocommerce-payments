@@ -1402,6 +1402,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
 
+		// Update saved payment method async to include billing details, if missing.
+		if ( $payment_information->is_using_saved_payment_method() ) {
+			$this->action_scheduler_service->schedule_job(
+				time(),
+				self::UPDATE_SAVED_PAYMENT_METHOD,
+				[
+					'payment_method' => $payment_information->get_payment_method(),
+					'order_id'       => $order->get_id(),
+					'is_test_mode'   => WC_Payments::mode()->is_test(),
+				]
+			);
+		}
+
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
 
@@ -1419,16 +1432,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// We need to make sure the saved payment method is saved to the order so we can
 				// charge the payment method for a future payment.
 				$this->add_token_to_order( $order, $payment_information->get_payment_token() );
-				// If we are not hitting the API for the intent, we need to update the saved payment method ourselves.
-				$this->action_scheduler_service->schedule_job(
-					time(),
-					self::UPDATE_SAVED_PAYMENT_METHOD,
-					[
-						'payment_method' => $payment_information->get_payment_method(),
-						'order_id'       => $order->get_id(),
-						'is_test_mode'   => WC_Payments::mode()->is_test(),
-					]
-				);
 			}
 
 			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
@@ -1511,16 +1514,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 				$request->set_hook_args( $payment_information );
-				if ( $payment_information->is_using_saved_payment_method() ) {
-					$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
-
-					$is_legacy_card_object = strpos( $payment_information->get_payment_method() ?? '', 'card_' ) === 0;
-
-					// Not updating billing details for legacy card objects because they have a different structure and are no longer supported.
-					if ( ! empty( $billing_details ) && ! $is_legacy_card_object ) {
-						$request->set_payment_method_update_data( [ 'billing_details' => $billing_details ] );
-					}
-				}
 				// Add specific payment method parameters to the request.
 				$this->modify_create_intent_parameters_when_processing_payment( $request, $payment_information, $order );
 
