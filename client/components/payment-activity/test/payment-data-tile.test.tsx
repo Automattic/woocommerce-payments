@@ -57,10 +57,11 @@ describe( 'PaymentDataTile', () => {
 				id="total-payment"
 				currencyCode="USD"
 				label={ label }
+				amount={ 123 }
 			/>
 		);
-		const labelElement = screen.getByText( label );
-		expect( labelElement ).toBeInTheDocument();
+		expect( screen.getByText( label ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( label ) ).toHaveTextContent( '$1.23' );
 	} );
 
 	test( 'renders amount correctly', () => {
