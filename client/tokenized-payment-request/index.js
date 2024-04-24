@@ -131,6 +131,7 @@ jQuery( ( $ ) => {
 		 * @param {Object} options Payment request options.
 		 */
 		startPaymentRequest: async ( { handler = paymentMethodHandler } ) => {
+			// TODO ~FR: is this creating multiple handlers to events on different `paymentRequest` objects?
 			const paymentRequest = getPaymentRequest( {
 				stripe: api.getStripe(),
 				cartData: wcpayPaymentRequest.cachedCartData,
@@ -312,8 +313,8 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: async () => {
-			if ( ! wcpayPaymentRequest.cachedCartData ) {
+		init: async ( { refresh = false } ) => {
+			if ( ! wcpayPaymentRequest.cachedCartData || refresh ) {
 				wcpayPaymentRequest.cachedCartData = await wcpayPaymentRequest.getCartData();
 			}
 
@@ -334,11 +335,11 @@ jQuery( ( $ ) => {
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
-		wcpayPaymentRequest.init();
+		wcpayPaymentRequest.init( { refresh: true } );
 	} );
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
-		wcpayPaymentRequest.init();
+		wcpayPaymentRequest.init( { refresh: true } );
 	} );
 } );
