@@ -7,6 +7,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 import { tip } from '@wordpress/icons';
 import { ExternalLink } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -222,30 +223,39 @@ export const DepositFailureNotice: React.FC< {
 	 * The link to update the account details.
 	 */
 	updateAccountLink: string;
-} > = ( { updateAccountLink } ) => (
-	<InlineNotice
-		status="warning"
-		icon
-		className="deposit-failure-notice"
-		isDismissible={ false }
-	>
-		{ interpolateComponents( {
-			mixedString: __(
-				'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
-				'woocommerce-payments'
-			),
-			components: {
-				updateLink: (
-					<ExternalLink
-						onClick={ () =>
-							recordEvent( 'wcpay_account_details_link_clicked', {
-								source: 'deposit-notices',
-							} )
-						}
-						href={ updateAccountLink }
-					/>
+} > = ( { updateAccountLink } ) => {
+	const accountLinkWithSource = addQueryArgs( updateAccountLink, {
+		source: 'deposits-overview__deposit-failure-notice',
+	} );
+	return (
+		<InlineNotice
+			status="warning"
+			icon
+			className="deposit-failure-notice"
+			isDismissible={ false }
+		>
+			{ interpolateComponents( {
+				mixedString: __(
+					'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+					'woocommerce-payments'
 				),
-			},
-		} ) }
-	</InlineNotice>
-);
+				components: {
+					updateLink: (
+						<ExternalLink
+							onClick={ () =>
+								recordEvent(
+									'wcpay_account_details_link_clicked',
+									{
+										source:
+											'deposits-overview__deposit-failure-notice',
+									}
+								)
+							}
+							href={ accountLinkWithSource }
+						/>
+					),
+				},
+			} ) }
+		</InlineNotice>
+	);
+};

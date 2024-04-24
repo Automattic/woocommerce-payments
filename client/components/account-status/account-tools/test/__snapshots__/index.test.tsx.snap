@@ -23,7 +23,7 @@ exports[`AccountTools should render in live mode 1`] = `
     >
       <a
         class="components-button is-secondary"
-        href="/onboarding"
+        href="/onboarding?source=account-tools__finish-setup-button"
         target="_blank"
       >
         Finish setup
@@ -62,7 +62,7 @@ exports[`AccountTools should render in sandbox mode 1`] = `
     >
       <a
         class="components-button is-secondary"
-        href="/onboarding"
+        href="/onboarding?source=account-tools__finish-setup-button"
         target="_blank"
       >
         Finish setup

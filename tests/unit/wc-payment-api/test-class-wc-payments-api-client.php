@@ -258,14 +258,15 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		];
 
 		$user_data = [
-			'user_id'    => 1,
-			'ip_address' => '0.0.0.0',
-			'browser'    => [
+			'user_id'           => 1,
+			'ip_address'        => '0.0.0.0',
+			'browser'           => [
 				'user_agent'       => 'Unit Test Agent/0.1.0',
 				'accept_language'  => 'en-US,en;q=0.5',
 				'content_language' => 'en-US,en;q=0.5',
 			],
-			'referer'    => 'https://example.com',
+			'referer'           => 'https://example.com',
+			'onboarding_source' => 'test_source',
 		];
 
 		$account_data = [];
