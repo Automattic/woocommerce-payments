@@ -27,12 +27,13 @@ exports[`PaymentActivity component should render 1`] = `
         >
           <div
             class="wcpay-payment-data-highlights__item"
-            id="wcpay-payment-activity-data__total-payment-volume"
           >
             <p
               class="wcpay-payment-data-highlights__item__label"
             >
-              <span>
+              <span
+                id="wcpay-payment-activity-data__total-payment-volume"
+              >
                 Total payment volume
               </span>
               <button
@@ -71,7 +72,7 @@ exports[`PaymentActivity component should render 1`] = `
                 aria-labelledby="wcpay-payment-activity-data__total-payment-volume"
                 class="wcpay-payment-data-highlights__item__wrapper__amount"
               >
-                $1,234.56
+                €1.234,56
               </p>
               <a
                 data-link-type="wc-admin"
@@ -86,12 +87,13 @@ exports[`PaymentActivity component should render 1`] = `
           >
             <div
               class="wcpay-payment-data-highlights__item"
-              id="wcpay-payment-data-highlights__charges"
             >
               <p
                 class="wcpay-payment-data-highlights__item__label"
               >
-                <span>
+                <span
+                  id="wcpay-payment-data-highlights__charges"
+                >
                   Charges
                 </span>
                 <button
@@ -130,7 +132,7 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__charges"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $98.76
+                  €98,76
                 </p>
                 <a
                   data-link-type="wc-admin"
@@ -142,12 +144,13 @@ exports[`PaymentActivity component should render 1`] = `
             </div>
             <div
               class="wcpay-payment-data-highlights__item"
-              id="wcpay-payment-data-highlights__refunds"
             >
               <p
                 class="wcpay-payment-data-highlights__item__label"
               >
-                <span>
+                <span
+                  id="wcpay-payment-data-highlights__refunds"
+                >
                   Refunds
                 </span>
               </p>
@@ -158,7 +161,7 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__refunds"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $44.44
+                  €44,44
                 </p>
                 <a
                   data-link-type="wc-admin"
@@ -170,12 +173,13 @@ exports[`PaymentActivity component should render 1`] = `
             </div>
             <div
               class="wcpay-payment-data-highlights__item"
-              id="wcpay-payment-data-highlights__disputes"
             >
               <p
                 class="wcpay-payment-data-highlights__item__label"
               >
-                <span>
+                <span
+                  id="wcpay-payment-data-highlights__disputes"
+                >
                   Disputes
                 </span>
               </p>
@@ -186,7 +190,7 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__disputes"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $55.55
+                  €55,55
                 </p>
                 <a
                   data-link-type="wc-admin"
@@ -198,12 +202,13 @@ exports[`PaymentActivity component should render 1`] = `
             </div>
             <div
               class="wcpay-payment-data-highlights__item"
-              id="wcpay-payment-data-highlights__fees"
             >
               <p
                 class="wcpay-payment-data-highlights__item__label"
               >
-                <span>
+                <span
+                  id="wcpay-payment-data-highlights__fees"
+                >
                   Fees
                 </span>
                 <button
@@ -242,7 +247,7 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__fees"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $12.34
+                  €12,34
                 </p>
               </div>
             </div>
