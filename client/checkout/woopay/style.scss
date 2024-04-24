@@ -123,7 +123,7 @@
 }
 
 .woopay-express-button {
-	font-size: 11px;
+	font-size: 16px;
 	font-weight: 500;
 	font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial',
 		sans-serif;
@@ -174,7 +174,7 @@
 	}
 
 	&[data-width-type='wide'] {
-		font-size: 13px;
+		font-size: 16px;
 
 		svg {
 			flex-shrink: 1;
@@ -203,7 +203,7 @@
 	}
 
 	&[data-size='medium'] {
-		font-size: 12px;
+		font-size: 18px;
 		height: 48px;
 
 		svg {
@@ -222,7 +222,7 @@
 		}
 
 		&[data-width-type='wide'] {
-			font-size: 14px;
+			font-size: 18px;
 
 			&[data-type='buy'],
 			&[data-type='book'],
@@ -236,7 +236,7 @@
 	}
 
 	&[data-size='large'] {
-		font-size: 13px;
+		font-size: 20px;
 		height: 56px;
 
 		svg {
@@ -256,7 +256,7 @@
 		}
 
 		&[data-width-type='wide'] {
-			font-size: 16px;
+			font-size: 20px;
 
 			&[data-type='buy'],
 			&[data-type='book'],
