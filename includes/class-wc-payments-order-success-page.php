@@ -28,38 +28,71 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function register_payment_method_override() {
 		// Override the payment method title on the order received page.
-		add_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woopay_payment_method_name' ], 10, 2 );
-		add_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_bnpl_payment_method_name' ], 10, 2 );
+		add_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woocommerce_payments_payment_method_name' ], 10, 2 );
 	}
 
 	/**
 	 * Remove the hook to override the payment method name on the order received page before the order summary.
 	 */
 	public function unregister_payment_method_override() {
-		remove_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woopay_payment_method_name' ], 10 );
-		remove_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_bnpl_payment_method_name' ], 10 );
+		remove_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woocommerce_payments_payment_method_name' ], 10 );
 	}
 
 	/**
-	 * Add the WooPay logo and the last 4 digits of the card used to the payment method name
-	 * on the order received page.
+	 * Hooked into `woocommerce_order_get_payment_method_title` to change the payment method title on the
+	 * order received page for WooPay and BNPL orders.
 	 *
-	 * @param string            $payment_method_title the default payment method title.
-	 * @param WC_Abstract_Order $abstract_order the order being shown.
+	 * @param string $payment_method_title
+	 * @param WC_Abstract_Order $abstract_order
+	 * @return void
 	 */
-	public function show_woopay_payment_method_name( $payment_method_title, $abstract_order ) {
-
+	public function show_woocommerce_payments_payment_method_name( $payment_method_title, $abstract_order ) {
 		// Only change the payment method title on the order received page.
 		if ( ! is_order_received_page() ) {
 			return $payment_method_title;
 		}
 
-		$order_id = $abstract_order->get_id();
-		$order    = wc_get_order( $order_id );
-		if ( ! $order || ! $order->get_meta( 'is_woopay' ) ) {
+		$order_id          = $abstract_order->get_id();
+		$order             = wc_get_order( $order_id );
+		$payment_method_id = $order->get_payment_method();
+
+		if ( stripos( $payment_method_id, 'woocommerce_payments' ) !== 0 ) {
 			return $payment_method_title;
 		}
 
+		if ( ! $order ) {
+			return $payment_method_title;
+		}
+
+		// If this is a WooPay order, return the html for the WooPay payment method name.
+		if ( $order->get_meta( 'is_woopay' ) ) {
+			return $this->show_woopay_payment_method_name( $order );
+		}
+
+		$gateway           = WC()->payment_gateways()->payment_gateways()[ $payment_method_id ];
+		$payment_method    = $gateway->get_payment_method( $order );
+
+		// If this is a BNPL order, return the html for the BNPL payment method name.
+		if ( $payment_method->is_bnpl() ) {
+			$bnpl_output = $this->show_bnpl_payment_method_name( $gateway, $payment_method );
+
+			if ( $bnpl_output !== false ) {
+				return $bnpl_output;
+			}
+		}
+
+		return $payment_method_title;
+	}
+
+	/**
+	 * Returns the HTML to add the WooPay logo and the last 4 digits of the card used to the
+	 * payment method name on the order received page.
+	 *
+	 * @param WC_Order $order the order being shown.
+	 *
+	 * @return string
+	 */
+	public function show_woopay_payment_method_name( $order ) {
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper woopay">
@@ -78,50 +111,27 @@ class WC_Payments_Order_Success_Page {
 	/**
 	 * Add the BNPL logo to the payment method name on the order received page.
 	 *
-	 * @param string            $payment_method_title the default payment method title.
-	 * @param WC_Abstract_Order $abstract_order the order being shown.
+	 * @param WC_Payment_Gateway_WCPay $gateway the gateway being shown.
+	 * @param UPE_Payment_Method $payment_method the payment method being shown.
+	 *
+	 * @return string|false
 	 */
-	public function show_bnpl_payment_method_name( $payment_method_title, $abstract_order ) {
-
-		// Only change the payment method title on the order received page.
-		if ( ! is_order_received_page() ) {
-			return $payment_method_title;
-		}
-
-		$order_id = $abstract_order->get_id();
-		$order    = wc_get_order( $order_id );
-		$bnpl_methods = [
-			'Affirm',
-			'Afterpay',
-			'Clearpay',
-			'Klarna',
-		];
-
-		if ( ! $order || ! in_array( $payment_method_title, $bnpl_methods, true ) ) {
-			return $payment_method_title;
-		}
-
-		$payment_method_id = $order->get_payment_method();
-		$payment_method    = WC()->payment_gateways()->payment_gateways()[ $payment_method_id ];
-
-		if ( ! $payment_method ) {
-			return $payment_method_title;
-		}
-
+	public function show_bnpl_payment_method_name( $gateway, $payment_method ) {
 		$method_logo_url = apply_filters(
 			'wc_payments_thank_you_page_bnpl_payment_method_logo_url',
-			$payment_method->get_theme_icon(),
-			$payment_method_id
+			$gateway->get_theme_icon(),
+			$payment_method->get_id()
 		);
 
+		// If we don't have a logo URL here for some reason, bail.
 		if ( ! $method_logo_url ) {
-			return $payment_method_title;
+			return false;
 		}
 
 		ob_start();
 		?>
-		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-bnpl-logo <?php echo str_replace( 'woocommerce_payments_', '', $payment_method_id ); ?>">
-			<img alt="<?php echo $payment_method_title; ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
+		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-bnpl-logo <?php echo str_replace( 'woocommerce_payments_', '', $payment_method->get_id() ); ?>">
+			<img alt="<?php echo $payment_method->get_title(); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
 		</div>
 		<?php
 		return ob_get_clean();
