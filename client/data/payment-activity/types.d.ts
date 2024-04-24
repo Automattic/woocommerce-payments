@@ -1,11 +1,18 @@
 /** @format */
 
 export interface PaymentActivityData {
-	total_payment_volume?: number; // Total payment volume
-	charges?: number; // Charges
-	fees?: number; // Fees
-	disputes?: number; // Disputes
-	refunds?: number; // Refunds
+	/** The currency code for the amounts below, e.g. `usd` */
+	currency?: string;
+	/** Total payment volume amount */
+	total_payment_volume?: number;
+	/** Charges total amount */
+	charges?: number;
+	/** Fees total amount */
+	fees?: number;
+	/** Disputes total amount */
+	disputes?: number;
+	/** Refunds total amount */
+	refunds?: number;
 }
 
 export interface PaymentActivityState {
