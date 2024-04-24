@@ -37,6 +37,14 @@ const doActionPaymentRequestAvailability = ( args ) => {
 const paymentMethodHandler = () => null;
 
 jQuery( ( $ ) => {
+	// Don't load if blocks checkout is being loaded.
+	if (
+		wcpayPaymentRequestParams.has_block &&
+		wcpayPaymentRequestParams.button_context !== 'pay_for_order'
+	) {
+		return;
+	}
+
 	const publishableKey = wcpayPaymentRequestParams.stripe.publishableKey;
 
 	if ( ! publishableKey ) {
