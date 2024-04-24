@@ -324,17 +324,21 @@ jQuery( ( $ ) => {
 		},
 	};
 
-	wcpayPaymentRequest.init();
+	// We don't need to initialize payment request on the checkout page now because it will be initialized by updated_checkout event.
+	if (
+		wcpayPaymentRequestParams.button_context !== 'checkout' ||
+		wcpayPaymentRequestParams.button_context === 'pay_for_order'
+	) {
+		wcpayPaymentRequest.init();
+	}
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
-		// TODO ~FR
 		wcpayPaymentRequest.init();
 	} );
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
-		// TODO ~FR
 		wcpayPaymentRequest.init();
 	} );
 } );
