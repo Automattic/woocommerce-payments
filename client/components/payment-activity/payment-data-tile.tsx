@@ -53,9 +53,9 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 	reportLink,
 } ) => {
 	return (
-		<div id={ id } className="wcpay-payment-data-highlights__item">
+		<div className="wcpay-payment-data-highlights__item">
 			<p className="wcpay-payment-data-highlights__item__label">
-				<span>{ label }</span>
+				<span id={ id }>{ label }</span>
 				{ ! isLoading && tooltip }
 			</p>
 			<div className="wcpay-payment-data-highlights__item__wrapper">
