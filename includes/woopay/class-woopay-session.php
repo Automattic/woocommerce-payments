@@ -617,12 +617,13 @@ class WooPay_Session {
 			return [];
 		}
 
-		$blog_id = Jetpack_Options::get_option('id');
+		$blog_id = Jetpack_Options::get_option( 'id' );
 		if ( empty( $blog_id ) ) {
 			return [];
 		}
 
 		$data = [
+			'wcpay_version'     => WCPAY_VERSION_NUMBER,
 			'blog_id'           => $blog_id,
 			'blog_rest_url'     => get_rest_url(),
 			'blog_checkout_url' => wc_get_checkout_url(),
