@@ -82,6 +82,17 @@ export const globalize = ( id: string ) => {
 	}
 };
 
+// Convert external module to WP asset
+const externalToAsset = ( id: string ) => {
+	if ( id.startsWith( WORDPRESS_NAMESPACE ) ) {
+		return id.replace(WORDPRESS_NAMESPACE, 'wp-');
+	}
+	if ( id.startsWith( WOOCOMMERCE_NAMESPACE ) ) {
+		return id.replace(WOOCOMMERCE_NAMESPACE, 'wc-');
+	}
+	return id;
+};
+
 // Generate the PHP deps file
 export const assetize = () => {
 	return {
@@ -89,12 +100,12 @@ export const assetize = () => {
 		enforce: 'pre',
 		generateBundle( options, bundle ) {
 			Object.entries( bundle ).forEach( ( [ fileName, fileInfo ] ) => {
-				if ( ! fileInfo.isAsset /*&& fileInfo.imports*/ ) {
+				if ( ! fileInfo.isAsset && fileInfo.imports ) {
 					const { imports, code } = fileInfo;
 					const scriptMeta = {
 						dependencies: imports
-							// .map(defaultRequestToHandle)
-							.filter( ( o ) => o != null ),
+						.map(externalToAsset)
+						.filter( ( o ) => o != null ),
 						version: createHash( 'sha1' )
 							.update( code )
 							.digest( 'hex' )

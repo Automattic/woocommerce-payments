@@ -40,7 +40,7 @@ export default defineConfig( {
 	plugins: [
 		react(),
 		tsconfigPaths(),
-		// assetize(),
+		assetize(),
 		cacheBusting(),
 		// externalGlobals(globalize, {
 		// 	//   exclude: ["node_modules/**/*"],
