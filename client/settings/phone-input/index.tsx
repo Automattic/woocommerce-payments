@@ -9,7 +9,7 @@ import './style.scss';
 /**
  * Internal dependencies
  */
-import utils from 'iti/utils';
+import * as utils from 'iti/utils';
 
 interface PhoneNumberInputProps {
 	value: string;
