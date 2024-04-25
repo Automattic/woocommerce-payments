@@ -127,6 +127,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT   = 'wcpay_upe_bnpl_cart_block_appearance_theme';
 
 	/**
+	 * The locations of appearance transients.
+	 */
+	const APPEARANCE_THEME_TRANSIENTS = [
+		'checkout'     => [
+			'block'   => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
+			'classic' => self::UPE_APPEARANCE_THEME_TRANSIENT,
+		],
+		'product_page' => [
+			'block'   => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+			'classic' => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+		],
+		'cart'         => [
+			'block'   => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
+			'classic' => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
+		],
+	];
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -4256,14 +4274,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_theme_icon() {
-		$upe_appearance_theme        = get_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
-		$upe_blocks_appearance_theme = get_transient( self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
+		$upe_appearance_theme = get_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
 
-		if ( 'night' === $upe_appearance_theme || 'night' === $upe_blocks_appearance_theme ) {
-			return $this->payment_method->get_dark_icon();
+		if ( $upe_appearance_theme ) {
+			return 'night' === $upe_appearance_theme ? $this->payment_method->get_dark_icon() : $this->payment_method->get_icon();
 		}
-
-		return $this->payment_method->get_icon();
 	}
 
 	/**

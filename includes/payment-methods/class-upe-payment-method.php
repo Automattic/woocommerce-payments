@@ -276,6 +276,24 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
+	 * Gets the theme appropriate icon for the payment method for a given location and context.
+	 *
+	 * @param string  $location The location to get the icon for.
+	 * @param boolean $is_blocks Whether the icon is for blocks.
+	 * @param string  $account_country Optional account country.
+	 * @return string
+	 */
+	public function get_payment_method_icon_for_location( string $location = 'checkout', bool $is_blocks = true, string $account_country = null ) {
+		$appearance_theme = WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $is_blocks ? 'block' : 'classic' );
+
+		if ( 'night' === $appearance_theme ) {
+			return $this->get_dark_icon( $account_country );
+		}
+
+		return $this->get_icon( $account_country );
+	}
+
+	/**
 	 * Returns payment method supported countries
 	 *
 	 * @return array
