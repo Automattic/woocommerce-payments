@@ -1,4 +1,5 @@
 // @ts-nocheck
+/* eslint-disable */
 import { createHash } from 'crypto';
 import json2php from 'json2php';
 
@@ -72,10 +73,6 @@ export const externalize = ( id ) => {
 
 // Add external modules to global context
 export const globalize = ( id: string ) => {
-	console.debug(id);
-	if ( id.startsWith( '.' ) || id.startsWith( '/' ) ) {
-		return;
-	}
 	const external = isExternal( id );
 	if ( external ) {
 		if ( Array.isArray( external ) ) {
