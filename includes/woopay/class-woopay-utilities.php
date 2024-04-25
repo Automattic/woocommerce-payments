@@ -261,6 +261,10 @@ class WooPay_Utilities {
 	public static function encrypt_and_sign_data( $data ) {
 		$store_blog_token = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
 
+		if ( empty( $store_blog_token ) ) {
+			return [];
+		}
+
 		$message = wp_json_encode( $data );
 
 		// Generate an initialization vector (IV) for encryption.
