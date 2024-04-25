@@ -1,12 +1,13 @@
 @import '../../../stylesheets/abstracts/colors';
 @import '../../../stylesheets/abstracts/variables';
 
-.woopay-save-new-user-container {
-	.save-details {
-		padding: $gap-small;
-		border: 1px solid rgba( 109, 109, 109, 0.3 );
+.woocommerce-checkout-payment {
+	.woopay-save-new-user-container {
+		padding: 1.41575em;
 	}
+}
 
+.woopay-save-new-user-container {
 	.save-details-header {
 		display: flex;
 		align-items: flex-start;
@@ -48,75 +49,6 @@
 				@include breakpoint( '>960px' ) {
 					margin-right: 1.25rem;
 				}
-			}
-		}
-
-		.woopay-logo {
-			height: 1.0625rem;
-			margin-top: 0.375rem;
-		}
-
-		.info-button {
-			border: none;
-			background: transparent;
-			padding: 0;
-
-			&:focus {
-				outline: none;
-			}
-
-			&:focus + .save-details-flyout {
-				display: none;
-			}
-		}
-
-		.info-button.flyout-visible:focus + .save-details-flyout {
-			display: flex;
-		}
-
-		.info-icon {
-			fill: $gray-600;
-			margin-top: 0.1875rem;
-			object-fit: none;
-
-			&:hover,
-			&:focus {
-				fill: #3d9cd2;
-			}
-		}
-
-		.save-details-flyout {
-			display: none;
-			flex-direction: row;
-			gap: $gap-smaller;
-			background-color: #fff;
-			border: 1px solid rgba( 109, 109, 109, 0.3 );
-			border-radius: 3px;
-			padding: $gap-small;
-			position: absolute;
-			width: 16.875rem;
-			font-size: 0.8125rem;
-			line-height: 1.25rem;
-			top: -7.75rem;
-			left: calc( 100% - 8.4375rem );
-
-			&:hover {
-				display: flex;
-			}
-
-			span {
-				color: $gray-900;
-			}
-
-			svg {
-				fill: currentColor;
-				color: $alert-green;
-			}
-
-			@include breakpoint( '<800px' ) {
-				left: initial;
-				right: 0;
-				top: -8.125rem;
 			}
 		}
 	}
