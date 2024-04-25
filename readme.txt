@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 7.5.1
+Stable tag: 7.5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,16 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 7.5.3 - 2024-04-22 =
+* Fix - Fix subscription renewals exceptions
+* Dev - Remove deprecated param from asset data registry interface.
+
+
+= 7.5.2 - 2024-04-22 =
+* Fix - Bugfix for failing subscription renewal payments.
+* Dev - Remove deprecated param from asset data registry interface.
+
 
 = 7.5.1 - 2024-04-18 =
 * Fix - Avoid updating billing details for legacy card objects.

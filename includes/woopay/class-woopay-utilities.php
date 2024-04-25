@@ -253,28 +253,17 @@ class WooPay_Utilities {
 	}
 
 	/**
-	 * Returns true if an extension WooPay supports is installed .
-	 *
-	 * @return bool
-	 */
-	public function has_adapted_extension_installed() {
-		foreach ( self::ADAPTED_EXTENSIONS as $supported_extension ) {
-			if ( in_array( $supported_extension, apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Return an array with encrypted and signed data.
-	 * 
+	 *
 	 * @param array $data The data to be encrypted and signed.
 	 * @return array The encrypted and signed data.
 	 */
 	public static function encrypt_and_sign_data( $data ) {
 		$store_blog_token = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
+
+		if ( empty( $store_blog_token ) ) {
+			return [];
+		}
 
 		$message = wp_json_encode( $data );
 

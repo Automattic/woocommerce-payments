@@ -1183,7 +1183,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 			// We set this variable to be used in following checks.
-			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
+			$blocked_by_fraud_rules = $this->is_blocked_by_fraud_rules( $e );
 
 			do_action( 'woocommerce_payments_order_failed', $order, $e );
 
@@ -1192,7 +1192,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 * It seems that the status only needs to change in certain instances, and within those instances the intent
 			 * information is not added to the order, as shown by tests.
 			 */
-			if ( ! $blocked_due_to_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
+			if ( ! $blocked_by_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
 				$order->update_status( Order_Status::FAILED );
 			}
 
@@ -1200,7 +1200,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
-			if ( $blocked_due_to_fraud_rules ) {
+			if ( $blocked_by_fraud_rules ) {
 				$this->order_service->mark_order_blocked_for_fraud( $order, '', Intent_Status::CANCELED );
 			} elseif ( ! empty( $payment_information ) ) {
 				/**
@@ -1270,7 +1270,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
-			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ) );
 		}
 	}
 
@@ -1420,6 +1420,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
 
+		// Update saved payment method async to include billing details, if missing.
+		if ( $payment_information->is_using_saved_payment_method() ) {
+			$this->action_scheduler_service->schedule_job(
+				time(),
+				self::UPDATE_SAVED_PAYMENT_METHOD,
+				[
+					'payment_method' => $payment_information->get_payment_method(),
+					'order_id'       => $order->get_id(),
+					'is_test_mode'   => WC_Payments::mode()->is_test(),
+				]
+			);
+		}
+
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
 
@@ -1437,16 +1450,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// We need to make sure the saved payment method is saved to the order so we can
 				// charge the payment method for a future payment.
 				$this->add_token_to_order( $order, $payment_information->get_payment_token() );
-				// If we are not hitting the API for the intent, we need to update the saved payment method ourselves.
-				$this->action_scheduler_service->schedule_job(
-					time(),
-					self::UPDATE_SAVED_PAYMENT_METHOD,
-					[
-						'payment_method' => $payment_information->get_payment_method(),
-						'order_id'       => $order->get_id(),
-						'is_test_mode'   => WC_Payments::mode()->is_test(),
-					]
-				);
 			}
 
 			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
@@ -1529,16 +1532,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 				$request->set_hook_args( $payment_information );
-				if ( $payment_information->is_using_saved_payment_method() ) {
-					$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
-
-					$is_legacy_card_object = strpos( $payment_information->get_payment_method() ?? '', 'card_' ) === 0;
-
-					// Not updating billing details for legacy card objects because they have a different structure and are no longer supported.
-					if ( ! empty( $billing_details ) && ! $is_legacy_card_object ) {
-						$request->set_payment_method_update_data( [ 'billing_details' => $billing_details ] );
-					}
-				}
 				// Add specific payment method parameters to the request.
 				$this->modify_create_intent_parameters_when_processing_payment( $request, $payment_information, $order );
 
@@ -2944,6 +2937,67 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if a fraud protection rule is enabled.
+	 *
+	 * @param string $rule The rule to check.
+	 *
+	 * @return bool True if the rule is enabled, false otherwise.
+	 */
+	protected function is_fraud_rule_enabled( string $rule ): bool {
+		$settings = $this->get_advanced_fraud_protection_settings();
+
+		if ( ! is_array( $settings ) ) {
+			return false;
+		}
+
+		foreach ( $settings as $setting ) {
+			if ( $rule === $setting['key'] ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks if the transaction was blocked by AVS verification fraud rule.
+	 *
+	 * @param string|null $error_code The error code to check.
+	 * @param string|null $error_type The error type to check.
+	 *
+	 * @return bool True if the transaction was blocked by the AVS verification fraud rule, false otherwise.
+	 */
+	private function is_blocked_by_avs_verification_fraud_rule( ?string $error_code, ?string $error_type ): bool {
+		$is_avs_verification_rule_enabled = $this->is_fraud_rule_enabled( 'avs_verification' );
+		$is_incorrect_zip_error           = 'card_error' === $error_type && 'incorrect_zip' === $error_code;
+
+		return $is_avs_verification_rule_enabled && $is_incorrect_zip_error;
+	}
+
+	/**
+	 * Checks if the transaction was blocked by fraud rules.
+	 *
+	 * @param Exception $e The exception to check.
+	 *
+	 * @return bool True if the transaction was blocked by fraud rules, false otherwise.
+	 */
+	protected function is_blocked_by_fraud_rules( Exception $e ): bool {
+		if ( ! ( $e instanceof API_Exception ) ) {
+			return false;
+		}
+
+		$error_code = $e->get_error_code() ?? null;
+		$error_type = $e->get_error_type() ?? null;
+
+		$blocked_by_fraud_rule = 'wcpay_blocked_by_fraud_rule' === $error_code;
+
+		// Since the AVS mismatch is part of the advanced fraud prevention, we need to consider that as a blocked order.
+		$blocked_by_avs_mismatch = $this->is_blocked_by_avs_verification_fraud_rule( $error_code, $error_type );
+
+		return $blocked_by_fraud_rule || $blocked_by_avs_mismatch;
+	}
+
+	/**
 	 * Checks the synchronicity of fraud protection settings with the server, and updates the local cache when needed.
 	 *
 	 * @return  void
@@ -2962,7 +3016,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// If the transient exists, do nothing.
 		$cached_server_settings = get_transient( 'wcpay_fraud_protection_settings' );
 
-		if ( ! $cached_server_settings ) {
+		if ( false === $cached_server_settings ) {
 			// When both local and server values don't exist, we need to reset the protection level on both to "Basic".
 			$needs_reset = false;
 
@@ -4134,7 +4188,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			true
 		);
 
-		if ( $is_link_enabled ) {
+		if ( $is_link_enabled && isset( $fields['billing_email'] ) ) {
 			// Update the field priority.
 			$fields['billing_email']['priority'] = 1;
 

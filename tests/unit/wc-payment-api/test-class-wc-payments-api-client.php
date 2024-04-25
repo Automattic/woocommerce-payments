@@ -258,14 +258,15 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		];
 
 		$user_data = [
-			'user_id'    => 1,
-			'ip_address' => '0.0.0.0',
-			'browser'    => [
+			'user_id'           => 1,
+			'ip_address'        => '0.0.0.0',
+			'browser'           => [
 				'user_agent'       => 'Unit Test Agent/0.1.0',
 				'accept_language'  => 'en-US,en;q=0.5',
 				'content_language' => 'en-US,en;q=0.5',
 			],
-			'referer'    => 'https://example.com',
+			'referer'           => 'https://example.com',
+			'onboarding_source' => 'test_source',
 		];
 
 		$account_data = [];
@@ -1275,11 +1276,15 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	private function get_mock_compatibility_data( array $args = [] ): array {
 		return array_merge(
 			[
-				'woopayments_version' => WCPAY_VERSION_NUMBER,
-				'woocommerce_version' => WC_VERSION,
-				'blog_theme'          => 'default',
-				'active_plugins'      => [],
-				'post_types_count'    => [
+				'woopayments_version'    => WCPAY_VERSION_NUMBER,
+				'woocommerce_version'    => WC_VERSION,
+				'woocommerce_permalinks' => get_option( 'woocommerce_permalinks' ),
+				'woocommerce_shop'       => get_permalink( wc_get_page_id( 'shop' ) ),
+				'woocommerce_cart'       => get_permalink( wc_get_page_id( 'cart' ) ),
+				'woocommerce_checkout'   => get_permalink( wc_get_page_id( 'checkout' ) ),
+				'blog_theme'             => 'default',
+				'active_plugins'         => [],
+				'post_types_count'       => [
 					'post'       => 0,
 					'page'       => 0,
 					'attachment' => 0,
