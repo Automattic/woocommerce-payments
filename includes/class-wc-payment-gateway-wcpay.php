@@ -4329,10 +4329,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_theme_icon() {
 		$upe_appearance_theme = get_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
-
 		if ( $upe_appearance_theme ) {
 			return 'night' === $upe_appearance_theme ? $this->payment_method->get_dark_icon() : $this->payment_method->get_icon();
 		}
+		return $this->payment_method->get_icon();
 	}
 
 	/**
