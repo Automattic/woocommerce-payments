@@ -1,33 +1,51 @@
 {
-  "compilerOptions": {
-    "outDir": "./dist/",        // path to output directory
-    "sourceMap": true,          // allow sourcemap support
-    "strict": true,             // enable strict type checks as a best practice
-    "module": "es6",            // specify module code generation
-    "jsx": "react",             // use typescript to transpile jsx to js
-    "target": "es6",            // specify ECMAScript target version
-    "allowJs": true,            // allow a partial TypeScript and JavaScript codebase
-    "moduleResolution": "node",
-    "baseUrl": "./client",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "noImplicitAny": true,
-    "paths": {
-      "assets/*": [ "../assets/*" ],
-      "wcpay/*": [ "./*" ],
-      "iti/utils": [ "../node_modules/intl-tel-input/build/js/utils" ],
-      "react": ["../node_modules/@types/react"]
-    },
-    "types": [
-      "node",
-      "jest",
-      "@testing-library/jest-dom"
-    ],
-    "resolveJsonModule": true,
-    "skipLibCheck": true // To be removed when the lint errors related to types and multiple resolutions are gone
-  },
-  "include": [
-    "./client/"
-  ],
-  "exclude": [ "node_modules" ]
+	"compilerOptions": {
+		"target": "ES2020",
+		"useDefineForClassFields": true,
+		"lib": [ "ES2020", "DOM", "DOM.Iterable" ],
+		"module": "ESNext",
+		"skipLibCheck": true,
+
+		/* Bundler mode */
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"jsx": "react", //react-jsx
+
+		/* Linting */
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+
+		/* Custom */
+		"sourceMap": true,
+		"allowJs": true,
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"noImplicitAny": true,
+		"types": [ "node", "jest", "@testing-library/jest-dom" ],
+		"baseUrl": "./client",
+		"outDir": "./dist/", // path to output directory
+		"paths": {
+			"assets/*": [ "../assets/*" ],
+			"wcpay/*": [ "./*" ],
+			"iti/utils": [ "../node_modules/intl-tel-input/build/js/utils" ],
+			"react": [ "../node_modules/@types/react" ]
+		}
+	},
+	"include": [ "client" ],
+	"references": [ { "path": "./tsconfig.node.json" } ]
 }
+
+// {
+//   "compilerOptions": {
+//     "module": "es6",            // specify module code generation
+//     "jsx": "react",             // use typescript to transpile jsx to js
+//     "target": "es6",            // specify ECMAScript target version
+//     "moduleResolution": "node",
+//     "noImplicitAny": true,
+//   },
+// }

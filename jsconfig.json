@@ -1,20 +1,12 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
-    "paths": {
-      "components/*": ["client/components/*"],
-      "utils/*": ["client/utils/*"]
-    }
+		"baseUrl": "./client",
+		"paths": {
+			"assets/*": [ "../assets/*" ],
+			"wcpay/*": [ "./*" ],
+			"iti/utils": [ "../node_modules/intl-tel-input/build/js/utils" ],
+			"react": [ "../node_modules/@types/react" ]
+		}
   },
-  "exclude": [
-    "assets",
-    "bin",
-    "dist",
-    "docker",
-    "includes",
-    "node_modules",
-    "vendor",
-    "tests/e2e/docker",
-    "tests/e2e/deps",
-  ]
+	"include": [ "client" ],
 }
