@@ -38,8 +38,8 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
-		if ( ! Rule::is_valid_fraud_outcome_status( $this->status ) ) {
-			$status = $this->status ?? 'null';
+		$status = $this->status ?? 'null';
+		if ( ! Rule::is_valid_fraud_outcome_status( $status ) ) {
 			throw new Invalid_Request_Parameter_Exception( "Invalid fraud outcome status provided: $status", 'invalid_fraud_outcome_status' );
 		}
 		return WC_Payments_API_Client::FRAUD_OUTCOMES_API . '/status/' . $this->status;
