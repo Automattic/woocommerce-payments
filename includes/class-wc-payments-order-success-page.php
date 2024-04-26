@@ -69,8 +69,13 @@ class WC_Payments_Order_Success_Page {
 			return $this->show_woopay_payment_method_name( $order );
 		}
 
-		$gateway           = WC()->payment_gateways()->payment_gateways()[ $payment_method_id ];
-		$payment_method    = $gateway->get_payment_method( $order );
+		$gateway = WC()->payment_gateways()->payment_gateways()[ $payment_method_id ];
+
+		if ( ! $gateway || ! method_exists( $gateway, 'get_payment_method' ) ) {
+			return $payment_method_title;
+		}
+
+		$payment_method = $gateway->get_payment_method( $order );
 
 		// If this is a BNPL order, return the html for the BNPL payment method name.
 		if ( $payment_method->is_bnpl() ) {
