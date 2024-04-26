@@ -144,18 +144,22 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return array
 	 */
 	private function transform_prb_address_data( $address ) {
-		$country  = $address['country'] ?? '';
-		$state    = $address['state'] ?? '';
+		$country = $address['country'] ?? '';
+		if ( empty( $country ) ) {
+			return $address;
+		}
+
+		// States from Apple Pay or Google Pay are in long format, we need their short format..
+		$state = $address['state'] ?? '';
+		if ( ! empty( $state ) ) {
+			$address['state'] = $this->get_normalized_state( $state, $country );
+		}
+
+		// Normalizes postal code in case of redacted data from Apple Pay or Google Pay.
 		$postcode = $address['postcode'] ?? '';
-
-		// Normalizes state to calculate shipping zones.
-		$state = $this->get_normalized_state( $state, $country );
-
-		// Normalizes postal code in case of redacted data from Apple Pay.
-		$postcode = $this->get_normalized_postal_code( $postcode, $country );
-
-		$address['postcode'] = $postcode;
-		$address['state']    = $state;
+		if ( ! empty( $postcode ) ) {
+			$address['postcode'] = $this->get_normalized_postal_code( $postcode, $country );
+		}
 
 		return $address;
 	}
