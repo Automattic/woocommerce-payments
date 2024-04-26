@@ -546,11 +546,12 @@ class WC_Payments_Utils {
 	 * Generally, only Stripe exceptions with type of `card_error` should be displayed.
 	 * Other API errors should be redacted (https://stripe.com/docs/api/errors#errors-message).
 	 *
-	 * @param Exception $e Exception to get the message from.
+	 * @param Exception $e                      Exception to get the message from.
+	 * @param boolean   $blocked_by_fraud_rules Whether the payment was blocked by the fraud rules. Defaults to false.
 	 *
 	 * @return string
 	 */
-	public static function get_filtered_error_message( Exception $e ) {
+	public static function get_filtered_error_message( Exception $e, bool $blocked_by_fraud_rules = false ) {
 		$error_message = method_exists( $e, 'getLocalizedMessage' ) ? $e->getLocalizedMessage() : $e->getMessage();
 
 		// These notices can be shown when placing an order or adding a new payment method, so we aim for
@@ -580,7 +581,7 @@ class WC_Payments_Utils {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
-		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
+		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() && ! $blocked_by_fraud_rules ) {
 			$error_message = __( 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', 'woocommerce-payments' );
 		}
 
