@@ -20,6 +20,7 @@ class Create_And_Confirm_Intention extends Create_Intention {
 		'amount',
 		'currency',
 		'payment_method',
+		'payment_method_update_data',
 		'return_url',
 	];
 
@@ -88,6 +89,17 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	 */
 	public function set_payment_methods( array $payment_methods ) {
 		$this->set_param( 'payment_method_types', $payment_methods );
+	}
+
+	/**
+	 * Payment method update data setter.
+	 *
+	 * @param array $payment_method_update_data Data to update on payment method.
+	 *
+	 * @return void
+	 */
+	public function set_payment_method_update_data( array $payment_method_update_data ) {
+		$this->set_param( 'payment_method_update_data', $payment_method_update_data );
 	}
 
 	/**

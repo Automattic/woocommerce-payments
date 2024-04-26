@@ -23,6 +23,27 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 	protected $rest_base = 'payments/charges';
 
 	/**
+	 * WC_Payments_Order_Service instance
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param WC_Payments_API_Client    $api_client    WooCommerce Payments API client.
+	 * @param WC_Payments_Order_Service $order_service Order service.
+	 */
+	public function __construct(
+		WC_Payments_API_Client $api_client,
+		WC_Payments_Order_Service $order_service
+	) {
+		parent::__construct( $api_client );
+		$this->order_service = $order_service;
+	}
+
+	/**
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
@@ -81,7 +102,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 
 		$currency        = $order->get_currency();
 		$amount          = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-		$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
+		$billing_details = $this->order_service->get_billing_data_from_order( $order );
 		$date_created    = $order->get_date_created();
 		$intent_id       = $order->get_meta( '_intent_id' );
 		$intent_status   = $order->get_meta( '_intent_status' );
