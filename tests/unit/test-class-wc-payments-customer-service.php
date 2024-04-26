@@ -511,15 +511,19 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_payment_method_with_billing_details_from_checkout_fields() {
-		$fields = wc()->checkout()->checkout_fields;
-		unset( $fields['billing']['billing_company'] );
-		unset( $fields['billing']['billing_country'] );
-		unset( $fields['billing']['billing_address_1'] );
-		unset( $fields['billing']['billing_address_2'] );
-		unset( $fields['billing']['billing_city'] );
-		unset( $fields['billing']['billing_state'] );
-		unset( $fields['billing']['billing_phone'] );
-		wc()->checkout()->checkout_fields = $fields;
+		add_filter(
+			'woocommerce_billing_fields',
+			function ( $fields ) {
+				unset( $fields['billing_company'] );
+				unset( $fields['billing_country'] );
+				unset( $fields['billing_address_1'] );
+				unset( $fields['billing_address_2'] );
+				unset( $fields['billing_city'] );
+				unset( $fields['billing_state'] );
+				unset( $fields['billing_phone'] );
+				return $fields;
+			}
+		);
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'update_payment_method' )

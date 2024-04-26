@@ -257,18 +257,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_payment_metadata' )
 			->willReturn( [] );
 		wcpay_get_test_container()->replace( OrderService::class, $mock_order_service );
-		$checkout_fields                  = [
-			'billing' => [
-				'billing_company'   => '',
-				'billing_country'   => '',
-				'billing_address_1' => '',
-				'billing_address_2' => '',
-				'billing_city'      => '',
-				'billing_state'     => '',
-				'billing_phone'     => '',
-			],
-		];
-		WC()->checkout()->checkout_fields = $checkout_fields;
 	}
 
 	/**
@@ -304,7 +292,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 
 		wcpay_get_test_container()->reset_all_replacements();
-		WC()->checkout()->checkout_fields = null;
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
