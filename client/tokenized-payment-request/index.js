@@ -3,14 +3,13 @@
  * Internal dependencies
  */
 import WCPayAPI from '../checkout/api';
-
-import paymentRequestButtonUi from './button-ui';
-import './wc-product-variations-compatibility';
-import './wc-deposits-compatibility';
-import '../checkout/express-checkout-buttons.scss';
-
 import PaymentRequestCartApi from './cart-api';
 import WcpayPaymentRequest from './payment-request';
+import paymentRequestButtonUi from './button-ui';
+import './compatibility/wc-deposits';
+import './compatibility/wc-product-variations';
+
+import '../checkout/express-checkout-buttons.scss';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
