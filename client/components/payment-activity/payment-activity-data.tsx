@@ -16,7 +16,6 @@ import { ClickTooltip } from '../tooltip';
 import { usePaymentActivityData } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import type { DateRange } from './types';
-import { recordEvent } from 'wcpay/tracks';
 import './style.scss';
 
 /**
@@ -84,15 +83,6 @@ const PaymentActivityData: React.FC = () => {
 					/>
 				}
 				amount={ totalPaymentVolume }
-				handleReportLinkClick={ () => {
-					recordEvent(
-						'wcpay_overview_payment_activity_total_payment_volume_click',
-						{
-							source:
-								'total_payment_volume_tile_view_report_link',
-						}
-					);
-				} }
 				reportLink={ getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
@@ -131,14 +121,6 @@ const PaymentActivityData: React.FC = () => {
 						/>
 					}
 					amount={ charges }
-					handleReportLinkClick={ () => {
-						recordEvent(
-							'wcpay_overview_payment_activity_charges_click',
-							{
-								source: 'charges_tile_view_report_link',
-							}
-						);
-					} }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
@@ -152,14 +134,6 @@ const PaymentActivityData: React.FC = () => {
 					label={ __( 'Refunds', 'woocommerce-payments' ) }
 					currencyCode={ storeCurrency }
 					amount={ refunds }
-					handleReportLinkClick={ () => {
-						recordEvent(
-							'wcpay_overview_payment_activity_refunds_click',
-							{
-								source: 'refunds_tile_view_report_link',
-							}
-						);
-					} }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
@@ -179,14 +153,6 @@ const PaymentActivityData: React.FC = () => {
 					label={ __( 'Disputes', 'woocommerce-payments' ) }
 					currencyCode={ storeCurrency }
 					amount={ disputes }
-					handleReportLinkClick={ () => {
-						recordEvent(
-							'wcpay_overview_payment_activity_disputes_click',
-							{
-								source: 'disputes_tile_view_report_link',
-							}
-						);
-					} }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/disputes',
