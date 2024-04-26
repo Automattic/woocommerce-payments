@@ -15,10 +15,10 @@ import BlockPostAuthorIcon from 'components/icons/block-post-author';
 import './style.scss';
 
 interface Props {
-	closeModal: () => void;
+	onClose: () => void;
 }
 
-const SetupLivePaymentsModal: React.FC< Props > = ( { closeModal }: Props ) => {
+const SetupLivePaymentsModal: React.FC< Props > = ( { onClose }: Props ) => {
 	const handleSetup = () => {
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			'wcpay-disable-onboarding-test-mode': true,
@@ -33,7 +33,7 @@ const SetupLivePaymentsModal: React.FC< Props > = ( { closeModal }: Props ) => {
 			) }
 			className="wcpay-setup-real-payments-modal"
 			isDismissible={ true }
-			onRequestClose={ closeModal }
+			onRequestClose={ onClose }
 		>
 			<p className="wcpay-setup-real-payments-modal__headline">
 				{ __(
@@ -59,7 +59,7 @@ const SetupLivePaymentsModal: React.FC< Props > = ( { closeModal }: Props ) => {
 				) }
 			</div>
 			<div className="wcpay-setup-real-payments-modal__footer">
-				<Button isTertiary onClick={ closeModal }>
+				<Button isTertiary onClick={ onClose }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
 				<Button isPrimary onClick={ handleSetup }>

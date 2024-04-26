@@ -10,6 +10,7 @@ module.exports = {
 	entry: mapValues(
 		{
 			index: './client/index.js',
+			'bnpl-announcement': './client/bnpl-announcement/index.js',
 			settings: './client/settings/index.js',
 			'blocks-checkout': './client/checkout/blocks/index.js',
 			woopay: './client/checkout/woopay/index.js',
@@ -36,6 +37,7 @@ module.exports = {
 			'subscription-product-onboarding-toast':
 				'./client/subscription-product-onboarding/toast.js',
 			'product-details': './client/product-details/index.js',
+			'cart-block': './client/cart/blocks/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.

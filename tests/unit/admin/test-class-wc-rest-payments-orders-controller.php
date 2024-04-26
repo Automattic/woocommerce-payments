@@ -900,7 +900,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' )
 			->with(
 				$this->callback(
-					function( $argument ) {
+					function ( $argument ) {
 						return ( $argument instanceof WP_User ) && ! $argument->ID;
 					}
 				),
@@ -918,7 +918,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->with(
 				$this->equalTo( 'cus_new' ),
 				$this->callback(
-					function( $argument ) {
+					function ( $argument ) {
 						return ( $argument instanceof WP_User ) && ! $argument->ID;
 					}
 				),
@@ -978,7 +978,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->with(
 				$this->equalTo( 'cus_guest' ),
 				$this->callback(
-					function( $argument ) {
+					function ( $argument ) {
 						return ( $argument instanceof WP_User ) && ! $argument->ID;
 					}
 				),
@@ -1192,7 +1192,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'set_metadata' )
 			->with(
 				$this->callback(
-					function( $metadata ) {
+					function ( $metadata ) {
 						return isset( $metadata['order_number'] );
 					}
 				)
@@ -1202,7 +1202,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'set_payment_method_types' )
 			->with(
 				$this->callback(
-					function( $argument ) {
+					function ( $argument ) {
 						return is_array( $argument ) && ! empty( $argument );
 					}
 				)

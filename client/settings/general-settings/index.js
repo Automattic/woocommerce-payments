@@ -60,7 +60,7 @@ const GeneralSettings = () => {
 												target="_blank"
 												rel="noreferrer"
 												/* eslint-disable-next-line max-len */
-												href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards"
+												href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards"
 											/>
 										),
 										learnMoreLink: (
@@ -68,7 +68,7 @@ const GeneralSettings = () => {
 											<a
 												target="_blank"
 												rel="noreferrer"
-												href="https://woo.com/document/woopayments/testing-and-troubleshooting/testing/"
+												href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/"
 											/>
 										),
 									},
@@ -112,7 +112,8 @@ const GeneralSettings = () => {
 											<a
 												target="_blank"
 												rel="noreferrer"
-												href="https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
+												// eslint-disable-next-line max-len
+												href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
 											/>
 										),
 									},
@@ -124,7 +125,7 @@ const GeneralSettings = () => {
 			</Card>
 			{ modalVisible && (
 				<SetupLivePaymentsModal
-					closeModal={ () => setModalVisible( false ) }
+					onClose={ () => setModalVisible( false ) }
 				/>
 			) }
 			{ testModeModalVisible && (

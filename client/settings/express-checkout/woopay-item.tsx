@@ -128,7 +128,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement => {
 																		target="_blank"
 																		rel="noreferrer"
 																		// eslint-disable-next-line max-len
-																		href="https://woo.com/document/woopay-merchant-documentation/"
+																		href="https://woocommerce.com/document/woopay-merchant-documentation/"
 																	/>
 																),
 																tosLink: (
@@ -149,7 +149,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement => {
 																	<a
 																		target="_blank"
 																		rel="noreferrer"
-																		href="https://woo.com/usage-tracking/"
+																		href="https://woocommerce.com/usage-tracking/"
 																	/>
 																),
 															},

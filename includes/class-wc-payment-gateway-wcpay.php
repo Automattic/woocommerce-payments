@@ -118,9 +118,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPE_APPEARANCE_TRANSIENT                         = 'wcpay_upe_appearance';
 	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT               = 'wcpay_wc_blocks_upe_appearance';
 	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_product_page_appearance';
+	const UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_classic_cart_appearance';
+	const UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT         = 'wcpay_upe_bnpl_cart_block_appearance';
 	const UPE_APPEARANCE_THEME_TRANSIENT                   = 'wcpay_upe_appearance_theme';
 	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT         = 'wcpay_wc_blocks_upe_appearance_theme';
 	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_product_page_appearance_theme';
+	const UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_classic_cart_appearance_theme';
+	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT   = 'wcpay_upe_bnpl_cart_block_appearance_theme';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -308,7 +312,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 				'description' => WC_Payments_Utils::esc_interpolated_html(
 					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
-					[ 'a' => '<a href="https://woo.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+					[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 				),
 			],
 			'manual_capture'                     => [
@@ -527,6 +531,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 
 			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
+
+			add_action( 'woocommerce_settings_save_general', [ $this, 'update_fraud_rules_based_on_general_options' ], 20 );
 		}
 
 		$this->maybe_init_subscriptions_hooks();
@@ -1159,7 +1165,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 			// We set this variable to be used in following checks.
-			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
+			$blocked_by_fraud_rules = $this->is_blocked_by_fraud_rules( $e );
 
 			do_action( 'woocommerce_payments_order_failed', $order, $e );
 
@@ -1168,7 +1174,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 * It seems that the status only needs to change in certain instances, and within those instances the intent
 			 * information is not added to the order, as shown by tests.
 			 */
-			if ( ! $blocked_due_to_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
+			if ( ! $blocked_by_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
 				$order->update_status( Order_Status::FAILED );
 			}
 
@@ -1176,7 +1182,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
-			if ( $blocked_due_to_fraud_rules ) {
+			if ( $blocked_by_fraud_rules ) {
 				$this->order_service->mark_order_blocked_for_fraud( $order, '', Intent_Status::CANCELED );
 			} elseif ( ! empty( $payment_information ) ) {
 				/**
@@ -1246,7 +1252,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
-			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ) );
 		}
 	}
 
@@ -1396,6 +1402,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
 
+		// Update saved payment method async to include billing details, if missing.
+		if ( $payment_information->is_using_saved_payment_method() ) {
+			$this->action_scheduler_service->schedule_job(
+				time(),
+				self::UPDATE_SAVED_PAYMENT_METHOD,
+				[
+					'payment_method' => $payment_information->get_payment_method(),
+					'order_id'       => $order->get_id(),
+					'is_test_mode'   => WC_Payments::mode()->is_test(),
+				]
+			);
+		}
+
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
 
@@ -1413,16 +1432,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// We need to make sure the saved payment method is saved to the order so we can
 				// charge the payment method for a future payment.
 				$this->add_token_to_order( $order, $payment_information->get_payment_token() );
-				// If we are not hitting the API for the intent, we need to update the saved payment method ourselves.
-				$this->action_scheduler_service->schedule_job(
-					time(),
-					self::UPDATE_SAVED_PAYMENT_METHOD,
-					[
-						'payment_method' => $payment_information->get_payment_method(),
-						'order_id'       => $order->get_id(),
-						'is_test_mode'   => WC_Payments::mode()->is_test(),
-					]
-				);
 			}
 
 			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
@@ -1505,13 +1514,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 				$request->set_hook_args( $payment_information );
-				if ( $payment_information->is_using_saved_payment_method() ) {
-					$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
-
-					if ( ! empty( $billing_details ) ) {
-						$request->set_payment_method_update_data( [ 'billing_details' => $billing_details ] );
-					}
-				}
 				// Add specific payment method parameters to the request.
 				$this->modify_create_intent_parameters_when_processing_payment( $request, $payment_information, $order );
 
@@ -1999,7 +2001,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param Payment_Information $payment_information Payment information object for transaction.
 	 * @return array List of payment methods.
 	 */
-	public function get_payment_method_types( $payment_information ) : array {
+	public function get_payment_method_types( $payment_information ): array {
 		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
 
@@ -2917,6 +2919,67 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if a fraud protection rule is enabled.
+	 *
+	 * @param string $rule The rule to check.
+	 *
+	 * @return bool True if the rule is enabled, false otherwise.
+	 */
+	protected function is_fraud_rule_enabled( string $rule ): bool {
+		$settings = $this->get_advanced_fraud_protection_settings();
+
+		if ( ! is_array( $settings ) ) {
+			return false;
+		}
+
+		foreach ( $settings as $setting ) {
+			if ( $rule === $setting['key'] ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks if the transaction was blocked by AVS verification fraud rule.
+	 *
+	 * @param string|null $error_code The error code to check.
+	 * @param string|null $error_type The error type to check.
+	 *
+	 * @return bool True if the transaction was blocked by the AVS verification fraud rule, false otherwise.
+	 */
+	private function is_blocked_by_avs_verification_fraud_rule( ?string $error_code, ?string $error_type ): bool {
+		$is_avs_verification_rule_enabled = $this->is_fraud_rule_enabled( 'avs_verification' );
+		$is_incorrect_zip_error           = 'card_error' === $error_type && 'incorrect_zip' === $error_code;
+
+		return $is_avs_verification_rule_enabled && $is_incorrect_zip_error;
+	}
+
+	/**
+	 * Checks if the transaction was blocked by fraud rules.
+	 *
+	 * @param Exception $e The exception to check.
+	 *
+	 * @return bool True if the transaction was blocked by fraud rules, false otherwise.
+	 */
+	protected function is_blocked_by_fraud_rules( Exception $e ): bool {
+		if ( ! ( $e instanceof API_Exception ) ) {
+			return false;
+		}
+
+		$error_code = $e->get_error_code() ?? null;
+		$error_type = $e->get_error_type() ?? null;
+
+		$blocked_by_fraud_rule = 'wcpay_blocked_by_fraud_rule' === $error_code;
+
+		// Since the AVS mismatch is part of the advanced fraud prevention, we need to consider that as a blocked order.
+		$blocked_by_avs_mismatch = $this->is_blocked_by_avs_verification_fraud_rule( $error_code, $error_type );
+
+		return $blocked_by_fraud_rule || $blocked_by_avs_mismatch;
+	}
+
+	/**
 	 * Checks the synchronicity of fraud protection settings with the server, and updates the local cache when needed.
 	 *
 	 * @return  void
@@ -2935,7 +2998,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// If the transient exists, do nothing.
 		$cached_server_settings = get_transient( 'wcpay_fraud_protection_settings' );
 
-		if ( ! $cached_server_settings ) {
+		if ( false === $cached_server_settings ) {
 			// When both local and server values don't exist, we need to reset the protection level on both to "Basic".
 			$needs_reset = false;
 
@@ -2969,6 +3032,48 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Set the static flag to prevent duplicate calls to this method.
 			$runonce = true;
+		}
+	}
+
+	/**
+	 * Updates the fraud rules depending on some settings when those settings have changed.
+	 *
+	 * @return  void           This is a readonly action.
+	 */
+	public function update_fraud_rules_based_on_general_options() {
+		// If the protection level is not "advanced", no need to run this, because it won't contain the IP country filter.
+		if ( 'advanced' !== $this->get_current_protection_level() ) {
+			return;
+		}
+
+		// If the ruleset can't be parsed, skip updating.
+		$ruleset = $this->get_advanced_fraud_protection_settings();
+		if (
+			'error' === $ruleset
+			|| ! is_array( $ruleset )
+			|| ! Fraud_Risk_Tools::is_valid_ruleset_array( $ruleset )
+		) {
+			return;
+		}
+
+		$needs_update = false;
+		foreach ( $ruleset as &$rule_array ) {
+			if ( isset( $rule_array['key'] ) && Fraud_Risk_Tools::RULE_INTERNATIONAL_IP_ADDRESS === $rule_array['key'] ) {
+				$new_rule_array = Fraud_Risk_Tools::get_international_ip_address_rule()->to_array();
+				if ( isset( $rule_array['check'] )
+					&& isset( $new_rule_array['check'] )
+					&& wp_json_encode( $rule_array['check'] ) !== wp_json_encode( $new_rule_array['check'] )
+				) {
+					$rule_array   = $new_rule_array;
+					$needs_update = true;
+				}
+			}
+		}
+
+		// Update the possibly changed values on the server, and the transient.
+		if ( $needs_update ) {
+			$this->payments_api_client->save_fraud_ruleset( $ruleset );
+			set_transient( 'wcpay_fraud_protection_settings', $ruleset, DAY_IN_SECONDS );
 		}
 	}
 
@@ -3813,7 +3918,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) ) {
 			$enabled_payment_methods = array_filter(
 				$enabled_payment_methods,
-				static function( $method ) {
+				static function ( $method ) {
 					return Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $method;
 				}
 			);
@@ -3887,7 +3992,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$elements_location = isset( $_POST['elements_location'] ) ? wc_clean( wp_unslash( $_POST['elements_location'] ) ) : null;
 			$appearance        = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
 
-			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page' ];
+			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block' ];
 			if ( ! $elements_location || ! in_array( $elements_location, $valid_locations, true ) ) {
 				throw new Exception(
 					__( 'Unable to update UPE appearance values at this time.', 'woocommerce-payments' )
@@ -3909,7 +4014,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			/**
 			 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
 			 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
-			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', or 'bnpl_product_page'.
+			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block'.
 			 *
 			 * @since 7.4.0
 			 */
@@ -3919,11 +4024,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
 				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
 				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
+				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT,
+				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT,
 			][ $elements_location ];
 			$appearance_theme_transient = [
 				'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
 				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
 				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
+				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
 			][ $elements_location ];
 
 			if ( null !== $appearance ) {
@@ -3952,9 +4061,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		delete_transient( self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT );
 		delete_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
 		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
 		delete_transient( self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT );
+		delete_transient( self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT );
 	}
 
 	/**
@@ -4057,7 +4170,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			true
 		);
 
-		if ( $is_link_enabled ) {
+		if ( $is_link_enabled && isset( $fields['billing_email'] ) ) {
 			// Update the field priority.
 			$fields['billing_email']['priority'] = 1;
 
@@ -4210,38 +4323,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_method_description() {
-		$description_links = [
-			'br'                   => '<br/>',
-			'tosLink'              => '<a href="https://wordpress.com/tos/" target="_blank" rel="noopener noreferrer">',
-			'privacyLink'          => '<a href="https://automattic.com/privacy/" target="_blank" rel="noopener noreferrer">',
-			'woopayMechantTosLink' => '<a href="https://wordpress.com/tos/#more-woopay-specifically" target="_blank" rel="noopener noreferrer">',
-		];
-
-		$description = WC_Payments_Utils::esc_interpolated_html(
-			sprintf(
-				/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
-				__(
-					'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
-			By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-					'woocommerce-payments'
-				),
-				'WooPayments'
+		$description = sprintf(
+			/* translators: %1$s: WooPayments */
+			__(
+				'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.',
+				'woocommerce-payments'
 			),
-			$description_links
+			'WooPayments'
 		);
 
 		if ( WooPay_Utilities::is_store_country_available() ) {
-			$description = WC_Payments_Utils::esc_interpolated_html(
-				sprintf(
-					/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, woopayMechantTosLink: Link to WooPay merchant terms, privacyLink: Link to privacy policy page */
-					__(
-						'Payments made simple — including WooPay, a new express checkout feature.<br/><br/>
-				By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink> (including WooPay <woopayMechantTosLink>merchant terms</woopayMechantTosLink>) and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-						'woocommerce-payments'
-					),
-					'WooPayments'
+			$description = sprintf(
+				/* translators: %s: WooPay,  */
+				__(
+					'Payments made simple — including %s, a new express checkout feature.',
+					'woocommerce-payments'
 				),
-				$description_links
+				'WooPay'
 			);
 		}
 
@@ -4300,7 +4398,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
-		$check_if_usable = function( array $address ): bool {
+		$check_if_usable = function ( array $address ): bool {
 			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
 		};
 

@@ -229,7 +229,7 @@ class WC_Payments_Admin {
 						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
 					</b>
 					<?php
-						echo sprintf(
+						printf(
 							/* translators: %s: WooPayments*/
 							esc_html__( 'The selected currency is not available for the country set in your %s account.', 'woocommerce-payments' ),
 							'WooPayments'
@@ -790,6 +790,10 @@ class WC_Payments_Admin {
 			$connect_url = add_query_arg( [ 'promo' => sanitize_text_field( $connect_incentive['id'] ) ], $connect_url );
 		}
 
+		// Get the site logo URL, if available.
+		$site_logo_id  = get_theme_mod( 'custom_logo' );
+		$site_logo_url = $site_logo_id ? ( wp_get_attachment_image_src( $site_logo_id, 'full' )[0] ?? '' ) : '';
+
 		$this->wcpay_js_settings = [
 			'version'                       => WCPAY_VERSION_NUMBER,
 			'connectUrl'                    => $connect_url,
@@ -833,6 +837,7 @@ class WC_Payments_Admin {
 			'currentUserEmail'              => $current_user_email,
 			'currencyData'                  => $currency_data,
 			'restUrl'                       => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
+			'siteLogoUrl'                   => $site_logo_url,
 			'isFRTReviewFeatureActive'      => WC_Payments_Features::is_frt_review_feature_active(),
 			'fraudProtection'               => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
@@ -852,8 +857,11 @@ class WC_Payments_Admin {
 			'reporting'                     => [
 				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
 			],
+			'dismissedDuplicateNotices'     => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
+			'isOverviewSurveySubmitted'     => get_option( 'wcpay_survey_payment_overview_submitted', false ),
 			'trackingInfo'                  => $this->account->get_tracking_info(),
+			'lifetimeTPV'                   => $this->account->get_lifetime_total_payment_volume(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
@@ -1219,7 +1227,7 @@ class WC_Payments_Admin {
 	 * @return int The number of disputes which need a response.
 	 */
 	private function get_disputes_awaiting_response_count() {
-		$send_callback = function() {
+		$send_callback = function () {
 			$request = Request::get( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
 			$request->assign_hook( 'wcpay_get_dispute_status_counts' );
 			return $request->send();
@@ -1249,7 +1257,7 @@ class WC_Payments_Admin {
 		$test_mode = WC_Payments::mode()->is_test();
 		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
 
-		$send_callback         = function() {
+		$send_callback         = function () {
 			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
 			$request->assign_hook( 'wc_pay_get_authorizations_summary' );
 			return $request->send();

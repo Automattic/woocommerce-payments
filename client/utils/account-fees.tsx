@@ -18,9 +18,9 @@ import { PaymentMethod } from 'wcpay/types/payment-methods';
 import { createInterpolateElement } from '@wordpress/element';
 
 const countryFeeStripeDocsBaseLink =
-	'https://woo.com/document/woopayments/fees-and-debits/fees/#';
+	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/#';
 const countryFeeStripeDocsBaseLinkNoCountry =
-	'https://woo.com/document/woopayments/fees-and-debits/fees/';
+	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/';
 const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	AE: 'united-arab-emirates',
 	AU: 'australia',
@@ -76,7 +76,7 @@ const getStripeFeeSectionUrl = ( country: string ): string => {
 
 const getFeeDescriptionString = (
 	fee: BaseFee,
-	discountBasedMultiplier: number
+	discountBasedMultiplier = 1
 ): string => {
 	if ( fee.fixed_rate && fee.percentage_rate ) {
 		return sprintf(
@@ -122,14 +122,15 @@ export const formatMethodFeesTooltip = (
 			? 1 - accountFees.discount[ 0 ].discount
 			: 1;
 
+	// Per https://woo.com/es/terms-conditions/woopayments-promotion-2023/ we exclude FX fees from discounts.
 	const total = {
 		percentage_rate:
-			accountFees.base.percentage_rate +
-			accountFees.additional.percentage_rate +
+			accountFees.base.percentage_rate * discountAdjustedFeeRate +
+			accountFees.additional.percentage_rate * discountAdjustedFeeRate +
 			accountFees.fx.percentage_rate,
 		fixed_rate:
-			accountFees.base.fixed_rate +
-			accountFees.additional.fixed_rate +
+			accountFees.base.fixed_rate * discountAdjustedFeeRate +
+			accountFees.additional.fixed_rate * discountAdjustedFeeRate +
 			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
 	};
@@ -165,12 +166,7 @@ export const formatMethodFeesTooltip = (
 			{ hasFees( accountFees.fx ) ? (
 				<div>
 					<div>Foreign exchange fee</div>
-					<div>
-						{ getFeeDescriptionString(
-							accountFees.fx,
-							discountAdjustedFeeRate
-						) }
-					</div>
+					<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
 				</div>
 			) : (
 				''
@@ -178,10 +174,7 @@ export const formatMethodFeesTooltip = (
 			<div>
 				<div>Total per transaction</div>
 				<div className={ 'wcpay-fees-tooltip__bold' }>
-					{ getFeeDescriptionString(
-						total,
-						discountAdjustedFeeRate
-					) }
+					{ getFeeDescriptionString( total ) }
 				</div>
 			</div>
 			{ wcpaySettings &&

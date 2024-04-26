@@ -219,7 +219,7 @@ class WC_Payments_Utils {
 
 	/**
 	 * List of countries enabled for Stripe platform account. See also this URL:
-	 * https://woo.com/document/woopayments/compatibility/countries/#supported-countries
+	 * https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries
 	 *
 	 * @return string[]
 	 */
@@ -359,6 +359,7 @@ class WC_Payments_Utils {
 			'phone'   => $order->get_billing_phone(),
 		];
 
+		$billing_details['address'] = array_filter( $billing_details['address'] );
 		return array_filter( $billing_details );
 	}
 
@@ -545,11 +546,12 @@ class WC_Payments_Utils {
 	 * Generally, only Stripe exceptions with type of `card_error` should be displayed.
 	 * Other API errors should be redacted (https://stripe.com/docs/api/errors#errors-message).
 	 *
-	 * @param Exception $e Exception to get the message from.
+	 * @param Exception $e                      Exception to get the message from.
+	 * @param boolean   $blocked_by_fraud_rules Whether the payment was blocked by the fraud rules. Defaults to false.
 	 *
 	 * @return string
 	 */
-	public static function get_filtered_error_message( Exception $e ) {
+	public static function get_filtered_error_message( Exception $e, bool $blocked_by_fraud_rules = false ) {
 		$error_message = method_exists( $e, 'getLocalizedMessage' ) ? $e->getLocalizedMessage() : $e->getMessage();
 
 		// These notices can be shown when placing an order or adding a new payment method, so we aim for
@@ -579,7 +581,7 @@ class WC_Payments_Utils {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
-		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
+		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() && ! $blocked_by_fraud_rules ) {
 			$error_message = __( 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', 'woocommerce-payments' );
 		}
 
@@ -593,7 +595,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return  int
 	 */
-	public static function get_filtered_error_status_code( Exception $e ) : int {
+	public static function get_filtered_error_status_code( Exception $e ): int {
 		$status_code = null;
 		if ( $e instanceof API_Exception ) {
 			$status_code = $e->get_http_code();
@@ -1083,5 +1085,17 @@ class WC_Payments_Utils {
 	 */
 	public static function is_cart_page(): bool {
 		return is_cart() || has_block( 'woocommerce/cart' );
+	}
+
+	/**
+	 * Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
+	 * in this case because it checks the page content for the block, which isn't present.
+	 *
+	 * @return bool
+	 *
+	 * @psalm-suppress UndefinedFunction
+	 */
+	public static function is_cart_block(): bool {
+		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
 	}
 }

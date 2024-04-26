@@ -26,7 +26,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
         Foreign exchange fee
       </div>
       <div>
-        0.8%
+        1%
       </div>
     </div>
     <div>
@@ -36,7 +36,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
       <div
         class="wcpay-fees-tooltip__bold"
       >
-        11.44% + $3.65
+        11.64% + $3.65
       </div>
     </div>
     <div
@@ -44,7 +44,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     >
       <span>
         <a
-          href="https://woo.com/document/woopayments/fees-and-debits/fees/#united-states"
+          href="https://woocommerce.com/document/woopayments/fees-and-debits/fees/#united-states"
           rel="noreferrer"
           target="_blank"
         >
@@ -101,7 +101,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     >
       <span>
         <a
-          href="https://woo.com/document/woopayments/fees-and-debits/fees/#united-states"
+          href="https://woocommerce.com/document/woopayments/fees-and-debits/fees/#united-states"
           rel="noreferrer"
           target="_blank"
         >

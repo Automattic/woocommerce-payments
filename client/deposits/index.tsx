@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from '@wordpress/data';
 import { ExternalLink } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies.
@@ -20,6 +21,7 @@ import { useAllDepositsOverviews } from 'data';
 import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
+import { recordEvent } from 'wcpay/tracks';
 
 const useNextDepositNoticeState = () => {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
@@ -99,6 +101,9 @@ const NextDepositNotice: React.FC = () => {
 
 const DepositFailureNotice: React.FC = () => {
 	const { hasErroredExternalAccount } = useAccountStatus();
+	const accountLink = addQueryArgs( wcpaySettings.accountStatus.accountLink, {
+		source: 'deposit__failure-notice',
+	} );
 
 	return hasErroredExternalAccount ? (
 		<BannerNotice
@@ -115,7 +120,13 @@ const DepositFailureNotice: React.FC = () => {
 				components: {
 					updateLink: (
 						<ExternalLink
-							href={ wcpaySettings.accountStatus.accountLink }
+							onClick={ () =>
+								recordEvent(
+									'wcpay_account_details_link_clicked',
+									{ source: 'deposit__failure-notice' }
+								)
+							}
+							href={ accountLink }
 						/>
 					),
 				},
