@@ -197,8 +197,7 @@ class Currency implements \JsonSerializable {
 	 * @return  string  Currency position (left/right).
 	 */
 	public function get_symbol_position(): string {
-		$localization_service = new WC_Payments_Localization_Service();
-		return $localization_service->get_currency_format( $this->code )['currency_pos'];
+		return $this->localization_service->get_currency_format( $this->code )['currency_pos'];
 	}
 
 	/**
