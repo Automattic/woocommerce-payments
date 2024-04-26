@@ -525,7 +525,7 @@ class WC_Payments_Account {
 	 *
 	 * @return array Fees.
 	 */
-	public function get_fees() {
+	public function get_fees(): array {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['fees'] ) ? $account['fees'] : [];
 	}
