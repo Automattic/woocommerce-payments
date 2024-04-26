@@ -267,7 +267,7 @@ export default class WcpayPaymentRequest {
 				);
 
 				const confirmationRequest = _self.wcpayApi.confirmIntent(
-					response.redirect
+					response.payment_result.redirect_url
 				);
 				// We need to call `complete` before redirecting to close the dialog for 3DS.
 				event.complete( 'success' );
@@ -276,7 +276,7 @@ export default class WcpayPaymentRequest {
 
 				// `true` means there is no intent to confirm.
 				if ( confirmationRequest === true ) {
-					redirectUrl = response.redirect;
+					redirectUrl = response.payment_result.redirect_url;
 				} else {
 					redirectUrl = await confirmationRequest;
 				}
