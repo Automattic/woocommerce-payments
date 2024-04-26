@@ -70,9 +70,8 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_account         = $this->createMock( WC_Payments_Account::class );
 		$this->mock_db_cache        = $this->createMock( Database_Cache::class );
 		$this->mock_session_service = $this->createMock( WC_Payments_Session_Service::class );
-		$this->mock_order_service   = $this->createMock( WC_Payments_Order_Service::class );
 
-		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_db_cache, $this->mock_session_service, $this->mock_order_service );
+		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_db_cache, $this->mock_session_service, WC_Payments::get_order_service() );
 	}
 
 	/**
