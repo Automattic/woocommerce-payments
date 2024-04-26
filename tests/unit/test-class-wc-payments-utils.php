@@ -576,24 +576,24 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$theme_transients = \WC_Payment_Gateway_WCPay::APPEARANCE_THEME_TRANSIENTS;
 
 		// Test with no transients set.
-		$this->assertSame( 'stripe', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'checkout', 'block' ) );
+		$this->assertSame( 'stripe', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'checkout', 'blocks' ) );
 
 		// Set the transients.
 		$this->set_appearance_theme_transients( $theme_transients );
 
 		// Test with transients set.
 		// Test with invalid location.
-		$this->assertSame( 'checkout_block_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'invalid_location', 'block' ) );
+		$this->assertSame( 'checkout_blocks_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'invalid_location', 'blocks' ) );
 
 		// Test with valid location and invalid context.
-		$this->assertSame( 'checkout_block_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'checkout', 'invalid_context' ) );
+		$this->assertSame( 'checkout_blocks_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'checkout', 'invalid_context' ) );
 
 		// Test with valid location and context.
 		foreach ( $theme_transients as $location => $contexts ) {
 			foreach ( $contexts as $context => $transient ) {
 				// Our transient for the product page is the same transient for both block and classic.
 				if ( 'product_page' === $location ) {
-					$this->assertSame( 'product_page_classic_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, 'block' ) );
+					$this->assertSame( 'product_page_classic_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, 'blocks' ) );
 					$this->assertSame( 'product_page_classic_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, 'classic' ) );
 				} else {
 					$this->assertSame( $location . '_' . $context . '_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $context ) );

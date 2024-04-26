@@ -1107,23 +1107,23 @@ class WC_Payments_Utils {
 	 * @param string $context The theme location to fall back to if both transients are set.
 	 * @return string
 	 */
-	public static function get_active_upe_theme_transient_for_location( string $location = 'checkout', string $context = 'block' ) {
+	public static function get_active_upe_theme_transient_for_location( string $location = 'checkout', string $context = 'blocks' ) {
 		$themes       = \WC_Payment_Gateway_WCPay::APPEARANCE_THEME_TRANSIENTS;
 		$active_theme = false;
 
 		// If an invalid location is sent, we fallback to trying $themes[ 'checkout' ][ 'block' ].
 		if ( ! isset( $themes[ $location ] ) ) {
-			$active_theme = get_transient( $themes['checkout']['block'] );
+			$active_theme = get_transient( $themes['checkout']['blocks'] );
 		} elseif ( ! isset( $themes[ $location ][ $context ] ) ) {
 			// If the location is valid but the context is invalid, we fallback to trying $themes[ $location ][ 'block' ].
-			$active_theme = get_transient( $themes[ $location ]['block'] );
+			$active_theme = get_transient( $themes[ $location ]['blocks'] );
 		} else {
 			$active_theme = get_transient( $themes[ $location ][ $context ] );
 		}
 
 		// If $active_theme is still false here, that means that $themes[ $location ][ $context ] is not set, so we try $themes[ $location ][ 'classic' ].
 		if ( ! $active_theme ) {
-			$active_theme = get_transient( $themes[ $location ][ 'block' === $context ? 'classic' : 'block' ] );
+			$active_theme = get_transient( $themes[ $location ][ 'blocks' === $context ? 'classic' : 'blocks' ] );
 		}
 
 		// If $active_theme is still false here, nothing at the location is set so we'll try all locations.

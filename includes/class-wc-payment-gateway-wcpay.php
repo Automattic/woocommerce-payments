@@ -131,15 +131,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	const APPEARANCE_THEME_TRANSIENTS = [
 		'checkout'     => [
-			'block'   => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
+			'blocks'  => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
 			'classic' => self::UPE_APPEARANCE_THEME_TRANSIENT,
 		],
 		'product_page' => [
-			'block'   => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+			'blocks'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
 			'classic' => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
 		],
 		'cart'         => [
-			'block'   => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
+			'blocks'  => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
 			'classic' => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
 		],
 	];
