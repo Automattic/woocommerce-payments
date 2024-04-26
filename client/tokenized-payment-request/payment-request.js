@@ -20,9 +20,6 @@ import {
 	transformStripeShippingAddressForStoreApi,
 } from './transformers';
 import paymentRequestButtonUi from './button-ui';
-import './wc-product-variations-compatibility';
-import './wc-deposits-compatibility';
-import '../checkout/express-checkout-buttons.scss';
 
 import {
 	getPaymentRequest,
