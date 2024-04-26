@@ -44,7 +44,7 @@ class WC_Payments_Order_Success_Page {
 	 *
 	 * @param string $payment_method_title
 	 * @param WC_Abstract_Order $abstract_order
-	 * @return void
+	 * @return string
 	 */
 	public function show_woocommerce_payments_payment_method_name( $payment_method_title, $abstract_order ) {
 		// Only change the payment method title on the order received page.
@@ -112,7 +112,7 @@ class WC_Payments_Order_Success_Page {
 	 * Add the BNPL logo to the payment method name on the order received page.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway the gateway being shown.
-	 * @param UPE_Payment_Method $payment_method the payment method being shown.
+	 * @param WCPay\Payment_Methods\UPE_Payment_Method $payment_method the payment method being shown.
 	 *
 	 * @return string|false
 	 */
