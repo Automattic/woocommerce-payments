@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Undeprecated `payments/order/id/create_customer` endpoint
