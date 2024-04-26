@@ -13,8 +13,6 @@ export default class PaymentRequestCartApi {
 	// for compatibility scenarios with other plugins (like WC Bookings, Product Add-Ons, WC Deposits, etc.).
 	cartRequestHeaders = {};
 
-	init( {} ) {}
-
 	async placeOrder( paymentData ) {
 		return await apiFetch( {
 			method: 'POST',
