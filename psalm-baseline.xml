@@ -100,4 +100,11 @@
       <code>$stripe_billing_migrator</code>
     </MissingDependency>
   </file>
+  <file src="includes/admin/class-wc-rest-payments-orders-controller.php">
+    <UndefinedFunction occurrences="3">
+      <code>wcs_get_subscriptions_for_order( $order )</code>
+      <code>wcs_is_manual_renewal_required()</code>
+      <code>wcs_order_contains_subscription( $order_id )</code>
+    </UndefinedFunction>
+  </file>
 </files>
