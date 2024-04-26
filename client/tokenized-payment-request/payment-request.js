@@ -209,6 +209,8 @@ export default class WcpayPaymentRequest {
 
 		paymentRequest.on( 'shippingaddresschange', async ( event ) => {
 			try {
+				// Please note that the `event.shippingAddress` might not contain all the fields.
+				// Some fields might not be present (like `line_1` or `line_2`) due to semi-anonymized data.
 				const cartData = await _self.paymentRequestCartApi.updateCustomer(
 					transformStripeShippingAddressForStoreApi(
 						event.shippingAddress
@@ -356,7 +358,7 @@ export default class WcpayPaymentRequest {
 			this.cachedCartData = await this.getCartData();
 		}
 
-		this.startPaymentRequest();
+		this.startPaymentRequest().then( noop );
 
 		// After initializing a new payment request, we need to reset the paymentAborted flag.
 		this.paymentAborted = false;

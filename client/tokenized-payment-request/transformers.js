@@ -3,25 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 
-const transformPostcode = ( country, postcode ) => {
-	/**
-	 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first 4 and 3 characters respectively
-	 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
-	 * the postal code and not calculate shipping zones correctly.
-	 */
-	if ( country.toUpperCase() === 'GB' ) {
-		// Replaces a redacted string with something like LN10***.
-		return postcode.replace( '/s+/', '' ).padEnd( 7, '*' );
-	}
-
-	if ( country.toUpperCase() === 'CA' ) {
-		// Replaces a redacted string with something like L4Y***.
-		return postcode.replace( '/s+/', '' ).padEnd( 6, '*' );
-	}
-
-	return postcode;
-};
-
 export const transformCartDataForDisplayItems = ( cartData ) => {
 	// see https://docs.stripe.com/js/appendix/payment_item_object for the data structure
 	const displayItems = cartData.items.map( ( item ) => ( {
@@ -83,16 +64,13 @@ export const transformStripeShippingAddressForStoreApi = (
 					?.split( ' ' )
 					?.slice( 1 )
 					?.join( ' ' ) ?? '',
-			company: '',
+			company: shippingAddress.organization ?? '',
 			address_1: shippingAddress.addressLine?.[ 0 ] ?? '',
 			address_2: shippingAddress.addressLine?.[ 1 ] ?? '',
 			city: shippingAddress.city ?? '',
 			state: shippingAddress.region ?? '',
 			country: shippingAddress.country ?? '',
-			postcode: transformPostcode(
-				shippingAddress.country,
-				shippingAddress.postalCode?.replace( ' ', '' ) ?? ''
-			),
+			postcode: shippingAddress.postalCode?.replace( ' ', '' ) ?? '',
 		},
 	};
 };
@@ -129,10 +107,7 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 			address_2: billing.line2 ?? '',
 			city: billing.city ?? '',
 			state: billing.state ?? '',
-			postcode: transformPostcode(
-				billing.country,
-				billing.postal_code ?? ''
-			),
+			postcode: billing.postal_code ?? '',
 			country: billing.country ?? '',
 			email:
 				paymentData.paymentMethod?.billing_details?.email ??
@@ -143,6 +118,8 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 				paymentData.payerPhone?.replace( '/[() -]/g', '' ) ??
 				'',
 		},
+		// refreshing any shipping address data, now that the customer is placing the order.
+		...transformStripeShippingAddressForStoreApi( shipping ),
 		payment_method: 'woocommerce_payments',
 		payment_data: [
 			{
@@ -162,17 +139,6 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 
 	// TODO: we also have all this data - do we need to submit it?
 	return {
-		shipping_first_name:
-			shipping.recipient?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
-		shipping_last_name:
-			shipping.recipient?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
-		shipping_company: shipping.organization ?? '',
-		shipping_country: shipping.country ?? '',
-		shipping_address_1: shipping.addressLine?.[ 0 ] ?? '',
-		shipping_address_2: shipping.addressLine?.[ 1 ] ?? '',
-		shipping_city: shipping.city ?? '',
-		shipping_state: shipping.region ?? '',
-		shipping_postcode: shipping.postalCode ?? '',
 		shipping_method: [ paymentData.shippingOption?.id ?? null ],
 		ship_to_different_address: 1,
 		terms: 1,

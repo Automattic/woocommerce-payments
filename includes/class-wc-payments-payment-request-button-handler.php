@@ -104,6 +104,60 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// will be used to calculate it whenever the option value is retrieved instead.
 		// It's used for displaying inbox notifications.
 		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
+
+		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
+			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+		}
+	}
+
+	/**
+	 * Google Pay/Apple Pay parameters for address data might need some massaging for some of the countries.
+	 * Ensuring that the Store API doesn't throw a `rest_invalid_param` error message for some of those scenarios.
+	 *
+	 * @param mixed            $response Response to replace the requested version with.
+	 * @param \WP_REST_Server  $server Server instance.
+	 * @param \WP_REST_Request $request Request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public function tokenized_cart_store_api_address_normalization( $response, $server, $request ) {
+		if ( 'true' !== $request->get_header( 'X-WC-Payments-prb-request' ) ) {
+			return $response;
+		}
+
+		$request_data = $request->get_json_params();
+		if ( isset( $request_data['shipping_address'] ) ) {
+			$request->set_param( 'shipping_address', $this->transform_prb_address_data( $request_data['shipping_address'] ) );
+		}
+		if ( isset( $request_data['billing_address'] ) ) {
+			$request->set_param( 'billing_address', $this->transform_prb_address_data( $request_data['billing_address'] ) );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Transform a GooglePay/ApplePay address data fields into values that are valid for WooCommerce.
+	 *
+	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
+	 *
+	 * @return array
+	 */
+	private function transform_prb_address_data( $address ) {
+		$country  = $address['country'] ?? '';
+		$state    = $address['state'] ?? '';
+		$postcode = $address['postcode'] ?? '';
+
+		// Normalizes state to calculate shipping zones.
+		$state = $this->get_normalized_state( $state, $country );
+
+		// Normalizes postal code in case of redacted data from Apple Pay.
+		$postcode = $this->get_normalized_postal_code( $postcode, $country );
+
+		$address['postcode'] = $postcode;
+		$address['state']    = $state;
+
+		return $address;
 	}
 
 	/**
@@ -487,7 +541,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			// Replaces a redacted string with something like LN10***.
 			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '*' );
 		}
-		if ( 'CA' === $country ) {
+		if ( Country_Code::CANADA === $country ) {
 			// Replaces a redacted string with something like L4Y***.
 			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '*' );
 		}

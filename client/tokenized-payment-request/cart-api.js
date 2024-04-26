@@ -19,6 +19,7 @@ export default class PaymentRequestCartApi {
 			path: '/wc/store/v1/checkout',
 			credentials: 'omit',
 			headers: {
+				'X-WC-Payments-prb-request': true,
 				...this.cartRequestHeaders,
 			},
 			data: paymentData,
@@ -47,6 +48,7 @@ export default class PaymentRequestCartApi {
 			path: '/wc/store/v1/cart/update-customer',
 			credentials: 'omit',
 			headers: {
+				'X-WC-Payments-prb-request': true,
 				...this.cartRequestHeaders,
 			},
 			data: customerData,
