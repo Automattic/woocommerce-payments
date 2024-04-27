@@ -37,13 +37,21 @@ class WCPay_Multi_Currency_WooCommercePointsAndRewards_Tests extends WCPAY_UnitT
 	private $wc_points_rewards;
 
 	/**
+	 * WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
-		$this->mock_utils          = $this->createMock( Utils::class );
+		$this->mock_multi_currency  = $this->createMock( MultiCurrency::class );
+		$this->mock_utils           = $this->createMock( Utils::class );
+		$this->localization_service = new WC_Payments_Localization_Service();
 
 		$this->wc_points_rewards = new WooCommercePointsAndRewards( $this->mock_multi_currency, $this->mock_utils );
 	}
@@ -97,7 +105,7 @@ class WCPay_Multi_Currency_WooCommercePointsAndRewards_Tests extends WCPAY_UnitT
 		$this->mock_multi_currency
 			->expects( $this->once() )
 			->method( 'get_selected_currency' )
-			->willReturn( new Currency( 'EUR' ) );
+			->willReturn( new Currency( $this->localization_service, 'EUR' ) );
 
 		$this->mock_utils
 			->expects( $this->once() )
@@ -115,7 +123,7 @@ class WCPay_Multi_Currency_WooCommercePointsAndRewards_Tests extends WCPAY_UnitT
 		$this->mock_multi_currency
 			->expects( $this->once() )
 			->method( 'get_selected_currency' )
-			->willReturn( new Currency( 'EUR', $rate ) );
+			->willReturn( new Currency( $this->localization_service, 'EUR', $rate ) );
 
 		$this->mock_utils
 			->expects( $this->once() )
