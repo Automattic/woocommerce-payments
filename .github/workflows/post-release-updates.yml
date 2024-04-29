@@ -155,8 +155,10 @@ jobs:
               echo ":warning: File "$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME.md" already exists. No action needed." >> $GITHUB_STEP_SUMMARY
           fi
           
-          # If an entry for the next version doesn't exist yet
+          # Check if this release version exists in Release-testing-instructions.md
           if ! grep -q "v$NEXT_RELEASE_VERSION" Release-testing-instructions.md; then
+            # If it doesn't exist, remove all trailing newlines and add the new version for this release
+            perl -pi -e 'BEGIN{undef $/;} s/\n+\z//' Release-testing-instructions.md
             echo -ne "\n* [v$NEXT_RELEASE_VERSION](https://github.com/Automattic/woocommerce-payments/wiki/$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME)" >> Release-testing-instructions.md
             echo "Added a new entry for v$NEXT_RELEASE_VERSION in \"Release-testing-instructions.md\"." >> $GITHUB_STEP_SUMMARY
             HAS_CHANGES=true
