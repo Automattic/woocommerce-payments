@@ -33,11 +33,6 @@ export interface PaymentActivityAction {
 	data: PaymentActivityData;
 }
 
-export interface QueryDate {
-	date_start: string;
-	date_end: string;
-}
-
 export interface PaymentActivityQuery {
 	date_start: string;
 	date_end: string;
