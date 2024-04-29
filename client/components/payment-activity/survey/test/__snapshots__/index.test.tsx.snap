@@ -201,7 +201,7 @@ exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`
         <p
           class="comment_container__disclaimer"
         >
-          Your feedback will be only be shared with WooCommerce and treated pursuant to our
+          Your feedback will be only be shared with WooCommerce and treated pursuant to our 
           <a
             href="https://automattic.com/privacy/"
             rel="noreferrer"
