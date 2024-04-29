@@ -52,8 +52,13 @@ class WC_Payments_Order_Success_Page {
 			return $payment_method_title;
 		}
 
-		$order_id          = $abstract_order->get_id();
-		$order             = wc_get_order( $order_id );
+		$order_id = $abstract_order->get_id();
+		$order    = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			return $payment_method_title;
+		}
+
 		$payment_method_id = $order->get_payment_method();
 
 		if ( stripos( $payment_method_id, 'woocommerce_payments' ) !== 0 ) {
