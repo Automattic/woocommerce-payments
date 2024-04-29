@@ -140,7 +140,7 @@ class WC_Payments_Order_Success_Page {
 
 		ob_start();
 		?>
-		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-bnpl-logo <?php echo str_replace( 'woocommerce_payments_', '', $payment_method->get_id() ); ?>">
+		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-bnpl-logo <?php echo $payment_method->get_id(); ?>">
 			<img alt="<?php echo $payment_method->get_title(); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
 		</div>
 		<?php
