@@ -2,17 +2,25 @@
 
 export interface PaymentActivityData {
 	/** The currency code for the amounts below, e.g. `usd` */
-	currency?: string;
+	currency: string;
 	/** Total payment volume amount */
-	total_payment_volume?: number;
+	total_payment_volume: number;
 	/** Charges total amount */
-	charges?: number;
+	charges: number;
 	/** Fees total amount */
-	fees?: number;
+	fees: number;
 	/** Disputes total amount */
-	disputes?: number;
+	disputes: number;
 	/** Refunds total amount */
-	refunds?: number;
+	refunds: number;
+	/** The timezone used to calculate the date range, e.g. 'UTC' */
+	timezone: string;
+	/** The date range start date */
+	date_start: string;
+	/** The date range end date */
+	date_end: string;
+	/** The interval used to calculate transaction data, e.g. 'daily' */
+	interval: string;
 }
 
 export interface PaymentActivityState {

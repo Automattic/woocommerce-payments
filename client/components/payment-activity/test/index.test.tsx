@@ -44,6 +44,10 @@ mockUsePaymentActivityData.mockReturnValue( {
 		fees: 1234,
 		disputes: 5555,
 		refunds: 4444,
+		date_start: '2024-01-01',
+		date_end: '2024-01-31',
+		timezone: 'UTC',
+		interval: 'daily',
 	},
 	isLoading: false,
 } );
