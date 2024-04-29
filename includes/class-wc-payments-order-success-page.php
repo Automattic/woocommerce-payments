@@ -42,8 +42,8 @@ class WC_Payments_Order_Success_Page {
 	 * Hooked into `woocommerce_order_get_payment_method_title` to change the payment method title on the
 	 * order received page for WooPay and BNPL orders.
 	 *
-	 * @param string $payment_method_title
-	 * @param WC_Abstract_Order $abstract_order
+	 * @param string $payment_method_title Original payment method title.
+	 * @param WC_Abstract_Order $abstract_order Successful received order being shown.
 	 * @return string
 	 */
 	public function show_woocommerce_payments_payment_method_name( $payment_method_title, $abstract_order ) {
