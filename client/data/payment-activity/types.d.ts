@@ -15,9 +15,9 @@ export interface PaymentActivityData {
 	refunds: number;
 	/** The timezone used to calculate the date range, e.g. 'UTC' */
 	timezone: string;
-	/** The date range start date */
+	/** The date range start datetime used to calculate transaction data, e.g. 2024-04-29T16:19:29 */
 	date_start: string;
-	/** The date range end date */
+	/** The date range end datetime used to calculate transaction data, e.g. 2024-04-29T16:19:29 */
 	date_end: string;
 	/** The interval used to calculate transaction data, e.g. 'daily' */
 	interval: string;
@@ -34,7 +34,10 @@ export interface PaymentActivityAction {
 }
 
 export interface PaymentActivityQuery {
+	/** The date range start datetime used to calculate transaction data, e.g. 2024-04-29T16:19:29 */
 	date_start: string;
+	/** The date range end datetime used to calculate transaction data, e.g. 2024-04-29T16:19:29 */
 	date_end: string;
+	/** The timezone used to calculate the transaction data date range, e.g. 'UTC' */
 	timezone?: string;
 }
