@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
 
 /**
@@ -68,6 +69,7 @@ class List_Fraud_Outcome_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::FRAUD_OUTCOMES_API . '/status/' . $status, $request->get_api() );
 	}
+
 	public function test_list_fraud_outcome_transactions_request_using_from_rest_request_function() {
 		$page        = 2;
 		$page_size   = 50;
@@ -568,5 +570,30 @@ class List_Fraud_Outcome_Transactions_Test extends WCPAY_UnitTestCase {
 		];
 
 		$this->assertEquals( $expected, $result );
+	}
+
+	/**
+	 * Checks to see if the get_api method throws an exception if an invalid status is passed.
+	 *
+	 * @param ?string $status The status to check.
+	 *
+	 * @return void
+	 *
+	 * @dataProvider provider_get_api_exception_on_invalid_status
+	 */
+	public function test_get_api_exception_on_invalid_status( $status ): void {
+		$request = new List_Fraud_Outcome_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_status( $status );
+
+		$status = $status ?? 'null';
+
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$this->expectExceptionMessage( "Invalid fraud outcome status provided: $status" );
+
+		$request->get_api();
+	}
+
+	public function provider_get_api_exception_on_invalid_status(): array {
+		return [ [ 'invalid' ], [ null ] ];
 	}
 }
