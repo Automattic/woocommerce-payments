@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Avoid warnings about fatal error during plugin update due to problems with plugin initialization.

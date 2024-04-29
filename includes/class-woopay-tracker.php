@@ -13,6 +13,7 @@ use WC_Payments;
 use WC_Payments_Features;
 use WCPay\Constants\Country_Code;
 use WP_Error;
+use Exception;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -42,6 +43,13 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	private $http;
 
+	/**
+	 * Base URL for stats counter.
+	 *
+	 * @var string
+	 */
+	private static $pixel_base_url = 'https://pixel.wp.com/g.gif';
+
 
 	/**
 	 * Constructor.
@@ -63,8 +71,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_after_single_product', [ $this, 'classic_product_page_view' ] );
 		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'blocks_checkout_start' ] );
 		add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ $this, 'blocks_cart_page_view' ] );
-		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
-		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
+		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
+		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
 		add_action( 'woocommerce_thankyou', [ $this, 'thank_you_page_view' ] );
@@ -370,7 +378,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		];
 	}
 
-
 	/**
 	 * Record a Tracks event that the classic checkout page has loaded.
 	 */
@@ -445,13 +452,56 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	}
 
 	/**
-	 * Record a Tracks event that the order has been processed.
+	 * Bump a counter. No user identifiable information is sent.
+	 *
+	 * @param string $group     The group to bump the stat in.
+	 * @param string $stat_name The name of the stat to bump.
+	 *
+	 * @return bool
 	 */
-	public function checkout_order_processed() {
-		$is_woopay_order = ( isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'] );
-		// Don't track WooPay orders. They will be tracked on WooPay side with more flow specific details.
-		if ( ! $is_woopay_order ) {
-			$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed' );
+	public function bump_stats( $group, $stat_name ) {
+		$pixel_url = sprintf(
+			self::$pixel_base_url . '?v=wpcom-no-pv&x_%s=%s',
+			$group,
+			$stat_name
+		);
+
+		$response = wp_remote_get( esc_url_raw( $pixel_url ) );
+
+		if ( is_wp_error( $response ) ) {
+			return false;
+		}
+
+		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Record that the order has been processed.
+	 */
+	public function checkout_order_processed( $order_id ) {
+
+		$payment_gateway = wc_get_payment_gateway_by_order( $order_id );
+		$properties = [ 'payment_title' => 'other' ];
+
+		// If the order was placed using WooCommerce Payments, record the payment title using Tracks.
+		if (strpos( $payment_gateway->id, 'woocommerce_payments') === 0 ) {
+			$order = wc_get_order( $order_id );
+			$payment_title = $order->get_payment_method_title();
+			$properties = [ 'payment_title' => $payment_title ];
+
+			$is_woopay_order = ( isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'] );
+
+			// Don't track WooPay orders. They will be tracked on WooPay side with more details.
+			if ( ! $is_woopay_order ) {
+				$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties );
+			}
+		// If the order was placed using a different payment gateway, just increment a counter.
+		} else {
+			$this->bump_stats( 'wcpay_order_completed_gateway', 'other' );
 		}
 	}
 
