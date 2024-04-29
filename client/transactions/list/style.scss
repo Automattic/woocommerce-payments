@@ -123,6 +123,8 @@ $gap-small: 12px;
 
 			.woocommerce-select-control__control {
 				height: 38px;
+				overflow: scroll;
+				align-items: flex-start;
 			}
 		}
 

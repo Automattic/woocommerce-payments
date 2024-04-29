@@ -43,6 +43,18 @@ const PaymentActivityData: React.FC = () => {
 	const refunds = paymentActivityData?.refunds ?? 0;
 	const { storeCurrency } = wcpaySettings;
 
+	const searchTermsForTPV = [
+		'charge',
+		'payment',
+		'payment_failure_refund',
+		'payment_refund',
+		'refund',
+		'refund_failure',
+		'dispute',
+		'dispute_reversal',
+		'card_reader_fee',
+	];
+
 	return (
 		<div className="wcpay-payment-activity-data">
 			<PaymentDataTile
@@ -92,7 +104,13 @@ const PaymentActivityData: React.FC = () => {
 					'date_between[1]': moment( getDateRange().date_end ).format(
 						'YYYY-MM-DD'
 					),
-					filter: 'advanced',
+					...searchTermsForTPV.reduce(
+						( acc, term, index ) => ( {
+							...acc,
+							[ `search[${ index }]` ]: term,
+						} ),
+						{}
+					),
 				} ) }
 				isLoading={ isLoading }
 			/>
