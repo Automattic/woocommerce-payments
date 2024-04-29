@@ -178,6 +178,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_fraud_service;
 
+		/**
+		 * Mock Duplicates Detection Service.
+		 *
+		 * @var Duplicates_Detection_Service
+		 */
+	private $mock_duplicates_detection_service;
+
 	/**
 	 * Pre-test setup
 	 */
@@ -230,7 +237,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'currency_code' => 'usd',
 				]
 			);
-		$this->mock_fraud_service = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
 		$this->mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
 			->setConstructorArgs( [ $this->mock_token_service ] )
@@ -898,7 +906,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
-					$this->createMock( Duplicates_Detection_Service::class ),
+					$this->mock_duplicates_detection_service,
 				]
 			)
 			->onlyMethods(
@@ -1006,7 +1014,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
-					$this->createMock( Duplicates_Detection_Service::class ),
+					$this->mock_duplicates_detection_service,
 				]
 			)
 			->onlyMethods(
@@ -3206,7 +3214,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_dpps,
 			$this->mock_localization_service,
 			$this->mock_fraud_service,
-			$this->createMock( Duplicates_Detection_Service::class ),
+			$this->mock_duplicates_detection_service,
 		];
 
 		foreach ( $constructor_replacement as $key => $value ) {
@@ -3693,7 +3701,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				$this->mock_dpps,
 				$this->mock_localization_service,
 				$this->mock_fraud_service,
-				$this->createMock( Duplicates_Detection_Service::class )
+				$this->mock_duplicates_detection_service
 			);
 		}
 

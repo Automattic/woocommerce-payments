@@ -159,6 +159,13 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_fraud_service;
 
+		/**
+		 * Mock Duplicates Detection Service.
+		 *
+		 * @var Duplicates_Detection_Service
+		 */
+	private $mock_duplicates_detection_service;
+
 	/**
 	 * Mapping for payment ID to payment method.
 	 *
@@ -248,8 +255,9 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
-		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
-		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_localization_service         = $this->createMock( WC_Payments_Localization_Service::class );
+		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
@@ -282,7 +290,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						$this->mock_dpps,
 						$this->mock_localization_service,
 						$this->mock_fraud_service,
-						$this->createMock( Duplicates_Detection_Service::class ),
+						$this->mock_duplicates_detection_service,
 					]
 				)
 				->setMethods(
@@ -1062,7 +1070,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
-					$this->createMock( Duplicates_Detection_Service::class ),
+					$this->mock_duplicates_detection_service,
 				]
 			)
 			->setMethods( [ 'get_payment_methods_from_gateway_id' ] )
@@ -1108,7 +1116,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
-					$this->createMock( Duplicates_Detection_Service::class ),
+					$this->mock_duplicates_detection_service,
 				]
 			)
 			->setMethods( [ 'get_payment_methods_from_gateway_id' ] )
@@ -1153,7 +1161,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
-					$this->createMock( Duplicates_Detection_Service::class ),
+					$this->mock_duplicates_detection_service,
 				]
 			)
 			->setMethods(
@@ -1207,7 +1215,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
-					$this->createMock( Duplicates_Detection_Service::class ),
+					$this->mock_duplicates_detection_service,
 				]
 			)
 			->onlyMethods(
