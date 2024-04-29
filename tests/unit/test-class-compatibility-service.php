@@ -176,11 +176,15 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	private function get_mock_compatibility_data( array $args = [] ): array {
 		return array_merge(
 			[
-				'woopayments_version' => WCPAY_VERSION_NUMBER,
-				'woocommerce_version' => WC_VERSION,
-				'blog_theme'          => $this->stylesheet,
-				'active_plugins'      => $this->active_plugins,
-				'post_types_count'    => $this->post_types_count,
+				'woopayments_version'    => WCPAY_VERSION_NUMBER,
+				'woocommerce_version'    => WC_VERSION,
+				'woocommerce_permalinks' => get_option( 'woocommerce_permalinks' ),
+				'woocommerce_shop'       => get_permalink( wc_get_page_id( 'shop' ) ),
+				'woocommerce_cart'       => get_permalink( wc_get_page_id( 'cart' ) ),
+				'woocommerce_checkout'   => get_permalink( wc_get_page_id( 'checkout' ) ),
+				'blog_theme'             => $this->stylesheet,
+				'active_plugins'         => $this->active_plugins,
+				'post_types_count'       => $this->post_types_count,
 			],
 			$args
 		);

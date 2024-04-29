@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Improve signing of minimum WooPay session data.
