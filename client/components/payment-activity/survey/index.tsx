@@ -99,7 +99,7 @@ const Survey: React.FC = () => {
 			<div className="wcpay-payments-activity__survey">
 				<div className="survey_container">
 					{ __(
-						'Are those metrics helpful?',
+						'Are these metrics helpful?',
 						'woocommerce-payments'
 					) }
 

@@ -260,7 +260,7 @@ exports[`PaymentActivity component should render 1`] = `
           <div
             class="survey_container"
           >
-            Are those metrics helpful?
+            Are these metrics helpful?
             <div
               class="survey_container__emoticons"
             >

@@ -120,7 +120,7 @@ describe( 'PaymentActivity component', () => {
 		const { container, getByText } = render( <PaymentActivity /> );
 
 		// Check survey is rendered.
-		getByText( 'Are those metrics helpful?' );
+		getByText( 'Are these metrics helpful?' );
 
 		expect( container ).toMatchSnapshot();
 	} );
@@ -140,7 +140,7 @@ describe( 'PaymentActivity component', () => {
 		const { queryByText } = render( <PaymentActivity /> );
 
 		expect(
-			queryByText( 'Are those metrics helpful?' )
+			queryByText( 'Are these metrics helpful?' )
 		).not.toBeInTheDocument();
 	} );
 } );
