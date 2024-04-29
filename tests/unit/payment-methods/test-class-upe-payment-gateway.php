@@ -33,6 +33,7 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WC_Payments_Localization_Service;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Database_Cache;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 
@@ -948,6 +949,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->expects( $this->any() )
 			->method( 'get_fees' )
 			->willReturn( $payment_methods );
+		$mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
 		$gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -961,7 +963,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$this->mock_order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$mock_duplicates_detection_service
 		);
 
 		$this->assertEquals( $expected_result, $gateway->get_upe_available_payment_methods() );

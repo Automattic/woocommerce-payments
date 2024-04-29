@@ -17,6 +17,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
@@ -3688,7 +3689,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				$this->order_service,
 				$this->mock_dpps,
 				$this->mock_localization_service,
-				$this->mock_fraud_service
+				$this->mock_fraud_service,
+				$this->createMock( Duplicates_Detection_Service::class )
 			);
 		}
 
