@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: This change doesn't impact production code, just updates the README file to clarify how the WCPay Dev Tools dependency is updated in this repository.
+
+
