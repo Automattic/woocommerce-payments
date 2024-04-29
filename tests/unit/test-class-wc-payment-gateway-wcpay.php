@@ -898,6 +898,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
+					$this->createMock( Duplicates_Detection_Service::class ),
 				]
 			)
 			->onlyMethods(
@@ -1005,6 +1006,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
+					$this->createMock( Duplicates_Detection_Service::class ),
 				]
 			)
 			->onlyMethods(
@@ -3204,6 +3206,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_dpps,
 			$this->mock_localization_service,
 			$this->mock_fraud_service,
+			$this->createMock( Duplicates_Detection_Service::class ),
 		];
 
 		foreach ( $constructor_replacement as $key => $value ) {

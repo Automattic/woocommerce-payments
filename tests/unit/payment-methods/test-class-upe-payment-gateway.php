@@ -295,6 +295,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
+					$this->createMock( Duplicates_Detection_Service::class ),
 				]
 			)
 			->setMethods(
