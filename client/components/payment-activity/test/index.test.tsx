@@ -88,7 +88,7 @@ describe( 'PaymentActivity component', () => {
 					},
 				},
 			},
-			accountDefaultCurrency: 'EUR',
+			accountDefaultCurrency: 'eur',
 			zeroDecimalCurrencies: [],
 			connect: {
 				country: 'DE',
