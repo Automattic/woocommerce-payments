@@ -22,7 +22,7 @@ declare const global: {
 
 describe( 'PaymentDataTile', () => {
 	global.wcpaySettings = {
-		accountDefaultCurrency: 'USD',
+		accountDefaultCurrency: 'usd',
 		zeroDecimalCurrencies: [],
 		connect: {
 			country: 'US',
@@ -43,7 +43,7 @@ describe( 'PaymentDataTile', () => {
 		const { container } = render(
 			<PaymentDataTile
 				id="total-payment"
-				currencyCode="USD"
+				currencyCode="usd"
 				label="Total payment volume"
 			/>
 		);
@@ -55,17 +55,18 @@ describe( 'PaymentDataTile', () => {
 		render(
 			<PaymentDataTile
 				id="total-payment"
-				currencyCode="USD"
+				currencyCode="usd"
 				label={ label }
+				amount={ 123 }
 			/>
 		);
-		const labelElement = screen.getByText( label );
-		expect( labelElement ).toBeInTheDocument();
+		expect( screen.getByText( label ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( label ) ).toHaveTextContent( '$1.23' );
 	} );
 
 	test( 'renders amount correctly', () => {
 		const amount = 10000;
-		const currencyCode = 'USD';
+		const currencyCode = 'usd';
 		render(
 			<PaymentDataTile
 				id="charges-test-tile"
@@ -85,7 +86,7 @@ describe( 'PaymentDataTile', () => {
 				id="charges-test-tile"
 				label="Charges"
 				amount={ 10000 }
-				currencyCode="USD"
+				currencyCode="usd"
 				reportLink={ reportLink }
 			/>
 		);
