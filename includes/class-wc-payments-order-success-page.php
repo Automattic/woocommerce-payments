@@ -76,7 +76,7 @@ class WC_Payments_Order_Success_Page {
 
 		$gateway = WC()->payment_gateways()->payment_gateways()[ $payment_method_id ];
 
-		if ( ! $gateway || ! method_exists( $gateway, 'get_payment_method' ) ) {
+		if ( ! is_object( $gateway ) || ! method_exists( $gateway, 'get_payment_method' ) ) {
 			return $payment_method_title;
 		}
 
