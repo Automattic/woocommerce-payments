@@ -556,7 +556,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 400, WC_Payments_Utils::get_filtered_error_status_code( new \WCPay\Exceptions\API_Exception( 'Error: Your card was declined.', 'card_declined', 402 ) ) );
 	}
 
-	public function delete_appearance_theme_transients( $transients ) {
+	private function delete_appearance_theme_transients( $transients ) {
 		foreach ( $transients as $location => $contexts ) {
 			foreach ( $contexts as $context => $transient ) {
 				delete_transient( $transient );
@@ -564,7 +564,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function set_appearance_theme_transients( $transients ) {
+	private function set_appearance_theme_transients( $transients ) {
 		foreach ( $transients as $location => $contexts ) {
 			foreach ( $contexts as $context => $transient ) {
 				set_transient( $transient, $location . '_' . $context . '_value', DAY_IN_SECONDS );
