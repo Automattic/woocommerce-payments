@@ -38,7 +38,7 @@ const mockUsePaymentActivityData = usePaymentActivityData as jest.MockedFunction
 
 mockUsePaymentActivityData.mockReturnValue( {
 	paymentActivityData: {
-		currency: 'EUR',
+		currency: 'eur',
 		total_payment_volume: 123456,
 		charges: 9876,
 		fees: 1234,

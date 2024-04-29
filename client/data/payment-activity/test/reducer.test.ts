@@ -12,7 +12,7 @@ describe( 'receivePaymentActivity', () => {
 		fees: 300,
 		disputes: 315,
 		refunds: 200,
-		currency: 'JPY',
+		currency: 'jpy',
 		timezone: 'UTC',
 		date_start: '2024-01-01',
 		date_end: '2024-01-31',
