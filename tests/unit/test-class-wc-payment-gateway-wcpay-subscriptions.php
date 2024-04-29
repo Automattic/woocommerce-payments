@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
@@ -156,7 +157,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$this->createMock( Duplicates_Detection_Service::class ),
 		);
 		$this->wcpay_gateway->init_hooks();
 		WC_Payments::set_gateway( $this->wcpay_gateway );
