@@ -43,6 +43,10 @@ interface PaymentDataTileProps {
 	 * Optional hover link to view report.
 	 */
 	reportLink?: string;
+	/**
+	 * The source of the event tracking.
+	 */
+	tracksSource?: string;
 }
 
 const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
@@ -53,10 +57,11 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 	amount = 0,
 	isLoading = false,
 	reportLink,
+	tracksSource,
 } ) => {
 	const handleReportLinkClick = () => {
 		recordEvent( 'wcpay_overview_payment_activity_click', {
-			source: label.toLowerCase().replace( / /g, '_' ),
+			source: tracksSource,
 		} );
 	};
 	return (
