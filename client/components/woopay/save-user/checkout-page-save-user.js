@@ -6,9 +6,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
-import { Icon, info } from '@wordpress/icons';
-import interpolateComponents from '@automattic/interpolate-components';
-import LockIconG from 'gridicons/dist/lock';
 
 /**
  * Internal dependencies
@@ -20,21 +17,17 @@ import Agreement from './agreement';
 import Container from './container';
 import useWooPayUser from '../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
-import WooPayIcon from 'assets/images/woopay.svg?asset';
 import { recordUserEvent } from 'tracks';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
-	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
+	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState(
+		window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO || false
+	);
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
-	const [ isInfoFlyoutVisible, setIsInfoFlyoutVisible ] = useState( false );
-	const [ hasShownInfoFlyout, setHasShownInfoFlyout ] = useState( false );
 
-	const toggleTooltip = () => {
-		setIsInfoFlyoutVisible( ! isInfoFlyoutVisible );
-	};
 	const isRegisteredUser = useWooPayUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
@@ -119,16 +112,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			recordUserEvent( 'checkout_woopay_save_my_info_mobile_enter' );
 		}
 	}, [ isPhoneValid ] );
-
-	useEffect( () => {
-		// Record Tracks event when user clicks on the info icon for the first time.
-		if ( isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
-			setHasShownInfoFlyout( true );
-			recordUserEvent( 'checkout_save_my_info_tooltip_click' );
-		} else if ( ! isInfoFlyoutVisible && ! hasShownInfoFlyout ) {
-			setHasShownInfoFlyout( false );
-		}
-	}, [ isInfoFlyoutVisible, hasShownInfoFlyout ] );
 
 	useEffect( () => {
 		const formSubmitButton = isBlocksCheckout
@@ -227,66 +210,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								</svg>
 							) }
 							<span>
-								{ isBlocksCheckout
-									? __(
-											'Save my information for a faster and secure checkout',
-											'woocommerce-payments'
-									  )
-									: __(
-											'Save my information for a faster checkout',
-											'woocommerce-payments'
-									  ) }
+								{ __(
+									'Securely save my information for 1-click checkout',
+									'woocommerce-payments'
+								) }
 							</span>
 						</label>
-					</div>
-					<img
-						src={ WooPayIcon }
-						className="woopay-logo"
-						alt="WooPay"
-					/>
-					<button
-						className={ `info-button ${
-							isInfoFlyoutVisible ? 'flyout-visible' : ''
-						}` }
-						type="button"
-						onClick={ toggleTooltip }
-						onBlur={ toggleTooltip }
-					>
-						<Icon icon={ info } size={ 20 } className="info-icon" />
-					</button>
-					<div className="save-details-flyout">
-						<div>
-							<LockIconG size={ 16 } />
-						</div>
-						<span>
-							{ interpolateComponents( {
-								mixedString: __(
-									'We use {{woopayBold/}} to securely store your information in this WooCommerce store and others. ' +
-										"Next time at checkout, we'll send you a code by SMS to authenticate your purchase. {{learnMore/}}",
-									'woocommerce-payments'
-								),
-								components: {
-									woopayBold: <b>WooPay</b>,
-									learnMore: (
-										<a
-											target="_blank"
-											href="https://woocommerce.com/document/woopay-customer-documentation/"
-											rel="noopener noreferrer"
-											onClick={ () => {
-												recordUserEvent(
-													'checkout_save_my_info_tooltip_learn_more_click'
-												);
-											} }
-										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
-										</a>
-									),
-								},
-							} ) }
-						</span>
 					</div>
 				</div>
 				{ isSaveDetailsChecked && (
