@@ -284,7 +284,7 @@ abstract class UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_payment_method_icon_for_location( string $location = 'checkout', bool $is_blocks = true, string $account_country = null ) {
-		$appearance_theme = WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $is_blocks ? 'block' : 'classic' );
+		$appearance_theme = WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $is_blocks ? 'blocks' : 'classic' );
 
 		if ( 'night' === $appearance_theme ) {
 			return $this->get_dark_icon( $account_country );
