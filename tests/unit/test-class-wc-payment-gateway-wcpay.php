@@ -2778,6 +2778,207 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->process_payment( $order->get_id() );
 	}
 
+	public function test_process_payment_marks_order_as_blocked_for_fraud() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'correct-token' )
+			->willReturn( true );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+
+		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$mock_order_service
+			->expects( $this->once() )
+			->method( 'mark_order_blocked_for_fraud' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway(
+			[ 'prepare_payment_information', 'process_payment_for_order' ],
+			[ WC_Payments_Order_Service::class => $mock_order_service ]
+		);
+
+		$error_message = "There's a problem with this payment. Please try again or use a different payment method.";
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'prepare_payment_information' );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' )
+			->willThrowException( new API_Exception( $error_message, 'wcpay_blocked_by_fraud_rule', 400, 'card_error' ) );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $error_message );
+
+		$mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_process_payment_marks_order_as_blocked_for_fraud_avs_mismatch() {
+		$ruleset_config = [
+			[
+				'key'     => 'avs_verification',
+				'outcome' => 'block',
+				'check'   => [
+					'key'      => 'avs_mismatch',
+					'operator' => 'equals',
+					'value'    => true,
+				],
+			],
+		];
+		set_transient( 'wcpay_fraud_protection_settings', $ruleset_config, DAY_IN_SECONDS );
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'correct-token' )
+			->willReturn( true );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+
+		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$mock_order_service
+			->expects( $this->once() )
+			->method( 'mark_order_blocked_for_fraud' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway(
+			[ 'prepare_payment_information', 'process_payment_for_order' ],
+			[ WC_Payments_Order_Service::class => $mock_order_service ]
+		);
+
+		$error_message = "There's a problem with this payment. Please try again or use a different payment method.";
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'prepare_payment_information' );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' )
+			->willThrowException( new API_Exception( $error_message, 'incorrect_zip', 400, 'card_error' ) );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $error_message );
+
+		$mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		delete_transient( 'wcpay_fraud_protection_settings' );
+	}
+
+	public function test_process_payment_marks_order_as_blocked_for_postal_code_mismatch() {
+		$ruleset_config = [
+			[
+				'key'     => 'address_mismatch',
+				'outcome' => 'block',
+				'check'   => [
+					'key'      => 'address_mismatch',
+					'operator' => 'equals',
+					'value'    => true,
+				],
+			],
+		];
+		set_transient( 'wcpay_fraud_protection_settings', $ruleset_config, DAY_IN_SECONDS );
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'correct-token' )
+			->willReturn( true );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+
+		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$mock_order_service
+			->expects( $this->never() )
+			->method( 'mark_order_blocked_for_fraud' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway(
+			[ 'prepare_payment_information', 'process_payment_for_order' ],
+			[ WC_Payments_Order_Service::class => $mock_order_service ]
+		);
+
+		$error_message = 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.';
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'prepare_payment_information' );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' )
+			->willThrowException( new API_Exception( $error_message, 'incorrect_zip', 400, 'card_error' ) );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( $error_message );
+
+		$mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		delete_transient( 'wcpay_fraud_protection_settings' );
+	}
+
 	public function test_process_payment_continues_if_valid_fraud_prevention_token() {
 		$order = WC_Helper_Order::create_order();
 
@@ -2981,27 +3182,39 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Create a partial mock for WC_Payment_Gateway_WCPay class.
 	 *
-	 * @param array $methods Method names that need to be mocked.
+	 * @param array $methods                 Method names that need to be mocked.
+	 * @param array $constructor_replacement Array of constructor arguments that need to be replaced.
+	 * The key is the class name and the value is the replacement object.
+	 * [ WC_Payments_Order_Service::class => $mock_order_service ]
+	 *
 	 * @return MockObject|WC_Payment_Gateway_WCPay
 	 */
-	private function get_partial_mock_for_gateway( array $methods = [] ) {
+	private function get_partial_mock_for_gateway( array $methods = [], array $constructor_replacement = [] ) {
+		$constructor_args = [
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			$this->mock_payment_method,
+			[ $this->mock_payment_method ],
+			$this->mock_rate_limiter,
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service,
+		];
+
+		foreach ( $constructor_replacement as $key => $value ) {
+			foreach ( $constructor_args as $index => $arg ) {
+				if ( $arg instanceof $key ) {
+					$constructor_args[ $index ] = $value;
+				}
+			}
+		}
+
 		return $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
-			->setConstructorArgs(
-				[
-					$this->mock_api_client,
-					$this->mock_wcpay_account,
-					$this->mock_customer_service,
-					$this->mock_token_service,
-					$this->mock_action_scheduler_service,
-					$this->mock_payment_method,
-					[ $this->mock_payment_method ],
-					$this->mock_rate_limiter,
-					$this->order_service,
-					$this->mock_dpps,
-					$this->mock_localization_service,
-					$this->mock_fraud_service,
-				]
-			)
+			->setConstructorArgs( $constructor_args )
 			->setMethods( $methods )
 			->getMock();
 	}

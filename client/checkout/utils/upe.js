@@ -13,7 +13,9 @@ import { getPaymentMethodsConstants } from '../constants';
  */
 export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 	const reusablePaymentMethods = Object.keys( paymentMethodsConfig ).filter(
-		( method ) => paymentMethodsConfig[ method ].isReusable
+		( method ) =>
+			// Stripe link doesn't need the "terms" - adding this property causes a warning in the console.
+			method !== 'link' && paymentMethodsConfig[ method ].isReusable
 	);
 
 	return reusablePaymentMethods.reduce( ( obj, method ) => {
