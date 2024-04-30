@@ -13,6 +13,7 @@ jest.mock( '@wordpress/data' );
 describe( 'usePaymentActivityData', () => {
 	test( 'should return the correct payment activity data and loading state', () => {
 		const mockPaymentActivityData = {
+			currency: 'jpy',
 			total_payment_volume: 2500,
 			charges: 3000,
 			fees: 300,

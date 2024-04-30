@@ -63,7 +63,7 @@ class WooPay_Save_User {
 			'WCPAY_WOOPAY',
 			'woopayCheckout',
 			[
-				'PRE_CHECK_SAVE_MY_INFO' => $account_data['pre_check_save_my_info']
+				'PRE_CHECK_SAVE_MY_INFO' => isset( $account_data['pre_check_save_my_info'] ) ? $account_data['pre_check_save_my_info'] : false,
 			]
 		);
 
