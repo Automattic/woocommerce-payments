@@ -17,6 +17,7 @@ import { usePaymentActivityData } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import type { DateRange } from './types';
 import './style.scss';
+import { filter } from 'lodash';
 
 /**
  * This will be replaces in the future with a dynamic date range picker.
@@ -98,6 +99,7 @@ const PaymentActivityData: React.FC = () => {
 				reportLink={ getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
+					filter: 'advanced',
 					'date_between[0]': moment(
 						getDateRange().date_start
 					).format( 'YYYY-MM-DD' ),
