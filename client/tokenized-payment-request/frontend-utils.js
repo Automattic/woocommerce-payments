@@ -2,7 +2,7 @@
 /**
  * Internal dependencies
  */
-import { transformCartDataForDisplayItems } from './transformers';
+import { transformCartDataForDisplayItems } from './transformers/wc-to-stripe';
 
 /**
  * Retrieves payment request data from global variable.

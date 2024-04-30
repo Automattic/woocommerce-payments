@@ -14,11 +14,13 @@ import {
 	trackPaymentRequestButtonLoad,
 } from './tracking';
 import {
-	transformCartDataForDisplayItems,
-	transformCartDataForShippingOptions,
 	transformStripePaymentMethodForStoreApi,
 	transformStripeShippingAddressForStoreApi,
-} from './transformers';
+} from './transformers/stripe-to-wc';
+import {
+	transformCartDataForDisplayItems,
+	transformCartDataForShippingOptions,
+} from './transformers/wc-to-stripe';
 import paymentRequestButtonUi from './button-ui';
 
 import {
