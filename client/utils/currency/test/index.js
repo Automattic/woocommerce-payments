@@ -13,7 +13,7 @@ describe( 'Currency utilities', () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
 			shouldUseExplicitPrice: true,
-			zeroDecimalCurrencies: [ 'vnd', 'jpy' ],
+			zeroDecimalCurrencies: [ 'vnd', 'jpy', 'xpf' ],
 			connect: {
 				country: 'US',
 			},
@@ -25,6 +25,11 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					defaultLocale: {
+						symbolPosition: 'left',
+						thousandSeparator: ',',
+						decimalSeparator: '.',
+					},
 				},
 				JP: {
 					code: 'JPY',
@@ -33,6 +38,11 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 0,
+					defaultLocale: {
+						symbolPosition: 'left',
+						thousandSeparator: ',',
+						decimalSeparator: '.',
+					},
 				},
 				FR: {
 					code: 'EUR',
@@ -41,6 +51,11 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ' ',
 					decimalSeparator: ',',
 					precision: 2,
+					defaultLocale: {
+						symbolPosition: 'right_space',
+						thousandSeparator: ',',
+						decimalSeparator: '.',
+					},
 				},
 				GB: {
 					code: 'GBP',
@@ -49,6 +64,11 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					defaultLocale: {
+						symbolPosition: 'left',
+						thousandSeparator: ',',
+						decimalSeparator: '.',
+					},
 				},
 				IN: {
 					code: 'INR',
@@ -57,6 +77,24 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					defaultLocale: {
+						symbolPosition: 'left',
+						thousandSeparator: ',',
+						decimalSeparator: '.',
+					},
+				},
+				NC: {
+					code: 'XPF',
+					symbol: 'XPF',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: '.',
+					precision: 0,
+					defaultLocale: {
+						symbolPosition: 'left_space',
+						thousandSeparator: ',',
+						decimalSeparator: '.',
+					},
 				},
 				RU: {
 					code: 'RUB',
@@ -65,6 +103,11 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ' ',
 					decimalSeparator: ',',
 					precision: 2,
+					defaultLocale: {
+						symbolPosition: 'right_space',
+						thousandSeparator: ' ',
+						decimalSeparator: ',',
+					},
 				},
 			},
 		};
@@ -108,6 +151,27 @@ describe( 'Currency utilities', () => {
 		global.wcpaySettings.connect.country = 'IN';
 
 		expect( utils.formatCurrency( 100000, 'EUR' ) ).toEqual( '€1,000.00' );
+	} );
+
+	test( 'getCurrencyLocale should use store country currency when it matches', () => {
+		expect( utils.formatCurrency( 100000, 'USD', null, true ) ).toEqual(
+			'$1,000.00'
+		);
+
+		global.wcpaySettings.connect.country = 'NC';
+
+		expect( utils.formatCurrency( 100000, 'XPF', null, true ) ).toEqual(
+			'100 000 XPF'
+		);
+	} );
+
+	test( 'getCurrencyLocale should use default locale formatting', () => {
+		expect( utils.formatCurrency( 100000, 'EUR', null, true ) ).toEqual(
+			'1,000.00 €'
+		);
+		expect( utils.formatCurrency( 100000, 'XPF', null, true ) ).toEqual(
+			'XPF 100,000'
+		);
 	} );
 
 	test( 'format export amounts', () => {
