@@ -125,6 +125,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return $response;
 		}
 
+		// This route is used to get shipping rates.
+		// GooglePay/ApplePay might provide us with "trimmed" zip codes.
+		// If that's the case, let's temporarily allow to skip the zip code validation, in order to get some shipping rates.
+		if ( $request->get_route() === '/wc/store/v1/cart/update-customer' ) {
+			add_filter( 'woocommerce_validate_postcode', [ $this, 'maybe_skip_postcode_validation' ], 10, 3 );
+		}
+
 		$request_data = $request->get_json_params();
 		if ( isset( $request_data['shipping_address'] ) ) {
 			$request->set_param( 'shipping_address', $this->transform_prb_address_data( $request_data['shipping_address'] ) );
@@ -134,6 +141,30 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Allows certain "redacted" postcodes for some countries to bypass WC core validation.
+	 *
+	 * @param bool   $valid Whether the postcode is valid.
+	 * @param string $postcode The postcode in question.
+	 * @param string $country The country for the postcode.
+	 *
+	 * @return bool
+	 */
+	public function maybe_skip_postcode_validation( $valid, $postcode, $country ) {
+		if ( ! in_array( $country, [ Country_Code::UNITED_KINGDOM, Country_Code::CANADA ], true ) ) {
+			return $valid;
+		}
+
+		// We padded the string with `0` in the `get_normalized_postal_code` method.
+		// It's a flimsy check, but better than nothing.
+		// Plus, this check is only made for the scenarios outlined in the `tokenized_cart_store_api_address_normalization` method.
+		if ( substr( $postcode, -1 ) === '0' ) {
+			return true;
+		}
+
+		return $valid;
 	}
 
 	/**
@@ -542,12 +573,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		 * the postal code and not calculate shipping zones correctly.
 		 */
 		if ( Country_Code::UNITED_KINGDOM === $country ) {
-			// Replaces a redacted string with something like LN10***.
-			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '*' );
+			// Replaces a redacted string with something like N1C****.
+			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '0' );
 		}
 		if ( Country_Code::CANADA === $country ) {
-			// Replaces a redacted string with something like L4Y***.
-			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '*' );
+			// Replaces a redacted string with something like H3B***.
+			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );
 		}
 
 		return $postcode;
