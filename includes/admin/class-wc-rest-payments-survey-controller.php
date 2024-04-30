@@ -105,34 +105,37 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 		// as an alternative, I could have also used the `jetpack_constant_default_value` filter, but this is shorter and also provides a fallback.
 		defined( 'JETPACK__WPCOM_JSON_API_BASE' ) || define( 'JETPACK__WPCOM_JSON_API_BASE', 'https://public-api.wordpress.com' );
 
-		$wpcom_request = $this->http_client->wpcom_json_api_request_as_user(
-			'/marketing/survey',
-			'2',
+		$request_body = [
+			'site_id'          => $this->http_client->get_blog_id(),
+			'survey_id'        => 'wcpay-payment-activity',
+			'survey_responses' => [
+				'rating'        => $rating,
+				'comments'      => [ 'text' => $comments ],
+				'wcpay-version' => [ 'text' => WCPAY_VERSION_NUMBER ],
+			],
+		];
+
+		$wpcom_response = $this->http_client->remote_request(
 			[
+				'url'     => WC_Payments_API_Client::ENDPOINT_BASE . '/marketing/survey',
 				'method'  => 'POST',
 				'headers' => [
 					'Content-Type'    => 'application/json',
 					'X-Forwarded-For' => \WC_Geolocation::get_ip_address(),
 				],
 			],
-			[
-				'site_id'          => $this->http_client->get_blog_id(),
-				'survey_id'        => 'wcpay-payment-activity',
-				'survey_responses' => [
-					'rating'        => $rating,
-					'comments'      => [ 'text' => $comments ],
-					'wcpay-version' => [ 'text' => WCPAY_VERSION_NUMBER ],
-				],
-			]
+			wp_json_encode( $request_body )
 		);
 
-		$wpcom_request_body = json_decode( wp_remote_retrieve_body( $wpcom_request ) );
+		// TODO: getting "An active access token must be used to submit this survey" error response.
+		$wpcom_response_status_code = wp_remote_retrieve_response_code( $wpcom_response );
 
-		if ( ! is_wp_error( $wpcom_request ) ) {
-			update_option( 'wcpay_survey_payment_overview_submitted', true );
+		if ( 200 === $wpcom_response_status_code ) {
+			// update_option( 'wcpay_survey_payment_overview_submitted', true );
+			trigger_error( 'wcpay_survey_payment_overview_submitted', E_USER_NOTICE );
 		}
 
-		return new WP_REST_Response( $wpcom_request_body, wp_remote_retrieve_response_code( $wpcom_request ) );
+		return new WP_REST_Response( $wpcom_response, $wpcom_response_status_code );
 	}
 
 	/**
