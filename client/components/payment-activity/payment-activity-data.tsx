@@ -41,7 +41,7 @@ const PaymentActivityData: React.FC = () => {
 	const fees = paymentActivityData?.fees ?? 0;
 	const disputes = paymentActivityData?.disputes ?? 0;
 	const refunds = paymentActivityData?.refunds ?? 0;
-	const { storeCurrency } = wcpaySettings;
+	const currency = paymentActivityData?.currency;
 
 	const searchTermsForTPV = [
 		'charge',
@@ -60,7 +60,7 @@ const PaymentActivityData: React.FC = () => {
 			<PaymentDataTile
 				id="wcpay-payment-activity-data__total-payment-volume"
 				label={ __( 'Total payment volume', 'woocommerce-payments' ) }
-				currencyCode={ storeCurrency }
+				currencyCode={ currency }
 				tooltip={
 					<ClickTooltip
 						className="wcpay-payment-activity-data__total-payment-volume__tooltip"
@@ -118,7 +118,7 @@ const PaymentActivityData: React.FC = () => {
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__charges"
 					label={ __( 'Charges', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					tooltip={
 						<ClickTooltip
 							className="payment-data-highlights__charges__tooltip"
@@ -150,7 +150,7 @@ const PaymentActivityData: React.FC = () => {
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__refunds"
 					label={ __( 'Refunds', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					amount={ refunds }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
@@ -169,7 +169,7 @@ const PaymentActivityData: React.FC = () => {
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__disputes"
 					label={ __( 'Disputes', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					amount={ disputes }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
@@ -188,7 +188,7 @@ const PaymentActivityData: React.FC = () => {
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__fees"
 					label={ __( 'Fees', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					tooltip={
 						<ClickTooltip
 							className="payment-data-highlights__fees__tooltip"

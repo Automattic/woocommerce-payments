@@ -33,6 +33,7 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WC_Payments_Localization_Service;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Database_Cache;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 
@@ -171,6 +172,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_fraud_service;
 
 	/**
+	 * Mock Duplicates Detection Service.
+	 *
+	 * @var Duplicates_Detection_Service
+	 */
+	private $mock_duplicates_detection_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -230,8 +238,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
-		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
-		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_localization_service         = $this->createMock( WC_Payments_Localization_Service::class );
+		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
 		$this->mock_payment_methods = [];
 		$payment_method_classes     = [
@@ -294,6 +303,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
+					$this->mock_duplicates_detection_service,
 				]
 			)
 			->setMethods(
@@ -961,7 +971,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$this->mock_order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service
 		);
 
 		$this->assertEquals( $expected_result, $gateway->get_upe_available_payment_methods() );
