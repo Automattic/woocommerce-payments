@@ -194,27 +194,20 @@ jQuery( ( $ ) => {
 			// Add extension data to the POST body
 			const formData = $( 'form.cart' ).serializeArray();
 			$.each( formData, ( i, field ) => {
-				if ( ! /^(addon-|wc_)/.test( field.name ) ) {
-					return;
-				}
-
-				// tests for a field name that has `[]` at the end (meaning: an array).
-				if ( /\[\]$/.test( field.name ) ) {
-					// getting the field's name by removing the square brackets at the end.
-					const fieldName = field.name.substring(
-						0,
-						field.name.length - 2
-					);
-					// if the value to send exists already, just add this value to it.
-					if ( data[ fieldName ] ) {
-						data[ fieldName ].push( field.value );
+				if ( /^(addon-|wc_)/.test( field.name ) ) {
+					if ( /\[\]$/.test( field.name ) ) {
+						const fieldName = field.name.substring(
+							0,
+							field.name.length - 2
+						);
+						if ( data[ fieldName ] ) {
+							data[ fieldName ].push( field.value );
+						} else {
+							data[ fieldName ] = [ field.value ];
+						}
 					} else {
-						// otherwise, create an array out of it and add the current value.
-						data[ fieldName ] = [ field.value ];
+						data[ field.name ] = field.value;
 					}
-				} else {
-					// if it's not an array, just add the value.
-					data[ field.name ] = field.value;
 				}
 			} );
 
@@ -411,6 +404,7 @@ jQuery( ( $ ) => {
 		},
 
 		attachProductPageEventListeners: ( prButton, paymentRequest ) => {
+			let paymentRequestError = [];
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
@@ -445,6 +439,12 @@ jQuery( ( $ ) => {
 							)
 						);
 					}
+					return;
+				}
+
+				if ( paymentRequestError.length > 0 ) {
+					evt.preventDefault();
+					window.alert( paymentRequestError );
 					return;
 				}
 
@@ -508,6 +508,7 @@ jQuery( ( $ ) => {
 					'.qty',
 					wcpayPaymentRequest.debounce( 250, () => {
 						wcpayPaymentRequest.blockPaymentRequestButton();
+						paymentRequestError = [];
 
 						$.when(
 							wcpayPaymentRequest.getSelectedProductData()

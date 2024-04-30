@@ -295,7 +295,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param object $product WC_Product_* object.
 	 * @param bool   $is_deposit Whether customer is paying a deposit.
 	 * @param int    $deposit_plan_id The ID of the deposit plan.
-	 *
 	 * @return mixed Total price.
 	 *
 	 * @throws Invalid_Price_Exception Whenever a product has no price.
@@ -342,7 +341,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( ! is_numeric( $base_price ) || ! is_numeric( $sign_up_fee ) ) {
 			$error_message = sprintf(
-			// Translators: %d is the numeric ID of the product without a price.
+				// Translators: %d is the numeric ID of the product without a price.
 				__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ),
 				(int) $product->get_id()
 			);
@@ -393,7 +392,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$price = $this->get_product_price( $product );
 		} catch ( Invalid_Price_Exception $e ) {
 			Logger::log( $e->getMessage() );
-
 			return false;
 		}
 
@@ -474,7 +472,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( $order->get_shipping_total() ) {
 			$shipping_label = sprintf(
-			// Translators: %s is the name of the shipping method.
+				// Translators: %s is the name of the shipping method.
 				__( 'Shipping (%s)', 'woocommerce-payments' ),
 				$order->get_shipping_method()
 			);
@@ -521,7 +519,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Filters the gateway title to reflect Payment Request type
 	 *
 	 * @param string $title Gateway title.
-	 * @param string $id Gateway ID.
+	 * @param string $id	Gateway ID.
 	 */
 	public function filter_gateway_title( $title, $id ) {
 		$order        = $this->get_current_order();
@@ -1065,7 +1063,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 					$chosen_method_id         = $chosen_shipping_methods[0];
 					$compare_shipping_options = function ( $a, $b ) use ( $chosen_method_id ) {
 						if ( $a['id'] === $chosen_method_id ) {
-							return - 1;
+							return -1;
 						}
 
 						if ( $b['id'] === $chosen_method_id ) {
@@ -1336,7 +1334,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function is_normalized_state( $state, $country ) {
 		$wc_states = WC()->countries->get_states( $country );
-
 		return is_array( $wc_states ) && array_key_exists( $state, $wc_states );
 	}
 
@@ -1460,7 +1457,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! $is_supported ) {
 			wc_add_notice(
 				sprintf(
-				/* translators: %s: country. */
+					/* translators: %s: country. */
 					__( 'The payment request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
 					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
 				),
