@@ -519,7 +519,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Filters the gateway title to reflect Payment Request type
 	 *
 	 * @param string $title Gateway title.
-	 * @param string $id	Gateway ID.
+	 * @param string $id    Gateway ID.
 	 */
 	public function filter_gateway_title( $title, $id ) {
 		$order        = $this->get_current_order();
