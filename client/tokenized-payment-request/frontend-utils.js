@@ -26,7 +26,7 @@ export const getPaymentRequestData = ( key ) => {
  * @param {Object} config A configuration object for getting the payment request.
  * @return {Object} Payment Request options object
  */
-export const getPaymentRequest = ( { stripe, cartData } ) => {
+export const getPaymentRequest = ( { stripe, cartData, productData } ) => {
 	// the country code defined here comes from the WC settings.
 	// It might be interesting to ensure the country code coincides with the Stripe account's country,
 	// as defined here: https://docs.stripe.com/js/payment_request/create
@@ -44,13 +44,27 @@ export const getPaymentRequest = ( { stripe, cartData } ) => {
 		requestPayerEmail: true,
 		requestPayerPhone: getPaymentRequestData( 'checkout' )
 			?.needs_payer_phone,
-		currency: cartData.totals.currency_code.toLowerCase(),
-		total: {
-			label: getPaymentRequestData( 'total_label' ),
-			amount: parseInt( cartData.totals.total_price, 10 ),
-		},
-		requestShipping: cartData.needs_shipping,
-		displayItems: transformCartDataForDisplayItems( cartData ),
+		...( productData
+			? {
+					// we can't just pass `productData`, and we need a little bit of massaging for older data.
+					currency: productData.currency,
+					total: productData.total,
+					displayItems: productData.displayItems,
+					requestShipping: productData.needs_shipping,
+			  }
+			: {
+					currency: cartData.totals.currency_code.toLowerCase(),
+					total: {
+						label: getPaymentRequestData( 'total_label' ),
+						amount: parseInt( cartData.totals.total_price, 10 ),
+					},
+					requestShipping:
+						wcpayPaymentRequestParams.button_context ===
+						'pay_for_order'
+							? false
+							: cartData.needs_shipping,
+					displayItems: transformCartDataForDisplayItems( cartData ),
+			  } ),
 	} );
 };
 

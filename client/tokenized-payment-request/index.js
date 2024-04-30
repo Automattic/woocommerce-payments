@@ -50,6 +50,7 @@ jQuery( ( $ ) => {
 	const wcpayPaymentRequest = new WcpayPaymentRequest( {
 		wcpayApi: api,
 		paymentRequestCartApi,
+		productData: wcpayPaymentRequestParams.product || undefined,
 	} );
 
 	// We don't need to initialize payment request on the checkout page now because it will be initialized by updated_checkout event.

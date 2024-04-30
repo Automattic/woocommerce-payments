@@ -62,9 +62,15 @@ export default class WcpayPaymentRequest {
 	 */
 	wcpayApi = undefined;
 
-	constructor( { wcpayApi, paymentRequestCartApi } ) {
+	/**
+	 * On page load for product pages, we might get some data from the backend (which might get overwritten later).
+	 */
+	initialProductData = undefined;
+
+	constructor( { wcpayApi, paymentRequestCartApi, productData } ) {
 		this.wcpayApi = wcpayApi;
 		this.paymentRequestCartApi = paymentRequestCartApi;
+		this.initialProductData = productData;
 	}
 
 	/**
@@ -77,6 +83,7 @@ export default class WcpayPaymentRequest {
 		const paymentRequest = getPaymentRequest( {
 			stripe: this.wcpayApi.getStripe(),
 			cartData: this.cachedCartData,
+			productData: this.initialProductData,
 		} );
 
 		// Check the availability of the Payment Request API first.
@@ -142,7 +149,8 @@ export default class WcpayPaymentRequest {
 				 */
 				if (
 					! _self.paymentAborted &&
-					_self.cachedCartData.needs_shipping ===
+					( _self.initialProductData.needs_shipping ||
+						_self.cachedCartData.needs_shipping ) ===
 						newCartData.needs_shipping
 				) {
 					_self.cachedCartData = newCartData;
@@ -154,7 +162,6 @@ export default class WcpayPaymentRequest {
 								10
 							),
 						},
-						requestShipping: newCartData.needs_shipping,
 						// TODO ~FR: get transform utility
 						displayItems: transformCartDataForDisplayItems(
 							newCartData
@@ -346,8 +353,8 @@ export default class WcpayPaymentRequest {
 		const cartData = await temporaryCart.addProductToCart();
 
 		// no need to wait for the request to end, it can be done asynchronously.
-		// using `.then( noop )` to avoid annoying IDE warnings.
-		temporaryCart.emptyCart().then( noop );
+		// using `.finally( noop )` to avoid annoying IDE warnings.
+		temporaryCart.emptyCart().finally( noop );
 
 		return cartData;
 	}
@@ -357,12 +364,19 @@ export default class WcpayPaymentRequest {
 	 */
 	async init( { refresh = false } = {} ) {
 		if ( ! this.cachedCartData || refresh ) {
-			this.cachedCartData = await this.getCartData();
+			try {
+				this.cachedCartData = await this.getCartData();
+			} catch ( e ) {}
 		}
 
 		this.startPaymentRequest().then( noop );
 
 		// After initializing a new payment request, we need to reset the paymentAborted flag.
 		this.paymentAborted = false;
+
+		// once cart data has been fetched, we can safely clear cached product data.
+		if ( this.cachedCartData ) {
+			this.initialProductData = undefined;
+		}
 	}
 }
