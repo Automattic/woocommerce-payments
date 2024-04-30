@@ -17,7 +17,6 @@ import { usePaymentActivityData } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import type { DateRange } from './types';
 import './style.scss';
-import { filter } from 'lodash';
 
 /**
  * This will be replaces in the future with a dynamic date range picker.
