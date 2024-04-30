@@ -84,7 +84,7 @@ export const getCurrencyByLocale = ( currencyCode ) => {
 		connect: { country = 'US' },
 	} = wcpaySettings;
 
-	// If store country matches the currency code, return the currency object.
+	// If store's country currency matches the provided currency code, return store's country currency.
 	if ( currencyData[ country ]?.code === code ) {
 		return Currency( currencyData[ country ] );
 	}
@@ -93,6 +93,7 @@ export const getCurrencyByLocale = ( currencyCode ) => {
 
 	if ( currency ) {
 		const { defaultLocale = {} } = currency;
+
 		if (
 			defaultLocale.hasOwnProperty( 'decimalSeparator' ) &&
 			defaultLocale.hasOwnProperty( 'thousandSeparator' ) &&
