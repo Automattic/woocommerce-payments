@@ -8,10 +8,10 @@ import { Link } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
 import './style.scss';
+
 interface PaymentDataTileProps {
 	/**
 	 * The id for the tile, can be used for CSS styling.
@@ -24,7 +24,7 @@ interface PaymentDataTileProps {
 	/**
 	 * The currency code for the amount displayed.
 	 */
-	currencyCode: string;
+	currencyCode?: string;
 	/**
 	 * For optionally passing a ClickTooltip component.
 	 */
@@ -53,9 +53,9 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 	reportLink,
 } ) => {
 	return (
-		<div id={ id } className="wcpay-payment-data-highlights__item">
+		<div className="wcpay-payment-data-highlights__item">
 			<p className="wcpay-payment-data-highlights__item__label">
-				<span>{ label }</span>
+				<span id={ id }>{ label }</span>
 				{ ! isLoading && tooltip }
 			</p>
 			<div className="wcpay-payment-data-highlights__item__wrapper">
