@@ -65,10 +65,6 @@ class WC_Payments_Order_Success_Page {
 			return $payment_method_title;
 		}
 
-		if ( ! $order ) {
-			return $payment_method_title;
-		}
-
 		// If this is a WooPay order, return the html for the WooPay payment method name.
 		if ( $order->get_meta( 'is_woopay' ) ) {
 			return $this->show_woopay_payment_method_name( $order );
