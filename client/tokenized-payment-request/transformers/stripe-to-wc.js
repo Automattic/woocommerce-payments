@@ -93,11 +93,4 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 			},
 		],
 	};
-
-	// TODO: we also have all this data - do we need to submit it?
-	return {
-		shipping_method: [ paymentData.shippingOption?.id ?? null ],
-		ship_to_different_address: 1,
-		terms: 1,
-	};
 };
