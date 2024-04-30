@@ -24,7 +24,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	 *
 	 * @var string
 	 */
-	protected $rest_base = 'payments/upe_survey';
+	protected $rest_base = 'payments/survey';
 
 	/**
 	 * The HTTP client, used to forward the request to WPCom.
@@ -57,15 +57,13 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 				'args'                => [
 					'rating'   => [
 						'type'              => 'string',
-						'items'             => [
-							'type' => 'string',
-							'enum' => [
-								'very-unhappy',
-								'unhappy',
-								'neutral',
-								'happy',
-								'very-happy',
-							],
+						'required'          => true,
+						'enum'              => [
+							'very-unhappy',
+							'unhappy',
+							'neutral',
+							'happy',
+							'very-happy',
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -90,7 +88,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 		$comments = $request->get_param( 'comments' ) ?? '';
 		$rating   = $request->get_param( 'rating' ) ?? '';
 
-		if ( empty( $comments ) && empty( $rating ) ) {
+		if ( empty( $rating ) ) {
 			return new WP_REST_Response(
 				[
 					'success' => false,
@@ -119,7 +117,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 			],
 			[
 				'site_id'          => $this->http_client->get_blog_id(),
-				'survey_id'        => 'wcpay-payments-overview',
+				'survey_id'        => 'wcpay-payment-activity',
 				'survey_responses' => [
 					'rating'        => $rating,
 					'comments'      => [ 'text' => $comments ],

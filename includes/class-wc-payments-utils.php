@@ -338,62 +338,29 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Extract the billing details from the WC order.
-	 * It only returns the fields that are present in the billing section of the checkout.
+	 * Extract the billing details from the WC order
 	 *
 	 * @param WC_Order $order Order to extract the billing details from.
-	 * @param bool     $legacy Whether to use the legacy way of loading straight from the order.
-	 * @todo The $legacy flag is just a patch for the current approach, fixing the linked issue.
-	 * @see https://github.com/Automattic/woocommerce-payments/issues/8678
 	 *
 	 * @return array
 	 */
-	public static function get_billing_details_from_order( $order, $legacy = true ) {
-		if ( $legacy ) {
-			$billing_details = [
-				'address' => [
-					'city'        => $order->get_billing_city(),
-					'country'     => $order->get_billing_country(),
-					'line1'       => $order->get_billing_address_1(),
-					'line2'       => $order->get_billing_address_2(),
-					'postal_code' => $order->get_billing_postcode(),
-					'state'       => $order->get_billing_state(),
-				],
-				'email'   => $order->get_billing_email(),
-				'name'    => trim( $order->get_formatted_billing_full_name() ),
-				'phone'   => $order->get_billing_phone(),
-			];
-
-			return array_filter( $billing_details );
-		}
-
-		$billing_fields       = array_keys( WC()->checkout()->get_checkout_fields( 'billing' ) );
-		$address_field_to_key = [
-			'billing_city'      => 'city',
-			'billing_country'   => 'country',
-			'billing_address_1' => 'line1',
-			'billing_address_2' => 'line2',
-			'billing_postcode'  => 'postal_code',
-			'billing_state'     => 'state',
+	public static function get_billing_details_from_order( $order ) {
+		$billing_details = [
+			'address' => [
+				'city'        => $order->get_billing_city(),
+				'country'     => $order->get_billing_country(),
+				'line1'       => $order->get_billing_address_1(),
+				'line2'       => $order->get_billing_address_2(),
+				'postal_code' => $order->get_billing_postcode(),
+				'state'       => $order->get_billing_state(),
+			],
+			'email'   => $order->get_billing_email(),
+			'name'    => trim( $order->get_formatted_billing_full_name() ),
+			'phone'   => $order->get_billing_phone(),
 		];
-		$field_to_key         = [
-			'billing_email' => 'email',
-			'billing_phone' => 'phone',
-		];
-		$billing_details      = [ 'address' => [] ];
-		foreach ( $billing_fields as $field ) {
-			if ( isset( $address_field_to_key[ $field ] ) ) {
-				$billing_details['address'][ $address_field_to_key[ $field ] ] = $order->{"get_{$field}"}();
-			} elseif ( isset( $field_to_key[ $field ] ) ) {
-				$billing_details[ $field_to_key[ $field ] ] = $order->{"get_{$field}"}();
-			}
-		}
 
-		if ( in_array( 'billing_first_name', $billing_fields, true ) && in_array( 'billing_last_name', $billing_fields, true ) ) {
-			$billing_details['name'] = trim( $order->get_formatted_billing_full_name() );
-		}
-
-		return $billing_details;
+		$billing_details['address'] = array_filter( $billing_details['address'] );
+		return array_filter( $billing_details );
 	}
 
 	/**
@@ -579,11 +546,12 @@ class WC_Payments_Utils {
 	 * Generally, only Stripe exceptions with type of `card_error` should be displayed.
 	 * Other API errors should be redacted (https://stripe.com/docs/api/errors#errors-message).
 	 *
-	 * @param Exception $e Exception to get the message from.
+	 * @param Exception $e                      Exception to get the message from.
+	 * @param boolean   $blocked_by_fraud_rules Whether the payment was blocked by the fraud rules. Defaults to false.
 	 *
 	 * @return string
 	 */
-	public static function get_filtered_error_message( Exception $e ) {
+	public static function get_filtered_error_message( Exception $e, bool $blocked_by_fraud_rules = false ) {
 		$error_message = method_exists( $e, 'getLocalizedMessage' ) ? $e->getLocalizedMessage() : $e->getMessage();
 
 		// These notices can be shown when placing an order or adding a new payment method, so we aim for
@@ -613,7 +581,7 @@ class WC_Payments_Utils {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
-		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
+		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() && ! $blocked_by_fraud_rules ) {
 			$error_message = __( 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', 'woocommerce-payments' );
 		}
 

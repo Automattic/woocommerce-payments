@@ -15,6 +15,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Constants\Payment_Method;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
 
 // Need to use WC_Mock_Data_Store.
@@ -167,6 +168,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->createMock( WC_Payments_Localization_Service::class ),
 					$this->createMock( WC_Payments_Fraud_Service::class ),
+					$this->createMock( Duplicates_Detection_Service::class ),
 				]
 			)
 			->setMethods(
@@ -1209,8 +1211,17 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 
 		$this->mock_action_scheduler_service
-			->expects( $this->never() )
-			->method( 'schedule_job' );
+			->expects( $this->once() )
+			->method( 'schedule_job' )
+			->with(
+				$this->anything(),
+				WC_Payment_Gateway_WCPay::UPDATE_SAVED_PAYMENT_METHOD,
+				[
+					'payment_method' => 'pm_mock',
+					'order_id'       => $order_id,
+					'is_test_mode'   => false,
+				]
+			);
 
 		$this->mock_wcpay_gateway->process_payment( $order_id );
 	}

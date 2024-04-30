@@ -26,6 +26,7 @@ import './shared.scss';
 import { AccountTools } from './account-tools';
 import { isInDevMode } from 'wcpay/utils';
 import { recordEvent } from 'wcpay/tracks';
+import { addQueryArgs } from '@wordpress/url';
 
 const AccountStatusCard = ( props ) => {
 	const { title, children, value } = props;
@@ -60,7 +61,9 @@ const AccountStatusError = () => {
 
 const AccountStatusDetails = ( props ) => {
 	const { accountStatus, accountFees } = props;
-
+	const accountLink = addQueryArgs( accountStatus.accountLink, {
+		source: 'account-details',
+	} );
 	const cardTitle = (
 		<>
 			<FlexItem className={ 'account-details' }>
@@ -83,7 +86,7 @@ const AccountStatusDetails = ( props ) => {
 							source: 'account-details',
 						} )
 					}
-					href={ accountStatus.accountLink }
+					href={ accountLink }
 					target={ '_blank' }
 				>
 					{ __( 'Edit details', 'woocommerce-payments' ) }

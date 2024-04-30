@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix order notes entry and risk meta box content when a payment is blocked due to AVS checks while the corresponding advanced fraud rule is enabled.

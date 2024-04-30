@@ -79,12 +79,13 @@ exports[`AccountStatus renders normal status 1`] = `
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
-          <button
+          <a
             class="components-button is-link"
-            type="button"
+            href="?source=account-details"
+            target="_blank"
           >
             Edit details
-          </button>
+          </a>
         </div>
       </div>
       <div
@@ -185,12 +186,13 @@ exports[`AccountStatus renders normal status 1`] = `
           <div
             class="account-tools__actions"
           >
-            <button
+            <a
               class="components-button is-secondary"
-              type="button"
+              href="?source=account-tools__finish-setup-button"
+              target="_blank"
             >
               Finish setup
-            </button>
+            </a>
             <button
               class="components-button is-tertiary"
               type="button"
