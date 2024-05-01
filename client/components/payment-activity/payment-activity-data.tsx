@@ -43,17 +43,29 @@ const PaymentActivityData: React.FC = () => {
 	const refunds = paymentActivityData?.refunds ?? 0;
 	const currency = paymentActivityData?.currency;
 
-	const searchTermsForTPV = [
-		'charge',
-		'payment',
-		'payment_failure_refund',
-		'payment_refund',
-		'refund',
-		'refund_failure',
-		'dispute',
-		'dispute_reversal',
-		'card_reader_fee',
-	];
+	const searchTermsForViewReportLink = {
+		totalPaymentVolume: [
+			'charge',
+			'payment',
+			'payment_failure_refund',
+			'payment_refund',
+			'refund',
+			'refund_failure',
+			'dispute',
+			'dispute_reversal',
+			'card_reader_fee',
+		],
+	};
+
+	const getSearchParams = ( searchTerms: string[] ) => {
+		return searchTerms.reduce(
+			( acc, term, index ) => ( {
+				...acc,
+				[ `search[${ index }]` ]: term,
+			} ),
+			{}
+		);
+	};
 
 	return (
 		<div className="wcpay-payment-activity-data">
@@ -105,12 +117,8 @@ const PaymentActivityData: React.FC = () => {
 					'date_between[1]': moment( getDateRange().date_end ).format(
 						'YYYY-MM-DD'
 					),
-					...searchTermsForTPV.reduce(
-						( acc, term, index ) => ( {
-							...acc,
-							[ `search[${ index }]` ]: term,
-						} ),
-						{}
+					...getSearchParams(
+						searchTermsForViewReportLink.totalPaymentVolume
 					),
 				} ) }
 				tracksSource="total_payment_volume"
