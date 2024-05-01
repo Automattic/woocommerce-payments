@@ -51,7 +51,7 @@ describe( 'Klarna checkout', () => {
 			if ( element ) {
 				element.click();
 			}
-		}, 'button[aria-label="Open Learn More Modal"]' );
+		}, '*[aria-label="Open Learn More Modal"]' );
 
 		// Wait for the iframe to be added by Stripe JS after clicking on the element.
 		await page.waitFor( 1000 );
