@@ -13,29 +13,19 @@ import interpolateComponents from '@automattic/interpolate-components';
 import InlineNotice from '../inline-notice';
 import PaymentDataTile from './payment-data-tile';
 import { ClickTooltip } from '../tooltip';
-import { usePaymentActivityData } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
-import type { DateRange } from './types';
+import type { PaymentActivityData } from 'wcpay/data/payment-activity/types';
 import './style.scss';
 
-/**
- * This will be replaces in the future with a dynamic date range picker.
- */
-const getDateRange = (): DateRange => {
-	return {
-		// Subtract 7 days from the current date.
-		date_start: moment()
-			.subtract( 7, 'd' )
-			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
-		date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
-	};
-};
+interface Props {
+	paymentActivityData?: PaymentActivityData;
+	isLoading?: boolean;
+}
 
-const PaymentActivityData: React.FC = () => {
-	const { paymentActivityData, isLoading } = usePaymentActivityData(
-		getDateRange()
-	);
-
+const PaymentActivityDataComponent: React.FC< Props > = ( {
+	paymentActivityData,
+	isLoading,
+} ) => {
 	const totalPaymentVolume = paymentActivityData?.total_payment_volume ?? 0;
 	const charges = paymentActivityData?.charges ?? 0;
 	const fees = paymentActivityData?.fees ?? 0;
@@ -87,11 +77,11 @@ const PaymentActivityData: React.FC = () => {
 					page: 'wc-admin',
 					path: '/payments/transactions',
 					'date_between[0]': moment(
-						getDateRange().date_start
+						paymentActivityData?.date_start
 					).format( 'YYYY-MM-DD' ),
-					'date_between[1]': moment( getDateRange().date_end ).format(
-						'YYYY-MM-DD'
-					),
+					'date_between[1]': moment(
+						paymentActivityData?.date_end
+					).format( 'YYYY-MM-DD' ),
 					filter: 'advanced',
 				} ) }
 				tracksSource="total_payment_volume"
@@ -142,10 +132,10 @@ const PaymentActivityData: React.FC = () => {
 						filter: 'advanced',
 						type_is: 'refund',
 						'date_between[0]': moment(
-							getDateRange().date_start
+							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
-							getDateRange().date_end
+							paymentActivityData?.date_end
 						).format( 'YYYY-MM-DD' ),
 					} ) }
 					tracksSource="refunds"
@@ -161,10 +151,10 @@ const PaymentActivityData: React.FC = () => {
 						path: '/payments/disputes',
 						filter: 'advanced',
 						'date_between[0]': moment(
-							getDateRange().date_start
+							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
-							getDateRange().date_end
+							paymentActivityData?.date_end
 						).format( 'YYYY-MM-DD' ),
 						status_is: 'needs_response',
 					} ) }
@@ -202,4 +192,4 @@ const PaymentActivityData: React.FC = () => {
 	);
 };
 
-export default PaymentActivityData;
+export default PaymentActivityDataComponent;
