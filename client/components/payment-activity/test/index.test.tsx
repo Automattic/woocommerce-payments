@@ -42,8 +42,8 @@ mockUsePaymentActivityData.mockReturnValue( {
 		total_payment_volume: 123456,
 		charges: 9876,
 		fees: 1234,
-		disputes: 5555,
-		refunds: 4444,
+		disputes: -5555,
+		refunds: -4444,
 		date_start: '2024-01-01',
 		date_end: '2024-01-31',
 		timezone: 'UTC',
@@ -129,9 +129,17 @@ describe( 'PaymentActivity component', () => {
 		// Check survey is rendered.
 		getByText( 'Are these metrics helpful?' );
 
-		// Check correct currency/value is displayed.
+		// Check TPV value is displayed with the correct currency symbol and format.
 		const tpvElement = getByLabelText( 'Total payment volume' );
-		expect( tpvElement ).toHaveTextContent( '€1.234,56' );
+		expect( tpvElement.textContent ).toEqual( '€1.234,56' );
+
+		// Check Disputes value is displayed as a positive number.
+		const disputesElement = getByLabelText( 'Disputes' );
+		expect( disputesElement.textContent ).toEqual( '€55,55' );
+
+		// Check Refunds value is displayed as a positive number.
+		const refundsElement = getByLabelText( 'Refunds' );
+		expect( refundsElement.textContent ).toEqual( '€44,44' );
 
 		expect( container ).toMatchSnapshot();
 	} );
