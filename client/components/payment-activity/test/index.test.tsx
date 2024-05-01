@@ -131,6 +131,7 @@ describe( 'PaymentActivity component', () => {
 
 		// Check TPV value is displayed with the correct currency symbol and format.
 		const tpvElement = getByLabelText( 'Total payment volume' );
+		// Regex start-of-string matcher (^) used to ensure the value isn't prefixed with '-'.
 		expect( tpvElement ).toHaveTextContent( /^€1.234,56/ );
 
 		// Check Disputes value is displayed as a positive number.
