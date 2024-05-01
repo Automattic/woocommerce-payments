@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix WooPay tracks user ID for logged in users.
