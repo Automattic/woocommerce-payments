@@ -4,6 +4,7 @@
 import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
+import { recordEvent } from 'wcpay/tracks';
 
 /**
  * Internal dependencies
@@ -41,6 +42,10 @@ interface PaymentDataTileProps {
 	 * Optional hover link to view report.
 	 */
 	reportLink?: string;
+	/**
+	 * The source of the event tracking.
+	 */
+	tracksSource?: string;
 }
 
 const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
@@ -51,7 +56,13 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 	amount = 0,
 	isLoading = false,
 	reportLink,
+	tracksSource,
 } ) => {
+	const handleReportLinkClick = () => {
+		recordEvent( 'wcpay_overview_payment_activity_click', {
+			source: tracksSource,
+		} );
+	};
 	return (
 		<div className="wcpay-payment-data-highlights__item">
 			<p className="wcpay-payment-data-highlights__item__label">
@@ -71,7 +82,7 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 					/>
 				</p>
 				{ reportLink && (
-					<Link href={ reportLink }>
+					<Link href={ reportLink } onClick={ handleReportLinkClick }>
 						{ __( 'View report', 'woocommerce_payments' ) }
 					</Link>
 				) }

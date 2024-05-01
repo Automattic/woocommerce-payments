@@ -113,6 +113,7 @@ const PaymentActivityData: React.FC = () => {
 						{}
 					),
 				} ) }
+				tracksSource="total_payment_volume"
 				isLoading={ isLoading }
 			/>
 			<div className="wcpay-payment-data-highlights">
@@ -146,6 +147,7 @@ const PaymentActivityData: React.FC = () => {
 						filter: 'advanced',
 						type_is: 'charge',
 					} ) }
+					tracksSource="charges"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
@@ -165,6 +167,7 @@ const PaymentActivityData: React.FC = () => {
 							getDateRange().date_end
 						).format( 'YYYY-MM-DD' ),
 					} ) }
+					tracksSource="refunds"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
@@ -184,6 +187,7 @@ const PaymentActivityData: React.FC = () => {
 						).format( 'YYYY-MM-DD' ),
 						status_is: 'needs_response',
 					} ) }
+					tracksSource="disputes"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
