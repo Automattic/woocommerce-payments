@@ -42,6 +42,15 @@ const PaymentActivity: React.FC = () => {
 		getDateRange()
 	);
 
+	const showWidget =
+		! hasAtLeastOnePayment ||
+		isLoading ||
+		paymentActivityData !== undefined;
+
+	if ( ! showWidget ) {
+		return <></>;
+	}
+
 	return (
 		<Card>
 			<CardHeader>
