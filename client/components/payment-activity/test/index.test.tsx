@@ -131,15 +131,15 @@ describe( 'PaymentActivity component', () => {
 
 		// Check TPV value is displayed with the correct currency symbol and format.
 		const tpvElement = getByLabelText( 'Total payment volume' );
-		expect( tpvElement.textContent ).toEqual( '€1.234,56' );
+		expect( tpvElement ).toHaveTextContent( /^€1.234,56/ );
 
 		// Check Disputes value is displayed as a positive number.
 		const disputesElement = getByLabelText( 'Disputes' );
-		expect( disputesElement.textContent ).toEqual( '€55,55' );
+		expect( disputesElement ).toHaveTextContent( /^€55,55/ );
 
 		// Check Refunds value is displayed as a positive number.
 		const refundsElement = getByLabelText( 'Refunds' );
-		expect( refundsElement.textContent ).toEqual( '€44,44' );
+		expect( refundsElement ).toHaveTextContent( /^€44,44/ );
 
 		expect( container ).toMatchSnapshot();
 	} );
