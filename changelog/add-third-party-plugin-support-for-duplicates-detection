@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Add support of a third-party plugin with PRBs into duplicates detection mechanism.
