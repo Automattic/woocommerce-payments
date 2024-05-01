@@ -26,6 +26,11 @@
 	}
 }
 
+.wcpay-payment-activity-filters {
+	flex-direction: column;
+	width: auto;
+}
+
 .wcpay-payment-activity-data {
 	display: grid;
 	grid-template-columns: 1fr 1fr;

@@ -2,11 +2,13 @@
  * External dependencies
  */
 import * as React from 'react';
+import moment from 'moment';
 import { useState } from 'react';
 import {
 	Card,
 	CardBody,
 	CardHeader,
+	Flex,
 	SelectControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
@@ -18,9 +20,15 @@ import interpolateComponents from '@automattic/interpolate-components';
 
 import EmptyStateAsset from 'assets/images/payment-activity-empty-state.svg?asset';
 import PaymentActivityData from './payment-activity-data';
+import DateRange from './date-range';
 import Survey from './survey';
 import { WcPayOverviewSurveyContextProvider } from './survey/context';
 import './style.scss';
+
+interface DateRange {
+	start: moment.Moment | undefined;
+	end: moment.Moment | undefined;
+}
 
 const PaymentActivity: React.FC = () => {
 	const { lifetimeTPV } = wcpaySettings;
@@ -28,10 +36,11 @@ const PaymentActivity: React.FC = () => {
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
-	const [ presetDateRangeState, setPresetDateRangeState ] = useState(
+	const [ dateRangeState, setDateRangeState ] = useState( {} as DateRange );
+	const [ dateRangePresetState, setDateRangePresetState ] = useState(
 		'last_7_days'
 	);
-	const presetDateRanges = [
+	const dateRangePresets = [
 		{
 			value: 'today',
 			label: 'Today',
@@ -69,6 +78,142 @@ const PaymentActivity: React.FC = () => {
 			label: 'All time',
 		},
 	];
+	const dateRangePresetOnChangeHandler = ( newDateRangePreset: string ) => {
+		let start, end;
+
+		setDateRangePresetState( newDateRangePreset );
+
+		switch ( newDateRangePreset ) {
+			case 'today': {
+				const now = moment();
+				start = now
+					.clone()
+					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
+				end = now.clone().set( {
+					hour: 23,
+					minute: 59,
+					second: 59,
+					millisecond: 0,
+				} );
+				break;
+			}
+			case 'last_7_days': {
+				const now = moment();
+				start = now
+					.clone()
+					.subtract( 7, 'd' )
+					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
+				end = now.clone().set( {
+					hour: 23,
+					minute: 59,
+					second: 59,
+					millisecond: 0,
+				} );
+				break;
+			}
+			case 'last_4_weeks': {
+				const now = moment();
+				start = now
+					.clone()
+					.subtract( 4, 'w' )
+					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
+				end = now.clone().set( {
+					hour: 23,
+					minute: 59,
+					second: 59,
+					millisecond: 0,
+				} );
+				break;
+			}
+			case 'last_3_months': {
+				const now = moment();
+				start = now
+					.clone()
+					.subtract( 3, 'm' )
+					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
+				end = now.clone().set( {
+					hour: 23,
+					minute: 59,
+					second: 59,
+					millisecond: 0,
+				} );
+				break;
+			}
+			case 'last_12_months': {
+				const now = moment();
+				start = now
+					.clone()
+					.subtract( 12, 'm' )
+					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
+				end = now.clone().set( {
+					hour: 23,
+					minute: 59,
+					second: 59,
+					millisecond: 0,
+				} );
+				break;
+			}
+			case 'month_to_date': {
+				const now = moment();
+				start = now.clone().set( {
+					date: 1,
+					hour: 0,
+					minute: 0,
+					second: 0,
+					millisecond: 0,
+				} );
+				end = now.clone().set( {
+					hour: 23,
+					minute: 59,
+					second: 59,
+					millisecond: 0,
+				} );
+				break;
+			}
+			case 'quarter_to_date': {
+				const now = moment();
+				start = now.clone().set( {
+					month: Math.floor( now.month() / 3 ) * 3,
+					date: 1,
+					hour: 0,
+					minute: 0,
+					second: 0,
+					millisecond: 0,
+				} );
+				end = now.clone().set( {
+					hour: 23,
+					minute: 59,
+					second: 59,
+					millisecond: 0,
+				} );
+				break;
+			}
+			case 'year_to_date': {
+				const now = moment();
+				start = now.clone().set( {
+					month: 0,
+					date: 1,
+					hour: 0,
+					minute: 0,
+					second: 0,
+					millisecond: 0,
+				} );
+				end = now.clone().set( {
+					hour: 23,
+					minute: 59,
+					second: 59,
+					millisecond: 0,
+				} );
+				break;
+			}
+			case 'all_time':
+				// TODO
+				break;
+		}
+
+		setDateRangeState( { start, end } );
+	};
+
 	return (
 		<Card>
 			<CardHeader>
@@ -76,17 +221,17 @@ const PaymentActivity: React.FC = () => {
 
 				{ hasAtLeastOnePayment && (
 					<>
-						{
+						<Flex className="wcpay-payment-activity-filters">
 							<SelectControl
-								value={ presetDateRangeState }
-								onChange={ ( newPresetDateRange ) =>
-									setPresetDateRangeState(
-										newPresetDateRange
-									)
-								}
-								options={ presetDateRanges }
+								value={ dateRangePresetState }
+								onChange={ dateRangePresetOnChangeHandler }
+								options={ dateRangePresets }
 							/>
-						}
+							<DateRange
+								start={ dateRangeState.start }
+								end={ dateRangeState.end }
+							/>
+						</Flex>
 					</>
 				) }
 			</CardHeader>
