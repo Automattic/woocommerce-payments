@@ -98,41 +98,39 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 			);
 		}
 
-		// Jetpack connection 1.27.0 created a default value for this constant, but we're using an older version of the package
-		// https://github.com/Automattic/jetpack/blob/master/projects/packages/connection/CHANGELOG.md#1270---2021-05-25
-		// - Connection: add the default value of JETPACK__WPCOM_JSON_API_BASE to the Connection Utils class
-		// this is just a patch so that we don't need to upgrade.
-		// as an alternative, I could have also used the `jetpack_constant_default_value` filter, but this is shorter and also provides a fallback.
-		defined( 'JETPACK__WPCOM_JSON_API_BASE' ) || define( 'JETPACK__WPCOM_JSON_API_BASE', 'https://public-api.wordpress.com' );
-
-		$request_body = [
-			'site_id'          => $this->http_client->get_blog_id(),
-			'survey_id'        => 'wcpay-payment-activity',
-			'survey_responses' => [
-				'rating'        => $rating,
-				'comments'      => [ 'text' => $comments ],
-				'wcpay-version' => [ 'text' => WCPAY_VERSION_NUMBER ],
+		$request_args     = [
+			'url'     => WC_Payments_API_Client::ENDPOINT_BASE . '/marketing/survey',
+			'method'  => 'POST',
+			'headers' => [
+				'Content-Type'    => 'application/json',
+				'X-Forwarded-For' => \WC_Geolocation::get_ip_address(),
 			],
 		];
+		$request_body     = wp_json_encode(
+			[
+				'site_id'          => $this->http_client->get_blog_id(),
+				'survey_id'        => 'wcpay-payment-activity',
+				'survey_responses' => [
+					'rating'        => $rating,
+					'comments'      => [ 'text' => $comments ],
+					'wcpay-version' => [ 'text' => WCPAY_VERSION_NUMBER ],
+				],
+			]
+		);
+		$is_site_specific = true;
+		$use_user_token   = true;
 
 		$wpcom_response = $this->http_client->remote_request(
-			[
-				'url'     => WC_Payments_API_Client::ENDPOINT_BASE . '/marketing/survey',
-				'method'  => 'POST',
-				'headers' => [
-					'Content-Type'    => 'application/json',
-					'X-Forwarded-For' => \WC_Geolocation::get_ip_address(),
-				],
-			],
-			wp_json_encode( $request_body )
+			$request_args,
+			$request_body,
+			$is_site_specific,
+			$use_user_token
 		);
 
-		// TODO: getting "An active access token must be used to submit this survey" error response.
 		$wpcom_response_status_code = wp_remote_retrieve_response_code( $wpcom_response );
 
 		if ( 200 === $wpcom_response_status_code ) {
-			// update_option( 'wcpay_survey_payment_overview_submitted', true );
-			trigger_error( 'wcpay_survey_payment_overview_submitted', E_USER_NOTICE );
+			update_option( 'wcpay_survey_payment_overview_submitted', true );
 		}
 
 		return new WP_REST_Response( $wpcom_response, $wpcom_response_status_code );
