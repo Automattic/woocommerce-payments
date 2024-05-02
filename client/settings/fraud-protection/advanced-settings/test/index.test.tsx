@@ -4,13 +4,11 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { mocked } from 'ts-jest/utils';
-import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import FraudProtectionAdvancedSettingsPage from '..';
-import { ProtectionLevel } from '../constants';
 import {
 	useAdvancedFraudProtectionSettings,
 	useCurrentProtectionLevel,
