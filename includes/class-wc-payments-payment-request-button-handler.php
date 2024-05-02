@@ -571,11 +571,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 		 * the postal code and not calculate shipping zones correctly.
 		 */
 		if ( Country_Code::UNITED_KINGDOM === $country ) {
-			// Replaces a redacted string with something like N1C****.
+			// Replaces a redacted string with something like N1C0000
 			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '0' );
 		}
 		if ( Country_Code::CANADA === $country ) {
-			// Replaces a redacted string with something like H3B***.
+			// Replaces a redacted string with something like H3B000
 			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );
 		}
 
