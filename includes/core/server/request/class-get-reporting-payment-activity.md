@@ -1,27 +1,37 @@
-# `Get_Intention` request class
+# `Get_Reporting_Payment_Activity` request class
 
 [ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
 
 ## Description
 
-The `WCPay\Core\Server\Request\Get_Intention` class is used to construct the request for retrieving an intention.
+The `WCPay\Core\Server\Request\Get_Reporting_Payment_Activity` class is used to construct the request for retrieving payment activity.
 
 ## Parameters
 
-When creating `Get_Intention` requests, the item ID must be provided to the `::create()` method. The identifier should be in the `pi_XXX` format.
-There are no additional parameters for this request.
+| Parameter   | Setter                                    | Immutable | Required | Default value |
+|-------------|-------------------------------------------|:---------:|:--------:|:-------------:|
+| `date_start`| `set_date_start( string $date_start )`    |    No     |    Yes   |       -       |
+| `date_end`  | `set_date_end( string $date_end )`        |    No     |    Yes   |       -       |
+| `timezone`  | `set_timezone( string $timezone )`        |    No     |    Yes   |       -       |
+
+The `date_start` and `date_end` parameters should be in the 'YYYY-MM-DDT00:00:00' format.
 
 ## Filter
 
 When using this request, provide the following filter and arguments:
 
-- Name: `wcpay_get_intent_request`
-- Arguments: `WC_Order $order`
+- Name: `wcpay_get_payment_activity`
 
 ## Example:
 
 ```php
-$request = Get_Intention::create( $id );
-$request->set_hook_args( $order )
+$request = Get_Reporting_Payment_Activity::create();
+$request->set_date_start( $date_start );
+$request->set_date_end( $date_end );
+$request->set_timezone( $timezone );
 $request->send();
 ```
+
+## Exceptions
+
+- `Invalid_Request_Parameter_Exception` - Thrown when the provided date is not in the 'YYYY-MM-DDT00:00:00' format.
