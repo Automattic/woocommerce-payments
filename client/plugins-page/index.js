@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from '@wordpress/data';
 import ReactDOM from 'react-dom';
+import { OPTIONS_STORE_NAME } from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -11,7 +12,7 @@ import ReactDOM from 'react-dom';
 import PluginDisableSurvey from './deactivation-survey';
 
 const PluginsPage = () => {
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
+	const { updateOptions } = useDispatch( OPTIONS_STORE_NAME );
 	const [ modalOpen, setModalOpen ] = useState( false );
 	const [ isModalDismissed, setIsModalDismissed ] = useState(
 		window.wcpayPluginsSettings?.isExitSurveyModalDimissed ?? false
@@ -35,12 +36,12 @@ const PluginsPage = () => {
 		setModalOpen( true );
 	}, [ setModalOpen ] );
 
-	const closeModal = useCallback( () => {
+	const closeModal = async () => {
 		setModalOpen( false );
 		setIsModalDismissed( true );
 
 		// Update modal dismissed option.
-		updateOptions( {
+		await updateOptions( {
 			wcpay_exit_survey_dismissed: true,
 		} );
 
@@ -48,7 +49,7 @@ const PluginsPage = () => {
 
 		// Deactivate plugin
 		deactivatePlugin();
-	}, [ setModalOpen, updateOptions, deactivatePlugin ] );
+	};
 
 	const handleLinkClick = useCallback(
 		( e ) => {
