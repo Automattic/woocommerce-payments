@@ -77,7 +77,7 @@ export default class PaymentRequestCartApi {
 		const productData = {
 			// can be modified in case of variable products, WC bookings plugin, etc.
 			id: jQuery( '.single_add_to_cart_button' ).val(),
-			qty: parseInt( jQuery( '.quantity .qty' ).val(), 10 ) || 1,
+			quantity: parseInt( jQuery( '.quantity .qty' ).val(), 10 ) || 1,
 			// can be modified in case of variable products, WC bookings plugin, etc.
 			variation: [],
 		};
