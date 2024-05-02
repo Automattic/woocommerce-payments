@@ -49,7 +49,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @param array  $args             - The arguments to passed to Jetpack.
 	 * @param string $body             - The body passed on to the HTTP request.
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
-	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
+	 * @param bool   $use_user_token   - If true, the request will be signed with the Jetpack connection owner user token rather than blog token. Defaults to false.
 	 *
 	 * @return array HTTP response on success.
 	 * @throws API_Exception - If not connected or request failed.
