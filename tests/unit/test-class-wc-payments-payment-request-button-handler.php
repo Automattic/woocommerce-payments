@@ -274,6 +274,23 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		return $method->get_rate_id();
 	}
 
+	public function test_tokenized_cart_address_avoid_normalization_when_missing_header() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WC-Payments-prb-request', null );
+		$request->set_route( '/wc/store/v1/cart/update-customer' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => 'US',
+				'state'   => 'California',
+			]
+		);
+
+		$modified_request = $this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$this->assertSame( $modified_request['shipping_address']['state'], 'California' );
+	}
+
 	public function test_tokenized_cart_address_state_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WC-Payments-prb-request', 'true' );
@@ -325,7 +342,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		// this shouldn't be modified.
 		$this->assertSame( $modified_request['billing_address']['postcode'], '90210' );
 	}
-
 
 	public function test_get_shipping_options_returns_shipping_options() {
 		$data = $this->pr->get_shipping_options( self::SHIPPING_ADDRESS );
