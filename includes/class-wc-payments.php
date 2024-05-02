@@ -984,7 +984,7 @@ class WC_Payments {
 		$disputes_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
-		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client, self::$order_service );
+		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
 		$charges_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-connection-tokens-controller.php';
