@@ -2462,6 +2462,39 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
+	public function test_no_billing_details_update_for_legacy_card_object_src() {
+		$legacy_card = 'src_mock';
+
+		// There is no payment method data within the request. This is the case e.g. for the automatic subscription renewals.
+		$_POST['payment_method'] = '';
+
+		$token = WC_Helper_Token::create_token( $legacy_card );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->add_payment_token( $token );
+		$order->save();
+
+		$pi             = new Payment_Information( $legacy_card, $order, null, $token, null, null, null, '', 'card' );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status' => 'success',
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will( $this->returnValue( $payment_intent ) );
+
+		$request->expects( $this->never() )
+			->method( 'set_payment_method_update_data' );
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
 	public function test_billing_details_update_if_not_empty() {
 		// There is no payment method data within the request. This is the case e.g. for the automatic subscription renewals.
 		$_POST['payment_method'] = '';

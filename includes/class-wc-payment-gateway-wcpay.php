@@ -1514,7 +1514,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $payment_information->is_using_saved_payment_method() ) {
 					$billing_details = $this->order_service->get_billing_data_from_order( $order );
 
-					$is_legacy_card_object = strpos( $payment_information->get_payment_method() ?? '', 'card_' ) === 0;
+					$is_legacy_card_object = (bool) preg_match( '/^(card_|src_)/', $payment_information->get_payment_method() );
 
 					// Not updating billing details for legacy card objects because they have a different structure and are no longer supported.
 					if ( ! empty( $billing_details ) && ! $is_legacy_card_object ) {
