@@ -98,23 +98,15 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 			);
 		}
 
-		// Jetpack connection 1.27.0 created a default value for this constant, but we're using an older version of the package
-		// https://github.com/Automattic/jetpack/blob/master/projects/packages/connection/CHANGELOG.md#1270---2021-05-25
-		// - Connection: add the default value of JETPACK__WPCOM_JSON_API_BASE to the Connection Utils class
-		// this is just a patch so that we don't need to upgrade.
-		// as an alternative, I could have also used the `jetpack_constant_default_value` filter, but this is shorter and also provides a fallback.
-		defined( 'JETPACK__WPCOM_JSON_API_BASE' ) || define( 'JETPACK__WPCOM_JSON_API_BASE', 'https://public-api.wordpress.com' );
-
-		$wpcom_request = $this->http_client->wpcom_json_api_request_as_user(
-			'/marketing/survey',
-			'2',
-			[
-				'method'  => 'POST',
-				'headers' => [
-					'Content-Type'    => 'application/json',
-					'X-Forwarded-For' => \WC_Geolocation::get_ip_address(),
-				],
+		$request_args     = [
+			'url'     => WC_Payments_API_Client::ENDPOINT_BASE . '/marketing/survey',
+			'method'  => 'POST',
+			'headers' => [
+				'Content-Type'    => 'application/json',
+				'X-Forwarded-For' => \WC_Geolocation::get_ip_address(),
 			],
+		];
+		$request_body     = wp_json_encode(
 			[
 				'site_id'          => $this->http_client->get_blog_id(),
 				'survey_id'        => 'wcpay-payment-activity',
@@ -125,14 +117,23 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 				],
 			]
 		);
+		$is_site_specific = true;
+		$use_user_token   = true;
 
-		$wpcom_request_body = json_decode( wp_remote_retrieve_body( $wpcom_request ) );
+		$wpcom_response = $this->http_client->remote_request(
+			$request_args,
+			$request_body,
+			$is_site_specific,
+			$use_user_token
+		);
 
-		if ( ! is_wp_error( $wpcom_request ) ) {
+		$wpcom_response_status_code = wp_remote_retrieve_response_code( $wpcom_response );
+
+		if ( 200 === $wpcom_response_status_code ) {
 			update_option( 'wcpay_survey_payment_overview_submitted', true );
 		}
 
-		return new WP_REST_Response( $wpcom_request_body, wp_remote_retrieve_response_code( $wpcom_request ) );
+		return new WP_REST_Response( $wpcom_response, $wpcom_response_status_code );
 	}
 
 	/**
