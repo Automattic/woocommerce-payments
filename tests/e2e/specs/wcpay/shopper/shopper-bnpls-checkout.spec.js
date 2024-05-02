@@ -66,14 +66,14 @@ describe.each( cardTestingPreventionStates )(
 					await paymentMethodLabel.click();
 
 					// Check the token presence when card testing prevention is enabled.
-					// if ( cardTestingPreventionEnabled ) {
-					// 	const token = await page.evaluate( () => {
-					// 		return window.wcpayFraudPreventionToken;
-					// 	} );
-					// 	expect( token ).not.toBeUndefined();
-					// }
+					if ( cardTestingPreventionEnabled ) {
+						const token = await page.evaluate( () => {
+							return window.wcpayFraudPreventionToken;
+						} );
+						expect( token ).not.toBeUndefined();
+					}
 
-					// await shopper.placeOrder();
+					await shopper.placeOrder();
 
 					// // Authorize payment with Stripe.
 					// // This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
