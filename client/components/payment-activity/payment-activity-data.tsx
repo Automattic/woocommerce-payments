@@ -23,12 +23,36 @@ import './style.scss';
  */
 const getDateRange = (): DateRange => {
 	return {
-		// Subtract 7 days from the current date.
+		// Subtract 6 days from the current date. 7 days including the current day.
 		date_start: moment()
-			.subtract( 7, 'd' )
+			.subtract( 6, 'd' )
 			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
 		date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
 	};
+};
+
+const searchTermsForViewReportLink = {
+	totalPaymentVolume: [
+		'charge',
+		'payment',
+		'payment_failure_refund',
+		'payment_refund',
+		'refund',
+		'refund_failure',
+		'dispute',
+		'dispute_reversal',
+		'card_reader_fee',
+	],
+};
+
+const getSearchParams = ( searchTerms: string[] ) => {
+	return searchTerms.reduce(
+		( acc, term, index ) => ( {
+			...acc,
+			[ `search[${ index }]` ]: term,
+		} ),
+		{}
+	);
 };
 
 const PaymentActivityData: React.FC = () => {
@@ -42,30 +66,6 @@ const PaymentActivityData: React.FC = () => {
 	const disputes = paymentActivityData?.disputes ?? 0;
 	const refunds = paymentActivityData?.refunds ?? 0;
 	const currency = paymentActivityData?.currency;
-
-	const searchTermsForViewReportLink = {
-		totalPaymentVolume: [
-			'charge',
-			'payment',
-			'payment_failure_refund',
-			'payment_refund',
-			'refund',
-			'refund_failure',
-			'dispute',
-			'dispute_reversal',
-			'card_reader_fee',
-		],
-	};
-
-	const getSearchParams = ( searchTerms: string[] ) => {
-		return searchTerms.reduce(
-			( acc, term, index ) => ( {
-				...acc,
-				[ `search[${ index }]` ]: term,
-			} ),
-			{}
-		);
-	};
 
 	return (
 		<div className="wcpay-payment-activity-data">
