@@ -54,19 +54,19 @@ const SingleCurrencySettings = () => {
 		? currencies.available[ currency ]
 		: {};
 
-	const targetCurrencyRoundingOptions = targetCurrency.is_zero_decimal
-		? zeroDecimalCurrencyRoundingOptions
-		: decimalCurrencyRoundingOptions;
+	const targetCurrencyRoundingOptions =
+		targetCurrency.number_of_decimals === 0
+			? zeroDecimalCurrencyRoundingOptions
+			: decimalCurrencyRoundingOptions;
 
-	const targetCurrencyCharmOptions = targetCurrency.is_zero_decimal
-		? zeroDecimalCurrencyCharmOptions
-		: decimalCurrencyCharmOptions;
+	const targetCurrencyCharmOptions =
+		targetCurrency.number_of_decimals === 0
+			? zeroDecimalCurrencyCharmOptions
+			: decimalCurrencyCharmOptions;
 
 	const initialExchangeRateType = 'automatic';
 	const initialManualRate = 0;
-	const initialPriceRoundingType = targetCurrency?.is_zero_decimal
-		? '100'
-		: '1.00';
+	const initialPriceRoundingType = targetCurrency?.default_rounding;
 	const initialPriceCharmType = '0.00';
 
 	const [ exchangeRateType, setExchangeRateType ] = useState(

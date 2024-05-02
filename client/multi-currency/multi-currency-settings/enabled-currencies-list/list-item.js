@@ -17,7 +17,7 @@ const EnabledCurrenciesListItem = ( {
 	currency: { code, flag, id, is_default: isDefault, name, symbol, rate },
 	defaultCurrency: {
 		code: defaultCode,
-		is_zero_decimal: isDefaultZeroDecimal,
+		number_of_decimals: numberOfDecimals,
 	},
 	onDeleteClick,
 } ) => {
@@ -26,15 +26,16 @@ const EnabledCurrenciesListItem = ( {
 	);
 
 	const formatCurrencyRate = () => {
-		const formattedRate = isDefaultZeroDecimal
-			? Number.parseFloat( rate * 1000 ).toFixed( 2 )
-			: Number.parseFloat( rate ).toFixed( 2 );
+		const formattedRate =
+			numberOfDecimals === 0
+				? Number.parseFloat( rate * 1000 ).toFixed( 2 )
+				: Number.parseFloat( rate ).toFixed( 2 );
 
 		if ( isDefault ) {
 			return __( 'Default currency', 'woocommerce-payments' );
 		}
 
-		return isDefaultZeroDecimal
+		return numberOfDecimals === 0
 			? `1,000 ${ defaultCode } → ${ formattedRate } ${ code }`
 			: `1 ${ defaultCode } → ${ formattedRate } ${ code }`;
 	};

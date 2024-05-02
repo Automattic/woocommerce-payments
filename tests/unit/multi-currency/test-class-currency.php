@@ -45,7 +45,7 @@ class WCPay_Multi_Currency_Currency_Tests extends WCPAY_UnitTestCase {
 		$json = wp_json_encode( $this->currency );
 
 		$this->assertSame(
-			'{"code":"USD","rate":1,"name":"United States (US) dollar","id":"usd","is_default":true,"flag":"\ud83c\uddfa\ud83c\uddf8","symbol":"$","symbol_position":"left","is_zero_decimal":false,"last_updated":' . $this->timestamp_for_testing . ',"number_of_decimals":2}',
+			'{"code":"USD","rate":1,"name":"United States (US) dollar","id":"usd","is_default":true,"flag":"\ud83c\uddfa\ud83c\uddf8","symbol":"$","symbol_position":"left","last_updated":' . $this->timestamp_for_testing . ',"number_of_decimals":2}',
 			$json
 		);
 	}
@@ -54,17 +54,9 @@ class WCPay_Multi_Currency_Currency_Tests extends WCPAY_UnitTestCase {
 		$json = wp_json_encode( new Currency( $this->localization_service, 'WST' ) );
 
 		$this->assertSame(
-			'{"code":"WST","rate":1,"name":"Samoan t\u0101l\u0101","id":"wst","is_default":false,"flag":"\ud83c\uddfc\ud83c\uddf8","symbol":"T","symbol_position":"left","is_zero_decimal":false,"last_updated":null,"number_of_decimals":2}',
+			'{"code":"WST","rate":1,"name":"Samoan t\u0101l\u0101","id":"wst","is_default":false,"flag":"\ud83c\uddfc\ud83c\uddf8","symbol":"T","symbol_position":"left","last_updated":null,"number_of_decimals":2}',
 			$json
 		);
-	}
-
-	public function test_is_zero_decimal_returns_right_value() {
-		$decimal_currency      = new Currency( $this->localization_service, 'USD' );
-		$zero_decimal_currency = new Currency( $this->localization_service, 'BIF' );
-
-		$this->assertFalse( $decimal_currency->get_is_zero_decimal() );
-		$this->assertTrue( $zero_decimal_currency->get_is_zero_decimal() );
 	}
 
 	public function test_get_number_of_decimals_returns_right_value() {

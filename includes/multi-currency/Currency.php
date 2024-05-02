@@ -183,6 +183,26 @@ class Currency implements \JsonSerializable {
 	}
 
 	/**
+	 * Returns the default rounding for the currency.
+	 *
+	 * @return string  The default rounding for this currency.
+	 */
+	public function get_default_rounding(): string {
+		if ( 0 === $this->number_of_decimals ) {
+			return '100';
+		} elseif ( 2 === $this->number_of_decimals ) {
+			return '1.00';
+		} elseif ( 3 === $this->number_of_decimals ) {
+			// We don't support currencies with 3 decimals yet, but Stripe does so this is trying to anticipate
+			// a future where we do add support for currencies with 3 decimal points.
+			return '1.000';
+		}
+
+		// Return 0, i.e. no rounding, by default.
+		return '0';
+	}
+
+	/**
 	 * Retrieves the currency's symbol from WooCommerce core.
 	 *
 	 * @return string Currency symbol.
@@ -198,15 +218,6 @@ class Currency implements \JsonSerializable {
 	 */
 	public function get_symbol_position(): string {
 		return $this->localization_service->get_currency_format( $this->code )['currency_pos'];
-	}
-
-	/**
-	 * Retrieves if the currency is zero decimal.
-	 *
-	 * @return bool
-	 */
-	public function get_is_zero_decimal(): bool {
-		return 0 === $this->number_of_decimals;
 	}
 
 	/**
@@ -281,9 +292,9 @@ class Currency implements \JsonSerializable {
 			'flag'               => $this->get_flag(),
 			'symbol'             => html_entity_decode( $this->get_symbol() ),
 			'symbol_position'    => $this->get_symbol_position(),
-			'is_zero_decimal'    => $this->get_is_zero_decimal(),
 			'last_updated'       => $this->get_last_updated(),
 			'number_of_decimals' => $this->get_number_of_decimals(),
+			'default_rounding'   => $this->get_default_rounding(),
 		];
 	}
 }
