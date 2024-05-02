@@ -30,6 +30,7 @@ use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
@@ -127,6 +128,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT   = 'wcpay_upe_bnpl_cart_block_appearance_theme';
 
 	/**
+	 * The locations of appearance transients.
+	 */
+	const APPEARANCE_THEME_TRANSIENTS = [
+		'checkout'     => [
+			'blocks'  => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
+			'classic' => self::UPE_APPEARANCE_THEME_TRANSIENT,
+		],
+		'product_page' => [
+			'blocks'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+			'classic' => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+		],
+		'cart'         => [
+			'blocks'  => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
+			'classic' => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
+		],
+	];
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -197,6 +216,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $duplicate_payment_prevention_service;
 
 	/**
+	 * Duplicate payment methods detection service
+	 *
+	 * @var Duplicates_Detection_Service
+	 */
+	protected $duplicate_payment_methods_detection_service;
+
+	/**
 	 * WC_Payments_Localization_Service instance.
 	 *
 	 * @var WC_Payments_Localization_Service
@@ -246,6 +272,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
 	 * @param WC_Payments_Localization_Service     $localization_service                 - Localization service instance.
 	 * @param WC_Payments_Fraud_Service            $fraud_service                        - Fraud service instance.
+	 * @param Duplicates_Detection_Service         $duplicate_payment_methods_detection_service - Service for finding duplicate enabled payment methods.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -259,22 +286,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Order_Service $order_service,
 		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service,
 		WC_Payments_Localization_Service $localization_service,
-		WC_Payments_Fraud_Service $fraud_service
+		WC_Payments_Fraud_Service $fraud_service,
+		Duplicates_Detection_Service $duplicate_payment_methods_detection_service
 	) {
 		$this->payment_methods = $payment_methods;
 		$this->payment_method  = $payment_method;
 		$this->stripe_id       = $payment_method->get_id();
 
-		$this->payments_api_client                  = $payments_api_client;
-		$this->account                              = $account;
-		$this->customer_service                     = $customer_service;
-		$this->token_service                        = $token_service;
-		$this->action_scheduler_service             = $action_scheduler_service;
-		$this->failed_transaction_rate_limiter      = $failed_transaction_rate_limiter;
-		$this->order_service                        = $order_service;
-		$this->duplicate_payment_prevention_service = $duplicate_payment_prevention_service;
-		$this->localization_service                 = $localization_service;
-		$this->fraud_service                        = $fraud_service;
+		$this->payments_api_client                         = $payments_api_client;
+		$this->account                                     = $account;
+		$this->customer_service                            = $customer_service;
+		$this->token_service                               = $token_service;
+		$this->action_scheduler_service                    = $action_scheduler_service;
+		$this->failed_transaction_rate_limiter             = $failed_transaction_rate_limiter;
+		$this->order_service                               = $order_service;
+		$this->duplicate_payment_prevention_service        = $duplicate_payment_prevention_service;
+		$this->localization_service                        = $localization_service;
+		$this->fraud_service                               = $fraud_service;
+		$this->duplicate_payment_methods_detection_service = $duplicate_payment_methods_detection_service;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = $this->get_theme_icon();
@@ -4344,6 +4373,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $description;
+	}
+
+	/**
+	 * Calls duplicate payment methods detection service to find duplicates.
+	 * This method acts as a wrapper. The approach should be reverted once
+	 * https://github.com/Automattic/woocommerce-payments/issues/7464 is resolved.
+	 */
+	public function find_duplicates() {
+		return $this->duplicate_payment_methods_detection_service->find_duplicates();
 	}
 
 	// Start: Deprecated functions.

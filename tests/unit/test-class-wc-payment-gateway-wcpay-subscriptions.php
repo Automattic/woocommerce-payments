@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
@@ -102,6 +103,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_fraud_service;
 
+	/**
+	 * Mock Duplicates Detection Service.
+	 *
+	 * @var Duplicates_Detection_Service
+	 */
+	private $mock_duplicates_detection_service;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -136,8 +144,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
-		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
-		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_localization_service         = $this->createMock( WC_Payments_Localization_Service::class );
+		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
 		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
 			->setConstructorArgs( [ $this->mock_token_service ] )
@@ -156,7 +165,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service,
 		);
 		$this->wcpay_gateway->init_hooks();
 		WC_Payments::set_gateway( $this->wcpay_gateway );
@@ -830,7 +840,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service,
 		);
 
 		// Ensure the has_attached_integration_hooks property is set to false so callbacks can be attached in maybe_init_subscriptions().
@@ -864,7 +875,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service,
 		);
 
 		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
