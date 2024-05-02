@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Update Payment Activity Card to use correct currency for rendering amounts.
+
+

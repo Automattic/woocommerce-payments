@@ -23,12 +23,36 @@ import './style.scss';
  */
 const getDateRange = (): DateRange => {
 	return {
-		// Subtract 7 days from the current date.
+		// Subtract 6 days from the current date. 7 days including the current day.
 		date_start: moment()
-			.subtract( 7, 'd' )
+			.subtract( 6, 'd' )
 			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
 		date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
 	};
+};
+
+const searchTermsForViewReportLink = {
+	totalPaymentVolume: [
+		'charge',
+		'payment',
+		'payment_failure_refund',
+		'payment_refund',
+		'refund',
+		'refund_failure',
+		'dispute',
+		'dispute_reversal',
+		'card_reader_fee',
+	],
+};
+
+const getSearchParams = ( searchTerms: string[] ) => {
+	return searchTerms.reduce(
+		( acc, term, index ) => ( {
+			...acc,
+			[ `search[${ index }]` ]: term,
+		} ),
+		{}
+	);
 };
 
 const PaymentActivityData: React.FC = () => {
@@ -41,14 +65,14 @@ const PaymentActivityData: React.FC = () => {
 	const fees = paymentActivityData?.fees ?? 0;
 	const disputes = paymentActivityData?.disputes ?? 0;
 	const refunds = paymentActivityData?.refunds ?? 0;
-	const { storeCurrency } = wcpaySettings;
+	const currency = paymentActivityData?.currency;
 
 	return (
 		<div className="wcpay-payment-activity-data">
 			<PaymentDataTile
 				id="wcpay-payment-activity-data__total-payment-volume"
 				label={ __( 'Total payment volume', 'woocommerce-payments' ) }
-				currencyCode={ storeCurrency }
+				currencyCode={ currency }
 				tooltip={
 					<ClickTooltip
 						className="wcpay-payment-activity-data__total-payment-volume__tooltip"
@@ -86,21 +110,25 @@ const PaymentActivityData: React.FC = () => {
 				reportLink={ getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
+					filter: 'advanced',
 					'date_between[0]': moment(
 						getDateRange().date_start
 					).format( 'YYYY-MM-DD' ),
 					'date_between[1]': moment( getDateRange().date_end ).format(
 						'YYYY-MM-DD'
 					),
-					filter: 'advanced',
+					...getSearchParams(
+						searchTermsForViewReportLink.totalPaymentVolume
+					),
 				} ) }
+				tracksSource="total_payment_volume"
 				isLoading={ isLoading }
 			/>
 			<div className="wcpay-payment-data-highlights">
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__charges"
 					label={ __( 'Charges', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					tooltip={
 						<ClickTooltip
 							className="payment-data-highlights__charges__tooltip"
@@ -127,12 +155,13 @@ const PaymentActivityData: React.FC = () => {
 						filter: 'advanced',
 						type_is: 'charge',
 					} ) }
+					tracksSource="charges"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__refunds"
 					label={ __( 'Refunds', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					amount={ refunds }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
@@ -146,12 +175,13 @@ const PaymentActivityData: React.FC = () => {
 							getDateRange().date_end
 						).format( 'YYYY-MM-DD' ),
 					} ) }
+					tracksSource="refunds"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__disputes"
 					label={ __( 'Disputes', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					amount={ disputes }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
@@ -165,12 +195,13 @@ const PaymentActivityData: React.FC = () => {
 						).format( 'YYYY-MM-DD' ),
 						status_is: 'needs_response',
 					} ) }
+					tracksSource="disputes"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__fees"
 					label={ __( 'Fees', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					tooltip={
 						<ClickTooltip
 							className="payment-data-highlights__fees__tooltip"
