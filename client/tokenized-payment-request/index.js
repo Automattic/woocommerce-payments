@@ -1,5 +1,10 @@
 /* global jQuery, wcpayPaymentRequestParams */
 /**
+ * External dependencies
+ */
+import { doAction } from '@wordpress/hooks';
+
+/**
  * Internal dependencies
  */
 import WCPayAPI from '../checkout/api';
@@ -63,11 +68,11 @@ jQuery( ( $ ) => {
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
-		wcpayPaymentRequest.init( { refresh: true } );
+		doAction( 'wcpay.payment-request.update-button-data' );
 	} );
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
-		wcpayPaymentRequest.init( { refresh: true } );
+		doAction( 'wcpay.payment-request.update-button-data' );
 	} );
 } );

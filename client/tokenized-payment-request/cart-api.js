@@ -26,6 +26,13 @@ export default class PaymentRequestCartApi {
 		} );
 	}
 
+	async getCart() {
+		return await apiFetch( {
+			method: 'GET',
+			path: '/wc/store/v1/cart',
+		} );
+	}
+
 	async createAnonymousCart() {
 		const response = await apiFetch( {
 			method: 'GET',

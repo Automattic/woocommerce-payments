@@ -3,7 +3,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { doAction, addAction } from '@wordpress/hooks';
+import { doAction, addAction, removeAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -22,11 +22,11 @@ import {
 	transformCartDataForShippingOptions,
 } from './transformers/wc-to-stripe';
 import paymentRequestButtonUi from './button-ui';
-
 import {
 	getPaymentRequest,
 	displayLoginConfirmationDialog,
 	getPaymentRequestData,
+	waitForAction,
 } from './frontend-utils';
 import PaymentRequestCartApi from './cart-api';
 import debounce from './debounce';
@@ -41,6 +41,11 @@ export default class WcpayPaymentRequest {
 	 * Whether the payment was aborted by the customer.
 	 */
 	paymentAborted = false;
+
+	/**
+	 * Whether global listeners have been added.
+	 */
+	areListenersInitialized = false;
 
 	/**
 	 * The cart data represented if the product were to be added to the cart (or, on cart/checkout pages, the cart data itself).
@@ -79,7 +84,7 @@ export default class WcpayPaymentRequest {
 	async startPaymentRequest() {
 		// reference to this class' instance, to be used inside callbacks to avoid `this` misunderstandings.
 		const _self = this;
-		// TODO ~FR: is this creating multiple handlers to events on different `paymentRequest` objects?
+		// TODO: is this creating multiple handlers to events on different `paymentRequest` objects?
 		const paymentRequest = getPaymentRequest( {
 			stripe: this.wcpayApi.getStripe(),
 			cartData: this.cachedCartData,
@@ -135,12 +140,22 @@ export default class WcpayPaymentRequest {
 			} );
 		paymentRequestButtonUi.showButton( prButton );
 
-		this.attachPaymentRequestButtonEventListeners( paymentRequest );
+		this.attachPaymentRequestButtonEventListeners();
+		removeAction(
+			'wcpay.payment-request.update-button-data',
+			'automattic/wcpay/payment-request'
+		);
 		addAction(
 			'wcpay.payment-request.update-button-data',
 			'automattic/wcpay/payment-request',
 			async () => {
 				const newCartData = await _self.getCartData();
+				// checking if items needed shipping, before assigning new cart data.
+				const didItemsNeedShipping =
+					_self.initialProductData?.needs_shipping ||
+					_self.cachedCartData?.needs_shipping;
+
+				_self.cachedCartData = newCartData;
 
 				/**
 				 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
@@ -149,11 +164,8 @@ export default class WcpayPaymentRequest {
 				 */
 				if (
 					! _self.paymentAborted &&
-					( _self.initialProductData.needs_shipping ||
-						_self.cachedCartData.needs_shipping ) ===
-						newCartData.needs_shipping
+					didItemsNeedShipping === newCartData.needs_shipping
 				) {
-					_self.cachedCartData = newCartData;
 					paymentRequest.update( {
 						total: {
 							label: getPaymentRequestData( 'total_label' ),
@@ -162,13 +174,11 @@ export default class WcpayPaymentRequest {
 								10
 							),
 						},
-						// TODO ~FR: get transform utility
 						displayItems: transformCartDataForDisplayItems(
 							newCartData
 						),
 					} );
 				} else {
-					_self.cachedCartData = newCartData;
 					_self.init().then( noop );
 				}
 			}
@@ -269,7 +279,7 @@ export default class WcpayPaymentRequest {
 		} );
 
 		paymentRequest.on( 'paymentmethod', async ( event ) => {
-			// TODO ~FR: this works for PDPs - need to handle checkout scenarios for pay-for-order, cart, checkout.
+			// TODO: this works for PDPs - need to handle checkout scenarios for pay-for-order, cart, checkout.
 			try {
 				const response = await _self.paymentRequestCartApi.placeOrder(
 					transformStripePaymentMethodForStoreApi( event )
@@ -329,6 +339,11 @@ export default class WcpayPaymentRequest {
 	}
 
 	attachPaymentRequestButtonEventListeners() {
+		if ( this.areListenersInitialized ) {
+			return;
+		}
+
+		this.areListenersInitialized = true;
 		// Block the payment request button as soon as an "input" event is fired, to avoid sync issues
 		// when the customer clicks on the button before the debounced event is processed.
 		const $quantityInput = jQuery( '.quantity' );
@@ -339,14 +354,21 @@ export default class WcpayPaymentRequest {
 		$quantityInput.on(
 			'input',
 			'.qty',
-			debounce( 250, () => {
+			debounce( 250, async () => {
 				doAction( 'wcpay.payment-request.update-button-data' );
+				await waitForAction(
+					'wcpay.payment-request.update-button-data'
+				);
 				paymentRequestButtonUi.unblockButton();
 			} )
 		);
 	}
 
 	async getCartData() {
+		if ( wcpayPaymentRequestParams.button_context !== 'product' ) {
+			return await this.paymentRequestCartApi.getCart();
+		}
+
 		const temporaryCart = new PaymentRequestCartApi();
 		await temporaryCart.createAnonymousCart();
 
@@ -362,11 +384,13 @@ export default class WcpayPaymentRequest {
 	/**
 	 * Initialize event handlers and UI state
 	 */
-	async init( { refresh = false } = {} ) {
-		if ( ! this.cachedCartData || refresh ) {
+	async init() {
+		if ( ! this.cachedCartData ) {
 			try {
 				this.cachedCartData = await this.getCartData();
-			} catch ( e ) {}
+			} catch ( e ) {
+				// if something fails here, we can likely fall back on the `initialProductData`.
+			}
 		}
 
 		this.startPaymentRequest().then( noop );

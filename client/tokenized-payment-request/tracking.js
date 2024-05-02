@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { debounce } from 'lodash';
-import '../checkout/express-checkout-buttons.scss';
 import { recordUserEvent } from 'tracks';
 
 let paymentRequestBranding;
