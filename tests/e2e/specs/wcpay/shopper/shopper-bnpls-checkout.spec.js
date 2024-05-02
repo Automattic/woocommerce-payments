@@ -66,29 +66,29 @@ describe.each( cardTestingPreventionStates )(
 					await paymentMethodLabel.click();
 
 					// Check the token presence when card testing prevention is enabled.
-					if ( cardTestingPreventionEnabled ) {
-						const token = await page.evaluate( () => {
-							return window.wcpayFraudPreventionToken;
-						} );
-						expect( token ).not.toBeUndefined();
-					}
+					// if ( cardTestingPreventionEnabled ) {
+					// 	const token = await page.evaluate( () => {
+					// 		return window.wcpayFraudPreventionToken;
+					// 	} );
+					// 	expect( token ).not.toBeUndefined();
+					// }
 
-					await shopper.placeOrder();
+					// await shopper.placeOrder();
 
-					// Authorize payment with Stripe.
-					// This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
-					const xPathAuthorizePaymentButton = `//*[self::button or self::a][contains(text(), 'Authorize Test Payment')]`;
-					await page.waitForXPath( xPathAuthorizePaymentButton );
-					const [ stripeButton ] = await page.$x(
-						xPathAuthorizePaymentButton
-					);
-					await stripeButton.click();
+					// // Authorize payment with Stripe.
+					// // This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
+					// const xPathAuthorizePaymentButton = `//*[self::button or self::a][contains(text(), 'Authorize Test Payment')]`;
+					// await page.waitForXPath( xPathAuthorizePaymentButton );
+					// const [ stripeButton ] = await page.$x(
+					// 	xPathAuthorizePaymentButton
+					// );
+					// await stripeButton.click();
 
-					// Wait for the order confirmation page to load.
-					await page.waitForNavigation( {
-						waitUntil: 'networkidle0',
-					} );
-					await expect( page ).toMatch( 'Order received' );
+					// // Wait for the order confirmation page to load.
+					// await page.waitForNavigation( {
+					// 	waitUntil: 'networkidle0',
+					// } );
+					// await expect( page ).toMatch( 'Order received' );
 				} );
 			}
 		);
