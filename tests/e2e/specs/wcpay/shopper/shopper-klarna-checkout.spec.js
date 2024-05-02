@@ -101,25 +101,26 @@ describe( 'Klarna checkout', () => {
 		// Klarna is rendered in an iframe, so we need to get its reference.
 		// Sometimes the iframe is updated (or removed from the page),
 		// this function has been created so that we always get the most updated reference.
-		const getNewKlarnaIframe = async () => {
-			const klarnaFrameHandle = await page.waitForSelector(
-				'#klarna-apf-iframe'
-			);
+		// const getNewKlarnaIframe = async () => {
+		// 	const klarnaFrameHandle = await page.waitForSelector(
+		// 		'#klarna-apf-iframe'
+		// 	);
 
-			return await klarnaFrameHandle.contentFrame();
-		};
+		// 	return await klarnaFrameHandle.contentFrame();
+		// };
 
-		let klarnaIframe = await getNewKlarnaIframe();
+		// let klarnaIframe = await getNewKlarnaIframe();
 
-		const frameNavigationHandler = async ( frame ) => {
-			const newKlarnaIframe = await getNewKlarnaIframe();
-			if ( frame === newKlarnaIframe ) {
-				klarnaIframe = newKlarnaIframe;
-			}
-		};
+		// const frameNavigationHandler = async ( frame ) => {
+		// 	const newKlarnaIframe = await getNewKlarnaIframe();
+		// 	if ( frame === newKlarnaIframe ) {
+		// 		klarnaIframe = newKlarnaIframe;
+		// 	}
+		// };
 
-		// Add frame navigation event listener.
-		page.on( 'framenavigated', frameNavigationHandler );
+		// // Add frame navigation event listener.
+		// page.on( 'framenavigated', frameNavigationHandler );
+		const klarnaIframe = page;
 
 		// waiting for the redirect & the Klarna iframe to load within the Stripe test page.
 		// this is the "confirm phone number" page - we just click "continue".
@@ -159,7 +160,7 @@ describe( 'Klarna checkout', () => {
 			.then( ( button ) => button.click() );
 
 		// at this point, the event listener is not needed anymore.
-		page.removeListener( 'framenavigated', frameNavigationHandler );
+		// page.removeListener( 'framenavigated', frameNavigationHandler );
 
 		// Confirm payment.
 		await klarnaIframe
