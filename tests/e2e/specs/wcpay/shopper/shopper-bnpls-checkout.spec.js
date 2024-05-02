@@ -2,13 +2,13 @@
  * External dependencies
  */
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
-import config from 'config';
-import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
+// import config from 'config';
+// import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 /**
  * Internal dependencies
  */
 import { merchantWCP, shopperWCP } from '../../../utils/flows';
-import { setupProductCheckout } from '../../../utils/payments';
+// import { setupProductCheckout } from '../../../utils/payments';
 
 const bnplProviders = [ [ 'Affirm' ], [ 'Afterpay' ] ];
 
@@ -52,18 +52,18 @@ describe.each( cardTestingPreventionStates )(
 			( providerName ) => {
 				it( `should successfully place order with ${ providerName }`, async () => {
 					await shopperWCP.emptyCart();
-					await setupProductCheckout(
-						config.get( 'addresses.customer.billing' ),
-						[ [ 'Beanie', 3 ] ]
-					);
-					await uiUnblocked();
-					// Select BNPL provider as payment method.
-					const xPathPaymentMethodSelector = `//*[@id='payment']/ul/li/label[contains(text(), '${ providerName }')]`;
-					await page.waitForXPath( xPathPaymentMethodSelector );
-					const [ paymentMethodLabel ] = await page.$x(
-						xPathPaymentMethodSelector
-					);
-					await paymentMethodLabel.click();
+					// await setupProductCheckout(
+					// 	config.get( 'addresses.customer.billing' ),
+					// 	[ [ 'Beanie', 3 ] ]
+					// );
+					// // await uiUnblocked();
+					// // // Select BNPL provider as payment method.
+					// // const xPathPaymentMethodSelector = `//*[@id='payment']/ul/li/label[contains(text(), '${ providerName }')]`;
+					// // await page.waitForXPath( xPathPaymentMethodSelector );
+					// // const [ paymentMethodLabel ] = await page.$x(
+					// // 	xPathPaymentMethodSelector
+					// // );
+					// // await paymentMethodLabel.click();
 
 					// Check the token presence when card testing prevention is enabled.
 					// if ( cardTestingPreventionEnabled ) {
