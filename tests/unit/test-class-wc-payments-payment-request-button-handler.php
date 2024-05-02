@@ -277,7 +277,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	public function test_tokenized_cart_address_avoid_normalization_when_missing_header() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WC-Payments-prb-request', null );
-		$request->set_route( '/wc/store/v1/cart/update-customer' );
+		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
 			[
@@ -286,15 +286,17 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			]
 		);
 
-		$modified_request = $this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
 
-		$this->assertSame( $modified_request['shipping_address']['state'], 'California' );
+		$shipping_address = $request->get_param( 'shipping_address' );
+
+		$this->assertSame( 'California', $shipping_address['state'] );
 	}
 
 	public function test_tokenized_cart_address_state_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WC-Payments-prb-request', 'true' );
-		$request->set_route( '/wc/store/v1/cart/update-customer' );
+		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
 			[
@@ -310,16 +312,19 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			]
 		);
 
-		$modified_request = $this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
 
-		$this->assertSame( $modified_request['shipping_address']['state'], 'CA' );
-		$this->assertSame( $modified_request['billing_address']['state'], 'BC' );
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		$this->assertSame( 'CA', $shipping_address['state'] );
+		$this->assertSame( 'BC', $billing_address['state'] );
 	}
 
 	public function test_tokenized_cart_address_postcode_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WC-Payments-prb-request', 'true' );
-		$request->set_route( '/wc/store/v1/cart/update-customer' );
+		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
 			[
@@ -335,12 +340,15 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			]
 		);
 
-		$modified_request = $this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
 
 		// this should be modified.
-		$this->assertSame( $modified_request['shipping_address']['postcode'], 'H3B000' );
+		$this->assertSame( 'H3B000', $shipping_address['postcode'] );
 		// this shouldn't be modified.
-		$this->assertSame( $modified_request['billing_address']['postcode'], '90210' );
+		$this->assertSame( '90210', $billing_address['postcode'] );
 	}
 
 	public function test_get_shipping_options_returns_shipping_options() {
