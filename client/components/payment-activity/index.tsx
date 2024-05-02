@@ -32,9 +32,36 @@ const getDateRange = (): DateRange => {
 	};
 };
 
+const PaymentActivityEmptyState: React.FC = () => (
+	<Card>
+		<CardHeader>
+			{ __( 'Your payment activity', 'woocommerce-payments' ) }
+		</CardHeader>
+		<CardBody className="wcpay-payment-activity__card__body">
+			<div className="wcpay-payment-activity__card__body__empty-state-wrapper">
+				<img src={ EmptyStateAsset } alt="" />
+				<p>
+					{ interpolateComponents( {
+						mixedString: __(
+							'{{strong}}No payments…yet!{{/strong}}'
+						),
+						components: {
+							strong: <strong />,
+						},
+					} ) }
+				</p>
+				<p>
+					{ __(
+						"Once your first order comes in, you'll start seeing your payment activity right here.",
+						'woocommerce-payments'
+					) }
+				</p>
+			</div>
+		</CardBody>
+	</Card>
+);
+
 const PaymentActivity: React.FC = () => {
-	const { lifetimeTPV } = wcpaySettings;
-	const hasAtLeastOnePayment = lifetimeTPV > 0;
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
@@ -42,52 +69,20 @@ const PaymentActivity: React.FC = () => {
 		getDateRange()
 	);
 
-	const showWidget =
-		! hasAtLeastOnePayment ||
-		isLoading ||
-		paymentActivityData !== undefined;
-
-	if ( ! showWidget ) {
-		return <></>;
-	}
-
 	return (
 		<Card>
 			<CardHeader>
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
-
-				{ hasAtLeastOnePayment && <>{ /* Filters go here */ }</> }
+				{ /* Filters go here */ }
 			</CardHeader>
 			<CardBody className="wcpay-payment-activity__card__body">
-				{ hasAtLeastOnePayment ? (
-					<PaymentActivityDataComponent
-						paymentActivityData={ paymentActivityData }
-						isLoading={ isLoading }
-					/>
-				) : (
-					<div className="wcpay-payment-activity__card__body__empty-state-wrapper">
-						<img src={ EmptyStateAsset } alt="" />
-						<p>
-							{ interpolateComponents( {
-								mixedString: __(
-									'{{strong}}No payments…yet!{{/strong}}'
-								),
-								components: {
-									strong: <strong />,
-								},
-							} ) }
-						</p>
-						<p>
-							{ __(
-								"Once your first order comes in, you'll start seeing your payment activity right here.",
-								'woocommerce-payments'
-							) }
-						</p>
-					</div>
-				) }
+				<PaymentActivityDataComponent
+					paymentActivityData={ paymentActivityData }
+					isLoading={ isLoading }
+				/>
 			</CardBody>
 
-			{ ! isOverviewSurveySubmitted && hasAtLeastOnePayment && (
+			{ ! isOverviewSurveySubmitted && (
 				<WcPayOverviewSurveyContextProvider>
 					<Survey />
 				</WcPayOverviewSurveyContextProvider>
@@ -96,4 +91,15 @@ const PaymentActivity: React.FC = () => {
 	);
 };
 
-export default PaymentActivity;
+const PaymentActivityWrapper: React.FC = () => {
+	const { lifetimeTPV } = wcpaySettings;
+	const hasAtLeastOnePayment = lifetimeTPV > 0;
+
+	if ( ! hasAtLeastOnePayment ) {
+		return <PaymentActivityEmptyState />;
+	}
+
+	return <PaymentActivity />;
+};
+
+export default PaymentActivityWrapper;
