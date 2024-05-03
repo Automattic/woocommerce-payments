@@ -180,7 +180,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 				}
 				dispatch( 'core/notices' ).createErrorNotice(
 					__(
-						'At least one risk filter needs to be enabled for advanced protection.',
+						'Protection level set to "basic", at least one risk filter needs to be enabled for advanced protection.',
 						'woocommerce-payments'
 					)
 				);
