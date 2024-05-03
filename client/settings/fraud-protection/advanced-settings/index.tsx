@@ -169,55 +169,59 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	};
 
 	const handleSaveSettings = () => {
-		if ( validateSettings( protectionSettingsUI ) ) {
-			const settings = writeRuleset( protectionSettingsUI );
-
-			if ( ! checkAnyRuleFilterEnabled( protectionSettingsUI ) ) {
-				if ( ProtectionLevel.BASIC !== currentProtectionLevel ) {
-					updateProtectionLevel( ProtectionLevel.BASIC );
-					updateAdvancedFraudProtectionSettings( settings );
-					saveSettings();
-				}
-				dispatch( 'core/notices' ).createErrorNotice(
-					__(
-						'Protection level set to "basic", at least one risk filter needs to be enabled for advanced protection.',
-						'woocommerce-payments'
-					)
-				);
-
-				return;
-			} else if ( ProtectionLevel.ADVANCED !== currentProtectionLevel ) {
-				updateProtectionLevel( ProtectionLevel.ADVANCED );
-				dispatch( 'core/notices' ).createSuccessNotice(
-					__(
-						'Current protection level is set to "advanced".',
-						'woocommerce-payments'
-					)
-				);
-			}
-
-			// Persist the AVS verification setting until the account cache is updated locally.
-			if (
-				wcpaySettings?.accountStatus?.fraudProtection
-					?.declineOnAVSFailure
-			) {
-				wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure = settings.some(
-					( setting ) => setting.key === 'avs_verification'
-				);
-			}
-
-			updateAdvancedFraudProtectionSettings( settings );
-
-			saveSettings();
-
-			recordEvent( 'wcpay_fraud_protection_advanced_settings_saved', {
-				settings: JSON.stringify( settings ),
-			} );
-		} else {
+		if ( ! validateSettings( protectionSettingsUI ) ) {
 			window.scrollTo( {
 				top: 0,
 			} );
+			return;
 		}
+
+		if ( ! checkAnyRuleFilterEnabled( protectionSettingsUI ) ) {
+			if ( ProtectionLevel.BASIC === currentProtectionLevel ) {
+				dispatch( 'core/notices' ).createErrorNotice(
+					__(
+						'At least one risk filter needs to be enabled for advanced protection.',
+						'woocommerce-payments'
+					)
+				);
+				return;
+			}
+
+			updateProtectionLevel( ProtectionLevel.BASIC );
+			dispatch( 'core/notices' ).createErrorNotice(
+				__(
+					'Current protection level is set to "basic". At least one risk filter needs to be enabled for advanced protection.',
+					'woocommerce-payments'
+				)
+			);
+		} else if ( ProtectionLevel.ADVANCED !== currentProtectionLevel ) {
+			updateProtectionLevel( ProtectionLevel.ADVANCED );
+			dispatch( 'core/notices' ).createSuccessNotice(
+				__(
+					'Current protection level is set to "advanced".',
+					'woocommerce-payments'
+				)
+			);
+		}
+
+		const settings = writeRuleset( protectionSettingsUI );
+
+		// Persist the AVS verification setting until the account cache is updated locally.
+		if (
+			wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure
+		) {
+			wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure = settings.some(
+				( setting ) => setting.key === 'avs_verification'
+			);
+		}
+
+		updateAdvancedFraudProtectionSettings( settings );
+
+		saveSettings();
+
+		recordEvent( 'wcpay_fraud_protection_advanced_settings_saved', {
+			settings: JSON.stringify( settings ),
+		} );
 	};
 
 	// Hack to make "Payments > Settings" the active selected menu item.
