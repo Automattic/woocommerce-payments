@@ -171,8 +171,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const handleSaveSettings = () => {
 		if ( validateSettings( protectionSettingsUI ) ) {
 			if ( ! checkAnyRuleFilterEnabled( protectionSettingsUI ) ) {
-				if ( ProtectionLevel.STANDARD !== currentProtectionLevel ) {
-					updateProtectionLevel( ProtectionLevel.STANDARD );
+				if ( ProtectionLevel.BASIC !== currentProtectionLevel ) {
+					updateProtectionLevel( ProtectionLevel.BASIC );
 				}
 				dispatch( 'core/notices' ).createErrorNotice(
 					__(
