@@ -170,9 +170,13 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	const handleSaveSettings = () => {
 		if ( validateSettings( protectionSettingsUI ) ) {
+			const settings = writeRuleset( protectionSettingsUI );
+
 			if ( ! checkAnyRuleFilterEnabled( protectionSettingsUI ) ) {
 				if ( ProtectionLevel.BASIC !== currentProtectionLevel ) {
 					updateProtectionLevel( ProtectionLevel.BASIC );
+					updateAdvancedFraudProtectionSettings( settings );
+					saveSettings();
 				}
 				dispatch( 'core/notices' ).createErrorNotice(
 					__(
@@ -180,6 +184,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 						'woocommerce-payments'
 					)
 				);
+
+				return;
 			} else if ( ProtectionLevel.ADVANCED !== currentProtectionLevel ) {
 				updateProtectionLevel( ProtectionLevel.ADVANCED );
 				dispatch( 'core/notices' ).createSuccessNotice(
@@ -189,8 +195,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 					)
 				);
 			}
-
-			const settings = writeRuleset( protectionSettingsUI );
 
 			// Persist the AVS verification setting until the account cache is updated locally.
 			if (
