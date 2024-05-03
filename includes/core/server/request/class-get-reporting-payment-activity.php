@@ -61,7 +61,7 @@ class Get_Reporting_Payment_Activity extends Request {
 	/**
 	 * Sets the end date for the payment activity data.
 	 *
-	 * @param string $date_end The end date in the format 'YYYY-MM-DDT00:00:00' or null.
+	 * @param string $date_end The end date in the format 'YYYY-MM-DDT00:00:00'.
 	 * @return void
 	 */
 	public function set_date_end( string $date_end ) {
