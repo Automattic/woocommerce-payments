@@ -121,8 +121,11 @@ $gap-small: 12px;
 		.woocommerce-search {
 			margin: 0 $gap;
 
-			.woocommerce-select-control__control {
-				height: 38px;
+			.components-base-control {
+				&.woocommerce-select-control__control {
+					min-height: 38px;
+					height: auto;
+				}
 			}
 		}
 
