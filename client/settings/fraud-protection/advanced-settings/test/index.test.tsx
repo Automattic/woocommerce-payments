@@ -28,6 +28,7 @@ jest.mock( '@wordpress/data', () => ( {
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		createSuccessNotice: jest.fn(),
+		createErrorNotice: jest.fn(),
 		onLoad: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
@@ -437,5 +438,46 @@ describe( 'Advanced fraud protection settings', () => {
 		expect( protectionLevelState.state ).toBe( 'advanced' );
 		expect( protectionLevelState.updateState.mock.calls.length ).toBe( 0 );
 		expect( protectionLevelState.updateState.mock.calls ).toEqual( [] );
+	} );
+	test( 'does not update protection level to advanced when no risk rules are enabled', async () => {
+		const protectionLevelState = {
+			state: 'standard',
+			updateState: jest.fn( ( level ) => {
+				protectionLevelState.state = level;
+			} ),
+		};
+		mockUseCurrentProtectionLevel.mockReturnValue( [
+			protectionLevelState.state,
+			protectionLevelState.updateState,
+		] );
+		mockUseSettings.mockReturnValue( {
+			settings: {
+				advanced_fraud_protection_settings: defaultSettings,
+			},
+			isSaving: false,
+			saveSettings: jest.fn(),
+			isLoading: false,
+		} );
+		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
+			defaultSettings,
+			jest.fn(),
+		] );
+		container = render(
+			<div>
+				<div className="woocommerce-layout__header-wrapper">
+					<div className="woocommerce-layout__header-heading"></div>
+				</div>
+				<FraudProtectionAdvancedSettingsPage />
+			</div>
+		);
+		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		saveButton.click();
+		await waitFor( () => {
+			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
+				1
+			);
+		} );
+
+		expect( protectionLevelState.state ).toBe( 'basic' );
 	} );
 } );
