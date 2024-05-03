@@ -3430,11 +3430,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$payment_method_id = isset( $_POST['payment_method_id'] ) ? wc_clean( wp_unslash( $_POST['payment_method_id'] ) ) : '';
-			if ( 'null' === $payment_method_id ) {
-				$payment_method_id = '';
-			}
-
 			// Check that the intent saved in the order matches the intent used as part of the
 			// authentication process. The ID of the intent used is sent with
 			// the AJAX request. We are about to use the status of the intent saved in
@@ -4289,7 +4284,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Payments_API_Setup_Intention $intent The PaymentIntent object.
 	 * @param WC_Payment_Token                $token The payment token.
-	 * @return string The payment method type.
+	 * @return string|null The payment method type.
 	 */
 	private function get_payment_method_type_for_setup_intent( $intent, $token ) {
 		return 'wcpay_link' !== $token->get_type() ? $intent->get_payment_method_type() : Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
