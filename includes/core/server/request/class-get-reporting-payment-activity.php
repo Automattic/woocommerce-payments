@@ -72,7 +72,7 @@ class Get_Reporting_Payment_Activity extends Request {
 	/**
 	 * Sets the timezone for the reporting data.
 	 *
-	 * @param string $timezone The timezone to set or null.
+	 * @param string $timezone The timezone to set.
 	 * @return void
 	 */
 	public function set_timezone( string $timezone ) {
