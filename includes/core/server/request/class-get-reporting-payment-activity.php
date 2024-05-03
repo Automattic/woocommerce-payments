@@ -50,7 +50,7 @@ class Get_Reporting_Payment_Activity extends Request {
 	/**
 	 * Sets the start date for the payment activity data.
 	 *
-	 * @param string $date_start The start date in the format 'YYYY-MM-DDT00:00:00' or null.
+	 * @param string $date_start The start date in the format 'YYYY-MM-DDT00:00:00'.
 	 * @return void
 	 */
 	public function set_date_start( string $date_start ) {
