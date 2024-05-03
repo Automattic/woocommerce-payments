@@ -16,7 +16,6 @@ use WC_Payments_API_Client;
  */
 class Get_Reporting_Payment_Activity extends Request {
 
-
 	const REQUIRED_PARAMS = [
 		'date_start',
 		'date_end',
@@ -74,8 +73,24 @@ class Get_Reporting_Payment_Activity extends Request {
 	 *
 	 * @param string $timezone The timezone to set.
 	 * @return void
+	 *
+	 * @throws Invalid_Request_Parameter_Exception Exception if the timezone is not in valid format.
 	 */
 	public function set_timezone( string $timezone ) {
+		try {
+			new \DateTimeZone( $timezone );
+		} catch ( \Exception $e ) {
+			throw new Invalid_Request_Parameter_Exception(
+				esc_html(
+					sprintf(
+						// Translators: %s is a provided timezone.
+						__( '%s is not a valid timezone.', 'woocommerce-payments' ),
+						$timezone,
+					)
+				),
+				'wcpay_core_invalid_request_parameter_invalid_timezone'
+			);
+		}
 		$this->set_param( 'timezone', $timezone );
 	}
 }
