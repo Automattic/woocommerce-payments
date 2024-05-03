@@ -9,6 +9,7 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
  */
 import { merchantWCP, shopperWCP } from '../../../utils/flows';
 import { setupProductCheckout } from '../../../utils/payments';
+import { takeScreenshot } from '../../../utils';
 
 const bnplProviders = [ [ 'Affirm' ], [ 'Afterpay' ] ];
 
@@ -73,7 +74,15 @@ describe.each( cardTestingPreventionStates )(
 						expect( token ).not.toBeUndefined();
 					}
 
+					await takeScreenshot(
+						`shopper-bnpls-checkout-${ providerName }-payment-method-selected`
+					);
+
 					await shopper.placeOrder();
+
+					await takeScreenshot(
+						`shopper-bnpls-checkout-${ providerName }-after-order-placed`
+					);
 
 					// // Authorize payment with Stripe.
 					// // This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
