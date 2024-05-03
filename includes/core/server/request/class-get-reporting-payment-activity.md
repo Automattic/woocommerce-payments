@@ -15,6 +15,7 @@ The `WCPay\Core\Server\Request\Get_Reporting_Payment_Activity` class is used to 
 | `timezone`  | `set_timezone( string $timezone )`        |    No     |    Yes   |       -       |
 
 The `date_start` and `date_end` parameters should be in the 'YYYY-MM-DDT00:00:00' format.
+The `timezone` parameter can be passed as an offset or as a [timezone name](https://www.php.net/manual/en/timezones.php).
 
 ## Filter
 
