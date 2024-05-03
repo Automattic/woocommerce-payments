@@ -162,7 +162,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 			.every( Boolean );
 	};
 
-	const checkAnySettingEnabled = (
+	const checkAnyRuleFilterEnabled = (
 		settings: ProtectionSettingsUI
 	): boolean => {
 		return Object.values( settings ).some( ( setting ) => setting.enabled );
@@ -170,8 +170,10 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	const handleSaveSettings = () => {
 		if ( validateSettings( protectionSettingsUI ) ) {
-			if ( ! checkAnySettingEnabled( protectionSettingsUI ) ) {
-				updateProtectionLevel( ProtectionLevel.BASIC );
+			if ( ! checkAnyRuleFilterEnabled( protectionSettingsUI ) ) {
+				if ( ProtectionLevel.STANDARD !== currentProtectionLevel ) {
+					updateProtectionLevel( ProtectionLevel.STANDARD );
+				}
 				dispatch( 'core/notices' ).createErrorNotice(
 					__(
 						'At least one risk filter needs to be enabled for advanced protection.',

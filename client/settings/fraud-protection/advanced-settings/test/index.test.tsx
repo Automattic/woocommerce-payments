@@ -478,6 +478,6 @@ describe( 'Advanced fraud protection settings', () => {
 			);
 		} );
 
-		expect( protectionLevelState.state ).toBe( 'basic' );
+		expect( protectionLevelState.state ).toBe( 'standard' );
 	} );
 } );
