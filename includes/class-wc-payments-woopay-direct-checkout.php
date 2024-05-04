@@ -40,12 +40,13 @@ class WC_Payments_WooPay_Direct_Checkout {
 		$is_already_defined_order_id = ! empty( $order_id );
 		// Only apply this filter if the session doesn't already have an order_awaiting_payment.
 		$is_order_awaiting_payment = isset( WC()->session->order_awaiting_payment );
-		if ( ! $is_checkout || $is_already_defined_order_id || $is_order_awaiting_payment ) {
+		// Only apply this filter if draft order ID exists.
+		$is_draft_order_exists = ! empty( WC()->session->get( 'store_api_draft_order' ) );
+		if ( ! $is_checkout || $is_already_defined_order_id || $is_order_awaiting_payment || ! $is_draft_order_exists ) {
 			return $order_id;
 		}
 
-		// Use draft order ID, if it exists.
-		$draft_order_id = absint( WC()->session->get( 'store_api_draft_order', $order_id ) );
+		$draft_order_id = absint( WC()->session->get( 'store_api_draft_order' ) );
 		// Set the order status to "pending" payment, so that it can be resumed.
 		$draft_order = wc_get_order( $draft_order_id );
 		$draft_order->set_status( 'pending' );
