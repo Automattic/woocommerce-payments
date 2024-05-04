@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Remove auto-redirect to WooPay on page load.
