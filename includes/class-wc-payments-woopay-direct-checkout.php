@@ -44,7 +44,17 @@ class WC_Payments_WooPay_Direct_Checkout {
 			return $order_id;
 		}
 
-		return absint( WC()->session->get( 'store_api_draft_order', $order_id ) );
+		// Use draft order ID, if it exists.
+		$draft_order_id = absint( WC()->session->get( 'store_api_draft_order', $order_id ) );
+		// Set the order status to "pending" payment, so that it can be resumed.
+		$draft_order = wc_get_order( $draft_order_id );
+		$draft_order->set_status( 'pending' );
+		$draft_order->save();
+
+		// Store Order ID in session, so it can be re-used during payment.
+		WC()->session->set( 'order_awaiting_payment', $draft_order_id );
+
+		return $order_id;
 	}
 
 	/**
