@@ -27,7 +27,8 @@ class WC_Payments_WooPay_Direct_Checkout {
 	/**
 	 * This filter is used to ensure the session's store_api_draft_order is used, if it exists.
 	 * This prevents a bug where the store_api_draft_order is not used and instead, a new
-	 * order_awaiting_payment is created during the checkout request.
+	 * order_awaiting_payment is created during the checkout request. Therefore, a product
+	 * would be considered out of stock, even though 1 was available.
 	 *
 	 * @param int $order_id The order ID being used.
 	 * @return int|mixed The new order ID to use.
