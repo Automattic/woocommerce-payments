@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add notice when no rules are enabled in advanced fraud settings
