@@ -69,6 +69,15 @@ const PaymentActivity: React.FC = () => {
 		getDateRange()
 	);
 
+	// When not loading and data is undefined, do not show widget.
+	// This should only happen in 2 occasions:
+	// 1. Initially on page load, and
+	// 2. When we get an error from server.
+	const showWidget = isLoading || paymentActivityData !== undefined;
+	if ( ! showWidget ) {
+		return <></>;
+	}
+
 	return (
 		<Card>
 			<CardHeader>
