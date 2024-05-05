@@ -17,6 +17,39 @@ import { getAdminUrl } from 'wcpay/utils';
 import type { PaymentActivityData } from 'wcpay/data/payment-activity/types';
 import './style.scss';
 
+const searchTermsForViewReportLink = {
+	totalPaymentVolume: [
+		'charge',
+		'payment',
+		'payment_failure_refund',
+		'payment_refund',
+		'refund',
+		'refund_failure',
+		'dispute',
+		'dispute_reversal',
+		'card_reader_fee',
+	],
+
+	charge: [ 'charge', 'payment' ],
+
+	refunds: [
+		'refund',
+		'refund_failure',
+		'payment_refund',
+		'payment_failure_refund',
+	],
+};
+
+const getSearchParams = ( searchTerms: string[] ) => {
+	return searchTerms.reduce(
+		( acc, term, index ) => ( {
+			...acc,
+			[ `search[${ index }]` ]: term,
+		} ),
+		{}
+	);
+};
+
 interface Props {
 	paymentActivityData?: PaymentActivityData;
 	isLoading?: boolean;
@@ -76,13 +109,16 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 				reportLink={ getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
+					filter: 'advanced',
 					'date_between[0]': moment(
 						paymentActivityData?.date_start
 					).format( 'YYYY-MM-DD' ),
 					'date_between[1]': moment(
 						paymentActivityData?.date_end
 					).format( 'YYYY-MM-DD' ),
-					filter: 'advanced',
+					...getSearchParams(
+						searchTermsForViewReportLink.totalPaymentVolume
+					),
 				} ) }
 				tracksSource="total_payment_volume"
 				isLoading={ isLoading }
@@ -116,7 +152,15 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
-						type_is: 'charge',
+						'date_between[0]': moment(
+							paymentActivityData?.date_start
+						).format( 'YYYY-MM-DD' ),
+						'date_between[1]': moment(
+							paymentActivityData?.date_end
+						).format( 'YYYY-MM-DD' ),
+						...getSearchParams(
+							searchTermsForViewReportLink.charge
+						),
 					} ) }
 					tracksSource="charges"
 					isLoading={ isLoading }
@@ -130,13 +174,15 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
-						type_is: 'refund',
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
 							paymentActivityData?.date_end
 						).format( 'YYYY-MM-DD' ),
+						...getSearchParams(
+							searchTermsForViewReportLink.refunds
+						),
 					} ) }
 					tracksSource="refunds"
 					isLoading={ isLoading }

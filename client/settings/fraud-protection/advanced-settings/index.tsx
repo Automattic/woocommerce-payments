@@ -70,20 +70,28 @@ const observerEventMapping: Record< string, string > = {
 };
 
 const Breadcrumb = () => (
-	<h2 className="fraud-protection-header-breadcrumb">
-		<Link
-			type="wp-admin"
-			href={ getAdminUrl( {
-				page: 'wc-settings',
-				tab: 'checkout',
-				section: 'woocommerce_payments',
-			} ) }
-		>
-			{ 'WooPayments' }
-		</Link>
-		&nbsp;&gt;&nbsp;
-		{ __( 'Advanced fraud protection', 'woocommerce-payments' ) }
-	</h2>
+	<>
+		<h2 className="fraud-protection-header-breadcrumb">
+			<Link
+				type="wp-admin"
+				href={ getAdminUrl( {
+					page: 'wc-settings',
+					tab: 'checkout',
+					section: 'woocommerce_payments',
+				} ) }
+			>
+				{ 'WooPayments' }
+			</Link>
+			&nbsp;&gt;&nbsp;
+			{ __( 'Advanced fraud protection', 'woocommerce-payments' ) }
+		</h2>
+		<p className="fraud-protection-advanced-settings-notice">
+			{ __(
+				'At least one risk filter needs to be enabled for advanced protection.',
+				'woocommerce-payments'
+			) }
+		</p>
+	</>
 );
 
 const SaveFraudProtectionSettingsButton: React.FC = ( { children } ) => {
@@ -154,42 +162,66 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 			.every( Boolean );
 	};
 
+	const checkAnyRuleFilterEnabled = (
+		settings: ProtectionSettingsUI
+	): boolean => {
+		return Object.values( settings ).some( ( setting ) => setting.enabled );
+	};
+
 	const handleSaveSettings = () => {
-		if ( validateSettings( protectionSettingsUI ) ) {
-			if ( ProtectionLevel.ADVANCED !== currentProtectionLevel ) {
-				updateProtectionLevel( ProtectionLevel.ADVANCED );
-				dispatch( 'core/notices' ).createSuccessNotice(
-					__(
-						'Current protection level is set to "advanced".',
-						'woocommerce-payments'
-					)
-				);
-			}
-
-			const settings = writeRuleset( protectionSettingsUI );
-
-			// Persist the AVS verification setting until the account cache is updated locally.
-			if (
-				wcpaySettings?.accountStatus?.fraudProtection
-					?.declineOnAVSFailure
-			) {
-				wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure = settings.some(
-					( setting ) => setting.key === 'avs_verification'
-				);
-			}
-
-			updateAdvancedFraudProtectionSettings( settings );
-
-			saveSettings();
-
-			recordEvent( 'wcpay_fraud_protection_advanced_settings_saved', {
-				settings: JSON.stringify( settings ),
-			} );
-		} else {
+		if ( ! validateSettings( protectionSettingsUI ) ) {
 			window.scrollTo( {
 				top: 0,
 			} );
+			return;
 		}
+
+		if ( ! checkAnyRuleFilterEnabled( protectionSettingsUI ) ) {
+			if ( ProtectionLevel.BASIC === currentProtectionLevel ) {
+				dispatch( 'core/notices' ).createErrorNotice(
+					__(
+						'At least one risk filter needs to be enabled for advanced protection.',
+						'woocommerce-payments'
+					)
+				);
+				return;
+			}
+
+			updateProtectionLevel( ProtectionLevel.BASIC );
+			dispatch( 'core/notices' ).createErrorNotice(
+				__(
+					'Current protection level is set to "basic". At least one risk filter needs to be enabled for advanced protection.',
+					'woocommerce-payments'
+				)
+			);
+		} else if ( ProtectionLevel.ADVANCED !== currentProtectionLevel ) {
+			updateProtectionLevel( ProtectionLevel.ADVANCED );
+			dispatch( 'core/notices' ).createSuccessNotice(
+				__(
+					'Current protection level is set to "advanced".',
+					'woocommerce-payments'
+				)
+			);
+		}
+
+		const settings = writeRuleset( protectionSettingsUI );
+
+		// Persist the AVS verification setting until the account cache is updated locally.
+		if (
+			wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure
+		) {
+			wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure = settings.some(
+				( setting ) => setting.key === 'avs_verification'
+			);
+		}
+
+		updateAdvancedFraudProtectionSettings( settings );
+
+		saveSettings();
+
+		recordEvent( 'wcpay_fraud_protection_advanced_settings_saved', {
+			settings: JSON.stringify( settings ),
+		} );
 	};
 
 	// Hack to make "Payments > Settings" the active selected menu item.
