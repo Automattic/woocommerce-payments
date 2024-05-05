@@ -9,6 +9,7 @@ import { buildAjaxURL } from '../../payment-request/utils';
 import {
 	getTargetElement,
 	validateEmail,
+	appendRedirectionParams,
 	shouldSkipWooPay,
 	deleteSkipWooPayCookie,
 } from './utils';
@@ -31,24 +32,6 @@ export const handleWooPayEmailInput = async (
 	const spinner = document.createElement( 'div' );
 	const parentDiv = woopayEmailInput.parentNode;
 	spinner.classList.add( 'wc-block-components-spinner' );
-
-	// Make the login session iframe wrapper.
-	const loginSessionIframeWrapper = document.createElement( 'div' );
-	loginSessionIframeWrapper.setAttribute( 'role', 'dialog' );
-	loginSessionIframeWrapper.setAttribute( 'aria-modal', 'true' );
-
-	// Make the login session iframe.
-	const loginSessionIframe = document.createElement( 'iframe' );
-	loginSessionIframe.title = __(
-		'WooPay Login Session',
-		'woocommerce-payments'
-	);
-	loginSessionIframe.classList.add( 'woopay-login-session-iframe' );
-
-	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
-	loginSessionIframe.classList.add( 'intrinsic-ignore' );
-
-	loginSessionIframeWrapper.insertBefore( loginSessionIframe, null );
 
 	// Make the otp iframe wrapper.
 	const iframeWrapper = document.createElement( 'div' );
@@ -440,35 +423,7 @@ export const handleWooPayEmailInput = async (
 			} );
 	};
 
-	const openLoginSessionIframe = ( email ) => {
-		const emailParam = new URLSearchParams();
-
-		if ( validateEmail( email ) ) {
-			parentDiv.insertBefore( spinner, woopayEmailInput );
-			emailParam.append( 'email', email );
-			emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
-		}
-
-		loginSessionIframe.src = `${ getConfig(
-			'woopayHost'
-		) }/login-session?${ emailParam.toString() }`;
-
-		// Insert the wrapper into the DOM.
-		parentDiv.insertBefore( loginSessionIframeWrapper, null );
-
-		// Focus the iframe.
-		loginSessionIframe.focus();
-
-		woopayLocateUser( woopayEmailInput.value );
-	};
-
 	woopayEmailInput.addEventListener( 'input', ( e ) => {
-		if ( ! customerClickedBackButton ) {
-			openLoginSessionIframe( woopayEmailInput.value );
-
-			return;
-		}
-
 		const email = e.currentTarget.value;
 
 		clearTimeout( timer );
@@ -485,14 +440,29 @@ export const handleWooPayEmailInput = async (
 		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
 			return;
 		}
-
 		switch ( e.data.action ) {
+			case 'redirect_to_woopay_skip_session_init':
+				if ( e.data.redirectUrl ) {
+					deleteSkipWooPayCookie();
+					window.location = appendRedirectionParams(
+						e.data.redirectUrl
+					);
+				}
+				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				api.initWooPay(
+				const promise = api.initWooPay(
 					woopayEmailInput.value,
 					e.data.platformCheckoutUserSession
-				)
+				);
+
+				// The <Login> component on WooPay re-renders sending the `redirect_to_platform_checkout` message twice.
+				// `api.initWooPay` skips the request the second time and returns undefined.
+				if ( ! promise ) {
+					break;
+				}
+
+				promise
 					.then( ( response ) => {
 						// Do nothing if the iframe has been closed.
 						if (
