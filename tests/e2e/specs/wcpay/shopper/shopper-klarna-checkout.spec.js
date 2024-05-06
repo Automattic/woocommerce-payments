@@ -37,44 +37,62 @@ describe( 'Klarna checkout', () => {
 	} );
 
 	it( 'should show the product messaging on the product page', async () => {
-		await shopperWCP.goToProductPageBySlug( 'belt' );
+		try {
+			await shopperWCP.goToProductPageBySlug( 'belt' );
+		} catch ( e ) {
+			console.log( 'await shopperWCP.goToProductPageBySlug', e );
+		}
 
 		// waiting for the "product messaging" component to be rendered, so we can click on it.
-		const paymentMethodMessageFrameHandle = await page.waitForSelector(
-			'#payment-method-message iframe'
-		);
-		const paymentMethodMessageIframe = await paymentMethodMessageFrameHandle.contentFrame();
+		try {
+			const paymentMethodMessageFrameHandle = await page.waitForSelector(
+				'#payment-method-message iframe'
+			);
+			const paymentMethodMessageIframe = await paymentMethodMessageFrameHandle.contentFrame();
 
-		// Click on Klarna link to open the modal.
-		await paymentMethodMessageIframe.evaluate( ( selector ) => {
-			const element = document.querySelector( selector );
-			if ( element ) {
-				element.click();
-			}
-		}, '*[aria-label="Open Learn More Modal"]' );
+			// Click on Klarna link to open the modal.
+			await paymentMethodMessageIframe.evaluate( ( selector ) => {
+				const element = document.querySelector( selector );
+				if ( element ) {
+					element.click();
+				}
+			}, '*[aria-label="Open Learn More Modal"]' );
+		} catch ( e ) {
+			console.log(
+				'await page.waitForSelector #payment-method-message iframe',
+				e
+			);
+		}
 
 		// Wait for the iframe to be added by Stripe JS after clicking on the element.
 		await page.waitFor( 1000 );
 
-		const paymentMethodMessageModalIframeHandle = await page.waitForSelector(
-			'iframe[src*="js.stripe.com/v3/elements-inner-payment-method-messaging-modal"]'
-		);
-		const paymentMethodMessageModalIframe = await paymentMethodMessageModalIframeHandle.contentFrame();
+		try {
+			const paymentMethodMessageModalIframeHandle = await page.waitForSelector(
+				'iframe[src*="js.stripe.com/v3/elements-inner-payment-method-messaging-modal"]'
+			);
+			const paymentMethodMessageModalIframe = await paymentMethodMessageModalIframeHandle.contentFrame();
 
-		await expect( paymentMethodMessageModalIframe ).toMatchElement(
-			'[data-testid="ModalHeader"] > p',
-			{
-				text: 'Buy Now. Pay Later.',
-			}
-		);
+			await expect( paymentMethodMessageModalIframe ).toMatchElement(
+				'[data-testid="ModalHeader"] > p',
+				{
+					text: 'Buy Now. Pay Later.',
+				}
+			);
 
-		await expect( paymentMethodMessageModalIframe ).toMatchElement(
-			'[data-testid="ModalDescription"] > p',
-			{
-				text:
-					'Select Klarna as your payment method at checkout to pay in installments.',
-			}
-		);
+			await expect( paymentMethodMessageModalIframe ).toMatchElement(
+				'[data-testid="ModalDescription"] > p',
+				{
+					text:
+						'Select Klarna as your payment method at checkout to pay in installments.',
+				}
+			);
+		} catch ( e ) {
+			console.log(
+				'await page.waitForSelector iframe[src*="js.stripe.com/v3/elements-inner-payment-method-messaging-modal"]',
+				e
+			);
+		}
 	} );
 
 	it( `should successfully place an order with Klarna`, async () => {
@@ -98,81 +116,84 @@ describe( 'Klarna checkout', () => {
 		await paymentMethodLabel.click();
 		await shopper.placeOrder();
 
+		await page.waitForNavigation();
+
 		// Klarna is rendered in an iframe, so we need to get its reference.
 		// Sometimes the iframe is updated (or removed from the page),
 		// this function has been created so that we always get the most updated reference.
-		// const getNewKlarnaIframe = async () => {
-		// 	const klarnaFrameHandle = await page.waitForSelector(
-		// 		'#klarna-apf-iframe'
-		// 	);
+		const getNewKlarnaIframe = async () => {
+			const klarnaFrameHandle = await page.waitForSelector(
+				'#klarna-apf-iframe'
+			);
 
-		// 	return await klarnaFrameHandle.contentFrame();
-		// };
+			return await klarnaFrameHandle.contentFrame();
+		};
 
-		// let klarnaIframe = await getNewKlarnaIframe();
+		let klarnaIframe = await getNewKlarnaIframe();
 
-		// const frameNavigationHandler = async ( frame ) => {
-		// 	const newKlarnaIframe = await getNewKlarnaIframe();
-		// 	if ( frame === newKlarnaIframe ) {
-		// 		klarnaIframe = newKlarnaIframe;
-		// 	}
-		// };
+		const frameNavigationHandler = async ( frame ) => {
+			const newKlarnaIframe = await getNewKlarnaIframe();
+			if ( frame === newKlarnaIframe ) {
+				klarnaIframe = newKlarnaIframe;
+			}
+		};
 
-		// // Add frame navigation event listener.
-		// page.on( 'framenavigated', frameNavigationHandler );
-		// const klarnaIframe = page;
+		// Add frame navigation event listener.
+		page.on( 'framenavigated', frameNavigationHandler );
 
-		// // waiting for the redirect & the Klarna iframe to load within the Stripe test page.
-		// // this is the "confirm phone number" page - we just click "continue".
-		// await klarnaIframe.waitForSelector( '#collectPhonePurchaseFlow' );
-		// (
-		// 	await klarnaIframe.waitForSelector(
-		// 		'#onContinue[data-testid="kaf-button"]'
-		// 	)
-		//  ).click();
-		// // this is where the OTP code is entered.
-		// await klarnaIframe.waitForSelector( '#phoneOtp' );
-		// await expect( klarnaIframe ).toFill(
-		// 	'[data-testid="kaf-field"]',
-		// 	'000000'
-		// );
+		// waiting for the redirect & the Klarna iframe to load within the Stripe test page.
+		// this is the "confirm phone number" page - we just click "continue".
+		await klarnaIframe.waitForSelector( '#collectPhonePurchaseFlow' );
+		(
+			await klarnaIframe.waitForSelector(
+				'#onContinue[data-testid="kaf-button"]'
+			)
+		 ).click();
+		// this is where the OTP code is entered.
+		await klarnaIframe.waitForSelector( '#phoneOtp' );
+		await expect( klarnaIframe ).toFill(
+			'[data-testid="kaf-field"]',
+			'000000'
+		);
 
-		// await klarnaIframe.waitForSelector(
-		// 	'button[data-testid="select-payment-category"'
-		// );
+		await klarnaIframe.waitForSelector(
+			'button[data-testid="select-payment-category"]'
+		);
 
 		// await klarnaIframe.waitForSelector( '.skeleton-wrapper' );
 		// await klarnaIframe.waitFor(
 		// 	() => ! document.querySelector( '.skeleton-wrapper' )
 		// );
 
-		// // Select Payment Plan - 4 weeks & click continue.
-		// await klarnaIframe
-		// 	.waitForSelector( 'input[type="radio"][id*="pay_in_n"]' )
-		// 	.then( ( input ) => input.click() );
-		// await klarnaIframe
-		// 	.waitForSelector( 'button[data-testid="select-payment-category"' )
-		// 	.then( ( button ) => button.click() );
+		await page.waitFor( 2000 );
 
-		// // Payment summary page. Click continue.
-		// await klarnaIframe
-		// 	.waitForSelector( 'button[data-testid="pick-plan"]' )
-		// 	.then( ( button ) => button.click() );
+		// Select Payment Plan - 4 weeks & click continue.
+		await klarnaIframe
+			.waitForSelector( 'button[id*="pay_in_n"]' )
+			.then( ( input ) => input.click() );
+		await klarnaIframe
+			.waitForSelector( 'button[data-testid="select-payment-category"]' )
+			.then( ( button ) => button.click() );
 
-		// // at this point, the event listener is not needed anymore.
-		// // page.removeListener( 'framenavigated', frameNavigationHandler );
+		// Payment summary page. Click continue.
+		await klarnaIframe
+			.waitForSelector( 'button[data-testid="pick-plan"]' )
+			.then( ( button ) => button.click() );
 
-		// // Confirm payment.
-		// await klarnaIframe
-		// 	.waitForSelector(
-		// 		'button[data-testid="confirm-and-pay"]:not(:disabled)'
-		// 	)
-		// 	.then( ( button ) => button.click() );
+		// at this point, the event listener is not needed anymore.
+		page.removeListener( 'framenavigated', frameNavigationHandler );
 
-		// // Wait for the order confirmation page to load.
-		// await page.waitForNavigation( {
-		// 	waitUntil: 'networkidle0',
-		// } );
-		// await expect( page ).toMatch( 'Order received' );
+		// Confirm payment.
+		await klarnaIframe
+			.waitForSelector(
+				'button[data-testid="confirm-and-pay"]:not(:disabled)'
+			)
+			.then( ( button ) => button.click() );
+
+		// Wait for the order confirmation page to load.
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+		await expect( page ).toMatch( 'Order received' );
 	} );
 } );

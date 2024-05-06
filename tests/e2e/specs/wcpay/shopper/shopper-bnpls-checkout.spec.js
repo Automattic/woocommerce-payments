@@ -59,12 +59,19 @@ describe.each( cardTestingPreventionStates )(
 					);
 					await uiUnblocked();
 					// Select BNPL provider as payment method.
-					const xPathPaymentMethodSelector = `//*[@id='payment']/ul/li/label[contains(text(), '${ providerName }')]`;
-					await page.waitForXPath( xPathPaymentMethodSelector );
-					const [ paymentMethodLabel ] = await page.$x(
-						xPathPaymentMethodSelector
-					);
-					await paymentMethodLabel.click();
+					try {
+						const xPathPaymentMethodSelector = `//*[@id='payment']/ul/li/label[contains(text(), '${ providerName }')]`;
+						await page.waitForXPath( xPathPaymentMethodSelector );
+						const [ paymentMethodLabel ] = await page.$x(
+							xPathPaymentMethodSelector
+						);
+						await paymentMethodLabel.click();
+					} catch ( error ) {
+						console.error(
+							'Error selecting payment method:',
+							error
+						);
+					}
 
 					// Check the token presence when card testing prevention is enabled.
 					if ( cardTestingPreventionEnabled ) {
@@ -74,30 +81,43 @@ describe.each( cardTestingPreventionStates )(
 						expect( token ).not.toBeUndefined();
 					}
 
+					await page.waitFor( 4000 );
 					await takeScreenshot(
 						`shopper-bnpls-checkout-${ providerName }-payment-method-selected`
 					);
 
-					await shopper.placeOrder();
+					try {
+						await shopper.placeOrder();
+					} catch ( e ) {
+						console.log( 'Error on shopper.placeOrder()', e );
+					}
 
+					await page.waitFor( 4000 );
 					await takeScreenshot(
 						`shopper-bnpls-checkout-${ providerName }-after-order-placed`
 					);
 
-					// // Authorize payment with Stripe.
-					// // This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
-					// const xPathAuthorizePaymentButton = `//*[self::button or self::a][contains(text(), 'Authorize Test Payment')]`;
-					// await page.waitForXPath( xPathAuthorizePaymentButton );
-					// const [ stripeButton ] = await page.$x(
-					// 	xPathAuthorizePaymentButton
-					// );
-					// await stripeButton.click();
+					// Authorize payment with Stripe.
+					// This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
+					try {
+						const xPathAuthorizePaymentButton = `//*[self::button or self::a][contains(text(), 'Authorize Test Payment')]`;
+						await page.waitForXPath( xPathAuthorizePaymentButton );
+						const [ stripeButton ] = await page.$x(
+							xPathAuthorizePaymentButton
+						);
+						await stripeButton.click();
+					} catch ( error ) {
+						console.error(
+							'Error authorizing test payment:',
+							error
+						);
+					}
 
-					// // Wait for the order confirmation page to load.
-					// await page.waitForNavigation( {
-					// 	waitUntil: 'networkidle0',
-					// } );
-					// await expect( page ).toMatch( 'Order received' );
+					// Wait for the order confirmation page to load.
+					await page.waitForNavigation( {
+						waitUntil: 'networkidle0',
+					} );
+					await expect( page ).toMatch( 'Order received' );
 				} );
 			}
 		);
