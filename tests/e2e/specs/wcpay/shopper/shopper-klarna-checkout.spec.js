@@ -7,7 +7,7 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 /**
  * Internal dependencies
  */
-import { merchantWCP, shopperWCP } from '../../../utils';
+import { merchantWCP, shopperWCP, takeScreenshot } from '../../../utils';
 import { setupProductCheckout } from '../../../utils/payments';
 
 const UPE_METHOD_CHECKBOXES = [
@@ -20,6 +20,7 @@ describe( 'Klarna checkout', () => {
 	beforeAll( async () => {
 		await merchant.login();
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
+		await takeScreenshot( 'after-enabling-klarna' );
 		await merchant.logout();
 		await shopper.login();
 		await shopperWCP.changeAccountCurrencyTo(
@@ -37,62 +38,44 @@ describe( 'Klarna checkout', () => {
 	} );
 
 	it( 'should show the product messaging on the product page', async () => {
-		try {
-			await shopperWCP.goToProductPageBySlug( 'belt' );
-		} catch ( e ) {
-			console.log( 'await shopperWCP.goToProductPageBySlug', e );
-		}
+		await shopperWCP.goToProductPageBySlug( 'belt' );
 
 		// waiting for the "product messaging" component to be rendered, so we can click on it.
-		try {
-			const paymentMethodMessageFrameHandle = await page.waitForSelector(
-				'#payment-method-message iframe'
-			);
-			const paymentMethodMessageIframe = await paymentMethodMessageFrameHandle.contentFrame();
+		const paymentMethodMessageFrameHandle = await page.waitForSelector(
+			'#payment-method-message iframe'
+		);
+		const paymentMethodMessageIframe = await paymentMethodMessageFrameHandle.contentFrame();
 
-			// Click on Klarna link to open the modal.
-			await paymentMethodMessageIframe.evaluate( ( selector ) => {
-				const element = document.querySelector( selector );
-				if ( element ) {
-					element.click();
-				}
-			}, '*[aria-label="Open Learn More Modal"]' );
-		} catch ( e ) {
-			console.error(
-				'await page.waitForSelector #payment-method-message iframe',
-				e
-			);
-		}
+		// Click on Klarna link to open the modal.
+		await paymentMethodMessageIframe.evaluate( ( selector ) => {
+			const element = document.querySelector( selector );
+			if ( element ) {
+				element.click();
+			}
+		}, '*[aria-label="Open Learn More Modal"]' );
 
 		// Wait for the iframe to be added by Stripe JS after clicking on the element.
 		await page.waitFor( 1000 );
 
-		try {
-			const paymentMethodMessageModalIframeHandle = await page.waitForSelector(
-				'iframe[src*="js.stripe.com/v3/elements-inner-payment-method-messaging-modal"]'
-			);
-			const paymentMethodMessageModalIframe = await paymentMethodMessageModalIframeHandle.contentFrame();
+		const paymentMethodMessageModalIframeHandle = await page.waitForSelector(
+			'iframe[src*="js.stripe.com/v3/elements-inner-payment-method-messaging-modal"]'
+		);
+		const paymentMethodMessageModalIframe = await paymentMethodMessageModalIframeHandle.contentFrame();
 
-			await expect( paymentMethodMessageModalIframe ).toMatchElement(
-				'[data-testid="ModalHeader"] > p',
-				{
-					text: 'Buy Now. Pay Later.',
-				}
-			);
+		await expect( paymentMethodMessageModalIframe ).toMatchElement(
+			'[data-testid="ModalHeader"] > p',
+			{
+				text: 'Buy Now. Pay Later.',
+			}
+		);
 
-			await expect( paymentMethodMessageModalIframe ).toMatchElement(
-				'[data-testid="ModalDescription"] > p',
-				{
-					text:
-						'Select Klarna as your payment method at checkout to pay in installments.',
-				}
-			);
-		} catch ( e ) {
-			console.error(
-				'await page.waitForSelector iframe[src*="js.stripe.com/v3/elements-inner-payment-method-messaging-modal"]',
-				e
-			);
-		}
+		await expect( paymentMethodMessageModalIframe ).toMatchElement(
+			'[data-testid="ModalDescription"] > p',
+			{
+				text:
+					'Select Klarna as your payment method at checkout to pay in installments.',
+			}
+		);
 	} );
 
 	it( `should successfully place an order with Klarna`, async () => {

@@ -82,7 +82,7 @@ describe.each( cardTestingPreventionStates )(
 					try {
 						await shopper.placeOrder();
 					} catch ( e ) {
-						console.log( 'Error on shopper.placeOrder()', e );
+						console.error( 'Error on shopper.placeOrder()', e ); // eslint-disable-line no-console
 					}
 
 					await page.waitFor( 4000 );
@@ -100,6 +100,7 @@ describe.each( cardTestingPreventionStates )(
 						);
 						await stripeButton.click();
 					} catch ( error ) {
+						// eslint-disable-next-line no-console
 						console.error(
 							'Error authorizing test payment:',
 							error
