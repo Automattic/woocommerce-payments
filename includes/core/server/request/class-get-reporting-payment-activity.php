@@ -51,6 +51,8 @@ class Get_Reporting_Payment_Activity extends Request {
 	 *
 	 * @param string $date_start The start date in the format 'YYYY-MM-DDT00:00:00'.
 	 * @return void
+	 *
+	 * @throws Invalid_Request_Parameter_Exception Exception if the date is not in valid format.
 	 */
 	public function set_date_start( string $date_start ) {
 		$this->validate_date( $date_start, 'Y-m-d\TH:i:s' );
@@ -62,6 +64,8 @@ class Get_Reporting_Payment_Activity extends Request {
 	 *
 	 * @param string $date_end The end date in the format 'YYYY-MM-DDT00:00:00'.
 	 * @return void
+	 *
+	 * @throws Invalid_Request_Parameter_Exception Exception if the date is not in valid format.
 	 */
 	public function set_date_end( string $date_end ) {
 		$this->validate_date( $date_end, 'Y-m-d\TH:i:s' );
