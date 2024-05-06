@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Behind fPayment Activity Card feature flag, fix View Report link of Charges tile.
+
+
