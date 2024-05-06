@@ -58,7 +58,7 @@ describe( 'Klarna checkout', () => {
 				}
 			}, '*[aria-label="Open Learn More Modal"]' );
 		} catch ( e ) {
-			console.log(
+			console.error(
 				'await page.waitForSelector #payment-method-message iframe',
 				e
 			);
@@ -88,7 +88,7 @@ describe( 'Klarna checkout', () => {
 				}
 			);
 		} catch ( e ) {
-			console.log(
+			console.error(
 				'await page.waitForSelector iframe[src*="js.stripe.com/v3/elements-inner-payment-method-messaging-modal"]',
 				e
 			);
