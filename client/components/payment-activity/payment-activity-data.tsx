@@ -65,9 +65,10 @@ const getSearchParams = ( searchTerms: string[] ) => {
 };
 
 const PaymentActivityData: React.FC = () => {
-	const { paymentActivityData, isLoading } = usePaymentActivityData(
-		getDateRange()
-	);
+	const { paymentActivityData, isLoading } = usePaymentActivityData( {
+		...getDateRange(),
+		timezone: moment( new Date() ).format( 'Z' ),
+	} );
 
 	const totalPaymentVolume = paymentActivityData?.total_payment_volume ?? 0;
 	const charges = paymentActivityData?.charges ?? 0;

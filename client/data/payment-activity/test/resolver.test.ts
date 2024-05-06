@@ -15,12 +15,13 @@ import { getPaymentActivityData } from '../resolvers';
 const query = {
 	date_start: '2020-04-29T04:00:00',
 	date_end: '2020-04-29T03:59:59',
+	timezone: '+2:30',
 };
 
 describe( 'getPaymentActivityData resolver', () => {
 	const successfulResponse: any = { amount: 3000 };
 	const expectedQueryString =
-		'date_start=2020-04-29T04%3A00%3A00&date_end=2020-04-29T03%3A59%3A59';
+		'date_start=2020-04-29T04%3A00%3A00&date_end=2020-04-29T03%3A59%3A59&timezone=%2B2%3A30';
 	const errorResponse = new Error(
 		'Error retrieving payment activity data.'
 	);
