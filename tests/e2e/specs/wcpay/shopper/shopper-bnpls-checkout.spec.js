@@ -9,7 +9,7 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
  */
 import { merchantWCP, shopperWCP } from '../../../utils/flows';
 import { setupProductCheckout } from '../../../utils/payments';
-import { takeScreenshot } from '../../../utils';
+// import { takeScreenshot } from '../../../utils';
 
 const bnplProviders = [ [ 'Affirm' ], [ 'Afterpay' ] ];
 
@@ -74,21 +74,21 @@ describe.each( cardTestingPreventionStates )(
 						expect( token ).not.toBeUndefined();
 					}
 
-					await page.waitFor( 4000 );
-					await takeScreenshot(
-						`shopper-bnpls-checkout-${ providerName }-payment-method-selected`
-					);
+					// await page.waitFor( 4000 );
+					// await takeScreenshot(
+					// 	`shopper-bnpls-checkout-${ providerName }-payment-method-selected`
+					// );
 
-					try {
-						await shopper.placeOrder();
-					} catch ( e ) {
-						console.error( 'Error on shopper.placeOrder()', e ); // eslint-disable-line no-console
-					}
+					// try {
+					await shopper.placeOrder();
+					// } catch ( e ) {
+					// 	console.error( 'Error on shopper.placeOrder()', e ); // eslint-disable-line no-console
+					// }
 
-					await page.waitFor( 4000 );
-					await takeScreenshot(
-						`shopper-bnpls-checkout-${ providerName }-after-order-placed`
-					);
+					// await page.waitFor( 4000 );
+					// await takeScreenshot(
+					// 	`shopper-bnpls-checkout-${ providerName }-after-order-placed`
+					// );
 
 					// Authorize payment with Stripe.
 					// This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
