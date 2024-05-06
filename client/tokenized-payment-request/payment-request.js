@@ -40,7 +40,7 @@ export default class WooPaymentsPaymentRequest {
 	/**
 	 * Whether the payment was aborted by the customer.
 	 */
-	paymentAborted = false;
+	isPaymentAborted = false;
 
 	/**
 	 * Whether global listeners have been added.
@@ -163,7 +163,7 @@ export default class WooPaymentsPaymentRequest {
 				 * consistent, we can simply update the payment request button with the new total and display items.
 				 */
 				if (
-					! _self.paymentAborted &&
+					! _self.isPaymentAborted &&
 					didItemsNeedShipping === newCartData.needs_shipping
 				) {
 					paymentRequest.update( {
@@ -223,7 +223,7 @@ export default class WooPaymentsPaymentRequest {
 		} );
 
 		paymentRequest.on( 'cancel', () => {
-			_self.paymentAborted = true;
+			_self.isPaymentAborted = true;
 		} );
 
 		paymentRequest.on( 'shippingaddresschange', async ( event ) => {
@@ -398,8 +398,8 @@ export default class WooPaymentsPaymentRequest {
 
 		this.startPaymentRequest().then( noop );
 
-		// After initializing a new payment request, we need to reset the paymentAborted flag.
-		this.paymentAborted = false;
+		// After initializing a new payment request, we need to reset the isPaymentAborted flag.
+		this.isPaymentAborted = false;
 
 		// once cart data has been fetched, we can safely clear cached product data.
 		if ( this.cachedCartData ) {
