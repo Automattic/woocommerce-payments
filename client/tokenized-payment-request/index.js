@@ -34,7 +34,7 @@ jQuery( ( $ ) => {
 
 	// initializing the UI's container.
 	paymentRequestButtonUi.init( {
-		$container: jQuery( '#wcpay-payment-request-button' ),
+		$container: $( '#wcpay-payment-request-button' ),
 	} );
 
 	const api = new WCPayAPI(
@@ -46,7 +46,7 @@ jQuery( ( $ ) => {
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
 			return new Promise( ( resolve, reject ) => {
-				jQuery.post( url, args ).then( resolve ).fail( reject );
+				$.post( url, args ).then( resolve ).fail( reject );
 			} );
 		}
 	);

@@ -276,7 +276,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_tokenized_cart_address_avoid_normalization_when_missing_header() {
 		$request = new WP_REST_Request();
-		$request->set_header( 'X-WC-Payments-prb-request', null );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request', null );
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
@@ -295,7 +295,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_tokenized_cart_address_state_normalization() {
 		$request = new WP_REST_Request();
-		$request->set_header( 'X-WC-Payments-prb-request', 'true' );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
@@ -323,7 +323,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_tokenized_cart_address_postcode_normalization() {
 		$request = new WP_REST_Request();
-		$request->set_header( 'X-WC-Payments-prb-request', 'true' );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',

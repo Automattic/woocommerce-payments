@@ -369,6 +369,9 @@ export default class WcpayPaymentRequest {
 			return await this.paymentRequestCartApi.getCart();
 		}
 
+		// creating a new cart and clearing it afterwards,
+		// to avoid scenarios where the stock for a product with limited (or low) availability is added to the cart,
+		// preventing other customers from purchasing.
 		const temporaryCart = new PaymentRequestCartApi();
 		await temporaryCart.createAnonymousCart();
 

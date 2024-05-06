@@ -121,7 +121,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return mixed
 	 */
 	public function tokenized_cart_store_api_address_normalization( $response, $server, $request ) {
-		if ( 'true' !== $request->get_header( 'X-WC-Payments-prb-request' ) ) {
+		if ( 'true' !== $request->get_header( 'X-WooPayments-Express-Payment-Request' ) ) {
 			return $response;
 		}
 

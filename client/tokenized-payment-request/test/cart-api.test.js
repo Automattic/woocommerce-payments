@@ -49,7 +49,7 @@ describe( 'PaymentRequestCartApi', () => {
 				path: '/wc/store/v1/cart/update-customer',
 				credentials: 'omit',
 				headers: expect.objectContaining( {
-					'X-WC-Payments-prb-request': true,
+					'X-WooPayments-Express-Payment-Request': true,
 					Nonce: 'nonce-value',
 					'Cart-Token': 'cart-token-value',
 				} ),
@@ -70,7 +70,7 @@ describe( 'PaymentRequestCartApi', () => {
 				credentials: 'omit',
 				// in this case, no additional headers should have been submitted.
 				headers: expect.objectContaining( {
-					'X-WC-Payments-prb-request': true,
+					'X-WooPayments-Express-Payment-Request': true,
 				} ),
 				data: expect.objectContaining( {
 					billing_address: { last_name: 'Last' },
