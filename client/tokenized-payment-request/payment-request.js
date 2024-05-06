@@ -3,7 +3,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { doAction, addAction, removeAction } from '@wordpress/hooks';
+import {
+	doAction,
+	addAction,
+	removeAction,
+	applyFilters,
+} from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -281,9 +286,15 @@ export default class WooPaymentsPaymentRequest {
 		paymentRequest.on( 'paymentmethod', async ( event ) => {
 			// TODO: this works for PDPs - need to handle checkout scenarios for pay-for-order, cart, checkout.
 			try {
-				const response = await _self.paymentRequestCartApi.placeOrder(
-					transformStripePaymentMethodForStoreApi( event )
-				);
+				const response = await _self.paymentRequestCartApi.placeOrder( {
+					// adding extension data as a separate action,
+					// so that we make it harder for external plugins to modify or intercept checkout data.
+					...transformStripePaymentMethodForStoreApi( event ),
+					extensions: applyFilters(
+						'wcpay.payment-request.cart-place-order-extension-data',
+						{}
+					),
+				} );
 
 				const confirmationRequest = _self.wcpayApi.confirmIntent(
 					response.payment_result.redirect_url

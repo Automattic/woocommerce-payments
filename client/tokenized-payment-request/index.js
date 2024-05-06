@@ -12,6 +12,7 @@ import PaymentRequestCartApi from './cart-api';
 import WooPaymentsPaymentRequest from './payment-request';
 import paymentRequestButtonUi from './button-ui';
 import './compatibility/wc-deposits';
+import './compatibility/wc-order-attribution';
 import './compatibility/wc-product-variations';
 
 import '../checkout/express-checkout-buttons.scss';
