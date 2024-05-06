@@ -36,7 +36,7 @@ const noop = () => null;
 /**
  * Class to handle Stripe payment forms.
  */
-export default class WcpayPaymentRequest {
+export default class WooPaymentsPaymentRequest {
 	/**
 	 * Whether the payment was aborted by the customer.
 	 */

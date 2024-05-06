@@ -9,7 +9,7 @@ import { doAction } from '@wordpress/hooks';
  */
 import WCPayAPI from '../checkout/api';
 import PaymentRequestCartApi from './cart-api';
-import WcpayPaymentRequest from './payment-request';
+import WooPaymentsPaymentRequest from './payment-request';
 import paymentRequestButtonUi from './button-ui';
 import './compatibility/wc-deposits';
 import './compatibility/wc-product-variations';
@@ -52,7 +52,7 @@ jQuery( ( $ ) => {
 	);
 	const paymentRequestCartApi = new PaymentRequestCartApi();
 
-	const wcpayPaymentRequest = new WcpayPaymentRequest( {
+	const wooPaymentsPaymentRequest = new WooPaymentsPaymentRequest( {
 		wcpayApi: api,
 		paymentRequestCartApi,
 		productData: wcpayPaymentRequestParams.product || undefined,
@@ -63,7 +63,7 @@ jQuery( ( $ ) => {
 		wcpayPaymentRequestParams.button_context !== 'checkout' ||
 		wcpayPaymentRequestParams.button_context === 'pay_for_order'
 	) {
-		wcpayPaymentRequest.init();
+		wooPaymentsPaymentRequest.init();
 	}
 
 	// We need to refresh payment request data when total is updated.

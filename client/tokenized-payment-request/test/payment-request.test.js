@@ -8,7 +8,7 @@ import { addAction, doAction, doingAction } from '@wordpress/hooks';
  * Internal dependencies
  */
 import PaymentRequestCartApi from '../cart-api';
-import WcpayPaymentRequest from '../payment-request';
+import WooPaymentsPaymentRequest from '../payment-request';
 import { trackPaymentRequestButtonLoad } from '../tracking';
 import { waitFor } from '@testing-library/react';
 
@@ -58,7 +58,7 @@ jQueryMock.blockUI = () => null;
 const waitForAction = async ( hookName ) =>
 	await waitFor( () => doingAction( hookName ) === false );
 
-describe( 'WcpayPaymentRequest', () => {
+describe( 'WooPaymentsPaymentRequest', () => {
 	let wcpayApi;
 
 	beforeEach( () => {
@@ -116,7 +116,7 @@ describe( 'WcpayPaymentRequest', () => {
 		);
 
 		const cartApi = new PaymentRequestCartApi();
-		const paymentRequest = new WcpayPaymentRequest( {
+		const paymentRequest = new WooPaymentsPaymentRequest( {
 			wcpayApi: wcpayApi,
 			paymentRequestCartApi: cartApi,
 		} );
