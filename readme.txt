@@ -94,6 +94,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.6.0-test-3 - unreleased =
+* Dev - Upgraded jetpack sync package version.
+
 = 7.6.0 - 2024-05-08 =
 * Add - Add additional data to Compatibility service
 * Add - Add User Satisfaction Survey for Payments Overview Widget

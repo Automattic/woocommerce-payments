@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 7.6.0-test-3 - 2024-xx-xx =
+* Dev - Upgraded jetpack sync package version.
+
 = 7.6.0 - 2024-05-08 =
 * Add - Add additional data to Compatibility service
 * Add - Add User Satisfaction Survey for Payments Overview Widget
