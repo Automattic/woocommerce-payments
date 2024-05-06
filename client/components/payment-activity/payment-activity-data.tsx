@@ -44,7 +44,7 @@ const searchTermsForViewReportLink = {
 		'card_reader_fee',
 	],
 
-	charge: [ 'charge', 'payment' ],
+	charge: [ 'charge', 'payment', 'adjustment' ],
 
 	refunds: [
 		'refund',
