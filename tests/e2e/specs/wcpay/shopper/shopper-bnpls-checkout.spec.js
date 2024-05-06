@@ -74,6 +74,7 @@ describe.each( cardTestingPreventionStates )(
 						expect( token ).not.toBeUndefined();
 					}
 
+					await page.waitForNavigation();
 					// await page.waitFor( 4000 );
 					// await takeScreenshot(
 					// 	`shopper-bnpls-checkout-${ providerName }-payment-method-selected`
@@ -89,6 +90,8 @@ describe.each( cardTestingPreventionStates )(
 					// await takeScreenshot(
 					// 	`shopper-bnpls-checkout-${ providerName }-after-order-placed`
 					// );
+
+					await page.waitForNavigation();
 
 					// Authorize payment with Stripe.
 					// This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
