@@ -136,7 +136,7 @@ exports[`PaymentActivity component should render 1`] = `
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&date_between%5B0%5D=2024-04-02&date_between%5B1%5D=2024-04-08&search%5B0%5D=charge&search%5B1%5D=payment"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&date_between%5B0%5D=2024-04-02&date_between%5B1%5D=2024-04-08&search%5B0%5D=charge&search%5B1%5D=payment&search%5B2%5D=adjustment"
                 >
                   View report
                 </a>
