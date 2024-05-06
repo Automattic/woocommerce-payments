@@ -160,13 +160,6 @@ describe( 'Klarna checkout', () => {
 			'button[data-testid="select-payment-category"]'
 		);
 
-		// await klarnaIframe.waitForSelector( '.skeleton-wrapper' );
-		// await klarnaIframe.waitFor(
-		// 	() => ! document.querySelector( '.skeleton-wrapper' )
-		// );
-
-		await page.waitFor( 2000 );
-
 		// Select Payment Plan - 4 weeks & click continue.
 		await klarnaIframe
 			.waitForSelector( 'button[id*="pay_in_n"]' )
