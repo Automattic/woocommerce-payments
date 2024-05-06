@@ -59,19 +59,12 @@ describe.each( cardTestingPreventionStates )(
 					);
 					await uiUnblocked();
 					// Select BNPL provider as payment method.
-					try {
-						const xPathPaymentMethodSelector = `//*[@id='payment']/ul/li/label[contains(text(), '${ providerName }')]`;
-						await page.waitForXPath( xPathPaymentMethodSelector );
-						const [ paymentMethodLabel ] = await page.$x(
-							xPathPaymentMethodSelector
-						);
-						await paymentMethodLabel.click();
-					} catch ( error ) {
-						console.error(
-							'Error selecting payment method:',
-							error
-						);
-					}
+					const xPathPaymentMethodSelector = `//*[@id='payment']/ul/li/label[contains(text(), '${ providerName }')]`;
+					await page.waitForXPath( xPathPaymentMethodSelector );
+					const [ paymentMethodLabel ] = await page.$x(
+						xPathPaymentMethodSelector
+					);
+					await paymentMethodLabel.click();
 
 					// Check the token presence when card testing prevention is enabled.
 					if ( cardTestingPreventionEnabled ) {
