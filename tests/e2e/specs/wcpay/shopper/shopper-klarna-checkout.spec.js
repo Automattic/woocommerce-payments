@@ -40,6 +40,11 @@ describe( 'Klarna checkout', () => {
 	it( 'should show the product messaging on the product page', async () => {
 		await shopperWCP.goToProductPageBySlug( 'belt' );
 
+		// TEMP
+		await takeScreenshot( 'product-page' );
+		await page.waitFor( 5000 );
+		await takeScreenshot( 'product-page-after-5-seconds' );
+
 		// waiting for the "product messaging" component to be rendered, so we can click on it.
 		const paymentMethodMessageFrameHandle = await page.waitForSelector(
 			'#payment-method-message iframe'
