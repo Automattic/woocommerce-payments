@@ -125,7 +125,7 @@ export default class WooPaymentsPaymentRequest {
 			this.paymentRequestCartApi.createAnonymousCart().then( noop );
 		}
 
-		const prButton = this.wcpayApi
+		const paymentRequestButton = this.wcpayApi
 			.getStripe()
 			.elements()
 			.create( 'paymentRequestButton', {
@@ -138,7 +138,7 @@ export default class WooPaymentsPaymentRequest {
 					},
 				},
 			} );
-		paymentRequestButtonUi.showButton( prButton );
+		paymentRequestButtonUi.showButton( paymentRequestButton );
 
 		this.attachPaymentRequestButtonEventListeners();
 		removeAction(
@@ -186,7 +186,7 @@ export default class WooPaymentsPaymentRequest {
 
 		const $addToCartButton = jQuery( '.single_add_to_cart_button' );
 
-		prButton.on( 'click', ( event ) => {
+		paymentRequestButton.on( 'click', ( event ) => {
 			trackPaymentRequestButtonClick( 'product' );
 
 			// If login is required for checkout, display redirect confirmation dialog.
