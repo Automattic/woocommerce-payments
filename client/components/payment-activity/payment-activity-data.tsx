@@ -43,6 +43,15 @@ const searchTermsForViewReportLink = {
 		'dispute_reversal',
 		'card_reader_fee',
 	],
+
+	charge: [ 'charge', 'payment' ],
+
+	refunds: [
+		'refund',
+		'refund_failure',
+		'payment_refund',
+		'payment_failure_refund',
+	],
 };
 
 const getSearchParams = ( searchTerms: string[] ) => {
@@ -56,9 +65,10 @@ const getSearchParams = ( searchTerms: string[] ) => {
 };
 
 const PaymentActivityData: React.FC = () => {
-	const { paymentActivityData, isLoading } = usePaymentActivityData(
-		getDateRange()
-	);
+	const { paymentActivityData, isLoading } = usePaymentActivityData( {
+		...getDateRange(),
+		timezone: moment( new Date() ).format( 'Z' ),
+	} );
 
 	const totalPaymentVolume = paymentActivityData?.total_payment_volume ?? 0;
 	const charges = paymentActivityData?.charges ?? 0;
@@ -153,7 +163,15 @@ const PaymentActivityData: React.FC = () => {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
-						type_is: 'charge',
+						'date_between[0]': moment(
+							getDateRange().date_start
+						).format( 'YYYY-MM-DD' ),
+						'date_between[1]': moment(
+							getDateRange().date_end
+						).format( 'YYYY-MM-DD' ),
+						...getSearchParams(
+							searchTermsForViewReportLink.charge
+						),
 					} ) }
 					tracksSource="charges"
 					isLoading={ isLoading }
@@ -167,13 +185,15 @@ const PaymentActivityData: React.FC = () => {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
-						type_is: 'refund',
 						'date_between[0]': moment(
 							getDateRange().date_start
 						).format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
 							getDateRange().date_end
 						).format( 'YYYY-MM-DD' ),
+						...getSearchParams(
+							searchTermsForViewReportLink.refunds
+						),
 					} ) }
 					tracksSource="refunds"
 					isLoading={ isLoading }

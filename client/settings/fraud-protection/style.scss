@@ -43,7 +43,7 @@
 	}
 	&-header-breadcrumb {
 		margin-top: 0;
-		margin-bottom: 24px;
+		margin-bottom: 8px;
 		@media screen and ( min-width: 961px ) {
 			margin-top: -16px;
 		}
@@ -260,6 +260,10 @@
 			var( --wp-admin-theme-color, #007cba )
 		);
 		cursor: pointer;
+	}
+	&-advanced-settings-notice {
+		margin-top: 0;
+		margin-bottom: 16px;
 	}
 }
 
