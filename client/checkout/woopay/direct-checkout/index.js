@@ -9,11 +9,84 @@ import { debounce } from 'lodash';
  * Internal dependencies
  */
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
-import { waitMilliseconds } from 'wcpay/checkout/woopay/direct-checkout/utils';
+import {
+	waitMilliseconds,
+	waitForSelector,
+} from 'wcpay/checkout/woopay/direct-checkout/utils';
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
 
 let isThirdPartyCookieEnabled = false;
+
+/**
+ * Add an event listener to the mini cart's checkout button.
+ */
+const addMiniCartEventListener = async () => {
+	const checkoutButton = WooPayDirectCheckout.getMiniCartProceedToCheckoutButton();
+
+	if ( ! checkoutButton ) {
+		return;
+	}
+
+	isThirdPartyCookieEnabled =
+		isThirdPartyCookieEnabled ||
+		( await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled() );
+	if ( isThirdPartyCookieEnabled ) {
+		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
+			WooPayDirectCheckout.addRedirectToWooPayEventListener( [
+				checkoutButton,
+			] );
+		}
+
+		return;
+	}
+
+	WooPayDirectCheckout.addRedirectToWooPayEventListener(
+		[ checkoutButton ],
+		true
+	);
+};
+
+/**
+ * Observe the mini cart drawer element for when it gets added to the DOM.
+ *
+ * As of today, no window events are triggered when the mini cart is opened or closed,
+ * nor there are attribute changes to the "open" button, so we have to rely on a MutationObserver
+ * attached to the `document.body`, which is where the mini cart drawer element is added.
+ */
+const observeMiniCartOpening = () => {
+	const observer = new MutationObserver( ( mutations ) => {
+		for ( const mutation of mutations ) {
+			if (
+				mutation.type === 'childList' &&
+				mutation.addedNodes.length > 0
+			) {
+				mutation.addedNodes.forEach( async ( node ) => {
+					// Check if the mini cart drawer parent selector was added to the DOM.
+					if (
+						node.nodeType === 1 &&
+						node.matches(
+							'.wc-block-components-drawer__screen-overlay'
+						)
+					) {
+						// Wait until the checkout button is available in the DOM.
+						waitForSelector(
+							WooPayDirectCheckout.redirectElements
+								.BLOCKS_MINI_CART_PROCEED_BUTTON,
+							addMiniCartEventListener
+						);
+					}
+				} );
+			}
+		}
+	} );
+
+	observer.observe( document.body, {
+		childList: true,
+		subtree: true,
+	} );
+};
 
 window.addEventListener( 'load', async () => {
 	if (
@@ -25,19 +98,30 @@ window.addEventListener( 'load', async () => {
 
 	WooPayDirectCheckout.init();
 
-	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
+	// Listen for mini cart opening, so we can add the event listener to the mini cart's checkout button.
+	observeMiniCartOpening();
+
+	isThirdPartyCookieEnabled =
+		isThirdPartyCookieEnabled ||
+		( await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled() );
 	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-			WooPayDirectCheckout.redirectToWooPay( checkoutElements, true );
+			WooPayDirectCheckout.addRedirectToWooPayEventListener(
+				checkoutElements,
+				true
+			);
 		}
 
 		return;
 	}
 
 	// Pass false to indicate we are not sure if the user is logged in or not.
-	WooPayDirectCheckout.redirectToWooPay( checkoutElements, false );
+	WooPayDirectCheckout.addRedirectToWooPayEventListener(
+		checkoutElements,
+		false
+	);
 } );
 
 jQuery( ( $ ) => {
@@ -55,13 +139,18 @@ jQuery( ( $ ) => {
 		if ( isThirdPartyCookieEnabled ) {
 			if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 				WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-				WooPayDirectCheckout.redirectToWooPay( [ checkoutButton ] );
+				WooPayDirectCheckout.addRedirectToWooPayEventListener( [
+					checkoutButton,
+				] );
 			}
 
 			return;
 		}
 
-		WooPayDirectCheckout.redirectToWooPay( [ checkoutButton ], true );
+		WooPayDirectCheckout.addRedirectToWooPayEventListener(
+			[ checkoutButton ],
+			true
+		);
 	} );
 } );
 

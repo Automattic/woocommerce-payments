@@ -19,6 +19,8 @@ class WooPayDirectCheckout {
 		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout .checkout-button',
 		BLOCKS_CART_PROCEED_BUTTON:
 			'.wp-block-woocommerce-proceed-to-checkout-block',
+		BLOCKS_MINI_CART_PROCEED_BUTTON:
+			'a.wp-block-woocommerce-mini-cart-checkout-button-block',
 	};
 
 	/**
@@ -227,12 +229,26 @@ class WooPayDirectCheckout {
 	}
 
 	/**
+	 * Gets the mini cart 'Go to checkout' button.
+	 *
+	 * @return {Element} The mini cart 'Go to checkout' button.
+	 */
+	static getMiniCartProceedToCheckoutButton() {
+		return document.querySelector(
+			this.redirectElements.BLOCKS_MINI_CART_PROCEED_BUTTON
+		);
+	}
+
+	/**
 	 * Adds a click-event listener to the given elements that redirects to the WooPay checkout page.
 	 *
 	 * @param {*[]} elements The elements to add a click-event listener to.
 	 * @param {boolean} userIsLoggedIn True if we determined the user is already logged in, false otherwise.
 	 */
-	static redirectToWooPay( elements, userIsLoggedIn = false ) {
+	static addRedirectToWooPayEventListener(
+		elements,
+		userIsLoggedIn = false
+	) {
 		/**
 		 * Adds a loading spinner to the given element.
 		 *
