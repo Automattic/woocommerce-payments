@@ -47,14 +47,13 @@ export const BlockedList = (): JSX.Element => {
 	const columnsToDisplay = getBlockedListColumns();
 	const { isLoading, transactions } = useFraudOutcomeTransactions(
 		'block',
-		query,
-		'review'
+		query
 	);
 
 	const {
 		transactionsSummary,
 		isLoading: isSummaryLoading,
-	} = useFraudOutcomeTransactionsSummary( 'block', query, 'review' );
+	} = useFraudOutcomeTransactionsSummary( 'block', query );
 
 	const rows = transactions.map( ( transaction ) =>
 		getBlockedListColumnsStructure( transaction, columnsToDisplay )

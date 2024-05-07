@@ -24,6 +24,10 @@ const getSupportAddressState = ( state ) => {
 	return getSettings( state ).account_business_support_address || EMPTY_OBJ;
 };
 
+export const getDuplicatedPaymentMethodIds = ( state ) => {
+	return getSettings( state ).duplicated_payment_method_ids || EMPTY_OBJ;
+};
+
 export const getIsWCPayEnabled = ( state ) => {
 	return getSettings( state ).is_wcpay_enabled || false;
 };

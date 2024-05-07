@@ -130,7 +130,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return bool
 	 */
 	private function is_pay_for_order_flow_supported() {
-		return ( WC_Payments_Features::is_pay_for_order_flow_enabled() && class_exists( '\Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '11.1.0', '>=' ) );
+		return ( class_exists( '\Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '11.1.0', '>=' ) );
 	}
 
 	/**

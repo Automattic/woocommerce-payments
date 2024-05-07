@@ -156,6 +156,7 @@ const PhoneNumberInput = ( {
 				ref={ inputRef }
 				value={ removeInternationalPrefix( value ) }
 				onChange={ handlePhoneNumberInputChange }
+				placeholder={ __( 'Mobile number', 'woocommerce-payments' ) }
 				aria-label={
 					inputProps.ariaLabel ||
 					__( 'Mobile phone number', 'woocommerce-payments' )

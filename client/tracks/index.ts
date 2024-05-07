@@ -111,36 +111,35 @@ export const getTracksIdentity = async (): Promise< string | undefined > => {
 	// if cookie is set, get identity from the cookie.
 	// eslint-disable-next-line
 	let _ui = getIdentityCookieValue();
+	if ( _ui ) {
+		const data = { _ut: 'anon', _ui: _ui };
+		return JSON.stringify( data );
+	}
 	// Otherwise get it via an Ajax request.
-	if ( ! _ui ) {
-		const nonce =
-			getConfig( 'platformTrackerNonce' ) ??
-			getPaymentRequestData( 'nonce' )?.platform_tracker;
-		const ajaxUrl =
-			getConfig( 'ajaxUrl' ) ?? getPaymentRequestData( 'ajax_url' );
-		const body = new FormData();
+	const nonce =
+		getConfig( 'platformTrackerNonce' ) ??
+		getPaymentRequestData( 'nonce' )?.platform_tracker;
+	const ajaxUrl =
+		getConfig( 'ajaxUrl' ) ?? getPaymentRequestData( 'ajax_url' );
+	const body = new FormData();
 
-		body.append( 'tracksNonce', nonce );
-		body.append( 'action', 'get_identity' );
-		try {
-			const response = await fetch( ajaxUrl, {
-				method: 'post',
-				body,
-			} );
-			if ( ! response.ok ) {
-				return undefined;
-			}
-
-			const data = await response.json();
-			if ( data.success && data.data ) {
-				_ui = data.data._ui;
-			} else {
-				return undefined;
-			}
-		} catch ( error ) {
+	body.append( 'tracksNonce', nonce );
+	body.append( 'action', 'get_identity' );
+	try {
+		const response = await fetch( ajaxUrl, {
+			method: 'post',
+			body,
+		} );
+		if ( ! response.ok ) {
 			return undefined;
 		}
+
+		const data = await response.json();
+		if ( data.success && data.data && data.data._ui && data.data._ut ) {
+			return JSON.stringify( data.data );
+		}
+		return undefined;
+	} catch ( error ) {
+		return undefined;
 	}
-	const data = { _ut: 'anon', _ui: _ui };
-	return JSON.stringify( data );
 };
