@@ -48,13 +48,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	private $order_service;
 
 	/**
-	 * WC_Payments_Token instance for working with customer tokens
-	 *
-	 * @var WC_Payments_Token_Service
-	 */
-	private $token_service;
-
-	/**
 	 * WC_Payments_REST_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WooCommerce Payments API client.
