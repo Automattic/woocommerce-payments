@@ -89,6 +89,7 @@ const CurrencySelect: React.FC< {
 			) }
 			options={ currencyOptions }
 			onChange={ ( { selectedItem } ) =>
+				// TODO: record tracks event.
 				selectedItem && setSelectedCurrency( selectedItem?.key )
 			}
 		/>
