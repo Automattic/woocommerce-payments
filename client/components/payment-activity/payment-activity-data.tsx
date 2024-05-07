@@ -30,7 +30,7 @@ const searchTermsForViewReportLink = {
 		'card_reader_fee',
 	],
 
-	charge: [ 'charge', 'payment' ],
+	charge: [ 'charge', 'payment', 'adjustment' ],
 
 	refunds: [
 		'refund',
@@ -38,6 +38,8 @@ const searchTermsForViewReportLink = {
 		'payment_refund',
 		'payment_failure_refund',
 	],
+
+	dispute: [ 'dispute', 'dispute_reversal' ],
 };
 
 const getSearchParams = ( searchTerms: string[] ) => {
@@ -194,7 +196,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 					amount={ disputes }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
-						path: '/payments/disputes',
+						path: '/payments/transactions',
 						filter: 'advanced',
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
@@ -202,7 +204,9 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						'date_between[1]': moment(
 							paymentActivityData?.date_end
 						).format( 'YYYY-MM-DD' ),
-						status_is: 'needs_response',
+						...getSearchParams(
+							searchTermsForViewReportLink.dispute
+						),
 					} ) }
 					tracksSource="disputes"
 					isLoading={ isLoading }
