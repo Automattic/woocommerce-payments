@@ -274,13 +274,23 @@ class WooPayDirectCheckout {
 		};
 
 		/**
-		 * Checks if the given element is the checkout button in the cart shortcode.
+		 * Checks if a loading spinner should be added to the given element.
 		 *
 		 * @param {Element} element The element to check.
 		 *
-		 * @return {boolean} True if the element is a checkout button in the cart shortcode.
+		 * @return {boolean} True if a loading spinner should be added.
 		 */
-		const isCheckoutButtonInCartShortCode = ( element ) => {
+		const shouldAddLoadingSpinner = ( element ) => {
+			// If the button is in the mini cart, add a spinner.
+			if (
+				element.classList.contains(
+					'wp-block-woocommerce-mini-cart-checkout-button-block'
+				)
+			) {
+				return true;
+			}
+
+			// If the button is in the classic cart, add a spinner.
 			const isCheckoutButton = element.classList.contains(
 				'checkout-button'
 			);
@@ -304,7 +314,7 @@ class WooPayDirectCheckout {
 
 				elementState.is_loading = true;
 
-				if ( isCheckoutButtonInCartShortCode( element ) ) {
+				if ( shouldAddLoadingSpinner( element ) ) {
 					addLoadingSpinner( element );
 				}
 
