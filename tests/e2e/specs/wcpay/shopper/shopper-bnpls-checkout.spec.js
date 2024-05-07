@@ -74,41 +74,20 @@ describe.each( cardTestingPreventionStates )(
 						expect( token ).not.toBeUndefined();
 					}
 
-					await page.waitForNavigation();
-					// await page.waitFor( 4000 );
-					// await takeScreenshot(
-					// 	`shopper-bnpls-checkout-${ providerName }-payment-method-selected`
-					// );
-
-					// try {
 					await shopper.placeOrder();
-					// } catch ( e ) {
-					// 	console.error( 'Error on shopper.placeOrder()', e ); // eslint-disable-line no-console
-					// }
 
-					// await page.waitFor( 4000 );
-					// await takeScreenshot(
-					// 	`shopper-bnpls-checkout-${ providerName }-after-order-placed`
-					// );
-
-					await page.waitForNavigation();
+					await page.waitForNavigation( {
+						waitUntil: 'networkidle0',
+					} );
 
 					// Authorize payment with Stripe.
 					// This XPath selector matches the Authorize Payment button, that is either a button or an anchor.
-					try {
-						const xPathAuthorizePaymentButton = `//*[self::button or self::a][contains(text(), 'Authorize Test Payment')]`;
-						await page.waitForXPath( xPathAuthorizePaymentButton );
-						const [ stripeButton ] = await page.$x(
-							xPathAuthorizePaymentButton
-						);
-						await stripeButton.click();
-					} catch ( error ) {
-						// eslint-disable-next-line no-console
-						console.error(
-							'Error authorizing test payment:',
-							error
-						);
-					}
+					const xPathAuthorizePaymentButton = `//*[self::button or self::a][contains(text(), 'Authorize Test Payment')]`;
+					await page.waitForXPath( xPathAuthorizePaymentButton );
+					const [ stripeButton ] = await page.$x(
+						xPathAuthorizePaymentButton
+					);
+					await stripeButton.click();
 
 					// Wait for the order confirmation page to load.
 					await page.waitForNavigation( {
