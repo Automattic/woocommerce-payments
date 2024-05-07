@@ -9,7 +9,6 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useCurrentWpUser } from './hooks';
-import wooPaymentsLogo from 'assets/images/woopayments.svg?asset';
 import './style.scss';
 
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
@@ -85,14 +84,7 @@ const Welcome: React.FC = () => {
 				<FlexItem className="wcpay-welcome__flex__greeting">
 					{ greeting }
 				</FlexItem>
-				<FlexItem>
-					<img
-						className="wcpay-welcome__flex__logo"
-						src={ wooPaymentsLogo }
-						alt="WooPayments logo"
-						width={ 107 }
-					/>
-				</FlexItem>
+				<FlexItem>{ /* TODO: Currency select goes here. */ }</FlexItem>
 			</Flex>
 		</CardHeader>
 	);
