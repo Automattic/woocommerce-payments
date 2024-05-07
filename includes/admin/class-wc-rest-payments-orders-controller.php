@@ -61,14 +61,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @param WC_Payment_Gateway_WCPay     $gateway          WooCommerce Payments payment gateway.
 	 * @param WC_Payments_Customer_Service $customer_service Customer class instance.
 	 * @param WC_Payments_Order_Service    $order_service    Order Service class instance.
-	 * @param WC_Payments_Token_Service    $token_service    Token Service class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service, WC_Payments_Token_Service $token_service ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service ) {
 		parent::__construct( $api_client );
 		$this->gateway          = $gateway;
 		$this->customer_service = $customer_service;
 		$this->order_service    = $order_service;
-		$this->token_service    = $token_service;
+		$this->token_service    = WC_Payments::get_token_service(); // TODO: Inject order_service after #7464 is fixed.
 	}
 
 	/**
