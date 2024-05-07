@@ -67,7 +67,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		$this->gateway          = $gateway;
 		$this->customer_service = $customer_service;
 		$this->order_service    = $order_service;
-		$this->token_service    = WC_Payments::get_token_service(); // TODO: Inject order_service after #7464 is fixed.
+		$this->token_service    = WC_Payments::get_token_service(); // TODO: Inject token_service after #7464 is fixed.
 	}
 
 	/**
