@@ -128,6 +128,7 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Avoid warnings about fatal error during plugin update due to problems with plugin initialization.
 * Dev - Remove legacy method from `WooPay_Utilities`.
 * Dev - Remove obsolete docker-compose key `version`
+* Dev - Upgraded jetpack sync package version.
 
 = 7.5.3 - 2024-04-22 =
 * Fix - Fix subscription renewals exceptions
