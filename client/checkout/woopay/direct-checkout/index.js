@@ -95,10 +95,7 @@ const maybeObserveMiniCartOpening = () => {
 };
 
 window.addEventListener( 'load', async () => {
-	if (
-		! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ||
-		shouldSkipWooPay()
-	) {
+	if ( shouldSkipWooPay() ) {
 		return;
 	}
 
@@ -132,10 +129,7 @@ window.addEventListener( 'load', async () => {
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_cart_totals', async () => {
-		if (
-			! WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ||
-			shouldSkipWooPay()
-		) {
+		if ( shouldSkipWooPay() ) {
 			return;
 		}
 
