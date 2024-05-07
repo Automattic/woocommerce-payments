@@ -1335,6 +1335,17 @@ class WC_Payments {
 	}
 
 	/**
+	 * Sets the token service instance. This is needed only for tests.
+	 *
+	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
+	 *
+	 * @return void
+	 */
+	public static function set_token_service( WC_Payments_Token_Service $token_service ) {
+		self::$token_service = $token_service;
+	}
+
+	/**
 	 * Sets the customer service instance. This is needed only for tests.
 	 *
 	 * @param WC_Payments_Customer_Service $customer_service_class Instance of WC_Payments_Customer_Service.
