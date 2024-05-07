@@ -67,7 +67,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		$this->gateway          = $gateway;
 		$this->customer_service = $customer_service;
 		$this->order_service    = $order_service;
-		$this->token_service    = WC_Payments::get_token_service(); // TODO: Inject token_service after #7464 is fixed.
 	}
 
 	/**
@@ -236,7 +235,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 										function_exists( 'wcs_is_manual_renewal_required' ) &&
 										wcs_order_contains_subscription( $order_id );
 				if ( $has_subscriptions ) {
-					$token = $this->token_service->add_payment_method_to_user( $generated_card, $order->get_user() );
+					$token = WC_Payments::get_token_service()->add_payment_method_to_user( $generated_card, $order->get_user() );
 					$this->gateway->add_token_to_order( $order, $token );
 					foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
 						$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
