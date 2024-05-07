@@ -52,6 +52,13 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	private $mock_available_currencies = [];
 
 	/**
+	 * The localization service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -81,6 +88,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			->willReturn( $this->get_mock_available_currencies() );
 
 		$this->analytics = new Analytics( $this->mock_multi_currency );
+
+		$this->localization_service = new WC_Payments_Localization_Service();
 
 		remove_filter( 'user_has_cap', $cb );
 	}
@@ -157,7 +166,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	public function test_update_order_stats_data_with_multi_currency_order() {
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->localization_service, 'USD', 1.0 ) );
 
 		$args  = $this->order_args_provider( 123, 0, 1, 15.50, 1.50, 0, 14.00 );
 		$order = wc_create_order();
@@ -172,7 +181,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	public function test_update_order_stats_data_with_large_order() {
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->localization_service, 'USD', 1.0 ) );
 
 		$args  = $this->order_args_provider( 123, 0, 1, 130500.75, 20000, 10000, 100500.75 );
 		$order = wc_create_order();
@@ -187,7 +196,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	public function test_update_order_stats_data_with_stripe_exchange_rate() {
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->localization_service, 'USD', 1.0 ) );
 
 		$args  = $this->order_args_provider( 123, 0, 1, 15.50, 1.50, 0, 15.00 );
 		$order = wc_create_order();
@@ -566,13 +575,14 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	}
 
 	private function get_mock_available_currencies() {
+		$this->localization_service = new WC_Payments_Localization_Service();
 		if ( empty( $this->mock_available_currencies ) ) {
 			$this->mock_available_currencies = [
-				'GBP' => new Currency( 'GBP', 1.2 ),
-				'USD' => new Currency( 'USD', 1 ),
-				'EUR' => new Currency( 'EUR', 0.9 ),
-				'ISK' => new Currency( 'ISK', 30.52 ),
-				'NZD' => new Currency( 'NZD', 1.4 ),
+				'GBP' => new Currency( $this->localization_service, 'GBP', 1.2 ),
+				'USD' => new Currency( $this->localization_service, 'USD', 1 ),
+				'EUR' => new Currency( $this->localization_service, 'EUR', 0.9 ),
+				'ISK' => new Currency( $this->localization_service, 'ISK', 30.52 ),
+				'NZD' => new Currency( $this->localization_service, 'NZD', 1.4 ),
 			];
 		}
 

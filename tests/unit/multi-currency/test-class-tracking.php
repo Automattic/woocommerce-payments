@@ -95,14 +95,23 @@ class WCPay_Multi_Currency_Tracking_Tests extends WCPAY_UnitTestCase {
 	private $mock_multi_currency;
 
 	/**
+	 * WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
+		$this->localization_service = new WC_Payments_Localization_Service();
+
 		$this->set_up_mock_enabled_currencies();
 		$this->add_mock_orders_with_meta();
-		$this->mock_default_currency = new WCPay\MultiCurrency\Currency( get_woocommerce_currency(), 1 );
+		$this->mock_default_currency = new WCPay\MultiCurrency\Currency( $this->localization_service, get_woocommerce_currency(), 1 );
 
 		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
 		$this->mock_multi_currency
@@ -246,7 +255,7 @@ class WCPay_Multi_Currency_Tracking_Tests extends WCPAY_UnitTestCase {
 
 	private function set_up_mock_enabled_currencies() {
 		foreach ( $this->mock_currencies as $code => $settings ) {
-			$currency = new WCPay\MultiCurrency\Currency( $code, $settings['rate'] );
+			$currency = new WCPay\MultiCurrency\Currency( $this->localization_service, $code, $settings['rate'] );
 
 			if ( isset( $settings['rate_type'] ) ) {
 				update_option( 'wcpay_multi_currency_exchange_rate_' . $currency->get_id(), $settings['rate_type'] );
