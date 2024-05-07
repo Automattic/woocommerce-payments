@@ -53,11 +53,11 @@ class Currency implements \JsonSerializable {
 	private $rounding;
 
 	/**
-	 * Is currency zero decimal?
+	 * Number of decimals used for this currency.
 	 *
-	 * @var bool
+	 * @var int
 	 */
-	private $is_zero_decimal = false;
+	private $number_of_decimals;
 
 	/**
 	 * A timestamp representing the time this currency was last fetched successfully from the server.
@@ -90,8 +90,8 @@ class Currency implements \JsonSerializable {
 			$this->is_default = true;
 		}
 
-		// Set zero-decimal style based on WC locale information.
-		$this->is_zero_decimal = 0 === $this->localization_service->get_currency_format( $code )['num_decimals'];
+		// Get the number of decimals for this currency based on WC locale information. Default to 2 decimals.
+		$this->number_of_decimals = $this->localization_service->get_currency_format( $code )['num_decimals'] ?? 2;
 
 		if ( ! is_null( $last_updated ) ) {
 			$this->last_updated = $last_updated;
@@ -183,6 +183,26 @@ class Currency implements \JsonSerializable {
 	}
 
 	/**
+	 * Returns the default rounding for the currency.
+	 *
+	 * @return string  The default rounding for this currency.
+	 */
+	public function get_default_rounding(): string {
+		if ( 0 === $this->number_of_decimals ) {
+			return '100';
+		} elseif ( 2 === $this->number_of_decimals ) {
+			return '1.00';
+		} elseif ( 3 === $this->number_of_decimals ) {
+			// We don't support currencies with 3 decimals yet, but Stripe does so this is trying to anticipate
+			// a future where we do add support for currencies with 3 decimal points.
+			return '1.000';
+		}
+
+		// Return 0, i.e. no rounding, by default.
+		return '0';
+	}
+
+	/**
 	 * Retrieves the currency's symbol from WooCommerce core.
 	 *
 	 * @return string Currency symbol.
@@ -201,12 +221,12 @@ class Currency implements \JsonSerializable {
 	}
 
 	/**
-	 * Retrieves if the currency is zero decimal.
+	 * Returns the number of decimal points used for this currency. For example, USD will return 2, ISK will return 0.
 	 *
-	 * @return bool
+	 * @return int  The number of decimals for this currency.
 	 */
-	public function get_is_zero_decimal(): bool {
-		return $this->is_zero_decimal;
+	public function get_number_of_decimals(): int {
+		return $this->number_of_decimals;
 	}
 
 	/**
@@ -264,16 +284,17 @@ class Currency implements \JsonSerializable {
 	 */
 	public function jsonSerialize(): array {
 		return [
-			'code'            => $this->code,
-			'rate'            => $this->get_rate(),
-			'name'            => html_entity_decode( $this->get_name() ),
-			'id'              => $this->get_id(),
-			'is_default'      => $this->get_is_default(),
-			'flag'            => $this->get_flag(),
-			'symbol'          => html_entity_decode( $this->get_symbol() ),
-			'symbol_position' => $this->get_symbol_position(),
-			'is_zero_decimal' => $this->get_is_zero_decimal(),
-			'last_updated'    => $this->get_last_updated(),
+			'code'               => $this->code,
+			'rate'               => $this->get_rate(),
+			'name'               => html_entity_decode( $this->get_name() ),
+			'id'                 => $this->get_id(),
+			'is_default'         => $this->get_is_default(),
+			'flag'               => $this->get_flag(),
+			'symbol'             => html_entity_decode( $this->get_symbol() ),
+			'symbol_position'    => $this->get_symbol_position(),
+			'last_updated'       => $this->get_last_updated(),
+			'number_of_decimals' => $this->get_number_of_decimals(),
+			'default_rounding'   => $this->get_default_rounding(),
 		];
 	}
 }
