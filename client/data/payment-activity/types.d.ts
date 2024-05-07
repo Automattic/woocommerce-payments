@@ -5,13 +5,13 @@ export interface PaymentActivityData {
 	currency: string;
 	/** Total payment volume amount */
 	total_payment_volume: number;
-	/** Charges total amount */
+	/** Charges total amount as a positive integer */
 	charges: number;
-	/** Fees total amount */
+	/** Fees total amount as a positive integer */
 	fees: number;
-	/** Disputes total amount */
+	/** Disputes total amount as a positive integer */
 	disputes: number;
-	/** Refunds total amount */
+	/** Refunds total amount as a positive integer */
 	refunds: number;
 	/** The timezone used to calculate the date range, e.g. 'UTC' */
 	timezone: string;

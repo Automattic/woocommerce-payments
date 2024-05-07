@@ -40,9 +40,8 @@ const PaymentActivityData: React.FC = () => {
 	const totalPaymentVolume = paymentActivityData?.total_payment_volume ?? 0;
 	const charges = paymentActivityData?.charges ?? 0;
 	const fees = paymentActivityData?.fees ?? 0;
-	// Display disputes and refunds as positive numbers, which are returned as negative numbers from the API.
-	const disputes = Math.abs( paymentActivityData?.disputes ?? 0 );
-	const refunds = Math.abs( paymentActivityData?.refunds ?? 0 );
+	const disputes = paymentActivityData?.disputes ?? 0;
+	const refunds = paymentActivityData?.refunds ?? 0;
 
 	return (
 		<div className="wcpay-payment-activity-data">
