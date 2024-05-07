@@ -76,7 +76,7 @@ class Currency implements \JsonSerializable {
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_Localization_Service $localization_service Three letter currency code.
+	 * @param WC_Payments_Localization_Service $localization_service Localization service instance.
 	 * @param string                           $code Three letter currency code.
 	 * @param float                            $rate The conversion rate.
 	 * @param int|null                         $last_updated The time this currency was last updated.
