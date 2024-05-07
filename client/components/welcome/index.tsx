@@ -8,6 +8,9 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { SelectField } from 'components/form/fields';
+import { useAllDepositsOverviews } from 'data';
+import { useSelectedCurrency } from 'overview/hooks';
 import { useCurrentWpUser } from './hooks';
 import './style.scss';
 
@@ -66,13 +69,43 @@ const getGreeting = ( name?: string, date: Date = new Date() ): string => {
 };
 
 /**
- * Renders a welcome card header with a greeting and the WooPayments logo.
- *
- * @return {JSX.Element} Rendered element with the account balances card header.
+ * A currency select control used in the welcome card header.
+ */
+const CurrencySelect: React.FC< {
+	currencies: string[];
+} > = ( { currencies } ) => {
+	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
+
+	const currencyOptions = currencies.map( ( currency ) => ( {
+		name: currency.toUpperCase(),
+		key: currency,
+	} ) );
+
+	return (
+		<SelectField
+			label="Currency"
+			value={ currencyOptions.find(
+				( option ) => option.key === selectedCurrency
+			) }
+			options={ currencyOptions }
+			onChange={ ( { selectedItem } ) =>
+				selectedItem && setSelectedCurrency( selectedItem?.key )
+			}
+		/>
+	);
+};
+
+/**
+ * Renders a welcome card header with a greeting and a currency select control if supported.
  */
 const Welcome: React.FC = () => {
 	const { user } = useCurrentWpUser();
 	const greeting = getGreeting( user?.first_name );
+	const { overviews } = useAllDepositsOverviews();
+	const currencies =
+		overviews?.currencies.map( ( currencyObj ) => currencyObj.currency ) ||
+		[];
+	const renderCurrencySelect = currencies.length > 1;
 
 	return (
 		<CardHeader className="wcpay-welcome">
@@ -84,7 +117,12 @@ const Welcome: React.FC = () => {
 				<FlexItem className="wcpay-welcome__flex__greeting">
 					{ greeting }
 				</FlexItem>
-				<FlexItem>{ /* TODO: Currency select goes here. */ }</FlexItem>
+
+				{ renderCurrencySelect && (
+					<FlexItem>
+						<CurrencySelect currencies={ currencies } />
+					</FlexItem>
+				) }
 			</Flex>
 		</CardHeader>
 	);
