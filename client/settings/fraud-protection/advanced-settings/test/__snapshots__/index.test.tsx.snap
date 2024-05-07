@@ -66,6 +66,11 @@ Object {
                &gt; 
               Advanced fraud protection
             </h2>
+            <p
+              class="fraud-protection-advanced-settings-notice"
+            >
+              At least one risk filter needs to be enabled for advanced protection.
+            </p>
             <div
               class="fraud-protection-advanced-settings-error-notice"
             >
@@ -1066,6 +1071,11 @@ Object {
              &gt; 
             Advanced fraud protection
           </h2>
+          <p
+            class="fraud-protection-advanced-settings-notice"
+          >
+            At least one risk filter needs to be enabled for advanced protection.
+          </p>
           <div
             class="fraud-protection-advanced-settings-error-notice"
           >
@@ -2149,6 +2159,11 @@ Object {
                &gt; 
               Advanced fraud protection
             </h2>
+            <p
+              class="fraud-protection-advanced-settings-notice"
+            >
+              At least one risk filter needs to be enabled for advanced protection.
+            </p>
             <div
               class="fraud-protection-advanced-settings-error-notice"
             >
@@ -3006,6 +3021,11 @@ Object {
              &gt; 
             Advanced fraud protection
           </h2>
+          <p
+            class="fraud-protection-advanced-settings-notice"
+          >
+            At least one risk filter needs to be enabled for advanced protection.
+          </p>
           <div
             class="fraud-protection-advanced-settings-error-notice"
           >
@@ -3926,6 +3946,11 @@ Object {
              &gt; 
             Advanced fraud protection
           </h2>
+          <p
+            class="fraud-protection-advanced-settings-notice"
+          >
+            At least one risk filter needs to be enabled for advanced protection.
+          </p>
           <div
             class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
             data-wp-c16t="true"
@@ -4746,6 +4771,11 @@ Object {
            &gt; 
           Advanced fraud protection
         </h2>
+        <p
+          class="fraud-protection-advanced-settings-notice"
+        >
+          At least one risk filter needs to be enabled for advanced protection.
+        </p>
         <div
           class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
           data-wp-c16t="true"
@@ -5666,6 +5696,11 @@ Object {
                &gt; 
               Advanced fraud protection
             </h2>
+            <p
+              class="fraud-protection-advanced-settings-notice"
+            >
+              At least one risk filter needs to be enabled for advanced protection.
+            </p>
             <div
               class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
               data-wp-c16t="true"
@@ -6586,6 +6621,11 @@ Object {
              &gt; 
             Advanced fraud protection
           </h2>
+          <p
+            class="fraud-protection-advanced-settings-notice"
+          >
+            At least one risk filter needs to be enabled for advanced protection.
+          </p>
           <div
             class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
             data-wp-c16t="true"

@@ -38,7 +38,7 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
-		$this->http_client_stub = $this->getMockBuilder( WC_Payments_Http::class )->disableOriginalConstructor()->setMethods( [ 'wpcom_json_api_request_as_user' ] )->getMock();
+		$this->http_client_stub = $this->getMockBuilder( WC_Payments_Http::class )->disableOriginalConstructor()->setMethods( [ 'remote_request' ] )->getMock();
 		$this->controller       = new WC_REST_Payments_Survey_Controller( $this->http_client_stub );
 	}
 
@@ -63,33 +63,42 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+
 	public function test_valid_request_forwards_data_to_jetpack() {
+		$request_url = WC_Payments_API_Client::ENDPOINT_BASE . '/marketing/survey';
+
 		$this->http_client_stub
 			->expects( $this->any() )
-			->method( 'wpcom_json_api_request_as_user' )
+			->method( 'remote_request' )
 			->with(
-				$this->stringContains( '/marketing/survey' ),
-				$this->anything(),
-				$this->anything(),
+				// Check the request argument URL is the same.
+				$this->callback(
+					function ( $argument ) use ( $request_url ) {
+						return $request_url === $argument['url'];
+					}
+				),
 				$this->logicalAnd(
-					$this->arrayHasKey( 'survey_id' ),
-					$this->arrayHasKey( 'survey_responses' ),
 					$this->callback(
 						function ( $argument ) {
-							return 'wcpay-payment-activity' === $argument['survey_id'];
+							$json_body = json_decode( $argument, true );
+							return 'wcpay-payment-activity' === $json_body['survey_id'];
 						}
 					),
 					$this->callback(
 						function ( $argument ) {
-							return 'happy' === $argument['survey_responses']['rating'];
+							$json_body = json_decode( $argument, true );
+							return 'happy' === $json_body['survey_responses']['rating'];
 						}
 					),
 					$this->callback(
 						function ( $argument ) {
-							return 'test comment' === $argument['survey_responses']['comments']['text'];
+							$json_body = json_decode( $argument, true );
+							return 'test comment' === $json_body['survey_responses']['comments']['text'];
 						}
-					)
-				)
+					),
+				),
+				$this->isTrue(),
+				$this->isTrue(),
 			)
 			->willReturn(
 				[

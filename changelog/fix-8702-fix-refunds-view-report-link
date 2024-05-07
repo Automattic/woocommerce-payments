@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: The PR fixes the correct landing links on `View report` for the Refunds tile in Payment activity widget. Changes are behind a feature flag.
+
+

@@ -1775,7 +1775,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} else {
 			$payment_method_details = false;
-			$payment_method_type    = $intent->get_payment_method_type();
+			$payment_method_type    = $this->get_payment_method_type_for_setup_intent( $intent, $token );
 		}
 
 		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
@@ -3430,11 +3430,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$payment_method_id = isset( $_POST['payment_method_id'] ) ? wc_clean( wp_unslash( $_POST['payment_method_id'] ) ) : '';
-			if ( 'null' === $payment_method_id ) {
-				$payment_method_id = '';
-			}
-
 			// Check that the intent saved in the order matches the intent used as part of the
 			// authentication process. The ID of the intent used is sent with
 			// the AJAX request. We are about to use the status of the intent saved in
@@ -3447,7 +3442,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$amount = $order->get_total();
+			$amount                 = $order->get_total();
+			$payment_method_details = false;
 
 			if ( $amount > 0 ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
@@ -3466,9 +3462,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// For $0 orders, fetch the Setup Intent instead.
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent    = $setup_intent_request->send();
-				$status    = $intent->get_status();
-				$charge_id = '';
+				$intent            = $setup_intent_request->send();
+				$status            = $intent->get_status();
+				$charge_id         = '';
+				$payment_method_id = $intent->get_payment_method_id();
 			}
 
 			if ( Intent_Status::SUCCEEDED === $status ) {
@@ -3484,6 +3481,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					try {
 						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
 						$this->add_token_to_order( $order, $token );
+
+						if ( ! empty( $token ) ) {
+							$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
+							$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+						}
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
@@ -4275,6 +4277,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function get_payment_method_type_from_payment_details( $payment_method_details ) {
 		return $payment_method_details['type'] ?? null;
+	}
+
+	/**
+	 * Get the payment method used with a setup intent.
+	 *
+	 * @param WC_Payments_API_Setup_Intention $intent The PaymentIntent object.
+	 * @param WC_Payment_Token                $token The payment token.
+	 * @return string|null The payment method type.
+	 */
+	private function get_payment_method_type_for_setup_intent( $intent, $token ) {
+		return 'wcpay_link' !== $token->get_type() ? $intent->get_payment_method_type() : Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 	}
 
 	/**
