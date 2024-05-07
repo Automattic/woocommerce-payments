@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "7.5.1",
+  "version": "7.5.3",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -37,6 +37,9 @@
     "test:e2e": "NODE_CONFIG_DIR='tests/e2e/config' JEST_PUPPETEER_CONFIG='tests/e2e/config/jest-puppeteer-headless.config.js' wp-scripts test-e2e --config tests/e2e/config/jest.config.js",
     "test:e2e-dev": "NODE_CONFIG_DIR='tests/e2e/config' JEST_PUPPETEER_CONFIG='tests/e2e/config/jest-puppeteer.config.js' wp-scripts test-e2e --config tests/e2e/config/jest.config.js --puppeteer-interactive",
     "test:e2e-performance": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.performance.config.js",
+    "test:e2e-pw": "./tests/e2e-pw/test-e2e-pw.sh",
+    "test:e2e-pw-ui": "./tests/e2e-pw/test-e2e-pw-ui.sh",
+    "test:e2e-pw-ci": "npx playwright test --config=tests/e2e-pw/playwright.config.ts",
     "test:update-snapshots": "npm run test:js -- --updateSnapshot",
     "test:php": "./bin/run-tests.sh",
     "test:php-coverage": "./bin/check-test-coverage.sh",
@@ -85,6 +88,7 @@
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",
     "@jest/test-sequencer": "29.5.0",
+    "@playwright/test": "1.43.1",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.5",
@@ -93,6 +97,7 @@
     "@types/canvas-confetti": "1.6.4",
     "@types/intl-tel-input": "17.0.4",
     "@types/lodash": "4.14.170",
+    "@types/node": "20.9.0",
     "@types/react": "17.0.2",
     "@types/react-transition-group": "4.4.6",
     "@types/wordpress__components": "19.10.5",

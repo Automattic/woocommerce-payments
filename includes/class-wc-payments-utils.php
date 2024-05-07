@@ -338,41 +338,29 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Extract the billing details from the WC order.
-	 * It only returns the fields that are present in the billing section of the checkout.
+	 * Extract the billing details from the WC order
 	 *
 	 * @param WC_Order $order Order to extract the billing details from.
 	 *
 	 * @return array
 	 */
 	public static function get_billing_details_from_order( $order ) {
-		$billing_fields       = array_keys( WC()->checkout()->get_checkout_fields( 'billing' ) );
-		$address_field_to_key = [
-			'billing_city'      => 'city',
-			'billing_country'   => 'country',
-			'billing_address_1' => 'line1',
-			'billing_address_2' => 'line2',
-			'billing_postcode'  => 'postal_code',
-			'billing_state'     => 'state',
+		$billing_details = [
+			'address' => [
+				'city'        => $order->get_billing_city(),
+				'country'     => $order->get_billing_country(),
+				'line1'       => $order->get_billing_address_1(),
+				'line2'       => $order->get_billing_address_2(),
+				'postal_code' => $order->get_billing_postcode(),
+				'state'       => $order->get_billing_state(),
+			],
+			'email'   => $order->get_billing_email(),
+			'name'    => trim( $order->get_formatted_billing_full_name() ),
+			'phone'   => $order->get_billing_phone(),
 		];
-		$field_to_key         = [
-			'billing_email' => 'email',
-			'billing_phone' => 'phone',
-		];
-		$billing_details      = [ 'address' => [] ];
-		foreach ( $billing_fields as $field ) {
-			if ( isset( $address_field_to_key[ $field ] ) ) {
-				$billing_details['address'][ $address_field_to_key[ $field ] ] = $order->{"get_{$field}"}();
-			} elseif ( isset( $field_to_key[ $field ] ) ) {
-				$billing_details[ $field_to_key[ $field ] ] = $order->{"get_{$field}"}();
-			}
-		}
 
-		if ( in_array( 'billing_first_name', $billing_fields, true ) && in_array( 'billing_last_name', $billing_fields, true ) ) {
-			$billing_details['name'] = trim( $order->get_formatted_billing_full_name() );
-		}
-
-		return $billing_details;
+		$billing_details['address'] = array_filter( $billing_details['address'] );
+		return array_filter( $billing_details );
 	}
 
 	/**
@@ -558,11 +546,12 @@ class WC_Payments_Utils {
 	 * Generally, only Stripe exceptions with type of `card_error` should be displayed.
 	 * Other API errors should be redacted (https://stripe.com/docs/api/errors#errors-message).
 	 *
-	 * @param Exception $e Exception to get the message from.
+	 * @param Exception $e                      Exception to get the message from.
+	 * @param boolean   $blocked_by_fraud_rules Whether the payment was blocked by the fraud rules. Defaults to false.
 	 *
 	 * @return string
 	 */
-	public static function get_filtered_error_message( Exception $e ) {
+	public static function get_filtered_error_message( Exception $e, bool $blocked_by_fraud_rules = false ) {
 		$error_message = method_exists( $e, 'getLocalizedMessage' ) ? $e->getLocalizedMessage() : $e->getMessage();
 
 		// These notices can be shown when placing an order or adding a new payment method, so we aim for
@@ -592,7 +581,7 @@ class WC_Payments_Utils {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
-		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
+		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() && ! $blocked_by_fraud_rules ) {
 			$error_message = __( 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', 'woocommerce-payments' );
 		}
 
@@ -1108,5 +1097,58 @@ class WC_Payments_Utils {
 	 */
 	public static function is_cart_block(): bool {
 		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+	}
+
+	/**
+	 * Gets the current active theme transient for a given location
+	 * Falls back to 'stripe' if no transients are set.
+	 *
+	 * @param string $location The theme location.
+	 * @param string $context The theme location to fall back to if both transients are set.
+	 * @return string
+	 */
+	public static function get_active_upe_theme_transient_for_location( string $location = 'checkout', string $context = 'blocks' ) {
+		$themes       = \WC_Payment_Gateway_WCPay::APPEARANCE_THEME_TRANSIENTS;
+		$active_theme = false;
+
+		// If an invalid location is sent, we fallback to trying $themes[ 'checkout' ][ 'block' ].
+		if ( ! isset( $themes[ $location ] ) ) {
+			$active_theme = get_transient( $themes['checkout']['blocks'] );
+		} elseif ( ! isset( $themes[ $location ][ $context ] ) ) {
+			// If the location is valid but the context is invalid, we fallback to trying $themes[ $location ][ 'block' ].
+			$active_theme = get_transient( $themes[ $location ]['blocks'] );
+		} else {
+			$active_theme = get_transient( $themes[ $location ][ $context ] );
+		}
+
+		// If $active_theme is still false here, that means that $themes[ $location ][ $context ] is not set, so we try $themes[ $location ][ 'classic' ].
+		if ( ! $active_theme ) {
+			$active_theme = get_transient( $themes[ $location ][ 'blocks' === $context ? 'classic' : 'blocks' ] );
+		}
+
+		// If $active_theme is still false here, nothing at the location is set so we'll try all locations.
+		if ( ! $active_theme ) {
+			foreach ( $themes as $location_const => $contexts ) {
+				// We don't need to check the same location again.
+				if ( $location_const === $location ) {
+					continue;
+				}
+
+				foreach ( $contexts as $context => $transient ) {
+					$active_theme = get_transient( $transient );
+					if ( $active_theme ) {
+						break 2; // This will break both loops.
+					}
+				}
+			}
+		}
+
+		// If $active_theme is still false, we don't have any theme set in the transients, so we fallback to 'stripe'.
+		if ( $active_theme ) {
+			return $active_theme;
+		}
+
+		// Fallback to 'stripe' if no transients are set.
+		return 'stripe';
 	}
 }

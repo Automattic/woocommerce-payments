@@ -254,7 +254,7 @@ const WooPaySettings = ( { section } ) => {
 							storeName={ wcSettings.siteTitle }
 							storeLogo={ woopayStoreLogo }
 							customMessage={ woopayCustomMessage }
-						></WooPayPreview>
+						/>
 					</div>
 				</CardBody>
 			) }

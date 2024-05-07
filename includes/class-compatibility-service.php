@@ -74,15 +74,23 @@ class Compatibility_Service {
 	 * @return array
 	 */
 	private function get_compatibility_data(): array {
-		$active_plugins   = get_option( 'active_plugins', [] );
-		$post_types_count = $this->get_post_types_count();
+		$active_plugins        = get_option( 'active_plugins', [] );
+		$post_types_count      = $this->get_post_types_count();
+		$wc_permalinks         = get_option( 'woocommerce_permalinks' );
+		$wc_shop_permalink     = get_permalink( wc_get_page_id( 'shop' ) );
+		$wc_cart_permalink     = get_permalink( wc_get_page_id( 'cart' ) );
+		$wc_checkout_permalink = get_permalink( wc_get_page_id( 'checkout' ) );
 
 		return [
-			'woopayments_version' => WCPAY_VERSION_NUMBER,
-			'woocommerce_version' => WC_VERSION,
-			'blog_theme'          => get_stylesheet(),
-			'active_plugins'      => $active_plugins,
-			'post_types_count'    => $post_types_count,
+			'woopayments_version'    => WCPAY_VERSION_NUMBER,
+			'woocommerce_version'    => WC_VERSION,
+			'woocommerce_permalinks' => $wc_permalinks,
+			'woocommerce_shop'       => $wc_shop_permalink,
+			'woocommerce_cart'       => $wc_cart_permalink,
+			'woocommerce_checkout'   => $wc_checkout_permalink,
+			'blog_theme'             => get_stylesheet(),
+			'active_plugins'         => $active_plugins,
+			'post_types_count'       => $post_types_count,
 		];
 	}
 

@@ -47,6 +47,9 @@ class WooPay_Session {
 		'@^\/wc\/store(\/v[\d]+)?\/checkout\/(?P<id>[\d]+)@',
 		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
 		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
+		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
+		// By adding it to this list, we're able to identify the user and load the correct session for this route.
+		'@^\/wc\/v3\/woopay\/session$@',
 	];
 
 	/**
@@ -338,14 +341,65 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Returns the initial session request data.
+	 * Retrieves cart data from the current session.
 	 *
-	 * @param int|null    $order_id Pay-for-order order ID.
+	 * If the request doesn't come from WooPay, this uses the same strategy in
+	 * `hydrate_from_api` on the Checkout Block to retrieve cart data.
+	 *
+	 * @param int|null $order_id Pay-for-order order ID.
 	 * @param string|null $key Pay-for-order key.
 	 * @param string|null $billing_email Pay-for-order billing email.
+	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
+	 * @return array The cart data.
+	 */
+	private static function get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request ) {
+		if ( ! $woopay_request ) {
+			return ! $is_pay_for_order
+			? rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body']
+			: rest_preload_api_request( [], "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) )[ "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) ]['body'];
+		}
+
+		$cart_request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
+		$cart_request->set_header( 'Cart-Token', $woopay_request->get_header('cart_token') );
+		return rest_do_request( $cart_request )->get_data();
+	}
+
+	/**
+	 * Retrieves checkout data from the current session.
+	 *
+	 * If the request doesn't come from WooPay, this uses the same strategy in
+	 * `hydrate_from_api` on the Checkout Block to retrieve checkout data.
+	 *
+	 * @param WP_REST_Request $woopay_request The WooPay request object.
+	 * @return mixed The checkout data.
+	 */
+	private static function get_checkout_data( $woopay_request ) {
+		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+
+		if ( ! $woopay_request ) {
+			$preloaded_checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' );
+			$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
+		} else {
+			$checkout_request = new WP_REST_Request( 'GET', '/wc/store/v1/checkout' );
+			$checkout_request->set_header( 'Cart-Token', $woopay_request->get_header('cart_token') );
+			$checkout_data = rest_do_request( $checkout_request )->get_data();
+		}
+
+		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+
+		return $checkout_data;
+	}
+
+	/**
+	 * Returns the initial session request data.
+	 *
+	 * @param int|null $order_id Pay-for-order order ID.
+	 * @param string|null $key Pay-for-order key.
+	 * @param string|null $billing_email Pay-for-order billing email.
+	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
 	 * @return array The initial session request data without email and user_session.
 	 */
-	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null ) {
+	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null ) {
 		$user             = wp_get_current_user();
 		$is_pay_for_order = null !== $order_id;
 		$order            = wc_get_order( $order_id );
@@ -381,14 +435,12 @@ class WooPay_Session {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
-		// This uses the same logic as the Checkout block in hydrate_from_api to get the cart and checkout data.
-		$cart_data = ! $is_pay_for_order
-			? rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body']
-			: rest_preload_api_request( [], "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) )[ "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) ]['body'];
-		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-		$preloaded_checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' );
-		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-		$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
+		$cart_data = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
+		$checkout_data = self::get_checkout_data( $woopay_request );
+
+		if ( $woopay_request ) {
+			$order_id = $checkout_data['order_id'] ?? null;
+		}
 
 		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 
@@ -560,20 +612,21 @@ class WooPay_Session {
 
 	/**
 	 * Return WooPay minimum session data.
-	 * 
+	 *
 	 * @return array Array of minimum session data used by WooPay or false on failures.
 	 */
 	public static function get_woopay_minimum_session_data() {
 		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
 			return [];
 		}
-		
-		$blog_id = Jetpack_Options::get_option('id');
+
+		$blog_id = Jetpack_Options::get_option( 'id' );
 		if ( empty( $blog_id ) ) {
 			return [];
 		}
 
 		$data = [
+			'wcpay_version'     => WCPAY_VERSION_NUMBER,
 			'blog_id'           => $blog_id,
 			'blog_rest_url'     => get_rest_url(),
 			'blog_checkout_url' => wc_get_checkout_url(),

@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\WooPay\WooPay_Session;
 use Automattic\Jetpack\Connection\Rest_Authentication;
+use WCPay\Logger;
 
 /**
  * REST controller to check get WooPay extension data for user.
@@ -49,20 +50,23 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
 	 *
-	 * @return WP_Error|WP_REST_Response
+	 * @return WP_Error|WP_REST_Response The initial session request data.
 	 */
 	public function get_session_data( WP_REST_Request $request ): WP_REST_Response {
-		// phpcs:ignore
-		/**
-		 * @psalm-suppress UndefinedClass
-		 */
-		$response = WooPay_Session::get_init_session_request();
-		// This was needed as the preloaded requests were not honoring the cart token and so were empty carts.
-		// It would be ideal to get this to successfully preload the cart data so WooPay doesn't need to make
-		// a separate request to get the cart data.
-		unset( $response['preloaded_requests'] );
+		try {
+			// phpcs:ignore
+			/**
+			 * @psalm-suppress UndefinedClass
+			 */
+			$response = WooPay_Session::get_init_session_request( null, null, null, $request );
 
-		return rest_ensure_response( $response );
+			return rest_ensure_response( $response );
+		} catch ( Exception $e ) {
+			$error = new WP_Error( 'wcpay_server_error', $e->getMessage(), [ 'status' => 400 ] );
+			Logger::log( 'Error validating cart token from WooPay request: ' . $e->getMessage() );
+
+			return rest_convert_error_to_response( $error );
+		}
 	}
 
 	/**
@@ -79,7 +83,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 *
 	 * @return bool True if the request signature is valid.
 	 */
-	private function has_valid_request_signature() {
+	private function has_valid_request_signature(): bool {
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
 	}
 

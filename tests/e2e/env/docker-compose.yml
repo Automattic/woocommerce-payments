@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   wordpress:
     build: ./wordpress-xdebug
@@ -19,6 +17,14 @@ services:
       - ${WCP_ROOT}:/var/www/html/wp-content/plugins/woocommerce-payments
       - ${E2E_ROOT}/deps/${DEV_TOOLS_DIR}:/var/www/html/wp-content/plugins/${DEV_TOOLS_DIR}
       - ${E2E_ROOT}/deps/woocommerce-subscriptions:/var/www/html/wp-content/plugins/woocommerce-subscriptions
+    environment:
+      WORDPRESS_CONFIG_EXTRA: |
+        /* Dynamic WP hostname to allow Playwright container to access site via `host.docker.internal` hostname. */
+        /* `$$_` ensures `$_` is not escaped (https://github.com/docker-library/wordpress/pull/142#issuecomment-478561857) */
+        define('DOCKER_HOST', $$_SERVER['HTTP_X_ORIGINAL_HOST'] ?? $$_SERVER['HTTP_HOST'] ?? 'localhost');
+        define('DOCKER_REQUEST_URL', ( ! empty( $$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . DOCKER_HOST);
+        define('WP_SITEURL', DOCKER_REQUEST_URL);
+        define('WP_HOME', DOCKER_REQUEST_URL);
   db:
     container_name: wcp_e2e_mysql
     image: mariadb:10.5.8
