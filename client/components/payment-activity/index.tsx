@@ -65,9 +65,10 @@ const PaymentActivity: React.FC = () => {
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
-	const { paymentActivityData, isLoading } = usePaymentActivityData(
-		getDateRange()
-	);
+	const { paymentActivityData, isLoading } = usePaymentActivityData( {
+		...getDateRange(),
+		timezone: moment( new Date() ).format( 'Z' ),
+	} );
 
 	// When not loading and data is undefined, do not show widget.
 	// This should only happen in 2 occasions:
