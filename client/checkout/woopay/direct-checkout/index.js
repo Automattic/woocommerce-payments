@@ -55,7 +55,7 @@ const addMiniCartEventListener = async () => {
  * nor there are attribute changes to the "open" button, so we have to rely on a MutationObserver
  * attached to the `document.body`, which is where the mini cart drawer element is added.
  */
-const maybeObserveMiniCartOpening = () => {
+const maybeObserveMiniCart = () => {
 	// Check if the widget is available on the page.
 	if ( ! document.querySelector( '.wc-block-mini-cart' ) ) {
 		return;
@@ -68,7 +68,7 @@ const maybeObserveMiniCartOpening = () => {
 				mutation.type === 'childList' &&
 				mutation.addedNodes.length > 0
 			) {
-				mutation.addedNodes.forEach( async ( node ) => {
+				mutation.addedNodes.some( async ( node ) => {
 					// Check if the mini cart drawer parent selector was added to the DOM.
 					if (
 						node.nodeType === 1 &&
@@ -82,7 +82,9 @@ const maybeObserveMiniCartOpening = () => {
 								.BLOCKS_MINI_CART_PROCEED_BUTTON,
 							addMiniCartEventListener
 						);
+						return true;
 					}
+					return false;
 				} );
 			}
 		}
@@ -101,8 +103,8 @@ window.addEventListener( 'load', async () => {
 
 	WooPayDirectCheckout.init();
 
-	// Listen for mini cart opening, so we can add the event listener to the mini cart's checkout button.
-	maybeObserveMiniCartOpening();
+	// If the mini cart is available, check when it's opened so we can add the event listener to the mini cart's checkout button.
+	maybeObserveMiniCart();
 
 	isThirdPartyCookieEnabled =
 		isThirdPartyCookieEnabled ||
