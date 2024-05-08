@@ -70,11 +70,8 @@ const maybeObserveMiniCart = () => {
 	// Create a MutationObserver to check when the mini cart drawer is added to the DOM.
 	const observer = new MutationObserver( ( mutations ) => {
 		for ( const mutation of mutations ) {
-			if (
-				mutation.type === 'childList' &&
-				mutation.addedNodes.length > 0
-			) {
-				mutation.addedNodes.some( async ( node ) => {
+			if ( mutation?.addedNodes?.length > 0 ) {
+				for ( const node of mutation.addedNodes ) {
 					// Check if the mini cart drawer parent selector was added to the DOM.
 					if (
 						node.nodeType === 1 &&
@@ -88,18 +85,14 @@ const maybeObserveMiniCart = () => {
 								.BLOCKS_MINI_CART_PROCEED_BUTTON,
 							addMiniCartEventListener
 						);
-						return true;
+						return;
 					}
-					return false;
-				} );
+				}
 			}
 		}
 	} );
 
-	observer.observe( document.body, {
-		childList: true,
-		subtree: true,
-	} );
+	observer.observe( document.body, { childList: true } );
 };
 
 window.addEventListener( 'load', async () => {
