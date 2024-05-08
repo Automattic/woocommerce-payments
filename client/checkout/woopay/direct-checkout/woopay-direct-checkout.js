@@ -197,7 +197,7 @@ class WooPayDirectCheckout {
 	 *
 	 * @return {*[]} The checkout redirect elements.
 	 */
-	static getCheckoutRedirectElements() {
+	static getCheckoutButtonElements() {
 		const elements = [];
 		const addElementBySelector = ( selector ) => {
 			const element = document.querySelector( selector );

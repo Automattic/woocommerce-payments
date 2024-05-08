@@ -16,34 +16,42 @@ import {
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
 
-let isThirdPartyCookieEnabled = false;
-
 /**
- * Add an event listener to the mini cart's checkout button.
+ * Handle the WooPay direct checkout for the given checkout buttons.
+ *
+ * @param {HTMLElement[]} checkoutButtons An array of checkout button elements.
  */
-const addMiniCartEventListener = async () => {
-	const checkoutButton = WooPayDirectCheckout.getMiniCartProceedToCheckoutButton();
-
-	if ( ! checkoutButton ) {
+const handleWooPayDirectCheckout = async ( checkoutButtons ) => {
+	if ( ! checkoutButtons ) {
 		return;
 	}
 
-	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
+	const isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-			WooPayDirectCheckout.addRedirectToWooPayEventListener( [
-				checkoutButton,
-			] );
+			WooPayDirectCheckout.addRedirectToWooPayEventListener(
+				checkoutButtons,
+				true
+			);
 		}
 
 		return;
 	}
 
+	// Pass false to indicate we are not sure if the user is logged in or not.
 	WooPayDirectCheckout.addRedirectToWooPayEventListener(
-		[ checkoutButton ],
-		true
+		checkoutButtons,
+		false
 	);
+};
+
+/**
+ * Add an event listener to the mini cart checkout button.
+ */
+const addMiniCartEventListener = async () => {
+	const checkoutButton = WooPayDirectCheckout.getMiniCartProceedToCheckoutButton();
+	handleWooPayDirectCheckout( [ checkoutButton ] );
 };
 
 /**
@@ -104,25 +112,8 @@ window.addEventListener( 'load', async () => {
 	// If the mini cart is available, check when it's opened so we can add the event listener to the mini cart's checkout button.
 	maybeObserveMiniCart();
 
-	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
-	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
-	if ( isThirdPartyCookieEnabled ) {
-		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
-			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-			WooPayDirectCheckout.addRedirectToWooPayEventListener(
-				checkoutElements,
-				true
-			);
-		}
-
-		return;
-	}
-
-	// Pass false to indicate we are not sure if the user is logged in or not.
-	WooPayDirectCheckout.addRedirectToWooPayEventListener(
-		checkoutElements,
-		false
-	);
+	const checkoutButtons = WooPayDirectCheckout.getCheckoutButtonElements();
+	handleWooPayDirectCheckout( checkoutButtons );
 } );
 
 jQuery( ( $ ) => {
@@ -134,21 +125,7 @@ jQuery( ( $ ) => {
 		// When "updated_cart_totals" is triggered, the classic 'Proceed to Checkout' button is
 		// re-rendered. So, the click-event listener needs to be re-attached to the new button.
 		const checkoutButton = WooPayDirectCheckout.getClassicProceedToCheckoutButton();
-		if ( isThirdPartyCookieEnabled ) {
-			if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
-				WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-				WooPayDirectCheckout.addRedirectToWooPayEventListener( [
-					checkoutButton,
-				] );
-			}
-
-			return;
-		}
-
-		WooPayDirectCheckout.addRedirectToWooPayEventListener(
-			[ checkoutButton ],
-			true
-		);
+		handleWooPayDirectCheckout( [ checkoutButton ] );
 	} );
 } );
 
@@ -159,7 +136,7 @@ jQuery( ( $ ) => {
  */
 const shouldPrefetchEncryptedSessionData = async () => {
 	return (
-		isThirdPartyCookieEnabled &&
+		( await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled() ) &&
 		( await WooPayDirectCheckout.isUserLoggedIn() )
 	);
 };

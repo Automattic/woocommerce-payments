@@ -22,7 +22,7 @@ jest.mock(
 	() => ( {
 		init: jest.fn(),
 		isWooPayThirdPartyCookiesEnabled: jest.fn(),
-		getCheckoutRedirectElements: jest.fn(),
+		getCheckoutButtonElements: jest.fn(),
 		isUserLoggedIn: jest.fn(),
 		maybePrefetchEncryptedSessionData: jest.fn(),
 		getClassicProceedToCheckoutButton: jest.fn(),
@@ -57,7 +57,7 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
-		WooPayDirectCheckout.getCheckoutRedirectElements.mockReturnValue( [] );
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 
@@ -80,7 +80,7 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			false
 		);
-		WooPayDirectCheckout.getCheckoutRedirectElements.mockReturnValue( [] );
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 
@@ -110,7 +110,7 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
-		WooPayDirectCheckout.getCheckoutRedirectElements.mockReturnValue( [] );
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 
