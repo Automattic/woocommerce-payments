@@ -90,10 +90,9 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
 		).toHaveBeenCalled();
-		expect( WooPayDirectCheckout.redirectToWooPay ).toHaveBeenCalledWith(
-			expect.any( Array ),
-			true
-		);
+		expect(
+			WooPayDirectCheckout.addRedirectToWooPayEventListener
+		).toHaveBeenCalledWith( expect.any( Array ), true );
 	} );
 
 	it( 'calls `redirectToWooPay` method with "checkout_redirect" if third-party cookies are disabled', async () => {
@@ -117,10 +116,9 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
 		).not.toHaveBeenCalled();
-		expect( WooPayDirectCheckout.redirectToWooPay ).toHaveBeenCalledWith(
-			expect.any( Array ),
-			false
-		);
+		expect(
+			WooPayDirectCheckout.addRedirectToWooPayEventListener
+		).toHaveBeenCalledWith( expect.any( Array ), false );
 	} );
 } );
 
@@ -172,10 +170,9 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
 		).toHaveBeenCalled();
-		expect( WooPayDirectCheckout.redirectToWooPay ).toHaveBeenCalledWith(
-			expect.any( Array ),
-			true
-		);
+		expect(
+			WooPayDirectCheckout.addRedirectToWooPayEventListener
+		).toHaveBeenCalledWith( expect.any( Array ), true );
 	} );
 
 	it( 'calls `redirectToWooPay` method with "checkout_redirect" if third-party cookies are disabled', async () => {
@@ -203,10 +200,9 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
 		).not.toHaveBeenCalled();
-		expect( WooPayDirectCheckout.redirectToWooPay ).toHaveBeenCalledWith(
-			expect.any( Array ),
-			false
-		);
+		expect(
+			WooPayDirectCheckout.addRedirectToWooPayEventListener
+		).toHaveBeenCalledWith( expect.any( Array ), false );
 	} );
 } );
 
