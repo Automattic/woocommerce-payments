@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Avoid updating billing details for legacy card objects.
