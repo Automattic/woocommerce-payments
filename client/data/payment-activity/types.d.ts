@@ -39,5 +39,5 @@ export interface PaymentActivityQuery {
 	/** The date range end datetime used to calculate transaction data, e.g. 2024-04-29T16:19:29 */
 	date_end: string;
 	/** The timezone used to calculate the transaction data date range, e.g. 'UTC' */
-	timezone?: string;
+	timezone: string;
 }
