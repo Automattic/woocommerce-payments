@@ -99,12 +99,12 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		).toBeInTheDocument();
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		).not.toBeChecked();
 	} );
@@ -115,7 +115,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -126,7 +126,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -139,7 +139,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -148,7 +148,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 
 		const label = screen.getByLabelText(
-			'Save my information for a faster checkout'
+			'Securely save my information for 1-click checkout'
 		);
 
 		expect( label ).not.toBeChecked();
@@ -169,7 +169,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		} );
 
 		const label = screen.getByLabelText(
-			'Save my information for a faster and secure checkout'
+			'Securely save my information for 1-click checkout'
 		);
 
 		expect( label ).not.toBeChecked();
@@ -194,7 +194,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		// click on the checkbox
 		userEvent.click(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		);
 
@@ -207,7 +207,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		} );
 
 		const label = screen.getByLabelText(
-			'Save my information for a faster and secure checkout'
+			'Securely save my information for 1-click checkout'
 		);
 
 		expect( label ).not.toBeChecked();
@@ -250,7 +250,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		} );
 
 		const saveMyInfoCheckbox = screen.getByLabelText(
-			'Save my information for a faster and secure checkout'
+			'Securely save my information for 1-click checkout'
 		);
 		// initial state
 		expect( saveMyInfoCheckbox ).not.toBeChecked();
@@ -303,7 +303,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		} );
 
 		const label = screen.getByLabelText(
-			'Save my information for a faster and secure checkout'
+			'Securely save my information for 1-click checkout'
 		);
 
 		expect( label ).not.toBeChecked();

@@ -91,6 +91,13 @@ abstract class UPE_Payment_Method {
 	protected $dark_icon_url;
 
 	/**
+	 * Is the payment method a BNPL (Buy Now Pay Later) method?
+	 *
+	 * @var boolean
+	 */
+	protected $is_bnpl = false;
+
+	/**
 	 * Supported customer locations for which charges for a payment method can be processed
 	 * Empty if all customer locations are supported
 	 *
@@ -199,6 +206,16 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
+	 * Returns boolean dependent on whether payment method
+	 * will support BNPL (Buy Now Pay Later) payments
+	 *
+	 * @return bool
+	 */
+	public function is_bnpl() {
+		return $this->is_bnpl;
+	}
+
+	/**
 	 * Returns boolean dependent on whether payment method will accept charges
 	 * with chosen currency
 	 *
@@ -256,6 +273,24 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_dark_icon( string $account_country = null ) {
 		return isset( $this->dark_icon_url ) ? $this->dark_icon_url : $this->get_icon( $account_country );
+	}
+
+	/**
+	 * Gets the theme appropriate icon for the payment method for a given location and context.
+	 *
+	 * @param string  $location The location to get the icon for.
+	 * @param boolean $is_blocks Whether the icon is for blocks.
+	 * @param string  $account_country Optional account country.
+	 * @return string
+	 */
+	public function get_payment_method_icon_for_location( string $location = 'checkout', bool $is_blocks = true, string $account_country = null ) {
+		$appearance_theme = WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $is_blocks ? 'blocks' : 'classic' );
+
+		if ( 'night' === $appearance_theme ) {
+			return $this->get_dark_icon( $account_country );
+		}
+
+		return $this->get_icon( $account_country );
 	}
 
 	/**

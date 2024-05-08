@@ -12,6 +12,7 @@ use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Response;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
@@ -104,7 +105,8 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			$this->mock_order_service,
 			$mock_dpps,
 			$this->createMock( WC_Payments_Localization_Service::class ),
-			$this->createMock( WC_Payments_Fraud_Service::class )
+			$this->createMock( WC_Payments_Fraud_Service::class ),
+			$this->createMock( Duplicates_Detection_Service::class )
 		);
 	}
 

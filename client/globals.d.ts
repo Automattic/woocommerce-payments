@@ -79,6 +79,7 @@ declare global {
 		currentUserEmail: string;
 		zeroDecimalCurrencies: string[];
 		restUrl: string;
+		siteLogoUrl: string;
 		shouldUseExplicitPrice: boolean;
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
@@ -90,6 +91,7 @@ declare global {
 			isEligibilityModalDismissed: boolean;
 		};
 		enabledPaymentMethods: string[];
+		dismissedDuplicateNotices: string[];
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
@@ -127,6 +129,7 @@ declare global {
 		trackingInfo?: {
 			hosting_provider: string;
 		};
+		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
 	};
 

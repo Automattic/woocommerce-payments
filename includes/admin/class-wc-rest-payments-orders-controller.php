@@ -217,6 +217,30 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
+
+			// Add payment method for future subscription payments.
+			$generated_card = $intent->get_charge()->get_payment_method_details()[ Payment_Method::CARD_PRESENT ]['generated_card'] ?? null;
+			// If we don't get a generated card, e.g. because a digital wallet was used, we can still return that the initial payment was successful.
+			// The subscription will not be activated and customers will need to provide a new payment method for renewals.
+			if ( $generated_card ) {
+				$has_subscriptions = function_exists( 'wcs_order_contains_subscription' ) &&
+										function_exists( 'wcs_get_subscriptions_for_order' ) &&
+										function_exists( 'wcs_is_manual_renewal_required' ) &&
+										wcs_order_contains_subscription( $order_id );
+				if ( $has_subscriptions ) {
+					$token = WC_Payments::get_token_service()->add_payment_method_to_user( $generated_card, $order->get_user() );
+					$this->gateway->add_token_to_order( $order, $token );
+					foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+						$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+						// Where the setting doesn't force manual renewals, we should turn them off, because we have an auto-renewal token now.
+						if ( ! wcs_is_manual_renewal_required() ) {
+							$subscription->set_requires_manual_renewal( false );
+						}
+						$subscription->save();
+					}
+				}
+			}
+
 			// Actualize order status.
 			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'] );
 
@@ -307,15 +331,14 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Returns customer id from order. Create or update customer if needed.
-	 * Use-cases: It was used by older versions of our Mobile apps in their workflows.
-	 *
-	 * @deprecated 3.9.0
+	 * Use-cases:
+	 *  - It was used by older versions of our mobile apps to add the customer details to Payment Intents.
+	 *  - It is used by the apps to set customer details on Payment Intents for an order containing subscriptions. Required for capturing renewal payments off session.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function create_customer( $request ) {
-		wc_deprecated_function( __FUNCTION__, '3.9.0' );
 		try {
 			$order_id = $request['order_id'];
 
