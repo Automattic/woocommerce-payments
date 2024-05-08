@@ -68,6 +68,7 @@ const mockMountFunction = jest.fn();
 const mockCreateFunction = jest.fn( () => ( {
 	mount: mockMountFunction,
 	update: mockUpdateFunction,
+	on: () => null,
 } ) );
 
 const mockSubmit = jest.fn( () => ( {
