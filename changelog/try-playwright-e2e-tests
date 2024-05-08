@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Add Playwright e2e test suite ready for incremental migration and visual regression testing

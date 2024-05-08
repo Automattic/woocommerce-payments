@@ -48,27 +48,18 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	private $order_service;
 
 	/**
-	 * WC_Payments_Token instance for working with customer tokens
-	 *
-	 * @var WC_Payments_Token_Service
-	 */
-	private $token_service;
-
-	/**
 	 * WC_Payments_REST_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WooCommerce Payments API client.
 	 * @param WC_Payment_Gateway_WCPay     $gateway          WooCommerce Payments payment gateway.
 	 * @param WC_Payments_Customer_Service $customer_service Customer class instance.
 	 * @param WC_Payments_Order_Service    $order_service    Order Service class instance.
-	 * @param WC_Payments_Token_Service    $token_service    Token Service class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service, WC_Payments_Token_Service $token_service ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service ) {
 		parent::__construct( $api_client );
 		$this->gateway          = $gateway;
 		$this->customer_service = $customer_service;
 		$this->order_service    = $order_service;
-		$this->token_service    = $token_service;
 	}
 
 	/**
@@ -237,7 +228,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 										function_exists( 'wcs_is_manual_renewal_required' ) &&
 										wcs_order_contains_subscription( $order_id );
 				if ( $has_subscriptions ) {
-					$token = $this->token_service->add_payment_method_to_user( $generated_card, $order->get_user() );
+					$token = WC_Payments::get_token_service()->add_payment_method_to_user( $generated_card, $order->get_user() );
 					$this->gateway->add_token_to_order( $order, $token );
 					foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
 						$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
