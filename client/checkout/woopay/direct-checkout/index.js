@@ -16,6 +16,8 @@ import {
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
 
+let isThirdPartyCookieEnabled = null;
+
 /**
  * Handle the WooPay direct checkout for the given checkout buttons.
  *
@@ -26,7 +28,11 @@ const handleWooPayDirectCheckout = async ( checkoutButtons ) => {
 		return;
 	}
 
-	const isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
+	isThirdPartyCookieEnabled =
+		isThirdPartyCookieEnabled === null
+			? await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled()
+			: isThirdPartyCookieEnabled;
+
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
@@ -129,7 +135,7 @@ jQuery( ( $ ) => {
  */
 const shouldPrefetchEncryptedSessionData = async () => {
 	return (
-		( await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled() ) &&
+		isThirdPartyCookieEnabled &&
 		( await WooPayDirectCheckout.isUserLoggedIn() )
 	);
 };
