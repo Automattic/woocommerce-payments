@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Fix for the `View report` link on Disputes tile of Payment activity widget. Changes behind a feature flag.
+
+

@@ -31,6 +31,13 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 	private $payment_methods_compatibility;
 
 	/**
+	 * WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -63,6 +70,8 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 
 		$this->payment_methods_compatibility = new \WCPay\MultiCurrency\PaymentMethodsCompatibility( $this->multi_currency_mock, $this->gateway_mock );
 		$this->payment_methods_compatibility->init_hooks();
+
+		$this->localization_service = new WC_Payments_Localization_Service();
 	}
 
 	public function test_it_should_not_update_available_currencies_when_enabled_payment_methods_do_not_need_it() {
@@ -87,13 +96,13 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_account_domestic_currency' )->willReturn( 'USD' );
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(
 			[
-				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ),
 			]
 		);
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->willReturn(
 			[
-				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
-				'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ),
+				'USD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
 			]
 		);
 		$this->multi_currency_mock->expects( $this->never() )->method( 'set_enabled_currencies' );
@@ -115,14 +124,14 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_account_domestic_currency' )->willReturn( 'USD' );
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(
 			[
-				'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
+				'USD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
 			]
 		);
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->willReturn(
 			[
-				'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
-				'AUD' => new \WCPay\MultiCurrency\Currency( 'AUD' ),
-				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
+				'USD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+				'AUD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'AUD' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ),
 			]
 		);
 		$this->multi_currency_mock
@@ -151,15 +160,15 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_account_domestic_currency' )->willReturn( 'USD' );
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(
 			[
-				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
-				'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ),
+				'USD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
 			]
 		);
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->willReturn(
 			[
-				'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
-				'AUD' => new \WCPay\MultiCurrency\Currency( 'AUD' ),
-				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
+				'USD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+				'AUD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'AUD' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ),
 			]
 		);
 		$this->multi_currency_mock->expects( $this->never() )->method( 'set_enabled_currencies' );
@@ -177,13 +186,13 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_account_domestic_currency' )->willReturn( 'USD' );
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(
 			[
-				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ),
 			]
 		);
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->willReturn(
 			[
-				'USD' => new \WCPay\MultiCurrency\Currency( 'USD' ),
-				'EUR' => new \WCPay\MultiCurrency\Currency( 'EUR' ),
+				'USD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ),
 			]
 		);
 		$this->multi_currency_mock

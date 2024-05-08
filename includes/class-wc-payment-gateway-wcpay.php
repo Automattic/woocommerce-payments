@@ -3462,11 +3462,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// For $0 orders, fetch the Setup Intent instead.
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent            = $setup_intent_request->send();
-				$status            = $intent->get_status();
-				$charge_id         = '';
-				$payment_method_id = $intent->get_payment_method_id();
+				$intent    = $setup_intent_request->send();
+				$status    = $intent->get_status();
+				$charge_id = '';
 			}
+
+			$payment_method_id = $intent->get_payment_method_id();
 
 			if ( Intent_Status::SUCCEEDED === $status ) {
 				$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
