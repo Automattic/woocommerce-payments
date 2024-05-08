@@ -16,7 +16,7 @@ import {
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
 
-let isThirdPartyCookieEnabled = null;
+let isThirdPartyCookieEnabled = false;
 
 /**
  * Handle the WooPay direct checkout for the given checkout buttons.
@@ -27,11 +27,6 @@ const handleWooPayDirectCheckout = async ( checkoutButtons ) => {
 	if ( ! checkoutButtons ) {
 		return;
 	}
-
-	isThirdPartyCookieEnabled =
-		isThirdPartyCookieEnabled === null
-			? await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled()
-			: isThirdPartyCookieEnabled;
 
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
@@ -107,6 +102,8 @@ window.addEventListener( 'load', async () => {
 	}
 
 	WooPayDirectCheckout.init();
+
+	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 
 	// If the mini cart is available, check when it's opened so we can add the event listener to the mini cart's checkout button.
 	maybeObserveMiniCart();
