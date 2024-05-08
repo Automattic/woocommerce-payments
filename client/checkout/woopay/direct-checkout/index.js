@@ -28,9 +28,7 @@ const addMiniCartEventListener = async () => {
 		return;
 	}
 
-	isThirdPartyCookieEnabled =
-		isThirdPartyCookieEnabled ||
-		( await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled() );
+	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
@@ -106,9 +104,7 @@ window.addEventListener( 'load', async () => {
 	// If the mini cart is available, check when it's opened so we can add the event listener to the mini cart's checkout button.
 	maybeObserveMiniCart();
 
-	isThirdPartyCookieEnabled =
-		isThirdPartyCookieEnabled ||
-		( await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled() );
+	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 	const checkoutElements = WooPayDirectCheckout.getCheckoutRedirectElements();
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {

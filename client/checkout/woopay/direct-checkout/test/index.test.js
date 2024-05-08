@@ -20,14 +20,13 @@ jest.mock( '@wordpress/hooks', () => ( {
 jest.mock(
 	'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout',
 	() => ( {
-		isWooPayDirectCheckoutEnabled: jest.fn(),
 		init: jest.fn(),
 		isWooPayThirdPartyCookiesEnabled: jest.fn(),
 		getCheckoutRedirectElements: jest.fn(),
 		isUserLoggedIn: jest.fn(),
 		maybePrefetchEncryptedSessionData: jest.fn(),
 		getClassicProceedToCheckoutButton: jest.fn(),
-		redirectToWooPay: jest.fn(),
+		addRedirectToWooPayEventListener: jest.fn(),
 		setEncryptedSessionDataAsNotPrefetched: jest.fn(),
 	} )
 );
@@ -53,25 +52,7 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'does not initialize WooPay direct checkout if not enabled', async () => {
-		WooPayDirectCheckout.isWooPayDirectCheckoutEnabled.mockReturnValue(
-			false
-		);
-
-		fireEvent.load( window );
-
-		await new Promise( ( resolve ) => setImmediate( resolve ) );
-
-		expect(
-			WooPayDirectCheckout.isWooPayDirectCheckoutEnabled
-		).toHaveBeenCalled();
-		expect( WooPayDirectCheckout.init ).not.toHaveBeenCalled();
-	} );
-
-	it( 'calls `redirectToWooPay` method if third-party cookies are enabled and user is logged-in', async () => {
-		WooPayDirectCheckout.isWooPayDirectCheckoutEnabled.mockReturnValue(
-			true
-		);
+	it( 'calls `addRedirectToWooPayEventListener` method if third-party cookies are enabled and user is logged-in', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			true
 		);
@@ -95,10 +76,7 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		).toHaveBeenCalledWith( expect.any( Array ), true );
 	} );
 
-	it( 'calls `redirectToWooPay` method with "checkout_redirect" if third-party cookies are disabled', async () => {
-		WooPayDirectCheckout.isWooPayDirectCheckoutEnabled.mockReturnValue(
-			true
-		);
+	it( 'calls `addRedirectToWooPayEventListener` method with "checkout_redirect" if third-party cookies are disabled', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			false
 		);
@@ -127,29 +105,7 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 		jest.clearAllMocks();
 	} );
 
-	it( 'should not proceed if direct checkout is not enabled', async () => {
-		WooPayDirectCheckout.isWooPayDirectCheckoutEnabled.mockReturnValue(
-			false
-		);
-
-		fireEvent.load( window );
-
-		await new Promise( ( resolve ) => setImmediate( resolve ) );
-
-		$( document.body ).trigger( 'updated_cart_totals' );
-
-		expect(
-			WooPayDirectCheckout.isWooPayDirectCheckoutEnabled
-		).toHaveBeenCalled();
-		expect(
-			WooPayDirectCheckout.getClassicProceedToCheckoutButton
-		).not.toHaveBeenCalled();
-	} );
-
-	it( 'calls `redirectToWooPay` method if third-party cookies are enabled and user is logged-in', async () => {
-		WooPayDirectCheckout.isWooPayDirectCheckoutEnabled.mockReturnValue(
-			true
-		);
+	it( 'calls `addRedirectToWooPayEventListener` method if third-party cookies are enabled and user is logged-in', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			true
 		);
@@ -175,10 +131,7 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 		).toHaveBeenCalledWith( expect.any( Array ), true );
 	} );
 
-	it( 'calls `redirectToWooPay` method with "checkout_redirect" if third-party cookies are disabled', async () => {
-		WooPayDirectCheckout.isWooPayDirectCheckoutEnabled.mockReturnValue(
-			true
-		);
+	it( 'calls `addRedirectToWooPayEventListener` method with "checkout_redirect" if third-party cookies are disabled', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			false
 		);
