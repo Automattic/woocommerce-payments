@@ -29,7 +29,7 @@ export default ( {
 	// Customer's country or base country of the store.
 	const currentCountry =
 		cartData.billingAddress.country ||
-		window?.wcBlocksCheckoutData?.storeCountry ||
+		window.wcBlocksCheckoutData?.storeCountry ||
 		'US';
 
 	return (
