@@ -328,7 +328,7 @@ class MultiCurrency {
 		// Ensures we are not initializing our REST during `rest_preload_api_request`.
 		// When constructors signature changes, in manual update scenarios we were run into fatals.
 		// Those fatals are not critical, but it causes hickups in release process as catches attention.
-		if ( get_current_screen() ) {
+		if ( function_exists( 'get_current_screen' ) && get_current_screen() ) {
 			return;
 		}
 
