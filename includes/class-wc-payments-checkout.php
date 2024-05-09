@@ -188,6 +188,7 @@ class WC_Payments_Checkout {
 			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isPreview'                      => is_preview(),
 			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
+			'isExpressCheckoutElementEnabled'=> WC_Payments_Features::is_stripe_ece_enabled(),
 			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_cart_or_checkout(),
 			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isWoopayFirstPartyAuthEnabled'  => $this->woopay_util->is_woopay_first_party_auth_enabled(),
