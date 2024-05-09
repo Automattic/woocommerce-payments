@@ -966,7 +966,7 @@ class WC_Payments {
 	public static function init_rest_api() {
 		// Ensures we are not initializing our REST during `rest_preload_api_request`.
 		// When constructors signature changes, in manual update scenarios we were run into fatals.
-		// Those fatals are not critical, but it causes hickups in release process as catches attention.
+		// Those fatals are not critical, but it causes hickups in release process as catches unnecessary attention.
 		if ( function_exists( 'get_current_screen' ) && get_current_screen() ) {
 			return;
 		}
