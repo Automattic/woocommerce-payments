@@ -62,7 +62,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 			'wc_payments_http',
 			[ $this, 'replace_http_client' ]
 		);
-		$this->customer_service     = new WC_Payments_Customer_Service( WC_Payments::create_api_client(), WC_Payments::get_account_service(), WC_Payments::get_database_cache(), WC_Payments::get_session_service() );
+		$this->customer_service     = new WC_Payments_Customer_Service( WC_Payments::create_api_client(), WC_Payments::get_account_service(), WC_Payments::get_database_cache(), WC_Payments::get_session_service(), WC_Payments::get_order_service() );
 		$this->customer_service_api = new WC_Payments_Customer_Service_API( $this->customer_service );
 	}
 
@@ -339,15 +339,16 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 						'test_mode'       => false,
 						'billing_details' => [
 							'address' => [
-								'city'        => $order->get_billing_city(),
 								'country'     => $order->get_billing_country(),
 								'line1'       => $order->get_billing_address_1(),
-								'postal_code' => $order->get_billing_postcode(),
+								'line2'       => $order->get_billing_address_2(),
+								'city'        => $order->get_billing_city(),
 								'state'       => $order->get_billing_state(),
+								'postal_code' => $order->get_billing_postcode(),
 							],
+							'phone'   => $order->get_billing_phone(),
 							'email'   => $order->get_billing_email(),
 							'name'    => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
-							'phone'   => $order->get_billing_phone(),
 						],
 					]
 				),
