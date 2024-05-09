@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Guarantee REST intialization on REST request context (avoiding rest_preload_api_request context).
