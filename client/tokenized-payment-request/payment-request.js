@@ -229,6 +229,9 @@ export default class WooPaymentsPaymentRequest {
 
 		paymentRequest.on( 'cancel', () => {
 			_self.isPaymentAborted = true;
+			// clearing the cart to avoid issues with products with low or limited availability
+			// being held hostage by customers cancelling the PRB.
+			_self.paymentRequestCartApi.emptyCart();
 		} );
 
 		paymentRequest.on( 'shippingaddresschange', async ( event ) => {

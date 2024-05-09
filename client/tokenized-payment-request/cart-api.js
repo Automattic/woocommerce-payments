@@ -166,8 +166,8 @@ export default class PaymentRequestCartApi {
 
 			const removeItemsPromises = cartData.items.map( ( item ) => {
 				return apiFetch( {
-					method: 'GET',
-					path: '/wc/store/v1/cart',
+					method: 'POST',
+					path: '/wc/store/v1/cart/remove-item',
 					credentials: 'omit',
 					headers: {
 						...this.cartRequestHeaders,
@@ -180,9 +180,7 @@ export default class PaymentRequestCartApi {
 
 			await Promise.all( removeItemsPromises );
 		} catch ( e ) {
-			// let's ignore the error, it's likely not going to be relevant. We can just clean the cached headers.
+			// let's ignore the error, it's likely not going to be relevant.
 		}
-
-		this.cartRequestHeaders = {};
 	}
 }
