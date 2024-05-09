@@ -81,7 +81,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 
 		$currency        = $order->get_currency();
 		$amount          = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-		$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
+		$billing_details = WC_Payments::get_order_service()->get_billing_data_from_order( $order ); // TODO: Inject order_service after #7464 is fixed.
 		$date_created    = $order->get_date_created();
 		$intent_id       = $order->get_meta( '_intent_id' );
 		$intent_status   = $order->get_meta( '_intent_status' );
@@ -102,7 +102,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 			'currency'               => $currency,
 			'disputed'               => false,
 			'outcome'                => false,
-			'order'                  => WC_Payments::get_payments_api_client()->build_order_info( $order ),
+			'order'                  => $this->api_client->build_order_info( $order ),
 			'paid'                   => false,
 			'paydown'                => null,
 			'payment_intent'         => ! empty( $intent_id ) ? $intent_id : null,
@@ -119,7 +119,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 			'status'                 => ! empty( $intent_status ) ? $intent_status : $order->get_status(),
 		];
 
-		$charge = WC_Payments::get_payments_api_client()->add_formatted_address_to_charge_object( $charge );
+		$charge = $this->api_client->add_formatted_address_to_charge_object( $charge );
 
 		return rest_ensure_response( $charge );
 	}
