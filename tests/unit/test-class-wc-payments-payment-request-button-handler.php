@@ -667,4 +667,40 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$this->pr->get_button_settings()
 		);
 	}
+
+	public function test_filter_gateway_title() {
+		$order = $this->createMock( WC_Order::class );
+		$order->method( 'get_payment_method_title' )->willReturn( 'Apple Pay' );
+
+		global $theorder;
+		$theorder = $order;
+
+		$this->set_is_admin( true );
+		$this->assertEquals( 'Apple Pay', $this->pr->filter_gateway_title( 'Original Title', 'woocommerce_payments' ) );
+
+		$this->set_is_admin( false );
+		$this->assertEquals( 'Original Title', $this->pr->filter_gateway_title( 'Original Title', 'woocommerce_payments' ) );
+
+		$this->set_is_admin( true );
+		$this->assertEquals( 'Original Title', $this->pr->filter_gateway_title( 'Original Title', 'another_gateway' ) );
+	}
+
+	/**
+	 * @param bool $is_admin
+	 */
+	private function set_is_admin( bool $is_admin ) {
+		global $current_screen;
+
+		if ( ! $is_admin ) {
+			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+			return;
+		}
+
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+		$current_screen = $this->getMockBuilder( \stdClass::class )
+			->setMethods( [ 'in_admin' ] )
+			->getMock();
+
+		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
+	}
 }
