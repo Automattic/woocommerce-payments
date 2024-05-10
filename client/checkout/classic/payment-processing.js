@@ -34,6 +34,7 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 	gatewayUPEComponents[ paymentMethodType ] = {
 		elements: null,
 		upeElement: null,
+		isPaymentInformationComplete: false,
 	};
 }
 

@@ -65,11 +65,25 @@ const mockUpdateFunction = jest.fn();
 
 const mockMountFunction = jest.fn();
 
+let eventHandlersFromElementsCreate = {};
 const mockCreateFunction = jest.fn( () => ( {
 	mount: mockMountFunction,
 	update: mockUpdateFunction,
-	on: () => null,
+	on: ( event, handler ) => {
+		if ( ! eventHandlersFromElementsCreate[ event ] ) {
+			eventHandlersFromElementsCreate[ event ] = [];
+		}
+		eventHandlersFromElementsCreate[ event ].push( handler );
+	},
 } ) );
+const callAllCreateHandlersWith = ( event, ...args ) => {
+	eventHandlersFromElementsCreate[ event ]?.forEach( ( handler ) => {
+		handler.apply( null, args );
+	} );
+};
+const markAllPaymentElementsAsComplete = () => {
+	callAllCreateHandlersWith( 'change', { complete: true } );
+};
 
 const mockSubmit = jest.fn( () => ( {
 	then: jest.fn(),
@@ -96,6 +110,7 @@ describe( 'Stripe Payment Element mounting', () => {
 
 	beforeEach( () => {
 		mockDomElement = document.createElement( 'div' );
+		eventHandlersFromElementsCreate = {};
 		getUPEConfig.mockImplementation( ( argument ) => {
 			if (
 				argument === 'wcBlocksUPEAppearance' ||
@@ -381,6 +396,7 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
+		markAllPaymentElementsAsComplete();
 
 		const mockJqueryForm = {
 			submit: jest.fn(),
@@ -427,6 +443,7 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
+		markAllPaymentElementsAsComplete();
 
 		const checkoutForm = {
 			submit: jest.fn(),
@@ -468,6 +485,7 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
+		markAllPaymentElementsAsComplete();
 
 		const checkoutForm = {
 			submit: jest.fn(),
@@ -505,6 +523,7 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
+		markAllPaymentElementsAsComplete();
 
 		const checkoutForm = {
 			submit: jest.fn(),
@@ -539,6 +558,7 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
+		markAllPaymentElementsAsComplete();
 
 		const checkoutForm = {
 			submit: jest.fn(),
@@ -571,6 +591,7 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
+		markAllPaymentElementsAsComplete();
 
 		const addPaymentMethodForm = {
 			submit: jest.fn(),
