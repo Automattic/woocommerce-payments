@@ -1,8 +1,8 @@
 <?php
 /**
- * Class WC_Payments_Payment_Request_Button_Handler
+ * Class WC_Payments_Express_Checkout_Button_Handler
  * Adds support for Apple Pay, Google Pay and Payment Request API buttons.
- * Utilizes the Stripe Payment Request Button to support checkout from the product detail and cart pages.
+ * Utilizes the Stripe Express Checkout Element to support checkout from the product detail and cart pages.
  *
  * Adapted from WooCommerce Stripe Gateway extension.
  *
@@ -22,7 +22,7 @@ use WCPay\Payment_Information;
 /**
  * WC_Payments_Payment_Request_Button_Handler class.
  */
-class WC_Payments_Payment_Request_Button_Handler {
+class WC_Payments_Express_Checkout_Button_Handler {
 	const BUTTON_LOCATIONS = 'payment_request_button_locations';
 
 	/**
@@ -81,7 +81,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
-		add_action( 'template_redirect', [ $this, 'handle_payment_request_redirect' ] );
+		add_action( 'template_redirect', [ $this, 'handle_express_checkout_redirect' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
@@ -156,7 +156,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// Don't set session cookies on product pages to allow for caching when payment request
 		// buttons are disabled. But keep cookies if there is already an active WC session in place.
 		if (
-			! ( $this->express_checkout_helper->is_product() && $this->should_show_payment_request_button() )
+			! ( $this->express_checkout_helper->is_product() && $this->should_show_express_checkout_button() )
 			|| ( isset( WC()->session ) && WC()->session->has_session() )
 		) {
 			return;
@@ -168,7 +168,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Handles payment request redirect when the redirect dialog "Continue" button is clicked.
 	 */
-	public function handle_payment_request_redirect() {
+	public function handle_express_checkout_redirect() {
 		if (
 			! empty( $_GET['wcpay_payment_request_redirect_url'] )
 			&& ! empty( $_GET['_wpnonce'] )
@@ -251,13 +251,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		if ( ! is_numeric( $base_price ) || ! is_numeric( $sign_up_fee ) ) {
-			$error_message = sprintf(
-				// Translators: %d is the numeric ID of the product without a price.
-				__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ),
-				(int) $product->get_id()
-			);
 			throw new Invalid_Price_Exception(
-				esc_html( $error_message )
+				sprintf(
+					// Translators: %d is the numeric ID of the product without a price.
+					__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ),
+					$product->get_id()
+				)
 			);
 		}
 
@@ -433,14 +432,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param string $id    Gateway ID.
 	 */
 	public function filter_gateway_title( $title, $id ) {
-		if ( 'woocommerce_payments' !== $id || ! is_admin() ) {
-			return $title;
-		}
-
 		$order        = $this->get_current_order();
 		$method_title = is_object( $order ) ? $order->get_payment_method_title() : '';
 
-		if ( ! empty( $method_title ) ) {
+		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) ) {
 			if (
 				strpos( $method_title, 'Apple Pay' ) === 0
 				|| strpos( $method_title, 'Google Pay' ) === 0
@@ -533,7 +528,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * @return bool
 	 */
-	public function should_show_payment_request_button() {
+	public function should_show_express_checkout_button() {
 		// If account is not connected, then bail.
 		if ( ! $this->account->is_stripe_connected( false ) ) {
 			return false;
@@ -711,7 +706,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function scripts() {
 		// Don't load scripts if page is not supported.
-		if ( ! $this->should_show_payment_request_button() ) {
+		if ( ! $this->should_show_express_checkout_button() ) {
 			return;
 		}
 
@@ -756,9 +751,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC_Payments_Utils::enqueue_style(
 			'WCPAY_PAYMENT_REQUEST',
-			plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
+			plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/express-checkout.css' )
+			WC_Payments::get_file_version( 'dist/payment-request.css' )
 		);
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );
@@ -778,12 +773,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Display the payment request button.
 	 */
-	public function display_payment_request_button_html() {
-		if ( ! $this->should_show_payment_request_button() ) {
+	public function display_express_checkout_button_html() {
+		if ( ! $this->should_show_express_checkout_button() ) {
 			return;
 		}
 		?>
-		<div id="wcpay-payment-request-button">
+		<div id="wcpay-express-checkout-element">
 			<!-- A Stripe Element will be inserted here. -->
 		</div>
 		<?php
@@ -866,15 +861,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$shipping_address          = filter_input_array(
 			INPUT_POST,
 			[
-				'country'   => FILTER_SANITIZE_SPECIAL_CHARS,
-				'state'     => FILTER_SANITIZE_SPECIAL_CHARS,
-				'postcode'  => FILTER_SANITIZE_SPECIAL_CHARS,
-				'city'      => FILTER_SANITIZE_SPECIAL_CHARS,
-				'address_1' => FILTER_SANITIZE_SPECIAL_CHARS,
-				'address_2' => FILTER_SANITIZE_SPECIAL_CHARS,
+				'country'   => FILTER_SANITIZE_STRING,
+				'state'     => FILTER_SANITIZE_STRING,
+				'postcode'  => FILTER_SANITIZE_STRING,
+				'city'      => FILTER_SANITIZE_STRING,
+				'address_1' => FILTER_SANITIZE_STRING,
+				'address_2' => FILTER_SANITIZE_STRING,
 			]
 		);
-		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
+		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_STRING ] );
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data = $this->get_shipping_options( $shipping_address, $should_show_itemized_view );
@@ -897,7 +892,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$data = [];
 
 			// Remember current shipping method before resetting.
-			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
+			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
 			$this->calculate_shipping( apply_filters( 'wcpay_payment_request_shipping_posted_values', $shipping_address ) );
 
 			$packages = WC()->shipping->get_packages();
@@ -947,8 +942,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			WC()->cart->calculate_totals();
 
-			$this->maybe_restore_recurring_chosen_shipping_methods( $chosen_shipping_methods );
-
 			$data          += $this->express_checkout_helper->build_display_items( $itemized_display_items );
 			$data['result'] = 'success';
 		} catch ( Exception $e ) {
@@ -974,7 +967,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC()->cart->calculate_totals();
 
-		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
+		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_STRING ] );
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data           = [];
@@ -1512,41 +1505,5 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
 		return WC_Tax::calc_tax( $price, $rates, false );
-	}
-
-	/**
-	 * Restores the shipping methods previously chosen for each recurring cart after shipping was reset and recalculated
-	 * during the Payment Request get_shipping_options flow.
-	 *
-	 * When the cart contains multiple subscriptions with different billing periods, customers are able to select different shipping
-	 * methods for each subscription, however, this is not supported when purchasing with Apple Pay and Google Pay as it's
-	 * only concerned about handling the initial purchase.
-	 *
-	 * In order to avoid Woo Subscriptions's `WC_Subscriptions_Cart::validate_recurring_shipping_methods` throwing an error, we need to restore
-	 * the previously chosen shipping methods for each recurring cart.
-	 *
-	 * This function needs to be called after `WC()->cart->calculate_totals()` is run, otherwise `WC()->cart->recurring_carts` won't exist yet.
-	 *
-	 * @param array $previous_chosen_methods The previously chosen shipping methods.
-	 */
-	private function maybe_restore_recurring_chosen_shipping_methods( $previous_chosen_methods = [] ) {
-		if ( empty( WC()->cart->recurring_carts ) || ! method_exists( 'WC_Subscriptions_Cart', 'get_recurring_shipping_package_key' ) ) {
-			return;
-		}
-
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
-
-		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
-			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_index => $recurring_cart_package ) {
-				$package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $recurring_cart_package_index );
-
-				// If the recurring cart package key is found in the previous chosen methods, but not in the current chosen methods, restore it.
-				if ( isset( $previous_chosen_methods[ $package_key ] ) && ! isset( $chosen_shipping_methods[ $package_key ] ) ) {
-					$chosen_shipping_methods[ $package_key ] = $previous_chosen_methods[ $package_key ];
-				}
-			}
-		}
-
-		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
 	}
 }
