@@ -400,6 +400,10 @@ export async function mountStripePaymentElement( api, domElement ) {
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
 		( await createStripePaymentElement( api, paymentMethodType ) );
 	upeElement.mount( domElement );
+	upeElement.on( 'change', ( e ) => {
+		gatewayUPEComponents[ paymentMethodType ].isPaymentInformationComplete =
+			e.complete;
+	} );
 	upeElement.on( 'loaderror', ( e ) => {
 		// unset any styling to ensure the WC error message wrapper can take more width.
 		domElement.style.padding = '0';
@@ -510,9 +514,15 @@ export const processPayment = (
 		return;
 	}
 
-	blockUI( $form );
+	const { elements, isPaymentInformationComplete } = gatewayUPEComponents[
+		paymentMethodType
+	];
+	if ( ! isPaymentInformationComplete ) {
+		showErrorCheckout( 'Your payment information is incomplete.' );
+		return false;
+	}
 
-	const { elements } = gatewayUPEComponents[ paymentMethodType ];
+	blockUI( $form );
 
 	( async () => {
 		try {

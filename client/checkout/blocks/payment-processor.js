@@ -66,7 +66,7 @@ const PaymentProcessor = ( {
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
-	const isPaymentElementCompleteRef = useRef( false );
+	const isPaymentInformationCompleteRef = useRef( false );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
@@ -140,7 +140,7 @@ const PaymentProcessor = ( {
 						return;
 					}
 
-					if ( ! isPaymentElementCompleteRef.current ) {
+					if ( ! isPaymentInformationCompleteRef.current ) {
 						return {
 							type: 'error',
 							message: __(
@@ -237,8 +237,8 @@ const PaymentProcessor = ( {
 		shouldSavePayment
 	);
 
-	const updatePaymentElementCompletionStatus = ( event ) => {
-		isPaymentElementCompleteRef.current = event.complete;
+	const setPaymentInformationCompletionStatus = ( event ) => {
+		isPaymentInformationCompleteRef.current = event.complete;
 	};
 
 	return (
@@ -257,7 +257,7 @@ const PaymentProcessor = ( {
 					paymentMethodsConfig
 				) }
 				onLoadError={ onLoadError }
-				onChange={ updatePaymentElementCompletionStatus }
+				onChange={ setPaymentInformationCompletionStatus }
 				className="wcpay-payment-element"
 			/>
 		</>

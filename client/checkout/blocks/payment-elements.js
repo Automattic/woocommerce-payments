@@ -74,7 +74,7 @@ const PaymentElements = ( { api, ...props } ) => {
 						fonts: fontRules,
 					} }
 				>
-					{ paymentProcessorLoadErrorMessage?.error?.message ? (
+					{ paymentProcessorLoadErrorMessage?.error?.message && (
 						<div className="wc-block-components-notices">
 							<StoreNotice status="error" isDismissible={ false }>
 								<RawHTML>
@@ -85,15 +85,14 @@ const PaymentElements = ( { api, ...props } ) => {
 								</RawHTML>
 							</StoreNotice>
 						</div>
-					) : (
-						<PaymentProcessor
-							api={ api }
-							errorMessage={ errorMessage }
-							fingerprint={ fingerprint }
-							onLoadError={ setPaymentProcessorLoadErrorMessage }
-							{ ...props }
-						/>
 					) }
+					<PaymentProcessor
+						api={ api }
+						errorMessage={ errorMessage }
+						fingerprint={ fingerprint }
+						onLoadError={ setPaymentProcessorLoadErrorMessage }
+						{ ...props }
+					/>
 				</Elements>
 			</LoadableBlock>
 		</>
