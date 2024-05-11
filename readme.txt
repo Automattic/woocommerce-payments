@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.3
-Stable tag: 7.5.3
+Stable tag: 7.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,42 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 7.6.0 - 2024-05-08 =
+* Add - Add additional data to Compatibility service
+* Add - Add User Satisfaction Survey for Payments Overview Widget
+* Add - Detect payment methods enabled by multiple payment gateways.
+* Add - Display BNPL payment method logos on the thank you page.
+* Add - Non user-facing changes. Behind feature flag. Add tooltip messages to tiles within Payment activity widget
+* Add - Not user-facing: hidden behind feature flag. Use Reporting API to fetch and populate data in the Payment Activity widget.
+* Add - Pre check save my info for eligible contries
+* Add - Support for starting auto-renewing subscriptions for In-Person Payments.
+* Fix - Add notice when no rules are enabled in advanced fraud settings
+* Fix - Adjust positioning of BNPL messaging on the classic cart page.
+* Fix - Avoid updating billing details for legacy card objects.
+* Fix - Ensure the WooPay preview in the admin dashboard matches the actual implementation.
+* Fix - fix: BNPL announcement link.
+* Fix - fix: Stripe terms warning at checkout when Link is enabled
+* Fix - Fix issue with transient check related to fraud protection settings.
+* Fix - Fix order notes entry and risk meta box content when a payment is blocked due to AVS checks while the corresponding advanced fraud rule is enabled.
+* Fix - Fix type error for fraud outcome API.
+* Fix - Fix WooPay tracks user ID for logged in users.
+* Fix - Hide Fraud info banner until first transaction happens
+* Fix - Improve merchant session request with preloaded data.
+* Fix - Improve signing of minimum WooPay session data.
+* Fix - Make sure an explicit currency code is present in the cart and checkout blocks when multi-currency is enabled
+* Fix - Prevent Stripe Link from triggering the checkout fields warning
+* Fix - Remove risk review request from the transactions page.
+* Fix - Resolves "Invalid recurring shipping method" errors when purchasing multiple subscriptions with Apple Pay and Google Pay.
+* Fix - Revert: Add Multi-Currency Support to Page Caching via Cookies.
+* Update - Add source param to onboarding and complete KYC links
+* Update - Add support of a third-party plugin with PRBs into duplicates detection mechanism.
+* Update - Remove feature flag for the pay-for-order flow
+* Dev - Add Playwright e2e test suite ready for incremental migration and visual regression testing
+* Dev - Avoid warnings about fatal error during plugin update due to problems with plugin initialization.
+* Dev - Remove legacy method from `WooPay_Utilities`.
+* Dev - Remove obsolete docker-compose key `version`
+* Dev - Upgraded jetpack sync package version.
 
 = 7.5.3 - 2024-04-22 =
 * Fix - Fix subscription renewals exceptions

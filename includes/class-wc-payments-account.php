@@ -525,7 +525,7 @@ class WC_Payments_Account {
 	 *
 	 * @return array Fees.
 	 */
-	public function get_fees() {
+	public function get_fees(): array {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['fees'] ) ? $account['fees'] : [];
 	}
@@ -1892,7 +1892,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Currency code in lowercase.
 	 */
-	public function get_account_default_currency() {
+	public function get_account_default_currency(): string {
 		$account = $this->get_cached_account_data();
 		return $account['store_currencies']['default'] ?? strtolower( Currency_Code::UNITED_STATES_DOLLAR );
 	}

@@ -58,8 +58,8 @@ describe( 'Shopper Multi-Currency widget', () => {
 		if ( ! wasMulticurrencyEnabled ) {
 			await merchant.login();
 			await merchantWCP.deactivateMulticurrency();
-			await merchant.logout();
 		}
+		await merchant.logout();
 	} );
 
 	it( 'should display currency switcher widget if multi-currency is enabled', async () => {
