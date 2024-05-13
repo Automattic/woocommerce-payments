@@ -10,6 +10,10 @@ import PaymentRequestCartApi from '../cart-api';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
+global.wcpayPaymentRequestParams = {};
+global.wcpayPaymentRequestParams.checkout = {};
+global.wcpayPaymentRequestParams.checkout.currency_code = 'USD';
+
 describe( 'PaymentRequestCartApi', () => {
 	afterEach( () => {
 		jest.resetAllMocks();
