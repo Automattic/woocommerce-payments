@@ -96,7 +96,6 @@ export type Event =
 	| 'checkout_save_my_info_privacy_policy_click'
 	| 'checkout_save_my_info_tooltip_click'
 	| 'checkout_save_my_info_tooltip_learn_more_click'
-	| 'checkout_woopay_auto_redirect'
 	| 'woopay_skipped'
 	| 'woopay_button_load'
 	| 'woopay_button_click'

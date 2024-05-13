@@ -489,7 +489,7 @@ class WC_Payments {
 		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
 		self::$session_service                      = new WC_Payments_Session_Service( self::$api_client );
 		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service, self::$session_service );
-		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache, self::$session_service );
+		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache, self::$session_service, self::$order_service );
 		self::$token_service                        = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                  = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account, self::$session_service, self::$database_cache );
@@ -1323,6 +1323,26 @@ class WC_Payments {
 	 */
 	public static function get_order_service(): WC_Payments_Order_Service {
 		return self::$order_service;
+	}
+
+	/**
+	 * Returns the token service instance.
+	 *
+	 * @return WC_Payments_Token_Service
+	 */
+	public static function get_token_service(): WC_Payments_Token_Service {
+		return self::$token_service;
+	}
+
+	/**
+	 * Sets the token service instance. This is needed only for tests.
+	 *
+	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
+	 *
+	 * @return void
+	 */
+	public static function set_token_service( WC_Payments_Token_Service $token_service ) {
+		self::$token_service = $token_service;
 	}
 
 	/**

@@ -23,18 +23,54 @@ import './style.scss';
  */
 const getDateRange = (): DateRange => {
 	return {
-		// Subtract 7 days from the current date.
+		// Subtract 6 days from the current date. 7 days including the current day.
 		date_start: moment()
-			.subtract( 7, 'd' )
+			.subtract( 6, 'd' )
 			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
 		date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
 	};
 };
 
-const PaymentActivityData: React.FC = () => {
-	const { paymentActivityData, isLoading } = usePaymentActivityData(
-		getDateRange()
+const searchTermsForViewReportLink = {
+	totalPaymentVolume: [
+		'charge',
+		'payment',
+		'payment_failure_refund',
+		'payment_refund',
+		'refund',
+		'refund_failure',
+		'dispute',
+		'dispute_reversal',
+		'card_reader_fee',
+	],
+
+	charge: [ 'charge', 'payment', 'adjustment' ],
+
+	refunds: [
+		'refund',
+		'refund_failure',
+		'payment_refund',
+		'payment_failure_refund',
+	],
+
+	dispute: [ 'dispute', 'dispute_reversal' ],
+};
+
+const getSearchParams = ( searchTerms: string[] ) => {
+	return searchTerms.reduce(
+		( acc, term, index ) => ( {
+			...acc,
+			[ `search[${ index }]` ]: term,
+		} ),
+		{}
 	);
+};
+
+const PaymentActivityData: React.FC = () => {
+	const { paymentActivityData, isLoading } = usePaymentActivityData( {
+		...getDateRange(),
+		timezone: moment( new Date() ).format( 'Z' ),
+	} );
 
 	const totalPaymentVolume = paymentActivityData?.total_payment_volume ?? 0;
 	const charges = paymentActivityData?.charges ?? 0;
@@ -86,13 +122,16 @@ const PaymentActivityData: React.FC = () => {
 				reportLink={ getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
+					filter: 'advanced',
 					'date_between[0]': moment(
 						getDateRange().date_start
 					).format( 'YYYY-MM-DD' ),
 					'date_between[1]': moment( getDateRange().date_end ).format(
 						'YYYY-MM-DD'
 					),
-					filter: 'advanced',
+					...getSearchParams(
+						searchTermsForViewReportLink.totalPaymentVolume
+					),
 				} ) }
 				tracksSource="total_payment_volume"
 				isLoading={ isLoading }
@@ -126,7 +165,15 @@ const PaymentActivityData: React.FC = () => {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
-						type_is: 'charge',
+						'date_between[0]': moment(
+							getDateRange().date_start
+						).format( 'YYYY-MM-DD' ),
+						'date_between[1]': moment(
+							getDateRange().date_end
+						).format( 'YYYY-MM-DD' ),
+						...getSearchParams(
+							searchTermsForViewReportLink.charge
+						),
 					} ) }
 					tracksSource="charges"
 					isLoading={ isLoading }
@@ -140,13 +187,15 @@ const PaymentActivityData: React.FC = () => {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
-						type_is: 'refund',
 						'date_between[0]': moment(
 							getDateRange().date_start
 						).format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
 							getDateRange().date_end
 						).format( 'YYYY-MM-DD' ),
+						...getSearchParams(
+							searchTermsForViewReportLink.refunds
+						),
 					} ) }
 					tracksSource="refunds"
 					isLoading={ isLoading }
@@ -158,7 +207,7 @@ const PaymentActivityData: React.FC = () => {
 					amount={ disputes }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
-						path: '/payments/disputes',
+						path: '/payments/transactions',
 						filter: 'advanced',
 						'date_between[0]': moment(
 							getDateRange().date_start
@@ -166,7 +215,9 @@ const PaymentActivityData: React.FC = () => {
 						'date_between[1]': moment(
 							getDateRange().date_end
 						).format( 'YYYY-MM-DD' ),
-						status_is: 'needs_response',
+						...getSearchParams(
+							searchTermsForViewReportLink.dispute
+						),
 					} ) }
 					tracksSource="disputes"
 					isLoading={ isLoading }

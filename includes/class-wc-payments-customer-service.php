@@ -72,6 +72,13 @@ class WC_Payments_Customer_Service {
 	private $session_service;
 
 	/**
+	 * WC_Payments_Order_Service instance
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * Class constructor
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
@@ -83,12 +90,14 @@ class WC_Payments_Customer_Service {
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Account $account,
 		Database_Cache $database_cache,
-		WC_Payments_Session_Service $session_service
+		WC_Payments_Session_Service $session_service,
+		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
 		$this->database_cache      = $database_cache;
 		$this->session_service     = $session_service;
+		$this->order_service       = $order_service;
 
 		/*
 		 * Adds the WooCommerce Payments customer ID found in the user session
@@ -283,7 +292,7 @@ class WC_Payments_Customer_Service {
 	 * @param WC_Order $order             Order to be used on the update.
 	 */
 	public function update_payment_method_with_billing_details_from_order( $payment_method_id, $order ) {
-		$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
+		$billing_details = $this->order_service->get_billing_data_from_order( $order );
 
 		if ( ! empty( $billing_details ) ) {
 			$this->payments_api_client->update_payment_method(
