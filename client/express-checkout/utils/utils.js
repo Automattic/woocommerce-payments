@@ -50,18 +50,14 @@ export const getPaymentRequest = ( {
 	}
 
 	const options = {
-		total: getTotalPaymentItem( total ),
+		mode: 'payment',
+		amount: getTotalPaymentItem( total )?.amount,
 		currency: getPaymentRequestData( 'checkout' )?.currency_code,
-		country,
-		requestPayerName: true,
-		requestPayerEmail: true,
-		requestPayerPhone: getPaymentRequestData( 'checkout' )
-			?.needs_payer_phone,
-		requestShipping,
-		displayItems,
 	};
 
-	return stripe.paymentRequest( options );
+	console.log(options);
+
+	return stripe.elements( options );
 };
 
 /**
