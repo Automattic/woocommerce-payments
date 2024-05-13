@@ -94,6 +94,13 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.7.0-test-1 - unreleased =
+* Fix - Charm pricing and rounding options corrected for all currencies that aren't presented with decimal points.
+* Fix - Fix Payment block render error while editing the block checkout page.
+* Fix - Fix shortcode orders when using WooPay Direct Checkout.
+* Fix - Updating saved payment method billing address before processing the payment
+* Update - Do not auto-redirect to WooPay on page load.
+
 = 7.6.0 - 2024-05-08 =
 * Add - Add additional data to Compatibility service
 * Add - Add User Satisfaction Survey for Payments Overview Widget
