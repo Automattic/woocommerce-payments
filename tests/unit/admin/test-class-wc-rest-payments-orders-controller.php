@@ -50,6 +50,11 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	private $mock_token_service;
 
 	/**
+	 * @var WC_Payments_Token_Service
+	 */
+	private $original_token_service;
+
+	/**
 	 * @var string
 	 */
 	private $mock_intent_id = 'pi_mock';
@@ -79,13 +84,19 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->setMethods( [ 'attach_intent_info_to_order' ] )
 			->getMock();
 
+		$this->original_token_service = WC_Payments::get_token_service();
+		WC_Payments::set_token_service( $this->mock_token_service );
 		$this->controller = new WC_REST_Payments_Orders_Controller(
 			$this->mock_api_client,
 			$this->mock_gateway,
 			$this->mock_customer_service,
 			$this->order_service,
-			$this->mock_token_service
 		);
+	}
+
+	public function tear_down() {
+		WC_Payments::set_token_service( $this->original_token_service );
+		parent::tear_down();
 	}
 
 	public function test_capture_terminal_payment_success() {
