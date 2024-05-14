@@ -469,6 +469,17 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return bool
 	 */
 	public function bump_stats( $group, $stat_name ) {
+		$is_admin_event = false;
+		$track_on_all_stores = true;
+
+		if ( ! $this->should_enable_tracking( $is_admin_event, $track_on_all_stores ) ) {
+			return false;
+		}
+
+		if ( WC_Payments::mode()->is_test() ) {
+			return false;
+		}
+
 		$pixel_url = sprintf(
 			self::$pixel_base_url . '?v=wpcom-no-pv&x_%s=%s',
 			$group,
