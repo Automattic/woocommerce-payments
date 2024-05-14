@@ -210,14 +210,9 @@ jQuery( ( $ ) => {
 			const eceButton = wcpayPaymentRequest.createPaymentRequestButton(
 				elements,
 				{
-					layout: 'auto',
 					buttonType: {
-						googlePay: 'book',
-						applePay: 'book',
-						paypal: 'buynow',
-					},
-					buttonTheme: {
-						applePay: 'black',
+						googlePay: wcpayExpressCheckoutParams.button.type,
+						applePay: wcpayExpressCheckoutParams.button.type,
 					},
 				}
 			);
@@ -564,7 +559,7 @@ jQuery( ( $ ) => {
 				api.paymentRequestGetCartDetails().then( ( cart ) => {
 					wcpayPaymentRequest.startPaymentRequest( {
 						mode: 'payment',
-						total: cart.total.amount,
+						total: 1000,
 						currency: 'usd',
 						requestShipping: cart.needs_shipping,
 						displayItems: cart.displayItems,

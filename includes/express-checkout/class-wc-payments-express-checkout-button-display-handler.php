@@ -127,10 +127,12 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			if ( ! $this->express_checkout_helper->is_pay_for_order_page() || $this->is_pay_for_order_flow_supported() ) {
 				$this->platform_checkout_button_handler->display_woopay_button_html();
 			}
-				$this->payment_request_button_handler->display_payment_request_button_html();
-				?>Start<?php
+
+			if( WC_Payments_Features::is_stripe_ece_enabled() ) {
 				$this->express_checkout_button_handler->display_express_checkout_button_html();
-				?>End<?php
+			} else {
+				$this->payment_request_button_handler->display_payment_request_button_html();
+			}
 			?>
 			</div >
 			<?php

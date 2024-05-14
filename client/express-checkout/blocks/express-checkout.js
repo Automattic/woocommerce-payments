@@ -1,3 +1,5 @@
+/* global wcpayExpressCheckoutParams */
+
 /**
  * External dependencies
  */
@@ -19,11 +21,16 @@ export const ExpressCheckout = ( props ) => {
 		currency: 'usd',
 	};
 
+	const buttonOptions = {
+		buttonType: {
+			googlePay: wcpayExpressCheckoutParams.button.type,
+			applePay: wcpayExpressCheckoutParams.button.type,
+		},
+	};
+
 	return (
 		<Elements stripe={ stripe } options={ options }>
-			<div width="100%">
-				<ExpressCheckoutElement { ...props } />
-			</div>
+			<ExpressCheckoutElement options={ buttonOptions } />
 		</Elements>
 	);
 };

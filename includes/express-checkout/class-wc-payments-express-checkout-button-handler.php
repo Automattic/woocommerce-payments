@@ -66,11 +66,15 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
+		if( ! WC_Payments_Features::is_stripe_ece_enabled() ) {
+			return;
+		}
+
 		// Checks if Payment Request is enabled.
 		if ( 'yes' !== $this->gateway->get_option( 'payment_request' ) ) {
 			return;
 		}
-
+		
 		// Don't load for change payment method page.
 		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
