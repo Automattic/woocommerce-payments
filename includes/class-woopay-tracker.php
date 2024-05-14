@@ -13,7 +13,6 @@ use WC_Payments;
 use WC_Payments_Features;
 use WCPay\Constants\Country_Code;
 use WP_Error;
-use Exception;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
