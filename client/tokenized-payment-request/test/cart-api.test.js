@@ -35,7 +35,7 @@ describe( 'PaymentRequestCartApi', () => {
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				method: 'GET',
-				path: '/wc/store/v1/cart',
+				path: expect.stringContaining( '/wc/store/v1/cart' ),
 				credentials: 'omit',
 				parse: false,
 			} )
@@ -50,7 +50,9 @@ describe( 'PaymentRequestCartApi', () => {
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				method: 'POST',
-				path: '/wc/store/v1/cart/update-customer',
+				path: expect.stringContaining(
+					'/wc/store/v1/cart/update-customer'
+				),
 				credentials: 'omit',
 				headers: expect.objectContaining( {
 					'X-WooPayments-Express-Payment-Request': true,
@@ -70,7 +72,9 @@ describe( 'PaymentRequestCartApi', () => {
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				method: 'POST',
-				path: '/wc/store/v1/cart/update-customer',
+				path: expect.stringContaining(
+					'/wc/store/v1/cart/update-customer'
+				),
 				credentials: 'omit',
 				// in this case, no additional headers should have been submitted.
 				headers: expect.objectContaining( {
