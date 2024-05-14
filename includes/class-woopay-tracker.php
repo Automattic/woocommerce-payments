@@ -230,7 +230,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		// 1. Only site pages are tracked.
 		// 2. Site Admin activity in site pages are not tracked.
 		// 3. If track_on_all_stores is enabled, track all events regardless of WooPay eligibility.
-		// 3. Otherwise, track only when WooPay is active.
+		// 4. Otherwise, track only when WooPay is active.
 
 		// Track only site pages.
 		if ( is_admin() && ! wp_doing_ajax() ) {
