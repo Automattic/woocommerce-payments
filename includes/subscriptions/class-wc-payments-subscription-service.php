@@ -1098,6 +1098,6 @@ class WC_Payments_Subscription_Service {
 			]
 		);
 
-		return ( is_countable( $active_wcpay_subscriptions ) ? count( $active_wcpay_subscriptions ) : 0) > 0;
+		return ( is_countable( $active_wcpay_subscriptions ) ? count( $active_wcpay_subscriptions ) : 0 ) > 0;
 	}
 }
