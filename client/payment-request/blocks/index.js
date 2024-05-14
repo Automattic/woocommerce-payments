@@ -1,3 +1,5 @@
+/* global wcpayConfig */
+
 /**
  * Internal dependencies
  */
@@ -23,6 +25,10 @@ const paymentRequestPaymentMethod = ( api ) => ( {
 		}
 
 		if ( typeof wcpayPaymentRequestParams === 'undefined' ) {
+			return false;
+		}
+
+		if ( wcpayConfig.isExpressCheckoutElementEnabled ) {
 			return false;
 		}
 

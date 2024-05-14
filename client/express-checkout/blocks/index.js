@@ -1,3 +1,5 @@
+/* global wcpayConfig */
+
 /**
  * Internal dependencies
  */
@@ -15,7 +17,7 @@ const expressCheckoutElementPaymentMethod = ( api ) => ( {
 	supports: {
 		features: getConfig( 'features' ),
 	},
-	canMakePayment: () => true,
+	canMakePayment: () => wcpayConfig.isExpressCheckoutElementEnabled,
 } );
 
 export default expressCheckoutElementPaymentMethod;
