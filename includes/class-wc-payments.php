@@ -425,6 +425,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-webhook-data-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-ruleset-exception.php';
+		include_once __DIR__ . '/exceptions/class-fraud-prevention-enabled-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-country-code.php';

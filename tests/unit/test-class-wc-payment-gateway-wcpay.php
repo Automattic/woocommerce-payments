@@ -20,6 +20,7 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Fraud_Prevention_Enabled_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Internal\Payment\Factor;
@@ -2860,7 +2861,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'is_enabled' )
 			->willReturn( true );
 
-		$this->expectException( Exception::class );
+		$this->expectException( Fraud_Prevention_Enabled_Exception::class );
 		$this->expectExceptionMessage( "We're not able to process this payment. Please refresh the page and try again." );
 		$this->card_gateway->process_payment( $order->get_id() );
 	}
@@ -2883,7 +2884,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$_POST['wcpay-fraud-prevention-token'] = 'incorrect-token';
 
-		$this->expectException( Exception::class );
+		$this->expectException( Fraud_Prevention_Enabled_Exception::class );
 		$this->expectExceptionMessage( "We're not able to process this payment. Please refresh the page and try again." );
 		$this->card_gateway->process_payment( $order->get_id() );
 	}
