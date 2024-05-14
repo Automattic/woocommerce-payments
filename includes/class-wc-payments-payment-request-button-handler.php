@@ -752,13 +752,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/express-checkout', [ 'jquery', 'stripe' ] );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/payment-request', [ 'jquery', 'stripe' ] );
 
 		WC_Payments_Utils::enqueue_style(
 			'WCPAY_PAYMENT_REQUEST',
-			plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
+			plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/express-checkout.css' )
+			WC_Payments::get_file_version( 'dist/payment-request.css' )
 		);
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );
