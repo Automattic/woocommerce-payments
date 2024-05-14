@@ -246,9 +246,9 @@ class MultiCurrency {
 
 		if ( $is_frontend_request || \WC_Payments_Utils::is_store_api_request() ) {
 			// Make sure that this runs after the main init function.
-			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 50 );
-			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 60 );
-			add_action( 'init', [ $this, 'possible_simulation_activation' ], 70 );
+			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
+			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
+			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
 			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
 
@@ -258,7 +258,7 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Called after the WooCommerce session has been initialized. Initializes the available currencies,
+	 * Called after the WooCommerce session has been initialized. Initialises the available currencies,
 	 * default currency and enabled currencies for the Multi-Currency plugin.
 	 *
 	 * @return void
@@ -291,7 +291,7 @@ class MultiCurrency {
 		$this->tracking            = new Tracking( $this );
 		$this->order_meta_helper   = new OrderMetaHelper( $this->payments_api_client );
 
-		// Init all the hooks.
+		// Init all of the hooks.
 		$payment_method_compat->init_hooks();
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
