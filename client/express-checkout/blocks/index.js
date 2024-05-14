@@ -5,7 +5,6 @@ import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from '../../checkout/con
 import { ExpressCheckout } from './express-checkout';
 import { applePayImage } from './apple-pay-preview';
 import { getConfig } from '../../utils/checkout';
-import { getPaymentRequest } from '../utils';
 
 const ApplePayPreview = () => <img src={ applePayImage } alt="" />;
 const expressCheckoutElementPaymentMethod = ( api ) => ( {

@@ -30,37 +30,6 @@ const getTotalPaymentItem = ( total ) => {
 };
 
 /**
- * Returns a Stripe payment request object.
- *
- * @param {Object} config A configuration object for getting the payment request.
- * @return {Object} Payment Request options object
- */
-export const getPaymentRequest = ( {
-	stripe,
-	total,
-	requestShipping,
-	displayItems,
-} ) => {
-	let country = getPaymentRequestData( 'checkout' )?.country_code;
-
-	// Puerto Rico (PR) is the only US territory/possession that's supported by Stripe.
-	// Since it's considered a US state by Stripe, we need to do some special mapping.
-	if ( country === 'PR' ) {
-		country = 'US';
-	}
-
-	const options = {
-		mode: 'payment',
-		amount: getTotalPaymentItem( total )?.amount,
-		currency: getPaymentRequestData( 'checkout' )?.currency_code,
-	};
-
-	console.log(options);
-
-	return stripe.elements( options );
-};
-
-/**
  * Utility function for updating the Stripe PaymentRequest object
  *
  * @param {Object} update An object containing the things needed for the update.

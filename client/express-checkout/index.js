@@ -1,10 +1,5 @@
-/* global jQuery, wcpayExpressCheckoutParams, wcpayPaymentRequestPayForOrderParams */
-/**
- * External dependencies
- */
-import { __ } from '@wordpress/i18n';
-import { doAction } from '@wordpress/hooks';
-import { debounce } from 'lodash';
+/* global jQuery, wcpayExpressCheckoutParams */
+
 /**
  * Internal dependencies
  */
@@ -14,12 +9,11 @@ import {
 	shippingAddressChangeHandler,
 	shippingOptionChangeHandler,
 	paymentMethodHandler,
-	payForOrderHandler,
 } from './event-handlers.js';
 import '../checkout/express-checkout-buttons.scss';
 import { recordUserEvent } from 'tracks';
 
-import { getPaymentRequest, displayLoginConfirmation } from './utils';
+import { displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -65,19 +59,6 @@ jQuery( ( $ ) => {
 			recordUserEvent( event, { source } );
 		}
 	};
-
-	// Track the payment request button load event.
-	const trackPaymentRequestButtonLoad = debounce( ( source ) => {
-		const paymentRequestTypeEvents = {
-			google_pay: 'gpay_button_load',
-			apple_pay: 'applepay_button_load',
-		};
-
-		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
-			const event = paymentRequestTypeEvents[ paymentRequestType ];
-			recordUserEvent( event, { source } );
-		}
-	}, 1000 );
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -236,7 +217,7 @@ jQuery( ( $ ) => {
 						paypal: 'buynow',
 					},
 					buttonTheme: {
-						applePay: 'black'
+						applePay: 'black',
 					},
 				}
 			);
@@ -403,53 +384,6 @@ jQuery( ( $ ) => {
 		},
 
 		attachProductPageEventListeners: ( prButton, paymentRequest ) => {
-			let paymentRequestError = [];
-			const addToCartButton = $( '.single_add_to_cart_button' );
-
-			/* prButton.on( 'click', ( evt ) => {
-				trackPaymentRequestButtonClick( 'product' );
-
-				// If login is required for checkout, display redirect confirmation dialog.
-				if ( wcpayExpressCheckoutParams.login_confirmation ) {
-					evt.preventDefault();
-					displayLoginConfirmation( paymentRequestType );
-					return;
-				}
-
-				// First check if product can be added to cart.
-				if ( addToCartButton.is( '.disabled' ) ) {
-					evt.preventDefault(); // Prevent showing payment request modal.
-					if (
-						addToCartButton.is( '.wc-variation-is-unavailable' )
-					) {
-						window.alert(
-							window?.wc_add_to_cart_variation_params
-								?.i18n_unavailable_text ||
-								__(
-									'Sorry, this product is unavailable. Please choose a different combination.',
-									'woocommerce-payments'
-								)
-						);
-					} else {
-						window.alert(
-							__(
-								'Please select your product options before proceeding.',
-								'woocommerce-payments'
-							)
-						);
-					}
-					return;
-				}
-
-				if ( paymentRequestError.length > 0 ) {
-					evt.preventDefault();
-					window.alert( paymentRequestError );
-					return;
-				}
-
-				wcpayPaymentRequest.addToCart();
-			} ); */
-
 			// WooCommerce Deposits support.
 			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
 			$(
@@ -474,8 +408,8 @@ jQuery( ( $ ) => {
 						 */
 						if (
 							! wcpayPaymentRequest.paymentAborted &&
-							wcpayExpressCheckoutParams.product.needs_shipping ===
-								response.needs_shipping
+							wcpayExpressCheckoutParams.product
+								.needs_shipping === response.needs_shipping
 						) {
 							paymentRequest.update( {
 								total: response.total,
@@ -507,7 +441,6 @@ jQuery( ( $ ) => {
 					'.qty',
 					wcpayPaymentRequest.debounce( 250, () => {
 						wcpayPaymentRequest.blockPaymentRequestButton();
-						paymentRequestError = [];
 
 						$.when(
 							wcpayPaymentRequest.getSelectedProductData()
