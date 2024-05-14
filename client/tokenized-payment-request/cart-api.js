@@ -87,7 +87,7 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */
 	async updateCustomer( customerData ) {
-		return apiFetch( {
+		return await apiFetch( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/update-customer',
 			credentials: 'omit',
@@ -107,7 +107,7 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */
 	async selectShippingRate( shippingRate ) {
-		return apiFetch( {
+		return await apiFetch( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/select-shipping-rate',
 			credentials: 'omit',
@@ -133,7 +133,7 @@ export default class PaymentRequestCartApi {
 			variation: [],
 		};
 
-		return apiFetch( {
+		return await apiFetch( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/add-item',
 			credentials: 'omit',
