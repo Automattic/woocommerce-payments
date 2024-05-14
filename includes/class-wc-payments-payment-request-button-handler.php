@@ -433,10 +433,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param string $id    Gateway ID.
 	 */
 	public function filter_gateway_title( $title, $id ) {
+		if ( 'woocommerce_payments' !== $id || ! is_admin() ) {
+			return $title;
+		}
+
 		$order        = $this->get_current_order();
 		$method_title = is_object( $order ) ? $order->get_payment_method_title() : '';
 
-		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) ) {
+		if ( ! empty( $method_title ) ) {
 			if (
 				strpos( $method_title, 'Apple Pay' ) === 0
 				|| strpos( $method_title, 'Google Pay' ) === 0
