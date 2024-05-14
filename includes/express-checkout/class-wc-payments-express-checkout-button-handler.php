@@ -1,4 +1,5 @@
 <?php
+use WCPay\Exceptions\Invalid_Price_Exception;
 /**
  * Class WC_Payments_Express_Checkout_Button_Handler
  * Adds support for Apple Pay, Google Pay and ECE API buttons.
@@ -274,25 +275,25 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			'button_context'     => $this->express_checkout_helper->get_button_context(),
 			'is_pay_for_order'   => $this->express_checkout_helper->is_pay_for_order_page(),
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
-			'product'            => '',
+			'product'            => $this->get_product_data(),
 			'total_label'        => $this->express_checkout_helper->get_total_label(),
 			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/express-checkout', [ 'jquery', 'stripe' ] );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'dist/express-checkout', [ 'jquery', 'stripe' ] );
 
 		WC_Payments_Utils::enqueue_style(
-			'WCPAY_PAYMENT_REQUEST',
+			'WCPAY_EXPRESS_CHECKOUT_ECE',
 			plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'dist/payment-request.css' )
 		);
 
-		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );
+		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $payment_request_params );
 
-		wp_set_script_translations( 'WCPAY_PAYMENT_REQUEST', 'woocommerce-payments' );
+		wp_set_script_translations( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'woocommerce-payments' );
 
-		wp_enqueue_script( 'WCPAY_PAYMENT_REQUEST' );
+		wp_enqueue_script( 'WCPAY_EXPRESS_CHECKOUT_ECE' );
 
 		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
@@ -344,6 +345,182 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
+	}
+
+	/**
+	 * Gets the product data for the currently viewed page.
+	 *
+	 * @return mixed Returns false if not on a product page, the product information otherwise.
+	 */
+	public function get_product_data() {
+		if ( ! $this->express_checkout_helper->is_product() ) {
+			return false;
+		}
+
+		/** @var WC_Product_Variable $product */ // phpcs:ignore
+		$product  = $this->express_checkout_helper->get_product();
+		$currency = get_woocommerce_currency();
+
+		if ( 'variable' === $product->get_type() || 'variable-subscription' === $product->get_type() ) {
+			$variation_attributes = $product->get_variation_attributes();
+			$attributes           = [];
+
+			foreach ( $variation_attributes as $attribute_name => $attribute_values ) {
+				$attribute_key = 'attribute_' . sanitize_title( $attribute_name );
+
+				// Passed value via GET takes precedence. Otherwise get the default value for given attribute.
+				$attributes[ $attribute_key ] = isset( $_GET[ $attribute_key ] ) // phpcs:ignore WordPress.Security.NonceVerification
+					? wc_clean( wp_unslash( $_GET[ $attribute_key ] ) ) // phpcs:ignore WordPress.Security.NonceVerification
+					: $product->get_variation_default_attribute( $attribute_name );
+			}
+
+			$data_store   = WC_Data_Store::load( 'product' );
+			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
+
+			if ( ! empty( $variation_id ) ) {
+				$product = wc_get_product( $variation_id );
+			}
+		}
+
+		try {
+			$price = $this->get_product_price( $product );
+		} catch ( Invalid_Price_Exception $e ) {
+			Logger::log( $e->getMessage() );
+			return false;
+		}
+
+		$data  = [];
+		$items = [];
+
+		$items[] = [
+			'label'  => $product->get_name(),
+			'amount' => WC_Payments_Utils::prepare_amount( $price, $currency ),
+		];
+
+		$total_tax = 0;
+		foreach ( $this->get_taxes_like_cart( $product, $price ) as $tax ) {
+			$total_tax += $tax;
+
+			$items[] = [
+				'label'   => __( 'Tax', 'woocommerce-payments' ),
+				'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
+				'pending' => 0 === $tax,
+			];
+		}
+
+		if ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() ) {
+			$items[] = [
+				'label'   => __( 'Shipping', 'woocommerce-payments' ),
+				'amount'  => 0,
+				'pending' => true,
+			];
+
+			$data['shippingOptions'] = [
+				'id'     => 'pending',
+				'label'  => __( 'Pending', 'woocommerce-payments' ),
+				'detail' => '',
+				'amount' => 0,
+			];
+		}
+
+		$data['displayItems'] = $items;
+		$data['total']        = [
+			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->express_checkout_helper->get_total_label() ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
+			'pending' => true,
+		];
+
+		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
+		$data['currency']       = strtolower( $currency );
+		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+
+		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
+	}
+
+	/**
+	 * Gets the product total price.
+	 *
+	 * @param object $product WC_Product_* object.
+	 * @param bool   $is_deposit Whether customer is paying a deposit.
+	 * @param int    $deposit_plan_id The ID of the deposit plan.
+	 * @return mixed Total price.
+	 *
+	 * @throws Invalid_Price_Exception Whenever a product has no price.
+	 */
+	public function get_product_price( $product, ?bool $is_deposit = null, int $deposit_plan_id = 0 ) {
+		// If prices should include tax, using tax inclusive price.
+		if ( $this->express_checkout_helper->cart_prices_include_tax() ) {
+			$base_price = wc_get_price_including_tax( $product );
+		} else {
+			$base_price = wc_get_price_excluding_tax( $product );
+		}
+
+		// If WooCommerce Deposits is active, we need to get the correct price for the product.
+		if ( class_exists( 'WC_Deposits_Product_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
+			// If is_deposit is null, we use the default deposit type for the product.
+			if ( is_null( $is_deposit ) ) {
+				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_selected_type( $product->get_id() );
+			}
+			if ( $is_deposit ) {
+				$deposit_type       = WC_Deposits_Product_Manager::get_deposit_type( $product->get_id() );
+				$available_plan_ids = WC_Deposits_Plans_Manager::get_plan_ids_for_product( $product->get_id() );
+				// Default to first (default) plan if no plan is specified.
+				if ( 'plan' === $deposit_type && 0 === $deposit_plan_id && ! empty( $available_plan_ids ) ) {
+					$deposit_plan_id = $available_plan_ids[0];
+				}
+
+				// Ensure the selected plan is available for the product.
+				if ( 0 === $deposit_plan_id || in_array( $deposit_plan_id, $available_plan_ids, true ) ) {
+					$base_price = WC_Deposits_Product_Manager::get_deposit_amount( $product, $deposit_plan_id, 'display', $base_price );
+				}
+			}
+		}
+
+		// Add subscription sign-up fees to product price.
+		$sign_up_fee        = 0;
+		$subscription_types = [
+			'subscription',
+			'subscription_variation',
+		];
+		if ( in_array( $product->get_type(), $subscription_types, true ) && class_exists( 'WC_Subscriptions_Product' ) ) {
+			// When there is no sign-up fee, `get_sign_up_fee` falls back to an int 0.
+			$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
+		}
+
+		if ( ! is_numeric( $base_price ) || ! is_numeric( $sign_up_fee ) ) {
+			$error_message = sprintf(
+				// Translators: %d is the numeric ID of the product without a price.
+				__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ),
+				(int) $product->get_id()
+			);
+			throw new Invalid_Price_Exception(
+				esc_html( $error_message )
+			);
+		}
+
+		return $base_price + $sign_up_fee;
+	}
+
+	/**
+	 * Calculates taxes as displayed on cart, based on a product and a particular price.
+	 *
+	 * @param WC_Product $product The product, for retrieval of tax classes.
+	 * @param float      $price   The price, which to calculate taxes for.
+	 * @return array              An array of final taxes.
+	 */
+	private function get_taxes_like_cart( $product, $price ) {
+		if ( ! wc_tax_enabled() || $this->express_checkout_helper->cart_prices_include_tax() ) {
+			// Only proceed when taxes are enabled, but not included.
+			return [];
+		}
+
+		// Follows the way `WC_Cart_Totals::get_item_tax_rates()` works.
+		$tax_class = $product->get_tax_class();
+		$rates     = WC_Tax::get_rates( $tax_class );
+		// No cart item, `woocommerce_cart_totals_get_item_tax_rates` can't be applied here.
+
+		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
+		return WC_Tax::calc_tax( $price, $rates, false );
 	}
 
 }

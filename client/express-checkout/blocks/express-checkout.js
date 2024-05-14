@@ -1,4 +1,4 @@
-/* global wcpayPaymentRequestParams */
+/* global wcpayExpressCheckoutParams */
 
 /**
  * External dependencies

@@ -1,4 +1,4 @@
-/* global jQuery, wcpayPaymentRequestParams, wcpayPaymentRequestPayForOrderParams */
+/* global jQuery, wcpayExpressCheckoutParams, wcpayPaymentRequestPayForOrderParams */
 /**
  * External dependencies
  */
@@ -24,13 +24,13 @@ import { getPaymentRequest, displayLoginConfirmation } from './utils';
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
 	if (
-		wcpayPaymentRequestParams.has_block &&
-		! wcpayPaymentRequestParams.is_pay_for_order
+		wcpayExpressCheckoutParams.has_block &&
+		! wcpayExpressCheckoutParams.is_pay_for_order
 	) {
 		return;
 	}
 
-	const publishableKey = wcpayPaymentRequestParams.stripe.publishableKey;
+	const publishableKey = wcpayExpressCheckoutParams.stripe.publishableKey;
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -40,8 +40,8 @@ jQuery( ( $ ) => {
 	const api = new WCPayAPI(
 		{
 			publishableKey,
-			accountId: wcpayPaymentRequestParams.stripe.accountId,
-			locale: wcpayPaymentRequestParams.stripe.locale,
+			accountId: wcpayExpressCheckoutParams.stripe.accountId,
+			locale: wcpayExpressCheckoutParams.stripe.locale,
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -392,7 +392,7 @@ jQuery( ( $ ) => {
 			prButton,
 			paymentRequest
 		) => {
-			if ( wcpayPaymentRequestParams.is_product_page ) {
+			if ( wcpayExpressCheckoutParams.is_product_page ) {
 				wcpayPaymentRequest.attachProductPageEventListeners(
 					prButton,
 					paymentRequest
@@ -410,7 +410,7 @@ jQuery( ( $ ) => {
 				trackPaymentRequestButtonClick( 'product' );
 
 				// If login is required for checkout, display redirect confirmation dialog.
-				if ( wcpayPaymentRequestParams.login_confirmation ) {
+				if ( wcpayExpressCheckoutParams.login_confirmation ) {
 					evt.preventDefault();
 					displayLoginConfirmation( paymentRequestType );
 					return;
@@ -474,7 +474,7 @@ jQuery( ( $ ) => {
 						 */
 						if (
 							! wcpayPaymentRequest.paymentAborted &&
-							wcpayPaymentRequestParams.product.needs_shipping ===
+							wcpayExpressCheckoutParams.product.needs_shipping ===
 								response.needs_shipping
 						) {
 							paymentRequest.update( {
@@ -514,7 +514,7 @@ jQuery( ( $ ) => {
 						).then( ( response ) => {
 							if (
 								! wcpayPaymentRequest.paymentAborted &&
-								wcpayPaymentRequestParams.product
+								wcpayExpressCheckoutParams.product
 									.needs_shipping === response.needs_shipping
 							) {
 								paymentRequest.update( {
@@ -535,12 +535,12 @@ jQuery( ( $ ) => {
 		attachCartPageEventListeners: ( prButton ) => {
 			prButton.on( 'click', ( evt ) => {
 				// If login is required for checkout, display redirect confirmation dialog.
-				if ( wcpayPaymentRequestParams.login_confirmation ) {
+				if ( wcpayExpressCheckoutParams.login_confirmation ) {
 					evt.preventDefault();
 					displayLoginConfirmation( paymentRequestType );
 				}
 				trackPaymentRequestButtonClick(
-					wcpayPaymentRequestParams.button_context
+					wcpayExpressCheckoutParams.button_context
 				);
 			} );
 		},
@@ -597,10 +597,10 @@ jQuery( ( $ ) => {
 		 * @param {Object} response Response from the server containing the updated product data.
 		 */
 		reInitPaymentRequest: ( response ) => {
-			wcpayPaymentRequestParams.product.needs_shipping =
+			wcpayExpressCheckoutParams.product.needs_shipping =
 				response.needs_shipping;
-			wcpayPaymentRequestParams.product.total = response.total;
-			wcpayPaymentRequestParams.product.displayItems =
+			wcpayExpressCheckoutParams.product.total = response.total;
+			wcpayExpressCheckoutParams.product.displayItems =
 				response.displayItems;
 			wcpayPaymentRequest.init();
 		},
@@ -609,21 +609,21 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: () => {
-			if ( wcpayPaymentRequestParams.is_pay_for_order ) {
+			if ( wcpayExpressCheckoutParams.is_pay_for_order ) {
 				if ( ! window.wcpayPaymentRequestPayForOrderParams ) {
 					return;
 				}
 
 				wcpayPaymentRequest.startPaymentRequest();
-			} else if ( wcpayPaymentRequestParams.is_product_page ) {
+			} else if ( wcpayExpressCheckoutParams.is_product_page ) {
 				wcpayPaymentRequest.startPaymentRequest( {
 					mode: 'payment',
-					total: wcpayPaymentRequestParams.product.total.amount,
+					total: wcpayExpressCheckoutParams.product.total.amount,
 					currency: 'usd',
 					requestShipping:
-						wcpayPaymentRequestParams.product.needs_shipping,
+						wcpayExpressCheckoutParams.product.needs_shipping,
 					displayItems:
-						wcpayPaymentRequestParams.product.displayItems,
+						wcpayExpressCheckoutParams.product.displayItems,
 				} );
 			} else {
 				// If this is the cart or checkout page, we need to request the
@@ -646,8 +646,8 @@ jQuery( ( $ ) => {
 
 	// We don't need to initialize payment request on the checkout page now because it will be initialized by updated_checkout event.
 	if (
-		! wcpayPaymentRequestParams.is_checkout_page ||
-		wcpayPaymentRequestParams.is_pay_for_order
+		! wcpayExpressCheckoutParams.is_checkout_page ||
+		wcpayExpressCheckoutParams.is_pay_for_order
 	) {
 		wcpayPaymentRequest.init();
 	}
@@ -684,8 +684,8 @@ jQuery( ( $ ) => {
 				wcpayPaymentRequest.blockPaymentRequestButton();
 				wcBookingFormChanged = false;
 				return wcpayPaymentRequest.addToCart().then( ( response ) => {
-					wcpayPaymentRequestParams.product.total = response.total;
-					wcpayPaymentRequestParams.product.displayItems =
+					wcpayExpressCheckoutParams.product.total = response.total;
+					wcpayExpressCheckoutParams.product.displayItems =
 						response.displayItems;
 					// Empty the cart to avoid having 2 products in the cart when payment request is not used.
 					api.paymentRequestEmptyCart( response.bookingId );

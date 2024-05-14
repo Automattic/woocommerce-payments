@@ -1,4 +1,4 @@
-/* global wcpayPaymentRequestParams */
+/* global wcpayExpressCheckoutParams */
 
 /**
  * Retrieves payment request data from global variable.
@@ -8,10 +8,10 @@
  */
 export const getPaymentRequestData = ( key ) => {
 	if (
-		typeof wcpayPaymentRequestParams === 'object' &&
-		wcpayPaymentRequestParams.hasOwnProperty( key )
+		typeof wcpayExpressCheckoutParams === 'object' &&
+		wcpayExpressCheckoutParams.hasOwnProperty( key )
 	) {
-		return wcpayPaymentRequestParams[ key ];
+		return wcpayExpressCheckoutParams[ key ];
 	}
 	return null;
 };
