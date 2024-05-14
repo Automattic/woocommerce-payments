@@ -63,7 +63,7 @@ class WCPay_Multi_Currency_Utils_Tests extends WCPAY_UnitTestCase {
 		$_REQUEST['rest_route']  = '/wc/store/v1/checkout';
 		$_SERVER['REQUEST_URI']  = trailingslashit( rest_get_url_prefix() );
 
-		$this->assertTrue( $this->utils->is_admin_api_request() );
+		$this->assertFalse( $this->utils->is_admin_api_request() );
 
 		unset( $_REQUEST['rest_route'] );
 	}
