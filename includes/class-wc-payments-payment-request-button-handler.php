@@ -70,7 +70,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		if( WC_Payments_Features::is_stripe_ece_enabled() ) {
+		if ( WC_Payments_Features::is_stripe_ece_enabled() ) {
 			return;
 		}
 

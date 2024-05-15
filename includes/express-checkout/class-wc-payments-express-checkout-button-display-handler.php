@@ -52,18 +52,23 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payment_Gateway_WCPay                   $gateway WCPay gateway.
-	 * @param WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler Payment request button handler.
-	 * @param WC_Payments_WooPay_Button_Handler          $platform_checkout_button_handler Platform checkout button handler.
-	 * @param WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper Express checkout helper.
+	 * @param WC_Payment_Gateway_WCPay                    $gateway WCPay gateway.
+	 * @param WC_Payments_Payment_Request_Button_Handler  $payment_request_button_handler Payment request button handler.
+	 * @param WC_Payments_WooPay_Button_Handler           $platform_checkout_button_handler Platform checkout button handler.
+	 * @param WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler Express Checkout Element button handler.
+	 * @param WC_Payments_Express_Checkout_Button_Helper  $express_checkout_helper Express checkout helper.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler, WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler,
-	WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler,
-	 WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper ) {
+	public function __construct(
+		WC_Payment_Gateway_WCPay $gateway,
+		WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler,
+		WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler,
+		WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler,
+		WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper
+	) {
 		$this->gateway                          = $gateway;
 		$this->payment_request_button_handler   = $payment_request_button_handler;
 		$this->platform_checkout_button_handler = $platform_checkout_button_handler;
-		$this->express_checkout_button_handler = $express_checkout_button_handler;
+		$this->express_checkout_button_handler  = $express_checkout_button_handler;
 		$this->express_checkout_helper          = $express_checkout_helper;
 	}
 
@@ -128,7 +133,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 				$this->platform_checkout_button_handler->display_woopay_button_html();
 			}
 
-			if( WC_Payments_Features::is_stripe_ece_enabled() ) {
+			if ( WC_Payments_Features::is_stripe_ece_enabled() ) {
 				$this->express_checkout_button_handler->display_express_checkout_button_html();
 			} else {
 				$this->payment_request_button_handler->display_payment_request_button_html();

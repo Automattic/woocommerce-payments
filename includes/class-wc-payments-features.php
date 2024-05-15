@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments_Features {
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
 	const STRIPE_BILLING_FLAG_NAME          = '_wcpay_feature_stripe_billing';
-	const STRIPE_ECE_FLAG_NAME 			    = '_wcpay_feature_stripe_ece';
+	const STRIPE_ECE_FLAG_NAME              = '_wcpay_feature_stripe_ece';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME = '_wcpay_feature_woopay_first_party_auth';
 	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME  = '_wcpay_feature_woopay_direct_checkout';

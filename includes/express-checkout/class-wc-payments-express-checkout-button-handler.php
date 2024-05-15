@@ -1,5 +1,4 @@
 <?php
-use WCPay\Exceptions\Invalid_Price_Exception;
 /**
  * Class WC_Payments_Express_Checkout_Button_Handler
  * Adds support for Apple Pay, Google Pay and ECE API buttons.
@@ -7,6 +6,8 @@ use WCPay\Exceptions\Invalid_Price_Exception;
  *
  * @package WooCommerce\Payments
  */
+
+use WCPay\Exceptions\Invalid_Price_Exception;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -66,7 +67,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		if( ! WC_Payments_Features::is_stripe_ece_enabled() ) {
+		if ( ! WC_Payments_Features::is_stripe_ece_enabled() ) {
 			return;
 		}
 
@@ -74,14 +75,13 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		if ( 'yes' !== $this->gateway->get_option( 'payment_request' ) ) {
 			return;
 		}
-		
+
 		// Don't load for change payment method page.
 		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
-
 	}
 
 	/**
@@ -526,5 +526,4 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
 		return WC_Tax::calc_tax( $price, $rates, false );
 	}
-
 }
