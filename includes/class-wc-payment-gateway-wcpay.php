@@ -18,7 +18,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Invalid_Address_Exception, Fraud_Prevention_Enabled_Exception, Invalid_Phone_Number_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Invalid_Address_Exception, Fraud_Prevention_Enabled_Exception, Invalid_Phone_Number_Exception, Rate_Limiter_Enabled_Exception };
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -1129,8 +1129,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws Invalid_Phone_Number_Exception Error processing the payment when phone number is invalid.
-	 * @throws Fraud_Prevention_Enabled_Exception Invalid_Phone_Number_Exception Error processing the payment when it is a WooPay request.
-	 * @throws Process_Payment_Exception Error processing the payment.
+	 * @throws Fraud_Prevention_Enabled_Exception Error processing the payment when it is a WooPay request.
+	 * @throws Rate_Limiter_Enabled_Exception Error processing the payment when rate limiter is enabled.
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
@@ -1161,7 +1161,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
-				throw new Process_Payment_Exception(
+				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
 				);
