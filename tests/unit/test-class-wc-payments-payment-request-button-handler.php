@@ -293,9 +293,30 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$this->assertSame( 'California', $shipping_address['state'] );
 	}
 
+	public function test_tokenized_cart_address_avoid_normalization_when_wrong_nonce() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', 'invalid-nonce' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => 'US',
+				'state'   => 'California',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+
+		$this->assertSame( 'California', $shipping_address['state'] );
+	}
+
 	public function test_tokenized_cart_address_state_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
@@ -324,6 +345,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	public function test_tokenized_cart_address_postcode_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',

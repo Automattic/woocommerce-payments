@@ -33,6 +33,9 @@ export default class PaymentRequestCartApi {
 			credentials: 'omit',
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
+				'X-WooPayments-Express-Payment-Request-Nonce':
+					window.wcpayPaymentRequestParams.nonce
+						.tokenized_cart_nonce || undefined,
 				...this.cartRequestHeaders,
 			},
 			data: paymentData,
@@ -73,6 +76,9 @@ export default class PaymentRequestCartApi {
 		this.cartRequestHeaders = {
 			Nonce: response.headers.get( 'Nonce' ),
 			'Cart-Token': response.headers.get( 'Cart-Token' ),
+			'X-WooPayments-Express-Payment-Request-Nonce': response.headers.get(
+				'X-WooPayments-Express-Payment-Request-Nonce'
+			),
 		};
 	}
 
@@ -93,6 +99,9 @@ export default class PaymentRequestCartApi {
 			credentials: 'omit',
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
+				'X-WooPayments-Express-Payment-Request-Nonce':
+					window.wcpayPaymentRequestParams.nonce
+						.tokenized_cart_nonce || undefined,
 				...this.cartRequestHeaders,
 			},
 			data: customerData,
