@@ -18,7 +18,7 @@ jest.mock( '@wordpress/a11y', () => ( {
 	speak: jest.fn(),
 } ) );
 
-jest.mock( 'payment-request/utils', () => ( {
+jest.mock( 'utils/express-checkout', () => ( {
 	shouldUseGooglePayBrand: jest.fn(),
 } ) );
 
