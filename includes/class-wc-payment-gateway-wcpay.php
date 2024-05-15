@@ -1128,9 +1128,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
-	 * @throws Invalid_Phone_Number_Exception Error processing the payment when phone number is invalid.
-	 * @throws Fraud_Prevention_Enabled_Exception Error processing the payment when it is a WooPay request.
-	 * @throws Rate_Limiter_Enabled_Exception Error processing the payment when rate limiter is enabled.
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
