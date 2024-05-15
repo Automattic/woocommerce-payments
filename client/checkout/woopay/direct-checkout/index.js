@@ -98,35 +98,6 @@ const maybeObserveMiniCart = () => {
 	observer.observe( document.body, { childList: true } );
 };
 
-window.addEventListener( 'load', async () => {
-	if ( shouldSkipWooPay() ) {
-		return;
-	}
-
-	WooPayDirectCheckout.init();
-
-	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
-
-	// If the mini cart is available, check when it's opened so we can add the event listener to the mini cart's checkout button.
-	maybeObserveMiniCart();
-
-	const checkoutButtons = WooPayDirectCheckout.getCheckoutButtonElements();
-	handleWooPayDirectCheckout( checkoutButtons );
-} );
-
-jQuery( ( $ ) => {
-	$( document.body ).on( 'updated_cart_totals', async () => {
-		if ( shouldSkipWooPay() ) {
-			return;
-		}
-
-		// When "updated_cart_totals" is triggered, the classic 'Proceed to Checkout' button is
-		// re-rendered. So, the click-event listener needs to be re-attached to the new button.
-		const checkoutButton = WooPayDirectCheckout.getClassicProceedToCheckoutButton();
-		handleWooPayDirectCheckout( [ checkoutButton ] );
-	} );
-} );
-
 /**
  * Determines whether the encrypted session data should be prefetched.
  *
@@ -235,22 +206,51 @@ const removeItemCallback = async ( { product } ) => {
 	}
 };
 
-// Note, although the following hooks are prefixed with 'experimental__', they will be
-// graduated to stable in the near future (it'll include the 'experimental__' prefix).
-addAction(
-	'experimental__woocommerce_blocks-cart-add-item',
-	'wcpay_woopay_direct_checkout',
-	addItemCallback
-);
+window.addEventListener( 'load', async () => {
+	if ( shouldSkipWooPay() ) {
+		return;
+	}
 
-addAction(
-	'experimental__woocommerce_blocks-cart-set-item-quantity',
-	'wcpay_woopay_direct_checkout',
-	debounceSetItemQtyCallback
-);
+	WooPayDirectCheckout.init();
 
-addAction(
-	'experimental__woocommerce_blocks-cart-remove-item',
-	'wcpay_woopay_direct_checkout',
-	removeItemCallback
-);
+	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
+
+	// Note, although the following hooks are prefixed with 'experimental__', they will be
+	// graduated to stable in the near future (it'll include the 'experimental__' prefix).
+	addAction(
+		'experimental__woocommerce_blocks-cart-add-item',
+		'wcpay_woopay_direct_checkout',
+		addItemCallback
+	);
+
+	addAction(
+		'experimental__woocommerce_blocks-cart-set-item-quantity',
+		'wcpay_woopay_direct_checkout',
+		debounceSetItemQtyCallback
+	);
+
+	addAction(
+		'experimental__woocommerce_blocks-cart-remove-item',
+		'wcpay_woopay_direct_checkout',
+		removeItemCallback
+	);
+
+	// If the mini cart is available, check when it's opened so we can add the event listener to the mini cart's checkout button.
+	maybeObserveMiniCart();
+
+	const checkoutButtons = WooPayDirectCheckout.getCheckoutButtonElements();
+	handleWooPayDirectCheckout( checkoutButtons );
+} );
+
+jQuery( ( $ ) => {
+	$( document.body ).on( 'updated_cart_totals', async () => {
+		if ( shouldSkipWooPay() ) {
+			return;
+		}
+
+		// When "updated_cart_totals" is triggered, the classic 'Proceed to Checkout' button is
+		// re-rendered. So, the click-event listener needs to be re-attached to the new button.
+		const checkoutButton = WooPayDirectCheckout.getClassicProceedToCheckoutButton();
+		handleWooPayDirectCheckout( [ checkoutButton ] );
+	} );
+} );
