@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Add command to run QIT PHPStan tests.
