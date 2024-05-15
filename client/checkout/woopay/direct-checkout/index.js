@@ -64,7 +64,9 @@ const addMiniCartEventListener = async () => {
  */
 const maybeObserveMiniCart = () => {
 	// Check if the widget is available on the page.
-	if ( ! document.querySelector( '.wc-block-mini-cart' ) ) {
+	if (
+		! document.querySelector( '[data-block-name="woocommerce/mini-cart"]' )
+	) {
 		return;
 	}
 
