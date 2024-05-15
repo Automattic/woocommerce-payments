@@ -50,7 +50,7 @@ const handleWooPayDirectCheckout = async ( checkoutButtons ) => {
 /**
  * Add an event listener to the mini cart checkout button.
  */
-const addMiniCartEventListener = async () => {
+const addMiniCartEventListener = () => {
 	const checkoutButton = WooPayDirectCheckout.getMiniCartProceedToCheckoutButton();
 	handleWooPayDirectCheckout( [ checkoutButton ] );
 };
